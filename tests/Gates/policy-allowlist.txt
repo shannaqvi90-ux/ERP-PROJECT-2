@@ -1,0 +1,4 @@
+# Row-level security policies other than the standard tenant_isolation policy.
+# Format: schema.table policy command roles  # reason   (command r = SELECT)
+identity.users auth_resolver_read r erp_auth  # Lets identity.resolve_login() find accounts by e-mail before a tenant is known (sign-in). erp_auth is NOLOGIN; the app reaches it only through that function.
+identity.sessions auth_resolver_read r erp_auth  # Lets identity.resolve_session() find a session by token hash before a tenant is known.

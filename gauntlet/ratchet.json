@@ -1,0 +1,26 @@
+{
+  "_rules": "Minimum counts the gate suite must reach and maximum counts it must stay under. Minimums may only go up and maximums only down (CLAUDE.md rule 9); ./erp verify compares this file with the committed version and fails if any value moved the wrong way or a key disappeared.",
+  "minimums": {
+    "g1.tenantTables": 6,
+    "g1.tablesAttackedInDatabase": 6,
+    "g1.endpointsAttacked": 25,
+    "g1.attackRequests": 2472,
+    "g1.isolationProbes": 0,
+    "g2.permissionedEndpoints": 13,
+    "g2.permissions": 10,
+    "rules.nugetPackagesChecked": 64,
+    "rules.npmPackagesChecked": 110,
+    "rules.serverStrings": 39,
+    "rules.webStrings": 63,
+    "rules.auditedTables": 4,
+    "rules.openApiOperations": 17,
+    "suite.dotnetTests": 95,
+    "suite.webUnitTests": 12,
+    "suite.e2eTests": 8
+  },
+  "maximums": {
+    "g1.securityDefinerFunctions": 2,
+    "g2.anonymousEndpoints": 12,
+    "rules.auditExemptTables": 2
+  }
+}
