@@ -29,6 +29,15 @@ case "$stage" in
     npx vitest run --reporter=default --reporter=json --outputFile="$out/vitest.json"
     npm run --silent build
 
+    step "Comparison harness (gauntlet/compare): install and unit tests"
+    cd /work/gauntlet/compare
+    npm ci --no-audit --no-fund --loglevel=error
+    # live-odoo.test.mjs needs the Odoo reference rig; critics run it with `npm run test:live`.
+    node --test --test-concurrency=1 \
+        --test-reporter=spec --test-reporter-destination=stdout \
+        --test-reporter=junit --test-reporter-destination="$out/compare-junit.xml" \
+        $(ls test/*.test.mjs | grep -v live-odoo)
+
     step ".NET: restore and build (warnings are errors)"
     cd /work
     dotnet restore Erp.slnx --verbosity quiet
