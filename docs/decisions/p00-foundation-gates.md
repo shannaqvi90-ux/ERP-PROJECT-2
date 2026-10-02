@@ -41,3 +41,35 @@ The gates live in `tests/Erp.Gates.Tests` and run in every `./erp verify`:
 
 - The owner's bar: gates are written first and may only get stricter (CLAUDE.md rule 9).
 - Enumerating from the running app means a new endpoint is attacked the moment it exists.
+
+## Round 2 additions (2026-10-02)
+
+The round 1 critic planted an endpoint that looked users up by e-mail through the reviewed
+sign-in function and an endpoint that let a user create users with roles beyond their own; the
+gates missed both. The gates now cover them:
+
+- **G1 HTTP, tenant B values in every parameter.** `VictimValues` reads tenant B's real values
+  from the database (every id, and every text value tenant A does not also hold: e-mails, names,
+  codes, hashes). Phase 2 sends them through every query parameter the OpenAPI document lists
+  (plus guessed names such as `email`, `code`, `name`, `q`) and every route parameter; phase 3
+  puts every B text value into every string field of every request body. Values the attacker
+  successfully stored in its own tenant, and values echoed back from the same request, are not
+  counted as leaks; ids and canaries are always leaks.
+- **G1 HTTP, existence oracles.** Every GET in phase 2 is repeated with a value of the same
+  shape that exists nowhere (letters and digits randomised, punctuation kept). Different status
+  or body (trace ids removed, sent value masked) fails the gate, so "does this e-mail exist in
+  another tenant" endpoints are caught even when they return no id.
+- **G1 reviewed lookups.** `SqlTrace` listens to Npgsql's ActivitySource and records which
+  endpoint (or the authentication handler) ran each statement naming a reviewed SECURITY
+  DEFINER function. `tests/Gates/security-definer-callers.txt` lists the reviewed callers and
+  source files; another caller, or another file under `src/` naming the function, fails the gate.
+  The gate also fails if the trace never saw the reviewed callers (a blind trace).
+- **G2 grant escalation.** Every endpoint whose request body has `roleIds` or `permissions` is
+  found from OpenAPI. A user holding only that endpoint's permission (plus read access to roles
+  and users) asks it to grant the Administrator role and every permission: it must answer 403 and
+  nothing may change; the same request granting only what the caller holds must succeed.
+- **Self-tests** plant each of these faults in the test-only leaky module (e-mail lookup,
+  existence oracle, undocumented query name, body lookup, role-granting endpoint).
+- **Speed.** Phase 2 runs four requests at a time (GETs first, then other methods, so no write
+  lands between a GET and its control). Phase 2 uses five ids per table and the full text-value
+  set for documented parameters, and a cross-section for guessed names and catch-all routes.
