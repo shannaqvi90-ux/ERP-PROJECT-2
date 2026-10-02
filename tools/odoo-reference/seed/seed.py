@@ -124,8 +124,10 @@ def setup():
         user = env['res.users'].with_context(active_test=False).search([('login', '=', login)], limit=1)
         if not user:
             user = env['res.users'].create({'name': name, 'login': login, 'email': f'{login}@demo-trading.example'})
-        user.write({'active': True, 'password': login, 'lang': 'en_US', 'tz': 'Asia/Dubai',
-                    'group_ids': [Command.set([internal.id, group.id])]})
+        user.write({'active': True, 'password': login, 'lang': 'en_US', 'tz': 'Asia/Dubai'})
+        # Only when they differ: rewriting groups makes Odoo re-check channel subscriptions.
+        if set(user.group_ids.ids) != {internal.id, group.id}:
+            user.write({'group_ids': [Command.set([internal.id, group.id])]})
     xmlid_record('reference_rig.product_chair', 'product.product', {
         'name': 'Office Chair', 'purchase_ok': True, 'standard_price': 750.0, 'list_price': 990.0, 'supplier_taxes_id': [Command.clear()],
     })
@@ -221,6 +223,30 @@ def users():
                   CROSS JOIN (SELECT id FROM res_users WHERE login IN (SELECT login FROM rig_users)) nu
                   WHERE r.user_id = %s ON CONFLICT DO NOTHING""", [template.id])
     template.active = False
+    return added
+
+
+@timed('user-channels')
+def user_channels():
+    # Odoo makes every user a member of the channels that auto-subscribe one of their groups
+    # (General for internal users). Bulk users were cloned in SQL, so add those memberships the
+    # same way, cloning a member row Odoo made for that channel. Without them, the next change to
+    # an internal user in the UI makes Odoo subscribe all 100,000 at once, which takes minutes and
+    # would slow the reference unfairly.
+    cr.execute("""SELECT r.discuss_channel_id, r.res_groups_id, min(m.id)
+                  FROM discuss_channel_res_groups_rel r
+                  JOIN discuss_channel_member m ON m.channel_id = r.discuss_channel_id AND m.partner_id IS NOT NULL
+                  GROUP BY 1, 2""")
+    added = 0
+    for channel_id, group_id, member_id in cr.fetchall():
+        added += clone_sql('discuss_channel_member', member_id, {
+            'partner_id': 'u.partner_id', 'create_date': 'now()', 'write_date': 'now()',
+            'seen_message_id': 'NULL', 'new_message_separator': '0', 'last_seen_dt': 'NULL',
+        }, f"""(SELECT DISTINCT u.partner_id FROM res_users u
+                  JOIN res_groups_users_rel g ON g.uid = u.id AND g.gid = {int(group_id)}
+                  WHERE u.active AND u.login LIKE '%@staff.example'
+                    AND NOT EXISTS (SELECT 1 FROM discuss_channel_member x
+                                    WHERE x.channel_id = {int(channel_id)} AND x.partner_id = u.partner_id)) u""")
     return added
 
 
@@ -420,7 +446,7 @@ def volume():
     return out
 
 
-for step in (setup, contacts, users, rates, audit_messages, attachments, job_runs, purchase_orders, purchase_buyer):
+for step in (user_channels, setup, contacts, users, user_channels, rates, audit_messages, attachments, job_runs, purchase_orders, purchase_buyer):
     step()
 # Planner statistics for the bulk-loaded tables. Without them PostgreSQL plans for empty tables
 # and some Odoo screens (the purchase dashboard) take minutes instead of milliseconds, which

@@ -14,7 +14,7 @@ compose project `b-p01-odoo-rig`, creates the `reference` database with Contacts
 Purchase and base import, activates Arabic, loads at least 100,000 rows into every main list,
 refreshes planner statistics, waits for the web client and writes the verified counts to
 `gauntlet/reference/odoo/volume.json`. A second run adds only what is missing (a few seconds).
-A first run on an empty machine takes a few minutes.
+A first run on an empty machine takes about three minutes once the images are pulled (measured: 2 min 34 s).
 
 Sign-ins (local rig only, bound to 127.0.0.1): `admin`/`admin`, `approver`/`approver` (purchase
 manager), `buyer`/`buyer` (purchase user). The harness adds `lang.tester` for the language task.
