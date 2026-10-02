@@ -20,7 +20,9 @@ public interface ITenantContext
 /// One PostgreSQL connection and one transaction per unit of work (an HTTP request, a job, a seed
 /// step). Every module's DbContext in the scope shares it, so a request commits or rolls back as a
 /// whole and audit rows are written in the same transaction. The tenant is set with
-/// <c>set_config('app.tenant_id', …, true)</c> (transaction-local), which row-level security reads.
+/// <c>set_config('app.tenant_id', …, true)</c> (transaction-local) together with
+/// <c>app.tenant_tx</c>, the transaction's start time; row-level security reads the tenant only
+/// inside that same transaction.
 /// Nothing can query tenant data before <see cref="BeginAsync"/> has run: the command guard
 /// refuses, and row-level security would return nothing anyway.
 /// </summary>
@@ -76,7 +78,8 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
         }
         Transaction = await Connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await using (var command = new NpgsqlCommand(
-            "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.actor_id', @actor, true), " +
+            "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
+            "set_config('app.actor_id', @actor, true), " +
             "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true)",
             Connection, Transaction))
         {

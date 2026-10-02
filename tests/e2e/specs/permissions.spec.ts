@@ -21,6 +21,20 @@ test.describe("screens hide what the user cannot do", () => {
     await page.getByRole("searchbox", { name: "Search by name or e-mail" }).fill("viewer@alnoor");
     await expect(page.locator("table tbody tr")).toHaveCount(1);
     await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
+    await expect(page.getByText("1 user", { exact: true })).toBeVisible();
+  });
+
+  test("counts take the right plural form in Arabic", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await page.locator('nav a[href="/identity/users"]').first().click();
+    await expect(page).toHaveURL(/\/identity\/users$/);
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    await page.getByRole("searchbox").fill("viewer@alnoor");
+    await expect(page.locator("table tbody tr")).toHaveCount(1);
+    await expect(page.getByText("مستخدم واحد", { exact: true })).toBeVisible();
+    await page.getByRole("searchbox").fill("no-such-user-anywhere");
+    await expect(page.getByText("لا يوجد مستخدمون", { exact: true })).toBeVisible();
   });
 
   test("signing out returns to the sign-in screen and the session is gone", async ({ page }) => {
