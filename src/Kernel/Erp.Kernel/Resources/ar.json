@@ -11,12 +11,12 @@
   "problem.request.tooMany": "محاولات كثيرة جدًا. انتظر دقيقة ثم حاول مرة أخرى.",
   "problem.request.missingRequestHeader": "الطلب لا يحتوي على الترويسة X-Erp-Request المطلوبة لإجراء التغييرات.",
   "validation.required": "مطلوب.",
-  "validation.maxLength": "استخدم {0} حرفًا على الأكثر.",
-  "validation.length": "استخدم ما بين {0} و{1} حرفًا.",
+  "validation.maxLength": "{0, plural, zero {اترك هذا الحقل فارغًا.} one {استخدم حرفًا واحدًا على الأكثر.} two {استخدم حرفين على الأكثر.} few {استخدم # أحرف على الأكثر.} many {استخدم # حرفًا على الأكثر.} other {استخدم # حرف على الأكثر.}}",
+  "validation.length": "استخدم ما بين {0} و{1, plural, zero {# حرف} one {حرف واحد} two {حرفين} few {# أحرف} many {# حرفًا} other {# حرف}}.",
   "validation.email": "أدخل عنوان بريد إلكتروني صحيحًا.",
   "validation.oneOf": "اختر واحدًا من: {0}.",
   "validation.unknownIds": "بعض العناصر المختارة غير موجودة.",
-  "validation.passwordTooShort": "استخدم {0} أحرف على الأقل.",
-  "validation.passwordTooLong": "استخدم {0} حرفًا على الأكثر.",
+  "validation.passwordTooShort": "{0, plural, zero {لا يلزم أي حرف.} one {استخدم حرفًا واحدًا على الأقل.} two {استخدم حرفين على الأقل.} few {استخدم # أحرف على الأقل.} many {استخدم # حرفًا على الأقل.} other {استخدم # حرف على الأقل.}}",
+  "validation.passwordTooLong": "{0, plural, zero {اترك هذا الحقل فارغًا.} one {استخدم حرفًا واحدًا على الأكثر.} two {استخدم حرفين على الأكثر.} few {استخدم # أحرف على الأكثر.} many {استخدم # حرفًا على الأكثر.} other {استخدم # حرف على الأكثر.}}",
   "validation.versionRequired": "رقم إصدار السجل مطلوب لحفظ التغييرات."
 }

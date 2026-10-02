@@ -1,4 +1,5 @@
 using Erp.Gates.Tests.G1;
+using Erp.Gates.Tests.G2;
 using Erp.Gates.Tests.Infrastructure;
 using Erp.Testing;
 using Npgsql;
@@ -11,6 +12,7 @@ public sealed class LeakyFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        SqlTrace.EnsureStarted();
         Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?>
         {
             ["Erp:Testing:ExtraModules"] = typeof(LeakyModule).AssemblyQualifiedName,
@@ -35,6 +37,33 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/tenants/", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // Lookups by e-mail, by an undocumented-name query parameter and by a body text field.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/lookup?email=", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/report?ownerReference=", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/find [body reference=", StringComparison.Ordinal));
+
+        // An endpoint that only says whether a tenant B e-mail exists.
+        Assert.Contains(report.Oracles, o => o.Contains("/api/leaky/exists?email=", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // The reviewed sign-in lookup reused by other endpoints.
+        foreach (var name in new[] { "leaky.lookup", "leaky.exists", "leaky.find" })
+        {
+            Assert.Contains(report.LookupMisuse, m => m.Contains($"endpoint:{name}", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.LookupMisuse, m => !m.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Empty(report.UntracedFunctions);
+    }
+
+    [Fact]
+    public async Task The_grant_escalation_check_catches_an_endpoint_that_grants_any_role()
+    {
+        var result = await GrantEscalation.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("Administrator", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/users", result.Checked);
     }
 
     [Fact]

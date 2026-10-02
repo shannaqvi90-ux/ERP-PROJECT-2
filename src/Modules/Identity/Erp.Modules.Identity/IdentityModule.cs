@@ -1,5 +1,6 @@
 using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Kernel.Shell;
@@ -37,6 +38,28 @@ public sealed class IdentityModule : ErpModule
         });
         module.Menu(new MenuEntry("identity.users", "identity.menu.users", "/identity/users", IdentityPermissions.UsersRead, Order: 800, Group: "settings"));
         module.Menu(new MenuEntry("identity.roles", "identity.menu.roles", "/identity/roles", IdentityPermissions.RolesRead, Order: 810, Group: "settings"));
+        module.List(new ListDefinition(
+            "identity.users", "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
+            [
+                new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true),
+                new ListColumn("email", "identity.users.email", ListColumnType.Text, Sortable: true),
+                new ListColumn("language", "identity.users.language", ListColumnType.Choice, Filterable: true),
+                new ListColumn("isActive", "identity.users.status", ListColumnType.Boolean, Filterable: true),
+                new ListColumn("lastSignInAt", "identity.users.lastSignIn", ListColumnType.DateTime, Sortable: true),
+                new ListColumn("createdAt", "identity.users.created", ListColumnType.DateTime, Sortable: true),
+            ],
+            SearchFields: ["displayName", "email"],
+            DefaultSort: "-createdAt"));
+        module.List(new ListDefinition(
+            "identity.roles", "identity.roles.title", IdentityPermissions.RolesRead, "/api/identity/roles",
+            [
+                new ListColumn("nameEn", "identity.roles.name", ListColumnType.Text, Sortable: true),
+                new ListColumn("isSystem", "identity.roles.kind", ListColumnType.Boolean, Filterable: true),
+                new ListColumn("userCount", "identity.roles.users", ListColumnType.Number, Sortable: true),
+                new ListColumn("permissions", "identity.roles.permissions", ListColumnType.Choice),
+            ],
+            SearchFields: [],
+            DefaultSort: "nameEn"));
         module.Seeder<IdentitySeeder>();
     }
 }

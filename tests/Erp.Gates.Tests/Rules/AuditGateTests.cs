@@ -128,7 +128,7 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
     {
         await using var app = await Env.OpenAppAsync();
         await using var tx = await app.BeginTransactionAsync();
-        await using (var bind = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.actor_kind', 'job', true)", app, tx))
+        await using (var bind = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), set_config('app.actor_kind', 'job', true)", app, tx))
         {
             bind.Parameters.AddWithValue("t", Env.TenantA.Id.ToString());
             await bind.ExecuteNonQueryAsync();

@@ -40,3 +40,14 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
   tables would have to be reshaped to meet rule 1.
 - JWT access tokens: no immediate revocation; larger attack surface (algorithm confusion, key
   management).
+
+## Client address behind a proxy (2026-10-02)
+
+The sign-in limiter partitions by client address. Behind a reverse proxy every request would come
+from the proxy's address, so one client could exhaust the limit for everyone. Setting
+`Erp:Http:KnownProxies` (addresses) or `Erp:Http:KnownNetworks` (CIDR) turns on forwarded-header
+handling for exactly those proxies and one hop; with neither set the header is ignored, so a
+client cannot choose its own address. Account lockout stays per account (5 failures, 15
+minutes); anyone who knows an address can pause that account's sign-in, as on any lockout
+system. Progressive delays or a challenge instead of a hard lockout are a later product
+decision.

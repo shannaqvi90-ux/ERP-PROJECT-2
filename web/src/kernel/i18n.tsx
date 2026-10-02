@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { formatMessage, type MessageParams } from "./messageFormat";
 
 export type Language = "en" | "ar";
 export const languages: readonly Language[] = ["en", "ar"];
@@ -30,11 +31,14 @@ export function buildCatalog(sources: Record<string, StringModule>): Record<Lang
 
 export const catalog = buildCatalog(files);
 
-/** Text for a key, with `{name}` placeholders filled. A missing key shows the key itself. */
-export function translate(language: Language, key: string, params?: Record<string, string | number>): string {
+export const localeOf = (language: Language): string => (language === "ar" ? "ar-AE" : "en-AE");
+
+/** Text for a key, with `{name}` placeholders and `{count, plural, …}` filled (numbers formatted
+ * for the language). A missing key shows the key itself. */
+export function translate(language: Language, key: string, params?: MessageParams): string {
   const text = catalog[language][key] ?? catalog.en[key] ?? key;
   if (!params) return text;
-  return text.replace(/\{(\w+)\}/g, (whole, name: string) => (name in params ? String(params[name]) : whole));
+  return formatMessage(text, localeOf(language), params);
 }
 
 export const direction = (language: Language): "rtl" | "ltr" => (language === "ar" ? "rtl" : "ltr");
@@ -94,7 +98,7 @@ export function I18nProvider({ initial, children }: { initial?: Language; childr
   const setLanguage = useCallback((next: Language) => setLanguageState(next), []);
 
   const value = useMemo<I18n>(() => {
-    const locale = language === "ar" ? "ar-AE" : "en-AE";
+    const locale = localeOf(language);
     const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
     const number = new Intl.NumberFormat(locale);
     return {

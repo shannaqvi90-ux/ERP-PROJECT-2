@@ -39,12 +39,21 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 ## Adding a module
 
 1. `src/Modules/<Name>/Erp.Modules.<Name>` and `….Contracts` projects; a class deriving from
-   `ErpModule` that registers permissions, its `DbContext`, endpoints, menu, seeders and probes.
+   `ErpModule` that registers permissions, its `DbContext`, endpoints, menu, list/search
+   registrations (`module.List(...)`), seeders and probes.
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
    for every table.
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens and
-   `i18n/{en,ar}.json` under `web/src/modules/<name>/`.
+   `i18n/{en,ar}.json` under `web/src/modules/<name>/`. Counts are plural messages
+   (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
 
-The gates then attack the new endpoints and tables automatically.
+The gates then attack the new endpoints and tables automatically: every documented route, query
+and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
+existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Code that
+needs to read across tenants (a SECURITY DEFINER function) must be listed with its callers in
+`tests/Gates/security-definer-callers.txt`.
+
+Behind a reverse proxy, set `Erp__Http__KnownProxies` (or `Erp__Http__KnownNetworks`) so sign-in
+rate limits see the client address.

@@ -50,3 +50,15 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
   small tenants, and still needs a cross-tenant sign-in lookup.
 - Tenant from subdomain or header: a client-controlled input; the G1 attack sends such headers on
   purpose and must never see them honoured.
+
+## The tenant counts only inside the transaction that bound it (2026-10-02)
+
+The application role can call `set_config` at session level, so a tenant id could outlive its
+transaction on a pooled connection. `ErpDbSession.BeginAsync` now sets `app.tenant_tx` (the
+transaction's start time, `extract(epoch from now())`) next to `app.tenant_id`, both
+transaction-local, and `erp.current_tenant_id()` returns the tenant only when the marker equals the
+current transaction's start time. A tenant left at session level, or set without the marker, binds
+nothing (kernel migration `TenantBoundToTransaction`; gate test
+`A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored`). Code inside a
+transaction can still bind that transaction, which is what the platform itself does; the gate
+traces and source scans cover what endpoints may do.

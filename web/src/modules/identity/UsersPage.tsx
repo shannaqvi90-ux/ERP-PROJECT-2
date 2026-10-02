@@ -56,7 +56,7 @@ export function UsersPage() {
           placeholder={t("identity.users.search")}
           aria-label={t("identity.users.search")}
         />
-        {page && <span className="muted">{t("identity.users.count", { count: formatNumber(page.total) })}</span>}
+        {page && <span className="muted">{t("identity.users.count", { count: page.total })}</span>}
       </div>
       {error && (
         <div className="alert" role="alert">
