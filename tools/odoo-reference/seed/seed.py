@@ -12,6 +12,7 @@ import csv
 import json
 import os
 import time
+from decimal import Decimal
 
 from odoo import Command
 from psycopg2.extras import execute_values
@@ -230,8 +231,10 @@ def rates():
     currencies = {c.name: c.id for c in env['res.currency'].with_context(active_test=False).search([])}
     cr.execute('CREATE TEMP TABLE rig_rates (currency_id int, name date, rate numeric) ON COMMIT DROP')
     # Odoo stores units of the currency per one unit of the company currency (AED).
+    # Inverted in decimal arithmetic; the dataset itself carries AED per unit with six decimals.
     execute_values(cr._obj, 'INSERT INTO rig_rates VALUES %s',
-                   [(currencies[r['currency']], r['date'], f"{1 / float(r['rate']):.12f}") for r in rows if r['currency'] in currencies],
+                   [(currencies[r['currency']], r['date'], str((Decimal(1) / Decimal(r['rate'])).quantize(Decimal('1e-12'))))
+                    for r in rows if r['currency'] in currencies],
                    page_size=5000)
     cr.execute("""INSERT INTO res_currency_rate (currency_id, company_id, name, rate, create_uid, write_uid, create_date, write_date)
                   SELECT r.currency_id, %s, r.name, r.rate, 1, 1, now(), now() FROM rig_rates r
@@ -386,6 +389,16 @@ def purchase_orders():
     return added
 
 
+@timed('purchase-buyer')
+def purchase_buyer():
+    # Bulk orders were cloned from a template the shell created as the superuser; a working
+    # company's orders belong to its buyer, and Odoo's purchase screens group by buyer.
+    buyer = env['res.users'].search([('login', '=', 'buyer')], limit=1)
+    cr.execute("""UPDATE purchase_order SET user_id = %s
+                  WHERE name ~ '^PO-H[0-9]{6}$' AND user_id IS DISTINCT FROM %s""", [buyer.id, buyer.id])
+    return cr.rowcount
+
+
 def volume():
     queries = {
         'contacts': ("res.partner", "SELECT count(*) FROM res_partner WHERE ref ~ '^C[0-9]{6}$'", 'Contacts from the shared dataset (contacts.csv)'),
@@ -407,8 +420,12 @@ def volume():
     return out
 
 
-for step in (setup, contacts, users, rates, audit_messages, attachments, job_runs, purchase_orders):
+for step in (setup, contacts, users, rates, audit_messages, attachments, job_runs, purchase_orders, purchase_buyer):
     step()
+# Planner statistics for the bulk-loaded tables. Without them PostgreSQL plans for empty tables
+# and some Odoo screens (the purchase dashboard) take minutes instead of milliseconds, which
+# would handicap the reference. Committed explicitly: `odoo shell` rolls back on exit.
 cr.execute('ANALYZE')
+cr.commit()
 import odoo  # noqa: E402
 log('VOLUME ' + json.dumps({'odoo_version': odoo.release.version, 'lists': volume()}))

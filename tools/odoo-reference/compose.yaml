@@ -1,7 +1,8 @@
 # Odoo Community reference instance for the blind comparison harness.
 # Reference only (CLAUDE.md rule 7): nothing from Odoo is copied into the product.
 # Started and seeded by tools/odoo-reference/up.sh; ports and project name come from the environment.
-name: ${ODOO_REF_PROJECT:-odoo-reference}
+# The default project name (b-p01-odoo-rig) and port (8069) are the shared rig every critic reuses.
+name: ${ODOO_REF_PROJECT:-b-p01-odoo-rig}
 
 services:
   db:
@@ -47,10 +48,11 @@ services:
       --http-interface=0.0.0.0
       --workers=0
       --max-cron-threads=1
+    # Only named volumes: the long-running server never depends on the checkout that started it,
+    # so any clone can run up.sh against the same project. The seed runs in a one-off container
+    # (up.sh) that mounts the seed script and the shared dataset itself.
     volumes:
       - filestore:/var/lib/odoo
-      - ./seed:/seed:ro
-      - ${ODOO_REF_DATA_DIR:-./.data}:/data:ro
     restart: unless-stopped
 
 volumes:

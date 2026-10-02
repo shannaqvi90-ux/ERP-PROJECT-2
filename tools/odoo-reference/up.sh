@@ -7,7 +7,7 @@
 #   tools/odoo-reference/down.sh          stop (add --purge to delete its volumes)
 #
 # Environment overrides (defaults in brackets):
-#   ODOO_REF_PROJECT [odoo-reference]   compose project name
+#   ODOO_REF_PROJECT [b-p01-odoo-rig]   compose project name (the shared rig every critic reuses)
 #   ODOO_REF_PORT    [8069]             host port for the web client
 #   ODOO_REF_DB      [reference]        database name
 #   ODOO_REF_TARGET  [100000]           minimum rows per main list
@@ -19,10 +19,10 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-export ODOO_REF_PROJECT="${ODOO_REF_PROJECT:-odoo-reference}"
+export ODOO_REF_PROJECT="${ODOO_REF_PROJECT:-b-p01-odoo-rig}"
 export ODOO_REF_PORT="${ODOO_REF_PORT:-8069}"
 export ODOO_REF_DB="${ODOO_REF_DB:-reference}"
-export ODOO_REF_DATA_DIR="$ROOT/gauntlet/compare/data/out"
+DATA_DIR="$ROOT/gauntlet/compare/data/out"
 TARGET="${ODOO_REF_TARGET:-100000}"
 VOLUME_OUT="${ODOO_REF_VOLUME_OUT:-$ROOT/gauntlet/reference/odoo/volume.json}"
 APPS="base,base_setup,contacts,mail,purchase,base_import"
@@ -65,14 +65,19 @@ dc up -d odoo >/dev/null
 
 say "seeding to at least $TARGET rows per main list"
 seed_log="$(mktemp)"
-if ! dc exec -T -e RIG_TARGET="$TARGET" odoo odoo shell -d "$ODOO_REF_DB" --db_host db --db_user odoo --db_password odoo \
-     --no-http --log-level=warn <"$HERE/seed/seed.py" >"$seed_log" 2>&1; then
+# A one-off container mounts the seed script and the dataset; the server container mounts neither,
+# so it never depends on the checkout that started it.
+if ! dc run --rm --no-deps -T -e RIG_TARGET="$TARGET" -v "$HERE/seed:/seed:ro" -v "$DATA_DIR:/data:ro" \
+     odoo odoo shell -d "$ODOO_REF_DB" --no-http --log-level=warn <"$HERE/seed/seed.py" >"$seed_log" 2>&1; then
   tail -40 "$seed_log" >&2; exit 1
 fi
 grep '^RIG step' "$seed_log" | sed 's/^RIG /  /'
 volume_line="$(grep '^RIG VOLUME ' "$seed_log" | tail -1 | sed 's/^RIG VOLUME //')"
 rm -f "$seed_log"
 [[ -n "$volume_line" ]] || { echo "seed did not report volume" >&2; exit 1; }
+# Planner statistics again from outside Odoo (the seed commits its own ANALYZE too): without them
+# PostgreSQL plans the bulk tables as empty and some Odoo screens take minutes.
+psql_ref "ANALYZE" >/dev/null
 
 say "waiting for the web client"
 for _ in $(seq 1 90); do

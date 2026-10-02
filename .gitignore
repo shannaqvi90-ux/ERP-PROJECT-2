@@ -15,3 +15,7 @@ coverage/
 test-results/
 playwright-report/
 .env.local
+
+# comparison harness: generated dataset (rebuilt by gauntlet/compare/data/generate.mjs) and local runs
+gauntlet/compare/data/out/
+gauntlet/compare/runs/
