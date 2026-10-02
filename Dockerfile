@@ -25,8 +25,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app ./
 COPY --from=web /web/dist ./wwwroot
+# PGGSSENCMODE=disable: the database is reached without Kerberos; without it Npgsql probes for
+# GSS encryption and the runtime prints a missing libgssapi_krb5 error on every start.
 ENV ASPNETCORE_URLS=http://+:8080 \
     DOTNET_RUNNING_IN_CONTAINER=true \
+    PGGSSENCMODE=disable \
     ASPNETCORE_ENVIRONMENT=Production
 USER app
 EXPOSE 8080
