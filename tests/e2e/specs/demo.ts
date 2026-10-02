@@ -16,6 +16,8 @@ export async function freshStart(page: Page, language: "en" | "ar" = "en") {
     localStorage.setItem("erp.language", lang);
   }, language);
   await page.goto("/");
+  // The sign-in screen is ready for the keyboard: the e-mail field has focus.
+  await expect(page.locator('input[name="email"]')).toBeFocused();
 }
 
 /** Keyboard-only sign-in: type the e-mail, Tab, type the password, Enter. */

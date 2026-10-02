@@ -1,3 +1,4 @@
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
 import { App } from "./App";
@@ -59,6 +60,25 @@ describe("sign-in screen", () => {
     expect(signIn.headers["X-Erp-Request"]).toBe("1");
     expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
     expect(view.container.querySelector("nav")!.textContent).toBe("Users");
+  });
+
+  it("keeps the keyboard in the form after switching language", async () => {
+    mockFetch(() => ({ status: 200, body: { authenticated: false } }));
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    expect(document.activeElement).toBe(email);
+    const toggle = view.container.querySelector<HTMLButtonElement>("button.lang-toggle")!;
+    toggle.focus();
+    await act(async () => toggle.click());
+    await settle();
+    expect(document.documentElement.dir).toBe("rtl");
+    expect(document.activeElement).toBe(email);
+    setInput(email, "admin@alnoor.example");
+    await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(document.activeElement).toBe(view.container.querySelector('input[name="password"]'));
   });
 
   it("shows the server's message after a failed sign-in and clears the password", async () => {

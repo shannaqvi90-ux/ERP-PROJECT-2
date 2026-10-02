@@ -34,9 +34,11 @@ export function SignInPage() {
   const passwordRef = useRef<HTMLInputElement>(null);
   const workspaceRef = useRef<HTMLButtonElement>(null);
 
+  // Keyboard first: the first empty field has focus on arrival and again after switching
+  // language, so the next keystroke always types into the form.
   useEffect(() => {
-    (remembered ? passwordRef : emailRef).current?.focus();
-  }, [remembered]);
+    (emailRef.current?.value ? passwordRef : emailRef).current?.focus();
+  }, [language]);
 
   useEffect(() => {
     if (workspaces) workspaceRef.current?.focus();

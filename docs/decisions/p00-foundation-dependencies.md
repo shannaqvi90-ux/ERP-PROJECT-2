@@ -5,7 +5,7 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
 Every direct and transitive package is checked by `tests/Erp.Gates.Tests/Rules/LicenceGateTests.cs`
 (NuGet: nuspec licence expression of every package in `project.assets.json`; npm: `license` of every
 package in both lockfiles). Allowed: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, PostgreSQL
-(CLAUDE.md rule 6), plus `0BSD`. Reviewed exceptions sit in `tests/Gates/licence-exceptions.txt`.
+(CLAUDE.md rule 6); copyleft and unknown licences always fail. Reviewed exceptions sit in `tests/Gates/licence-exceptions.txt`.
 
 ## Direct dependencies
 
