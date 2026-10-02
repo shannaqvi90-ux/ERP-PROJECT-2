@@ -26,6 +26,8 @@ services:
     <<: *app-image
     build:
       context: .
+      secrets:
+        - extra_ca
     command: ["setup"]
     environment:
       ConnectionStrings__Admin: "Host=db;Username=postgres;Password=${ERP_DB_ADMIN_PASSWORD:-erp-local-admin};Database=postgres"
@@ -54,3 +56,9 @@ services:
 
 volumes:
   db-data:
+
+secrets:
+  # Extra CA certificates for networks that re-terminate TLS; ./erp sets ERP_EXTRA_CA_CERTS when the
+  # host has them. The default is an empty file, so an ordinary build trusts only the public CAs.
+  extra_ca:
+    file: ${ERP_EXTRA_CA_CERTS:-./build/no-extra-ca.crt}

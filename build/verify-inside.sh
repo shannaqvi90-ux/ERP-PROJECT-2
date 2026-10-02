@@ -9,6 +9,12 @@ mkdir -p "$out" /work
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
+# Networks that re-terminate TLS: ./erp mounts the extra CA certificates here (see ERP_EXTRA_CA_CERTS).
+if [[ -s /etc/erp-extra-ca.crt ]]; then
+  cat /etc/erp-extra-ca.crt >>/etc/ssl/certs/ca-certificates.crt
+  export NODE_EXTRA_CA_CERTS=/etc/erp-extra-ca.crt
+fi
+
 step "Copying sources (without build output)"
 tar -C /src -cf - --exclude=bin --exclude=obj --exclude=node_modules --exclude=dist \
     --exclude=test-results --exclude=playwright-report --exclude=.git . | tar -C /work -xf -

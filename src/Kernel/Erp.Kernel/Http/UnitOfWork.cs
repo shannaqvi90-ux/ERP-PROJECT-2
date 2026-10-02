@@ -29,12 +29,7 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
             await session.RollbackAsync();
             throw;
         }
-        var status = result switch
-        {
-            IStatusCodeHttpResult { StatusCode: { } code } => code,
-            _ => StatusCodes.Status200OK,
-        };
-        if (status < 400)
+        if (StatusOf(result) < 400)
         {
             await session.CommitAsync(context.HttpContext.RequestAborted);
         }
@@ -43,6 +38,18 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
             await session.RollbackAsync();
         }
         return result;
+    }
+
+    /// <summary>The status an endpoint result will write. Typed unions such as
+    /// <c>Results&lt;Ok&lt;T&gt;, ProblemHttpResult&gt;</c> are unwrapped to the result they hold, so
+    /// a problem returned inside a union rolls the transaction back.</summary>
+    internal static int StatusOf(object? result)
+    {
+        while (result is INestedHttpResult nested)
+        {
+            result = nested.Result;
+        }
+        return result is IStatusCodeHttpResult { StatusCode: { } code } ? code : StatusCodes.Status200OK;
     }
 }
 
