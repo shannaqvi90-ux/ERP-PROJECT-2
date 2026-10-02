@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gauntlet Progress</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1b1f24;--muted:#5d6670;--line:#dfe3e8;--win:#1f7a4a;--loss:#a15c00;--blocked:#b42318;--none:#7a838c;--code:#eef1f4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111418;--card:#1a1f25;--fg:#e7eaee;--muted:#9aa4ae;--line:#2c333b;--win:#4cc38a;--loss:#f0a742;--blocked:#ff6b5e;--none:#8a939c;--code:#232a31}}
+:root[data-theme="dark"]{--bg:#111418;--card:#1a1f25;--fg:#e7eaee;--muted:#9aa4ae;--line:#2c333b;--win:#4cc38a;--loss:#f0a742;--blocked:#ff6b5e;--none:#8a939c;--code:#232a31}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",sans-serif}
+main{max-width:1180px;margin:0 auto;padding:24px 16px 64px}h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:2px 0}
+.muted{color:var(--muted)}.small{font-size:12px}code{background:var(--code);padding:1px 4px;border-radius:4px}
+.summary{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 24px}.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:120px}.stat b{display:block;font-size:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,540px),1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pid{font:12px ui-monospace,monospace;color:var(--muted)}
+.badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.badge.win,.chip.win,.win.ours{color:var(--win)}.badge.loss,.chip.loss,.win.odoo,.win.tie{color:var(--loss)}.badge.blocked,.chip.blocked{color:var(--blocked)}.badge.none{color:var(--none)}
+.history{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.chip{font-size:11px;border:1px solid currentColor;border-radius:4px;padding:0 5px}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px}
+.gap{border-inline-start:3px solid var(--loss);padding:4px 10px;margin:10px 0;background:var(--bg);border-radius:4px}.gap p{margin:4px 0 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+.gates{list-style:none;padding:0;margin:0}.gates li{margin:3px 0}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:6px;background:var(--none)}.dot.pass{background:var(--win)}.dot.fail{background:var(--blocked)}
+.big{font-size:20px;font-weight:700;margin:0}
+.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:start;padding:4px 6px;border-bottom:1px solid var(--line)}td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.shots{display:flex;flex-wrap:wrap;gap:6px}.shots img{width:120px;height:76px;object-fit:cover;border:1px solid var(--line);border-radius:4px}
+</style></head>
+<body><main>
+<h1>Gauntlet progress</h1>
+<p class="muted">Platform core, judged piece by piece against the owner's bar and Odoo Community. Rebuilt from <code>gauntlet/verdicts/</code> by <code>gauntlet/tools/record.mjs</code>. Full evidence in <a href="ledger.md">ledger.md</a>; owner items in <a href="needs-human.md">needs-human.md</a>.</p>
+<div class="summary">
+<div class="stat"><b>0</b><span class="muted">verdicts</span></div>
+<div class="stat"><b style="color:var(--win)">0</b><span class="muted">pieces winning</span></div>
+<div class="stat"><b style="color:var(--loss)">0</b><span class="muted">pieces losing</span></div>
+<div class="stat"><b style="color:var(--blocked)">0</b><span class="muted">pieces blocked</span></div>
+<div class="stat"><b>16</b><span class="muted">not judged yet</span></div>
+<div class="stat"><b class="small">—</b><span class="muted">last verdict</span></div>
+</div>
+<div class="cards">
+<section class="card">
+      <header><div><span class="pid">p00-foundation</span><h2>Foundation and hard gates</h2><span class="muted small">Wave 0 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p01-odoo-rig</span><h2>Odoo reference rig and blind comparison harness</h2><span class="muted small">Wave 0 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p02-tenancy</span><h2>Tenants, companies and branches</h2><span class="muted small">Wave 1 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p03-identity</span><h2>Users, roles and permissions</h2><span class="muted small">Wave 1 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p04-shell</span><h2>English/Arabic app shell</h2><span class="muted small">Wave 1 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p05-list-search</span><h2>List and search framework</h2><span class="muted small">Wave 1 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p06-form-report</span><h2>Form and report framework</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p07-audit</span><h2>Audit trail</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p08-currency</span><h2>Multi-currency</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p09-custom-fields</span><h2>Tenant-defined custom fields</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p10-numbering</span><h2>Document numbering</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p11-attachments</span><h2>Attachments</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p12-jobs</span><h2>Background jobs</h2><span class="muted small">Wave 2 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p13-approvals</span><h2>Approval flows</h2><span class="muted small">Wave 3 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p14-import-export</span><h2>Import and export</h2><span class="muted small">Wave 3 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+<section class="card">
+      <header><div><span class="pid">p15-api-docs</span><h2>Documented API for everything</h2><span class="muted small">Wave 3 · 0 rounds judged</span></div>
+      <span class="badge none">NOT JUDGED</span></header>
+      
+      <p class="muted">Waiting for its first critic.</p>
+    </section>
+</div>
+</main></body></html>

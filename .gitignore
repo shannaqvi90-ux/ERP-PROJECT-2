@@ -1,0 +1,17 @@
+# build output
+bin/
+obj/
+node_modules/
+dist/
+coverage/
+*.user
+.vs/
+.idea/
+.DS_Store
+# local runtime data
+.data/
+*.log
+!gauntlet/**/*.log
+test-results/
+playwright-report/
+.env.local
