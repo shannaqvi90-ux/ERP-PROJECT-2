@@ -201,6 +201,34 @@ public static class ErpPlatform
         {
             throw new InvalidOperationException("Endpoint authorisation is incomplete:\n" + string.Join("\n", problems));
         }
+        ValidateLists(app, catalog);
+    }
+
+    /// <summary>Every registered list is served by a GET endpoint that declares the list's
+    /// permission. The host refuses to start otherwise.</summary>
+    private static void ValidateLists(WebApplication app, ModuleCatalog catalog)
+    {
+        var gets = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>()
+            .Where(e => e.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Contains(HttpMethods.Get) == true)
+            .Select(e => (Pattern: "/" + (e.RoutePattern.RawText ?? "").TrimStart('/'), Permission: e.Metadata.GetMetadata<RequiresPermissionAttribute>()?.Permission))
+            .ToList();
+        var problems = new List<string>();
+        foreach (var list in catalog.Lists)
+        {
+            var endpoint = gets.FirstOrDefault(g => g.Pattern == list.Endpoint);
+            if (endpoint.Pattern is null)
+            {
+                problems.Add($"list '{list.Key}': no GET endpoint {list.Endpoint}");
+            }
+            else if (endpoint.Permission != list.Permission)
+            {
+                problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
+            }
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException("List registrations are inconsistent:\n" + string.Join("\n", problems));
+        }
     }
 
     private static async Task SecurityHeaders(HttpContext context, Func<Task> next)

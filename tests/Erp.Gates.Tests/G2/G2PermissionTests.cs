@@ -283,6 +283,34 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     }
 
     [Fact]
+    public void The_host_refuses_a_list_whose_endpoint_declares_another_permission()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: "rogue.things.read", listPermission: "rogue.things.write")));
+        Assert.Contains("the list says 'rogue.things.write'", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Every_registered_list_is_readable_with_its_permission_alone()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var list in catalog.Lists)
+        {
+            var email = $"g2.list.{list.Key.Replace('.', '-')}@{Env.TenantA.EmailDomain}";
+            var role = await (await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"List {list.Key}", nameAr = $"قائمة {list.Key}", permissions = new[] { list.Permission } }))
+                .Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users",
+                new { email, displayName = $"List {list.Key}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } })).StatusCode);
+            using var reader = await Env.SignInAsync(email);
+            using var allowed = await reader.GetAsync(list.Endpoint);
+            Assert.True(allowed.IsSuccessStatusCode, $"{list.Key}: {list.Endpoint} answered {(int)allowed.StatusCode} to a user holding {list.Permission}");
+            using var noAccess = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
+            using var denied = await noAccess.GetAsync(list.Endpoint);
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task Undeclared_endpoints_fall_back_to_deny()
     {
         var policy = await Env.Factory.Services.GetRequiredService<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider>()
@@ -300,7 +328,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         app.UseErpPlatform();
     }
 
-    private sealed class RogueModule(string? declare, bool register = true) : ErpModule
+    private sealed class RogueModule(string? declare, bool register = true, string? listPermission = null) : ErpModule
     {
         public override string Name => "rogue";
 
@@ -309,6 +337,12 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             if (register)
             {
                 module.Permissions("rogue.things.read");
+            }
+            if (listPermission is not null)
+            {
+                module.Permissions(listPermission);
+                module.List(new Erp.Kernel.Lists.ListDefinition("rogue.things", "rogue.things.title", listPermission, "/api/rogue/declared",
+                    [new Erp.Kernel.Lists.ListColumn("name", "rogue.things.name", Erp.Kernel.Lists.ListColumnType.Text)], ["name"]));
             }
             module.Endpoints(group =>
             {

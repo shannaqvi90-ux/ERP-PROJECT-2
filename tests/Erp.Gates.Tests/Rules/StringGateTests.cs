@@ -46,7 +46,9 @@ public sealed partial class StringGateTests(GateFixture fixture)
         var missing = catalog.Permissions.Select(p => p.LabelKey).Where(k => !server.Contains(k))
             .Concat(catalog.Modules.Select(m => $"module.{m.Name}").Where(k => !server.Contains(k)))
             .Concat(catalog.Menu.Select(m => m.LabelKey).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
+            .Concat(catalog.Lists.SelectMany(l => l.Columns.Select(c => c.LabelKey).Append(l.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .ToList();
+        Assert.NotEmpty(catalog.Lists);
         Assert.True(missing.Count == 0, "Missing labels: " + string.Join(", ", missing));
     }
 
