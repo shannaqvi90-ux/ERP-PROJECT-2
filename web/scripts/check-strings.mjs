@@ -7,6 +7,9 @@
 //  3. Every literal key passed to t("...") exists in the English and Arabic strings; template keys
 //     t(`prefix.${x}`) must match at least one key with that prefix.
 //  4. Each module's keys start with "<module>." so modules never collide.
+//  5. English and Arabic texts of a key use the same placeholders, and every plural message
+//     ({n, plural, ...}) covers the CLDR categories its language needs (English one/other;
+//     Arabic zero/one/two/few/many/other).
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import ts from "typescript";
@@ -38,6 +41,70 @@ for (const file of files.filter((f) => /[\\/]i18n[\\/](en|ar)\.json$/.test(f))) 
   }
 }
 for (const key of Object.keys(strings.en)) if (!(key in strings.ar)) problems.push(`ar: missing "${key}"`);
+
+const needed = { en: ["one", "other"], ar: ["zero", "one", "two", "few", "many", "other"] };
+function matching(text, open) {
+  let depth = 0;
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === "{") depth++;
+    else if (text[i] === "}" && --depth === 0) return i;
+  }
+  return -1;
+}
+function branches(text) {
+  const out = [];
+  const re = /\s*([^\s{]+)\s*\{/g;
+  let i = 0;
+  while (i < text.length) {
+    re.lastIndex = i;
+    const m = re.exec(text);
+    if (!m || m.index !== i) break;
+    const open = m.index + m[0].length - 1;
+    const end = matching(text, open);
+    if (end < 0) break;
+    out.push({ selector: m[1], text: text.slice(open + 1, end) });
+    i = end + 1;
+  }
+  return out;
+}
+// Placeholders and plural messages of a text.
+function analyse(text, found = { names: new Set(), plurals: [] }) {
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== "{") continue;
+    const end = matching(text, i);
+    if (end < 0) {
+      found.names.add("<unbalanced braces>");
+      break;
+    }
+    const parts = text.slice(i + 1, end).split(",");
+    if (parts.length >= 3 && parts[1].trim() === "plural") {
+      const list = branches(parts.slice(2).join(","));
+      found.names.add(parts[0].trim());
+      found.plurals.push({ variable: parts[0].trim(), selectors: list.map((b) => b.selector) });
+      for (const b of list) analyse(b.text, found);
+    } else {
+      found.names.add(parts[0].trim());
+    }
+    i = end;
+  }
+  return found;
+}
+let pluralMessages = 0;
+for (const key of Object.keys(strings.en)) {
+  if (!(key in strings.ar)) continue;
+  const en = analyse(strings.en[key]);
+  const ar = analyse(strings.ar[key]);
+  const enNames = [...en.names].sort().join(",");
+  const arNames = [...ar.names].sort().join(",");
+  if (enNames !== arNames) problems.push(`"${key}": English uses {${enNames}} but Arabic uses {${arNames}}`);
+  for (const [language, found] of [["en", en], ["ar", ar]]) {
+    for (const plural of found.plurals) {
+      pluralMessages++;
+      const missing = needed[language].filter((c) => !plural.selectors.includes(c));
+      if (missing.length > 0) problems.push(`${language}: "${key}" plural {${plural.variable}} lacks ${missing.join(", ")}`);
+    }
+  }
+}
 for (const key of Object.keys(strings.ar)) if (!(key in strings.en)) problems.push(`en: missing "${key}"`);
 
 const userFacingAttributes = new Set(["title", "placeholder", "aria-label", "alt", "label", "aria-description", "aria-placeholder"]);
@@ -85,4 +152,4 @@ if (problems.length > 0) {
   console.error(`String check failed (${problems.length}):\n` + problems.join("\n"));
   process.exit(1);
 }
-console.log(`String check passed: ${scanned} source files, ${Object.keys(strings.en).length} keys in English and Arabic.`);
+console.log(`String check passed: ${scanned} source files, ${Object.keys(strings.en).length} keys in English and Arabic, ${pluralMessages} plural messages.`);

@@ -100,6 +100,6 @@ public sealed class StringCatalog
         {
             return key;
         }
-        return args.Length == 0 ? text : string.Format(CultureInfo.InvariantCulture, text, args);
+        return args.Length == 0 ? text : MessageFormat.Format(text, language, args);
     }
 }

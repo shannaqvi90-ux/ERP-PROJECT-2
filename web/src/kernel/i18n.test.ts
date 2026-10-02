@@ -13,6 +13,23 @@ describe("strings", () => {
     expect(translate("en", "no.such.key")).toBe("no.such.key");
   });
 
+  it("chooses English and Arabic plural forms (CLDR categories)", () => {
+    const en = [0, 1, 2, 100000].map((count) => translate("en", "identity.users.count", { count }));
+    expect(en).toEqual(["0 users", "1 user", "2 users", "100,000 users"]);
+    const ar = [0, 1, 2, 3, 10, 11, 99, 100, 102].map((count) => translate("ar", "identity.users.count", { count }));
+    expect(ar).toEqual([
+      "لا يوجد مستخدمون",
+      "مستخدم واحد",
+      "مستخدمان",
+      "3 مستخدمين",
+      "10 مستخدمين",
+      "11 مستخدمًا",
+      "99 مستخدمًا",
+      "100 مستخدم",
+      "102 مستخدم",
+    ]);
+  });
+
   it("refuses a key defined twice", () => {
     expect(() =>
       buildCatalog({

@@ -11,12 +11,12 @@
   "problem.request.tooMany": "Too many attempts. Wait a minute and try again.",
   "problem.request.missingRequestHeader": "The request is missing the X-Erp-Request header required for changes.",
   "validation.required": "Required.",
-  "validation.maxLength": "Use at most {0} characters.",
-  "validation.length": "Use between {0} and {1} characters.",
+  "validation.maxLength": "{0, plural, one {Use at most # character.} other {Use at most # characters.}}",
+  "validation.length": "Use between {0} and {1, plural, one {# character} other {# characters}}.",
   "validation.email": "Enter a valid e-mail address.",
   "validation.oneOf": "Choose one of: {0}.",
   "validation.unknownIds": "Some selected items do not exist.",
-  "validation.passwordTooShort": "Use at least {0} characters.",
-  "validation.passwordTooLong": "Use at most {0} characters.",
+  "validation.passwordTooShort": "{0, plural, one {Use at least # character.} other {Use at least # characters.}}",
+  "validation.passwordTooLong": "{0, plural, one {Use at most # character.} other {Use at most # characters.}}",
   "validation.versionRequired": "The record version is required to save changes."
 }

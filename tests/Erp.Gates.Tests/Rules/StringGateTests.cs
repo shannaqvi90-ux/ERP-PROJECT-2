@@ -94,6 +94,7 @@ public sealed partial class StringGateTests(GateFixture fixture)
         foreach (var key in en.Keys.Except(ar.Keys)) yield return $"{name}: '{key}' has no Arabic text";
         foreach (var key in ar.Keys.Except(en.Keys)) yield return $"{name}: '{key}' has Arabic but no English text";
         foreach (var (key, value) in en.Where(p => string.IsNullOrWhiteSpace(p.Value))) yield return $"{name}: '{key}' English text is empty";
+        foreach (var problem in PlaceholderAndPluralProblems(name, en, ar)) yield return problem;
         foreach (var (key, value) in ar)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -108,6 +109,58 @@ public sealed partial class StringGateTests(GateFixture fixture)
                 yield return $"{name}: '{key}' Arabic text has no Arabic letters: {value}";
             }
         }
+    }
+
+    /// <summary>English and Arabic texts of a key use the same placeholders, and every plural
+    /// message covers the CLDR categories its language needs (Arabic has six).</summary>
+    private static IEnumerable<string> PlaceholderAndPluralProblems(string name, Dictionary<string, string> en, Dictionary<string, string> ar)
+    {
+        foreach (var (key, english) in en)
+        {
+            if (!ar.TryGetValue(key, out var arabic))
+            {
+                continue;
+            }
+            var enNames = string.Join(",", Erp.Kernel.Localization.MessageFormat.Placeholders(english).Order(StringComparer.Ordinal));
+            var arNames = string.Join(",", Erp.Kernel.Localization.MessageFormat.Placeholders(arabic).Order(StringComparer.Ordinal));
+            if (enNames != arNames)
+            {
+                yield return $"{name}: '{key}' English uses {{{enNames}}} but Arabic uses {{{arNames}}}";
+            }
+            foreach (var (language, text) in new[] { ("en", english), ("ar", arabic) })
+            {
+                foreach (var plural in Erp.Kernel.Localization.MessageFormat.Plurals(text))
+                {
+                    var missing = Erp.Kernel.Localization.PluralRules.Categories[language].Except(plural.Selectors).ToList();
+                    if (missing.Count > 0)
+                    {
+                        yield return $"{name}: '{key}' {language} plural {{{plural.Variable}}} lacks {string.Join(", ", missing)}";
+                    }
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void Count_messages_use_plural_forms()
+    {
+        // A count shown with a number placeholder must be a plural message in both languages:
+        // "{count} users" reads "1 users", and Arabic has six forms.
+        var problems = new List<string>();
+        foreach (var (english, arabic) in Pairs("src", "Resources").Concat(Pairs("web/src", "i18n")))
+        {
+            foreach (var (language, path) in new[] { ("en", english), ("ar", arabic) })
+            {
+                foreach (var (key, value) in Load(path))
+                {
+                    if (key.EndsWith(".count", StringComparison.Ordinal) && Erp.Kernel.Localization.MessageFormat.Plurals(value).Count == 0)
+                    {
+                        problems.Add($"{Path.GetRelativePath(Repo.Root, path)}: '{key}' shows a count without a plural message");
+                    }
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
     [GeneratedRegex(@"\p{IsArabic}")]
