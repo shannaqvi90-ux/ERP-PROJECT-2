@@ -1,0 +1,16 @@
+{
+  "name": "gauntlet-compare",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Blind, instrumented side-by-side comparison harness (our product vs the Odoo Community reference).",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/",
+    "compare": "node run.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

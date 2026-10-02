@@ -1,0 +1,58 @@
+# Odoo Community reference instance for the blind comparison harness.
+# Reference only (CLAUDE.md rule 7): nothing from Odoo is copied into the product.
+# Started and seeded by tools/odoo-reference/up.sh; ports and project name come from the environment.
+name: ${ODOO_REF_PROJECT:-odoo-reference}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    command: >-
+      postgres
+      -c shared_buffers=512MB
+      -c work_mem=32MB
+      -c maintenance_work_mem=256MB
+      -c max_wal_size=4GB
+      -c synchronous_commit=off
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    restart: unless-stopped
+
+  odoo:
+    image: ${ODOO_REF_IMAGE:-odoo:20.0-20260926}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_REF_BIND:-127.0.0.1}:${ODOO_REF_PORT:-8069}:8069"
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    # One database, no database manager. Threaded mode (workers=0) serves the web client and its
+    # websocket on the same port, so no reverse proxy is needed for a single reviewer.
+    command: >-
+      --database=${ODOO_REF_DB:-reference}
+      --db-filter=^${ODOO_REF_DB:-reference}$$
+      --no-database-list
+      --without-demo=True
+      --http-interface=0.0.0.0
+      --workers=0
+      --max-cron-threads=1
+    volumes:
+      - filestore:/var/lib/odoo
+      - ./seed:/seed:ro
+      - ${ODOO_REF_DATA_DIR:-./.data}:/data:ro
+    restart: unless-stopped
+
+volumes:
+  db:
+  filestore:
