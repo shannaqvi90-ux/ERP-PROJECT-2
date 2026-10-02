@@ -26,3 +26,12 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
 
 - G3 demands one command from a clean clone with nothing but Docker, bash and git.
 - Running the same `setup` path for the demo and for verify means the demo is what the tests saw.
+
+## Networks that inspect TLS
+
+Some networks (corporate proxies, this build machine) re-terminate TLS with their own CA. Containers
+do not inherit the host's trust store, so `npm ci` and `dotnet restore` inside the toolbox and the
+image build would fail. `./erp` therefore passes `ERP_EXTRA_CA_CERTS` (defaulting to the host's
+`NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE` when one names a file) into the toolbox as a read-only
+mount and into the image build as a BuildKit secret (never a layer of the final image). On an
+ordinary machine the variable is unset, the secret is an empty file and nothing changes.
