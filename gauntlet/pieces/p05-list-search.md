@@ -10,6 +10,7 @@
   steps and keystrokes than Odoo.
 - Every list registered with the framework is automatically attacked by G1 and checked by G2.
 - Demo volume: at least one 100,000-record list exists to exercise it (users from p03 or a
-  platform list; the critic uses the largest).
+  platform list; the critic uses the largest). From wave 2 the Contacts directory (p16) is
+  the main 100,000-record list and the comparison runs there too.
 
 Compared against Odoo: find one record among 100,000.

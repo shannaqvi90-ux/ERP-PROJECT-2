@@ -7,4 +7,4 @@
 - Import and export files are tenant-isolated (G1 attacks export ids and file paths) and
   permissioned (G2).
 
-Compared against Odoo: import 5,000 rows; export a filtered list.
+Compared against Odoo: import 5,000 rows (contacts once p16 exists); export a filtered list.
