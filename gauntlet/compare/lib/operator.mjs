@@ -112,10 +112,10 @@ export class Operator {
   }
 
   /** Wait for the product to respond. Not a step; counted as system wait. */
-  async waitFor(what, { label = 'wait', timeout = this.defaultTimeout, arg = null } = {}) {
+  async waitFor(what, { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = {}) {
     const t = this.now();
     if (typeof what === 'function') await this.page.waitForFunction(what, arg, { timeout, polling: 50 });
-    else await this.locate(what).first().waitFor({ state: 'visible', timeout });
+    else await this.locate(what).first().waitFor({ state, timeout });
     const w = { label, at: round(t), seconds: round(this.now() - t) };
     this.waits.push(w);
     return w;

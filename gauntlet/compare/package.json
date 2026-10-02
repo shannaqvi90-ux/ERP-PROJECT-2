@@ -7,7 +7,9 @@
   "license": "UNLICENSED",
   "engines": { "node": ">=20" },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test --test-concurrency=1 \"test/*.test.mjs\"",
+    "test:live": "COMPARE_LIVE=1 node --test --test-concurrency=1 \"test/*.test.mjs\"",
+    "baseline": "node run.mjs --task all --product odoo",
     "compare": "node run.mjs"
   },
   "dependencies": {
