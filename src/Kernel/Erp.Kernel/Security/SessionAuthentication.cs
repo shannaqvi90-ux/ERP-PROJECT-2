@@ -70,6 +70,17 @@ public static class SessionTokens
 
 public sealed class SessionAuthenticationOptions : AuthenticationSchemeOptions;
 
+/// <summary>Marks the request while the authentication handler resolves its session token. The
+/// tenant-isolation gate uses it to prove that the reviewed cross-tenant session lookup runs only
+/// there and never from an endpoint.</summary>
+public static class SessionResolution
+{
+    public const string InProgressItem = "erp.session.resolving";
+
+    public static bool IsInProgress(HttpContext? context) =>
+        context?.Items.TryGetValue(InProgressItem, out var value) == true && value is true;
+}
+
 /// <summary>Reads the session token from the <c>erp_session</c> cookie or an
 /// <c>Authorization: Bearer</c> header (API clients), and resolves it.</summary>
 internal sealed class SessionAuthenticationHandler(
@@ -94,7 +105,17 @@ internal sealed class SessionAuthenticationHandler(
             return AuthenticateResult.Fail("Malformed session token.");
         }
         var resolver = Context.RequestServices.GetRequiredService<ISessionResolver>();
-        var session = await resolver.ResolveAsync(SessionTokens.Hash(token), Context.RequestAborted);
+        ResolvedSession? session;
+        // Marks the one place the reviewed session lookup may run (the isolation gate traces it).
+        Context.Items[SessionResolution.InProgressItem] = true;
+        try
+        {
+            session = await resolver.ResolveAsync(SessionTokens.Hash(token), Context.RequestAborted);
+        }
+        finally
+        {
+            Context.Items.Remove(SessionResolution.InProgressItem);
+        }
         if (session is null)
         {
             return AuthenticateResult.Fail("Session expired, revoked or unknown.");

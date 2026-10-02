@@ -56,4 +56,71 @@ internal static class IdentitySql
         DROP POLICY IF EXISTS auth_resolver_read ON identity.users;
         REVOKE ALL ON SCHEMA identity FROM erp_auth;
         """;
+
+    /// <summary>
+    /// Defence in depth for the two reviewed lookups: they answer only on a connection that is not
+    /// bound to a tenant (no transaction-local <c>app.tenant_id</c>). Sign-in and session
+    /// resolution run before any tenant is bound; an endpoint that tried to call them inside its
+    /// request's tenant-bound transaction gets no rows. Replaced as <c>erp_auth</c>, which owns
+    /// them, so ownership, grants and the pinned search_path stay as reviewed.
+    /// </summary>
+    public const string UnboundOnlyUp = """
+        GRANT CREATE ON SCHEMA identity TO erp_auth;
+        SET LOCAL ROLE erp_auth;
+        CREATE OR REPLACE FUNCTION identity.resolve_login(p_email text)
+            RETURNS TABLE (tenant_id uuid, user_id uuid, password_hash text, is_active boolean, lockout_until timestamptz)
+            LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+            SELECT u.tenant_id, u.id, u.password_hash, u.is_active, u.lockout_until
+              FROM identity.users u
+             WHERE u.email_normalized = lower(btrim(p_email))
+               AND coalesce(current_setting('app.tenant_id', true), '') = ''
+             ORDER BY u.tenant_id
+             LIMIT 10
+        $$;
+        CREATE OR REPLACE FUNCTION identity.resolve_session(p_token_hash bytea)
+            RETURNS TABLE (session_id uuid, tenant_id uuid, user_id uuid, expires_at timestamptz)
+            LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+            SELECT s.id, s.tenant_id, s.user_id, s.expires_at
+              FROM identity.sessions s
+             WHERE s.token_hash = p_token_hash
+               AND s.revoked_at IS NULL
+               AND s.expires_at > now()
+               AND coalesce(current_setting('app.tenant_id', true), '') = ''
+        $$;
+        RESET ROLE;
+        REVOKE CREATE ON SCHEMA identity FROM erp_auth;
+        """;
+
+    public const string UnboundOnlyDown = """
+        GRANT CREATE ON SCHEMA identity TO erp_auth;
+        SET LOCAL ROLE erp_auth;
+        CREATE OR REPLACE FUNCTION identity.resolve_login(p_email text)
+            RETURNS TABLE (tenant_id uuid, user_id uuid, password_hash text, is_active boolean, lockout_until timestamptz)
+            LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+            SELECT u.tenant_id, u.id, u.password_hash, u.is_active, u.lockout_until
+              FROM identity.users u
+             WHERE u.email_normalized = lower(btrim(p_email))
+             ORDER BY u.tenant_id
+             LIMIT 10
+        $$;
+        CREATE OR REPLACE FUNCTION identity.resolve_session(p_token_hash bytea)
+            RETURNS TABLE (session_id uuid, tenant_id uuid, user_id uuid, expires_at timestamptz)
+            LANGUAGE sql STABLE SECURITY DEFINER
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+            SELECT s.id, s.tenant_id, s.user_id, s.expires_at
+              FROM identity.sessions s
+             WHERE s.token_hash = p_token_hash
+               AND s.revoked_at IS NULL
+               AND s.expires_at > now()
+        $$;
+        RESET ROLE;
+        REVOKE CREATE ON SCHEMA identity FROM erp_auth;
+        """;
 }
