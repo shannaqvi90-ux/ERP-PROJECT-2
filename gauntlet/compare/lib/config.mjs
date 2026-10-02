@@ -25,8 +25,10 @@ export const PRODUCTS = Object.freeze({
   ours: Object.freeze({
     id: 'ours',
     baseUrl: (env.COMPARE_OURS_URL || 'http://localhost:8080').replace(/\/$/, ''),
+    // Demo sign-ins printed by `./erp up` (local demo data, not real credentials).
     users: {
-      admin: { login: env.COMPARE_OURS_ADMIN || '', password: env.COMPARE_OURS_ADMIN_PASSWORD || '' },
+      admin: { login: env.COMPARE_OURS_ADMIN || 'admin@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },
+      adminArabic: { login: 'admin.ar@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },
     },
     // Product name words to hide in blind screenshots, once the product has a name.
     brandWords: list(env.COMPARE_OURS_BRAND_WORDS),
