@@ -1,0 +1,64 @@
+# Local run of the product: PostgreSQL, a one-shot setup (roles, migrations, demo seed) and the app.
+# Everything is overridable from the environment so several copies run side by side:
+#   ERP_PROJECT (compose project name), ERP_HTTP_PORT, ERP_DB_PORT, ERP_SEED_VOLUME, ERP_SEED_PROFILE.
+# The passwords below are local development defaults, not real credentials.
+name: ${ERP_PROJECT:-erp}
+
+x-app-image: &app-image
+  image: ${ERP_IMAGE:-erp-app}:${ERP_IMAGE_TAG:-local}
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${ERP_DB_ADMIN_PASSWORD:-erp-local-admin}
+    ports:
+      - "${ERP_DB_PORT:-5440}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  setup:
+    <<: *app-image
+    build:
+      context: .
+      secrets:
+        - extra_ca
+    command: ["setup"]
+    environment:
+      ConnectionStrings__Admin: "Host=db;Username=postgres;Password=${ERP_DB_ADMIN_PASSWORD:-erp-local-admin};Database=postgres"
+      ConnectionStrings__Owner: "Host=db;Username=erp_owner;Password=${ERP_DB_OWNER_PASSWORD:-erp-local-owner};Database=erp"
+      ConnectionStrings__App: "Host=db;Username=erp_app;Password=${ERP_DB_APP_PASSWORD:-erp-local-app};Database=erp"
+      Erp__Seed__Profile: ${ERP_SEED_PROFILE:-demo}
+      Erp__Seed__Volume: ${ERP_SEED_VOLUME:-100000}
+      Erp__Seed__DemoPassword: ${ERP_DEMO_PASSWORD:-Demo-Pass-2026}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    <<: *app-image
+    pull_policy: never
+    environment:
+      # The app gets the application role only: no owner, no superuser.
+      ConnectionStrings__App: "Host=db;Username=erp_app;Password=${ERP_DB_APP_PASSWORD:-erp-local-app};Database=erp;Maximum Pool Size=50"
+    ports:
+      - "${ERP_HTTP_PORT:-8080}:8080"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  db-data:
+
+secrets:
+  # Extra CA certificates for networks that re-terminate TLS; ./erp sets ERP_EXTRA_CA_CERTS when the
+  # host has them. The default is an empty file, so an ordinary build trusts only the public CAs.
+  extra_ca:
+    file: ${ERP_EXTRA_CA_CERTS:-./build/no-extra-ca.crt}

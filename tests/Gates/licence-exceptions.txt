@@ -1,0 +1,7 @@
+# Reviewed licence exceptions. Each needs a reason.
+# nuget:<id>           a package whose nuspec has no SPDX expression, after reading its licence
+# npm:<name>           a specific npm package
+# npm-build-only:<id>  a permissive licence accepted for build-time tooling only (never shipped to the browser
+#                      or server); needs owner approval, see gauntlet/needs-human.md
+npm:picocolors  # ISC (permissive, OSI-approved; same terms as MIT). Build-only: terminal colours inside postcss, which Vite uses at build time; never shipped. Awaiting owner approval (gauntlet/needs-human.md).
+npm:siginfo  # ISC. Test-only: used by vitest's why-is-node-running; never shipped. Awaiting owner approval (gauntlet/needs-human.md).

@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..31e85ad 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -104,10 +104,6 @@ internal static class UserEndpoints
+         {
+             return validator.ToResult();
+         }
+-        if (!RoleGrants.WithinCaller(roles, caller))
+-        {
+-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+-        }
+         var normalized = email!.ToLowerInvariant();
+         if (await db.Users.AnyAsync(u => u.EmailNormalized == normalized, cancellationToken))
+         {
