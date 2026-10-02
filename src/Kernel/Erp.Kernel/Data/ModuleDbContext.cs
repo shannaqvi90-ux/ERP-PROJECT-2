@@ -1,0 +1,151 @@
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace Erp.Kernel.Data;
+
+/// <summary>A row owned by a tenant. Row-level security keys on <see cref="TenantId"/>.</summary>
+public interface ITenantOwned
+{
+    Guid TenantId { get; set; }
+}
+
+/// <summary>Base for business records: tenant-owned, UUIDv7 key, timestamps, optimistic
+/// concurrency on PostgreSQL's <c>xmin</c>. Every insert, update and delete is captured in the
+/// audit trail by a database trigger (see <see cref="TenantSql"/>).</summary>
+public abstract class TenantEntity : ITenantOwned
+{
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid TenantId { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public Guid? CreatedBy { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+
+    /// <summary>Concurrency token mapped to <c>xmin</c>.</summary>
+    public uint Version { get; set; }
+}
+
+/// <summary>
+/// Base DbContext for a module. It owns one schema, applies the tenant query filter to every
+/// <see cref="ITenantOwned"/> entity (the second layer behind row-level security), stamps tenant
+/// and timestamps on save, and refuses to move a row to another tenant.
+/// </summary>
+public abstract class ModuleDbContext : DbContext
+{
+    private readonly ITenantContext? _tenant;
+
+    protected ModuleDbContext(DbContextOptions options, ITenantContext? tenant) : base(options)
+    {
+        _tenant = tenant;
+        // The shared unit-of-work transaction is already open on the connection.
+        Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
+    }
+
+    /// <summary>The module's schema.</summary>
+    protected abstract string Schema { get; }
+
+    /// <summary>Tenant used by the query filter. Throws outside a tenant-bound unit of work.</summary>
+    internal bool HasTenant => _tenant?.HasTenant == true;
+
+    public Guid CurrentTenantId => _tenant?.TenantId ?? throw new TenantContextMissingException();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema(Schema);
+        ConfigureModel(modelBuilder);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.IsOwned() || !typeof(ITenantOwned).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+            var entity = modelBuilder.Entity(entityType.ClrType);
+            entity.Property(nameof(ITenantOwned.TenantId)).IsRequired();
+
+            // e => e.TenantId == this.CurrentTenantId
+            var parameter = Expression.Parameter(entityType.ClrType, "e");
+            var body = Expression.Equal(
+                Expression.Property(parameter, nameof(ITenantOwned.TenantId)),
+                Expression.Property(Expression.Constant(this), nameof(CurrentTenantId)));
+            entity.HasQueryFilter(TenantFilterName, Expression.Lambda(body, parameter));
+
+            if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                entity.HasKey(nameof(TenantEntity.Id));
+                entity.Property(nameof(TenantEntity.Version)).IsRowVersion();
+                entity.Property(nameof(TenantEntity.CreatedAt)).HasDefaultValueSql("now()");
+                entity.Property(nameof(TenantEntity.UpdatedAt)).HasDefaultValueSql("now()");
+                // Composite principal key so children can reference (tenant_id, id): the database
+                // itself then refuses a reference to another tenant's row.
+                entity.HasAlternateKey(nameof(ITenantOwned.TenantId), nameof(TenantEntity.Id));
+            }
+        }
+    }
+
+    public const string TenantFilterName = "tenant";
+
+    /// <summary>Module model configuration.</summary>
+    protected abstract void ConfigureModel(ModelBuilder modelBuilder);
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        Stamp();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        Stamp();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void Stamp()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (EntityEntry entry in ChangeTracker.Entries())
+        {
+            if (entry.Entity is not ITenantOwned owned)
+            {
+                continue;
+            }
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    if (owned.TenantId == Guid.Empty)
+                    {
+                        owned.TenantId = CurrentTenantId;
+                    }
+                    else if (owned.TenantId != CurrentTenantId)
+                    {
+                        throw new CrossTenantWriteException(entry.Metadata.ClrType.Name);
+                    }
+                    if (entry.Entity is TenantEntity added)
+                    {
+                        added.CreatedAt = now;
+                        added.UpdatedAt = now;
+                        added.CreatedBy = _tenant?.ActorId;
+                        added.UpdatedBy = _tenant?.ActorId;
+                    }
+                    break;
+                case EntityState.Modified:
+                case EntityState.Deleted:
+                    var tenantProperty = entry.Property(nameof(ITenantOwned.TenantId));
+                    if ((Guid)tenantProperty.OriginalValue! != CurrentTenantId || owned.TenantId != CurrentTenantId)
+                    {
+                        throw new CrossTenantWriteException(entry.Metadata.ClrType.Name);
+                    }
+                    if (entry.State == EntityState.Modified && entry.Entity is TenantEntity modified)
+                    {
+                        modified.UpdatedAt = now;
+                        modified.UpdatedBy = _tenant?.ActorId;
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+public sealed class CrossTenantWriteException(string entity)
+    : InvalidOperationException($"Refused to write a {entity} row that belongs to another tenant.");

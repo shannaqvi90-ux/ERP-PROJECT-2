@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/Erp.Host/Erp.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/Kernel/">
+    <Project Path="src/Kernel/Erp.Kernel/Erp.Kernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj" />
+    <Project Path="src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Tenancy/">
+    <Project Path="src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/Erp.Modules.Tenancy.Contracts.csproj" />
+    <Project Path="src/Modules/Tenancy/Erp.Modules.Tenancy/Erp.Modules.Tenancy.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj" />
+    <Project Path="tests/Erp.Kernel.Tests/Erp.Kernel.Tests.csproj" />
+    <Project Path="tests/Erp.Modules.Identity.Tests/Erp.Modules.Identity.Tests.csproj" />
+    <Project Path="tests/Erp.Testing/Erp.Testing.csproj" />
+  </Folder>
+</Solution>

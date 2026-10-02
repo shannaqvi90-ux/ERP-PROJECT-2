@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Erp.Modules.Identity</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\Erp.Modules.Identity.Contracts\Erp.Modules.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Tenancy\Erp.Modules.Tenancy.Contracts\Erp.Modules.Tenancy.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Identity.Resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Erp.Modules.Identity.Tests" />
+  </ItemGroup>
+</Project>
