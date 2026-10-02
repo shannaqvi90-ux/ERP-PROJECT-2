@@ -19,15 +19,20 @@ if (live && !up) throw new Error(`COMPARE_LIVE=1 but the Odoo rig does not answe
 
 test('the rig holds at least 100,000 rows in every main list right now', { skip: !up && 'Odoo rig not reachable' }, async () => {
   const rpc = await new OdooRpc(PRODUCTS.odoo).login(PRODUCTS.odoo.users.admin);
-  const counts = {
-    contacts: await rpc.searchCount('res.partner', [['ref', '=like', 'C______']]),
-    users: await rpc.call('res.users', 'search_count', [[['share', '=', false]]], { context: { active_test: false } }),
-    currency_rates: await rpc.searchCount('res.currency.rate', []),
-    audit_messages: await rpc.searchCount('mail.message', [['message_type', '=', 'tracking']]),
-    attachments: await rpc.searchCount('ir.attachment', [['res_model', '=', 'res.partner']]),
-    approvals: await rpc.searchCount('purchase.order', []),
+  // "At least N" without counting everything: ask for the N-th row. (Odoo refuses to count chatter
+  // messages above a limit.)
+  const atLeast = async (model, domain, n = 100_000) =>
+    (await rpc.call(model, 'search', [domain], { offset: n - 1, limit: 1, order: 'id', context: { active_test: false } })).length === 1;
+  const lists = {
+    contacts: ['res.partner', [['ref', '=like', 'C______']]],
+    users: ['res.users', [['share', '=', false]]],
+    currency_rates: ['res.currency.rate', []],
+    audit_messages: ['mail.message', [['message_type', '=', 'tracking']]],
+    attachments: ['ir.attachment', [['res_model', '=', 'res.partner']]],
+    job_runs: ['ir.cron.progress', []],
+    approvals: ['purchase.order', []],
   };
-  for (const [k, n] of Object.entries(counts)) assert.ok(n >= 100_000, `${k}: ${n}`);
+  for (const [k, [model, domain]] of Object.entries(lists)) assert.ok(await atLeast(model, domain), `${k} (${model}) holds fewer than 100,000 rows`);
 });
 
 test('the rig serves Arabic and the apps the tasks need', { skip: !up && 'Odoo rig not reachable' }, async () => {

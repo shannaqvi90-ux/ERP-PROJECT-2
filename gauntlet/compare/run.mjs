@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BASELINE_DIR, REPO_ROOT } from './lib/config.mjs';
 import { loadTasks, PRODUCT_IDS } from './lib/registry.mjs';
-import { compareRuns, medianOf, runTask } from './lib/runner.mjs';
+import { compareRuns, medianOf, promoteBaseline, runTask } from './lib/runner.mjs';
 import { writeReview } from './lib/review.mjs';
 
 function parse(argv) {
@@ -57,7 +57,8 @@ async function main() {
     for (const p of products) {
       const runs = [];
       for (let i = 0; i < args.repeat; i++) {
-        const r = await runTask(id, p, { outDir, baseline, headed: args.headed });
+        // Baseline repeats are written as ordinary runs; the median one is promoted below.
+        const r = await runTask(id, p, { outDir, baseline: baseline && args.repeat === 1, headed: args.headed });
         runs.push(r);
         const c = r.counts;
         console.log(`${id.padEnd(24)} ${p.padEnd(5)} ${r.status.padEnd(9)}` +
@@ -66,6 +67,11 @@ async function main() {
         if (r.status === 'error' || r.status === 'failed') failures++;
       }
       byProduct[p] = args.repeat > 1 ? medianOf(runs) : runs[0];
+      if (baseline && args.repeat > 1) {
+        const chosen = runs.find(r => r.run_id === byProduct[p].run_id) || runs[runs.length - 1];
+        byProduct[p] = promoteBaseline(outDir, { ...byProduct[p], screenshots: chosen.screenshots }, runs);
+        console.log(`${id.padEnd(24)} ${p.padEnd(5)} baseline: median of ${args.repeat} -> ${byProduct[p].result_file}`);
+      }
     }
     if (products.length === 2) {
       const cmp = compareRuns(byProduct.ours, byProduct.odoo);

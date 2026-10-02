@@ -8,10 +8,13 @@ import { BASELINE_DIR, HARNESS_DIR, REPO_ROOT } from '../lib/config.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
 
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
-const min = ratchet.compare;
+const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
+  odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
+  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests' };
+const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
-test('ratchet.json has a compare section', () => {
-  assert.ok(min, 'gauntlet/ratchet.json: "compare" section missing');
+test('ratchet.json has every comparison minimum', () => {
+  for (const [k, key] of Object.entries(KEYS)) assert.equal(typeof min[k], 'number', `gauntlet/ratchet.json: minimums["${key}"] missing`);
 });
 
 test('tasks and named tasks never go below their minimum', async () => {

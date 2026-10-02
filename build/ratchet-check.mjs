@@ -27,7 +27,7 @@ if (basePath && existsSync(basePath)) {
   console.log("ratchet: no committed base to compare with (first version)");
 }
 
-const counts = { dotnet: { passed: 0, failed: 0, skipped: 0 }, web: { passed: 0, failed: 0, skipped: 0 }, e2e: { passed: 0, failed: 0, skipped: 0 } };
+const counts = { dotnet: { passed: 0, failed: 0, skipped: 0 }, web: { passed: 0, failed: 0, skipped: 0 }, e2e: { passed: 0, failed: 0, skipped: 0 }, compare: { passed: 0, failed: 0, skipped: 0 } };
 const trxDir = join(outDir, "trx");
 if (existsSync(trxDir)) {
   for (const file of readdirSync(trxDir).filter((f) => f.endsWith(".trx"))) {
@@ -51,10 +51,23 @@ if (existsSync(e2e)) {
   counts.e2e = { passed: r.stats.expected, failed: r.stats.unexpected + r.stats.flaky, skipped: r.stats.skipped };
 }
 
+// Comparison harness (gauntlet/compare): node:test JUnit report.
+const compareJunit = join(outDir, "compare-junit.xml");
+if (existsSync(compareJunit)) {
+  const xml = readFileSync(compareJunit, "utf8");
+  const cases = xml.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) ?? [];
+  for (const c of cases) {
+    if (/<failure\b/.test(c) || /<error\b/.test(c)) counts.compare.failed++;
+    else if (/<skipped\b/.test(c)) counts.compare.skipped++;
+    else counts.compare.passed++;
+  }
+}
+
 const suite = [
   ["suite.dotnetTests", counts.dotnet],
   ["suite.webUnitTests", counts.web],
   ["suite.e2eTests", counts.e2e],
+  ["suite.compareTests", counts.compare],
 ];
 for (const [key, c] of suite) {
   const min = ratchet.minimums?.[key];

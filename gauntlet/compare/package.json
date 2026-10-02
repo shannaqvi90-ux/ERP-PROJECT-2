@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node --test --test-concurrency=1 \"test/*.test.mjs\"",
     "test:live": "COMPARE_LIVE=1 node --test --test-concurrency=1 \"test/*.test.mjs\"",
-    "baseline": "node run.mjs --task all --product odoo",
+    "baseline": "node run.mjs --task all --product odoo --repeat 3",
     "compare": "node run.mjs"
   },
   "dependencies": {

@@ -144,6 +144,30 @@ function finish(result, out) {
   return result;
 }
 
+/**
+ * Make `chosen` (one of `runs`, all written to `outDir` as ordinary runs) the baseline of its
+ * task: tasks/<task>.json with the chosen run's screenshots. The other repeats' results and
+ * screenshots, and the screenshots of the baseline it replaces, are removed.
+ */
+export function promoteBaseline(outDir, chosen, runs) {
+  const out = layout(outDir, { baseline: true });
+  const file = path.join(out.resultsDir, `${chosen.task}.json`);
+  const keepShots = new Set((chosen.screenshots || []).map(s => s.file));
+  const prev = readJson(file, null);
+  for (const s of prev?.screenshots || []) if (!keepShots.has(s.file)) fs.rmSync(path.join(out.shotsDir, s.file), { force: true });
+  for (const r of runs) {
+    if (r !== chosen && r.run_id !== chosen.run_id) for (const s of r.screenshots || []) fs.rmSync(path.join(out.shotsDir, s.file), { force: true });
+    if (r.result_file) fs.rmSync(path.join(REPO_ROOT, r.result_file), { force: true });
+  }
+  fs.rmSync(path.join(outDir, 'results'), { recursive: true, force: true, maxRetries: 0 });
+  const baseline = { ...chosen, result_file: rel(file) };
+  writeJson(file, baseline);
+  const key = readJson(out.keyFile, { shots: {} });
+  for (const f of Object.keys(key.shots)) if (!fs.existsSync(path.join(out.shotsDir, f))) delete key.shots[f];
+  writeJson(out.keyFile, key);
+  return baseline;
+}
+
 /** Compare one run of each product. A tie is a loss. */
 export function compareRuns(ours, odoo) {
   const usable = r => r && r.status === 'verified';

@@ -91,7 +91,12 @@ public sealed class LicenceGateTests
     [Fact]
     public void Every_npm_package_has_an_allowed_licence()
     {
-        var lockfiles = new[] { Repo.PathOf("web", "package-lock.json"), Repo.PathOf("tests", "e2e", "package-lock.json") };
+        var lockfiles = new[]
+        {
+            Repo.PathOf("web", "package-lock.json"),
+            Repo.PathOf("tests", "e2e", "package-lock.json"),
+            Repo.PathOf("gauntlet", "compare", "package-lock.json"),
+        };
         var devLicences = Exceptions.Where(e => e.Entry.StartsWith("npm-build-only:", StringComparison.Ordinal))
             .Select(e => e.Entry["npm-build-only:".Length..]).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var problems = new List<string>();
