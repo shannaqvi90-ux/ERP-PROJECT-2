@@ -97,4 +97,25 @@ internal static class KernelSql
         DROP FUNCTION IF EXISTS erp.current_tenant_id();
         DROP SCHEMA IF EXISTS erp;
         """;
+
+    /// <summary>
+    /// The tenant counts only inside the transaction that bound it. Binding sets
+    /// <c>app.tenant_id</c> and <c>app.tenant_tx</c> (the transaction's start time) transaction-
+    /// locally; a tenant left at session level on a pooled connection, or set without the marker,
+    /// binds nothing.
+    /// </summary>
+    public const string TransactionBoundTenant = """
+        CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$
+                SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text
+                            THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END
+            $$;
+        """;
+
+    public const string TransactionBoundTenantDown = """
+        CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$ SELECT NULLIF(current_setting('app.tenant_id', true), '')::uuid $$;
+        """;
 }

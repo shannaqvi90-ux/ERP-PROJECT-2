@@ -23,3 +23,12 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
 - Floating point cannot represent 0.10 exactly; ledgers must balance to the fil.
 - `numeric(19,4)` holds amounts up to 10^15 with four decimals (enough for 3-decimal currencies and
   unit prices); the rate needs more precision.
+
+## Rounding rule is not a statutory rule yet (2026-10-02)
+
+Rounding the base amount half away from zero is an engineering default for converting a
+document amount at its exchange rate; it is not taken from any publication. Before VAT, ledger
+postings or any statutory figure build on it, the applicable rounding rule must be taken from the
+Federal Tax Authority's current publications, recorded in `docs/compliance/` with its source link
+and check date, and signed off by the owner's accountant (CLAUDE.md rule 8 and the human gate for
+tax calculation rules). p08 and the VAT work own that step.

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Erp.Kernel.Data;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Security;
 using Erp.Kernel.Seeding;
 using Erp.Kernel.Shell;
@@ -52,6 +53,7 @@ public sealed class ModuleDescriptor
     public List<MenuEntry> Menu { get; } = [];
     public List<Type> Seeders { get; } = [];
     public List<Type> IsolationProbes { get; } = [];
+    public List<ListDefinition> Lists { get; } = [];
 }
 
 /// <summary>Registration surface handed to <see cref="ErpModule.Register"/>.</summary>
@@ -125,6 +127,23 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Register a searchable list (columns, search fields, default sort) served by one of
+    /// this module's GET endpoints. Checked at start-up against the endpoint and its permission.</summary>
+    public ModuleBuilder List(ListDefinition list)
+    {
+        var problems = list.Problems(Name).ToList();
+        if (_descriptor.Lists.Any(l => l.Key == list.Key))
+        {
+            problems.Add($"list '{list.Key}' is registered twice");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.Lists.Add(list);
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -145,6 +164,8 @@ public sealed class ModuleCatalog
     public IEnumerable<PermissionDefinition> Permissions => _modules.SelectMany(m => m.Permissions);
 
     public IEnumerable<Type> DbContexts => _modules.SelectMany(m => m.DbContexts);
+
+    public IEnumerable<ListDefinition> Lists => _modules.SelectMany(m => m.Lists);
 
     public IEnumerable<MenuEntry> Menu => _modules.SelectMany(m => m.Menu).OrderBy(m => m.Order).ThenBy(m => m.Key, StringComparer.Ordinal);
 

@@ -220,6 +220,55 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     }
 
     [Fact]
+    public async Task Creating_a_user_cannot_grant_more_than_the_caller_holds()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var limited = new[] { "identity.users.create", "identity.users.read", "identity.roles.read" };
+        var role = await (await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = "User creator", nameAr = "منشئ المستخدمين", permissions = limited }))
+            .Content.ReadFromJsonAsync<JsonElement>();
+        var broader = await (await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = "Role deleter", nameAr = "حاذف الأدوار", permissions = new[] { "identity.users.read", "identity.roles.delete" } }))
+            .Content.ReadFromJsonAsync<JsonElement>();
+        var email = $"creator@{Env.TenantA.EmailDomain}";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users",
+            new { email, displayName = "Creator", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } })).StatusCode);
+
+        using var client = await Env.SignInAsync(email);
+        var roles = await client.GetFromJsonAsync<JsonElement>("/api/identity/roles");
+        var administrator = roles.EnumerateArray().Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var before = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/users?take=1")).GetProperty("total").GetInt32();
+
+        foreach (var (label, roleIds) in new[]
+                 {
+                     ("the Administrator role", new[] { administrator }),
+                     ("a role with a permission the caller lacks", new[] { broader.GetProperty("id").GetGuid() }),
+                     ("its own role plus the Administrator role", new[] { role.GetProperty("id").GetGuid(), administrator }),
+                 })
+        {
+            var minted = $"minted.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+            var response = await client.PostAsJsonAsync("/api/identity/users",
+                new { email = minted, displayName = "Minted", language = "en", password = ErpTestEnvironment.Password, roleIds });
+            Assert.True(response.StatusCode == HttpStatusCode.Forbidden, $"Creating a user with {label} answered {(int)response.StatusCode}");
+            Assert.Equal("identity.grantBeyondOwn", (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Env.SignInAsync(minted));
+        }
+        Assert.Equal(before, (await admin.GetFromJsonAsync<JsonElement>("/api/identity/users?take=1")).GetProperty("total").GetInt32());
+
+        // Within the caller's own grants it works.
+        var allowed = await client.PostAsJsonAsync("/api/identity/users",
+            new { email = $"helper@{Env.TenantA.EmailDomain}", displayName = "Helper", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } });
+        Assert.Equal(HttpStatusCode.Created, allowed.StatusCode);
+    }
+
+    [Fact]
+    public async Task No_endpoint_grants_more_than_the_caller_holds()
+    {
+        var result = await GrantEscalation.RunAsync(Env);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.True(result.Checked.Count >= Ratchet.Min("g2.grantEndpointsChecked"),
+            $"{result.Checked.Count} grant endpoints checked ({string.Join(", ", result.Checked)}); ratchet minimum {Ratchet.Min("g2.grantEndpointsChecked")}");
+    }
+
+    [Fact]
     public void The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission()
     {
         var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: null)));
@@ -231,6 +280,34 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     {
         var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: "rogue.things.read", register: false)));
         Assert.Contains("not in any module's catalogue", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_host_refuses_a_list_whose_endpoint_declares_another_permission()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: "rogue.things.read", listPermission: "rogue.things.write")));
+        Assert.Contains("the list says 'rogue.things.write'", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Every_registered_list_is_readable_with_its_permission_alone()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var list in catalog.Lists)
+        {
+            var email = $"g2.list.{list.Key.Replace('.', '-')}@{Env.TenantA.EmailDomain}";
+            var role = await (await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"List {list.Key}", nameAr = $"قائمة {list.Key}", permissions = new[] { list.Permission } }))
+                .Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users",
+                new { email, displayName = $"List {list.Key}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } })).StatusCode);
+            using var reader = await Env.SignInAsync(email);
+            using var allowed = await reader.GetAsync(list.Endpoint);
+            Assert.True(allowed.IsSuccessStatusCode, $"{list.Key}: {list.Endpoint} answered {(int)allowed.StatusCode} to a user holding {list.Permission}");
+            using var noAccess = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
+            using var denied = await noAccess.GetAsync(list.Endpoint);
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        }
     }
 
     [Fact]
@@ -251,7 +328,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         app.UseErpPlatform();
     }
 
-    private sealed class RogueModule(string? declare, bool register = true) : ErpModule
+    private sealed class RogueModule(string? declare, bool register = true, string? listPermission = null) : ErpModule
     {
         public override string Name => "rogue";
 
@@ -260,6 +337,12 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             if (register)
             {
                 module.Permissions("rogue.things.read");
+            }
+            if (listPermission is not null)
+            {
+                module.Permissions(listPermission);
+                module.List(new Erp.Kernel.Lists.ListDefinition("rogue.things", "rogue.things.title", listPermission, "/api/rogue/declared",
+                    [new Erp.Kernel.Lists.ListColumn("name", "rogue.things.name", Erp.Kernel.Lists.ListColumnType.Text)], ["name"]));
             }
             module.Endpoints(group =>
             {

@@ -13,6 +13,7 @@ using Erp.Kernel.Seeding;
 using Erp.Kernel.Shell;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -96,6 +97,44 @@ public static class ErpPlatform
         return builder;
     }
 
+    /// <summary>
+    /// Forwarded-header handling, or null when no proxy is configured (the app then uses the TCP
+    /// peer address). <c>Erp:Http:KnownProxies</c> lists proxy addresses and
+    /// <c>Erp:Http:KnownNetworks</c> proxy networks in CIDR form, comma separated. Only the
+    /// nearest hop is honoured, so a client cannot choose its own address by sending the header.
+    /// </summary>
+    public static ForwardedHeadersOptions? ForwardedHeadersFrom(IConfiguration configuration)
+    {
+        static IEnumerable<string> Items(string? value) =>
+            (value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var proxies = Items(configuration["Erp:Http:KnownProxies"]).ToList();
+        var networks = Items(configuration["Erp:Http:KnownNetworks"]).ToList();
+        if (proxies.Count == 0 && networks.Count == 0)
+        {
+            return null;
+        }
+        var options = new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+            ForwardLimit = 1,
+        };
+        options.KnownProxies.Clear();
+        options.KnownIPNetworks.Clear();
+        foreach (var proxy in proxies)
+        {
+            options.KnownProxies.Add(System.Net.IPAddress.TryParse(proxy, out var address)
+                ? address
+                : throw new InvalidOperationException($"Erp:Http:KnownProxies: '{proxy}' is not an IP address."));
+        }
+        foreach (var network in networks)
+        {
+            options.KnownIPNetworks.Add(System.Net.IPNetwork.TryParse(network, out var parsed)
+                ? parsed
+                : throw new InvalidOperationException($"Erp:Http:KnownNetworks: '{network}' is not a CIDR network."));
+        }
+        return options;
+    }
+
     public static void ConfigureJson(JsonSerializerOptions options)
     {
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -106,6 +145,12 @@ public static class ErpPlatform
     /// <summary>Build the request pipeline and map every module's endpoints.</summary>
     public static WebApplication UseErpPlatform(this WebApplication app)
     {
+        // Behind a reverse proxy the client address (rate limits, session records) comes from
+        // X-Forwarded-For, trusted only from the configured proxies.
+        if (ForwardedHeadersFrom(app.Configuration) is { } forwarded)
+        {
+            app.UseForwardedHeaders(forwarded);
+        }
         app.UseExceptionHandler();
         app.Use(SecurityHeaders);
         app.UseDefaultFiles();
@@ -200,6 +245,34 @@ public static class ErpPlatform
         if (problems.Count > 0)
         {
             throw new InvalidOperationException("Endpoint authorisation is incomplete:\n" + string.Join("\n", problems));
+        }
+        ValidateLists(app, catalog);
+    }
+
+    /// <summary>Every registered list is served by a GET endpoint that declares the list's
+    /// permission. The host refuses to start otherwise.</summary>
+    private static void ValidateLists(WebApplication app, ModuleCatalog catalog)
+    {
+        var gets = ((IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints).OfType<RouteEndpoint>()
+            .Where(e => e.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Contains(HttpMethods.Get) == true)
+            .Select(e => (Pattern: "/" + (e.RoutePattern.RawText ?? "").TrimStart('/'), Permission: e.Metadata.GetMetadata<RequiresPermissionAttribute>()?.Permission))
+            .ToList();
+        var problems = new List<string>();
+        foreach (var list in catalog.Lists)
+        {
+            var endpoint = gets.FirstOrDefault(g => g.Pattern == list.Endpoint);
+            if (endpoint.Pattern is null)
+            {
+                problems.Add($"list '{list.Key}': no GET endpoint {list.Endpoint}");
+            }
+            else if (endpoint.Permission != list.Permission)
+            {
+                problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
+            }
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException("List registrations are inconsistent:\n" + string.Join("\n", problems));
         }
     }
 

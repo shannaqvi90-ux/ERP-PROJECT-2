@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Erp.Kernel.Http;
 using Erp.Kernel.Security;
 
@@ -59,4 +60,20 @@ public sealed class SecurityTests
     [InlineData("a b@c.example", false)]
     [InlineData("a@.example", false)]
     public void Email_validation(string value, bool valid) => Assert.Equal(valid, Validator.IsEmail(value));
+
+    [Fact]
+    public void Forwarded_headers_are_trusted_only_from_configured_proxies()
+    {
+        IConfiguration Config(params (string Key, string Value)[] values) =>
+            new ConfigurationBuilder().AddInMemoryCollection(values.ToDictionary(v => v.Key, v => (string?)v.Value)).Build();
+
+        Assert.Null(Erp.Kernel.Hosting.ErpPlatform.ForwardedHeadersFrom(Config()));
+
+        var options = Erp.Kernel.Hosting.ErpPlatform.ForwardedHeadersFrom(Config(("Erp:Http:KnownProxies", "10.0.0.5, 10.0.0.6"), ("Erp:Http:KnownNetworks", "172.18.0.0/16")))!;
+        Assert.Equal(["10.0.0.5", "10.0.0.6"], options.KnownProxies.Select(p => p.ToString()));
+        Assert.Equal(["172.18.0.0/16"], options.KnownIPNetworks.Select(n => n.ToString()));
+        Assert.Equal(1, options.ForwardLimit);
+
+        Assert.Throws<InvalidOperationException>(() => Erp.Kernel.Hosting.ErpPlatform.ForwardedHeadersFrom(Config(("Erp:Http:KnownProxies", "proxy.local"))));
+    }
 }

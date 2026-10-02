@@ -3,6 +3,9 @@ using System.Text.Json.Nodes;
 
 namespace Erp.Gates.Tests.Infrastructure;
 
+/// <summary>A documented route, query or header parameter.</summary>
+public sealed record ApiParameter(string Name, string In, string Type, string? Format);
+
 /// <summary>The OpenAPI document served by the running app.</summary>
 public sealed class OpenApiDocument(JsonElement root)
 {
@@ -36,6 +39,57 @@ public sealed class OpenApiDocument(JsonElement root)
             return null;
         }
         return Resolve(schema);
+    }
+
+    /// <summary>Every documented parameter (path, query, header) of an operation.</summary>
+    public IReadOnlyList<ApiParameter> Parameters(string method, string pattern)
+    {
+        var list = new List<ApiParameter>();
+        var path = NormalizePattern(pattern);
+        if (!Root.GetProperty("paths").TryGetProperty(path, out var item))
+        {
+            return list;
+        }
+        var sources = new List<JsonElement>();
+        if (item.TryGetProperty("parameters", out var shared)) sources.Add(shared);
+        if (item.TryGetProperty(method.ToLowerInvariant(), out var operation) && operation.TryGetProperty("parameters", out var own)) sources.Add(own);
+        foreach (var parameter in sources.SelectMany(s => s.EnumerateArray()).Select(Resolve))
+        {
+            var schema = parameter.TryGetProperty("schema", out var sc) ? Resolve(sc) : default;
+            var type = schema.ValueKind == JsonValueKind.Object ? TypeOf(schema) ?? "string" : "string";
+            var format = schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("format", out var f) ? f.GetString() : null;
+            list.Add(new ApiParameter(parameter.GetProperty("name").GetString()!, parameter.GetProperty("in").GetString()!, type, format));
+        }
+        return list;
+    }
+
+    /// <summary>Names of the string leaves of a request body (uuid strings excluded: they get ids).</summary>
+    public IReadOnlyList<string> StringLeaves(JsonElement schema)
+    {
+        var names = new List<string>();
+        void Walk(JsonElement s, string? name, int depth)
+        {
+            s = Resolve(s);
+            if (depth > 6) return;
+            switch (TypeOf(s))
+            {
+                case "object":
+                    if (s.TryGetProperty("properties", out var properties))
+                    {
+                        foreach (var property in properties.EnumerateObject()) Walk(property.Value, property.Name, depth + 1);
+                    }
+                    break;
+                case "array":
+                    if (s.TryGetProperty("items", out var items)) Walk(items, name, depth + 1);
+                    break;
+                case "string" or null:
+                    var format = s.TryGetProperty("format", out var f) ? f.GetString() : null;
+                    if (name is not null && format is not ("uuid" or "date-time" or "date")) names.Add(name);
+                    break;
+            }
+        }
+        Walk(schema, null, 0);
+        return names.Distinct().ToList();
     }
 
     public JsonElement Resolve(JsonElement schema)

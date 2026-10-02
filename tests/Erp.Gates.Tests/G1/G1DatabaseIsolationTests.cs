@@ -312,6 +312,45 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
     }
 
     [Fact]
+    public async Task A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+    {
+        var a = Env.TenantA.Id;
+        await using var app = await Env.OpenAppAsync();
+
+        // Session-level settings (not transaction-local), as a careless or hostile statement could
+        // leave on a pooled connection.
+        await DbCatalog.ExecuteAsync(app,
+            $"SELECT set_config('app.tenant_id', '{a}', false), set_config('app.tenant_tx', extract(epoch from now())::text, false)");
+        Assert.Equal(0L, await DbCatalog.ScalarAsync<long>(app, "SELECT count(*) FROM identity.users"));
+        Assert.Equal(0L, await DbCatalog.ScalarAsync<long>(app, "SELECT count(*) FROM identity.roles"));
+
+        // A transaction-local tenant from an earlier transaction is gone; a fresh bind works.
+        await using (var tx = await app.BeginTransactionAsync())
+        {
+            await BindAsync(app, tx, a);
+            await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", app, tx);
+            Assert.True((long)(await count.ExecuteScalarAsync())! > 0);
+            await tx.CommitAsync();
+        }
+        await using (var tx = await app.BeginTransactionAsync())
+        {
+            await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", app, tx);
+            Assert.Equal(0L, await count.ExecuteScalarAsync());
+            await tx.RollbackAsync();
+        }
+
+        // The tenant id alone, without the transaction marker, binds nothing.
+        await using (var tx = await app.BeginTransactionAsync())
+        {
+            await using var bind = new NpgsqlCommand($"SELECT set_config('app.tenant_id', '{a}', true)", app, tx);
+            await bind.ExecuteNonQueryAsync();
+            await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", app, tx);
+            Assert.Equal(0L, await count.ExecuteScalarAsync());
+            await tx.RollbackAsync();
+        }
+    }
+
+    [Fact]
     public async Task Audit_trail_is_append_only_for_the_application()
     {
         await using var app = await Env.OpenAppAsync();
@@ -324,9 +363,12 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
+    /// <summary>Bind a transaction to a tenant the way the platform does: the tenant and the
+    /// transaction it belongs to, both transaction-local.</summary>
     internal static async Task BindAsync(NpgsqlConnection connection, NpgsqlTransaction tx, Guid tenant)
     {
-        await using var command = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true)", connection, tx);
+        await using var command = new NpgsqlCommand(
+            "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", connection, tx);
         command.Parameters.AddWithValue("t", tenant.ToString());
         await command.ExecuteNonQueryAsync();
     }
