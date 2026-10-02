@@ -1,0 +1,108 @@
+{
+  "piece": "p00-foundation",
+  "round": 1,
+  "commit": "fe90a71ea0c41ba1db9e2e336bc8be590860242c",
+  "judged_at": "2026-10-02T22:39:48Z",
+  "critic": "fresh critic, p00-foundation round 1",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Gate suite passes (G1 DB plus HTTP: 25 endpoints, 2472+ requests). My own attack found no leak. Over HTTP I signed in as alnoor and sent 320 requests carrying gulfsteel ids in the route, tenant headers, query and body: 0 leaks, B rows untouched (attack/http_attack.out). As erp_app with no tenant set, every table returned 0 rows. Inserting or moving a row to B was refused by RLS. DISABLE RLS was refused (not owner). SET ROLE erp_auth/erp_owner was denied. UPDATE/DELETE on audit.entries was denied. CREATE in schemas was denied (db-attack-app-role.txt). No exports, jobs or file paths exist yet."
+    },
+    {
+      "gate": "G1 tenant isolation (gate catches planted faults)",
+      "status": "fail",
+      "evidence": "Planted 3 tenant leaks in a scratch clone (plants/*.diff, *.log). A1 (tenant_isolation policy on identity.roles changed to USING(true)) was caught by 2 DB tests. A3 (GET /api/tenancy/tenant honours ?tenantId=) was caught by the HTTP attack. A2 was MISSED: GET /api/identity/users/lookup?email= declares identity.users.read and calls the reviewed SECURITY DEFINER identity.resolve_login(). Gate suite: 35/35 passed (plants/plant-a2.log). plants/plant-proof.log shows the same endpoint returning tenant B's tenant_id and user_id to a tenant A admin."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 test passes: fallback deny, anonymous allowlist, grant exactly one permission, no-roles user denied everything. In the browser, noaccess@ gets an empty menu and 'No access' at /identity/roles. viewer@ sees read-only screens."
+    },
+    {
+      "gate": "G2 permissions (gate catches planted faults)",
+      "status": "fail",
+      "evidence": "P1 (.AllowAnonymous() added to PUT /api/tenancy/tenant) was caught by 3 G2 tests and by G1. P2 was MISSED: I removed the RoleGrants.WithinCaller check from POST /api/identity/users and the gate suite still passed 35/35 (plants/plant-p2.log). plants/plant-proof.log shows a user holding only identity.users.create and identity.roles.read creating a user with the Administrator role, then signing in with every permission. No test anywhere covers granting roles beyond your own on user create."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "`./erp verify` (project c-p00-foundation-r1, ports 20060/20061): 118 tests passed, rc=0, 86 s. `./erp up`: 100,004 users seeded and served on 20050, 25 s. `./erp verify --clean-clone` (G3 script: fresh clone, verify, up, HTTP sign-in): passed, 101 s. Ports and project overridable from the environment as documented. Timings are warm: the toolbox image, base images and the erp-cache-nuget/npm volumes already existed on this machine."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR string parity, audit coverage, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All pass in the suite and the ratchet check passed. Manual check: API writes to tenants, roles, users and user_roles each left a field-level audit row with actor, tenant and correlation id (audit-sample.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r1 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ./erp verify",
+    "total": 118,
+    "passed": 118,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 86
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 101,
+    "evidence": "`./erp verify --clean-clone` rc=0 in 101 s (g3-clean-clone.log). `./erp verify` from my clone rc=0 in 86 s (verify.log). `./erp up` rc=0 in 25 s with 100,004 users (up.log). All warm-cache numbers: toolbox image and NuGet/npm cache volumes were already present."
+  },
+  "odoo": [
+    {
+      "task": "sign in to an empty workspace",
+      "winner": "not-compared",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 36,
+        "seconds": 0.3,
+        "klm_seconds": 12.8
+      },
+      "odoo": null,
+      "notes": "Not compared. gauntlet/compare/ does not exist at this commit, so there is no blind harness. The Odoo rig answers on :8069 (odoo 20.0), but database listing is disabled and no database name or sign-in has been published to critics. Ours, keyboard only: type e-mail, Tab, type password, Enter. 36 keystrokes, 274-346 ms machine time. KLM estimate 12.8 s (2 M + 36 K at 0.28 s). With the remembered e-mail it is 15 keystrokes, about 5.6 s. Screenshots 01, 02, 07, 08."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r1/01-signin-en.jpg",
+    "gauntlet/evidence/p00-foundation/r1/02-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r1/03-users-search-en.jpg",
+    "gauntlet/evidence/p00-foundation/r1/04-workspace-en.jpg",
+    "gauntlet/evidence/p00-foundation/r1/05-users-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r1/06-signin-ar-after-signout.jpg",
+    "gauntlet/evidence/p00-foundation/r1/07-signin-first-screen-ar-browser.jpg",
+    "gauntlet/evidence/p00-foundation/r1/08-signin-ar-wrong-password.jpg",
+    "gauntlet/evidence/p00-foundation/r1/09-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r1/10-noaccess-direct-url.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G1 HTTP attack misses a tenant leak through any parameter that is not an id",
+    "detail": "The attack sends tenant B values in only a few places. Routes get B's GUIDs and its code. The query string gets fixed names (tenantId, tenant, id, userId, search, workspace). Body uuid fields get B's ids, and B's e-mail goes only to sign-in. Documented query parameters are ignored, and string fields such as email, code or name never carry B's real values. Nothing attacks the two reviewed SECURITY DEFINER lookups through new callers. So an endpoint that ignores the tenant by looking something up by e-mail, code or name passes the whole gate. For an ERP that will soon add contacts, products and documents looked up by code, TRN or e-mail, that blind spot is the main risk. Fix: drive every documented query, route and body parameter from the OpenAPI document with all of B's markers (ids, codes, e-mails, names, canary). Also fail when any endpoint other than auth.signIn and the session resolver calls identity.resolve_login/resolve_session. A related G2 blind spot: no gate checks that user create stays within the caller's grants.",
+    "evidence": "In a clone of fe90a71, apply plants/plant-a2.diff. It adds GET /api/identity/users/lookup?email=, declares identity.users.read, and runs SELECT tenant_id, user_id FROM identity.resolve_login(@e) on the request's connection. Run `dotnet test tests/Erp.Gates.Tests -c Release`: 35/35 pass (plants/plant-a2.log). Add the test in plants/plant-proof.diff: signed in as tenant A admin, GET /api/identity/users/lookup?email=admin@<tenant B domain> returns tenant B's id (plants/plant-proof.log, test passes). The database confirms it: as erp_app, `SELECT * FROM identity.resolve_login('admin@gulfsteel.example')` returns gulfsteel's tenant_id, user_id and password hash (db-attack-app-role.txt, item 8). For G2, plants/plant-p2.diff removes the WithinCaller check on POST /api/identity/users; the suite passes 35/35 and the proof test mints an Administrator."
+  },
+  "other_findings": [
+    "G2 gate blind spot (planted fault P2 missed): no test covers POST /api/identity/users assigning roles beyond the caller's own permissions. Users_cannot_escalate covers only role create/update and user update.",
+    "Scope gap: ModuleBuilder has no list/search registration hook, though p00-foundation.md lists 'list/search registrations' among what a module contributes from its own folder.",
+    "i18n has no plural rules. The users list shows '1 users'; the Arabic '{count} مستخدم' is wrong for 2 and for 3-10 (Arabic has six plural forms). A string framework every module will reuse needs ICU-style plurals.",
+    "The setup container prints 'Error: libgssapi_krb5.so.2: cannot open shared object file' on every `./erp up` and verify. It is harmless, but a newcomer sees an error line.",
+    "Sign-in failures increment lockout counters on every account with that e-mail in every tenant. Anyone who knows a tenant B address can pause B's sign-in for 15 minutes with 5 bad attempts. That is ordinary lockout behaviour, not a leak, but it has no per-account rate limit or CAPTCHA, and the per-IP limiter keys on RemoteIpAddress, which collapses behind a proxy.",
+    "The app role can set app.tenant_id at session level (non-local set_config works). The code uses transaction-local settings correctly; only the trust boundary is noted.",
+    "Demo tenant ids are predictable (0190a000-0000-7000-8000-00000000000N). Not a leak, but attack tooling and fixtures should not rely on it.",
+    "No compliance rules exist yet (docs/compliance absent), consistent with p00 having no statutory calculations. Money rounds the base amount half away from zero; once VAT or ledger rounding builds on it, that rule needs a source.",
+    "Browser walk: English and Arabic RTL from the first screen (ar-AE locale gives lang=ar dir=rtl). Sign-in, navigation, language switch and sign-out all work by keyboard, with focus kept in the form. Users search found 1 of 100,004 in 437 ms. No console errors. Back after sign-out shows the sign-in screen.",
+    "Tests at this commit: 97 .NET (42 kernel, 20 identity, 35 gates), 13 web unit, 8 Playwright e2e. All pass and none are skipped. Every ratchet minimum is met; there are no earlier verdicts to compare against."
+  ],
+  "human_gates": [
+    {
+      "gate": "Change to CLAUDE.md",
+      "what": "CLAUDE.md still says [PROJECT NAME]; the UI uses the neutral working name 'ERP' and 'نظام تخطيط الموارد'. Already open in needs-human.md (#1)."
+    },
+    {
+      "gate": "Odoo reference under bar/",
+      "what": "No bar/ directory exists. Odoo captures are meant to wait in gauntlet/reference/ for approval, and that folder is empty, so the sign-in comparison has no baseline (needs-human.md #2)."
+    }
+  ],
+  "evidence_staging": "/home/user/evidence-staging/p00-foundation/r1",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r1"
+}

@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 1c8ebc6..0ab2240 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -26,7 +26,8 @@ internal static class TenancyEndpoints
+             .WithName("tenancy.tenant.update")
+             .WithSummary("Rename the signed-in user's tenant (English and Arabic names).")
+             .ProducesValidationProblem()
+-            .RequirePermission(TenancyPermissions.TenantUpdate);
++            .RequirePermission(TenancyPermissions.TenantUpdate)
++            .AllowAnonymous();
+     }
+ 
+     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> GetTenant(TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)

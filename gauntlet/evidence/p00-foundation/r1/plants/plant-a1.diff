@@ -1,0 +1,12 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
+index c1fe41d..bd6513a 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
+@@ -201,6 +201,7 @@ namespace Erp.Modules.Identity.Migrations
+             migrationBuilder.GrantSchemaUsage("identity");
+             migrationBuilder.ProtectTenantTable("identity", "users", redact: ["password_hash"], ignore: ["last_sign_in_at", "failed_sign_in_count", "lockout_until"]);
+             migrationBuilder.ProtectTenantTable("identity", "roles");
++            migrationBuilder.Sql("DROP POLICY tenant_isolation ON identity.roles; CREATE POLICY tenant_isolation ON identity.roles AS PERMISSIVE FOR ALL TO PUBLIC USING (true) WITH CHECK (true);");
+             migrationBuilder.ProtectTenantTable("identity", "user_roles");
+             // Sessions are the sign-in history themselves; auditing them would double every sign-in.
+             migrationBuilder.ProtectTenantTable("identity", "sessions", audited: false);

@@ -1,0 +1,17 @@
+EN first screen: lang=en dir=ltr focused=email
+EN sign-in: keystrokes=36 steps=4 (type email, Tab, type password, Enter) machine_ms=274
+Tab order in shell: ["Users","Roles","Workspace","Skip to contentERPAl Noor Trad","Skip to content","ERP","Users","Roles","Workspace"]
+Users count text: 100,004 users
+search one in 100k: ms=437 rows=1 text=1 users
+Roles screen h1: Roles
+Workspace screen h1: Workspace
+after toggle: lang=ar dir=rtl
+Latin text on Arabic users screen (outside data cells): ["English","تم تسجيل الدخول باسم Mariam Al Mansoori · مساحة العمل alnoor"]
+after sign-out: lang=ar focused=password
+back after sign-out shows sign-in: true
+console errors: []
+ar-AE browser first screen: lang=ar dir=rtl
+wrong password (ar): تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور. بعد 5 محاولات فاشلة يتوقف تسجيل الدخول لمدة 15 دقيقة.
+AR admin shell: dir=rtl h1=مرحبًا، فاطمة الزعابي
+viewer@alnoor.example menu=["Users","Roles","Workspace"]; /identity/roles shows: Roles
+noaccess@alnoor.example menu=[]; /identity/roles shows: No access

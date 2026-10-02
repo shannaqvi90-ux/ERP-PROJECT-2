@@ -1,0 +1,101 @@
+-- 1 no tenant set
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+-- 2 tenant A set in txn
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ count  
+--------
+ 100004
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+COMMIT
+-- 3 insert row for B while A
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "roles"
+-- 4 move row A->B
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "roles"
+-- 5 disable rls
+ERROR:  must be owner of table users
+-- 6 set role
+ERROR:  permission denied to set role "erp_auth"
+ERROR:  permission denied to set role "erp_owner"
+-- 7 audit tamper
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  permission denied for table entries
+-- 8 resolve_login cross tenant
+              tenant_id               |               user_id                |         left         
+--------------------------------------+--------------------------------------+----------------------
+ 0190a000-0000-7000-8000-000000000002 | 01a0fec0-332e-7b05-9311-e3601cd6f53f | pbkdf2-sha512$210000
+(1 row)
+
+-- 9 create objects
+ERROR:  permission denied for schema public
+LINE 1: create table public.x(a int);
+                     ^
+ERROR:  permission denied for schema identity
+LINE 1: create table identity.x(a int);
+                     ^
+ERROR:  permission denied for schema public
+-- 10 session reuse: setting persists after commit?
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+COMMIT
+ current_setting | count 
+-----------------+-------
+                 |     0
+(1 row)
+
+-- 11 session-level set_config (non-local)
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+ count 
+-------
+  1004
+(1 row)
+

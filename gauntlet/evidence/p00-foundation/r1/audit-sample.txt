@@ -1,0 +1,9 @@
+          occurred_at          |               actor_id               | actor_kind |          t          | action |                                                                   changes                                                                    | has_corr 
+-------------------------------+--------------------------------------+------------+---------------------+--------+----------------------------------------------------------------------------------------------------------------------------------------------+----------
+ 2026-10-02 22:37:43.39881+00  | 01a0fec0-0a6e-7972-bb60-6ecfdf312507 | user       | identity.user_roles | insert | {"id": {"new": "01a0fec4-2906-7353-8018-af5089e51fa1"}, "role_id": {"new": "01a0fec4-283f-775a-8e9b-b02bfb60dd2f"}, "user_id": {"new": "01a0 | t
+ 2026-10-02 22:37:43.39881+00  | 01a0fec0-0a6e-7972-bb60-6ecfdf312507 | user       | identity.users      | insert | {"id": {"new": "01a0fec4-286f-778d-98db-735a3c0ed801"}, "email": {"new": "critic.clerk@alnoor.example"}, "language": {"new": "ar"}, "is_acti | t
+ 2026-10-02 22:37:43.341083+00 | 01a0fec0-0a6e-7972-bb60-6ecfdf312507 | user       | identity.roles      | insert | {"id": {"new": "01a0fec4-283f-775a-8e9b-b02bfb60dd2f"}, "name_ar": {"new": "كاتب"}, "name_en": {"new": "Critic clerk"}, "is_system": {"new": | t
+ 2026-10-02 22:37:43.328366+00 | 01a0fec0-0a6e-7972-bb60-6ecfdf312507 | user       | tenancy.tenants     | update | {"name_en": {"new": "Al Noor Trading LLC (critic)", "old": "Al Noor Trading LLC"}}                                                           | t
+ 2026-10-02 22:37:20.286052+00 | 01a0fec0-0a6e-7972-bb60-6ecfdf312507 | user       | identity.users      | update | {"language": {"new": "ar", "old": "en"}}                                                                                                     | t
+(5 rows)
+
