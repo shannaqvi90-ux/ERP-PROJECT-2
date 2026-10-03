@@ -161,7 +161,7 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         Assert.Equal("concurrency", (await Json(stale)).GetProperty("code").GetString());
 
         // Inactive: hidden from the active list and the switcher, no new branches, still editable.
-        var active = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?isActive=true&take=200");
+        var active = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies?filter={Uri.EscapeDataString("isActive eq true")}&take=200");
         Assert.DoesNotContain(active.GetProperty("items").EnumerateArray(), c => c.GetProperty("id").GetGuid() == id);
         var workplace = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace");
         Assert.DoesNotContain(workplace.GetProperty("companies").EnumerateArray(), c => c.GetProperty("id").GetGuid() == id);
@@ -204,7 +204,7 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         Assert.Equal(HttpStatusCode.BadRequest, moved.StatusCode);
         Assert.Equal("tenancyBranchCompanyFixed", (await Json(moved)).GetProperty("errors").GetProperty("companyId")[0].GetProperty("code").GetString());
 
-        var ofFirst = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?companyId={first}");
+        var ofFirst = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{first}'")}");
         Assert.Equal(1, ofFirst.GetProperty("total").GetInt32());
         var company = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{first}");
         Assert.Equal(1, company.GetProperty("branchCount").GetInt32());

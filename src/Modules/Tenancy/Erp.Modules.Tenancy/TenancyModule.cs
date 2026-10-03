@@ -3,6 +3,7 @@ using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Kernel.Shell;
+using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Tenancy.Access;
 using Erp.Modules.Tenancy.Branches;
 using Erp.Modules.Tenancy.Companies;
@@ -46,42 +47,10 @@ public sealed class TenancyModule : ErpModule
         module.Menu(new MenuEntry("tenancy.branches", "tenancy.menu.branches", "/tenancy/branches", TenancyPermissions.BranchesRead, Order: 710, Group: "settings"));
         module.Menu(new MenuEntry("tenancy.access", "tenancy.menu.access", "/tenancy/access", TenancyPermissions.AccessRead, Order: 820, Group: "settings"));
         module.Menu(new MenuEntry("tenancy.tenant", "tenancy.menu.tenant", "/tenancy/tenant", TenancyPermissions.TenantRead, Order: 900, Group: "settings"));
-        module.List(new ListDefinition(
-            "tenancy.companies", "tenancy.companies.title", TenancyPermissions.CompaniesRead, "/api/tenancy/companies",
-            [
-                new ListColumn("code", "tenancy.company.code", ListColumnType.Text, Sortable: true),
-                new ListColumn("legalNameEn", "tenancy.company.legalNameEn", ListColumnType.Text, Sortable: true),
-                new ListColumn("legalNameAr", "tenancy.company.legalNameAr", ListColumnType.Text, Sortable: true),
-                new ListColumn("baseCurrency", "tenancy.company.baseCurrency", ListColumnType.Choice, Filterable: true),
-                new ListColumn("city", "tenancy.company.city", ListColumnType.Text, Sortable: true),
-                new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true),
-                new ListColumn("branchCount", "tenancy.company.branchCount", ListColumnType.Number, Sortable: true),
-                new ListColumn("isActive", "tenancy.common.status", ListColumnType.Boolean, Filterable: true),
-            ],
-            SearchFields: ["code", "legalNameEn", "legalNameAr"],
-            DefaultSort: "code"));
-        module.List(new ListDefinition(
-            "tenancy.branches", "tenancy.branches.title", TenancyPermissions.BranchesRead, "/api/tenancy/branches",
-            [
-                new ListColumn("code", "tenancy.branch.code", ListColumnType.Text, Sortable: true),
-                new ListColumn("nameEn", "tenancy.branch.nameEn", ListColumnType.Text, Sortable: true),
-                new ListColumn("nameAr", "tenancy.branch.nameAr", ListColumnType.Text, Sortable: true),
-                new ListColumn("companyCode", "tenancy.branch.company", ListColumnType.Reference, Filterable: true),
-                new ListColumn("city", "tenancy.company.city", ListColumnType.Text, Sortable: true),
-                new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true),
-                new ListColumn("isActive", "tenancy.common.status", ListColumnType.Boolean, Filterable: true),
-            ],
-            SearchFields: ["code", "nameEn", "nameAr"],
-            DefaultSort: "code"));
-        module.List(new ListDefinition(
-            "tenancy.access", "tenancy.access.title", TenancyPermissions.AccessRead, "/api/tenancy/access",
-            [
-                new ListColumn("displayName", "tenancy.access.user", ListColumnType.Text, Sortable: true),
-                new ListColumn("email", "tenancy.access.email", ListColumnType.Text),
-                new ListColumn("companies", "tenancy.access.companies", ListColumnType.Reference),
-            ],
-            SearchFields: ["displayName", "email"],
-            DefaultSort: "displayName"));
+        module.List(CompaniesList.Create());
+        module.List(BranchesList.Create());
+        // The access list's rows are identity's users: identity's users list serves its query.
+        module.List(AccessList.Definition, servedBy: IdentityLists.Users);
         module.Seeder<TenancySeeder>();
         module.Seeder<TenancyAccessSeeder>();
         module.IsolationProbe<CompanyLogoProbe>();
@@ -265,6 +234,11 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
             e.Property(x => x.LogoHash).HasMaxLength(64);
             e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
             e.HasIndex(x => new { x.TenantId, x.LegalNameEn });
+            // List framework: word search on trigram indexes, keyset order on (tenant, column, id).
+            e.HasIndex(x => new { x.Code, x.LegalNameEn, x.LegalNameAr }, "ix_companies_search")
+                .HasMethod("gin").HasOperators("gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops");
+            e.HasIndex(x => new { x.TenantId, x.LegalNameAr, x.Id });
+            e.HasIndex(x => new { x.TenantId, x.City, x.Id });
             // Children reference (tenant_id, company_id): the database refuses a child in another
             // tenant's company.
             e.HasAlternateKey(x => new { x.TenantId, x.CompanyId });
@@ -284,6 +258,12 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
             e.Property(x => x.NameAr).HasMaxLength(200);
             e.HasIndex(x => new { x.TenantId, x.CompanyId, x.Code }).IsUnique();
             e.HasIndex(x => new { x.TenantId, x.NameEn });
+            // List framework: word search on trigram indexes, keyset order on (tenant, column, id).
+            e.HasIndex(x => new { x.Code, x.NameEn, x.NameAr }, "ix_branches_search")
+                .HasMethod("gin").HasOperators("gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops");
+            e.HasIndex(x => new { x.TenantId, x.Code, x.Id });
+            e.HasIndex(x => new { x.TenantId, x.NameAr, x.Id });
+            e.HasIndex(x => new { x.TenantId, x.City, x.Id });
             // (tenant, company, branch): a branch reference also proves the branch's company.
             e.HasAlternateKey(x => new { x.TenantId, x.CompanyId, x.Id });
             e.HasOne<Company>().WithMany().HasForeignKey(x => new { x.TenantId, x.CompanyId })

@@ -2,12 +2,15 @@ using System.ComponentModel.DataAnnotations;
 using Validator = Erp.Kernel.Http.Validator;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
+using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Modules.Tenancy.Companies;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,8 +49,6 @@ public sealed record BranchRow(
     bool IsActive,
     uint Version);
 
-public sealed record BranchPage(IReadOnlyList<BranchRow> Items, int Total);
-
 /// <summary>Create or change a branch. A branch stays in the company it was created in. The code
 /// may be left empty (one is made from the English name); a name in English or Arabic is required.</summary>
 public sealed record SaveBranchRequest(
@@ -73,7 +74,7 @@ internal static class BranchEndpoints
     {
         group.MapGet("/branches", List)
             .WithName("tenancy.branches.list")
-            .WithSummary("Branches of the companies the caller may work in, by company and code; optionally of one company.")
+            .WithSummary("Branches of the companies the caller may work in, a page at a time: word search on code and names, filters (companyId eq '…' for one company), sort, keyset or offset paging and grouping (the list query contract); by code by default.")
             .RequirePermission(TenancyPermissions.BranchesRead);
 
         group.MapGet("/branches/{id:guid}", Get)
@@ -96,46 +97,19 @@ internal static class BranchEndpoints
             .RequirePermission(TenancyPermissions.BranchesUpdate);
     }
 
-    private static async Task<Ok<BranchPage>> List(TenancyDbContext db, Guid? companyId, string? search, bool? isActive, string? sort,
-        int? skip, int? take, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<ListPage<BranchRow>>, ProblemHttpResult>> List(
+        TenancyDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
-        var query = from b in db.Branches.AsNoTracking()
-                    join c in db.Companies.AsNoTracking() on b.CompanyId equals c.Id
-                    select new { Branch = b, CompanyCode = c.Code };
-        if (companyId is { } company)
+        var result = await catalog.ListBinding<Branch>(BranchesList.Key).QueryAsync(db.Branches.AsNoTracking(), request, http, cancellationToken);
+        if (result.Problem is { } problem)
         {
-            query = query.Where(x => x.Branch.CompanyId == company);
+            return problem;
         }
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var pattern = "%" + Like.Escape(search.Trim()) + "%";
-            query = query.Where(x => EF.Functions.ILike(x.Branch.Code, pattern, "\\") || EF.Functions.ILike(x.Branch.NameEn, pattern, "\\")
-                                     || EF.Functions.ILike(x.Branch.NameAr, pattern, "\\"));
-        }
-        if (isActive is { } active)
-        {
-            query = query.Where(x => x.Branch.IsActive == active);
-        }
-        var total = await query.CountAsync(cancellationToken);
-        var ordered = (sort ?? "code") switch
-        {
-            "-code" => query.OrderByDescending(x => x.CompanyCode).ThenByDescending(x => x.Branch.Code),
-            "nameEn" => query.OrderBy(x => x.Branch.NameEn),
-            "-nameEn" => query.OrderByDescending(x => x.Branch.NameEn),
-            "nameAr" => query.OrderBy(x => x.Branch.NameAr),
-            "-nameAr" => query.OrderByDescending(x => x.Branch.NameAr),
-            "city" => query.OrderBy(x => x.Branch.City),
-            "-city" => query.OrderByDescending(x => x.Branch.City),
-            _ => query.OrderBy(x => x.CompanyCode).ThenBy(x => x.Branch.Code),
-        };
-        var rows = await ordered.ThenBy(x => x.Branch.Id)
-            .Skip(Math.Max(0, skip ?? 0))
-            .Take(Math.Clamp(take ?? 50, 1, CompanyEndpoints.MaxPageSize))
-            .ToListAsync(cancellationToken);
-        return TypedResults.Ok(new BranchPage(
-            rows.Select(x => new BranchRow(x.Branch.Id, x.Branch.CompanyId, x.CompanyCode, x.Branch.Code, x.Branch.NameEn, x.Branch.NameAr,
-                x.Branch.City, TenancyValidation.ParseEmirate(x.Branch.Emirate), x.Branch.IsActive, x.Branch.Version)).ToList(),
-            total));
+        var companyIds = result.Rows.Select(b => b.CompanyId).Distinct().ToList();
+        var companies = await db.Companies.AsNoTracking().Where(c => companyIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, c => c.Code, cancellationToken);
+        return TypedResults.Ok(result.ToPage(b => new BranchRow(b.Id, b.CompanyId, companies.GetValueOrDefault(b.CompanyId) ?? "", b.Code, b.NameEn, b.NameAr,
+            b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version)));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)

@@ -1,10 +1,12 @@
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Security;
 using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +17,6 @@ public sealed record AccessCompanySummary(Guid CompanyId, string Code, bool AllB
 
 /// <summary>A row of the access list: a user and the companies (of the caller's) they may work in.</summary>
 public sealed record AccessRow(Guid Id, string DisplayName, string Email, IReadOnlyList<AccessCompanySummary> Companies);
-
-public sealed record AccessPage(IReadOnlyList<AccessRow> Items, int Total);
 
 /// <summary>Access to one company: every branch, or only <c>branchIds</c>.</summary>
 public sealed record CompanyAccessDto(Guid CompanyId, bool AllBranches, IReadOnlyList<Guid> BranchIds);
@@ -43,7 +43,7 @@ internal static class AccessEndpoints
     {
         group.MapGet("/access", List)
             .WithName("tenancy.access.list")
-            .WithSummary("Users by name, each with the caller's companies they may work in.")
+            .WithSummary("Users of the workspace, each with the caller's companies they may work in, a page at a time: word search on name and e-mail, filters, sort, keyset or offset paging (the list query contract); by name by default.")
             .RequirePermission(TenancyPermissions.AccessRead);
 
         group.MapGet("/access/{userId:guid}", Get)
@@ -58,10 +58,15 @@ internal static class AccessEndpoints
             .RequirePermission(TenancyPermissions.AccessUpdate);
     }
 
-    private static async Task<Ok<AccessPage>> List(TenancyDbContext db, IUserDirectory users, string? search, int? skip, int? take, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<ListPage<AccessRow>>, ProblemHttpResult>> List(
+        TenancyDbContext db, IUserDirectory users, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
-        var page = await users.SearchAsync(search, Math.Max(0, skip ?? 0), Math.Clamp(take ?? 50, 1, Companies.CompanyEndpoints.MaxPageSize), cancellationToken);
-        var ids = page.Items.Select(u => u.Id).ToList();
+        var result = await users.QueryListAsync(AccessList.Key, request, http, cancellationToken);
+        if (result.Problem is { } problem)
+        {
+            return problem;
+        }
+        var ids = result.Rows.Select(u => u.Id).ToList();
         var access = await (from a in db.CompanyAccess.AsNoTracking()
                             where ids.Contains(a.UserId)
                             join c in db.Companies.AsNoTracking() on a.CompanyId equals c.Id
@@ -76,9 +81,7 @@ internal static class AccessEndpoints
             .ToListAsync(cancellationToken);
         var byUser = access.GroupBy(a => a.UserId).ToDictionary(g => g.Key,
             g => (IReadOnlyList<AccessCompanySummary>)g.Select(a => new AccessCompanySummary(a.CompanyId, a.Code, a.AllBranches, a.Branches)).ToList());
-        return TypedResults.Ok(new AccessPage(
-            page.Items.Select(u => new AccessRow(u.Id, u.DisplayName, u.Email, byUser.GetValueOrDefault(u.Id) ?? [])).ToList(),
-            page.Total));
+        return TypedResults.Ok(result.ToPage(u => new AccessRow(u.Id, u.DisplayName, u.Email, byUser.GetValueOrDefault(u.Id) ?? [])));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Get(

@@ -4,11 +4,14 @@ using System.Security.Cryptography;
 using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
+using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,8 +60,6 @@ public sealed record CompanyRow(
     bool IsActive,
     uint Version);
 
-public sealed record CompanyPage(IReadOnlyList<CompanyRow> Items, int Total);
-
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
 /// name); a legal name in English or Arabic is required (both are recommended). On change,
 /// <c>version</c> is the version that was read.</summary>
@@ -98,7 +99,7 @@ internal static class CompanyEndpoints
     {
         group.MapGet("/companies", List)
             .WithName("tenancy.companies.list")
-            .WithSummary("Companies the caller may work in, by code; search matches code and legal names.")
+            .WithSummary("Companies the caller may work in, a page at a time: word search on code and legal names, filters, sort, keyset or offset paging and grouping (the list query contract); by code by default.")
             .RequirePermission(TenancyPermissions.CompaniesRead);
 
         group.MapGet("/companies/{id:guid}", Get)
@@ -141,47 +142,20 @@ internal static class CompanyEndpoints
             .RequirePermission(TenancyPermissions.CompaniesUpdate);
     }
 
-    private static async Task<Ok<CompanyPage>> List(
-        TenancyDbContext db, string? search, bool? isActive, string? sort, int? skip, int? take, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<ListPage<CompanyRow>>, ProblemHttpResult>> List(
+        TenancyDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
-        var query = db.Companies.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(search))
+        var result = await catalog.ListBinding<Company>(CompaniesList.Key).QueryAsync(db.Companies.AsNoTracking(), request, http, cancellationToken);
+        if (result.Problem is { } problem)
         {
-            var pattern = "%" + Like.Escape(search.Trim()) + "%";
-            query = query.Where(c => EF.Functions.ILike(c.Code, pattern, "\\") || EF.Functions.ILike(c.LegalNameEn, pattern, "\\")
-                                     || EF.Functions.ILike(c.LegalNameAr, pattern, "\\"));
+            return problem;
         }
-        if (isActive is { } active)
-        {
-            query = query.Where(c => c.IsActive == active);
-        }
-        var total = await query.CountAsync(cancellationToken);
-        var ordered = (sort ?? "code") switch
-        {
-            "-code" => query.OrderByDescending(c => c.Code),
-            "legalNameEn" => query.OrderBy(c => c.LegalNameEn),
-            "-legalNameEn" => query.OrderByDescending(c => c.LegalNameEn),
-            "legalNameAr" => query.OrderBy(c => c.LegalNameAr),
-            "-legalNameAr" => query.OrderByDescending(c => c.LegalNameAr),
-            "city" => query.OrderBy(c => c.City),
-            "-city" => query.OrderByDescending(c => c.City),
-            "branchCount" => query.OrderBy(c => db.Branches.Count(b => b.CompanyId == c.Id)),
-            "-branchCount" => query.OrderByDescending(c => db.Branches.Count(b => b.CompanyId == c.Id)),
-            _ => query.OrderBy(c => c.Code),
-        };
-        var rows = await ordered.ThenBy(c => c.Id)
-            .Skip(Math.Max(0, skip ?? 0))
-            .Take(Math.Clamp(take ?? 50, 1, MaxPageSize))
-            .Select(c => new
-            {
-                c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City, c.Emirate, c.IsActive, c.Version,
-                Branches = db.Branches.Count(b => b.CompanyId == c.Id),
-            })
-            .ToListAsync(cancellationToken);
-        return TypedResults.Ok(new CompanyPage(
-            rows.Select(r => new CompanyRow(r.Id, r.Code, r.LegalNameEn, r.LegalNameAr, r.BaseCurrency, r.City,
-                TenancyValidation.ParseEmirate(r.Emirate), r.Branches, r.IsActive, r.Version)).ToList(),
-            total));
+        var ids = result.Rows.Select(c => c.Id).ToList();
+        var branches = await db.Branches.AsNoTracking().Where(b => ids.Contains(b.CompanyId))
+            .GroupBy(b => b.CompanyId).Select(g => new { CompanyId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.CompanyId, g => g.Count, cancellationToken);
+        return TypedResults.Ok(result.ToPage(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
+            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version)));
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
@@ -412,11 +386,4 @@ internal static class CompanyLogo
         "image/webp" => bytes.Length > 12 && bytes.AsSpan(0, 4).SequenceEqual("RIFF"u8) && bytes.AsSpan(8, 4).SequenceEqual("WEBP"u8),
         _ => false,
     };
-}
-
-/// <summary>ILIKE patterns that match user text literally.</summary>
-internal static class Like
-{
-    public static string Escape(string value) =>
-        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal);
 }

@@ -18,7 +18,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?sort=code")).GetProperty("items").EnumerateArray()
             .Where(c => c.GetProperty("code").GetString() is "A1-CO" or "A2-CO").Select(c => c.GetProperty("id").GetGuid()).ToList();
-        var branches = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?companyId={companies[0]}")).GetProperty("items")
+        var branches = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{companies[0]}'")}")).GetProperty("items")
             .EnumerateArray().Select(b => b.GetProperty("id").GetGuid()).ToList();
         return (admin, companies[0], companies[1], branches);
     }
@@ -57,7 +57,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         var companies = await user.GetFromJsonAsync<JsonElement>("/api/tenancy/companies");
         Assert.Equal(x, companies.GetProperty("items").EnumerateArray().Single().GetProperty("id").GetGuid());
         Assert.Equal(HttpStatusCode.NotFound, (await user.GetAsync($"/api/tenancy/companies/{y}")).StatusCode);
-        Assert.Equal(0, (await user.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?companyId={y}")).GetProperty("total").GetInt32());
+        Assert.Equal(0, (await user.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{y}'")}")).GetProperty("total").GetInt32());
 
         // Starts in the one company, in the one branch they may work in.
         var workplace = await user.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace");
@@ -109,7 +109,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         Assert.True((await limited.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{limitedId}")).GetProperty("isCaller").GetBoolean());
 
         // Branches must belong to the company they are listed under; a company may not be listed twice.
-        var branchOfY = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?companyId={y}")).GetProperty("items")[0].GetProperty("id").GetGuid();
+        var branchOfY = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{y}'")}")).GetProperty("items")[0].GetProperty("id").GetGuid();
         var wrong = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { new { companyId = x, allBranches = false, branchIds = new[] { branchOfY } } } });
         Assert.Equal("tenancyAccessBranchOfOtherCompany", (await Json(wrong)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
         var twice = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new

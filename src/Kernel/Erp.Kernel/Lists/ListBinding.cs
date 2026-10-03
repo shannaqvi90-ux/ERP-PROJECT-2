@@ -33,6 +33,11 @@ public interface IListBinding
     /// <summary>Problems with the binding (unbound sortable/filterable/search columns, value types
     /// that do not suit the column type). The host refuses to start with any.</summary>
     IEnumerable<string> Problems();
+
+    /// <summary>The same rows and bound values serving another list's definition (a list another
+    /// module shows over this module's rows, see <c>ModuleBuilder.List(definition, servedBy)</c>):
+    /// the columns the other definition names keep their bindings, the rest are left out.</summary>
+    IListBinding ServeAs(ListDefinition definition);
 }
 
 /// <summary>The result of one list query: the page's rows, or the problem the caller must fix.</summary>
@@ -61,6 +66,11 @@ public sealed class ListResult<T>
 
     /// <summary>The page in the shape every list endpoint returns.</summary>
     public ListPage<TItem> ToPage<TItem>(Func<T, TItem> map) => new(Rows.Select(map).ToList(), Total, Next, Groups);
+
+    /// <summary>The same result over other row objects (for example a module's public summary of
+    /// its own rows, handed to another module through a contract); a problem stays the problem.</summary>
+    public ListResult<TOut> Map<TOut>(Func<T, TOut> map) =>
+        Problem is { } problem ? ListResult<TOut>.Invalid(problem) : ListResult<TOut>.Valid(Rows.Select(map).ToList(), Total, Next, Groups);
 }
 
 /// <summary>
@@ -112,6 +122,20 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var member = value.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == value.Parameters[0] ? property.Name : null;
         _columns[key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value));
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IListBinding ServeAs(ListDefinition definition)
+    {
+        var served = new ListBinding<T>(definition, _id) { InMemoryReason = InMemoryReason };
+        foreach (var column in definition.Columns)
+        {
+            if (_columns.TryGetValue(column.Key, out var bound))
+            {
+                served._columns[column.Key] = bound;
+            }
+        }
+        return served;
     }
 
     /// <summary>Query this list in memory (LINQ to objects over rows already loaded) because it

@@ -9,6 +9,7 @@ using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Identity.Roles;
 using Erp.Modules.Identity.Seeding;
 using Erp.Modules.Identity.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
@@ -267,7 +268,7 @@ internal sealed class IdentityDbContextDesignFactory : IDesignTimeDbContextFacto
     }
 }
 
-internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
+internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog) : IUserDirectory
 {
     public async Task<IReadOnlyDictionary<Guid, UserSummary>> GetAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken)
     {
@@ -295,6 +296,13 @@ internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
             .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
             .ToListAsync(cancellationToken);
         return new UserSummaryPage(items, total);
+    }
+
+    public async Task<ListResult<UserSummary>> QueryListAsync(string listKey, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
+        // Only lists bound to identity's users resolve here (ListBinding<User> throws otherwise).
+        var result = await catalog.ListBinding<User>(listKey).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
+        return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
     }
 
     public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)

@@ -10,7 +10,7 @@ namespace Erp.Modules.Identity.Users;
 /// </summary>
 internal static class UsersList
 {
-    public const string Key = "identity.users";
+    public const string Key = IdentityLists.Users;
 
     public static ListBinding<User> Create() =>
         ListBinding<User>.For(new ListDefinition(
