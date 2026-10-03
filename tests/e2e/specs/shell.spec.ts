@@ -134,7 +134,7 @@ test.describe("app shell", () => {
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\/identity\/users\?q=alnoor$/);
     await expect(page.locator('input[type="search"]')).toHaveValue("alnoor");
-    expect(await page.locator("table tbody tr").count()).toBeGreaterThan(5);
+    await expect(page.locator("table tbody tr").nth(5)).toBeVisible();
   });
 
   for (const language of ["en", "ar"] as const) {
