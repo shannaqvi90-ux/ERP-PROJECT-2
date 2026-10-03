@@ -73,10 +73,15 @@ export class Operator {
 
   get machineSeconds() { return round(this.now()); }
 
-  /** API session for op.request (base URL and the headers a signed-in client sends). Set before start(). */
-  useApi({ baseUrl, headers = {} }) {
+  /**
+   * API session for op.request, set before start(): the base URL and the headers a signed-in
+   * client sends. `transport` (optional) maps the request as typed to the request actually sent,
+   * for a product whose usable API carries its sign-in in the body; keystrokes always count the
+   * request as typed.
+   */
+  useApi({ baseUrl, headers = {}, transport = null }) {
     if (this.measuring) throw new UncountedAction('signing in to the API inside the measured part');
-    this.#api = { baseUrl: baseUrl.replace(/\/$/, ''), headers: { ...headers } };
+    this.#api = { baseUrl: baseUrl.replace(/\/$/, ''), headers: { ...headers }, transport };
   }
 
   #locate(target) { return typeof target === 'string' ? this.#page.locator(target) : unwrap(target); }
@@ -192,19 +197,20 @@ export class Operator {
     const verb = String(method).toUpperCase();
     const bodyText = body === undefined ? '' : JSON.stringify(body);
     const typed = `${verb} ${urlPath}${bodyText ? ` ${bodyText}` : ''}`;
-    const res = await rawFetch(this.#api.baseUrl + encodeURI(urlPath), {
-      method: verb,
-      headers: { ...(bodyText ? { 'Content-Type': 'application/json' } : {}), ...this.#api.headers },
-      body: bodyText || undefined,
-    });
+    const send = this.#api.transport
+      ? this.#api.transport(verb, urlPath, body)
+      : { url: this.#api.baseUrl + encodeURI(urlPath), init: { method: verb, headers: { ...(bodyText ? { 'Content-Type': 'application/json' } : {}), ...this.#api.headers }, body: bodyText || undefined } };
+    const res = await rawFetch(send.url, send.init);
     const text = await res.text();
     let parsed = null;
     try { parsed = text ? JSON.parse(text) : null; } catch { parsed = text; }
+    let status = res.status;
+    if (send.read) ({ status, body: parsed } = send.read(res.status, parsed));
     const took = this.now() - t;
     this.#waits.push({ label: `response ${verb} ${urlPath}`, at: round(t), seconds: round(took) });
-    const step = this.#record('request', label || `${verb} ${urlPath}`, keystrokesForText(typed) + 1, chain, t, { text: typed, status: res.status, response: text.slice(0, 400) });
-    if (!expect.includes(res.status)) throw new Error(`${verb} ${urlPath}: HTTP ${res.status} ${text.slice(0, 300)}`);
-    return { status: res.status, body: parsed, step };
+    const step = this.#record('request', label || `${verb} ${urlPath}`, keystrokesForText(typed) + 1, chain, t, { text: typed, status, response: text.slice(0, 400) });
+    if (!expect.includes(status)) throw new Error(`${verb} ${urlPath}: HTTP ${status} ${text.slice(0, 300)}`);
+    return { status, body: parsed, step };
   }
 
   /**
