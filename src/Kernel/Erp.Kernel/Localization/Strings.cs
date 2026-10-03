@@ -7,6 +7,19 @@ using Microsoft.AspNetCore.Http;
 
 namespace Erp.Kernel.Localization;
 
+/// <summary>Digit shapes a user may choose for numbers on Arabic screens: Latin digits (0123,
+/// <c>latn</c>, the common choice in the UAE) or Arabic-Indic digits (٠١٢٣, <c>arab</c>). The codes
+/// are the Unicode numbering-system identifiers browsers accept (<c>ar-AE-u-nu-arab</c>).</summary>
+public static class NumeralSystems
+{
+    public const string Latin = "latn";
+    public const string ArabicIndic = "arab";
+
+    public static readonly IReadOnlyList<string> All = [Latin, ArabicIndic];
+
+    public static bool IsSupported(string? numerals) => numerals is Latin or ArabicIndic;
+}
+
 /// <summary>Supported languages. English is left-to-right, Arabic right-to-left.</summary>
 public static class Languages
 {

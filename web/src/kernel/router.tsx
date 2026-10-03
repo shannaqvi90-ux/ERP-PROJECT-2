@@ -22,24 +22,39 @@ export function matchRoute(path: string, all: RouteDef[] = routes): RouteDef | u
 
 const changeEvent = "erp:navigate";
 
+/** Go to an in-app address (path, optionally with a query). */
 export function navigate(path: string): void {
-  if (path === window.location.pathname) return;
+  if (path === window.location.pathname + window.location.search) return;
   window.history.pushState(null, "", path);
   window.dispatchEvent(new Event(changeEvent));
 }
 
-export function usePath(): string {
-  const [path, setPath] = useState(() => window.location.pathname);
+function useLocationPart(read: () => string): string {
+  const [value, setValue] = useState(read);
   useEffect(() => {
-    const update = () => setPath(window.location.pathname);
+    const update = () => setValue(read());
     window.addEventListener("popstate", update);
     window.addEventListener(changeEvent, update);
     return () => {
       window.removeEventListener("popstate", update);
       window.removeEventListener(changeEvent, update);
     };
+    // `read` is one of the two module-level readers below; it never changes.
   }, []);
-  return path;
+  return value;
+}
+
+const readPath = () => window.location.pathname;
+const readSearch = () => window.location.search;
+
+export function usePath(): string {
+  return useLocationPart(readPath);
+}
+
+/** One query parameter of the current address ("?search=…"), kept current as the address changes. */
+export function useSearchParam(name: string): string | null {
+  const search = useLocationPart(readSearch);
+  return new URLSearchParams(search).get(name);
 }
 
 /** An in-app link: a real anchor (opens in a new tab with a modifier) that navigates without reloading. */

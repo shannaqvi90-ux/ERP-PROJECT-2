@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
+import { useSearchParam } from "../../kernel/router";
 
 type User = {
   id: string;
@@ -19,7 +20,12 @@ const pageSize = 50;
 /** Read-only user list (the shared list framework replaces it in p05). */
 export function UsersPage() {
   const { t, formatDateTime, formatNumber } = useI18n();
-  const [search, setSearch] = useState("");
+  // ?search= (the command palette opens a user this way) fills the search box.
+  const searched = useSearchParam("search");
+  const [search, setSearch] = useState(searched ?? "");
+  useEffect(() => {
+    if (searched !== null) setSearch(searched);
+  }, [searched]);
   const [skip, setSkip] = useState(0);
   const [page, setPage] = useState<Page | null>(null);
   const [error, setError] = useState<string | null>(null);

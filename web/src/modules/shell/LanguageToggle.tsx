@@ -1,34 +1,27 @@
-import { api } from "../../kernel/api";
 import { useI18n, type Language } from "../../kernel/i18n";
-import { useSession } from "../../kernel/session";
+import { chordForAria } from "../../kernel/shortcuts";
+import { usePreferenceActions } from "./usePreferenceActions";
+
+export const languageChord = "Alt+KeyL";
 
 /**
- * One step from English to Arabic and back. The button names the other language in that
- * language. When signed in with the right permission, the choice is saved to the user's profile.
+ * One step from English to Arabic and back (also Alt+L). The button names the other language in
+ * that language. The whole screen mirrors at once, without a reload; a signed-in user's choice is
+ * saved to their profile.
  */
-export function LanguageToggle() {
-  const { t, language, setLanguage } = useI18n();
-  const { state, can } = useSession();
+export function LanguageToggle({ className = "" }: { className?: string }) {
+  const { t } = useI18n();
+  const { language, changeLanguage } = usePreferenceActions();
   const next: Language = language === "ar" ? "en" : "ar";
-
-  async function toggle() {
-    setLanguage(next);
-    if (state.status === "signedIn" && can("identity.profile.update")) {
-      try {
-        await api("PUT", "/api/identity/me/preferences", { language: next });
-      } catch {
-        // The screen already switched; the profile keeps the old choice until the next try.
-      }
-    }
-  }
 
   return (
     <button
       type="button"
-      className="button ghost lang-toggle"
+      className={`button ghost lang-toggle ${className}`.trim()}
       lang={next}
-      onClick={() => void toggle()}
+      onClick={() => changeLanguage(next)}
       title={t("shell.language.switchTo")}
+      aria-keyshortcuts={chordForAria(languageChord)}
     >
       {t(`shell.language.native.${next}`)}
     </button>

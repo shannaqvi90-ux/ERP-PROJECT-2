@@ -1,10 +1,19 @@
 /*
- * Dense, keyboard-first business layout. Logical properties only (inline-start/end), so the same
- * rules mirror for Arabic (dir="rtl") without a separate stylesheet. System fonts with Arabic
- * coverage; the shell piece (p04) chooses a bundled Arabic-capable font.
+ * Dense, keyboard-first business layout. Logical properties only (inline-start/end, block-start/
+ * end): the same rules mirror for Arabic (dir="rtl") without a separate stylesheet, and a gate
+ * (ShellGateTests) refuses physical left/right properties. Fonts: the system's UI fonts that cover
+ * Arabic on every desktop (Segoe UI and Tahoma on Windows, SF/Geeza Pro on Apple, Noto/DejaVu on
+ * Linux). A bundled Arabic font waits for licence approval (docs/decisions/p04-shell-fonts.md).
  */
 :root {
-  --font: system-ui, -apple-system, "Segoe UI", Tahoma, "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  --font: system-ui, -apple-system, "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  --font-ar: "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif;
+  --topbar: #1f3349;
+  --topbar-text: #ffffff;
+  --nav-bg: #ffffff;
+  --selected: #e7f0fb;
+  --kbd-bg: #f6f8fa;
+  --warn: #8a4b00;
   --bg: #f3f4f6;
   --surface: #ffffff;
   --text: #1f2328;
@@ -31,9 +40,60 @@ body {
   margin: 0;
 }
 
+:lang(ar) {
+  font-family: var(--font-ar);
+}
+
+/* Focus rings: always visible for keyboard users, on light and dark surfaces. */
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 1px;
+}
+
+.topbar :focus-visible {
+  outline-color: #ffffff;
+  box-shadow: 0 0 0 4px var(--focus);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Icons that point somewhere mirror on right-to-left screens. */
+.icon {
+  flex: none;
+  vertical-align: middle;
+}
+
+[dir="rtl"] .icon-directional {
+  transform: scaleX(-1);
+}
+
+kbd {
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-block-end-width: 2px;
+  border-radius: 3px;
+  background: var(--kbd-bg);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.keys {
+  display: inline-flex;
+  gap: 2px;
+  unicode-bidi: isolate;
 }
 
 h1 {
@@ -190,11 +250,14 @@ input[aria-invalid="true"] {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding-inline: 12px;
+  gap: 10px;
+  padding-inline: 6px 12px;
   height: 44px;
-  background: #1f3349;
-  color: #ffffff;
+  background: var(--topbar);
+  color: var(--topbar-text);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
 }
 
 .topbar a {
@@ -202,57 +265,193 @@ input[aria-invalid="true"] {
   text-decoration: none;
 }
 
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 7px;
+}
+
 .brand {
   font-weight: 700;
 }
 
 .workspace-name {
-  opacity: 0.85;
-  padding-inline-end: 8px;
-  border-inline-end: 1px solid rgba(255, 255, 255, 0.3);
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
 }
 
-.topnav {
+.topbar-context {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+}
+
+.palette-trigger {
+  font: inherit;
   flex: 1;
-  overflow-x: auto;
-}
-
-.topnav a {
-  padding: 6px 10px;
+  max-width: 460px;
+  min-width: 160px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding-inline: 10px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--topbar-text);
+  cursor: text;
+  text-align: start;
 }
 
-.topnav a:hover,
-.topnav a[aria-current="page"] {
-  background: rgba(255, 255, 255, 0.15);
+.palette-trigger:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.palette-trigger-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-trigger kbd {
+  background: transparent;
+  color: var(--topbar-text);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .topbar-end {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+.topbar .button.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .user-name {
-  opacity: 0.9;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frame {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  min-height: 0;
+}
+
+.navpane {
+  width: 208px;
+  background: var(--nav-bg);
+  border-inline-end: 1px solid var(--border);
+  padding-block: 8px;
+  overflow-y: auto;
+}
+
+.navpane[hidden] {
+  display: none;
+}
+
+.nav-group + .nav-group {
+  margin-block-start: 8px;
+}
+
+.nav-group[data-label]::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 4px 14px;
+}
+
+.navpane ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navpane a {
+  display: block;
+  padding: 5px 14px;
+  color: var(--text);
+  text-decoration: none;
+  border-inline-start: 3px solid transparent;
+}
+
+.navpane a:hover {
+  background: var(--bg);
+}
+
+.navpane a[aria-current="page"] {
+  background: var(--selected);
+  border-inline-start-color: var(--accent);
+  font-weight: 600;
 }
 
 .workspace {
-  padding: 12px 16px;
+  padding: 10px 16px;
   outline: none;
+  min-width: 0;
+}
+
+.breadcrumbs ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
 }
 
 .statusbar {
   display: flex;
   gap: 16px;
-  justify-content: space-between;
-  padding: 4px 12px;
+  align-items: center;
+  padding: 3px 12px;
   font-size: 12px;
   color: var(--muted);
   border-block-start: 1px solid var(--border);
   background: var(--surface);
+}
+
+.status-hints {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .splash {
@@ -288,6 +487,354 @@ input[aria-invalid="true"] {
 
 .empty-state {
   padding: 24px 0;
+}
+
+/* Dialogs, command palette, shortcut help, preferences */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 32, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-block-start: 10vh;
+  z-index: 20;
+}
+
+.dialog {
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  width: min(560px, calc(100vw - 32px));
+  max-height: 80vh;
+  overflow: auto;
+  padding: 16px;
+  outline: none;
+}
+
+.dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+.dialog.palette {
+  width: min(640px, calc(100vw - 32px));
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.palette-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 12px;
+  border-block-end: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.palette-input input {
+  flex: 1;
+  border: none;
+  height: 44px;
+  font-size: 15px;
+  padding-inline: 0;
+  outline: none;
+  background: transparent;
+}
+
+.palette-list {
+  overflow-y: auto;
+  max-height: 52vh;
+  padding-block: 4px;
+}
+
+.palette-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 6px 12px 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.palette-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 5px;
+  padding-inline: 9px 12px;
+  border-inline-start: 3px solid transparent;
+  cursor: pointer;
+  min-height: 30px;
+}
+
+.palette-option[aria-selected="true"] {
+  background: var(--selected);
+  border-inline-start-color: var(--accent);
+}
+
+.palette-option-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-option-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-option-keys {
+  margin-inline-start: auto;
+}
+
+.palette-note,
+.palette-empty {
+  padding: 8px 12px;
+  color: var(--muted);
+}
+
+.palette-footer {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 6px 12px;
+  border-block-start: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.palette-count {
+  margin-inline-start: auto;
+}
+
+.shortcut-help {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.shortcut-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px 20px;
+}
+
+.shortcut-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.shortcut-table caption {
+  text-align: start;
+  font-weight: 600;
+  padding-block-end: 4px;
+}
+
+.shortcut-table td {
+  padding: 3px 0;
+  border-block-end: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.shortcut-table td:first-child {
+  white-space: nowrap;
+  padding-inline-end: 12px;
+  width: 1%;
+}
+
+.shortcut-table td:first-child .keys + .keys {
+  margin-inline-start: 4px;
+}
+
+.choice {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 0 0 10px;
+}
+
+.choice legend {
+  font-weight: 600;
+  padding-inline: 4px;
+}
+
+.choice-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 3px;
+}
+
+.choice-option input {
+  height: auto;
+}
+
+.prefs-sample {
+  margin-block: 6px 0;
+}
+
+.prefs-status {
+  margin: 0;
+  color: #1a7f37;
+}
+
+.prefs-status.warn {
+  color: var(--warn);
+}
+
+.prefs-account {
+  margin-block: 0 10px;
+}
+
+/* Printing: only the screen's content, with a small letterhead; never the app's chrome. */
+.print-only {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 14mm 12mm 16mm;
+
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-size: 9pt;
+    color: #57606a;
+  }
+}
+
+@media print {
+  :root {
+    background: #ffffff;
+    font-size: 10.5pt;
+  }
+
+  .topbar,
+  .navpane,
+  .statusbar,
+  .skip-link,
+  .breadcrumbs,
+  .dialog-backdrop,
+  .pager,
+  .search {
+    display: none !important;
+  }
+
+  .app,
+  .frame {
+    display: block;
+    min-height: 0;
+  }
+
+  .workspace {
+    padding: 0;
+  }
+
+  .print-only {
+    display: flex;
+  }
+
+  .print-screen-head {
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 9pt;
+    color: #57606a;
+    border-block-end: 1px solid #d0d7de;
+    padding-block-end: 4px;
+    margin-block-end: 8px;
+  }
+
+  .grid th {
+    position: static;
+  }
+
+  .grid tr {
+    break-inside: avoid;
+  }
+}
+
+/* Printed documents (kernel/print.tsx): the document's own language and direction. */
+.print-document {
+  background: var(--surface);
+  color: #000000;
+  max-width: 190mm;
+}
+
+.print-letterhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  border-block-end: 2px solid #1f2328;
+  padding-block-end: 6px;
+  margin-block-end: 10px;
+}
+
+.print-issuer {
+  font-weight: 700;
+  font-size: 13pt;
+}
+
+.print-title {
+  font-size: 15pt;
+}
+
+.print-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 24px;
+  margin: 0 0 10px;
+}
+
+.print-fact {
+  display: flex;
+  gap: 8px;
+}
+
+.print-fact dt {
+  color: #57606a;
+  min-width: 30%;
+}
+
+.print-fact dd {
+  margin: 0;
+}
+
+.print-document table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-document th,
+.print-document td {
+  text-align: start;
+  padding: 3px 6px;
+  border-block-end: 1px solid #d0d7de;
+}
+
+.print-document .num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-block-start: 12px;
+  font-size: 9pt;
+  color: #57606a;
 }
 
 /* Screens */

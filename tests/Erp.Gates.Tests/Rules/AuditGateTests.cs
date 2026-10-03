@@ -111,6 +111,31 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
     }
 
     [Fact]
+    public async Task Changing_ones_own_interface_preferences_is_audited_field_by_field()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var session = await admin.GetFromJsonAsync<JsonElement>("/api/auth/session");
+        var adminId = session.GetProperty("user").GetProperty("id").GetGuid();
+        var before = session.GetProperty("user").GetProperty("numerals").GetString();
+        var after = before == "arab" ? "latn" : "arab";
+
+        var response = await admin.PutAsJsonAsync("/api/identity/me/preferences", new { numerals = after });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        await using var db = await Env.OpenAdminAsync();
+        var rows = await DbCatalog.ReadAsync(db, """
+            SELECT actor_id, changes::text FROM audit.entries
+             WHERE table_name = 'users' AND record_id = @id AND action = 'update' ORDER BY id DESC LIMIT 1
+            """, r => (Actor: r.IsDBNull(0) ? (Guid?)null : r.GetGuid(0), Changes: JsonDocument.Parse(r.GetString(1)).RootElement),
+            ("id", adminId));
+        var row = Assert.Single(rows);
+        Assert.Equal(adminId, row.Actor);
+        Assert.Equal(before, row.Changes.GetProperty("numerals").GetProperty("old").GetString());
+        Assert.Equal(after, row.Changes.GetProperty("numerals").GetProperty("new").GetString());
+        Assert.False(row.Changes.TryGetProperty("language", out _), "The language did not change and must not be recorded");
+    }
+
+    [Fact]
     public async Task Passwords_are_redacted_in_the_audit_trail()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

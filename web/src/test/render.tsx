@@ -32,12 +32,12 @@ type Reply = { status: number; body?: unknown };
 
 /** Replace fetch with a router of canned replies; records every call. */
 export function mockFetch(handler: (method: string, url: string, body: unknown) => Reply) {
-  const calls: { method: string; url: string; headers: Record<string, string>; body: unknown }[] = [];
+  const calls: { method: string; url: string; headers: Record<string, string>; body: unknown; keepalive: boolean }[] = [];
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const method = init?.method ?? "GET";
     const url = String(input);
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-    calls.push({ method, url, headers: (init?.headers ?? {}) as Record<string, string>, body });
+    calls.push({ method, url, headers: (init?.headers ?? {}) as Record<string, string>, body, keepalive: init?.keepalive === true });
     const reply = handler(method, url, body);
     return new Response(reply.body === undefined ? null : JSON.stringify(reply.body), {
       status: reply.status,
