@@ -28,3 +28,8 @@ web/src/modules/shell/PreferencesDialog.tsx sampleDate  # A fixed sample date (3
 web/src/modules/shell/ShortcutHelp.tsx localKeys  # The screen-local keys listed on the shortcut sheet; fixed in code, never written.
 web/src/modules/shell/ShortcutHelp.tsx groupOrder  # The order of the shortcut sheet's groups (string keys); fixed in code, never written.
 web/src/modules/shell/announcer.tsx listeners  # The mounted live region's listener functions; the announced text passes through to the screen reader and is not kept here.
+web/src/modules/tenancy/CompanyForm.tsx blank  # The empty company form a new company starts from: frozen, fixed in code; edits go to a component's state copy, never into it.
+web/src/modules/tenancy/CompanyForm.tsx currencies  # The ISO 4217 codes offered first in the base-currency field; frozen, fixed in code, never written.
+web/src/modules/tenancy/CompanyForm.tsx emptyBranch  # The empty quick-add branch line: frozen, fixed in code; typing goes to a component's state copy, never into it.
+web/src/modules/tenancy/records.ts listSearch  # A getter that finds the list's search box in the current page for the "/" shortcut; holds no value of its own.
+web/src/modules/tenancy/ui.tsx emirates  # The seven emirate keys (abuDhabi ... fujairah) for address fields; frozen, fixed in code, never written.

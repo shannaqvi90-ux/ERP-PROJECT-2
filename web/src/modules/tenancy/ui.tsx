@@ -4,7 +4,7 @@ import { useI18n } from "../../kernel/i18n";
 import { useShortcut } from "../../kernel/shortcuts";
 
 /** The seven emirates, in the order the API documents them. */
-export const emirates = ["abuDhabi", "dubai", "sharjah", "ajman", "ummAlQuwain", "rasAlKhaimah", "fujairah"] as const;
+export const emirates = Object.freeze(["abuDhabi", "dubai", "sharjah", "ajman", "ummAlQuwain", "rasAlKhaimah", "fujairah"] as const);
 export type Emirate = (typeof emirates)[number];
 
 export type FieldErrors = Record<string, FieldError[]>;

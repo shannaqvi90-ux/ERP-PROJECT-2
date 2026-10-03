@@ -40,7 +40,7 @@ type Draft = {
   version: number | null;
 };
 
-const blank: Draft = {
+const blank: Draft = Object.freeze({
   code: "",
   legalNameEn: "",
   legalNameAr: "",
@@ -62,7 +62,7 @@ const blank: Draft = {
   website: "",
   isActive: true,
   version: null,
-};
+});
 
 function draftOf(c: Company): Draft {
   return {
@@ -93,7 +93,7 @@ function draftOf(c: Company): Draft {
 const optional = (value: string) => (value.trim() === "" ? null : value.trim());
 
 /** Currencies offered first; any ISO 4217 code is accepted. */
-const currencies = ["AED", "SAR", "OMR", "QAR", "BHD", "KWD", "USD", "EUR", "GBP", "INR", "PKR", "CNY"];
+const currencies = Object.freeze(["AED", "SAR", "OMR", "QAR", "BHD", "KWD", "USD", "EUR", "GBP", "INR", "PKR", "CNY"]);
 
 /** Create or edit one company; once saved, its branches can be added right below. */
 export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSaved: (id: string) => void; onClose: () => void }) {
@@ -351,7 +351,7 @@ function CompanyLogo({ company, editable, onChange }: { company: Company; editab
 }
 
 type QuickBranch = { code: string; nameEn: string; nameAr: string; city: string; emirate: Emirate | "" };
-const emptyBranch: QuickBranch = { code: "", nameEn: "", nameAr: "", city: "", emirate: "" };
+const emptyBranch: QuickBranch = Object.freeze({ code: "", nameEn: "", nameAr: "", city: "", emirate: "" });
 
 /** The company's branches, with a one-line form to add another (Enter saves). */
 function CompanyBranches({ companyId }: { companyId: string }) {
