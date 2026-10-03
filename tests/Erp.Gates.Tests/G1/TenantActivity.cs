@@ -407,6 +407,7 @@ public sealed class TenantActivity
             "string" when lower == "workspace" => _tenant.Code,
             "string" when lower == "password" => "Activity-Password-2026!",
             "string" when lower == "language" => "en",
+            "string" when lower == "numerals" => "latn",
             "string" when lower.Contains("permission") => "identity.users.read",
             "string" when format == "date-time" => DateTimeOffset.UtcNow.ToString("O"),
             "string" when lower.EndsWith("ar", StringComparison.Ordinal) => $"نشاط {marker} {n}",
