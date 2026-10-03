@@ -51,6 +51,15 @@ blind spots made that possible:
   the attack to report each in both directions and the process-state inventory to report both
   captured arrays (`EndpointClosures`, added by p00 round 3).
 
+- **Arrays are never immutable** in the process-state inventory (`G1ProcessStateTests`,
+  `IsImmutableCore`). An array of a product type (`SessionUser?[]`) took its namespace from the
+  element and was judged by the element's fields, so the captured array of the real plant was
+  taken as immutable and the static check passed it. Verified on a planted copy: the HTTP attack
+  reports the leak in both directions (write after write and the switch-input phase), and the
+  static check now reports `closure …ProfileEndpoints.Map.previous`. The self-test plant for P1c
+  has the exact shape (a synchronous lambda passing a captured array of a product record to a
+  static handler).
+
 ## Why
 
 - A plant that leaks only on the success path of a validated write is the general shape of every

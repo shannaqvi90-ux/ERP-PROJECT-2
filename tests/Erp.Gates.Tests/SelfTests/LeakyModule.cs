@@ -140,18 +140,11 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { email = mine, theme = request.Theme });
             }).WithName("leaky.theme").WithSummary("Planted bug: a captured array hands the previous writer's e-mail to the next writer in a header.").RequirePermission("leaky.data.update");
 
-            var previousSaver = new string?[1];
-            group.MapPut("/me/density", async (DensityRequest request, ErpDbSession session, ICurrentUser caller) =>
-            {
-                if (request.Density is not ("compact" or "roomy"))
-                {
-                    return Results.BadRequest();
-                }
-                var mine = await EmailAsync(session, caller.UserId);
-                var last = previousSaver[0];
-                previousSaver[0] = mine;
-                return Results.Ok(new { displayName = last is null ? mine : $"{mine} (after {last})", density = request.Density });
-            }).WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
+            // Bug 28 has the exact shape of the critic's plant: a synchronous lambda passes the
+            // captured array of a product record to a static handler.
+            var previousSaver = new LeakySaver?[1];
+            group.MapPut("/me/density", (DensityRequest request, ErpDbSession session, ICurrentUser caller) => SaveDensityAsync(request, session, caller, previousSaver))
+                .WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
 
             // Bug 24 (critic p00 round 2, plant P2): a write guarded by a read permission.
             group.MapPost("/users/{id:guid}/reactivate", async (Guid id, ErpDbSession session) =>
@@ -220,6 +213,20 @@ public sealed class LeakyModule : ErpModule
     public sealed class LastListHolder
     {
         public List<string>? Last;
+    }
+
+    public sealed record LeakySaver(string Email);
+
+    private static async Task<IResult> SaveDensityAsync(DensityRequest request, ErpDbSession session, ICurrentUser caller, LeakySaver?[] previous)
+    {
+        if (request.Density is not ("compact" or "roomy"))
+        {
+            return Results.BadRequest();
+        }
+        var mine = await EmailAsync(session, caller.UserId);
+        var last = previous[0];
+        previous[0] = new LeakySaver(mine);
+        return Results.Ok(new { displayName = last is null ? mine : $"{mine} (after {last.Email})", density = request.Density });
     }
 
     public sealed record ThemeRequest([property: AllowedTextValues("calm", "bright")] string? Theme);
