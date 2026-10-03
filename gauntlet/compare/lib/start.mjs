@@ -46,8 +46,9 @@ export function screenUrlProblem(product, url) {
  */
 export const READY = Object.freeze({
   odoo: {
+    // Any action rendered in the action manager (a view, or a client action such as Discuss).
     signedIn: () => !document.querySelector('.o_loading_indicator, .o_blockUI') && !!document.querySelector('.o_main_navbar button.o_user_menu') &&
-      !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'),
+      !!document.querySelector('.o_action_manager > *'),
     signIn: () => !!document.querySelector('form.oe_login_form input[name="login"], form[action*="/web/login"] input[name="login"]'),
   },
   ours: {

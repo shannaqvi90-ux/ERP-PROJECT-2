@@ -1,4 +1,4 @@
-import { OursApi, oursAs } from '../../lib/ours-api.mjs';
+import { oursAs } from '../../lib/ours-api.mjs';
 
 // A dedicated ordinary user, so switching languages never disturbs the other tasks' users. The
 // user holds the read-only role (an internal user who works in lists). The working screen is the
@@ -7,8 +7,8 @@ import { OursApi, oursAs } from '../../lib/ours-api.mjs';
 const TESTER = { email: 'lang.tester@alnoor.example', name: 'Layla Linguist' };
 const ROWS = 'main table tbody tr';
 
-async function testerApi(ctx) {
-  return new OursApi(ctx.product).signIn({ login: TESTER.email, password: ctx.product.users.admin.password });
+function testerApi(ctx) {
+  return oursAs(ctx.product, { login: TESTER.email, password: ctx.product.users.admin.password });
 }
 
 export default {
@@ -63,8 +63,9 @@ export default {
     }));
     // The saved preference: a fresh sign-in through the API reads it back.
     let language = null;
+    const tester = await testerApi(ctx);
     for (let i = 0; i < 20 && language !== 'ar'; i++) {
-      const session = await (await testerApi(ctx)).get('/api/auth/session');
+      const session = await tester.get('/api/auth/session');
       language = session.user.language;
       if (language !== 'ar') await new Promise(r => setTimeout(r, 100));
     }
