@@ -56,3 +56,8 @@ test('totals for a short path add up', () => {
 test('unknown step kinds are rejected', () => {
   assert.throws(() => operatorsForStep({ kind: 'wave', keystrokes: 0 }, null), /unknown step kind/);
 });
+
+test('a scroll is a mouse step modelled like a click', () => {
+  assert.deepEqual(operatorsForStep({ kind: 'scroll', keystrokes: 0 }, 'mouse').ops, { K: 0, P: 1, B: 2, H: 0, M: 1 });
+  assert.deepEqual(operatorsForStep({ kind: 'scroll', keystrokes: 0 }, 'keyboard').ops, { K: 0, P: 1, B: 2, H: 1, M: 1 });
+});

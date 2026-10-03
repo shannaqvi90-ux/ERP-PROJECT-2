@@ -60,8 +60,8 @@ export async function runTask(taskId, productId, opts = {}) {
     task_title: task.title,
     product: productId,
     status: 'error',
-    goal: describe(task.goal, needles),
-    done_when: describe(task.done, needles),
+    goal: describe(task.goal, { ...needles, ...(task.input || {}) }),
+    done_when: describe(task.done, { ...needles, ...(task.input || {}) }),
     started_at: new Date().toISOString(),
     finished_at: null,
     environment: {

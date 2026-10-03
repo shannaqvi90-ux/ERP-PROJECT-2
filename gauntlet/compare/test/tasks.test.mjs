@@ -46,7 +46,8 @@ test('every Odoo driver is built; placeholders in task text resolve from the dat
   const needles = loadNeedles();
   for (const t of await loadTasks()) {
     assert.notEqual((await loadDriver('odoo', t.id)).built, false, `odoo/${t.id} must be built`);
-    assert.doesNotMatch(describe(t.goal, needles) + describe(t.done, needles), /\{[a-z_.]+\}/i, `${t.id}: unresolved placeholder`);
+    const values = { ...needles, ...(t.input || {}) };
+    assert.doesNotMatch(describe(t.goal, values) + describe(t.done, values) + describe(t.start, values), /\{[a-z_.]+\}/i, `${t.id}: unresolved placeholder`);
   }
 });
 

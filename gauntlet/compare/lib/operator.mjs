@@ -1,6 +1,6 @@
 // The instrumented operator. Drivers act on a product only through it, so every user action is
 // counted the same way in both products:
-//   step       each click, each key chord, each field entry (typing a value), each file pick
+//   step       each click, each key chord, each field entry (typing a value), each file pick, each scroll
 //   keystroke  each key pressed (Shift counts; a chord counts each of its keys)
 //   machine    wall-clock seconds from start() to the verified end of the task
 //   wait       seconds spent waiting for the product to respond (part of machine seconds)
@@ -64,6 +64,13 @@ export class Operator {
     return this.record('double-click', label || String(target), 0, chain, t);
   }
 
+  /** Scroll with the mouse wheel until the target is in view (one step, modelled like a click). */
+  async scrollTo(target, { label, chain = false } = {}) {
+    const t = this.now();
+    await this.locate(target).scrollIntoViewIfNeeded({ timeout: this.defaultTimeout });
+    return this.record('scroll', label || `scroll to ${String(target)}`, 0, chain, t);
+  }
+
   /** Type a value into the focused field (one step; one keystroke per key pressed). */
   async type(text, { label, chain = false } = {}) {
     const t = this.now();
@@ -111,6 +118,22 @@ export class Operator {
     return this.record('file-pick', label || path.basename(file), 0, true, t2, { file: path.basename(file) });
   }
 
+  /**
+   * Click something that makes the product send a file (one step), then wait for the file
+   * (system wait) and save it into `dir`. Returns the saved file's path.
+   */
+  async clickForDownload(target, dir, { label, chain = false } = {}) {
+    const download = this.page.waitForEvent('download', { timeout: this.defaultTimeout });
+    await this.click(target, { label, chain });
+    const t = this.now();
+    const d = await download;
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, d.suggestedFilename());
+    await d.saveAs(file);
+    this.waits.push({ label: 'file received', at: round(t), seconds: round(this.now() - t) });
+    return file;
+  }
+
   /** Wait for the product to respond. Not a step; counted as system wait. */
   async waitFor(what, { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = {}) {
     const t = this.now();
@@ -148,6 +171,7 @@ export class Operator {
       steps: this.steps.length,
       keystrokes: this.steps.reduce((s, x) => s + x.keystrokes, 0),
       clicks: by('click') + by('double-click'),
+      scrolls: by('scroll'),
       field_entries: by('type'),
       key_chords: by('key'),
       file_picks: by('file-pick'),
