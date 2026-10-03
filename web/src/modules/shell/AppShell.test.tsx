@@ -1,6 +1,7 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
+import { listReply } from "../../test/lists";
 import { App } from "./App";
 
 let view: Rendered | undefined;
@@ -36,6 +37,8 @@ function serve(session: Session, extra?: (method: string, url: string, body: unk
     const custom = extra?.(method, url, body);
     if (custom) return custom;
     if (url === "/api/auth/session") return { status: 200, body: session };
+    const list = listReply(method, url);
+    if (list) return list;
     if (method === "PUT" && url === "/api/identity/me/preferences") return { status: 200, body: { ...session.user, ...(body as object) } };
     if (url.startsWith("/api/identity/users")) return { status: 200, body: { items: [{ id: "u2", email: "omar@alnoor.example", displayName: "Omar Haddad", language: "en", isActive: true, roleIds: [], lastSignInAt: null }], total: 1 } };
     if (url.startsWith("/api/identity/roles")) return { status: 200, body: { items: [], total: 0 } };
@@ -97,7 +100,7 @@ describe("command palette", () => {
     for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
     press({ code: "Enter", key: "Enter" }, input);
     await settle();
-    expect(window.location.pathname + window.location.search).toBe("/identity/users?search=omar%40alnoor.example");
+    expect(window.location.pathname + window.location.search).toBe("/identity/users?q=omar%40alnoor.example");
     expect(document.querySelector<HTMLInputElement>('input[type="search"]')!.value).toBe("omar@alnoor.example");
   });
 

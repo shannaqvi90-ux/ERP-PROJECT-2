@@ -18,7 +18,7 @@ export const extensions: ModuleExtensions = {
           id: u.id,
           title: u.displayName,
           subtitle: u.email,
-          path: `/identity/users?${new URLSearchParams({ search: u.email })}`,
+          path: `/identity/users?${new URLSearchParams({ q: u.email })}`,
         }));
       },
     },

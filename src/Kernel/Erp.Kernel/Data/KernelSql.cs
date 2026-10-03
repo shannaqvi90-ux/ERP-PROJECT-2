@@ -118,4 +118,35 @@ internal static class KernelSql
             LANGUAGE sql STABLE PARALLEL SAFE
             AS $$ SELECT NULLIF(current_setting('app.tenant_id', true), '')::uuid $$;
         """;
+
+    /// <summary>
+    /// Trigram matching for list search (ILIKE '%word%' served by GIN indexes with
+    /// <c>gin_trgm_ops</c>). pg_trgm is a trusted extension shipped with PostgreSQL (PostgreSQL
+    /// licence): the database owner installs it without superuser rights. It lives in
+    /// <c>public</c>, which the application role may use but not create in; it adds operators and
+    /// functions only, no tables and no SECURITY DEFINER code.
+    /// </summary>
+    public const string SearchExtension = """
+        CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA public;
+        """;
+
+    public const string SearchExtensionDown = """
+        DROP EXTENSION IF EXISTS pg_trgm;
+        """;
+
+    /// <summary>
+    /// Row-level security evaluates a query's own conditions after the tenant policy unless they
+    /// are LEAKPROOF, and only leakproof conditions may drive an index. Case-insensitive LIKE
+    /// (<c>texticlike</c>, the <c>~~*</c> operator behind ILIKE) is not marked leakproof by
+    /// PostgreSQL, so under row-level security a list search could never use its trigram index and
+    /// scanned every row of the tenant. texticlike has no side effects and its only errors concern
+    /// the pattern (a trailing escape character), never the row value it is matched against; the
+    /// platform always passes patterns as parameters, never from a row. Marking it leakproof lets
+    /// the trigram index serve ILIKE under row-level security. Set by the superuser bootstrap (only
+    /// a superuser may); the leakproof gate keeps the set of leakproof functions that differ from
+    /// PostgreSQL's defaults reviewed.
+    /// </summary>
+    public const string SearchLeakproof = """
+        ALTER FUNCTION pg_catalog.texticlike(text, text) LEAKPROOF;
+        """;
 }

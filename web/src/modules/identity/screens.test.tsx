@@ -1,5 +1,6 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { listReply } from "../../test/lists";
 import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
 import { App } from "../shell/App";
 
@@ -57,8 +58,10 @@ describe("users screen", () => {
     window.history.replaceState(null, "", "/identity/users");
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      const list = listReply(method, url);
+      if (list) return list;
       if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
-      if (url === "/api/identity/roles") return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (method === "POST" && url === "/api/identity/users") {
         const b = body as Record<string, unknown>;
         return { status: 201, body: { id: "u-new", ...b, isActive: true, lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true, setupCode: "K7QM-3XRA-PZ9D", setupCodeExpiresAt: "2026-10-10T00:00:00Z" } };
@@ -94,13 +97,15 @@ describe("users screen", () => {
     const post = calls.find((c) => c.method === "POST" && c.url === "/api/identity/users")!;
     expect(post.body).toEqual({ email: "hessa.clerk@demo-trading.example", displayName: "Hessa Clerk", language: "en", roleIds: ["r-clerk"] });
     expect(view.container.querySelector('[data-testid="setup-code"]')!.textContent).toBe("K7QM-3XRA-PZ9D");
-    expect(window.location.search).toBe("?user=u-new");
+    expect(window.location.search).toBe("?open=u-new");
   });
 
   it("hides creation and account actions from a read-only user", async () => {
-    window.history.replaceState(null, "", "/identity/users?user=u1");
+    window.history.replaceState(null, "", "/identity/users?open=u1");
     mockFetch((_m, url) => {
       if (url === "/api/auth/session") return { status: 200, body: session(["identity.users.read"]) };
+      const list = listReply(_m, url);
+      if (list) return list;
       if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
       if (url === "/api/identity/users/u1")
         return { status: 200, body: { id: "u1", email: "x@y.example", displayName: "Someone", language: "en", isActive: true, roleIds: [], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: false } };
@@ -125,7 +130,9 @@ describe("roles screen", () => {
     const mine = all.filter((p) => p !== "identity.users.resetPassword");
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(mine) };
-      if (url === "/api/identity/roles") return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
       if (method === "PUT") return { status: 200, body: { ...clerk, ...(body as object) } };
       return { status: 404, body: {} };
@@ -161,7 +168,9 @@ describe("roles screen", () => {
     window.history.replaceState(null, "", "/identity/roles");
     mockFetch((_m, url) => {
       if (url === "/api/auth/session") return { status: 200, body: session(all, "ar") };
-      if (url === "/api/identity/roles") return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      const list = listReply(_m, url);
+      if (list) return list;
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
       return { status: 404, body: {} };
     });
@@ -184,6 +193,8 @@ describe("sign-in with a set-up code", () => {
     window.history.replaceState(null, "", "/?email=hessa.clerk%40demo-trading.example");
     const calls = mockFetch((_m, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+      const list = listReply(_m, url);
+      if (list) return list;
       const b = body as Record<string, string>;
       if (!b.newPassword) return { status: 409, body: { title: "Choose a new password to finish signing in.", code: "auth.passwordChangeRequired" } };
       return { status: 200, body: session(["identity.users.read"]) };

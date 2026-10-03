@@ -113,7 +113,7 @@ test.describe("app shell", () => {
     const option = page.getByRole("option", { name: /Omar Haddad/ });
     await expect(option).toBeVisible();
     await option.click();
-    await expect(page).toHaveURL(/\/identity\/users\?search=viewer%40alnoor\.example$/);
+    await expect(page).toHaveURL(/\/identity\/users\?q=viewer%40alnoor\.example$/);
     await expect(page.locator("table tbody tr")).toHaveCount(1);
     await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
   });

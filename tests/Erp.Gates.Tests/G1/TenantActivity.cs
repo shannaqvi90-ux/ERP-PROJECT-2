@@ -381,7 +381,7 @@ public sealed class TenantActivity
             return new JsonObject();
         }
         var n = Interlocked.Increment(ref _counter);
-        var body = _openApi.BuildBody(schema, (type, format, name) => OwnLeaf(type, format, name, own, n)) as JsonObject ?? [];
+        var body = _openApi.BuildBody(schema, (type, format, name) => OwnLeaf(type, format, name, own, n), useDocumentedValues: true) as JsonObject ?? [];
         if (template is JsonObject source)
         {
             foreach (var (field, _) in body.ToList())
