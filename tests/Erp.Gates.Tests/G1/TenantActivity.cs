@@ -60,6 +60,10 @@ public sealed class TenantActivity
     private int _successfulReads;
     private int _counter;
 
+    /// <summary>Distinguishes this activity's created records from those of any other activity on
+    /// the same database (upper-case letters and digits, so it fits code patterns).</summary>
+    private readonly string _run = Convert.ToHexString(Guid.NewGuid().ToByteArray(), 0, 2);
+
     private TenantActivity(ErpTestEnvironment env, SeedTenant tenant, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi)
     {
         _env = env;
@@ -503,6 +507,10 @@ public sealed class TenantActivity
         // Every leaf conforms to its documented constraints (enums, patterns, lengths, ranges), so
         // the write passes validation and its handler runs to the end.
         var body = _openApi.BuildBody(schema, (leaf, type, format, name) => _openApi.Conform(leaf, OwnLeaf(type, format, name, own, n)), useDocumentedValues: true) as JsonObject ?? [];
+        if (template is null)
+        {
+            UniqueDocumentedValues(schema, body, n);
+        }
         if (template is JsonObject source)
         {
             foreach (var (field, _) in body.ToList())
@@ -516,6 +524,41 @@ public sealed class TenantActivity
         }
         return body;
     }
+
+    /// <summary>
+    /// A create takes a field's documented example where the field has one (so it passes
+    /// validation), and the example is the same in every body: a field that must be unique in the
+    /// workspace, such as a company or branch code, would refuse the second create and the handler
+    /// would never run to the end. Each create therefore gets its own variant of a patterned
+    /// example (the example, this run's tag and the body's number) when the variant still conforms
+    /// to the field's pattern and length; other fields keep the example.
+    /// </summary>
+    private void UniqueDocumentedValues(JsonElement schema, JsonObject body, int n)
+    {
+        var resolved = _openApi.Resolve(schema);
+        if (!resolved.TryGetProperty("properties", out var properties))
+        {
+            return;
+        }
+        foreach (var property in properties.EnumerateObject())
+        {
+            if (body[property.Name] is not JsonValue value || value.GetValueKind() != JsonValueKind.String || !HasPattern(_openApi.Resolve(property.Value)))
+            {
+                continue;
+            }
+            var candidate = $"{value.GetValue<string>()}-{_run}-{n}";
+            if (_openApi.Conform(property.Value, JsonValue.Create(candidate)) is JsonValue conformed &&
+                conformed.GetValueKind() == JsonValueKind.String && conformed.GetValue<string>() == candidate)
+            {
+                body[property.Name] = candidate;
+            }
+        }
+    }
+
+    private bool HasPattern(JsonElement leaf) =>
+        leaf.ValueKind == JsonValueKind.Object &&
+        (leaf.TryGetProperty("pattern", out _) ||
+         new[] { "oneOf", "anyOf", "allOf" }.Any(c => leaf.TryGetProperty(c, out var options) && options.EnumerateArray().Any(o => HasPattern(_openApi.Resolve(o)))));
 
     private JsonNode? OwnLeaf(string type, string? format, string? name, TenantSnapshot own, int n)
     {
