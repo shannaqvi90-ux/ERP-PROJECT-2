@@ -1,0 +1,22 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 1c8ebc6..859bba6 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -27,6 +27,17 @@ internal static class TenancyEndpoints
+             .WithSummary("Rename the signed-in user's tenant (English and Arabic names).")
+             .ProducesValidationProblem()
+             .RequirePermission(TenancyPermissions.TenantUpdate);
++
++        group.MapPost("/tenant/suspend", async (TenancyDbContext db, CancellationToken ct) =>
++            {
++                var tenant = await db.Tenants.SingleAsync(ct);
++                tenant.NameEn = tenant.NameEn + " (suspended)";
++                await db.SaveChangesAsync(ct);
++                return Results.NoContent();
++            })
++            .WithName("tenancy.tenant.suspend")
++            .WithSummary("Suspend the tenant.")
++            .RequireAuthorization();
+     }
+ 
+     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> GetTenant(TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)

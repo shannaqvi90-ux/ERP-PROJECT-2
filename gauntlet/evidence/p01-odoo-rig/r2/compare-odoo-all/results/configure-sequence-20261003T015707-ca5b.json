@@ -1,0 +1,691 @@
+{
+  "schema": 1,
+  "run_id": "configure-sequence-20261003T015707-ca5b",
+  "task": "configure-sequence",
+  "task_title": "Configure a document sequence",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
+  "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
+  "started_at": "2026-10-03T01:57:07.917Z",
+  "finished_at": "2026-10-03T01:57:16.841Z",
+  "environment": {
+    "base_url": "http://localhost:20152",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 17,
+    "keystrokes": 32,
+    "clicks": 8,
+    "scrolls": 2,
+    "field_entries": 3,
+    "key_chords": 4,
+    "file_picks": 0,
+    "machine_seconds": 1.645,
+    "system_wait_seconds": 2.174,
+    "human_seconds": 40.72,
+    "human_plus_wait_seconds": 42.818,
+    "klm_operator_counts": {
+      "K": 34,
+      "P": 10,
+      "B": 20,
+      "H": 5,
+      "M": 12
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.038
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.038,
+      "took": 0.046
+    },
+    {
+      "n": 3,
+      "kind": "scroll",
+      "label": "scroll to the bottom of the settings",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.361,
+      "took": 0.015
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Activate the developer mode",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.377,
+      "took": 0.041
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Technical menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.812,
+      "took": 0.044
+    },
+    {
+      "n": 6,
+      "kind": "scroll",
+      "label": "scroll the menu to Sequences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.058,
+      "took": 0.036
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Sequences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.094,
+      "took": 0.041
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "search",
+      "keystrokes": 16,
+      "chain": false,
+      "at": 2.363,
+      "took": 0.044,
+      "text": "Purchase Order"
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 2.408,
+      "took": 0.011,
+      "chord": "Enter"
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "open Purchase Order",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.475,
+      "took": 0.05
+    },
+    {
+      "n": 11,
+      "kind": "click",
+      "label": "prefix field",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.58,
+      "took": 0.036
+    },
+    {
+      "n": 12,
+      "kind": "key",
+      "label": "select the old prefix",
+      "keystrokes": 2,
+      "chain": true,
+      "at": 2.615,
+      "took": 0.003,
+      "chord": "Control+a"
+    },
+    {
+      "n": 13,
+      "kind": "type",
+      "label": "prefix",
+      "keystrokes": 10,
+      "chain": true,
+      "at": 2.618,
+      "took": 0.014,
+      "text": "PO-2026-"
+    },
+    {
+      "n": 14,
+      "kind": "click",
+      "label": "sequence size field",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.632,
+      "took": 0.038
+    },
+    {
+      "n": 15,
+      "kind": "key",
+      "label": "select the old size",
+      "keystrokes": 2,
+      "chain": true,
+      "at": 2.671,
+      "took": 0.01,
+      "chord": "Control+a"
+    },
+    {
+      "n": 16,
+      "kind": "type",
+      "label": "size",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 2.681,
+      "took": 0.003,
+      "text": "6"
+    },
+    {
+      "n": 17,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 2.684,
+      "took": 0.013,
+      "chord": "Alt+s"
+    }
+  ],
+  "waits": [
+    {
+      "label": "Settings loaded",
+      "at": 0.085,
+      "seconds": 1.265
+    },
+    {
+      "label": "settings page",
+      "at": 1.35,
+      "seconds": 0.011
+    },
+    {
+      "label": "developer mode on",
+      "at": 1.418,
+      "seconds": 0.395
+    },
+    {
+      "label": "technical menu open",
+      "at": 1.856,
+      "seconds": 0.13
+    },
+    {
+      "label": "sequence list, search focused",
+      "at": 2.134,
+      "seconds": 0.229
+    },
+    {
+      "label": "search result",
+      "at": 2.419,
+      "seconds": 0.056
+    },
+    {
+      "label": "sequence form",
+      "at": 2.525,
+      "seconds": 0.055
+    },
+    {
+      "label": "saved",
+      "at": 2.698,
+      "seconds": 0.033
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d845434804c382fa.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r2/compare-odoo-all/shots/d845434804c382fa.jpg"
+    },
+    {
+      "moment": "sequence edited",
+      "file": "e35d5329b426a0fc.jpg",
+      "at": 2.684,
+      "path": "../../evidence-staging/p01-odoo-rig/r2/compare-odoo-all/shots/e35d5329b426a0fc.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "be46074340640ea4.jpg",
+      "at": 2.731,
+      "path": "../../evidence-staging/p01-odoo-rig/r2/compare-odoo-all/shots/be46074340640ea4.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "prefix": "PO-2026-",
+      "padding": 6,
+      "next_number": "PO-2026-000003"
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S | pointer: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/configure-sequence.mjs",
+    "sha256": "7b60a46d802e7ff70a4cfe4c592e236c62b0f7400b706ff40090ef20aa503787"
+  },
+  "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "pointer",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 17,
+        "keystrokes": 34,
+        "clicks": 8,
+        "scrolls": 2,
+        "field_entries": 3,
+        "key_chords": 4,
+        "file_picks": 0,
+        "machine_seconds": 2.672,
+        "system_wait_seconds": 2.174,
+        "human_seconds": 40.72,
+        "human_plus_wait_seconds": 42.894,
+        "klm_operator_counts": {
+          "K": 34,
+          "P": 10,
+          "B": 20,
+          "H": 5,
+          "M": 12
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.038
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.038,
+          "took": 0.046
+        },
+        {
+          "n": 3,
+          "kind": "scroll",
+          "label": "scroll to the bottom of the settings",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.361,
+          "took": 0.015
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Activate the developer mode",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.377,
+          "took": 0.041
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "Technical menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.812,
+          "took": 0.044
+        },
+        {
+          "n": 6,
+          "kind": "scroll",
+          "label": "scroll the menu to Sequences",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.058,
+          "took": 0.036
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Sequences",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.094,
+          "took": 0.041
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "search",
+          "keystrokes": 16,
+          "chain": false,
+          "at": 2.363,
+          "took": 0.044,
+          "text": "Purchase Order"
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 2.408,
+          "took": 0.011,
+          "chord": "Enter"
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "open Purchase Order",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.475,
+          "took": 0.05
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "prefix field",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.58,
+          "took": 0.036
+        },
+        {
+          "n": 12,
+          "kind": "key",
+          "label": "select the old prefix",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 2.615,
+          "took": 0.003,
+          "chord": "Control+a"
+        },
+        {
+          "n": 13,
+          "kind": "type",
+          "label": "prefix",
+          "keystrokes": 10,
+          "chain": true,
+          "at": 2.618,
+          "took": 0.014,
+          "text": "PO-2026-"
+        },
+        {
+          "n": 14,
+          "kind": "click",
+          "label": "sequence size field",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.632,
+          "took": 0.038
+        },
+        {
+          "n": 15,
+          "kind": "key",
+          "label": "select the old size",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 2.671,
+          "took": 0.01,
+          "chord": "Control+a"
+        },
+        {
+          "n": 16,
+          "kind": "type",
+          "label": "size",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 2.681,
+          "took": 0.003,
+          "text": "6"
+        },
+        {
+          "n": 17,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 2.684,
+          "took": 0.013,
+          "chord": "Alt+s"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "prefix": "PO-2026-",
+          "padding": 6,
+          "next_number": "PO-2026-000003"
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 17,
+        "keystrokes": 32,
+        "clicks": 9,
+        "scrolls": 2,
+        "field_entries": 3,
+        "key_chords": 3,
+        "file_picks": 0,
+        "machine_seconds": 1.645,
+        "system_wait_seconds": 0.958,
+        "human_seconds": 41.86,
+        "human_plus_wait_seconds": 42.818,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 11,
+          "B": 22,
+          "H": 6,
+          "M": 12
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.048
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.049,
+          "took": 0.046
+        },
+        {
+          "n": 3,
+          "kind": "scroll",
+          "label": "scroll to the bottom of the settings",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.4,
+          "took": 0.037
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Activate the developer mode",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.437,
+          "took": 0.041
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "Technical menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.883,
+          "took": 0.254
+        },
+        {
+          "n": 6,
+          "kind": "scroll",
+          "label": "scroll the menu to Sequences",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.15,
+          "took": 0.037
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Sequences",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.187,
+          "took": 0.041
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "search",
+          "keystrokes": 16,
+          "chain": false,
+          "at": 1.332,
+          "took": 0.042,
+          "text": "Purchase Order"
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 1.374,
+          "took": 0.009,
+          "chord": "Enter"
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "open Purchase Order",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.435,
+          "took": 0.048
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "prefix field",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.542,
+          "took": 0.032
+        },
+        {
+          "n": 12,
+          "kind": "key",
+          "label": "select the old prefix",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 1.575,
+          "took": 0.003,
+          "chord": "Control+a"
+        },
+        {
+          "n": 13,
+          "kind": "type",
+          "label": "prefix",
+          "keystrokes": 10,
+          "chain": true,
+          "at": 1.578,
+          "took": 0.015,
+          "text": "PO-2026-"
+        },
+        {
+          "n": 14,
+          "kind": "click",
+          "label": "sequence size field",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.592,
+          "took": 0.034
+        },
+        {
+          "n": 15,
+          "kind": "key",
+          "label": "select the old size",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 1.627,
+          "took": 0.004,
+          "chord": "Control+a"
+        },
+        {
+          "n": 16,
+          "kind": "type",
+          "label": "size",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 1.63,
+          "took": 0.004,
+          "text": "6"
+        },
+        {
+          "n": 17,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.634,
+          "took": 0.039
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "prefix": "PO-2026-",
+          "padding": 6,
+          "next_number": "PO-2026-000003"
+        }
+      }
+    }
+  ]
+}
