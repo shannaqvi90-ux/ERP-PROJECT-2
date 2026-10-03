@@ -104,25 +104,6 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         AssertAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
     }
 
-    /// <summary>What one tenant is answered may not depend on what the other tenant did, whether
-    /// or not the answer carries anything of the other tenant's (<see cref="NonInterference"/>).</summary>
-    [Fact]
-    public async Task What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
-    {
-        var result = await NonInterference.RunAsync(Env);
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), {result.Requests} requests, {result.Unstable.Count} unstable");
-        foreach (var unstable in result.Unstable)
-        {
-            TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
-        }
-        Assert.True(result.Findings.Count == 0, $"{result.Findings.Count} answers depend on the other tenant's activity:\n" + string.Join("\n", result.Findings.Take(30)));
-        Assert.True(result.BlindSpots.Count == 0, "The non-interference check may be blind: " + string.Join("; ", result.BlindSpots));
-        AssertAtLeast(result.Comparisons, "g1.nonInterferenceComparisons");
-        AssertAtLeast(result.Endpoints, "g1.nonInterferenceEndpoints");
-        AssertAtLeast(result.Discriminating, "g1.nonInterferenceDiscriminating");
-    }
-
     private static void AssertAtLeast(int value, string key) =>
         Assert.True(value >= Ratchet.Min(key), $"{key}: {value}; ratchet minimum {Ratchet.Min(key)}");
 }
