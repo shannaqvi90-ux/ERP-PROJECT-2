@@ -55,6 +55,56 @@ public static class PasswordHasher
         return ok;
     }
 
+    /// <summary>
+    /// The public part of a stored hash: <c>algorithm$iterations$salt</c>. Sign-in hands it to the
+    /// application instead of the hash, so the application can prove a password
+    /// (<see cref="Prove"/>) without ever reading a stored hash.
+    /// </summary>
+    public static string? ChallengeOf(string stored)
+    {
+        var parts = stored?.Split('$');
+        return parts is { Length: 4 } && parts[0] == Algorithm ? string.Join('$', parts[..3]) : null;
+    }
+
+    /// <summary>
+    /// The stored-hash form this password would have under the challenge's algorithm, cost and
+    /// salt; it equals the stored hash exactly when the password is right. Returns null for a
+    /// malformed challenge, after the same amount of work, so timing does not tell them apart.
+    /// </summary>
+    public static string? Prove(string password, string challenge)
+    {
+        ArgumentNullException.ThrowIfNull(password);
+        var parts = challenge?.Split('$');
+        byte[]? salt = null;
+        var iterations = 0;
+        if (parts is { Length: 3 } && parts[0] == Algorithm && int.TryParse(parts[1], out iterations) && iterations is >= 10_000 and <= 10_000_000)
+        {
+            try
+            {
+                salt = Convert.FromBase64String(parts[2]);
+            }
+            catch (FormatException)
+            {
+                salt = null;
+            }
+        }
+        if (salt is null || salt.Length == 0)
+        {
+            Verify(password, Decoy, out _);
+            return null;
+        }
+        var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA512, HashBytes);
+        return $"{challenge}${Convert.ToBase64String(hash)}";
+    }
+
+    /// <summary>True when a challenge's cost is below today's, so the hash should be renewed at
+    /// the next successful sign-in.</summary>
+    public static bool IsOutdated(string challenge)
+    {
+        var parts = challenge?.Split('$');
+        return parts is { Length: >= 2 } && int.TryParse(parts[1], out var iterations) && iterations < Iterations;
+    }
+
     /// <summary>A hash of a random password, verified against when the e-mail is unknown so the
     /// response time does not reveal whether an account exists.</summary>
     public static readonly string Decoy = Hash(Convert.ToBase64String(RandomNumberGenerator.GetBytes(24)));

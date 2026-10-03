@@ -13,7 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace Erp.Modules.Identity.Auth;
 
-public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken);
+/// <summary>Sign-in. <c>NewPassword</c> changes the password as part of signing in: required when
+/// the password is a one-time set-up code, and how a signed-in user changes their own password
+/// (proving the current one).</summary>
+public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken, string? NewPassword = null);
 
 /// <summary>The signed-in user as the shell shows them. <c>Numerals</c> is latn or arab: the digits
 /// Arabic screens use.</summary>
@@ -42,7 +45,7 @@ internal static class AuthEndpoints
     {
         group.MapPost("/sign-in", SignIn)
             .WithName("auth.signIn")
-            .WithSummary("Sign in with e-mail and password. Sets the session cookie; returns a bearer token too when issueToken is true.")
+            .WithSummary("Sign in with e-mail and password (or a one-time set-up code). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -72,13 +75,15 @@ internal static class AuthEndpoints
         var validator = new Validator(http)
             .Required("email", request.Email).Email("email", request.Email?.Trim())
             .Required("password", request.Password).MaxLength("password", request.Password, 1024)
-            .MaxLength("workspace", request.Workspace, 40);
+            .MaxLength("workspace", request.Workspace, 40)
+            .MaxLength("newPassword", request.NewPassword, 1024);
         if (!validator.IsValid)
         {
             return validator.ToResult();
         }
 
-        var outcome = await signIn.SignInAsync(request.Email!.Trim(), request.Password!, request.Workspace, http, cancellationToken);
+        var outcome = await signIn.SignInAsync(request.Email!.Trim(), request.Password!, string.IsNullOrEmpty(request.NewPassword) ? null : request.NewPassword,
+            request.Workspace, http, cancellationToken);
         switch (outcome)
         {
             case SignInOutcome.Succeeded success:
@@ -93,6 +98,10 @@ internal static class AuthEndpoints
                 });
                 var response = await payload.BuildAsync(success.UserId, success.ExpiresAt, cancellationToken);
                 return TypedResults.Ok(request.IssueToken == true ? response with { Token = success.Token } : response);
+            case SignInOutcome.PasswordChangeRequired:
+                return Problems.Result(http, StatusCodes.Status409Conflict, "auth.passwordChangeRequired");
+            case SignInOutcome.NewPasswordInvalid invalid:
+                return new Validator(http).Add("newPassword", invalid.Code, invalid.Args).ToResult();
             case SignInOutcome.ChooseWorkspace choose:
                 var problem = Problems.Create(http, StatusCodes.Status409Conflict, "auth.chooseWorkspace");
                 problem.Extensions["workspaces"] = choose.Workspaces;

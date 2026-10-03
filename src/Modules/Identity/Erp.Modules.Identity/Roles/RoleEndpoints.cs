@@ -19,7 +19,13 @@ public sealed record RolePage(IReadOnlyList<RoleDto> Items, int Total);
 
 public sealed record SaveRoleRequest(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions, uint? Version);
 
-public sealed record PermissionDto(string Key, string Module, string Label, string ModuleLabel);
+/// <summary>Name of a copy of a role.</summary>
+public sealed record CopyRoleRequest(string? NameEn, string? NameAr);
+
+/// <summary>A permission for the role editor's matrix: rows are a module's resources, columns their
+/// actions. <c>ResourceLabel</c> falls back to the permission's own label when the module names
+/// no resource label.</summary>
+public sealed record PermissionDto(string Key, string Module, string Label, string ModuleLabel, string Resource, string Action, string ResourceLabel);
 
 internal static class RoleEndpoints
 {
@@ -51,6 +57,12 @@ internal static class RoleEndpoints
             .WithName("identity.roles.delete")
             .WithSummary("Delete a role and its assignments. System roles cannot be deleted.")
             .RequirePermission(IdentityPermissions.RolesDelete);
+
+        group.MapPost("/roles/{id:guid}/copy", Copy)
+            .WithName("identity.roles.copy")
+            .WithSummary("Create a new role with the same permissions as this one, under a new name. Only roles whose permissions the caller holds.")
+            .ProducesValidationProblem()
+            .RequirePermission(IdentityPermissions.RolesCreate);
 
         group.MapGet("/permissions", Permissions)
             .WithName("identity.permissions.list")
@@ -98,6 +110,36 @@ internal static class RoleEndpoints
             return Problems.Conflict(http, "identity.roleNameTaken");
         }
         var role = new Role { NameEn = nameEn, NameAr = request.NameAr!.Trim(), Permissions = permissions };
+        db.Roles.Add(role);
+        await db.SaveChangesAsync(cancellationToken);
+        return TypedResults.Created($"/api/identity/roles/{role.Id}", ToDto(role, 0));
+    }
+
+    private static async Task<Results<Created<RoleDto>, ProblemHttpResult>> Copy(
+        Guid id, CopyRoleRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+    {
+        var validator = new Validator(http)
+            .Required("nameEn", request.NameEn).MaxLength("nameEn", request.NameEn, 100)
+            .Required("nameAr", request.NameAr).MaxLength("nameAr", request.NameAr, 100);
+        if (!validator.IsValid)
+        {
+            return validator.ToResult();
+        }
+        var source = await db.Roles.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (source is null)
+        {
+            return Problems.NotFound(http);
+        }
+        if (!source.Permissions.All(caller.Has))
+        {
+            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+        }
+        var nameEn = request.NameEn!.Trim();
+        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
+        {
+            return Problems.Conflict(http, "identity.roleNameTaken");
+        }
+        var role = new Role { NameEn = nameEn, NameAr = request.NameAr!.Trim(), Permissions = [.. source.Permissions] };
         db.Roles.Add(role);
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Created($"/api/identity/roles/{role.Id}", ToDto(role, 0));
@@ -178,7 +220,13 @@ internal static class RoleEndpoints
     {
         var language = Languages.ForRequest(http);
         return TypedResults.Ok(catalog.Permissions
-            .Select(p => new PermissionDto(p.Key, p.Module, strings.Get(p.LabelKey, language), strings.Get($"module.{p.Module}", language)))
+            .Select(p =>
+            {
+                var label = strings.Get(p.LabelKey, language);
+                var resourceKey = $"resource.{p.Module}.{p.Resource}";
+                return new PermissionDto(p.Key, p.Module, label, strings.Get($"module.{p.Module}", language), p.Resource, p.Action,
+                    strings.Contains(resourceKey) ? strings.Get(resourceKey, language) : label);
+            })
             .OrderBy(p => p.Module, StringComparer.Ordinal).ThenBy(p => p.Key, StringComparer.Ordinal)
             .ToList());
     }

@@ -22,7 +22,8 @@ export type SignInResult =
   | { kind: "ok"; session: Session }
   | { kind: "failed"; message: string }
   | { kind: "invalid"; message: string; fieldErrors: Record<string, FieldError[]> }
-  | { kind: "chooseWorkspace"; message: string; workspaces: Workspace[] };
+  | { kind: "chooseWorkspace"; message: string; workspaces: Workspace[] }
+  | { kind: "changePassword"; message: string };
 
 type SessionState =
   | { status: "loading" }
@@ -31,7 +32,8 @@ type SessionState =
 
 type SessionApi = {
   state: SessionState;
-  signIn: (email: string, password: string, workspace?: string) => Promise<SignInResult>;
+  /** With `newPassword`, the password is changed as part of signing in (one-time set-up codes). */
+  signIn: (email: string, password: string, workspace?: string, newPassword?: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   /** True when the signed-in user's roles grant the permission. The API enforces it anyway. */
@@ -40,12 +42,15 @@ type SessionApi = {
 
 const SessionContext = createContext<SessionApi | null>(null);
 
-export async function requestSignIn(email: string, password: string, workspace?: string): Promise<SignInResult> {
+export async function requestSignIn(email: string, password: string, workspace?: string, newPassword?: string): Promise<SignInResult> {
   try {
-    const session = await api<Session>("POST", "/api/auth/sign-in", { email, password, workspace });
+    const session = await api<Session>("POST", "/api/auth/sign-in", newPassword ? { email, password, workspace, newPassword } : { email, password, workspace });
     return { kind: "ok", session };
   } catch (error) {
     if (!(error instanceof ApiError)) throw error;
+    if (error.status === 409 && error.code === "auth.passwordChangeRequired") {
+      return { kind: "changePassword", message: error.message };
+    }
     if (error.status === 409 && error.code === "auth.chooseWorkspace") {
       return { kind: "chooseWorkspace", message: error.message, workspaces: (error.body.workspaces as Workspace[]) ?? [] };
     }
@@ -76,8 +81,8 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     if (state.status === "signedIn") onSignedIn?.(state.session);
   }, [state, onSignedIn]);
 
-  const signIn = useCallback(async (email: string, password: string, workspace?: string) => {
-    const result = await requestSignIn(email, password, workspace);
+  const signIn = useCallback(async (email: string, password: string, workspace?: string, newPassword?: string) => {
+    const result = await requestSignIn(email, password, workspace, newPassword);
     if (result.kind === "ok") setState({ status: "signedIn", session: result.session });
     return result;
   }, []);
