@@ -12,9 +12,11 @@ test.describe("users, roles and permissions", () => {
     await page.locator('nav a[href="/identity/users"]').first().click();
     await expect(page.locator("table tbody tr").first()).toBeVisible();
 
-    // n: new user; type only the part before @; Tab completes the address and suggests the name.
-    await page.locator("main h1").click();
-    await page.keyboard.press("n");
+    // The list arrives with the cursor in its search box; Alt+N starts a new user from there
+    // (a plain n would be typed into the search). Type only the part before @; Tab completes
+    // the address and suggests the name.
+    await expect(page.getByRole("searchbox", { name: "Search by name or e-mail" })).toBeFocused();
+    await page.keyboard.press("Alt+n");
     await expect(page.locator('input[name="email"]')).toBeFocused();
     await page.keyboard.type(local);
     await page.keyboard.press("Tab");
@@ -51,6 +53,15 @@ test.describe("users, roles and permissions", () => {
     await expect(clerk.locator("aside h2")).toBeVisible();
     await expect(clerk.getByRole("button", { name: "Save" })).toHaveCount(0);
     await expect(clerk.getByRole("button", { name: "Reset password…" })).toHaveCount(0);
+    // Roles too: no New role, and neither n nor Alt+N opens a new role.
+    await clerk.keyboard.press("Escape");
+    await clerk.locator('nav a[href="/identity/roles"]').first().click();
+    await expect(clerk.locator("table tbody tr").first()).toBeVisible();
+    await expect(clerk.getByRole("button", { name: "New role" })).toHaveCount(0);
+    await clerk.keyboard.press("Alt+n");
+    await clerk.locator("main h1").click();
+    await clerk.keyboard.press("n");
+    await expect(clerk.locator('input[name="nameEn"]')).toHaveCount(0);
     // And the API refuses what the screen does not offer.
     const refused = await clerk.request.post("/api/identity/users", {
       headers: { "X-Erp-Request": "1" },
@@ -77,6 +88,7 @@ test.describe("users, roles and permissions", () => {
     await signIn(page, users.admin);
     await page.locator('nav a[href="/identity/roles"]').first().click();
     await expect(page.locator("table tbody tr").first()).toBeVisible();
+    // A plain n starts a new role when no field has the focus.
     await page.locator("main h1").click();
     await page.keyboard.press("n");
     await expect(page.locator('input[name="nameEn"]')).toBeFocused();

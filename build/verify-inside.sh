@@ -29,6 +29,9 @@ case "$stage" in
     npx vitest run --reporter=default --reporter=json --outputFile="$out/vitest.json"
     # G1 in the browser: the client isolation gate must catch every planted client-side leak.
     node scripts/plant-self-test.mjs
+    # G2 on screen: the identity screens' permission gate must catch every planted action offered
+    # without its permission.
+    node scripts/identity-plant-self-test.mjs
     npm run --silent build
 
     step "Comparison harness (gauntlet/compare): install and unit tests"

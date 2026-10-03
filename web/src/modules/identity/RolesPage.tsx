@@ -3,7 +3,8 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleActions, roleName, type Permission, type Role, type RolePage } from "./model";
+import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
+import { isTyping, newRecordChord, roleActions, roleName, type Permission, type Role, type RolePage } from "./model";
 import { PermissionMatrix } from "./PermissionMatrix";
 import { formKeys } from "./UserPanel";
 import "./identity.css";
@@ -42,6 +43,16 @@ export function RolesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Alt+N from anywhere on the screen, including the search box the list focuses on arrival.
+  useShortcut({
+    id: "identity.roles.new",
+    chord: newRecordChord,
+    labelKey: "identity.roles.new",
+    groupKey: "identity.shortcuts.group",
+    enabled: can("identity.roles.create"),
+    run: () => setSelection({ kind: "new" }),
+  });
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -83,7 +94,10 @@ export function RolesPage() {
           onOpen={(row) => setSelection({ kind: "role", id: row.id })}
           actions={
             can("identity.roles.create") && (
-              <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })} aria-keyshortcuts="N">
+              <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })}
+                aria-keyshortcuts={`${chordForAria(newRecordChord)} N`}
+                title={chordKeys(newRecordChord).join("+")}
+              >
                 {t("identity.roles.new")}
               </button>
             )
