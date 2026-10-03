@@ -9,14 +9,14 @@ export default {
   async run(op) {
     await op.press('Control+k', { label: 'command palette' });
     await op.waitFor('.o_command_palette input', { label: 'palette open' });
-    await op.type('/user', { label: 'menu search', chain: true });
+    await op.type('/user', { label: 'menu search' });
     await op.waitFor(() => (document.querySelector('.o_command_palette .o_command.focused, .o_command_palette .o_command')?.textContent || '').includes('Users & Companies / Users'), { label: 'Users menu first' });
-    await op.press('Enter', { label: 'open', chain: true });
+    await op.press('Enter', { label: 'open' });
     await op.waitFor(() => document.querySelectorAll('.o_list_view .o_data_row').length > 0 && /Users/.test(document.querySelector('.o_breadcrumb')?.textContent || ''), { label: 'users list' });
     return { keyboardOnly: op.steps.every(s => s.kind === 'key' || s.kind === 'type') };
   },
   async verify(ctx, outcome) {
-    const ui = await ctx.page.evaluate(() => ({ url: location.pathname, crumb: document.querySelector('.o_breadcrumb')?.textContent?.trim(), rows: document.querySelectorAll('.o_list_view .o_data_row').length }));
+    const ui = await ctx.read(() => ({ url: location.pathname, crumb: document.querySelector('.o_breadcrumb')?.textContent?.trim(), rows: document.querySelectorAll('.o_list_view .o_data_row').length }));
     return { verified: outcome.keyboardOnly && /users/.test(ui.url) && ui.rows > 0, details: { ...ui, keyboard_only: outcome.keyboardOnly } };
   },
 };

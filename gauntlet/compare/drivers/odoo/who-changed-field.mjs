@@ -35,7 +35,7 @@ export default {
     await openApp(op, 'Contacts');
     await op.waitFor('.o_searchview_input:focus', { label: 'contact list ready, search focused' });
     await op.type(name, { label: 'contact name' });
-    await op.press('Enter', { label: 'search', chain: true });
+    await op.press('Enter', { label: 'search' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').length === 1, { label: 'one result' });
     await op.click(op.page.locator('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').first(), { label: 'open the result' });
     await op.waitFor(([oldEmail, newE, who]) => {

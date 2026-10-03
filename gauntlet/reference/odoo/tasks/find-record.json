@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "find-record-20261003T042950-2ac8",
-  "instrument": 3,
+  "run_id": "find-record-20261003T144353-c1ea",
+  "instrument": 4,
   "task": "find-record",
   "task_title": "Find one record among 100,000",
   "product": "odoo",
   "status": "verified",
   "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
   "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
-  "started_at": "2026-10-03T04:29:50.179Z",
-  "finished_at": "2026-10-03T04:30:02.028Z",
+  "started_at": "2026-10-03T14:43:53.546Z",
+  "finished_at": "2026-10-03T14:44:19.238Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 1,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 2.255,
-    "system_wait_seconds": 1.605,
-    "human_seconds": 17.91,
-    "human_plus_wait_seconds": 20.105,
+    "machine_seconds": 3.998,
+    "system_wait_seconds": 2.794,
+    "human_seconds": 16.56,
+    "human_plus_wait_seconds": 20.535,
     "klm_operator_counts": {
       "K": 30,
       "P": 3,
@@ -57,99 +57,100 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.068
+      "took": 0.045,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.069,
-      "took": 0.065
+      "at": 0.046,
+      "took": 0.092,
+      "chain": false
     },
     {
       "n": 3,
       "kind": "type",
       "label": "contact name",
       "keystrokes": 29,
-      "chain": false,
-      "at": 0.818,
-      "took": 0.32,
-      "text": "Shamma Waleed Al Romaithi"
+      "at": 1.421,
+      "took": 0.531,
+      "text": "Shamma Waleed Al Romaithi",
+      "same_field": false,
+      "chain": false
     },
     {
       "n": 4,
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "chain": true,
-      "at": 1.138,
-      "took": 0.041,
-      "chord": "Enter"
+      "at": 1.953,
+      "took": 0.045,
+      "chord": "Enter",
+      "chain": true
     },
     {
       "n": 5,
       "kind": "click",
       "label": "open the result",
       "keystrokes": 0,
-      "chain": false,
-      "at": 1.868,
-      "took": 0.154
+      "at": 3.382,
+      "took": 0.094,
+      "chain": false
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.134,
-      "seconds": 0.137
+      "at": 0.138,
+      "seconds": 0.251
     },
     {
       "label": "contact list ready, search focused",
-      "at": 0.271,
-      "seconds": 0.047
+      "at": 0.388,
+      "seconds": 0.006
     },
     {
       "label": "first page of contacts",
-      "at": 0.318,
-      "seconds": 0.5
+      "at": 0.395,
+      "seconds": 0.929
     },
     {
       "label": "one result",
-      "at": 1.179,
-      "seconds": 0.689
+      "at": 1.998,
+      "seconds": 1.086
     },
     {
       "label": "contact form",
-      "at": 2.022,
-      "seconds": 0.226
+      "at": 3.476,
+      "seconds": 0.494
     },
     {
       "label": "mobile number shown",
-      "at": 2.249,
-      "seconds": 0.006
+      "at": 3.97,
+      "seconds": 0.028
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "b3ed56f70c973d17.jpg",
+      "file": "c2c8959652c236ed.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/b3ed56f70c973d17.jpg"
+      "path": "gauntlet/reference/odoo/shots/c2c8959652c236ed.jpg"
     },
     {
       "moment": "result list",
-      "file": "0ed326ee08ef8706.jpg",
-      "at": 1.868,
-      "path": "gauntlet/reference/odoo/shots/0ed326ee08ef8706.jpg"
+      "file": "93eec37b7f407c24.jpg",
+      "at": 3.084,
+      "path": "gauntlet/reference/odoo/shots/93eec37b7f407c24.jpg"
     },
     {
       "moment": "done",
-      "file": "9b16f70d18e00717.jpg",
-      "at": 2.255,
-      "path": "gauntlet/reference/odoo/shots/9b16f70d18e00717.jpg"
+      "file": "6a0473e23445d627.jpg",
+      "at": 3.998,
+      "path": "gauntlet/reference/odoo/shots/6a0473e23445d627.jpg"
     }
   ],
   "verification": {
@@ -163,16 +164,27 @@
   "path_notes": "menus: Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result. | palette: Ctrl+K > type \"/contacts\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/find-record.mjs",
-    "sha256": "175bdba9b8725ffb09a086af73146d2af89af525f32666d3c087315e13580b5b"
+    "sha256": "6b62913df01776e0822aad18ca3eacf5dd197cef688f9eb790b3269c793f46bb"
   },
   "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "screenshots_path": "menus",
   "best_path_per_metric": {
     "steps": "menus",
     "keystrokes": "menus",
     "machine_seconds": "menus",
     "human_seconds": "palette",
-    "human_plus_wait_seconds": "menus"
+    "human_plus_wait_seconds": "palette"
   },
   "variants": [
     {
@@ -189,10 +201,10 @@
         "key_chords": 1,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 2.255,
-        "system_wait_seconds": 1.605,
+        "machine_seconds": 3.998,
+        "system_wait_seconds": 2.794,
         "human_seconds": 18.5,
-        "human_plus_wait_seconds": 20.105,
+        "human_plus_wait_seconds": 21.294,
         "klm_operator_counts": {
           "K": 30,
           "P": 3,
@@ -207,79 +219,80 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "chain": false,
           "at": 0,
-          "took": 0.068
+          "took": 0.045,
+          "chain": false
         },
         {
           "n": 2,
           "kind": "click",
           "label": "Contacts app",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.069,
-          "took": 0.065
+          "at": 0.046,
+          "took": 0.092,
+          "chain": false
         },
         {
           "n": 3,
           "kind": "type",
           "label": "contact name",
           "keystrokes": 29,
-          "chain": false,
-          "at": 0.818,
-          "took": 0.32,
-          "text": "Shamma Waleed Al Romaithi"
+          "at": 1.421,
+          "took": 0.531,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "chain": false
         },
         {
           "n": 4,
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "chain": true,
-          "at": 1.138,
-          "took": 0.041,
-          "chord": "Enter"
+          "at": 1.953,
+          "took": 0.045,
+          "chord": "Enter",
+          "chain": true
         },
         {
           "n": 5,
           "kind": "click",
           "label": "open the result",
           "keystrokes": 0,
-          "chain": false,
-          "at": 1.868,
-          "took": 0.154
+          "at": 3.382,
+          "took": 0.094,
+          "chain": false
         }
       ],
       "waits": [
         {
           "label": "Contacts loaded",
-          "at": 0.134,
-          "seconds": 0.137
+          "at": 0.138,
+          "seconds": 0.251
         },
         {
           "label": "contact list ready, search focused",
-          "at": 0.271,
-          "seconds": 0.047
+          "at": 0.388,
+          "seconds": 0.006
         },
         {
           "label": "first page of contacts",
-          "at": 0.318,
-          "seconds": 0.5
+          "at": 0.395,
+          "seconds": 0.929
         },
         {
           "label": "one result",
-          "at": 1.179,
-          "seconds": 0.689
+          "at": 1.998,
+          "seconds": 1.086
         },
         {
           "label": "contact form",
-          "at": 2.022,
-          "seconds": 0.226
+          "at": 3.476,
+          "seconds": 0.494
         },
         {
           "label": "mobile number shown",
-          "at": 2.249,
-          "seconds": 0.006
+          "at": 3.97,
+          "seconds": 0.028
         }
       ],
       "verification": {
@@ -289,6 +302,16 @@
           "name_shown": "Shamma Waleed Al Romaithi",
           "mobile_shown": true
         }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
       }
     },
     {
@@ -305,16 +328,16 @@
         "key_chords": 3,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 2.696,
-        "system_wait_seconds": 2.272,
-        "human_seconds": 17.91,
-        "human_plus_wait_seconds": 20.182,
+        "machine_seconds": 5.473,
+        "system_wait_seconds": 3.975,
+        "human_seconds": 16.56,
+        "human_plus_wait_seconds": 20.535,
         "klm_operator_counts": {
           "K": 42,
           "P": 1,
           "B": 2,
           "H": 2,
-          "M": 3
+          "M": 2
         }
       },
       "steps": [
@@ -323,101 +346,103 @@
           "kind": "key",
           "label": "command palette",
           "keystrokes": 2,
-          "chain": false,
           "at": 0,
-          "took": 0.025,
-          "chord": "Control+k"
+          "took": 0.018,
+          "chord": "Control+k",
+          "chain": false
         },
         {
           "n": 2,
           "kind": "type",
           "label": "menu search /contacts",
           "keystrokes": 9,
-          "chain": true,
-          "at": 0.262,
-          "took": 0.044,
-          "text": "/contacts"
+          "at": 0.34,
+          "took": 0.297,
+          "text": "/contacts",
+          "same_field": false,
+          "chain": true
         },
         {
           "n": 3,
           "kind": "key",
           "label": "open Contacts",
           "keystrokes": 1,
-          "chain": true,
-          "at": 0.39,
-          "took": 0.015,
-          "chord": "Enter"
+          "at": 0.709,
+          "took": 0.014,
+          "chord": "Enter",
+          "chain": true
         },
         {
           "n": 4,
           "kind": "type",
           "label": "contact name",
           "keystrokes": 29,
-          "chain": false,
-          "at": 1.182,
-          "took": 0.256,
-          "text": "Shamma Waleed Al Romaithi"
+          "at": 2.106,
+          "took": 0.637,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "chain": true
         },
         {
           "n": 5,
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "chain": true,
-          "at": 1.438,
-          "took": 0.015,
-          "chord": "Enter"
+          "at": 2.743,
+          "took": 0.01,
+          "chord": "Enter",
+          "chain": true
         },
         {
           "n": 6,
           "kind": "click",
           "label": "open the result",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.411,
-          "took": 0.067
+          "at": 4.505,
+          "took": 0.075,
+          "chain": false
         }
       ],
       "waits": [
         {
           "label": "palette open",
-          "at": 0.025,
-          "seconds": 0.237
+          "at": 0.018,
+          "seconds": 0.322
         },
         {
           "label": "menu found",
-          "at": 0.306,
-          "seconds": 0.084
+          "at": 0.637,
+          "seconds": 0.072
         },
         {
           "label": "Contacts loaded",
-          "at": 0.405,
-          "seconds": 0.231
+          "at": 0.723,
+          "seconds": 0.617
         },
         {
           "label": "contact list ready, search focused",
-          "at": 0.637,
-          "seconds": 0.003
+          "at": 1.34,
+          "seconds": 0.008
         },
         {
           "label": "first page of contacts",
-          "at": 0.64,
-          "seconds": 0.542
+          "at": 1.348,
+          "seconds": 0.758
         },
         {
           "label": "one result",
-          "at": 1.453,
-          "seconds": 0.957
+          "at": 2.753,
+          "seconds": 1.306
         },
         {
           "label": "contact form",
-          "at": 2.478,
-          "seconds": 0.213
+          "at": 4.581,
+          "seconds": 0.394
         },
         {
           "label": "mobile number shown",
-          "at": 2.691,
-          "seconds": 0.005
+          "at": 4.975,
+          "seconds": 0.498
         }
       ],
       "verification": {
@@ -427,14 +452,24 @@
           "name_shown": "Shamma Waleed Al Romaithi",
           "mobile_shown": true
         }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
       }
     }
   ],
   "result_file": "gauntlet/reference/odoo/tasks/find-record.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/find-record-20261003T042950-2ac8.json",
-    "gauntlet/reference/odoo/results/find-record-20261003T043002-1427.json",
-    "gauntlet/reference/odoo/results/find-record-20261003T043015-3429.json"
+    "gauntlet/reference/odoo/results/find-record-20261003T144303-4aaf.json",
+    "gauntlet/reference/odoo/results/find-record-20261003T144327-e655.json",
+    "gauntlet/reference/odoo/results/find-record-20261003T144353-c1ea.json"
   ]
 }

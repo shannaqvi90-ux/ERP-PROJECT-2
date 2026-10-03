@@ -31,17 +31,24 @@ export const BRANDING = Object.freeze({
       'img[src*="/res.partner/2/"]',
     ],
     words: ['Odoo', 'OdooBot'],
+    // The demo data's own names tell the products apart too (round 3): the reference's company
+    // and its database badge. `identity` is matched anywhere in a text; `identityExact` only as a
+    // whole text (a short code would otherwise hide ordinary words).
+    identity: ['Demo Trading LLC'],
+    identityExact: ['reference'],
   },
   ours: {
     selectors: ['[data-brand]', 'img[src*="logo" i]'],
     words: [],
+    identity: ['Al Noor Trading LLC', 'شركة النور للتجارة'],
+    identityExact: ['alnoor'],
   },
 });
 
 export function brandingFor(product, extraWords = []) {
   const b = BRANDING[product];
   if (!b) throw new Error(`unknown product: ${product}`);
-  return { selectors: [...b.selectors], words: [...b.words, ...extraWords] };
+  return { selectors: [...b.selectors], words: [...b.words, ...extraWords], identity: [...(b.identity || [])], identityExact: [...(b.identityExact || [])] };
 }
 
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -53,6 +60,8 @@ export function maskLocators(page, branding) {
     const re = new RegExp(branding.words.map(escapeRe).join('|'), 'i');
     locs.push(page.getByText(re));
   }
+  if (branding.identity?.length) locs.push(page.getByText(new RegExp(branding.identity.map(escapeRe).join('|'), 'i')));
+  for (const w of branding.identityExact || []) locs.push(page.getByText(w, { exact: true }));
   return locs;
 }
 

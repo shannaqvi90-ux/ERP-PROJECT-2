@@ -5,6 +5,8 @@ export default {
   named: false,
   piece: 'p03',
   actor: 'admin',
+  startAt: 'home',
+  moments: ['result list'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Open the user whose name the administrator knows ({user.name}) out of 100,000 users and read their sign-in e-mail.',
   done: 'The user\'s own record is open on screen and shows the sign-in {user.login}.',

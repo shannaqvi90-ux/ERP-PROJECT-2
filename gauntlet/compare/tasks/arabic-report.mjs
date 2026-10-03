@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p06',
   actor: 'admin (working in English)',
+  startAt: 'record',
+  moments: [],
   start: 'Signed in, working in English, with an order to the vendor {contact.parent_name} open on screen. The vendor\'s language is Arabic.',
   goal: 'Print the order as a PDF document in the vendor\'s language, Arabic.',
   done: 'The product hands over a PDF of the order whose content is in Arabic and laid out right to left.',

@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p07',
   actor: 'admin',
+  startAt: 'home',
+  moments: [],
   start: 'Signed in, on the screen the product shows right after sign-in.',
   goal: 'Find out who last changed the e-mail address of the contact {contact.name}, from what to what, and when.',
   done: 'The change is on screen: the old and new e-mail, the person who made it ({changedBy}) and the time.',

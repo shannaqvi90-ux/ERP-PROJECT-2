@@ -40,6 +40,20 @@ export class OdooRpc {
     return this;
   }
 
+  /** Use a browser's session (cookies from ctx.context.cookies()), to read what that browser is signed in as. */
+  withBrowserSession(cookies) {
+    const c = cookies.find(x => x.name === 'session_id');
+    this.cookie = c ? `session_id=${c.value}` : '';
+    return this;
+  }
+
+  /** GET a page of the web client as this session (for example a report rendered as HTML). */
+  async getText(path) {
+    const res = await fetch(this.baseUrl + path, { headers: this.cookie ? { Cookie: this.cookie } : {} });
+    if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+    return res.text();
+  }
+
   /** The session cookie, for a browser context (so sign-in is not part of a measured task). */
   sessionCookie() {
     const value = this.cookie.replace(/^session_id=/, '');

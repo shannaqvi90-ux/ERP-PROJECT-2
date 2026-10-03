@@ -24,7 +24,7 @@ export default {
     await openApp(op, 'Purchase');
     await op.waitFor(page.locator('.o_data_row').first(), { label: 'order list' });
     const firstRow = await page.locator('.o_data_row').first().innerText();
-    await op.shot('order list');
+    await op.shot('orders waiting for approval');
     await op.click(page.locator('.o_data_row', { hasText: name }).first(), { label: 'open the order waiting for approval' });
     await op.waitFor(page.getByRole('button', { name: 'Approve Order' }), { label: 'order form' });
     await op.click(page.getByRole('button', { name: 'Approve Order' }), { label: 'Approve Order' });
@@ -47,7 +47,7 @@ export default {
   async cleanup(ctx) {
     if (!ctx.state.po) return;
     const rpc = await adminRpc(ctx);
-    await rpc.call('purchase.order', 'button_cancel', [[ctx.state.po.id]]).catch(() => {});
+    await rpc.call('purchase.order', 'button_cancel', [[ctx.state.po.id]]).catch(() => { });
     await rpc.unlink('purchase.order', [ctx.state.po.id]);
   },
 };

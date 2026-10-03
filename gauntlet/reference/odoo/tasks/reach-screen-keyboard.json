@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "reach-screen-keyboard-20261003T070955-4def",
-  "instrument": 3,
+  "run_id": "reach-screen-keyboard-20261003T150309-a8cd",
+  "instrument": 4,
   "task": "reach-screen-keyboard",
   "task_title": "Reach a named screen by keyboard only",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
   "done_when": "The users list is on screen with its rows, and no step used the mouse.",
-  "started_at": "2026-10-03T07:09:57.937Z",
-  "finished_at": "2026-10-03T07:10:04.162Z",
+  "started_at": "2026-10-03T15:03:09.180Z",
+  "finished_at": "2026-10-03T15:03:14.982Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 2,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 1.977,
-    "system_wait_seconds": 1.908,
+    "machine_seconds": 1.174,
+    "system_wait_seconds": 1.05,
     "human_seconds": 3.99,
-    "human_plus_wait_seconds": 5.898,
+    "human_plus_wait_seconds": 5.04,
     "klm_operator_counts": {
       "K": 8,
       "P": 0,
@@ -57,61 +57,62 @@
       "kind": "key",
       "label": "command palette",
       "keystrokes": 2,
-      "chain": false,
       "at": 0,
-      "took": 0.023,
-      "chord": "Control+k"
+      "took": 0.019,
+      "chord": "Control+k",
+      "chain": false
     },
     {
       "n": 2,
       "kind": "type",
       "label": "menu search",
       "keystrokes": 5,
-      "chain": true,
-      "at": 0.376,
-      "took": 0.026,
-      "text": "/user"
+      "at": 0.207,
+      "took": 0.057,
+      "text": "/user",
+      "same_field": false,
+      "chain": true
     },
     {
       "n": 3,
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.51,
-      "took": 0.016,
-      "chord": "Enter"
+      "at": 0.321,
+      "took": 0.022,
+      "chord": "Enter",
+      "chain": true
     }
   ],
   "waits": [
     {
       "label": "palette open",
-      "at": 0.023,
-      "seconds": 0.353
+      "at": 0.019,
+      "seconds": 0.188
     },
     {
       "label": "Users menu first",
-      "at": 0.402,
-      "seconds": 0.105
+      "at": 0.264,
+      "seconds": 0.057
     },
     {
       "label": "users list",
-      "at": 0.527,
-      "seconds": 1.45
+      "at": 0.342,
+      "seconds": 0.831
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "989040b75abbcdd7.jpg",
+      "file": "027d24c315dcb9fa.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/989040b75abbcdd7.jpg"
+      "path": "gauntlet/reference/odoo/shots/027d24c315dcb9fa.jpg"
     },
     {
       "moment": "done",
-      "file": "a0086738aa41a2cb.jpg",
-      "at": 1.977,
-      "path": "gauntlet/reference/odoo/shots/a0086738aa41a2cb.jpg"
+      "file": "e00ed9bd27581fb4.jpg",
+      "at": 1.174,
+      "path": "gauntlet/reference/odoo/shots/e00ed9bd27581fb4.jpg"
     }
   ],
   "verification": {
@@ -126,15 +127,25 @@
   "path_notes": "Ctrl+K (command palette) > type \"/user\" > Enter (Settings / Users & Companies / Users).",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/reach-screen-keyboard.mjs",
-    "sha256": "7903bd1b84d6a4b4ff110b817dada9a96ba36a47b7cc0bb57af6a577b490d19e"
+    "sha256": "147c1cecca50430400481d3261d8b855d5ff5086fc149952f3c687729d305f27"
   },
   "task_notes": "Proposed by the p04 critic, round 1 (its task and drivers, added to the harness in p04 round 2). Every step must be a key or a key chord; the verification fails a run with a click in it.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/reach-screen-keyboard.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T070955-4def.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T071004-e962.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T071012-132a.json"
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T150303-6dfa.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T150309-a8cd.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261003T150314-3ae5.json"
   ]
 }

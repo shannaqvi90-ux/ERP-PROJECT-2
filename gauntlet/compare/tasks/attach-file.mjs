@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p11',
   actor: 'admin',
+  startAt: 'record',
+  moments: [],
   start: 'Signed in, with the contact {contact.name} open on screen.',
   goal: 'Attach the file {file} to the contact.',
   done: 'The file is listed on the contact; the back end holds it attached to that contact.',

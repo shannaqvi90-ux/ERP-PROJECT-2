@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "create-company-branch-20261003T042845-f197",
-  "instrument": 3,
+  "run_id": "create-company-branch-20261003T143726-61a7",
+  "instrument": 4,
   "task": "create-company-branch",
   "task_title": "Create a company with a branch",
   "product": "odoo",
   "status": "verified",
   "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
   "done_when": "Both are saved; the back end holds the company and the branch under it.",
-  "started_at": "2026-10-03T04:28:45.949Z",
-  "finished_at": "2026-10-03T04:29:06.672Z",
+  "started_at": "2026-10-03T14:37:26.934Z",
+  "finished_at": "2026-10-03T14:37:53.713Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,16 +29,16 @@
     "key_chords": 2,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 4.665,
-    "system_wait_seconds": 3.633,
-    "human_seconds": 48.53,
-    "human_plus_wait_seconds": 52.163,
+    "machine_seconds": 4.736,
+    "system_wait_seconds": 3.32,
+    "human_seconds": 47.18,
+    "human_plus_wait_seconds": 50.793,
     "klm_operator_counts": {
       "K": 76,
       "P": 8,
       "B": 16,
       "H": 5,
-      "M": 11
+      "M": 10
     }
   },
   "klm": {
@@ -57,185 +57,187 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.071
+      "took": 0.046,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "Settings app",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.072,
-      "took": 0.254
+      "at": 0.046,
+      "took": 0.05,
+      "chain": false
     },
     {
       "n": 3,
       "kind": "click",
       "label": "Users & Companies menu",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.744,
-      "took": 0.227
+      "at": 0.693,
+      "took": 0.049,
+      "chain": false
     },
     {
       "n": 4,
       "kind": "click",
       "label": "Companies",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.971,
-      "took": 0.063
+      "at": 0.741,
+      "took": 0.037,
+      "chain": false
     },
     {
       "n": 5,
       "kind": "key",
       "label": "New (hotkey)",
       "keystrokes": 2,
-      "chain": false,
-      "at": 1.512,
-      "took": 0.011,
-      "chord": "Alt+c"
+      "at": 1.616,
+      "took": 0.033,
+      "chord": "Alt+c",
+      "chain": false
     },
     {
       "n": 6,
       "kind": "type",
       "label": "company name",
       "keystrokes": 25,
-      "chain": false,
-      "at": 1.811,
-      "took": 0.208,
-      "text": "Falcon Logistics LLC"
+      "at": 1.864,
+      "took": 0.16,
+      "text": "Falcon Logistics LLC",
+      "same_field": false,
+      "chain": true
     },
     {
       "n": 7,
       "kind": "click",
       "label": "Branches tab",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.02,
-      "took": 0.045
+      "at": 2.024,
+      "took": 0.044,
+      "chain": false
     },
     {
       "n": 8,
       "kind": "click",
       "label": "Add a line",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.065,
-      "took": 0.141
+      "at": 2.069,
+      "took": 0.076,
+      "chain": false
     },
     {
       "n": 9,
       "kind": "click",
       "label": "focus branch name",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.565,
-      "took": 0.082
+      "at": 2.279,
+      "took": 0.12,
+      "chain": false
     },
     {
       "n": 10,
       "kind": "type",
       "label": "branch name",
       "keystrokes": 47,
-      "chain": true,
-      "at": 2.647,
-      "took": 0.136,
-      "text": "Falcon Logistics LLC - Jebel Ali Branch"
+      "at": 2.411,
+      "took": 0.129,
+      "text": "Falcon Logistics LLC - Jebel Ali Branch",
+      "same_field": true,
+      "chain": true
     },
     {
       "n": 11,
       "kind": "click",
       "label": "Save & Close",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.783,
-      "took": 0.1
+      "at": 2.767,
+      "took": 0.13,
+      "chain": false
     },
     {
       "n": 12,
       "kind": "key",
       "label": "Save (hotkey)",
       "keystrokes": 2,
-      "chain": false,
-      "at": 3,
-      "took": 0.022,
-      "chord": "Alt+s"
+      "at": 2.973,
+      "took": 0.01,
+      "chord": "Alt+s",
+      "chain": false
     }
   ],
   "waits": [
     {
       "label": "Settings loaded",
-      "at": 0.326,
-      "seconds": 0.418
+      "at": 0.096,
+      "seconds": 0.596
     },
     {
       "label": "company list",
-      "at": 1.034,
-      "seconds": 0.478
+      "at": 0.778,
+      "seconds": 0.838
     },
     {
       "label": "new company form, name focused",
-      "at": 1.523,
-      "seconds": 0.288
+      "at": 1.649,
+      "seconds": 0.215
     },
     {
       "label": "branch dialog",
-      "at": 2.206,
-      "seconds": 0.359
+      "at": 2.144,
+      "seconds": 0.135
     },
     {
       "label": "branch dialog closed",
-      "at": 2.883,
-      "seconds": 0.116
+      "at": 2.897,
+      "seconds": 0.076
     },
     {
       "label": "saved",
-      "at": 3.022,
-      "seconds": 1.632
+      "at": 2.983,
+      "seconds": 1.388
     },
     {
       "label": "company has an id",
-      "at": 4.654,
-      "seconds": 0.011
+      "at": 4.371,
+      "seconds": 0.365
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "8eedab7e09ff59e3.jpg",
+      "file": "be8b8225e8a6fe14.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/8eedab7e09ff59e3.jpg"
+      "path": "gauntlet/reference/odoo/shots/be8b8225e8a6fe14.jpg"
     },
     {
       "moment": "branch filled in",
-      "file": "ba10188097bb4e99.jpg",
-      "at": 2.783,
-      "path": "gauntlet/reference/odoo/shots/ba10188097bb4e99.jpg"
+      "file": "37ac968cf5618257.jpg",
+      "at": 2.54,
+      "path": "gauntlet/reference/odoo/shots/37ac968cf5618257.jpg"
     },
     {
       "moment": "done",
-      "file": "1911fc6142771ba0.jpg",
-      "at": 4.665,
-      "path": "gauntlet/reference/odoo/shots/1911fc6142771ba0.jpg"
+      "file": "98c9c6d69350ea7b.jpg",
+      "at": 4.736,
+      "path": "gauntlet/reference/odoo/shots/98c9c6d69350ea7b.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
       "company": {
-        "id": 26,
+        "id": 50,
         "parent_id": false,
         "child_ids": [
-          27
+          51
         ]
       },
       "branch": {
-        "id": 27,
+        "id": 51,
         "parent_id": [
-          26,
+          50,
           "Falcon Logistics LLC"
         ]
       }
@@ -244,10 +246,21 @@
   "path_notes": "keyboard: Apps menu > Settings > Users & Companies > Companies > Alt+C > name > Branches tab > Add a line > click name > branch name > Save & Close > Alt+S | pointer: Apps menu > Settings > Users & Companies > Companies > New > name > Branches tab > Add a line > click name > branch name > Save & Close > Save",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/create-company-branch.mjs",
-    "sha256": "1af6f4344ea228fd95ba2e1cb98880088601829c9c5c0bb166e47b95ef9ab7dc"
+    "sha256": "741695fa61ce2680110ff5b91bff12e28eb5560ad5bde6e21db43badd0a5abb2"
   },
   "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "screenshots_path": "keyboard",
   "best_path_per_metric": {
     "steps": "keyboard",
     "keystrokes": "pointer",
@@ -270,16 +283,16 @@
         "key_chords": 2,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 4.665,
-        "system_wait_seconds": 3.302,
-        "human_seconds": 48.53,
-        "human_plus_wait_seconds": 51.832,
+        "machine_seconds": 4.736,
+        "system_wait_seconds": 3.613,
+        "human_seconds": 47.18,
+        "human_plus_wait_seconds": 50.793,
         "klm_operator_counts": {
           "K": 76,
           "P": 8,
           "B": 16,
           "H": 5,
-          "M": 11
+          "M": 10
         }
       },
       "steps": [
@@ -288,169 +301,181 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "chain": false,
           "at": 0,
-          "took": 0.071
+          "took": 0.046,
+          "chain": false
         },
         {
           "n": 2,
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.072,
-          "took": 0.254
+          "at": 0.046,
+          "took": 0.05,
+          "chain": false
         },
         {
           "n": 3,
           "kind": "click",
           "label": "Users & Companies menu",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.744,
-          "took": 0.227
+          "at": 0.693,
+          "took": 0.049,
+          "chain": false
         },
         {
           "n": 4,
           "kind": "click",
           "label": "Companies",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.971,
-          "took": 0.063
+          "at": 0.741,
+          "took": 0.037,
+          "chain": false
         },
         {
           "n": 5,
           "kind": "key",
           "label": "New (hotkey)",
           "keystrokes": 2,
-          "chain": false,
-          "at": 1.512,
-          "took": 0.011,
-          "chord": "Alt+c"
+          "at": 1.616,
+          "took": 0.033,
+          "chord": "Alt+c",
+          "chain": false
         },
         {
           "n": 6,
           "kind": "type",
           "label": "company name",
           "keystrokes": 25,
-          "chain": false,
-          "at": 1.811,
-          "took": 0.208,
-          "text": "Falcon Logistics LLC"
+          "at": 1.864,
+          "took": 0.16,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "chain": true
         },
         {
           "n": 7,
           "kind": "click",
           "label": "Branches tab",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.02,
-          "took": 0.045
+          "at": 2.024,
+          "took": 0.044,
+          "chain": false
         },
         {
           "n": 8,
           "kind": "click",
           "label": "Add a line",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.065,
-          "took": 0.141
+          "at": 2.069,
+          "took": 0.076,
+          "chain": false
         },
         {
           "n": 9,
           "kind": "click",
           "label": "focus branch name",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.565,
-          "took": 0.082
+          "at": 2.279,
+          "took": 0.12,
+          "chain": false
         },
         {
           "n": 10,
           "kind": "type",
           "label": "branch name",
           "keystrokes": 47,
-          "chain": true,
-          "at": 2.647,
-          "took": 0.136,
-          "text": "Falcon Logistics LLC - Jebel Ali Branch"
+          "at": 2.411,
+          "took": 0.129,
+          "text": "Falcon Logistics LLC - Jebel Ali Branch",
+          "same_field": true,
+          "chain": true
         },
         {
           "n": 11,
           "kind": "click",
           "label": "Save & Close",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.783,
-          "took": 0.1
+          "at": 2.767,
+          "took": 0.13,
+          "chain": false
         },
         {
           "n": 12,
           "kind": "key",
           "label": "Save (hotkey)",
           "keystrokes": 2,
-          "chain": false,
-          "at": 3,
-          "took": 0.022,
-          "chord": "Alt+s"
+          "at": 2.973,
+          "took": 0.01,
+          "chord": "Alt+s",
+          "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.326,
-          "seconds": 0.418
+          "at": 0.096,
+          "seconds": 0.596
         },
         {
           "label": "company list",
-          "at": 1.034,
-          "seconds": 0.478
+          "at": 0.778,
+          "seconds": 0.838
         },
         {
           "label": "new company form, name focused",
-          "at": 1.523,
-          "seconds": 0.288
+          "at": 1.649,
+          "seconds": 0.215
         },
         {
           "label": "branch dialog",
-          "at": 2.206,
-          "seconds": 0.359
+          "at": 2.144,
+          "seconds": 0.135
         },
         {
           "label": "branch dialog closed",
-          "at": 2.883,
-          "seconds": 0.116
+          "at": 2.897,
+          "seconds": 0.076
         },
         {
           "label": "saved",
-          "at": 3.022,
-          "seconds": 1.632
+          "at": 2.983,
+          "seconds": 1.388
         },
         {
           "label": "company has an id",
-          "at": 4.654,
-          "seconds": 0.011
+          "at": 4.371,
+          "seconds": 0.365
         }
       ],
       "verification": {
         "verified": true,
         "details": {
           "company": {
-            "id": 26,
+            "id": 50,
             "parent_id": false,
             "child_ids": [
-              27
+              51
             ]
           },
           "branch": {
-            "id": 27,
+            "id": 51,
             "parent_id": [
-              26,
+              50,
               "Falcon Logistics LLC"
             ]
           }
         }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
       }
     },
     {
@@ -467,10 +492,10 @@
         "key_chords": 0,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 5.104,
-        "system_wait_seconds": 4.239,
+        "machine_seconds": 7.139,
+        "system_wait_seconds": 2.962,
         "human_seconds": 49.61,
-        "human_plus_wait_seconds": 53.849,
+        "human_plus_wait_seconds": 52.572,
         "klm_operator_counts": {
           "K": 72,
           "P": 10,
@@ -485,175 +510,187 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.001,
-          "took": 0.044
+          "at": 0,
+          "took": 0.08,
+          "chain": false
         },
         {
           "n": 2,
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.044,
-          "took": 0.045
+          "at": 0.08,
+          "took": 0.089,
+          "chain": false
         },
         {
           "n": 3,
           "kind": "click",
           "label": "Users & Companies menu",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.81,
-          "took": 0.061
+          "at": 0.971,
+          "took": 0.07,
+          "chain": false
         },
         {
           "n": 4,
           "kind": "click",
           "label": "Companies",
           "keystrokes": 0,
-          "chain": false,
-          "at": 0.871,
-          "took": 0.037
+          "at": 1.041,
+          "took": 0.05,
+          "chain": false
         },
         {
           "n": 5,
           "kind": "click",
           "label": "New",
           "keystrokes": 0,
-          "chain": false,
-          "at": 1.709,
-          "took": 0.085
+          "at": 1.488,
+          "took": 0.119,
+          "chain": false
         },
         {
           "n": 6,
           "kind": "type",
           "label": "company name",
           "keystrokes": 25,
-          "chain": false,
-          "at": 1.967,
-          "took": 0.081,
-          "text": "Falcon Logistics LLC"
+          "at": 3.884,
+          "took": 0.434,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "chain": false
         },
         {
           "n": 7,
           "kind": "click",
           "label": "Branches tab",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.047,
-          "took": 0.045
+          "at": 4.318,
+          "took": 0.056,
+          "chain": false
         },
         {
           "n": 8,
           "kind": "click",
           "label": "Add a line",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.092,
-          "took": 0.099
+          "at": 4.375,
+          "took": 0.072,
+          "chain": false
         },
         {
           "n": 9,
           "kind": "click",
           "label": "focus branch name",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.387,
-          "took": 0.075
+          "at": 4.592,
+          "took": 0.14,
+          "chain": false
         },
         {
           "n": 10,
           "kind": "type",
           "label": "branch name",
           "keystrokes": 47,
-          "chain": true,
-          "at": 2.462,
-          "took": 0.149,
-          "text": "Falcon Logistics LLC - Jebel Ali Branch"
+          "at": 4.741,
+          "took": 0.305,
+          "text": "Falcon Logistics LLC - Jebel Ali Branch",
+          "same_field": true,
+          "chain": true
         },
         {
           "n": 11,
           "kind": "click",
           "label": "Save & Close",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.611,
-          "took": 0.093
+          "at": 5.376,
+          "took": 0.269,
+          "chain": false
         },
         {
           "n": 12,
           "kind": "click",
           "label": "Save",
           "keystrokes": 0,
-          "chain": false,
-          "at": 2.845,
-          "took": 0.051
+          "at": 5.774,
+          "took": 0.15,
+          "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.09,
-          "seconds": 0.72
+          "at": 0.169,
+          "seconds": 0.802
         },
         {
           "label": "company list",
-          "at": 0.908,
-          "seconds": 0.801
+          "at": 1.091,
+          "seconds": 0.397
         },
         {
           "label": "new company form, name focused",
-          "at": 1.794,
-          "seconds": 0.173
+          "at": 1.607,
+          "seconds": 0.275
         },
         {
           "label": "branch dialog",
-          "at": 2.191,
-          "seconds": 0.195
+          "at": 4.447,
+          "seconds": 0.145
         },
         {
           "label": "branch dialog closed",
-          "at": 2.704,
-          "seconds": 0.141
+          "at": 5.646,
+          "seconds": 0.128
         },
         {
           "label": "saved",
-          "at": 2.895,
-          "seconds": 2.191
+          "at": 5.924,
+          "seconds": 1.199
         },
         {
           "label": "company has an id",
-          "at": 5.086,
-          "seconds": 0.018
+          "at": 7.123,
+          "seconds": 0.016
         }
       ],
       "verification": {
         "verified": true,
         "details": {
           "company": {
-            "id": 28,
+            "id": 52,
             "parent_id": false,
             "child_ids": [
-              29
+              53
             ]
           },
           "branch": {
-            "id": 29,
+            "id": 53,
             "parent_id": [
-              28,
+              52,
               "Falcon Logistics LLC"
             ]
           }
         }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
       }
     }
   ],
   "result_file": "gauntlet/reference/odoo/tasks/create-company-branch.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/create-company-branch-20261003T042758-92b7.json",
-    "gauntlet/reference/odoo/results/create-company-branch-20261003T042820-73ff.json",
-    "gauntlet/reference/odoo/results/create-company-branch-20261003T042845-f197.json"
+    "gauntlet/reference/odoo/results/create-company-branch-20261003T143632-1b8f.json",
+    "gauntlet/reference/odoo/results/create-company-branch-20261003T143702-44e7.json",
+    "gauntlet/reference/odoo/results/create-company-branch-20261003T143726-61a7.json"
   ]
 }

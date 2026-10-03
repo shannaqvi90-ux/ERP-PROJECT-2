@@ -16,7 +16,7 @@ function build(palette) {
     await op.waitFor('.o_searchview_input:focus', { label: 'user list ready, search focused' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length > 0, { label: 'first page of users' });
     await op.type(name, { label: 'user name' });
-    await op.press('Enter', { label: 'search', chain: true });
+    await op.press('Enter', { label: 'search' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length === 1, { label: 'one result' });
     await op.shot('result list');
     await op.click(op.page.locator('.o_data_row').first(), { label: 'open the result' });
@@ -39,7 +39,7 @@ export default {
   async signIn(ctx) { await signInAs(ctx, 'admin'); },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;
-    const shown = await ctx.page.evaluate(() => ({
+    const shown = await ctx.read(() => ({
       text: document.querySelector('.o_form_view')?.innerText || '',
       inputs: [...document.querySelectorAll('.o_form_view input, .o_form_view textarea')].map(i => i.value),
     }));

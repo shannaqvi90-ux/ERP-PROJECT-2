@@ -3,21 +3,19 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // Things are found by role and label (the Users link, the search box, the row with the name),
 // never by layout, so the driver keeps working while the users screen changes.
 const usersLink = page => page.getByRole('navigation').getByRole('link', { name: 'Users', exact: true }).first();
-
-/** "Majid Anil Pillai" -> "maj ani pil": the first three letters of each word, as typed. */
-function shortQuery(name) {
-  return name.toLowerCase().split(/\s+/).filter(Boolean).map(w => w.slice(0, 3)).join(' ');
-}
+const searchBox = page => page.getByRole('searchbox').or(page.getByLabel(/search/i)).first();
 
 export default {
   built: true,
-  path: 'Users (navigation; the search box has focus) > type the first three letters of each word of the name > the row with the name > open it: the user\'s record shows the sign-in.',
+  path: 'Users (navigation) > search box > type the name > the row with the name > open it: the user\'s record shows the sign-in.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
-    const { login } = ctx.needles.user;
+    const { login, name, lang } = ctx.needles.user;
     const found = await api.get(`/api/identity/users?search=${encodeURIComponent(login)}`);
     if (!found.items.some(u => u.email.toLowerCase() === login.toLowerCase())) {
-      throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
+      // A driver health check (./erp verify, a clean stack without the dataset) creates the one user.
+      if (ctx.health) await api.post('/api/identity/users', { email: login, displayName: name, language: lang === 'ar' ? 'ar' : 'en', password: ctx.product.users.admin.password, roleIds: [] });
+      else throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
     }
   },
   async signIn(ctx) {
@@ -29,13 +27,12 @@ export default {
     await page.keyboard.press('Enter');
     await usersLink(page).waitFor();
   },
+  ready: page => usersLink(page),
   async run(op, ctx) {
     const { name, login } = ctx.needles.user;
     await op.click(usersLink(op.page), { label: 'Users' });
-    // The list opens with the cursor in its search box. Search matches every word anywhere in the
-    // name or e-mail, in any order, so an expert types a few letters of each word of the name.
-    await op.waitFor(() => !!document.activeElement?.matches('input[type="search"], [role="searchbox"]'), { label: 'user list ready, search focused' });
-    await op.type(shortQuery(name), { label: 'three letters of each word of the name' });
+    await op.waitFor(searchBox(op.page), { label: 'user list ready' });
+    await op.fill(searchBox(op.page), name, { label: 'user name' });
     const row = op.page.getByRole('row').filter({ hasText: name }).first();
     await op.waitFor(row, { label: 'the row with the name' });
     await op.shot('result list');
@@ -49,7 +46,7 @@ export default {
   },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;
-    const shown = await ctx.page.evaluate(([n, l]) => {
+    const shown = await ctx.read(([n, l]) => {
       const outside = [...document.querySelectorAll('[role="dialog"], [role="complementary"], form, aside')].filter(el => !el.closest('table, [role="grid"]'));
       const text = outside.map(el => el.innerText).join('\n') + '\n' + outside.flatMap(el => [...el.querySelectorAll('input, textarea')].map(i => i.value)).join('\n');
       return { name: text.includes(n), login: text.includes(l) };

@@ -3,6 +3,8 @@ export default {
   title: 'Import 5,000 rows',
   named: true,
   actor: 'admin',
+  startAt: 'home',
+  moments: ['columns matched'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.',
   done: 'The product reports the import finished; the back end holds the 5,000 new contacts.',
