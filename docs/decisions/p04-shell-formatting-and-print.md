@@ -33,3 +33,14 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
 - Formatting in one place is the only way a digit preference can reach every screen.
 - Printing from the browser keeps one rendering path (and the Arabic shaping of the browser) for
   screen and paper; p06 can add server-side PDF later on the same markup.
+
+## Round 3: a printed screen carries no interactive chrome
+
+Printing the users list in Arabic kept the "New user", "Columns" and "View" buttons, the row
+checkboxes, sort arrows and the keyboard hint line. The print stylesheet now hides, inside a printed
+screen, every button except column-title sort buttons (which print as plain headings), menus, the
+list search, filter-chip remove buttons, the selection bar, unchecked checkboxes and every checkbox
+in a list grid, sort marks, key hints (`kbd`, elements with `aria-keyshortcuts`, the list's hint
+line) and anything a module marks `.no-print`. Form fields print as their values (no borders or
+backgrounds). An end-to-end test prints the users list in Arabic and requires no visible button,
+checkbox, sort mark or hint, with the Arabic column titles still printed.

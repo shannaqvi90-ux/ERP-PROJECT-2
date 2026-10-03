@@ -20,13 +20,15 @@ const passwordField = page => page.getByLabel('Password', { exact: true }).or(pa
 
 /**
  * Two start states, each the user's shortest path from it. `new-device`: the first sign-in on this
- * browser. `returning`: this browser has signed in and out before (set up outside the measured
- * part); our sign-in screen then remembers the e-mail and puts the focus on the password.
+ * browser. `returning`: this browser's last session ended without the user signing out (it expired,
+ * or the browser was closed; set up outside the measured part); our sign-in screen then remembers
+ * the e-mail and puts the focus on the password. Signing out with the Sign out button forgets the
+ * e-mail (a shared device shows the next person an empty sign-in), which is the new-device path.
  */
 function variant(returning) {
   return {
     path: returning
-      ? 'A browser that signed in before: the e-mail is remembered and the password has focus: type the password > Enter.'
+      ? 'A browser whose last session ended without signing out: the e-mail is remembered and the password has focus: type the password > Enter.'
       : 'The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.',
     async signIn(ctx) {
       const { user, password } = ctx.task.input;

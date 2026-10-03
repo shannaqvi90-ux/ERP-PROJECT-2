@@ -58,3 +58,15 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
   pane reach any screen in one step.
 - Context providers for slots (React context registration at run time): ordering and permission
   filtering are simpler with static discovery, and it works before any screen mounts.
+
+## Round 3: the frame is exactly the window's height
+
+At 1366x768, 1920x1080 and 1280x720 the users and roles lists were 23 px taller than the window, so
+the status line sat below the fold and the page scrolled (the account screen by 6 px at 1280x720).
+The shell is now a grid of exactly the window's height (`100dvh`, `100vh` as fallback): top bar,
+then the frame (`minmax(0, 1fr)`), then the status line. The screen (`main`) and the navigation pane
+scroll inside the frame; the page itself never scrolls, so the status line is always in view. The
+list grid's height allowance was corrected from 230 px to 256 px of surrounding chrome so a list
+fits without an inner scroll of the screen. Printing resets the frame to normal flow. An end-to-end
+test visits every menu screen at the three sizes and requires the status line inside the window and
+no page scroll.
