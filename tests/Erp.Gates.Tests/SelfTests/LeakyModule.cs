@@ -233,7 +233,10 @@ public sealed class LeakyModule : ErpModule
             group.MapDelete("/roles/{id:guid}", async (Guid id, ErpDbSession session) =>
             {
                 await using var command = new NpgsqlCommand(
-                    "DELETE FROM identity.user_roles WHERE role_id = @id; DELETE FROM identity.roles WHERE id = @id AND NOT is_system",
+                    // Like the real endpoint, a system role (and so its members' access) is never touched:
+                    // the attack aims this route at tenant A's own Administrator role too, and taking the
+                    // administrator's access away would blind every later self-test.
+                    "DELETE FROM identity.user_roles WHERE role_id = @id AND role_id IN (SELECT id FROM identity.roles WHERE NOT is_system); DELETE FROM identity.roles WHERE id = @id AND NOT is_system",
                     session.Connection, session.Transaction);
                 command.Parameters.AddWithValue("id", id);
                 return await command.ExecuteNonQueryAsync() > 0 ? Results.NoContent() : Results.NotFound();
