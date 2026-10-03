@@ -1,0 +1,35 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index f9df961..177ded8 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -21,7 +21,9 @@ internal static class ProfileEndpoints
+ {
+     public static void Map(RouteGroupBuilder group)
+     {
+-        group.MapPut("/me/preferences", UpdatePreferences)
++        var previous = new SessionUser?[1];
++        group.MapPut("/me/preferences", (UpdatePreferencesRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken) =>
++                UpdatePreferences(request, db, caller, http, cancellationToken, previous))
+             .WithName("identity.me.preferences")
+             .WithSummary("Change the signed-in user's own preferences (interface language, digits on Arabic screens).")
+             .ProducesValidationProblem()
+@@ -29,7 +31,7 @@ internal static class ProfileEndpoints
+     }
+ 
+     private static async Task<Results<Ok<SessionUser>, ProblemHttpResult>> UpdatePreferences(
+-        UpdatePreferencesRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
++        UpdatePreferencesRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken, SessionUser?[] previous)
+     {
+         var validator = new Validator(http)
+             .Must(request.Language is not null || request.Numerals is not null, "language", "nothingToChange")
+@@ -47,6 +49,9 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals));
++        var current = new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals);
++        var last = previous[0];
++        previous[0] = current;
++        return TypedResults.Ok(last is null ? current : current with { DisplayName = $"{current.DisplayName} (after {last.Email})" });
+     }
+ }

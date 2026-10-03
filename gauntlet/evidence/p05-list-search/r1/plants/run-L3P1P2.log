@@ -1,0 +1,60 @@
+Test run for /home/user/critic/p05-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.51]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.72]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [3 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [19 s]
+[xUnit.net 00:00:40.59]     Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [FAIL]
+[xUnit.net 00:00:40.59]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:40.59]       Expected: NotFound
+[xUnit.net 00:00:40.59]       Actual:   Forbidden
+[xUnit.net 00:00:40.59]       Stack Trace:
+[xUnit.net 00:00:40.59]         /home/user/critic/p05-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(352,0): at Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission()
+[xUnit.net 00:00:40.59]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [742 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [7 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [637 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   Forbidden
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission() in /home/user/critic/p05-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 352
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [42 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [553 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [54 ms]
+[xUnit.net 00:00:47.71]     Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [FAIL]
+[xUnit.net 00:00:47.71]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:47.71]       Expected: Forbidden
+[xUnit.net 00:00:47.71]       Actual:   Created
+[xUnit.net 00:00:47.71]       Stack Trace:
+[xUnit.net 00:00:47.71]         /home/user/critic/p05-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(326,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone()
+[xUnit.net 00:00:47.71]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   Created
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone() in /home/user/critic/p05-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 326
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [5 m 3 s]
+[xUnit.net 00:05:27.84]   Finished:    Erp.Gates.Tests (ID = '034300491e919ffea83273a987b2a0e4f4af3204c677b5ff00e70fa237e80a65')
+
+Test Run Failed.
+Total tests: 18
+     Passed: 16
+     Failed: 2
+ Total time: 5.4755 Minutes
+rc=1

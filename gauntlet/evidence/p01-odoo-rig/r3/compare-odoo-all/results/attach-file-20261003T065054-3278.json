@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "run_id": "attach-file-20261003T065054-3278",
+  "instrument": 3,
+  "task": "attach-file",
+  "task_title": "Attach a file to a record",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
+  "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
+  "started_at": "2026-10-03T06:50:54.154Z",
+  "finished_at": "2026-10-03T06:51:00.071Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 1,
+    "requests": 0,
+    "machine_seconds": 0.238,
+    "system_wait_seconds": 0.095,
+    "human_seconds": 6.8,
+    "human_plus_wait_seconds": 6.895,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 3,
+      "B": 8,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "paperclip (attachment box)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.081
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.089,
+      "took": 0.043
+    },
+    {
+      "n": 3,
+      "kind": "file-pick",
+      "label": "trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "chain": true,
+      "at": 0.132,
+      "took": 0.018,
+      "file": "trade-licence-TL-2026-73519.pdf"
+    }
+  ],
+  "waits": [
+    {
+      "label": "attachment box",
+      "at": 0.082,
+      "seconds": 0.007
+    },
+    {
+      "label": "file listed on the record",
+      "at": 0.15,
+      "seconds": 0.088
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "42cf76b6b38721af.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/42cf76b6b38721af.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "71f25e354d4097f9.jpg",
+      "at": 0.238,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/71f25e354d4097f9.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "attachments": [
+        {
+          "id": 100516,
+          "file_size": 417
+        }
+      ]
+    }
+  },
+  "path_notes": "Paperclip on the record (it already holds a file, so the attachment box opens) > Attach files > choose the file in the file dialog.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/attach-file.mjs",
+    "sha256": "1fc2b4b3067dc92923c13f1af618f9790d7bcac27eb6b417c7c3ec00ae8449f5"
+  },
+  "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
+  "error": null
+}

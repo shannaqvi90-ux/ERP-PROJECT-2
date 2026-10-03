@@ -1,0 +1,36 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 7c0c4fc..f67fe63 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -327,6 +327,11 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Access(
+         Guid id, IdentityDbContext db, ModuleCatalog catalog, StringCatalog strings, HttpContext http, CancellationToken cancellationToken)
+     {
++        // CRITIC PLANT T1: "what can this person do" cached per user id for speed (no tenant in the key).
++        if (AccessCache.Entries.TryGetValue(id, out var hit))
++        {
++            return TypedResults.Ok(hit);
++        }
+         if (!await db.Users.AnyAsync(u => u.Id == id, cancellationToken))
+         {
+             return Problems.NotFound(http);
+@@ -347,7 +352,9 @@ internal static class UserEndpoints
+                 strings.Get($"module.{p.Definition.Module}", language), p.GrantedBy))
+             .OrderBy(p => p.Module, StringComparer.Ordinal).ThenBy(p => p.Key, StringComparer.Ordinal)
+             .ToList();
+-        return TypedResults.Ok(new UserAccessDto(id, roles.Select(r => new AccessRole(r.Id, r.NameEn, r.NameAr, r.IsSystem)).ToList(), permissions));
++        var dto = new UserAccessDto(id, roles.Select(r => new AccessRole(r.Id, r.NameEn, r.NameAr, r.IsSystem)).ToList(), permissions);
++        AccessCache.Entries[id] = dto;
++        return TypedResults.Ok(dto);
+     }
+ 
+     private static async Task<Results<Ok<SignInHistoryPage>, ProblemHttpResult>> SignIns(
+@@ -466,3 +473,8 @@ internal static class UserAccess
+         return held.All(caller.Has);
+     }
+ }
++
++internal static class AccessCache
++{
++    internal static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, UserAccessDto> Entries = new();
++}

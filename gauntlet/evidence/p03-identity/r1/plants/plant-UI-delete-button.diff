@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/identity/RolesPage.tsx b/web/src/modules/identity/RolesPage.tsx
+index 8478a49..96af67b 100644
+--- a/web/src/modules/identity/RolesPage.tsx
++++ b/web/src/modules/identity/RolesPage.tsx
+@@ -250,7 +250,7 @@ function RoleEditor({
+             {t("identity.roles.copy")}
+           </button>
+         )}
+-        {role && !role.isSystem && can("identity.roles.delete") && !confirmDelete && (
++        {role && !role.isSystem && !confirmDelete && (
+           <button type="button" className="button danger" onClick={() => setConfirmDelete(true)}>
+             {t("identity.roles.delete")}
+           </button>

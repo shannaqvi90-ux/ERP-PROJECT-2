@@ -1,0 +1,38 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index 82cd658..9adbff1 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -201,10 +201,7 @@ internal static class RoleEndpoints
+         {
+             return Problems.Forbidden(http, "identity.systemRole");
+         }
+-        if (!role.Permissions.All(caller.Has))
+-        {
+-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+-        }
++        // CRITIC PLANT P2: any role deleter may delete roles granting what they do not hold.
+         if (await db.UserRoles.AnyAsync(ur => ur.RoleId == id && ur.UserId == caller.UserId, cancellationToken))
+         {
+             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 7c0c4fc..fae320a 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -105,7 +105,7 @@ internal static class UserEndpoints
+         group.MapPost("/users/{id:guid}/unblock", Unblock)
+             .WithName("identity.users.unblock")
+             .WithSummary("Clear every sign-in pause on another user's account (failed attempts before now stop counting).")
+-            .RequirePermission(IdentityPermissions.UsersUpdate);
++            .RequirePermission(IdentityPermissions.SignInsRead); // CRITIC PLANT P1: a write guarded by a read permission
+ 
+         group.MapPost("/users/{id:guid}/sessions/revoke", RevokeSessions)
+             .WithName("identity.users.revokeSessions")
+@@ -247,7 +247,7 @@ internal static class UserEndpoints
+             var removedIds = current.Select(c => c.RoleId).Except(roleIds).ToList();
+             var removed = await db.Roles.AsNoTracking().Where(r => removedIds.Contains(r.Id)).ToListAsync(cancellationToken);
+             var added = roles.Where(r => current.All(c => c.RoleId != r.Id)).ToList();
+-            if (!RoleGrants.WithinCaller(added.Concat(removed), caller))
++            if (!RoleGrants.WithinCaller(removed, caller)) // CRITIC PLANT P3: added roles no longer checked
+             {
+                 return Problems.Forbidden(http, "identity.grantBeyondOwn");
+             }

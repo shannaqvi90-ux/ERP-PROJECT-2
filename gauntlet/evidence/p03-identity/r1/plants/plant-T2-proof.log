@@ -1,0 +1,28 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p03-identity-r1-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r1-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.95]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:02.26]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:03.28]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:15.13]   Finished:    Erp.Gates.Tests (ID = '6de8a1d4f1db0d5f660cb60931996a42fd9fc689295f354df631025f088e48d8')
+  Passed Erp.Gates.Tests.CriticProof.CriticPlantProof.Tenant_A_reads_tenant_B_access_view_through_the_planted_cache [558 ms]
+  Standard Output Messages:
+ tenant A admin GET /api/identity/users/01a10059-b9f5-7416-9546-ba76548fbd24/access (a tenant B user) -> 200 {"userId":"01a10059-b9f5-7416-9546-ba76548fbd24","roles":[{"id":"01a10059-b95c-7968-9a2b-6c8a9c4e5a33","nameEn":"Administrator","nameAr":"مدير النظام","isSystem":true}],"permissions":[{"key":"identity.profile.update","module":"identity","label":"Change own preferences","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.roles.create","module":"identity","label":"Create roles","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.roles.delete","module":"identity","label":"Delete roles","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.roles.read","module":"identity","label":"View roles and permissions","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.roles.update","module":"identity","label":"Change roles","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.signIns.read","module":"identity","label":"View sign-in history","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.users.create","module":"identity","label":"Create users","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.users.read","module":"identity","label":"View users","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.users.resetPassword","module":"identity","label":"Reset other users' passwords","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"identity.users.update","module":"identity","label":"Change users","moduleLabel":"Users and access","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"tenancy.tenant.read","module":"tenancy","label":"View workspace details","moduleLabel":"Workspace","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]},{"key":"tenancy.tenant.update","module":"tenancy","label":"Change workspace details","moduleLabel":"Workspace","grantedBy":["01a10059-b95c-7968-9a2b-6c8a9c4e5a33"]}]}
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 16.7895 Seconds

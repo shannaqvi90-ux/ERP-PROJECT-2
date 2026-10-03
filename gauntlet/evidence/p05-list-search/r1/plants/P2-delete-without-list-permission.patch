@@ -1,0 +1,16 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index d5d6593..dd5fc96 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -282,10 +282,7 @@ internal static class ViewEndpoints
+     private static async Task<Results<NoContent, ProblemHttpResult>> Delete(
+         ListDefinition list, Guid id, bool shared, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (!caller.Has(list.Permission))
+-        {
+-            return Problems.NotFound(http);
+-        }
++        // PLANT P2: the list's own read permission is no longer checked before deleting.
+         var owner = shared ? (Guid?)null : caller.UserId;
+         var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
+         if (view is null)

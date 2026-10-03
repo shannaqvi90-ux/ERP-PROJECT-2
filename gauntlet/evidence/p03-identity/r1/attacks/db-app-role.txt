@@ -1,0 +1,67 @@
+== as erp_app, no tenant bound
+ users_visible 
+---------------
+             0
+(1 row)
+
+ roles_visible 
+---------------
+             0
+(1 row)
+
+ attempts_visible 
+------------------
+                0
+(1 row)
+
+== credentials column
+ERROR:  permission denied for table user_credentials
+== bind to tenant A in a transaction, try to read B
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ a_users 
+---------
+       0
+(1 row)
+
+ b_rows_seen_from_a 
+--------------------
+                  0
+(1 row)
+
+== insert a row claiming tenant B while bound to A
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+== reviewed function from the app role: what does it reveal forunterminated quoted string
+
+                   challenge                   | tenant_id 
+-----------------------------------------------+-----------
+ pbkdf2-sha512$210000$FsocsBK5fWhQ2KC/RTVeXQ== | 
+(1 row)
+
+                   challenge                   | tenant_id 
+-----------------------------------------------+-----------
+ pbkdf2-sha512$210000$5r6uq+N+VPUQ7iX8ndiLYQ== | 
+(1 row)
+
+== app role attributes
+  rolname  | rolsuper | rolbypassrls | rolinherit 
+-----------+----------+--------------+------------
+ erp_owner | f        | f            | t
+ erp_app   | f        | f            | f
+ erp_auth  | f        | f            | f
+(3 rows)
+
+== can the app role change RLS or policies?
+ERROR:  must be owner of table users
+== functions callable
+ nspname  |     proname     | prosecdef 
+----------+-----------------+-----------
+ identity | resolve_session | t
+ identity | verify_sign_in  | t
+(2 rows)
+

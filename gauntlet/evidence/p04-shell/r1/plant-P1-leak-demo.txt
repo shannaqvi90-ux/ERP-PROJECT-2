@@ -1,0 +1,5 @@
+LEAKS []
+--- planted closure state: B saves a preference, then A saves one
+B PUT {"id":"01a10024-5daf-7176-afaa-1e0502e2e00d","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn"}
+A PUT 200 {"id":"01a10024-5f6f-786e-ad00-9717ad8e8df1","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn"}
+LEAK to A of B email: True

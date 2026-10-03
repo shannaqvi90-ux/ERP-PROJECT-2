@@ -1,0 +1,27 @@
+== memberships
+pg_read_all_settings|pg_monitor
+pg_read_all_stats|pg_monitor
+pg_stat_scan_tables|pg_monitor
+erp_auth|erp_owner
+== set role erp_auth as erp_app
+ERROR:  permission denied to set role "erp_auth"
+== GUC without marker
+BEGIN
+SET
+0
+COMMIT
+== bound to A
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791010853.334953
+0190a000-0000-7000-8000-000000000001|100006
+0
+UPDATE 0
+ROLLBACK
+== insert into B while bound to A
+0190a000-0000-7000-8000-000000000001|1791010853.392431
+ERROR:  new row violates row-level security policy for table "saved_views"
+== disable rls
+ERROR:  must be owner of table users
+== set role owner
+ERROR:  permission denied to set role "erp_owner"
+== call security definer resolve_session as unbound app

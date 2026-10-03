@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261003T065357-2eb8",
+  "instrument": 3,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-03T06:53:57.214Z",
+  "finished_at": "2026-10-03T06:54:00.742Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 9,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 1.519,
+    "system_wait_seconds": 1.359,
+    "human_seconds": 7.25,
+    "human_plus_wait_seconds": 8.609,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "apps menu",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 0,
+      "took": 0.02,
+      "chord": "Alt+h"
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "first app",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 0.06,
+      "took": 0.009,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Contacts",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.069,
+      "took": 0.003,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open Contacts",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.078,
+      "took": 0.007,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 0.519,
+      "took": 0.022,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.542,
+      "took": 0.036,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.578,
+      "took": 0.007,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.585,
+      "took": 0.008,
+      "chord": "ArrowDown"
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.632,
+      "took": 0.028,
+      "chord": "Enter"
+    }
+  ],
+  "waits": [
+    {
+      "label": "apps menu open",
+      "at": 0.021,
+      "seconds": 0.039
+    },
+    {
+      "label": "Contacts highlighted",
+      "at": 0.072,
+      "seconds": 0.006
+    },
+    {
+      "label": "contact list",
+      "at": 0.085,
+      "seconds": 0.434
+    },
+    {
+      "label": "third row selected",
+      "at": 0.611,
+      "seconds": 0.021
+    },
+    {
+      "label": "contact form",
+      "at": 0.66,
+      "seconds": 0.859
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "a3e7a723f7586efa.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/a3e7a723f7586efa.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "00ad7262e17c1cb8.jpg",
+      "at": 1.519,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/00ad7262e17c1cb8.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "expected": "Abdullah Abdullah Al Ameri <abdullah.al.ameri.001205@staff.example>",
+      "shown": "Abdullah Abdullah Al Ameri <abdullah.al.ameri.001205@staff.example>",
+      "keyboard_only": true
+    }
+  },
+  "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
+    "sha256": "a67c193efd44d413d1383aefe3aabe55e90bc7f7f2fabe3f90f3330ac8281f7b"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null
+}

@@ -1,0 +1,31 @@
+    [90m112| [39m    })[33m;[39m
+    [90m113| [39m    [34mexpect[39m([34moptions[39m())[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Users"[39m)[33m;[39m
+    [90m114| [39m    expect(calls.filter((c) => c.url.startsWith("/api/identity/users")…
+    [90m   | [39m                                                                         [31m^[39m
+    [90m115| [39m    [34msetInput[39m(input[33m,[39m [32m""[39m)[33m;[39m
+    [90m116| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m63 passed[39m[22m[90m (64)[39m
+[2m   Start at [22m 04:54:05
+[2m   Duration [22m 5.60s[2m (transform 1.98s, setup 0ms, import 3.22s, tests 2.85s, environment 5.82s)[22m
+
+    [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request 
+    [chromium] › specs/shell.spec.ts:26:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload 
+    [chromium] › specs/shell.spec.ts:58:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut 
+    [chromium] › specs/shell.spec.ts:94:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) 
+    [chromium] › specs/shell.spec.ts:107:7 › app shell › the palette finds a record and opens it ───
+    [chromium] › specs/shell.spec.ts:121:7 › app shell › the palette offers a user with no roles nothing they cannot open 
+    [chromium] › specs/shell.spec.ts:135:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user 
+    [chromium] › specs/shell.spec.ts:163:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome 
+    [chromium] › specs/shell.spec.ts:180:9 › app shell › every shell screen and dialog meets the accessibility basics (en) 
+    [chromium] › specs/shell.spec.ts:180:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) 
+    [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu 
+    [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen 
+    [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password 
+    [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › empty fields are explained without a round trip 
+    [chromium] › specs/sign-in.spec.ts:47:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter 
+DONE
