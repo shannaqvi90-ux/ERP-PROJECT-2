@@ -33,6 +33,16 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
   - Each item may name a `permission`; the shell offers it only to users whose roles grant it.
     Keys must start with the module's name and be unique per slot (checked at start-up and in
     tests).
+  - A palette source may answer `{ items, total }` and name `showAll(query)`, the address of a
+    screen listing every match. When it matched more than it shows (or gives no total), the
+    palette ends its records with "Show all N matches for …", which opens that screen (identity:
+    the users list with `?q=`). A record entry opens the record itself: identity's users open the
+    users list narrowed to the user with the user's details panel (`?q=<e-mail>&open=<id>`).
+- **Phone width (600 px and less)**, round 2: nothing is wider than the window. The top bar keeps
+  every control as an icon (brand and keyboard hints hidden, workspace name shortened); the
+  navigation pane lies over the screen instead of beside it, starts closed on a phone, opens with
+  the menu button or Alt+B and closes when a screen opens; the status line wraps. Checked by the
+  end-to-end test "at phone width nothing is wider than the window" in English and Arabic.
 - **Focus**: a new screen gets the focus unless it already put the focus inside itself (a search
   field), and changing the language never moves the focus.
 

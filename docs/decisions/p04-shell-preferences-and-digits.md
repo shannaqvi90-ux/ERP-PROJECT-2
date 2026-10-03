@@ -41,3 +41,12 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
 
 - A separate shell preferences table/module: an extra request on every load and a second home for
   what is one profile.
+
+## Round 2: signing out survives closing the tab
+
+`POST /api/auth/sign-out` is sent with `keepalive`, like the preference save: when a user signs
+out and closes or reloads the tab at once (a shared device), the browser still delivers the
+request and the server ends the session. The screen changes to the sign-in form only after the
+server answered, so the form never claims a sign-out that did not happen. The end-to-end digits test
+waits for the sign-in form before it clears storage and navigates (its sign-out was being
+cancelled by the navigation, which made it fail 2 times in 4).

@@ -52,6 +52,17 @@ internal static class OpenApiSetup
                     schema.Format = "decimal";
                     schema.Pattern = "^-?[0-9]+(\\.[0-9]+)?$";
                 }
+                if (context.JsonPropertyInfo?.AttributeProvider?.GetCustomAttributes(typeof(Erp.Kernel.Http.AllowedTextValuesAttribute), true)
+                        .OfType<Erp.Kernel.Http.AllowedTextValuesAttribute>().FirstOrDefault() is { } allowed)
+                {
+                    // A field that may be left out (null) keeps null among its values.
+                    var values = allowed.Values.Select(v => (JsonNode?)JsonValue.Create(v)).ToList();
+                    if (schema.Type is { } t && t.HasFlag(JsonSchemaType.Null))
+                    {
+                        values.Add(null);
+                    }
+                    schema.Enum = values!;
+                }
                 return Task.CompletedTask;
             });
 

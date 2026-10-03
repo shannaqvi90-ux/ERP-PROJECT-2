@@ -70,8 +70,9 @@ export default {
       if (language !== 'ar') await new Promise(r => setTimeout(r, 100));
     }
     const arabic = t => /[؀-ۿ]/.test(t);
+    // The list's selection column has a checkbox and no text; every column with text must be Arabic.
     return {
-      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.length > 0 && ui.columns.every(arabic)
+      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.filter(Boolean).length >= 3 && ui.columns.filter(Boolean).every(arabic)
         && ui.navigation.every(arabic) && ui.records > 0,
       details: { user_language: language, direction: ui.direction, working_screen: ctx.state.workingPath, heading: ui.heading, columns: ui.columns, navigation: ui.navigation, records: ui.records },
     };

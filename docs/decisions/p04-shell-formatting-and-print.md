@@ -21,6 +21,12 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
   the app's chrome (top bar, pane, status bar, breadcrumbs, pagers, search fields) and prints any
   screen with a small letterhead (workspace, printed by, printed at). Reports (p06) render their
   documents inside `PrintDocument`.
+- **Every screen prints through the base** (round 2): the shell wraps the open screen in
+  `<PrintDocument screen …>`. On screen the wrapper adds nothing visible (no box, no width, no
+  second heading: the letterhead title is not an `h1`); on paper the screen gets the base's
+  letterhead (workspace, screen name) and footer (printed by, printed at). The printed time is
+  stamped on `beforeprint`, so it is the moment of printing, not of opening the screen. One
+  letterhead implementation for screens and documents.
 
 ## Why
 
