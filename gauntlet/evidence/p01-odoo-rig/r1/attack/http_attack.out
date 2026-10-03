@@ -1,0 +1,11 @@
+sign-in 200 {"authenticated":true,"user":{"id":"01a0ff18-4120-7537-aaf2-3c6fad5994e2","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en"},"tenant":{"id":"0190a000-0000-7000-8000-000
+PUT user B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-57fc
+PUT user B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-a472
+PUT user B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-11ff
+PUT role B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-206d
+DELETE role B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-befb
+PUT role B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-8ab1
+DELETE role B 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-ac21
+POST user with B roles 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-71eccc264e4459264a95aafe83d5b8da-1be40
+PUT tenant with B header 409 {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency"
+requests=209 leaks=0

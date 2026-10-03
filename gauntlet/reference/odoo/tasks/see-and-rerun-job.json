@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261003T041618-80d4",
+  "instrument": 3,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-10-03T04:16:19.091Z",
+  "finished_at": "2026-10-03T04:16:25.595Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 11,
+    "keystrokes": 31,
+    "clicks": 7,
+    "scrolls": 2,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 3.092,
+    "system_wait_seconds": 2.208,
+    "human_seconds": 34.68,
+    "human_plus_wait_seconds": 36.888,
+    "klm_operator_counts": {
+      "K": 31,
+      "P": 9,
+      "B": 18,
+      "H": 2,
+      "M": 10
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.038
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.038,
+      "took": 0.05
+    },
+    {
+      "n": 3,
+      "kind": "scroll",
+      "label": "scroll to the bottom of the settings",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.633,
+      "took": 0.054
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Activate the developer mode",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.687,
+      "took": 0.099
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Technical menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.479,
+      "took": 0.076
+    },
+    {
+      "n": 6,
+      "kind": "scroll",
+      "label": "scroll the menu to Scheduled Actions",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.581,
+      "took": 0.182
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Scheduled Actions",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.763,
+      "took": 0.071
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "job name",
+      "keystrokes": 30,
+      "chain": false,
+      "at": 2.07,
+      "took": 0.173,
+      "text": "Mail: Email Queue Manager"
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 2.243,
+      "took": 0.007,
+      "chord": "Enter"
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "open the job",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.304,
+      "took": 0.073
+    },
+    {
+      "n": 11,
+      "kind": "click",
+      "label": "Run Manually",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.785,
+      "took": 0.151
+    }
+  ],
+  "waits": [
+    {
+      "label": "Settings loaded",
+      "at": 0.089,
+      "seconds": 0.501
+    },
+    {
+      "label": "settings page",
+      "at": 0.59,
+      "seconds": 0.043
+    },
+    {
+      "label": "developer mode on",
+      "at": 0.786,
+      "seconds": 0.693
+    },
+    {
+      "label": "technical menu open",
+      "at": 1.555,
+      "seconds": 0.02
+    },
+    {
+      "label": "scheduled action list, search focused",
+      "at": 1.834,
+      "seconds": 0.236
+    },
+    {
+      "label": "one job",
+      "at": 2.25,
+      "seconds": 0.054
+    },
+    {
+      "label": "job form (last run on screen)",
+      "at": 2.377,
+      "seconds": 0.407
+    },
+    {
+      "label": "run finished (no message is shown)",
+      "at": 2.936,
+      "seconds": 0.156
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "908ede1034c9a2ab.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/908ede1034c9a2ab.jpg"
+    },
+    {
+      "moment": "job opened",
+      "file": "cd5c542a9dcc60da.jpg",
+      "at": 2.784,
+      "path": "gauntlet/reference/odoo/shots/cd5c542a9dcc60da.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "88166a01380740ad.jpg",
+      "at": 3.092,
+      "path": "gauntlet/reference/odoo/shots/88166a01380740ad.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "last_run_before": "2026-10-03 03:25:13",
+      "last_run_now": "2026-10-03 04:16:25",
+      "last_run_shown_in_interface": false
+    }
+  },
+  "path_notes": "Apps menu > Settings > scroll > Activate the developer mode > Technical > (scroll) Scheduled Actions > search the job > open it > Run Manually. Odoo shows the next execution only; the last run is not shown anywhere in its interface.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/see-and-rerun-job.mjs",
+    "sha256": "a7bbff7eb3623ddcafc5f228fb474fb60e413389d49344eeaf6ec5b025ee157f"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": null,
+  "result_file": "gauntlet/reference/odoo/tasks/see-and-rerun-job.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261003T041618-80d4.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261003T041625-5208.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261003T041632-2b30.json"
+  ]
+}

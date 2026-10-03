@@ -1,0 +1,49 @@
+
+[1m== Copying sources (without build output)[0m
+
+[1m== End-to-end: Playwright against http://localhost:20450[0m
+
+added 3 packages in 584ms
+
+Running 34 tests using 1 worker
+
+  ✓   1 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (8.3s)
+  ✓   2 [chromium] › specs/identity.spec.ts:74:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (4.3s)
+  ✓   3 [chromium] › specs/identity.spec.ts:103:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (2.4s)
+  ✓   4 [chromium] › specs/lists.spec.ts:17:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match (3.5s)
+  ✓   5 [chromium] › specs/lists.spec.ts:37:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter (2.6s)
+  ✓   6 [chromium] › specs/lists.spec.ts:63:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state (2.7s)
+  ✓   7 [chromium] › specs/lists.spec.ts:93:7 › list framework › groups by a column with counts and opens a group's rows (2.8s)
+  ✓   8 [chromium] › specs/lists.spec.ts:108:7 › list framework › chooses columns and saves a personal default view that opens next time (3.4s)
+  ✓   9 [chromium] › specs/lists.spec.ts:138:7 › list framework › a read-only user keeps personal views but is not offered sharing (2.1s)
+  ✓  10 [chromium] › specs/lists.spec.ts:152:7 › list framework › the list works right to left in Arabic with Arabic counts and headers (2.5s)
+  ✓  11 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (2.4s)
+  ✓  12 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (2.0s)
+  ✓  13 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (1.8s)
+  ✓  14 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (2.1s)
+  ✓  15 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (3.0s)
+  ✓  16 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (1.7s)
+  ✓  17 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (639ms)
+switch to Arabic on the users list: 155 ms
+  ✓  18 [chromium] › specs/shell.spec.ts:26:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (2.7s)
+palette to the Roles screen: 294 ms, 3 steps, 6 keystrokes
+  ✓  19 [chromium] › specs/shell.spec.ts:58:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (1.8s)
+  ✓  20 [chromium] › specs/shell.spec.ts:94:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (1.8s)
+  ✓  21 [chromium] › specs/shell.spec.ts:107:7 › app shell › the palette finds a record and opens it (2.8s)
+  ✓  22 [chromium] › specs/shell.spec.ts:123:7 › app shell › the palette leads from a few record matches to the list of every match (3.8s)
+  ✓  23 [chromium] › specs/shell.spec.ts:141:9 › app shell › at phone width nothing is wider than the window (en) (2.1s)
+  ✓  24 [chromium] › specs/shell.spec.ts:141:9 › app shell › at phone width nothing is wider than the window (ar) (1.7s)
+  ✓  25 [chromium] › specs/shell.spec.ts:162:7 › app shell › the palette offers a user with no roles nothing they cannot open (2.0s)
+  ✓  26 [chromium] › specs/shell.spec.ts:176:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (4.0s)
+  ✓  27 [chromium] › specs/shell.spec.ts:206:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (4.6s)
+  ✓  28 [chromium] › specs/shell.spec.ts:227:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (3.1s)
+  ✓  29 [chromium] › specs/shell.spec.ts:227:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (3.5s)
+sign-in to workspace: 1015 ms
+  ✓  30 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (1.7s)
+  ✓  31 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (2.6s)
+  ✓  32 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (2.6s)
+  ✓  33 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › empty fields are explained without a round trip (555ms)
+  ✓  34 [chromium] › specs/sign-in.spec.ts:47:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter (4.0s)
+
+  34 passed (1.6m)
+rc=0 s=101

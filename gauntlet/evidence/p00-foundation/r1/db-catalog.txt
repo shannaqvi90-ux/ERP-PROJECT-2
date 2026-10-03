@@ -1,0 +1,37 @@
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity |   owner   | has_tenant 
+----------+-------------------------+----------------+---------------------+-----------+------------
+ audit    | __ef_migrations_history | f              | f                   | erp_owner |          0
+ audit    | entries                 | t              | t                   | erp_owner |          1
+ identity | __ef_migrations_history | f              | f                   | erp_owner |          0
+ identity | roles                   | t              | t                   | erp_owner |          1
+ identity | sessions                | t              | t                   | erp_owner |          1
+ identity | user_roles              | t              | t                   | erp_owner |          1
+ identity | users                   | t              | t                   | erp_owner |          1
+ tenancy  | __ef_migrations_history | f              | f                   | erp_owner |          0
+ tenancy  | tenants                 | t              | t                   | erp_owner |          1
+(9 rows)
+
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcanlogin 
+-----------+----------+--------------+------------+-------------
+ erp_owner | f        | f            | t          | t
+ erp_app   | f        | f            | f          | t
+ erp_auth  | f        | f            | f          | f
+(3 rows)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000002 |   1004
+ 0190a000-0000-7000-8000-000000000001 | 100004
+(2 rows)
+
+                  id                  |   code    |          name_en           |          name_ar          | status |              tenant_id               |          created_at           | created_by |          updated_at           | updated_by 
+--------------------------------------+-----------+----------------------------+---------------------------+--------+--------------------------------------+-------------------------------+------------+-------------------------------+------------
+ 0190a000-0000-7000-8000-000000000001 | alnoor    | Al Noor Trading LLC        | شركة النور للتجارة ذ.م.م  | active | 0190a000-0000-7000-8000-000000000001 | 2026-10-02 22:33:13.23287+00  |            | 2026-10-02 22:33:13.23287+00  | 
+ 0190a000-0000-7000-8000-000000000002 | gulfsteel | Gulf Steel Fabrication LLC | الخليج لتصنيع الصلب ذ.م.م | active | 0190a000-0000-7000-8000-000000000002 | 2026-10-02 22:33:23.874852+00 |            | 2026-10-02 22:33:23.874852+00 | 
+(2 rows)
+
+ count  
+--------
+ 101020
+(1 row)
+

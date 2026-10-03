@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..f93a542 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -49,6 +49,18 @@ internal static class UserEndpoints
+             .ProducesValidationProblem()
+             .RequirePermission(IdentityPermissions.UsersCreate);
+ 
++        group.MapPost("/users/{id:guid}/deactivate", async (Guid id, IdentityDbContext db, CancellationToken ct) =>
++            {
++                var u = await db.Users.SingleOrDefaultAsync(x => x.Id == id, ct);
++                if (u is null) return Results.NotFound();
++                u.IsActive = false;
++                await db.SaveChangesAsync(ct);
++                return Results.NoContent();
++            })
++            .WithName("identity.users.deactivate")
++            .WithSummary("Deactivate a user.")
++            .RequireAuthorization();
++
+         group.MapPut("/users/{id:guid}", Update)
+             .WithName("identity.users.update")
+             .WithSummary("Change a user's name, language, active flag and roles. Callers cannot change their own roles or deactivate themselves.")

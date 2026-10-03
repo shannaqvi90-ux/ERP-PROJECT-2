@@ -1,0 +1,162 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 1,
+  "commit": "21025788df0ae77f4fb2f1b6d27e2122cba15e6a",
+  "judged_at": "2026-10-03T00:18:29Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 1",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Gate suite passes. I attacked as alnoor admin against gulfsteel over HTTP: 209 requests sending B's user and role ids, tenant id, code and e-mails in routes, query strings and tenant headers, plus PUT/DELETE on B's users and roles and POST user with B's role ids. Result: 0 leaks. Writes to B returned 404 or 400 (attack/http_attack.out). As erp_app with no tenant set: 0 rows. Bound to A: only A's 100,004 users visible. UPDATE on B's rows changed 0 rows. INSERT into B was refused by RLS. DISABLE RLS was refused (not owner). SET ROLE erp_owner was denied (db-attack-app-role.txt). p01 changes no product code (git diff c71d20e..HEAD touches only build/, the licence gate test and the harness/rig). No exports, jobs or file paths exist yet."
+    },
+    {
+      "gate": "G1 tenant isolation (gate catches planted faults)",
+      "status": "fail",
+      "evidence": "Plant A4 was MISSED. It adds a process-wide static cache to GET /api/tenancy/tenant (plants/plant-a4-static-cache.diff). The gate suite still passed 45/45 (plants/plant-a4-static-cache.log), and so did the whole .NET suite, 126/126 (plants/plant-a4-full-dotnet-suite.log). A proof test confirms the leak: tenant B's admin calls the endpoint, then tenant A's admin calls it and receives tenant B's id (plants/plant-a4-proof.diff and .log, passed). Two other plants were caught. A2 replays the earlier round's resolve_login lookup endpoint and failed 3 tests: the source gate, the HTTP attack and a self-test. A5 disables and un-forces RLS on identity.user_roles, and the host refused to start with 'Security invariants violated'."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 test passes in ./erp verify: fallback deny, exactly one permission or reviewed anonymous, no-roles user denied everything, grant escalation on create and update, and list permission checks. The e2e test 'a user whose roles grant nothing sees no menu' passes."
+    },
+    {
+      "gate": "G2 permissions (gate catches planted faults)",
+      "status": "pass",
+      "evidence": "P2 replays the earlier round's plant, which removes RoleGrants.WithinCaller from POST /api/identity/users. It was caught by 3 tests (Creating_a_user_cannot_grant_more_than_the_caller_holds, No_endpoint_grants_more_than_the_caller_holds and a self-test), so the round 1 gap stays fixed. P3 adds POST /api/identity/users/{id}/deactivate with RequireAuthorization() only. The host refused to start ('declares no permission') and all 45 gate tests failed (plants/plant-p3-no-permission.log)."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "`./erp verify` from my clone (ERP_PROJECT=c-p01-odoo-rig-r1, ports 20150/20151/20160/20161) returned rc=0 in 183 s with 199 tests passed and the ratchet passed (verify.log). `./erp up` returned rc=0 in 26 s and served the seeded demo on 20150 (up.log). The Odoo rig also built from scratch in my own project (ODOO_REF_PROJECT=c-p01-odoo-rig-r1-odoo, ODOO_REF_PORT=20152): rc=0 in 161 s with every main list at 100,000 or more. A second run took 11 s and added 0 rows, so it is idempotent (rig-up-first.log, rig-up-second.log). Ports and project names are overridable from the environment as documented. Timings are warm: the images and NuGet/npm caches already existed."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All pass in ./erp verify. The ratchet check passed, and no count fell below gauntlet/ratchet.json (suite.dotnetTests 126, webUnitTests 19, e2eTests 9, compareTests 45). The harness dependency (playwright-core) is Apache-2.0 and pinned."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r1 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ./erp verify",
+    "total": 199,
+    "passed": 199,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 183
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 183,
+    "evidence": "`./erp verify` rc=0 in 183 s (verify.log): 126 .NET, 19 web unit, 9 e2e and 45 harness tests, all passed. `./erp up` rc=0 in 26 s (up.log). The Odoo rig `tools/odoo-reference/up.sh` built from empty volumes in 161 s, and a second run took 11 s. `npm run test:live` against my own rig passed 53/53 in 107 s, and all six Odoo drivers verified (compare-live-own-rig.log). All timings are warm-cache."
+  },
+  "odoo": [
+    {
+      "task": "find-record (find one record among 100,000)",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 1.082,
+        "klm_seconds": 18.5
+      },
+      "ours": null,
+      "notes": "Our driver is a stub ('not built yet: waits for p05 with p16'), which p01 allows. Odoo: median of 3 runs on my own freshly built rig. It matches the committed baseline (5 steps, 30 keys). compare/comparisons/find-record.json. Screenshot 03."
+    },
+    {
+      "task": "create-restricted-user",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 6.443,
+        "klm_seconds": 37.03
+      },
+      "ours": null,
+      "notes": "Our driver is a stub (waits for p03). The Odoo path is not the shortest. A probe shows Tab from the name field lands in the login field, but the driver clicks it. The form also has an Alt+S save hotkey. The keyboard path models about 2 s faster (probes/probe-odoo-paths.json). Screenshot 01."
+    },
+    {
+      "task": "custom-field-filter",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 61,
+        "seconds": 2.772,
+        "klm_seconds": 54.83
+      },
+      "ours": null,
+      "notes": "Our driver is a stub (waits for p09 with p16). Odoo uses a contact property, its Community no-code field. Screenshot 02."
+    },
+    {
+      "task": "switch-to-arabic",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 1.181,
+        "klm_seconds": 15.28
+      },
+      "ours": null,
+      "notes": "Our driver is a stub (waits for p04). I confirmed the F5 step is needed: 6 s after Update Preferences the navbar is still left to right. However, the measuring user lang.tester has no apps. Odoo shows an empty client at start and at done, so the blind screenshots contain no Arabic text and the reload is of an empty client (probes/probe-lang-tester-landing.json). Screenshots 06, 07, 08."
+    },
+    {
+      "task": "import-5000",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 7,
+        "keystrokes": 0,
+        "seconds": 9.862,
+        "klm_seconds": 17.4
+      },
+      "ours": null,
+      "notes": "Our driver is a stub (waits for p14 with p16). Odoo imported 5,000 rows and the back end verified them; clean-up removed them. Screenshot 05."
+    },
+    {
+      "task": "follow-approval",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 0,
+        "seconds": 1.695,
+        "klm_seconds": 10.6
+      },
+      "ours": null,
+      "notes": "Our driver is a stub (waits for p13). Odoo uses its purchase two-step approval (Approvals is Enterprise), with a limit of AED 5,000. Screenshot 04."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r1/01-reference-create-user-filled.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/02-reference-custom-field-added.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/03-reference-find-record-result.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/04-reference-approval-order-list.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/05-reference-import-mapping.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/06-reference-arabic-before-reload.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/07-reference-arabic-done.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/08-probe-arabic-6s-after-update-no-reload.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r1/09-blind-review-page.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G1 gate misses a cross-tenant leak through shared process state, such as a static or singleton cache",
+    "detail": "The G1 HTTP attack only ever signs in tenant A's users. Tenant B never sends a request to the app under test, so B's data never enters process-wide state: static fields, singletons, IMemoryCache, output caching, or anything keyed without the tenant. In production both tenants share one process, so this whole class of leak can ship. I added a 3-line static cache to GET /api/tenancy/tenant. The gate suite (45/45) and the full .NET suite (126/126) still pass, while tenant A's admin receives tenant B's tenant record. The gate needs B (and A) to be active at the same time: drive B's users through every GET and write first, interleave them with A's attack, then look for B's markers in A's responses and the reverse. A self-test should plant a static cache to prove the gate catches it.",
+    "evidence": "Reproduce: `git apply gauntlet/evidence/p01-odoo-rig/r1/plants/plant-a4-static-cache.diff && dotnet test tests/Erp.Gates.Tests -c Release`, which reports 'Passed! Failed: 0, Passed: 45' (plants/plant-a4-static-cache.log). The full `dotnet test Erp.slnx -c Release` also passes (plants/plant-a4-full-dotnet-suite.log). Proof of the leak: apply plants/plant-a4-proof.diff (it adds SelfTests/CriticPlantProof.cs) and run with --filter CriticPlantProof. The test signs in gulfsteel's admin, then alnoor's admin, and asserts alnoor's GET /api/tenancy/tenant contains gulfsteel's tenant id. It passes (plants/plant-a4-proof.log). Script: plants/run-plants.sh."
+  },
+  "other_findings": [
+    "Instrument bias against the reference (create-restricted-user): Tab from the Odoo name field lands in the login field, but the driver clicks it. The form also has an Alt+S save hotkey. Odoo's modelled human seconds (37.03) are therefore overstated by about 2 s, so a later 'win' on human seconds could be an artefact. The six driver paths were never checked as the shortest for each metric (probes/probe-odoo-paths.json).",
+    "switch-to-arabic is measured as lang.tester, who has only base.group_user. In this rig that user has no apps and lands on an empty client before and after the switch. The blind start and done screenshots show no Arabic text, and Odoo reloads an empty client, so machine seconds are understated (probes/probe-lang-tester-landing.json, screenshots 06 and 07). Use a user with a real working screen, such as Contacts.",
+    "There is no way to load the shared dataset (gauntlet/compare/data: contacts.csv, users.csv, rates.csv) into our product. `./erp up` seeds its own 100,000 users (for example abdullah.aldhaheri.10768@alnoor.example), not users.csv. The 'both products hold the same records' promise, and needle uniqueness, are enforced only on the Odoo side.",
+    "The one command never re-verifies the six Odoo baselines. verify-inside.sh excludes live-odoo.test.mjs, so verify runs 45 harness tests. The ratchet's compare.harnessTests=47 is counted by grepping `^test(` in source, so it includes 2 live tests that never run in ./erp verify.",
+    "Blindness leaks: review.html captions show driver-specific moment names ('labels in Arabic, layout still left to right', 'mapping preview'), and result JSONs carry vendor UI step labels ('Edit Properties', 'Approve Order'). The vendor-name placeholder mask also paints over the contact's Website value with a grey box, which singles out the reference product.",
+    "The plan names a comparison task for every piece (sign in, create company and branch, switch company, keyboard navigation, edit and save, Arabic report, who changed this field, add a rate, configure a sequence, attach and find a file, see and rerun a job, export a filtered list, an API task). None is defined yet. Every task starts already signed in, so p00's 'sign in' comparison still cannot be measured. The rig already loads 100,000 audit messages, attachments, job runs and rates for these tasks.",
+    "Rig realism: the 100,000 attachments share 8 stored blobs. Cloned audit message bodies do not match the contacts' real e-mails (screenshot 02 shows 'old73518@... → new73518@...' on contact 73519). ir.cron.progress rows decay after a week unless up.sh is run again (documented).",
+    "Approver and buyer sign-ins for the rig are hard-coded in gauntlet/compare/lib/config.mjs and cannot be overridden from the environment, unlike admin.",
+    "Positive: the rig is reproducible and idempotent under my own project and port (161 s from empty, 11 s on a second run). Counts checked directly in the rig database: 100,000 dataset contacts, 100,003 active internal users, 100,000 rates across 50 currencies, 100,007 tracking messages, 100,046 contact attachments, 100,001 cron progress rows, 100,000 purchase orders (200 to approve), and en_US plus ar_001 active. All six Odoo drivers verified three times with step and keystroke counts identical to the committed baselines."
+  ],
+  "human_gates": [
+    {
+      "gate": "Change under bar/ (CLAUDE.md human gate)",
+      "what": "The Odoo reference captures and timings belong in bar/reference/ under CLAUDE.md. They are kept in gauntlet/reference/odoo/ until the owner approves the move (gauntlet/needs-human.md item 2, still open)."
+    }
+  ],
+  "evidence_staging": "/home/user/evidence-staging/p01-odoo-rig/r1",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r1"
+}

@@ -1,0 +1,66 @@
+-- unbound: users visible
+ count 
+-------
+     0
+(1 row)
+
+-- bound to A
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ a_users | other 
+---------+-------
+       0 |     0
+(1 row)
+
+-- update B numerals while bound to A
+UPDATE 0
+ROLLBACK
+-- try bypass
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+-- rolbypassrls / rls forced on piece column table
+  rolname  | rolbypassrls | rolsuper 
+-----------+--------------+----------
+ erp_owner | f            | f
+ erp_app   | f            | f
+(2 rows)
+
+                 relname                  | relrowsecurity | relforcerowsecurity 
+------------------------------------------+----------------+---------------------
+ pk_users                                 | f              | f
+ ak_users_tenant_id_id                    | f              | f
+ __ef_migrations_history                  | f              | f
+ pk___ef_migrations_history               | f              | f
+ pk_roles                                 | f              | f
+ ak_roles_tenant_id_id                    | f              | f
+ pk_sessions                              | f              | f
+ ak_sessions_tenant_id_id                 | f              | f
+ pk_user_roles                            | f              | f
+ ak_user_roles_tenant_id_id               | f              | f
+ ix_roles_tenant_id_name_en               | f              | f
+ ix_roles_tenant_id_system_key            | f              | f
+ ix_sessions_tenant_id_user_id_created_at | f              | f
+ ix_sessions_token_hash                   | f              | f
+ ix_user_roles_tenant_id_role_id          | f              | f
+ ix_user_roles_tenant_id_user_id_role_id  | f              | f
+ ix_users_email_normalized                | f              | f
+ ix_users_tenant_id_display_name          | f              | f
+ ix_users_tenant_id_email_normalized      | f              | f
+ users                                    | t              | t
+ roles                                    | t              | t
+ user_roles                               | t              | t
+ sessions                                 | t              | t
+(23 rows)
+
+-- numerals column
+ column_name |     data_type     |      column_default       
+-------------+-------------------+---------------------------
+ tenant_id   | uuid              | 
+ language    | character varying | 
+ numerals    | character varying | 'latn'::character varying
+(3 rows)
+

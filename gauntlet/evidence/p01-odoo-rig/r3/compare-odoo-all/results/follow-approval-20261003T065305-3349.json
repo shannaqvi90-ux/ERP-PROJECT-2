@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "run_id": "follow-approval-20261003T065305-3349",
+  "instrument": 3,
+  "task": "follow-approval",
+  "task_title": "Follow an approval",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find the document that is waiting for your approval and approve it.",
+  "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
+  "started_at": "2026-10-03T06:53:05.250Z",
+  "finished_at": "2026-10-03T06:53:14.433Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 0,
+    "clicks": 4,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.87,
+    "system_wait_seconds": 2.532,
+    "human_seconds": 10.6,
+    "human_plus_wait_seconds": 13.132,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 4,
+      "B": 8,
+      "H": 0,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.052
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Purchase app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.052,
+      "took": 0.049
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "open the order waiting for approval",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.93,
+      "took": 0.128
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Approve Order",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.449,
+      "took": 0.073
+    }
+  ],
+  "waits": [
+    {
+      "label": "Purchase loaded",
+      "at": 0.101,
+      "seconds": 0.271
+    },
+    {
+      "label": "order list",
+      "at": 0.372,
+      "seconds": 1.522
+    },
+    {
+      "label": "order form",
+      "at": 2.058,
+      "seconds": 0.391
+    },
+    {
+      "label": "order approved",
+      "at": 2.522,
+      "seconds": 0.348
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d64c8cf9bcd91913.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/d64c8cf9bcd91913.jpg"
+    },
+    {
+      "moment": "order list",
+      "file": "498a52d4696a0940.jpg",
+      "at": 1.93,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/498a52d4696a0940.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "356b1b87b87961b3.jpg",
+      "at": 2.87,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/356b1b87b87961b3.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "order": "P00014",
+      "state": "purchase",
+      "date_approve": "2026-10-03 06:53:13",
+      "approver_messages": 1,
+      "first_row_is_the_order": true
+    }
+  },
+  "path_notes": "Apps menu > Purchase (the newest order, waiting for approval, is the first row) > open it > Approve Order.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/follow-approval.mjs",
+    "sha256": "4cdb956558d65135d92352ef39e51ddec732cc66b0b1c231d23297af25f2acdd"
+  },
+  "task_notes": "Odoo Community has no generic approvals app (Approvals is Enterprise). Its nearest Community feature is the purchase order two-step approval, so the Odoo driver approves a purchase order. Our product follows its own approval flow (p13) for an equivalent document.",
+  "error": null
+}

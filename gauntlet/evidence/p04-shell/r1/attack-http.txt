@@ -1,0 +1,22 @@
+A tenant alnoor 0190a000-0000-7000-8000-000000000001 B tenant gulfsteel 0190a000-0000-7000-8000-000000000002
+B prefs before {"authenticated":true,"user":{"id":"01a10013-f47f-7a3e-82fb-0a09f11a0b52","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn"},"tenant":{"id":"0190a0
+PUT prefs {"language": "ar", "userId": "01a10013-f47f-7a3e-82fb-0a09f1 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+PUT prefs {"numerals": "arab", "tenantId": "0190a000-0000-7000-8000-00 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+PUT prefs {"language": "ar", "user": {"id": "01a10013-f47f-7a3e-82fb-0 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+session hdr {'X-Tenant-Id': '0190a000-0000-7000-8000 200 {"authenticated":true,"user":{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"
+prefs hdr {'X-Tenant-Id': '0190a000-0000-7000-8000 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+session hdr {'X-Tenant': 'gulfsteel'} 200 {"authenticated":true,"user":{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"
+prefs hdr {'X-Tenant': 'gulfsteel'} 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+session hdr {'X-Workspace': 'gulfsteel'} 200 {"authenticated":true,"user":{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"
+prefs hdr {'X-Workspace': 'gulfsteel'} 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+session hdr {'X-User-Id': '01a10013-f47f-7a3e-82fb-0 200 {"authenticated":true,"user":{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"
+prefs hdr {'X-User-Id': '01a10013-f47f-7a3e-82fb-0 200 {"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language
+users get B 404 {"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-396a5
+users search B email 200 {"items":[],"total":0}
+users search gulfsteel 200 {"items":[],"total":0}
+users put B 400 {"type":"urn:erp:problem:validation","title":"بعض الحقول تحتاج إلى مراجعة.","status":400,"code":"validation","traceId":"
+tenant get w/ query 200 {"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة
+session query 200 {"authenticated":true,"user":{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"
+palette users search 200 {"items":[{"id":"01a10013-9f48-7492-8083-0597bf7cc4d8","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori"
+B prefs after {"authenticated":true,"user":{"id":"01a10013-f47f-7a3e-82fb-0a09f11a0b52","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn"},"tenant":{"id":"0190a0
+LEAKS []

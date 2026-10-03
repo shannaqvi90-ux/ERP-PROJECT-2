@@ -1,0 +1,40 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/user/critic/p04-shell-r2-plants/web[39m
+
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 2915[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 1502[2mms[22m[39m
+     [33m[2m✓[22m[39m edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks [33m 538[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the Administrator system role read-only, with copy offered [33m 628[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 4029[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 732[2mms[22m[39m
+     [33m[2m✓[22m[39m moves through rows with the keyboard, selects with Space and copies the selection [33m 442[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 1770[2mms[22m[39m
+     [33m[2m✓[22m[39m groups with counts and drills into a group with Enter [33m 626[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 421[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 10083[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 882[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 1730[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 3207[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 1419[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 369[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 521[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the focus where it is when the language changes [33m 858[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 194[2mms[22m[39m
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 110[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 132[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 459[2mms[22m[39m
+     [33m[2m✓[22m[39m fills placeholders and leaves unknown ones visible [33m 376[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[32m93 passed[39m[22m[90m (93)[39m
+[2m   Start at [22m 16:36:46
+[2m   Duration [22m 25.01s[2m (transform 4.64s, setup 0ms, import 10.96s, tests 18.57s, environment 27.52s)[22m
+

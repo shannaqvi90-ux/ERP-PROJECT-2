@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "run_id": "custom-field-filter-20261003T001112-cc41",
+  "task": "custom-field-filter",
+  "task_title": "Add a custom field and filter by it",
+  "product": "ours",
+  "status": "not_built",
+  "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
+  "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
+  "started_at": "2026-10-03T00:11:12.775Z",
+  "finished_at": "2026-10-03T00:11:12.775Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": null,
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": null,
+  "task_notes": "Set-up removes any earlier copy of the field.",
+  "error": "not built yet: waits for p09 (tenant-defined custom fields) with p16 (contacts)"
+}

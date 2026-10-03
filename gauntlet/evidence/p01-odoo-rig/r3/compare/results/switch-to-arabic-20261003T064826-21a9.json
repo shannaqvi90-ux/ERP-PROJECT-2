@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261003T064826-21a9",
+  "instrument": 3,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-03T06:48:26.157Z",
+  "finished_at": "2026-10-03T06:48:39.178Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 1,
+    "clicks": 5,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.835,
+    "system_wait_seconds": 2.018,
+    "human_seconds": 15.28,
+    "human_plus_wait_seconds": 17.298,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 5,
+      "B": 10,
+      "H": 1,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.147
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.147,
+      "took": 0.067
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.709,
+      "took": 0.104
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.813,
+      "took": 0.065
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.878,
+      "took": 0.111
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "reload the page for the right-to-left layout",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 1.782,
+      "took": 0.323,
+      "chord": "F5"
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.214,
+      "seconds": 0.495
+    },
+    {
+      "label": "labels re-rendered in Arabic",
+      "at": 0.989,
+      "seconds": 0.793
+    },
+    {
+      "label": "client reloaded right to left",
+      "at": 2.105,
+      "seconds": 0.249
+    },
+    {
+      "label": "working screen back",
+      "at": 2.354,
+      "seconds": 0.481
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "264f2ef035bda46f.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare/blind/shots/264f2ef035bda46f.jpg"
+    },
+    {
+      "moment": "language chosen",
+      "file": "7d9fc1ef19f6587a.jpg",
+      "at": 0.877,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare/blind/shots/7d9fc1ef19f6587a.jpg"
+    },
+    {
+      "moment": "after confirming",
+      "file": "f5a389bb26aa616b.jpg",
+      "at": 1.782,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare/blind/shots/f5a389bb26aa616b.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "b98cf8fb8f6986ed.jpg",
+      "at": 2.835,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare/blind/shots/b98cf8fb8f6986ed.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_lang": "ar_001",
+      "direction": "rtl",
+      "user_menu": [
+        "المساعدة",
+        "Shortcuts\nCTRL+K",
+        "عبر الإنترنت",
+        "تفضيلاتي",
+        "My Subscription",
+        "تسجيل الخروج"
+      ],
+      "working_screen": "جديد\nجهات الاتصال\n1-80 / 10000+",
+      "working_screen_records": 80
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language > Arabic > Update Preferences. Odoo re-renders the labels in Arabic but keeps the left-to-right layout until the page is reloaded, so the path ends with F5.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-to-arabic.mjs",
+    "sha256": "d039d21b85781a9924333c1d44daf8523ce9045dfe9121cbc64a60bb0d48db82"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null
+}

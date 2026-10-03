@@ -1,0 +1,28 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p01-odoo-rig-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Host -> /home/user/critic/p01-odoo-rig-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.68]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.91]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:09.22]   Finished:    Erp.Gates.Tests (ID = '7ebc8e0ec4f3ec82dbe8026846d063abf151be3caf12a91fd0f67b3ef1c45cb8')
+  Passed Erp.Gates.Tests.SelfTests.CriticPlantProof.Plant_B_leaks_tenant_B_in_a_response_header [358 ms]
+  Standard Output Messages:
+ tenant A received header X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000b bravocnryea73bbffc3 Bravo CNRYEA73BBFFC3 LLC
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 9.7006 Seconds

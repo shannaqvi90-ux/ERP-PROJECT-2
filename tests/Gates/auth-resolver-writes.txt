@@ -1,0 +1,4 @@
+# Tables the NOLOGIN role erp_auth (owner of the reviewed SECURITY DEFINER functions) may write.
+# Reviewed list: `schema.table PRIVILEGE  # reason`. The G1 credential gate compares the role's
+# actual INSERT, UPDATE, DELETE and TRUNCATE privileges with this list, both ways.
+identity.sign_in_attempts INSERT  # identity.verify_sign_in() records each failed, paused or refused attempt in the account's own sign-in history. Every row passes the standard tenant_isolation policy: the function binds the account's tenant for the insert only and unbinds before it returns.

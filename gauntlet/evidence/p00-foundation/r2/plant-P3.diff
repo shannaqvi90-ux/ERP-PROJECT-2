@@ -1,0 +1,16 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..52240de 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -104,10 +104,7 @@ internal static class UserEndpoints
+         {
+             return validator.ToResult();
+         }
+-        if (!RoleGrants.WithinCaller(roles, caller))
+-        {
+-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+-        }
++        // PLANTED P3: grant check removed on user create
+         var normalized = email!.ToLowerInvariant();
+         if (await db.Users.AnyAsync(u => u.EmailNormalized == normalized, cancellationToken))
+         {

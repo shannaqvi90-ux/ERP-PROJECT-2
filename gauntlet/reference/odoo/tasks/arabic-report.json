@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "run_id": "arabic-report-20261003T042056-eef4",
+  "instrument": 3,
+  "task": "arabic-report",
+  "task_title": "Print a document in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
+  "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
+  "started_at": "2026-10-03T04:20:56.931Z",
+  "finished_at": "2026-10-03T04:21:06.866Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 0,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 4.364,
+    "system_wait_seconds": 3.909,
+    "human_seconds": 15.9,
+    "human_plus_wait_seconds": 19.809,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 6,
+      "B": 12,
+      "H": 0,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.065
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.065,
+      "took": 0.052
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.298,
+      "took": 0.085
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.383,
+      "took": 0.09
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.474,
+      "took": 0.077
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.828,
+      "took": 0.084
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.117,
+      "seconds": 0.181
+    },
+    {
+      "label": "interface in Arabic",
+      "at": 0.551,
+      "seconds": 0.699
+    },
+    {
+      "label": "order form in Arabic",
+      "at": 1.25,
+      "seconds": 0.577
+    },
+    {
+      "label": "file received",
+      "at": 1.912,
+      "seconds": 2.452
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "defd70d6c24f7a20.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/defd70d6c24f7a20.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "e7bdfcc16a690f22.jpg",
+      "at": 4.364,
+      "path": "gauntlet/reference/odoo/shots/e7bdfcc16a690f22.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "download",
+      "bytes": 47318,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 25,
+      "right_to_left": true
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language: Arabic > Update Preferences > Print. Printing straight away gives Arabic text in a left-to-right layout (Odoo lays the page out in the user's language and translates it into the vendor's), so the user switches to Arabic first.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/arabic-report.mjs",
+    "sha256": "1813ef645c10fb961a8b5fc20898fedc85644a9a7b6c9020c056ae0d23cff081"
+  },
+  "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
+  "error": null,
+  "result_file": "gauntlet/reference/odoo/tasks/arabic-report.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/arabic-report-20261003T042041-9645.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261003T042056-eef4.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261003T042106-d6c1.json"
+  ]
+}

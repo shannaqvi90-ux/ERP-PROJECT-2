@@ -1,0 +1,11 @@
+# Process-wide state in the product's assemblies (static fields, fields of singleton services,
+# cache services). Every tenant shares one process, so state that outlives a request can carry one
+# tenant's data to another. Reviewed list: every entry needs a reason after '#' saying why it can
+# never hold tenant data. The G1 process-state gate fails on an unreviewed or stale entry.
+# Format: static|singleton <Namespace.Type>.<field>   or   service <Service.Type.FullName>
+singleton Erp.Kernel.Modules.ModuleCatalog._modules  # The module registry, filled from code once while the host starts (ModuleBuilder) and only read afterwards; holds module names, permission keys, routes, menus and list registrations with their query bindings (column expressions compiled from code), never tenant data.
+singleton Erp.Kernel.Modules.ModuleCatalog._permissionKeys  # Lazily computed set of the permission keys declared in code by the modules above; identical for every tenant.
+static Erp.Modules.Identity.Seeding.DemoPeople.ArabicFirstNames  # Fixed list of demo first names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.ArabicLastNames  # Fixed list of demo last names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.FirstNames  # Fixed list of demo first names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.LastNames  # Fixed list of demo last names in code, read by the demo seeder only; never written.

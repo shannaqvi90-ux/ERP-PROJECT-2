@@ -1,0 +1,162 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 3,
+  "commit": "b0981bddc40abae4d9d708200c8929707969408b",
+  "judged_at": "2026-10-03T07:21:51Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 3",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 test passed in ./erp verify. My HTTP attack (attack/http-attack.mjs, http-attack.out) ran as the alnoor admin. It sent 866 requests over all 43 documented operations. B's tenant id and code, user, view, shared-view and role ids, B's e-mails and a fresh canary were placed in routes, search, filter ('in' and 'eq'), groupBy and paging parameters, and six tenant-switch header and cookie variants. Every PUT, POST and DELETE on B's ids was also tried. Result: 0 of 408 markers appeared in any body or header, and no write was accepted on a B id. B's user, views and tenant were unchanged. As erp_app (attack/db-attack-app-role.txt): unbound, 0 rows. With the GUC set but no transaction marker, 0 rows. Bound to A, only A's 100,006 users were visible and UPDATE on B changed 0 rows. INSERT into B was refused by RLS. DISABLE RLS was refused (not owner). SET ROLE erp_auth and SET ROLE erp_owner were denied. All 9 tenant tables have RLS enabled and forced. No exports, jobs or file paths exist yet."
+    },
+    {
+      "gate": "Instrument integrity: the harness's own guard catches planted measuring faults (this piece's surface)",
+      "status": "fail",
+      "evidence": "Seven planted faults were all MISSED. Five generic plants (plants/critic-plants.test.mjs, critic-plants.log) ran on a stand-in page and all ended 'verified'. U1: signIn (unmeasured) runs page.evaluate to install a listener that fills the form and submits it during the measured part: 2 steps instead of 5, human 3.33 s instead of 10.11 s. U2: setup adds context.addInitScript with an F9 hook that does the whole task: 1 step. S1: op.type('y\\n') presses Enter inside a typing step: 4 steps instead of 5. T1: op.shot() in a loop while the product works is subtracted from the clock: machine 0.126 s instead of 1.581 s for a 1.5 s server delay. K1: chain:true on every step drops every M: human 6.06 s instead of 10.11 s. Two plants in real ours drivers, run against my demo, also stayed 'verified'. H2 (plant-H2-start-state-find-user.diff): signIn opens Users and types the name before the clock starts, so find-user drops from 4 steps to 1 (2.65 s human). K1 on sign-in (plant-K1-chain-sign-in.diff): human 19.06 s to 16.36 s (new device) and 7.63 s to 6.28 s (returning). With either real-driver plant applied, npm test stayed green: 137 tests, 117 pass, 20 live tests skipped, 0 fail (plant-H2-npm-test.log, plant-K1-npm-test.log)."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 test passed in ./erp verify. They cover: undeclared endpoints fall back to deny; a user whose roles grant nothing is denied everything and sees no menu; granting exactly one permission opens exactly the endpoints that declare it; no endpoint grants more than the caller holds; users cannot escalate their own privileges; anonymous callers get 401; sharing a view needs its permissions; the host refuses an endpoint with no permission or one outside the catalogue."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "Run from my clone with ERP_PROJECT=c-p01-odoo-rig-r3 and ports 20150/20151/20160/20161. `./erp verify` returned rc=0 in 883 s with 480 tests passed and the ratchet passed (verify.log). `./erp up` returned rc=0 in 47 s (up.log). With ERP_SEED_USERS_CSV set, `./erp up` returned rc=0 in 46 s and loaded the dataset's 100,000 users (up-shared-dataset.log). The private Odoo rig (ODOO_REF_PROJECT=c-p01-odoo-rig-r3-odoo, ODOO_REF_PORT=20152) came up from empty volumes with rc=0 in 506 s under shared load (README says about 2.5 min). Every main list reached 100,000 or more. A second run took 28 s and every step added +0 (rig-up-first.log, rig-up-second.log, rig-volume.json). Port and project overrides work as documented."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All pass in ./erp verify: 350 keys in English and Arabic, accessibility 616 JSX elements, audit gate, licence gate. Ratchet minimums are met and no count fell: dotnet 245 (min 221), web 89 (64), e2e 31 (21), compare 115 (114; round 2 was 67)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r3 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ./erp verify",
+    "total": 480,
+    "passed": 480,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 883
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 883,
+    "evidence": "`./erp verify` rc=0 in 883 s, all passed: 245 .NET, 89 web unit, 31 e2e, 115 harness (verify.log). `./erp up` rc=0 in 47 s, seeded demo on :20150 (up.log). The private Odoo rig came up from empty in 506 s and was idempotent on a second run (28 s). All timings are warm-cache and on a machine shared with other agents."
+  },
+  "odoo": [
+    {
+      "task": "sign-in",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 21,
+        "seconds": 0.267,
+        "klm_seconds": 7.63
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 57,
+        "seconds": 1.501,
+        "klm_seconds": 19.06
+      },
+      "notes": "`--product both --repeat 3` against my demo and the shared rig. Ours wins every metric (human+wait 7.836 vs 20.447). Ours' best is its 'returning' variant (the e-mail is remembered); Odoo's returning variant is still 4 steps. Its human seconds can be lowered further, undetected, by chain abuse (plant K1)."
+    },
+    {
+      "task": "find-user",
+      "winner": "ours",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 20,
+        "seconds": 0.413,
+        "klm_seconds": 14.35
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 21,
+        "seconds": 1.393,
+        "klm_seconds": 14.55
+      },
+      "notes": "Ours wins every metric, but narrowly on keys (20 vs 21) and human seconds (14.35 vs 14.55). Screenshots 04 and 05."
+    },
+    {
+      "task": "api-update-user",
+      "winner": "odoo",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 243,
+        "seconds": 0.029,
+        "klm_seconds": 71.14
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 184,
+        "seconds": 0.474,
+        "klm_seconds": 54.62
+      },
+      "notes": "LOSS: steps tie and ours loses keys and human seconds. Ours' PUT must resend the whole user (displayName, isActive, roleIds, version) to change one field. Odoo writes {lang} alone. The third ours repeat failed with HTTP 429 from our sign-in throttle. Screenshots 06 and 07."
+    },
+    {
+      "task": "switch-to-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.094,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 3.261,
+        "klm_seconds": 15.28
+      },
+      "notes": "As committed, the ours driver FAILS in all 3 runs: its check requires every column header to be Arabic, and p05's list added an empty checkbox header. I fixed it in my clone with `.filter(Boolean)` (drivers/switch-to-arabic.fix.diff) and re-ran 3x: ours wins every metric (human+wait 2.656 vs 17.1). Screenshots 02 and 03."
+    },
+    {
+      "task": "find-record, create-restricted-user, custom-field-filter, import-5000, follow-approval, switch-company, add-rate, arabic-report, attach-file, configure-sequence, create-company-branch, edit-and-save, export-filtered-list, keyboard-navigation, see-and-rerun-job, who-changed-field",
+      "winner": "not-compared",
+      "notes": "The ours drivers are stubs (16 of 20). I re-drove every Odoo driver once on the shared rig: 19 of 20 verified with steps and keys matching the committed baselines. see-and-rerun-job failed once: Odoo's search box lost the first characters of the typed job name ('anager'), so the search timed out (screenshot 08). It then verified 3 of 3 times (11 steps, 31 keys). This is a reference-driver race under load."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r3/01-blind-review-page.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/02-blind-switch-arabic-done-product-a.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/03-blind-switch-arabic-done-product-b.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/04-blind-find-user-done-product-a.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/05-blind-find-user-done-product-b.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/06-blind-api-update-user-done-product-a.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/07-blind-api-update-user-done-product-b.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r3/08-reference-rerun-job-typing-lost-characters.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The instrument trusts everything a driver does outside the clock, and several things it declares inside it, so an ours driver can win without doing the task as a user would",
+    "detail": "The round-3 guard closes actions taken during the measured part through the page, keyboard, network and waitFor. It does not close these: (1) Page or context scripts installed in setup or signIn (page.evaluate, addInitScript, exposeFunction) are allowed and keep acting after the clock starts. The sentinel only covers the waitFor condition. (2) The start state is not checked. signIn may end on any screen with any input already typed, although the README promises 'the screen the product shows right after sign-in'. (3) op.shot() inside run() is subtracted from machine seconds while the product keeps working, so screenshots hide latency. (4) op.type accepts '\\n', which presses Enter without counting a step. (5) `chain` (no M operator) is the driver's own claim and is never checked. Later critics write the ours drivers, so each of these lets a gamed or careless driver turn a loss into a recorded win. Fixes: snapshot and verify the start state (URL plus focused element plus empty inputs, or a product-neutral start check per task). Forbid evaluate, addInitScript, exposeFunction and route in drivers (lint plus guard), or reload the page before start() so set-up scripts are gone. Stop excluding screenshot time inside run(), or forbid op.shot while a step's response is pending. Reject control characters in op.type. Derive chain from the step sequence (Enter after type, type after a click on the same field) instead of trusting the flag. Add a plant test for each.",
+    "evidence": "In a clone at b0981bd: copy gauntlet/evidence/p01-odoo-rig/r3/plants/critic-plants.test.mjs to gauntlet/compare/test/ and run `node --test test/zz-critic-plants.test.mjs`. All 5 plants end 'verified' (plants/critic-plants.log): U1 2 steps vs 5; U2 1 step vs 5; S1 4 vs 5; T1 machine 0.126 s vs 1.581 s; K1 human 6.06 s vs 10.11 s. Against the demo (ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up), `git apply plants/plant-H2-start-state-find-user.diff`, then `COMPARE_OURS_URL=http://localhost:<port> node run.mjs --task find-user --product ours` gives 'verified, steps 1, keys 0, human 2.65 s' against Odoo's 6 steps (plant-H2-run.log). `npm test` stays green with the plant (137 tests, 0 fail). Script: plants/run-plants.sh."
+  },
+  "other_findings": [
+    "[route: p00-foundation] The round-2 biggest gap is still open at this commit. I applied gauntlet/evidence/p01-odoo-rig/r2/plants/plant-B-closure-header.diff (a lambda-captured previousCaller returned in an X-Previous-Workspace header). `dotnet test tests/Erp.Gates.Tests -c Release` passed 69/69 in 666 s (plants/r2-plant-B-recheck.log). The r2 proof test also passed: tenant A received 'X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000b bravocnry0833736f1d Bravo CNRY0833736F1D LLC' (plants/r2-plant-B-proof.log). So G1 still neither judges response headers nor inventories closure state.",
+    "Ours driver rot goes undetected. ./erp verify never runs the built ours drivers against the built product. The integration of p05 (checkbox column with an empty header) broke switch-to-arabic, and every test stayed green. The harness needs an ours-live check, like test:live for Odoo, that runs the built ours drivers against `./erp up` in verify.",
+    "[route: p03-identity] api-update-user loses to Odoo: steps tie 2-2, keys 243 vs 184. PUT /api/identity/users/{id} needs the whole record (displayName, isActive, roleIds, version) to change one field. A PATCH or a field-level update would win. Our sign-in throttle also returned HTTP 429 to the harness on the third repeat ('Too many attempts'). Repeated comparisons from one client trip it.",
+    "Reference flake: drivers/odoo/see-and-rerun-job.mjs types right after '.o_searchview_input:focus'. Under load Odoo dropped the first characters ('Mail: Email Queue M'), and the run timed out after 120 s (screenshot 08). It then verified 3 of 3 times. Wait for the search box to be ready, or verify the typed value.",
+    "Blindness, minor: the reference shows its database badge 'reference' and the company 'Demo Trading LLC', while ours shows 'Al Noor Trading LLC' and 'alnoor' in the status bar. The demo company names differ, so text identifies the product. The number of moment shots per task also differs by product (switch-to-arabic: 2 vs 4).",
+    "The blind review page puts the reference's new-device start shot beside ours. The counts for sign-in come from each product's best variant, so the shots and the numbers can describe different paths.",
+    "Licence: commit 47473a7, authored by an agent, marks needs-human #3 (ISC: picocolors, siginfo) 'Approved by the owner, 2026-10-03'. I cannot verify that the owner made this approval. The lead should confirm it came from the owner and was not self-approved (CLAUDE.md human gates).",
+    "Rig: the first run from empty took 506 s here (README says about 2 min 34 s); the machine was under shared load. It was idempotent: the second run took 28 s with +0 in every step, including setup (the round-2 '+1 setup' cosmetic issue is fixed). Every main list was at 100,000 or more, and Arabic was active.",
+    "Fixed since round 2 and still fixed: the done screenshot no longer moves the clock, and the baseline invariants test machine seconds against the last step. Drivers acting through ctx.page or keyboard during the run are refused (the round-2 plant H1 is now a test). The key sits outside blind/, file times are neutral and run order is random. The p15 API task and the find-user task exist.",
+    "CLAUDE.md rules: no isolation leak in the product as built, through HTTP or as the database role. Arabic is right to left (screenshot 02). No Odoo code or views were found copied: drivers only operate its screens. The harness's only dependency is playwright-core 1.56.1 (Apache-2.0)."
+  ],
+  "human_gates": [
+    {
+      "gate": "Change under bar/ (CLAUDE.md human gate)",
+      "what": "Odoo reference captures and timings belong in bar/reference/ under CLAUDE.md, but are still in gauntlet/reference/odoo/ pending owner approval (needs-human #2, open)."
+    },
+    {
+      "gate": "Licence approval (CLAUDE.md rule 6)",
+      "what": "needs-human #3 (ISC licences of picocolors and siginfo) is marked approved by the owner in an agent-authored commit (47473a7). The lead should confirm the owner really gave this approval."
+    }
+  ],
+  "evidence_staging": "/home/user/evidence-staging/p01-odoo-rig/r3",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r3"
+}

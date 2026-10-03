@@ -1,0 +1,63 @@
+# Odoo Community reference instance for the blind comparison harness.
+# Reference only (CLAUDE.md rule 7): nothing from Odoo is copied into the product.
+# Started and seeded by tools/odoo-reference/up.sh; ports and project name come from the environment.
+# The default project name (odoo-reference) and port (8069) are the shared rig every critic reuses.
+# The shared rig keeps its data in external volumes (compose.shared.yaml, added by up.sh), so no
+# `docker compose down -v` of any project can delete it. Any other project name (a critic's own
+# copy) keeps project-scoped volumes that its own `down -v` removes.
+name: ${ODOO_REF_PROJECT:-odoo-reference}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    command: >-
+      postgres
+      -c shared_buffers=512MB
+      -c work_mem=32MB
+      -c maintenance_work_mem=256MB
+      -c max_wal_size=4GB
+      -c synchronous_commit=off
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    restart: unless-stopped
+
+  odoo:
+    image: ${ODOO_REF_IMAGE:-odoo:20.0-20260926}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_REF_BIND:-127.0.0.1}:${ODOO_REF_PORT:-8069}:8069"
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    # One database, no database manager. Threaded mode (workers=0) serves the web client and its
+    # websocket on the same port, so no reverse proxy is needed for a single reviewer.
+    command: >-
+      --database=${ODOO_REF_DB:-reference}
+      --db-filter=^${ODOO_REF_DB:-reference}$$
+      --no-database-list
+      --without-demo=True
+      --http-interface=0.0.0.0
+      --workers=0
+      --max-cron-threads=1
+    # Only named volumes: the long-running server never depends on the checkout that started it,
+    # so any clone can run up.sh against the same project. The seed runs in a one-off container
+    # (up.sh) that mounts the seed script and the shared dataset itself.
+    volumes:
+      - filestore:/var/lib/odoo
+    restart: unless-stopped
+
+volumes:
+  db:
+  filestore:

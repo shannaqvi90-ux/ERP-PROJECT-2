@@ -1,0 +1,43 @@
+Attacker: admin@gulfsteel.example (tenant 2). Victim: alnoor (tenant 1).
+victim user 0192a218-6240-7870-a1ab-fd6978f4677f yousef.wang.060019@staff.example
+victim shared view 01a10071-743d-72d2-8a48-3e3b6e8d4c99 Team view
+victim personal view 201 01a10073-132f-7aa8-b880-97e67a787fe9
+victim shared view create 201 01a10073-135f-7a03-8ee1-3463b0eb4a79
+  search victim name                                                     200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  search victim email                                                    200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  filter displayName eq victim                                           200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  filter email in victim                                                 200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  filter with tenantId column                                            400  leak=False  {"type": "urn:erp:problem:validation", "title": "Some fields need attention.", "status": 400, "code": "validation", "traceId": "00-0bb79870d
+  filter injection quote                                                 200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  search with % wildcard                                                 200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  search with _ wildcard                                                 200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  groupBy language                                                       200  leak=False  {"items": [{"id": "01a10071-7555-7b5a-824e-a0051d6190ca", "email": "noaccess@gulfsteel.example", "displayName": "Layla Nasser", "language": 
+  X-Tenant-Id header                                                     200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  tenant query param                                                     200  leak=False  {"items": [], "total": 0, "next": null, "groups": null}
+  victim cursor b'{"s":"displayName","k":["Abdullah Abdullah Al Ameri"],"i":"01918fbf-88e0-7ec9-ba79-8c6fa9d91435"}'
+  victim cursor replayed                                                 200  leak=False  {"items": [{"id": "018cc5fc-5e60-779e-b4a4-98b780adcf7b", "email": "abdullah.almarzooqi.96@gulfsteel.example", "displayName": "Abdullah Al M
+  forged cursor at victim row                                            200  leak=False  {"items": [{"id": "018cc783-4c80-7cce-8587-7a0b91f8349b", "email": "zainab.alketbi.157@gulfsteel.example", "displayName": "Zainab Al Ketbi",
+  GET victim shared view id                                              404  leak=False  {"type": "urn:erp:problem:notFound", "title": "The record was not found.", "status": 404, "code": "notFound", "traceId": "00-e0a16eba3dc2530
+  GET victim personal view id                                            404  leak=False  {"type": "urn:erp:problem:notFound", "title": "The record was not found.", "status": 404, "code": "notFound", "traceId": "00-ad3a384bb92becc
+  PUT victim shared view                                                 404  leak=False  {"type": "urn:erp:problem:notFound", "title": "The record was not found.", "status": 404, "code": "notFound", "traceId": "00-c565ddd5f0cb2b0
+  DELETE victim shared view                                              404  leak=False  {"type": "urn:erp:problem:notFound", "title": "The record was not found.", "status": 404, "code": "notFound", "traceId": "00-8bf4ef2f4a59b3c
+  DELETE victim personal view                                            404  leak=False  {"type": "urn:erp:problem:notFound", "title": "The record was not found.", "status": 404, "code": "notFound", "traceId": "00-b2e6ec255c491d8
+  list views                                                             200  leak=False  {"items": [{"id": "01a10071-76f2-724f-a283-a94075416af6", "listKey": "identity.users", "name": "Team view", "isShared": true, "isDefault": f
+  create view with same name as victim                                   201  leak=True  {"id": "01a10073-152c-7faf-9ae9-ac5b84349214", "listKey": "identity.users", "name": "CANARY-ALNOOR-SHARED", "isShared": true, "isDefault": f
+  roles list search                                                      200  leak=False  {"items": [{"id": "01a10071-74b6-72d1-bf38-1dd442b34672", "nameEn": "Administrator", "nameAr": "مدير النظام", "permissions": ["identity.prof
+  victim views after attack: [('CANARY-ALNOOR-SHARED', 796), ('Team view', 755), ('CANARY-ALNOOR-VIEW', 795)]
+
+Permissions:
+  viewer@alnoor.example
+  definition                                                             200  leak=False  {"key": "identity.users", "labelKey": "identity.users.title", "endpoint": "/api/identity/users", "columns": [{"key": "displayName", "labelKe
+  users list                                                             200  leak=False  {"items": [{"id": "019688b3-1580-73a0-a317-0566b2d7ca72", "email": "hind.wang.099909@staff.example", "displayName": "Hind Fahad Wang", "lang
+  create shared view                                                     403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  delete shared view                                                     403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  create personal view                                                   201  leak=False  {"id": "01a10073-1638-76d6-8df9-adf57f008081", "listKey": "identity.users", "name": "mine-view", "isShared": false, "isDefault": false, "isM
+  noaccess@alnoor.example
+  definition                                                             403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  users list                                                             403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  create shared view                                                     403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  delete shared view                                                     403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  create personal view                                                   403  leak=False  {"type": "urn:erp:problem:auth.forbidden", "title": "You do not have permission to do this.", "status": 403, "code": "auth.forbidden", "trac
+  unauthenticated list                                                   401  leak=False  {"type": "urn:erp:problem:auth.required", "title": "Sign in to continue.", "status": 401, "code": "auth.required", "traceId": "0HNP12T6245BL

@@ -1,0 +1,16 @@
+import { chromium } from 'playwright-core';
+const B='http://localhost:20550';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } }); const p = await ctx.newPage();
+await p.goto(B + '/'); await p.locator('input[name="email"]:focus').waitFor();
+await p.keyboard.type('admin@alnoor.example'); await p.keyboard.press('Tab'); await p.keyboard.type('Demo-Pass-2026'); await p.keyboard.press('Enter');
+await p.locator('nav.navpane a').first().waitFor();
+const t0=Date.now();
+await p.keyboard.press('Control+k'); await p.waitForTimeout(200);
+console.log('palette focused', await p.evaluate(()=>document.activeElement?.outerHTML.slice(0,200)));
+await p.keyboard.type('Yousef Samir Wang'); await p.waitForTimeout(1500);
+console.log('palette options', await p.locator('[role=option]').evaluateAll(o=>o.map(x=>x.textContent.trim().slice(0,80))));
+await p.keyboard.press('Enter'); await p.waitForTimeout(1000);
+console.log('after Enter url', p.url(), 'ms', Date.now()-t0);
+console.log("focused", await p.evaluate(()=>document.activeElement?.outerHTML.slice(0,150))); await p.keyboard.press("Enter"); await p.waitForTimeout(800); console.log("after 2nd Enter", p.url());
+await browser.close();

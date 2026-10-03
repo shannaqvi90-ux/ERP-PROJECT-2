@@ -84,8 +84,13 @@ task for every other thing a user can touch in their piece. Tasks are never remo
 | p13 | Approval flows | 3 | p06, p12 | follow an approval |
 | p14 | Import and export | 3 | p05, p09, p12 | import 5,000 rows; export a filtered list |
 | p15 | Documented API for everything | 3 | all | do a screen task through the API |
+| p16 | Shared Contacts directory (owner decision, 2026-10-02) | 2 | p05, p06 | find one contact among 100,000; custom field and filter; import 5,000 |
 
 Piece scope details are in `gauntlet/pieces/<piece>.md`.
+
+Owner decisions (2026-10-02): Contacts is part of the platform core as shared master data and
+is the main 100,000-record list for the comparisons (p16). Odoo captures stay in
+`gauntlet/reference/` until the owner approves `bar/reference/`. Pull requests target `main`.
 
 ## Round protocol
 

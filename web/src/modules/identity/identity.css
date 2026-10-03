@@ -1,0 +1,373 @@
+/* Identity screens: list beside a panel, dense forms, the permission matrix. Logical properties
+ * only, so Arabic mirrors without separate rules. */
+.id-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.id-screen.with-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+}
+
+.id-screen.with-panel.wide {
+  grid-template-columns: minmax(280px, 0.8fr) minmax(480px, 1.2fr);
+}
+
+.id-list {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.id-push {
+  margin-inline-start: auto;
+}
+
+.id-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  position: sticky;
+  inset-block-start: 8px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+
+.id-form h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.id-form h2:focus {
+  outline: none;
+}
+
+.id-form h3 {
+  font-size: 14px;
+  margin: 12px 0 6px;
+}
+
+.id-form select,
+.id-me select {
+  font: inherit;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.id-email {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.id-email input {
+  border: 0;
+  flex: 1;
+}
+
+.id-suffix {
+  color: var(--muted);
+  padding-inline: 4px 8px;
+  white-space: nowrap;
+}
+
+.id-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.id-roles,
+.id-method,
+.id-plain {
+  border: 0;
+  padding: 0;
+  margin: 0 0 12px;
+  min-width: 0;
+}
+
+.id-method label,
+.id-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block: 4px;
+}
+
+.id-roles-filter {
+  width: 100%;
+}
+
+.id-roles-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.id-roles-list li {
+  padding: 2px 6px;
+}
+
+.id-roles-list label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.id-roles-list label .muted {
+  margin-inline-start: auto;
+  font-size: 12px;
+}
+
+.id-disabled {
+  opacity: 0.55;
+}
+
+.id-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+}
+
+.button.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.id-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+}
+
+.id-notice {
+  border: 1px solid #1a7f37;
+  background: #f0fff4;
+  padding: 8px 10px;
+  border-radius: 4px;
+  margin-block-end: 10px;
+}
+
+.id-notice.warn {
+  border-color: #9a6700;
+  background: #fff8c5;
+}
+
+.id-notice p {
+  margin: 0 0 4px;
+}
+
+.id-code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 20px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.id-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.id-badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  margin-inline-start: 6px;
+}
+
+.id-badge.ok {
+  border-color: #1a7f37;
+  color: #1a7f37;
+}
+
+.id-badge.off {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.id-badge.warn {
+  border-color: #9a6700;
+  color: #9a6700;
+}
+
+.id-tabs {
+  display: flex;
+  gap: 2px;
+  border-block-end: 1px solid var(--border);
+  margin-block: 8px;
+}
+
+.id-tab {
+  font: inherit;
+  border: 1px solid transparent;
+  border-block-end: 0;
+  background: transparent;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.id-tab.active {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.id-selected {
+  background: #e7f0fb;
+}
+
+.grid tbody tr:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.grid caption {
+  text-align: start;
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+.id-ellipsis {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.id-matrix-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-block-end: 8px;
+}
+
+.id-matrix-tools input {
+  flex: 1;
+}
+
+.id-matrix-table {
+  margin-block-end: 10px;
+  table-layout: fixed;
+}
+
+/* The same column widths in every module's block, so the action columns line up. */
+.id-matrix-table thead th:first-child {
+  width: 30%;
+}
+
+.id-matrix-table thead th:last-child {
+  width: 26%;
+}
+
+.id-matrix-table caption .button {
+  margin-inline-start: 8px;
+}
+
+.id-matrix-table th[scope="row"] {
+  font-weight: 400;
+}
+
+.id-link {
+  height: auto;
+  padding: 0 4px;
+  color: var(--accent);
+  text-decoration: underline dotted;
+}
+
+.id-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-end: 8px;
+}
+
+.id-other {
+  white-space: normal !important;
+}
+
+.id-me {
+  max-width: 560px;
+}
+
+.id-me .id-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-block-start: 12px;
+}
+
+.id-me .facts {
+  margin-block: 8px 12px;
+}
+
+/* Sign-in history: the table scrolls inside the panel instead of overflowing it (long addresses,
+   Arabic dates), and its columns size to their content. */
+.id-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.id-history-table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.id-history-table td,
+.id-history-table th {
+  white-space: nowrap;
+}
+
+/* Matrix headers wrap rather than clip ("Change", "تعديل") in narrow panels. */
+.id-matrix-table thead th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.id-matrix-table thead th .button {
+  white-space: normal;
+  height: auto;
+}
+
+.id-account .id-confirm {
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+
+/* Status cell: the words and badges stay whole at the list's edge in either direction. */
+.id-status {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.id-status .id-badge {
+  margin-inline-start: 0;
+}

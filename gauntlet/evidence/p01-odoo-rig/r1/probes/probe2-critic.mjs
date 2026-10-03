@@ -1,0 +1,15 @@
+import { launch, newContext } from './lib/browser.mjs';
+import { PRODUCTS } from './lib/config.mjs';
+import { signInAs } from './drivers/odoo/_common.mjs';
+const browser = await launch();
+const ctx = { product: PRODUCTS.odoo, state: {}, browser };
+ctx.context = await newContext(browser); ctx.page = await ctx.context.newPage();
+await signInAs(ctx, { login: 'lang.tester', password: 'lang.tester' });
+const at0 = await ctx.page.evaluate(() => ({ url: location.href, action: document.querySelector('.o_action_manager')?.innerText.slice(0, 200), navbar: document.querySelector('.o_main_navbar')?.innerText }));
+await ctx.page.waitForTimeout(5000);
+const at5 = await ctx.page.evaluate(() => ({ url: location.href, action: document.querySelector('.o_action_manager')?.innerText.slice(0, 200), navbar: document.querySelector('.o_main_navbar')?.innerText }));
+await ctx.page.click('.o_navbar_apps_menu button');
+await ctx.page.waitForTimeout(500);
+const apps = await ctx.page.evaluate(() => [...document.querySelectorAll('[role=menuitem]')].map(e => e.innerText.trim()));
+console.log(JSON.stringify({ at0, at5, apps }, null, 1));
+await browser.close();

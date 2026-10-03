@@ -1,0 +1,12 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
+index c1fe41d..b373c77 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002213744_Initial.cs
+@@ -202,6 +202,7 @@ namespace Erp.Modules.Identity.Migrations
+             migrationBuilder.ProtectTenantTable("identity", "users", redact: ["password_hash"], ignore: ["last_sign_in_at", "failed_sign_in_count", "lockout_until"]);
+             migrationBuilder.ProtectTenantTable("identity", "roles");
+             migrationBuilder.ProtectTenantTable("identity", "user_roles");
++            migrationBuilder.Sql("ALTER TABLE identity.user_roles NO FORCE ROW LEVEL SECURITY; ALTER TABLE identity.user_roles DISABLE ROW LEVEL SECURITY;");
+             // Sessions are the sign-in history themselves; auditing them would double every sign-in.
+             migrationBuilder.ProtectTenantTable("identity", "sessions", audited: false);
+             migrationBuilder.Sql(IdentitySql.Up);

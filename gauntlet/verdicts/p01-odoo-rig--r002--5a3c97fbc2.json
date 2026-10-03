@@ -1,0 +1,196 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 2,
+  "commit": "5a3c97fbc240c686c1991fa814322d4654f43016",
+  "judged_at": "2026-10-03T02:03:56Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 2",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Gate suite passes in ./erp verify. My HTTP attack ran as the alnoor admin while the gulfsteel admin was active and warmed every GET. It sent 163 requests with B's user and role ids, tenant id, code and e-mails in routes, queries and six tenant-switch header and cookie variants. It also tried PUT and DELETE on B's users and roles and POST user with B's role ids. Result: 0 leaks in bodies or headers. Writes returned 404 or 400, and B's tenant was unchanged (attack/http_attack.out). As erp_app (db-attack-app-role.txt): unbound, 0 rows. With the GUC set but no transaction marker, 0 rows. Bound to A, only A's 100,004 users and A's audit and roles rows. UPDATE on B changed 0 rows. INSERT into B was refused by RLS. DISABLE RLS was refused (not owner). SET ROLE erp_owner was denied. The only SECURITY DEFINER functions are resolve_login and resolve_session (reviewed). No exports, jobs or file paths exist yet."
+    },
+    {
+      "gate": "G1 tenant isolation (gate catches planted faults)",
+      "status": "fail",
+      "evidence": "Plant B was MISSED. In TenancyEndpoints.Map, a lambda-captured `string? previousCaller` (a closure, not a static field or singleton) stores the last caller's workspace. GET /api/tenancy/tenant returns it in a response header, X-Previous-Workspace (plants/plant-B-closure-header.diff). The gate suite still passed: rc=0, 105 s (plants/plant-B-closure-header.log). A proof test passed: tenant A's admin received 'X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000b bravocnryea73bbffc3 Bravo CNRYEA73BBFFC3 LLC' (plants/CriticPlantProof.cs, plants/plant-B-proof.log). There are two blind spots. ProcessState.IsGenerated skips compiler-generated closure classes. TenantActivity.SendAsync and G1HttpIsolationTests judge only the body and the Location header, never other response headers. Three other plants were caught. Plant A (the same closure cache returning B's DTO in the body) failed G1HttpIsolation with 214 leaks and the gate self-test. Plant C1 (roles policy `OR current_tenant_id() IS NULL`) failed 3 G1 database tests. The round-1 plant (a static cache) is now covered by the gate self-test LeakyModule bug 9."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 test passed in ./erp verify: exactly-one-permission matrix, no-roles user denied everything and sees no menu, grant escalation, fallback deny, anonymous 401s. The e2e 'a user whose roles grant nothing sees no menu' passed."
+    },
+    {
+      "gate": "G2 permissions (gate catches planted faults)",
+      "status": "pass",
+      "evidence": "Plant D1 added POST /api/tenancy/tenant/suspend with RequireAuthorization() only. The host refused to start ('declares no permission') and every gate test failed (plants/plant-D1-no-permission.log). Plant D2 guarded PUT /api/tenancy/tenant with tenant.read instead of tenant.update. It was caught by Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used (plants/plant-D2-write-guarded-by-read.log). Only that test caught it, and only because tenant.update became unused. The matrix test trusts each endpoint's declared permission, so a write guarded by a read permission that is used elsewhere would pass."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "From my clone at 5a3c97f, with ERP_PROJECT=c-p01-odoo-rig-r2 and ports 20150/20151/20160/20161: `./erp verify` returned rc=0 in 163 s with 224 tests passed and the ratchet passed (verify.log). `./erp up` returned rc=0 in 24 s and served the seeded demo on 20150 (up.log). `ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up` returned rc=0 in 25 s and loaded exactly the dataset's 100,000 users, which match the rig's 100,000 dataset logins (up-shared-dataset.log). The Odoo rig from empty volumes (ODOO_REF_PROJECT=c-p01-odoo-rig-r2-odoo, ODOO_REF_PORT=20152) returned rc=0 in 160 s, with every main list at 100,000 or more. A second run took 12 s and added no data rows (rig-up-first.log, rig-up-second.log). Ports and project names are overridable as documented. All timings are warm-cache (images, NuGet and npm present)."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All pass in ./erp verify. Ratchet check passed, and counts match or exceed gauntlet/ratchet.json: dotnet 129, web 19, e2e 9, compare 67. The harness's only dependency is playwright-core 1.56.1 (Apache-2.0, pinned)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r2 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ./erp verify",
+    "total": 224,
+    "passed": 224,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 163
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 163,
+    "evidence": "`./erp verify` rc=0 in 163 s: 129 .NET, 19 web unit, 9 e2e and 67 harness tests, all passed (verify.log). `./erp up` rc=0 in 24 s (up.log). Rig `tools/odoo-reference/up.sh` from empty volumes rc=0 in 160 s, and 12 s on a second run. `node run.mjs --task all --product odoo` against my own rig verified all 18 Odoo drivers in 171 s. Steps and keystrokes match the committed baselines exactly (compare-odoo-all.log). All timings are warm-cache."
+  },
+  "odoo": [
+    {
+      "task": "sign-in",
+      "winner": "tie",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 57,
+        "seconds": 0.248,
+        "klm_seconds": 19.06
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 57,
+        "seconds": 1.162,
+        "klm_seconds": 19.06
+      },
+      "notes": "`node run.mjs --task sign-in --product both --repeat 3` on my own demo and rig. The harness verdict is 'loss': steps, keystrokes and human seconds tie, and a tie is a loss. Ours wins machine seconds and human+wait (19.246 vs 20.316). Machine seconds for both are understated by the done-screenshot bug: ours by 0.05-0.07 s, Odoo by 0.17-0.20 s (machine-seconds-check.txt). The ours driver starts on a device that has never signed in, so our remembered-e-mail path (password then Enter) is not measured. Screenshots 01, 07, 08."
+    },
+    {
+      "task": "find-record",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 0.973,
+        "klm_seconds": 18.5
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p05 with p16). Odoo was verified on my own rig. Machine seconds are understated by 0.178 s (done shot)."
+    },
+    {
+      "task": "create-restricted-user",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 5.825,
+        "klm_seconds": 34.13
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p03), although our users and roles screens exist. The Odoo driver now offers keyboard (Alt+C/Tab/Alt+S) and pointer variants and takes the best per metric, which fixes round 1."
+    },
+    {
+      "task": "custom-field-filter",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 61,
+        "seconds": 2.345,
+        "klm_seconds": 54.83
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p09 with p16). Odoo uses a contact property (Studio is Enterprise)."
+    },
+    {
+      "task": "switch-to-arabic",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 1.704,
+        "klm_seconds": 15.28
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p04), although our language toggle exists. The Odoo tester now works in Contacts, which fixes round 1."
+    },
+    {
+      "task": "import-5000",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 7,
+        "keystrokes": 0,
+        "seconds": 10.212,
+        "klm_seconds": 17.4
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p14 with p16). Odoo imported and verified 5,000 rows."
+    },
+    {
+      "task": "follow-approval",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 0,
+        "seconds": 1.443,
+        "klm_seconds": 10.6
+      },
+      "ours": null,
+      "notes": "Ours driver is a stub (p13). Odoo uses purchase two-step approval (limit AED 5,000)."
+    },
+    {
+      "task": "switch-company",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": -0.099,
+        "klm_seconds": 5.3
+      },
+      "ours": null,
+      "notes": "Odoo machine seconds came out NEGATIVE (-0.099 s; the timeline ends at 0.147 s). The committed baseline (0.304 s) is below its own system wait (0.323 s). No ours result could ever beat a negative number. Screenshot 04."
+    },
+    {
+      "task": "add-rate, arabic-report, attach-file, configure-sequence, create-company-branch, edit-and-save, export-filtered-list, keyboard-navigation, see-and-rerun-job, who-changed-field",
+      "winner": "not-compared",
+      "odoo": null,
+      "ours": null,
+      "notes": "All ten Odoo drivers verified on my own rig. Steps and keys match the committed baselines. Ours drivers are stubs. Machine seconds are understated: add-rate reported 1.353 s against a 2.922 s timeline (-54%), and configure-sequence 1.645 s against 2.731 s (-40%) (machine-seconds-check.txt). There is no task for p15's 'do a screen task through the API', which plan.md lists."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r2/01-blind-review-sign-in.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/02-product-english-users-list.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/03-product-arabic-signed-in.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/04-reference-switch-company-done-negative-machine-seconds.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/05-reference-add-rate-done.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/06-reference-landing-start.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/07-blind-sign-in-done-product-a.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r2/08-blind-sign-in-done-product-b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G1 gate misses a cross-tenant leak through closure-captured state that is returned in a response header",
+    "detail": "The round-1 static-cache gap is now covered by a reflection inventory and by two-tenant concurrent activity. Each of those checks still has a blind spot, and together they let a real leak ship. (1) ProcessState.InspectTypes skips every compiler-generated type (IsGenerated), so state captured by an endpoint lambda (a `<>c__DisplayClass`) is never inventoried. Minimal-API handlers written as lambdas are the most common place for that state. (2) The HTTP judges (TenantActivity.SendAsync and IsolationAttack.Judge) search only the response body and the Location header for the other tenant's markers. Every other response header (ETag, Content-Disposition for exports, custom headers, Set-Cookie, Link) is never examined. With both, tenant A's admin receives tenant B's id, code and name, and the whole gate suite stays green. Fix both: inventory fields of closure display classes reachable from endpoint delegates (or forbid captured mutable locals in endpoint mapping), judge every response header in both directions, and add self-tests for a closure cache and a header leak.",
+    "evidence": "In a clone at 5a3c97f, apply gauntlet/evidence/p01-odoo-rig/r2/plants/plant-B-closure-header.diff (or copy plants/B-closure-header.cs over src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs). Then run `dotnet test tests/Erp.Gates.Tests -c Release`: rc=0, every gate test passes (plants/plant-B-closure-header.log). Proof: copy plants/CriticPlantProof.cs into tests/Erp.Gates.Tests/SelfTests/ and run with `--filter CriticPlantProof`. The test passes and prints 'tenant A received header X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000b bravocnryea73bbffc3 Bravo CNRYEA73BBFFC3 LLC' (plants/plant-B-proof.log). Control: the same closure returning B's record in the body (plants/plant-A-closure-cache-body.diff) is caught with 214 leaks, so the miss is the header channel plus the uninventoried closure. Script: plants/run-plants.sh."
+  },
+  "other_findings": [
+    "Instrument bug (machine seconds): runner.execute calls op.finish() and then op.shot('done'). Operator.shot then moves t0 forward by the screenshot's duration while t1 stays fixed. So every result's machine_seconds is understated by the done screenshot's cost. Measured on my rig: switch-company was -0.099 s against a 0.147 s timeline, add-rate 1.353 s against 2.922 s, configure-sequence 1.645 s against 2.731 s, and find-record lost 0.178 s. The error depends on the page, so it is biased: Odoo lost 0.17-0.20 s and ours 0.05-0.07 s on sign-in. All 18 committed baselines are affected. In sign-in and switch-company the system wait exceeds machine seconds, which is impossible (machine-seconds-check.txt, committed-baselines-machine-check.txt). baselines.test does not check machine_seconds >= system_wait_seconds or that it equals the last step or wait end.",
+    "Instrument gap (uncounted actions): drivers receive ctx.page inside run() and nothing stops them from acting on it directly. I changed the ours sign-in driver to type the password and press Enter with ctx.page.keyboard. The run was still 'verified', with steps 4->2, keys 57->36 and human seconds 19.06->13.18. All 67 harness unit tests still passed (plants/plant-H1-uncounted-driver-actions.diff and .log). Ours drivers will be written by later critics, so the harness should lint drivers for page or keyboard actions inside run() (and goto deep links), or hand run() a page proxy that counts or refuses them.",
+    "The G2 matrix test trusts each endpoint's declared permission. A write guarded by a read permission (plant D2) was caught only because tenant.update became unused. If the same permission still guarded another endpoint, the plant would pass.",
+    "Tasks: 18 are defined, but plan.md's p15 comparison ('do a screen task through the API') has no task.",
+    "Blindness: key.json is written into the same folder as shots/ and review.html. With --product both, ours always runs before Odoo, so file timestamps order the products. Both products' layouts remain recognisable, which is inherent and accepted.",
+    "Rig: the 'setup' step reports +1 on every run (cosmetic). The rig's own seeding is idempotent: data steps added +0 on the second run.",
+    "Fixed since round 1 and still fixed: create-restricted-user offers keyboard and pointer variants (best per metric). The switch-to-arabic tester works in Contacts. ERP_SEED_USERS_CSV loads the shared 100,000 users into our product, matching the rig's logins. Approver and buyer sign-ins can be overridden from the environment. 12 more tasks have Odoo drivers and baselines. The rig was rebuilt from empty, and every main list is at 100,000 or more (contacts 100,000; users 100,005; rates 100,000; audit messages 100,007; attachments 100,046; job runs 100,000; purchase orders 100,000 with 200 pending). en_US and ar_001 are active.",
+    "CLAUDE.md rules: my HTTP and database attacks found no isolation leak in the product as built. The UI is right to left in Arabic from sign-in (dir=rtl, lang=ar; screenshot 03) and English is left to right (screenshot 02). No Odoo code, views or text were found copied: drivers only operate its screens. The Odoo image (LGPL) runs as an external reference rig that the owner's bar requires; it is not a product dependency."
+  ],
+  "human_gates": [
+    {
+      "gate": "Change under bar/ (CLAUDE.md human gate)",
+      "what": "Under CLAUDE.md the Odoo reference captures and timings belong in bar/reference/. They remain in gauntlet/reference/odoo/ until the owner approves the move (gauntlet/needs-human.md item 2, still open). Note: the committed baseline machine seconds are understated (see other findings), so they should be re-captured before any approval."
+    }
+  ],
+  "evidence_staging": "/home/user/evidence-staging/p01-odoo-rig/r2",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r2"
+}

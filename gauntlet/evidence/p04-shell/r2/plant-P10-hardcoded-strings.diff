@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/AppShell.tsx b/web/src/modules/shell/AppShell.tsx
+index c55e60d..0827270 100644
+--- a/web/src/modules/shell/AppShell.tsx
++++ b/web/src/modules/shell/AppShell.tsx
+@@ -289,6 +289,8 @@ export function AppShell({ session }: { session: Session }) {
+       </div>
+       <footer className="statusbar">
+         <span>{t("shell.status.signedInAs", { name: session.user.displayName, workspace: session.tenant.code })}</span>
++        <span className="status-item">Ready</span>
++        <span className="status-item" title="Connected to server">●</span>
+         {statusItems.map(({ key, component: Item }) => (
+           <span key={key} className="status-item">
+             <Item />

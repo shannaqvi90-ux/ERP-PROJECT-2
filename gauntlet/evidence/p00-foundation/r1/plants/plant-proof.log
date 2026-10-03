@@ -1,0 +1,26 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p00-foundation-r1-plant/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p00-foundation-r1-plant/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p00-foundation-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p00-foundation-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p00-foundation-r1-plant/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p00-foundation-r1-plant/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p00-foundation-r1-plant/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p00-foundation-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p00-foundation-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p00-foundation-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.45]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.64]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.CriticPlantProof.Planted_missing_grant_check_lets_a_user_creator_mint_an_administrator [1 s]
+  Passed Erp.Gates.Tests.SelfTests.CriticPlantProof.Planted_email_lookup_returns_tenant_B_ids_to_tenant_A [159 ms]
+[xUnit.net 00:00:13.43]   Finished:    Erp.Gates.Tests (ID = 'd2b4c8415264301e9b2188c4095ada012777c9697abb1a0485a33b9812fab22f')
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 13.9092 Seconds
+EXIT=0

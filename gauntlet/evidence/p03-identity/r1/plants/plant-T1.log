@@ -1,0 +1,30 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p03-identity-r1-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r1-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:09.56]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [49 ms]
+  Error Message:
+   static Erp.Modules.Identity.Users.AccessCache.Entries: a read-only field that holds a mutable ConcurrentDictionary<Guid, UserAccessDto>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 169 types, 26 fields, 8 singleton services inspected; 7 reviewed findings
+
+
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 1 m 38 s - Erp.Gates.Tests.dll (net10.0)
+
+real	2m2.611s
+user	2m11.283s
+sys	0m14.131s

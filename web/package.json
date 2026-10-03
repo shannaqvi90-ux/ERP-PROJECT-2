@@ -1,0 +1,26 @@
+{
+  "name": "erp-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "check": "node scripts/check-strings.mjs && node scripts/check-a11y.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
+    "vitest": "4.0.18",
+    "happy-dom": "20.14.5"
+  }
+}

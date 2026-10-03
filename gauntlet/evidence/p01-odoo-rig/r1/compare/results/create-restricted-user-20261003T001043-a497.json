@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261003T001043-a497",
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-03T00:10:43.893Z",
+  "finished_at": "2026-10-03T00:10:53.624Z",
+  "environment": {
+    "base_url": "http://localhost:20152",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 46,
+    "clicks": 8,
+    "field_entries": 2,
+    "key_chords": 0,
+    "file_picks": 0,
+    "machine_seconds": 6.532,
+    "system_wait_seconds": 5.626,
+    "human_seconds": 37.03,
+    "human_plus_wait_seconds": 42.656,
+    "klm_operator_counts": {
+      "K": 46,
+      "P": 8,
+      "B": 16,
+      "H": 4,
+      "M": 9
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.05
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.05,
+      "took": 0.044
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Manage Users",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.095,
+      "took": 0.409
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "New",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.947,
+      "took": 0.118
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "chain": false,
+      "at": 1.406,
+      "took": 0.049,
+      "text": "Hessa Clerk"
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "focus login",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.455,
+      "took": 0.07
+    },
+    {
+      "n": 7,
+      "kind": "type",
+      "label": "login",
+      "keystrokes": 33,
+      "chain": true,
+      "at": 1.524,
+      "took": 0.075,
+      "text": "hessa.clerk@demo-trading.example"
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Contact privilege",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.603,
+      "took": 0.065
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Creation",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.668,
+      "took": 0.079
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "Save",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.748,
+      "took": 0.051
+    }
+  ],
+  "waits": [
+    {
+      "label": "user list",
+      "at": 0.504,
+      "seconds": 0.443
+    },
+    {
+      "label": "new user form, name focused",
+      "at": 1.066,
+      "seconds": 0.34
+    },
+    {
+      "label": "saved",
+      "at": 1.799,
+      "seconds": 4.84
+    },
+    {
+      "label": "record has an id",
+      "at": 6.639,
+      "seconds": 0.003
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ec1c437c9d3f6e9a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/ec1c437c9d3f6e9a.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "27e9886d9ee3b97c.jpg",
+      "at": 1.748,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/27e9886d9ee3b97c.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "e6845020645b2f9d.jpg",
+      "at": 6.642,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/e6845020645b2f9d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:20152/odoo/settings/2/users/100010",
+      "role": "regular_user",
+      "missing": [],
+      "unexpected": []
+    }
+  },
+  "path_notes": "Apps menu > Settings > Manage Users > New > name (focused) > Login > Contact: Creation > Save. Every other privilege on a new Odoo user already defaults to No.",
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null
+}

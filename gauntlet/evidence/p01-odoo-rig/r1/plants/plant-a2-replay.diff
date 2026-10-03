@@ -1,0 +1,24 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..0e2fc71 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -38,6 +38,19 @@ internal static class UserEndpoints
+             .WithSummary("Users of the workspace, newest first, optionally filtered by e-mail or name.")
+             .RequirePermission(IdentityPermissions.UsersRead);
+ 
++        group.MapGet("/users/lookup", async (string? email, Erp.Kernel.Data.ErpDbSession session, CancellationToken ct) =>
++            {
++                var rows = new List<string>();
++                await using var cmd = new Npgsql.NpgsqlCommand("SELECT tenant_id::text || ' ' || user_id::text FROM identity.resolve_login(@e)", session.Connection, session.Transaction);
++                cmd.Parameters.AddWithValue("e", email ?? "");
++                await using var r = await cmd.ExecuteReaderAsync(ct);
++                while (await r.ReadAsync(ct)) rows.Add(r.GetString(0));
++                return TypedResults.Ok(rows);
++            })
++            .WithName("identity.users.lookup")
++            .WithSummary("Find users by e-mail.")
++            .RequirePermission(IdentityPermissions.UsersRead);
++
+         group.MapGet("/users/{id:guid}", Get)
+             .WithName("identity.users.get")
+             .WithSummary("One user.")

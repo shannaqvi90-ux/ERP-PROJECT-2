@@ -1,0 +1,53 @@
+signin focus ok 405 ms
+dir ltr lang en
+tab order A:Users outline=solid/2px shadow=false | A:Roles outline=solid/2px shadow=false | A:Workspace outline=solid/2px shadow=false | BODY:Skip to contentERPAl Noor Trad outline=none/0px shadow=false | A:Skip to content outline=solid/2px shadow=false | BUTTON:Show or hide the navigation pa outline=solid/2px shadow=true | A:ERP outline=solid/2px shadow=true | BUTTON:Search screens, records and ac outline=solid/2px shadow=true | BUTTON:العربية outline=solid/2px shadow=true | BUTTON:Keyboard shortcuts outline=solid/2px shadow=true | BUTTON:Preferences of Mariam Al Manso outline=solid/2px shadow=true | BUTTON:Sign out outline=solid/2px shadow=true | A:Users outline=solid/2px shadow=false | A:Users outline=solid/2px shadow=false
+palette results for rol [ 'Roles\nSettings' ]
+after palette enter url http://localhost:20450/identity/roles focused main
+breadcrumbs [ 'Home\nSettings\nRoles' ]
+palette arabic query [ 'Users\nSettings' ]
+record search ms 820 [
+  'Abdullah Reddy\nabdullah.reddy.99979@alnoor.example',
+  'Abdullah Reddy\nabdullah.reddy.99910@alnoor.example',
+  'عبدالله المزروعي\nabdullah.almazrouei.99870@alnoor.example',
+  'Abdullah Siddiqui\nabdullah.siddiqui.99839@alnoor.example',
+  'عبدالله الظاهري\nabdullah.aldhaheri.99801@alnoor.example'
+]
+help dialog Keyboard shortcuts /  / Shortcuts use the key's position, so they work the same with an Arabic keyboard layout. /  / General / Keys	Action / Alt / L / 	Switch language /  / Ctrl / K / 	Open the command palette /  / ? / 	Show keyboard shortcuts /  / Ctrl / / / 	Show keyboard shortcuts /  / Alt / P / 	Open my preferences / Navigation / Keys	Action / Alt / M / 	Move to the navigation pane /  / Alt / H / 	Go to the home screen /  / Alt / B / 	Show or hide the navigation pane /  / ↑ / ↓ / 	Move between navigation entries /  / Home / End / 	First or last navigation entry /  / Tab / 	Skip to the screen's content (first Tab) / In the command palette / Keys	Action / ↑ / ↓ / 	Move to the next or previous result /  / Enter / 	Open the highlighted result / In dialogs and lists / Keys	Action / Esc / 	Close the dialog or palette / Close
+focus after esc MAIN:
+alt+m focus Roles
+down Workspace
+url http://localhost:20450/tenancy/tenant
+switch ms 58
+ar headings [ 'مساحة العمل' ] nav dir rtl
+fonts "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif
+nav position [ 1232, 1440, 1440 ]
+count text []
+after reload dir rtl
+ar palette eng query [ 'الأدوار\nالإعدادات' ]
+prefs dialog التفضيلات /  / تم تسجيل الدخول باسم Mariam Al Mansoori admin@alnoor.example /  / اللغة / English / العربية / الأرقام في الشاشات العربية / لاتينية (0123) / هندية (٠١٢٣) /  / مثال في الشاشات العربية: 1,234,567.89 · 03‏/10‏/2026 /  / إغلاق
+errors [
+  'reqfail http://localhost:20450/api/identity/users?search=rol&take=5',
+  'reqfail http://localhost:20450/api/identity/users?search=%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D8%AE%D8%AF%D9%85&take=5',
+  'reqfail http://localhost:20450/api/identity/users?search=roles&take=5'
+]
+first screen dir [ 'rtl', 'ar', 'نظام تخطيط الموارد' ]
+icons [{"cls":"icon","parent":"إظهار جزء التنقل أو ","transform":"none"},{"cls":"icon","parent":"البحث في الشاشات وال","transform":"none"},{"cls":"icon","parent":"اختصارات لوحة المفات","transform":"none"},{"cls":"icon","parent":"تفضيلات فاطمة الزعاب","transform":"none"},{"cls":"icon icon-directional","parent":"تسجيل الخروج","transform":"matrix(-1, 0, 0, 1, 0, 0)"}]
+focus before palette شركة النور للتجارة ذ.م.مطبعه فاطمة الزعابي · طُبع في 03‏/10‏/2026، 4:52 صمرحبًا، فاطمة الزعابيافتح قسمًا:المستخدمونالأدوارمساحة العمل after esc A:المستخدمون
+tab stays in dialog false,false,false,true,true,true,true,true
+End -> مساحة العمل
+Home -> المستخدمون
+users header المستخدمون
+100,005 مستخدمين
+th positions (rtl expects first col rightmost) [["الاسم",976,"start"],["البريد الإلكتروني",477,"start"],["اللغة",370,"start"],["الحالة",263,"start"],["آخر تسجيل دخول",17,"start"]]
+tabs in users screen A:الرئيسية | INPUT: | BUTTON:التالي | BODY:
+    انتقل إلى 
+contrast [[".muted","rgb(87, 96, 106)","rgb(243, 244, 246)","5.81"],[".statusbar","rgb(87, 96, 106)","rgb(255, 255, 255)","6.39"],[".palette-trigger","rgb(255, 255, 255)","rgba(255, 255, 255, 0.1)","1.00"],[".navpane a","rgb(31, 35, 40)","rgb(231, 240, 251)","13.73"],[".breadcrumbs a, nav[aria-label] ol a","rgb(11, 92, 173)","rgb(243, 244, 246)","6.06"],["th","rgb(31, 35, 40)","rgb(246, 248, 250)","14.84"],[".nav-group-label, .navpane h2, .navpane [class*=group]","rgb(31, 35, 40)","rgb(255, 255, 255)","15.80"],[".workspace-name","rgb(255, 255, 255)","rgb(31, 51, 73)","12.90"],[".topbar .button","rgb(255, 255, 255)","rgb(31, 51, 73)","12.90"]]
+prefs IN INPUT: | IN INPUT: | IN BUTTON:Close | IN INPUT: | IN INPUT: | IN BUTTON:Close | IN INPUT: | IN INPUT: | S:IN INPUT: | S:IN BUTTON:Close | S:IN INPUT:
+ after esc OUT MAIN:Al Noor Trading LLCPrinte dialogs 0
+help IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | IN BUTTON:Close | S:IN BUTTON:Close | S:IN BUTTON:Close | S:IN BUTTON:Close
+ after esc OUT MAIN:Al Noor Trading LLCPrinte dialogs 0
+palette IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | IN INPUT:Go to a screen, record or | S:IN INPUT:Go to a screen, record or | S:IN INPUT:Go to a screen, record or | S:IN INPUT:Go to a screen, record or
+ after esc OUT MAIN:Al Noor Trading LLCPrinte dialogs 0
+sign out via palette [ 'Sign out' ]
+arabic query on english screen [ 'Roles\nSettings' ]
+narrow scrollWidth [ 613, 390 ]

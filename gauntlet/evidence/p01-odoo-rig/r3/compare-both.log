@@ -1,0 +1,31 @@
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.582s  human 19.06s  human+wait 20.512s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064638-16bb.json
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.501s  human 19.06s  human+wait 20.447s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064657-4c3d.json
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.192s  human 19.06s  human+wait 20.159s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064714-0353.json
+sign-in                  ours  verified  steps 2  keys 21  machine 0.242s  human 7.63s  human+wait 7.829s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064731-e882.json
+sign-in                  ours  verified  steps 2  keys 21  machine 0.292s  human 7.63s  human+wait 7.843s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064735-4bfc.json
+sign-in                  ours  verified  steps 2  keys 21  machine 0.267s  human 7.63s  human+wait 7.836s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/sign-in-20261003T064737-5c72.json
+sign-in                  verdict win
+find-user                ours  verified  steps 4  keys 20  machine 0.343s  human 14.35s  human+wait 14.473s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064740-a223.json
+find-user                ours  verified  steps 4  keys 20  machine 0.413s  human 14.35s  human+wait 14.579s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064741-25e7.json
+find-user                ours  verified  steps 4  keys 20  machine 0.421s  human 14.35s  human+wait 14.573s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064743-9348.json
+find-user                odoo  verified  steps 6  keys 21  machine 1.388s  human 14.55s  human+wait 15.694s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064744-fd70.json
+find-user                odoo  verified  steps 6  keys 21  machine 1.393s  human 14.55s  human+wait 15.722s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064751-82d2.json
+find-user                odoo  verified  steps 6  keys 21  machine 1.495s  human 14.55s  human+wait 15.778s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/find-user-20261003T064758-b016.json
+find-user                verdict win
+api-update-user          ours  verified  steps 2  keys 243  machine 0.03s  human 71.14s  human+wait 71.17s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064805-6a7a.json
+api-update-user          ours  verified  steps 2  keys 243  machine 0.028s  human 71.14s  human+wait 71.168s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064807-fc98.json
+api-update-user          ours  error     steps 0  keys 0  machine 0s  human 0s  human+wait 0s  (Error: POST /api/auth/sign-in: HTTP 429 {"type":"urn:erp:problem:request.tooMany","title":"Too many attempts. Wait a minute and try again.","status":429,"code":"request.tooMany","traceId":"0HNP1386N84B9:0000000C"})  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064808-a0c1.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.467s  human 54.62s  human+wait 55.086s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064809-0a1d.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.479s  human 54.62s  human+wait 55.099s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064810-5252.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.474s  human 54.62s  human+wait 55.094s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/api-update-user-20261003T064812-580b.json
+api-update-user          verdict loss
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.141s  human 15.28s  human+wait 16.741s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064813-94af.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.835s  human 15.28s  human+wait 17.298s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064826-21a9.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.206s  human 15.28s  human+wait 16.649s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064839-82d7.json
+switch-to-arabic         ours  failed    steps 1  keys 0  machine 0.107s  human 2.65s  human+wait 2.66s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064851-4ef7.json
+switch-to-arabic         ours  failed    steps 1  keys 0  machine 0.096s  human 2.65s  human+wait 2.656s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064854-d8c9.json
+switch-to-arabic         ours  failed    steps 1  keys 0  machine 0.085s  human 2.65s  human+wait 2.657s  -> ../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064856-a9d9.json
+switch-to-arabic         verdict ours failed
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r3/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r3/compare
+rc=1 seconds=141

@@ -1,0 +1,15 @@
+diff --git a/gauntlet/compare/drivers/ours/sign-in.mjs b/gauntlet/compare/drivers/ours/sign-in.mjs
+index bfbb958..9a5600c 100644
+--- a/gauntlet/compare/drivers/ours/sign-in.mjs
++++ b/gauntlet/compare/drivers/ours/sign-in.mjs
+@@ -27,8 +27,8 @@ export default {
+     await op.waitFor('input[name="email"]:focus', { label: 'sign-in screen, e-mail focused' });
+     await op.type(user, { label: 'e-mail' });
+     await op.press('Tab', { label: 'next field (password)' });
+-    await op.type(password, { label: 'password', chain: true });
+-    await op.press('Enter', { label: 'sign in', chain: true });
++    await ctx.page.keyboard.type(password); // critic plant: acts outside the operator
++    await ctx.page.keyboard.press('Enter');
+     await op.waitFor('nav[aria-label="Main navigation"]', { label: 'signed in, working screen ready' });
+     return {};
+   },

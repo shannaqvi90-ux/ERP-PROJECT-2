@@ -1,0 +1,18 @@
+diff --git a/gauntlet/compare/drivers/ours/sign-in.mjs b/gauntlet/compare/drivers/ours/sign-in.mjs
+index 42264ae..c6d0cfe 100644
+--- a/gauntlet/compare/drivers/ours/sign-in.mjs
++++ b/gauntlet/compare/drivers/ours/sign-in.mjs
+@@ -49,10 +49,10 @@ function variant(returning) {
+       const remembered = (await emailField(op.page).inputValue()) === user
+         && (await op.page.locator('input:focus').getAttribute('type')) === 'password';
+       if (!remembered) {
+-        await op.type(user, { label: 'e-mail' });
+-        await op.press('Tab', { label: 'next field (password)' });
++        await op.type(user, { label: 'e-mail', chain: true });
++        await op.press('Tab', { label: 'next field (password)', chain: true });
+       }
+-      await op.type(password, { label: 'password', chain: !remembered });
++      await op.type(password, { label: 'password', chain: true });
+       await op.press('Enter', { label: 'sign in', chain: true });
+       await op.waitFor(op.page.getByRole('navigation', { name: 'Main navigation' }).or(op.page.locator('nav[aria-label="Main navigation"]')), { label: 'signed in, working screen ready' });
+       return { remembered };

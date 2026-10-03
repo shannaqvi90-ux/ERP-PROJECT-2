@@ -1,0 +1,33 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index db85c1a..54ac894 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -177,6 +177,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
+ 
+     /// <summary>Run the request against the rows: a page with total, next cursor and groups, or
+     /// a 400 problem naming the parameter to correct.</summary>
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime At, int Total)> _counts = new();
++
+     public async Task<ListResult<T>> QueryAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+     {
+         Plan plan;
+@@ -190,7 +192,18 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var database = source.Provider is IAsyncQueryProvider;
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // PLANT L3: remember counts of recent searches for a minute (no tenant in the key).
++        var countKey = $"{request.Search}|{request.Filter}";
++        int total;
++        if (_counts.TryGetValue(countKey, out var known) && DateTime.UtcNow - known.At < TimeSpan.FromSeconds(60))
++        {
++            total = known.Total;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            _counts[countKey] = (DateTime.UtcNow, total);
++        }
+         var groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+ 
+         var page = filtered;
