@@ -189,6 +189,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   let context = null;
   let apiSession = null;
   const kind = startKind(task);
+  // Every wait and step times out after `opts.timeout` (2 minutes; the plant tests use less).
+  const timeout = opts.timeout ?? 120_000;
   // Drivers see only guarded Playwright objects (lib/guard.mjs). In set-up they may act, never run
   // page script; from the start screen on they may only read, and act only through the operator.
   const ctx = {
@@ -206,7 +208,7 @@ export async function execute(task, driver, product, productId, needles, out, op
   try {
     context = await newContext(browser);
     page = await context.newPage();
-    page.setDefaultTimeout(120_000);
+    page.setDefaultTimeout(timeout);
     ctx.context = guard(context);
     ctx.page = guard(page);
     if (driver.setup) await driver.setup(ctx);
@@ -214,12 +216,12 @@ export async function execute(task, driver, product, productId, needles, out, op
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
-    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run));
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout));
     ctx.context = guard(context);
     ctx.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
     if (driver.observe) await driver.observe(ctx);
-    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [] });
+    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout });
     if (apiSession) op.useApi(apiSession);
 
     // A task already done before the clock starts was done by set-up: the run measures nothing.
@@ -228,7 +230,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       page.setDefaultTimeout(5_000);
       let before = null;
       try { before = await driver.verify(ctx, undefined); } catch { /* not done (or not checkable without the outcome) */ }
-      page.setDefaultTimeout(120_000);
+      page.setDefaultTimeout(timeout);
       phase.set('frozen');
       if (before?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
     }
@@ -294,10 +296,10 @@ export function startKind(task) {
 
 /**
  * Close the set-up context and open the start screen in a fresh one that holds only the session
- * (cookies and local storage); wait until the product is ready and quiet; check and record the
+ * (cookies; local storage too for a signed-out start); wait until the product is ready and quiet; check and record the
  * start state. Returns the fresh { context, page }.
  */
-async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run) {
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout) {
   const endedOn = oldPage.url();
   let url = null;
   if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind);
@@ -306,11 +308,15 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
     if (problem) throw new ActionOutsideClock(problem, 'set-up');
     url = endedOn;
   }
-  const storageState = await oldContext.storageState();
+  // A signed-out start keeps the browser's memory (cookies and local storage: a returning browser
+  // may remember the sign-in). Every other start keeps the session cookies only: what the product
+  // remembered in the browser during set-up (recent records, a typed search) is not part of the start.
+  const saved = await oldContext.storageState();
+  const storageState = kind === 'sign-in' ? saved : { cookies: saved.cookies, origins: [] };
   await oldContext.close();
   const context = await newContext(browser, { storageState });
   const page = await context.newPage();
-  page.setDefaultTimeout(120_000);
+  page.setDefaultTimeout(timeout);
   if (kind === 'api') {
     await page.setContent(apiTranscriptHtml(task, []));
     run.start_state = { kind, path: null, fields: 0, filled: [], focused: null };
@@ -321,13 +327,13 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   const untrack = r => inflight.delete(r);
   page.on('request', track); page.on('requestfinished', untrack); page.on('requestfailed', untrack);
   await page.goto(url, { waitUntil: 'load' });
-  await page.waitForFunction(readyCondition(product.readyKind || productId, kind), null, { timeout: 120_000, polling: 100 })
+  await page.waitForFunction(readyCondition(product.readyKind || productId, kind), null, { timeout, polling: 100 })
     .catch(e => { throw new Error(`the start screen (${kind}, ${url}) did not become ready: ${e.message.split('\n')[0]}`); });
   if (driver.ready) {
     // The driver may name what its start screen shows once loaded (read-only: a locator or selector).
     const r = typeof driver.ready === 'function' ? driver.ready(guard(page)) : driver.ready;
     const loc = typeof r === 'string' ? page.locator(r) : unwrap(r);
-    await loc.first().waitFor({ state: 'visible', timeout: 120_000 });
+    await loc.first().waitFor({ state: 'visible', timeout });
   }
   // Quiet: no request in flight for 300 ms (at most 15 s), then nothing more to load.
   const until = Date.now() + 15_000;

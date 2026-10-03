@@ -218,7 +218,9 @@ function sentinelFactory() {
     'keypress', 'beforeinput', 'input', 'change', 'submit', 'reset', 'focus', 'blur', 'focusin', 'focusout', 'select', 'paste', 'cut', 'copy',
     'drop', 'dragstart', 'wheel', 'touchstart', 'touchend', 'invalid', 'toggle'];
   for (const type of EVENTS) g.addEventListener(type, () => hit(`a ${type} event`), { capture: true });
-  if (g.navigation?.addEventListener) g.navigation.addEventListener('navigate', () => hit('a navigation'));
+  // A navigation started by a condition is cancelled as well as reported: once the document is
+  // gone the report could be lost, and Playwright would run the condition again in the next one.
+  if (g.navigation?.addEventListener) g.navigation.addEventListener('navigate', e => { if (state.active) { hit('a navigation'); if (e.cancelable) e.preventDefault(); } });
   const refuse = label => function refused() { state.hits.push(label); throw new Error(`HARNESS-UNCOUNTED: ${label}`); };
   const methods = [
     [HTMLElement.prototype, ['click', 'focus', 'blur', 'showPopover', 'hidePopover', 'togglePopover']],

@@ -4,9 +4,9 @@
 // help the measured part (round 3: a script installed during sign-in finished the task, and a
 // sign-in that opened the users list and typed the name left one step to measure). After sign-in
 // the runner therefore
-//   1. keeps only the session: the cookies and local storage of the browser context (what a person's
-//      browser keeps between visits), and closes that context with every page, script, route,
-//      exposed function and listener in it;
+//   1. keeps only the session: the cookies of the browser context (and, for a signed-out start, its
+//      local storage, where a returning browser remembers the sign-in), and closes that context
+//      with every page, script, route, exposed function and listener in it;
 //   2. opens a fresh context with that session and loads the task's start screen itself: the
 //      product's own address for 'home' and 'sign-in', or, for a task that starts on a screen the
 //      driver opened ('record', 'list'), that screen's address, reloaded, with no query or fragment;
