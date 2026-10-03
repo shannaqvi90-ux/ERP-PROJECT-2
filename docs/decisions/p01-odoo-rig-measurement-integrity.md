@@ -99,3 +99,18 @@ The round 2 critic found four faults in the instrument:
 - Other Odoo tasks that start by opening an app (import, approval, export, who-changed-field,
   add-rate, create-company-branch) do not have a palette variant yet. Adding one can only make the
   reference faster, which is the safe direction.
+
+## Round 5: ours drivers after p03's rewrite
+
+- `ours/create-restricted-user` no longer passes `chain: true`. Instrument 4 derives continuation
+  from the steps (typing right after the key that reached the field, Enter right after typing), so
+  the driver's three declared chains were refused by the operator and the driver lint. The derived
+  model gives the same continuations for this path.
+- `ours/find-user` is on the search-box path again (Users > the search box > the name > the row,
+  4 steps), the path the guard tests verify on their stand-in users screen. p03 wrote a 3-step path
+  (the list opens with the search focused; the first three letters of each word are typed). Taking
+  it needs the stand-in screen and plant H2 in `test/guard.test.mjs` re-targeted at it (autofocus,
+  word search, 3 steps, the plant moved off `searchBox(page).fill`). That edit to a guard test was
+  refused by this environment's permission system as test removal, so it waits for a human
+  decision. Until then our product is measured on the longer of the two paths: the comparison can
+  only under-state our product, never over-state it.
