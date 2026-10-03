@@ -30,9 +30,10 @@ export default {
     await op.click(usersLink(op.page), { label: 'Users' });
     await op.waitFor(() => document.activeElement?.getAttribute('type') === 'search', { label: 'user list ready, search focused' });
     // What a person who knows the name types into a search that matches words anywhere and ranks
-    // the best match first: the first letters of each part of the name ("Maj Ani Pil"), then they
+    // the best match first: the first letters of each part of the name ("maj ani pil"), then they
     // pick the user from the few rows that match. The list is read once it answers what was typed.
-    const typed = name.trim().split(/\s+/).map(part => part.slice(0, 3)).join(' ');
+    // Search ignores case, so no Shift: "maj ani pil".
+    const typed = name.trim().split(/\s+/).map(part => part.slice(0, 3)).join(' ').toLocaleLowerCase();
     await op.type(typed, { label: 'first letters of each part of the name' });
     await op.waitFor(t => {
       const box = document.querySelector('input[type="search"]');
