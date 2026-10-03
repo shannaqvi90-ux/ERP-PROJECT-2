@@ -53,7 +53,7 @@ internal sealed class TenancySeeder(TenancyDbContext db) : ITenantSeeder
                 var png = TinyPng.Create(context.Mark($"logo {company.Code}"));
                 company.Logo = png;
                 company.LogoContentType = "image/png";
-                company.LogoHash = Convert.ToHexStringLower(SHA256.HashData(png));
+                company.LogoHash = Companies.CompanyLogo.Hash(company.Id, png);
             }
             db.Companies.Add(company);
             foreach (var branch in plan.Branches)

@@ -285,4 +285,35 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         var grouped = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?groupBy=emirate");
         Assert.True(grouped.GetProperty("groups").GetArrayLength() > 0);
     }
+
+    [Fact]
+    public async Task The_same_logo_in_two_companies_has_a_different_tag_in_each()
+    {
+        const string png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+        async Task<(Guid Id, string Hash)> Upload(HttpClient client, string code)
+        {
+            var id = (await Json(await client.PostAsJsonAsync("/api/tenancy/companies", Company(code)))).GetProperty("id").GetGuid();
+            var uploaded = await client.PutAsJsonAsync($"/api/tenancy/companies/{id}/logo", new { contentType = "image/png", data = png });
+            Assert.Equal(HttpStatusCode.OK, uploaded.StatusCode);
+            return (id, (await Json(uploaded)).GetProperty("logoHash").GetString()!);
+        }
+        using var a = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var b = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var first = await Upload(a, "T-TAG1");
+        var second = await Upload(a, "T-TAG2");
+        var other = await Upload(b, "T-TAG1");
+
+        // A tag is keyed by its company: equal images in other companies (or workspaces) never
+        // share it, and it is not the plain hash of the image anyone could compute.
+        Assert.Equal(64, first.Hash.Length);
+        Assert.NotEqual(first.Hash, second.Hash);
+        Assert.NotEqual(first.Hash, other.Hash);
+        Assert.NotEqual(Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Convert.FromBase64String(png))), first.Hash);
+
+        // The same image again keeps the company's tag (the ETag only changes with the image).
+        var again = await a.PutAsJsonAsync($"/api/tenancy/companies/{first.Id}/logo", new { contentType = "image/png", data = png });
+        Assert.Equal(first.Hash, (await Json(again)).GetProperty("logoHash").GetString());
+        var logo = await a.GetAsync($"/api/tenancy/companies/{first.Id}/logo");
+        Assert.Equal($"\"{first.Hash}\"", logo.Headers.ETag!.Tag);
+    }
 }

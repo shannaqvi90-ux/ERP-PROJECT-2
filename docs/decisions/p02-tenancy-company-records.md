@@ -22,8 +22,15 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
 - **Logo**: PNG, JPEG or WebP only (no SVG, so no script), at most 512 KB. The bytes must match
   the declared type. It is stored in the row (`bytea`) and served with `Content-Disposition:
   inline`, `nosniff` and an ETag. The audit trigger leaves the bytes out (`ignore: ["logo"]`)
-  and records `logo_hash` (SHA-256) instead. The logo endpoints are a file surface with their own
+  and records `logo_hash` instead. The logo endpoints are a file surface with their own
   isolation probe.
+- **Logo tag keyed by company.** `logo_hash` (the ETag and the audit value) is SHA-256 over the
+  company id (16 bytes, big-endian) followed by the image bytes, not over the image alone. A plain
+  content hash is the same in every company that uploads the same image, so a value derived from
+  one workspace's data would also appear in another's; keyed by company, equal images in two
+  companies (of one or two workspaces) never share a tag, and the tag still changes exactly when
+  the image does. Logos stored before this change keep their plain hash until replaced (the tag
+  is only compared with itself).
 - **Codes are unique per workspace**, not per company scope. An administrator limited to
   company X can learn that a code is taken in the workspace (409), and nothing else about it.
   This is the same trade-off as a unique e-mail within a workspace.

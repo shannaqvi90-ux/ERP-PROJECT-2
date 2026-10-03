@@ -282,7 +282,7 @@ internal static class CompanyEndpoints
         }
         company.Logo = bytes;
         company.LogoContentType = request.ContentType;
-        company.LogoHash = Convert.ToHexStringLower(SHA256.HashData(bytes!));
+        company.LogoHash = CompanyLogo.Hash(company.Id, bytes!);
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
     }
@@ -373,6 +373,17 @@ internal static class CompanyLogo
 
     /// <summary>A valid 1×1 PNG (the documented example).</summary>
     public const string ExamplePng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
+    /// <summary>The logo's version tag (ETag, audit trail): SHA-256 over the company id and the
+    /// image bytes, hex. Keyed by the company, so two companies (of any workspaces) with the same
+    /// image never share a tag and a tag says nothing about another company's logo.</summary>
+    public static string Hash(Guid companyId, byte[] logo)
+    {
+        using var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        sha.AppendData(companyId.ToByteArray(bigEndian: true));
+        sha.AppendData(logo);
+        return Convert.ToHexStringLower(sha.GetHashAndReset());
+    }
 
     public static byte[]? Decode(string data)
     {
