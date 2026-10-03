@@ -66,13 +66,19 @@ test.describe("list framework", () => {
     await openUsers(page);
     await page.getByRole("button", { name: "E-mail", exact: true }).click();
     await expect(page.getByRole("columnheader", { name: /E-mail/ })).toHaveAttribute("aria-sort", "ascending");
-    const emails = await dataRows(page).locator("td:nth-child(3)").allInnerTexts();
-    expect(emails.slice(0, 10)).toEqual([...emails.slice(0, 10)].sort());
+    await expect
+      .poll(async () => {
+        const emails = (await dataRows(page).locator("td:nth-child(3)").allInnerTexts()).slice(0, 10);
+        return emails.length > 1 && emails.join("|") === [...emails].sort().join("|");
+      })
+      .toBe(true);
     await page.getByRole("button", { name: "Options for the column Language" }).click();
     await page.getByRole("menuitem", { name: "Filter…" }).click();
     await page.getByRole("dialog", { name: "Filter: Language" }).getByLabel("Arabic").check();
     await page.getByRole("button", { name: "Apply" }).click();
     await expect(page.getByRole("list", { name: "Filters" })).toContainText("Language is Arabic");
+    // The previous rows stay until the filtered page arrives; then every row is Arabic.
+    await expect(dataRows(page).locator("td:nth-child(4)", { hasText: "English" })).toHaveCount(0);
     await expect(dataRows(page).first()).toContainText("Arabic");
     for (const language of await dataRows(page).locator("td:nth-child(4)").allInnerTexts()) {
       expect(language).toBe("Arabic");
