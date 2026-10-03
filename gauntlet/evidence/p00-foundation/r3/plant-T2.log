@@ -1,0 +1,115 @@
+Test run for /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.78]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.22]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:23.41]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:23.41]       identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       identity.sessions: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       identity.sign_in_attempts: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       identity.user_credentials: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       identity.user_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       identity.users: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       lists.saved_views: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       tenancy.tenants: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:23.41]       Stack Trace:
+[xUnit.net 00:00:23.41]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:23.41]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:23.63]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [FAIL]
+[xUnit.net 00:00:23.64]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:23.64]       Expected: 0
+[xUnit.net 00:00:23.64]       Actual:   58
+[xUnit.net 00:00:23.64]       Stack Trace:
+[xUnit.net 00:00:23.64]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(348,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:23.64]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(374,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:23.64]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [33 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [132 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [113 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [814 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [50 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [617 ms]
+  Error Message:
+   identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+identity.sessions: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+identity.sign_in_attempts: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+identity.user_credentials: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+identity.user_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+identity.users: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+lists.saved_views: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+tenancy.tenants: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [369 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   58
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 348
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 374
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [233 ms]
+[xUnit.net 00:00:25.36]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:25.36]       identity.roles: 4 rows visible without a tenant
+[xUnit.net 00:00:25.36]       identity.sessions: 4 rows visible without a tenant
+[xUnit.net 00:00:25.36]       identity.sign_in_attempts: 4 rows visible without a tenant
+[xUnit.net 00:00:25.36]       identity.user_credentials: 58 rows visible without a tenant
+[xUnit.net 00:00:25.36]       identity.user_roles: 6 rows visible without a tenant
+[xUnit.net 00:00:25.36]       identity.users: 58 rows visible without a tenant
+[xUnit.net 00:00:25.36]       lists.saved_views: 4 rows visible without a tenant
+[xUnit.net 00:00:25.36]       tenancy.tenants: 2 rows visible without a tenant
+[xUnit.net 00:00:25.36]       Stack Trace:
+[xUnit.net 00:00:25.36]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(333,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:25.36]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(334,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:25.36]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Error Message:
+   identity.roles: 4 rows visible without a tenant
+identity.sessions: 4 rows visible without a tenant
+identity.sign_in_attempts: 4 rows visible without a tenant
+identity.user_credentials: 58 rows visible without a tenant
+identity.user_roles: 6 rows visible without a tenant
+identity.users: 58 rows visible without a tenant
+lists.saved_views: 4 rows visible without a tenant
+tenancy.tenants: 2 rows visible without a tenant
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 333
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 334
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [16 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [34 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [151 ms]
+[xUnit.net 00:00:38.30]     Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [FAIL]
+[xUnit.net 00:00:38.30]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:38.30]       Expected: 0
+[xUnit.net 00:00:38.30]       Actual:   58
+[xUnit.net 00:00:38.30]       Stack Trace:
+[xUnit.net 00:00:38.30]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs(161,0): at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven()
+[xUnit.net 00:00:38.30]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs(164,0): at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven()
+[xUnit.net 00:00:38.30]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs(164,0): at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven()
+[xUnit.net 00:00:38.30]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [24 ms]
+  Failed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [931 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   58
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs:line 161
+   at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs:line 164
+   at Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/G1/G1CredentialTests.cs:line 164
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [40 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [58 ms]
+[xUnit.net 00:00:40.48]   Finished:    Erp.Gates.Tests (ID = 'c720e2ece72620509407a7f93f775fa3415199404832abcfc5da65b868426324')
+
+Test Run Failed.
+Total tests: 17
+     Passed: 13
+     Failed: 4
+ Total time: 41.1156 Seconds
+rc=1 seconds=42
