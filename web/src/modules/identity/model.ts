@@ -76,8 +76,8 @@ export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; p
 
 /**
  * The permission matrix: one block per module, one row per resource, a column per common action
- * and an "other" cell for the rest. With a filter, only rows whose resource, label or key contains
- * every word of it are kept (case-insensitive, any script).
+ * and an "other" cell for the rest. With a filter, only rows whose resource name, permission labels
+ * or keys contain every word of it are kept (case-insensitive, any script).
  */
 export function buildMatrix(permissions: Permission[], filter = ""): MatrixModule[] {
   const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
@@ -100,7 +100,7 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
   for (const block of modules.values()) {
     const rows = block.rows.filter((row) => {
       if (words.length === 0) return true;
-      const text = [block.label, block.module, row.label, row.resource, ...rowPermissions(row).flatMap((p) => [p.label, p.key])]
+      const text = [row.label, row.resource, ...rowPermissions(row).flatMap((p) => [p.label, p.key])]
         .join(" ")
         .toLocaleLowerCase();
       return words.every((w) => text.includes(w));

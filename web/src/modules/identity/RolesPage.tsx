@@ -124,7 +124,7 @@ export function RolesPage() {
             />
           ) : (
             <RoleEditor
-              key={selection.kind === "role" ? selection.id : "new"}
+              key={selection.kind === "role" ? `${selection.id}:${selectedRole ? "loaded" : "loading"}` : "new"}
               role={selection.kind === "role" ? selectedRole : undefined}
               permissions={permissions}
               onClose={() => setSelection({ kind: "none" })}
