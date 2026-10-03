@@ -66,6 +66,21 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public void The_process_state_check_catches_a_static_cache_and_a_stateful_singleton()
+    {
+        var inventory = ProcessState.InspectTypes(typeof(LeakyModule).GetNestedTypes().Append(typeof(LeakyModule)),
+            [typeof(LeakyModule.LastListHolder)], new HashSet<Type>());
+        Assert.Contains(inventory.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant" && f.Why.Contains("reassigned", StringComparison.Ordinal));
+        Assert.Contains(inventory.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
+
+        // The running self-test app loads the planted module and registers its singleton; the
+        // inventory of the running app finds both.
+        var running = ProcessState.Inspect(fixture.Env.Factory);
+        Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
+        Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
+    }
+
+    [Fact]
     public async Task The_grant_escalation_check_catches_an_endpoint_that_grants_any_role()
     {
         var result = await GrantEscalation.RunAsync(fixture.Env);
