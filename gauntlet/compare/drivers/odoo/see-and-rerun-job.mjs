@@ -15,9 +15,13 @@ export default {
     const page = op.page;
     await developerMode(op);
     await technicalMenu(op, 'Scheduled Actions');
-    await op.waitFor('.o_searchview_input:focus', { label: 'scheduled action list, search focused' });
+    // The list must have finished loading before typing: under load Odoo re-renders the search
+    // box once the first page arrives and drops what was typed before (round 3: 'anager').
+    await op.waitFor(() => !document.querySelector('.o_loading_indicator, .o_blockUI') && document.querySelectorAll('.o_data_row').length > 0 &&
+      document.activeElement?.matches('.o_searchview_input'), { label: 'scheduled action list loaded, search focused' });
     await op.type(job, { label: 'job name' });
-    await op.press('Enter', { label: 'search', chain: true });
+    await op.waitFor(j => document.querySelector('.o_searchview_input')?.value === j, { label: 'job name in the search box', arg: job, timeout: 10_000 });
+    await op.press('Enter', { label: 'search' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length === 1, { label: 'one job' });
     await op.click(page.locator('.o_data_row').first(), { label: 'open the job' });
     const run = page.getByRole('button', { name: 'Run Manually' });

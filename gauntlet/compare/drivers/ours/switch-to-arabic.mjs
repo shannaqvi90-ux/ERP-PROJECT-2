@@ -34,11 +34,13 @@ export default {
     await page.keyboard.type(ctx.product.users.admin.password);
     await page.keyboard.press('Enter');
     await page.locator('nav.navpane a').first().waitFor();
-    const paths = await page.locator('nav.navpane a').evaluateAll(as => as.map(a => a.getAttribute('href')));
+    const paths = await ctx.read(() => [...document.querySelectorAll('nav.navpane a')].map(a => a.getAttribute('href')));
     ctx.state.workingPath = paths.find(p => /contacts/.test(p)) ?? '/identity/users';
     await page.locator(`nav.navpane a[href="${ctx.state.workingPath}"]`).click();
     await page.locator(ROWS).first().waitFor();
   },
+  // The runner reloads the working list in a fresh browser; it is ready when its records show.
+  ready: ROWS,
   async run(op) {
     await op.click('button.lang-toggle', { label: 'العربية (language button)' });
     await op.waitFor(() => {
@@ -51,10 +53,11 @@ export default {
   },
   async verify(ctx) {
     const page = ctx.page;
-    const ui = await page.evaluate(() => ({
+    const ui = await ctx.read(() => ({
       direction: getComputedStyle(document.querySelector('nav.navpane')).direction,
       heading: document.querySelector('main h1')?.textContent?.trim() || '',
-      columns: [...document.querySelectorAll('main table thead th')].map(th => th.textContent.trim()),
+      // Column headers with a label (a selection column's header holds only a checkbox).
+      columns: [...document.querySelectorAll('main table thead th')].map(th => th.textContent.trim()).filter(Boolean),
       navigation: [...document.querySelectorAll('nav.navpane a')].map(a => a.textContent.trim()),
       records: document.querySelectorAll('main table tbody tr').length,
     }));
@@ -67,7 +70,7 @@ export default {
     }
     const arabic = t => /[؀-ۿ]/.test(t);
     return {
-      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.every(arabic)
+      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.length > 0 && ui.columns.every(arabic)
         && ui.navigation.every(arabic) && ui.records > 0,
       details: { user_language: language, direction: ui.direction, working_screen: ctx.state.workingPath, heading: ui.heading, columns: ui.columns, navigation: ui.navigation, records: ui.records },
     };

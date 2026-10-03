@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p08',
   actor: 'admin',
+  startAt: 'home',
+  moments: ['rate entered'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Record today\'s rate for the euro: 1 EUR = {aedPerUnit} AED.',
   done: 'The rate is saved; the back end holds a EUR rate dated today equal to {aedPerUnit} AED per euro.',

@@ -33,7 +33,7 @@ export default {
     await op.click(page.getByRole('button', { name: 'Actions' }), { label: 'Actions' });
     await op.click(page.locator('.o-dropdown--menu .dropdown-item', { hasText: /^Export$/ }), { label: 'Export' });
     await op.waitFor('.modal .o_export_field, .modal .o_fields_list li', { label: 'export dialog' });
-    await op.shot('export dialog');
+    await op.shot('export options chosen');
     ctx.state.file = await op.clickForDownload(page.locator('.modal-footer button', { hasText: /^Export$/ }), ctx.state.dir, { label: 'Export (download)' });
     return {};
   },

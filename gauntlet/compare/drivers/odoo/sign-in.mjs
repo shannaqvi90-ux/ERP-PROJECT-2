@@ -38,20 +38,20 @@ function variant(returning) {
         await ctx.page.locator('.o_main_navbar button.o_user_menu').waitFor();
         await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`);
       }
-      await ctx.page.goto(LOGIN_URL(ctx));
-      await ctx.page.locator('input:focus').waitFor();
+      // The runner opens the start (the bookmarked sign-in address) in a fresh browser that keeps
+      // this browser's cookies and local storage.
     },
+    ready: 'input[name="login"]:focus, input[name="password"]:focus',
     async run(op, ctx) {
       const { user, password } = ctx.task.input;
-      await op.waitFor('input[name="login"]:focus, input[name="password"]:focus', { label: 'sign-in screen, a field focused' });
       const remembered = (await op.page.locator('input[name="login"]').inputValue()) === user
         && (await op.page.locator('input[name="password"]:focus').count()) === 1;
       if (!remembered) {
         await op.type(user, { label: 'e-mail' });
         await op.press('Tab', { label: 'next field (password)' });
       }
-      await op.type(password, { label: 'password', chain: !remembered });
-      await op.press('Enter', { label: 'sign in', chain: true });
+      await op.type(password, { label: 'password' });
+      await op.press('Enter', { label: 'sign in' });
       await op.waitFor('.o_main_navbar button.o_user_menu', { label: 'signed in' });
       await op.waitFor('.o_action_manager :is(.o_kanban_view, .o_list_view) :is(.o_kanban_record:not(.o_kanban_ghost), .o_data_row)', { label: 'working screen ready' });
       return { remembered };
@@ -66,14 +66,12 @@ export default {
   variants: { 'new-device': variant(false), returning: variant(true) },
   async setup(ctx) { ctx.state.uid = await ensureUser(ctx); },
   async verify(ctx) {
-    const info = await ctx.page.evaluate(async () => {
-      const res = await fetch('/web/session/get_session_info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {} }) });
-      return (await res.json()).result;
-    });
+    // The browser's own session, read through the back end with its cookie.
+    const info = await new OdooRpc(ctx.product).withBrowserSession(await ctx.context.cookies()).post('/web/session/get_session_info', {}).catch(() => null);
     return { verified: info?.uid === ctx.state.uid, details: { uid: info?.uid, expected_uid: ctx.state.uid, login: info?.username } };
   },
   async cleanup(ctx) {
     // Sign the session out so the next run starts signed out (the user is kept for the next run).
-    await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`).catch(() => {});
+    await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`).catch(() => { });
   },
 };

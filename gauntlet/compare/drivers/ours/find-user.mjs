@@ -25,6 +25,7 @@ export default {
     await page.keyboard.press('Enter');
     await usersLink(page).waitFor();
   },
+  ready: page => usersLink(page),
   async run(op, ctx) {
     const { name, login } = ctx.needles.user;
     await op.click(usersLink(op.page), { label: 'Users' });
@@ -43,7 +44,7 @@ export default {
   },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;
-    const shown = await ctx.page.evaluate(([n, l]) => {
+    const shown = await ctx.read(([n, l]) => {
       const outside = [...document.querySelectorAll('[role="dialog"], [role="complementary"], form, aside')].filter(el => !el.closest('table, [role="grid"]'));
       const text = outside.map(el => el.innerText).join('\n') + '\n' + outside.flatMap(el => [...el.querySelectorAll('input, textarea')].map(i => i.value)).join('\n');
       return { name: text.includes(n), login: text.includes(l) };

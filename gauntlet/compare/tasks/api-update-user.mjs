@@ -6,6 +6,8 @@ export default {
   piece: 'p15',
   channel: 'api',
   actor: 'an integration developer with an administrator\'s API access, in an HTTP client already signed in',
+  startAt: 'api',
+  moments: [],
   start: 'An HTTP client holding a signed-in administrator session (base address and token set up); nothing sent yet.',
   goal: 'Through the product\'s documented API only, find the user {user.name} among 100,000 users and switch their interface language to Arabic.',
   done: 'The API answered every request successfully and the back end shows the user\'s language as Arabic.',

@@ -1,19 +1,29 @@
 // The measured part of a task may act on a product only through the instrumented operator, so no
-// action escapes the count. Three guards enforce that while a task is being measured:
+// action escapes the count, and nothing a driver does outside the clock may act inside it. The
+// guards work by phase (one run at a time in this process):
+//
+//   free       set-up, sign-in, clean-up: drivers may act on the product (fixtures, signing in).
+//   frozen     the runner moves the session to a fresh browser context, opens the start screen
+//              and checks it; the done screenshot. Drivers may only read.
+//   measuring  the measured part. Drivers act only through the operator; they may read.
+//   verifying  the driver's verify(): read-only, on the page and on the back end.
 //
 // 1. Page guard. Drivers never hold a raw Playwright object: ctx.page, ctx.context, ctx.browser and
 //    op.page are proxies, and so is everything reached through them (locators, the keyboard, the
-//    mouse, frames, request contexts, objects handed to event listeners). Outside the measured
-//    part they pass every call through. Inside it they allow only reading and locating (finding
-//    elements, reading text, values, visibility, the address). Any action (click, fill, press,
-//    keyboard, mouse, goto, reload, evaluate, a new page) throws UncountedAction.
-// 2. Page-script sentinel. The only script a driver may run in the page while measured is the
-//    condition of op.waitFor. It runs inside a sentinel that refuses actions (click, focus, value
-//    and scroll setters, form submit, timers, network, storage, history, listeners) and reports
-//    anything that still changed the page (DOM mutations, events, navigation, focus moves).
-// 3. Node network guard. While measured, fetch and http(s) requests from the harness process are
-//    refused, so a driver cannot do the task through the back end and count nothing.
-//    op.request (the API channel, which counts each request) uses the original fetch.
+//    mouse, frames, request contexts, objects handed to event listeners). In the free phase they
+//    pass calls through, except page script: evaluate, init scripts, exposed functions, routes and
+//    the like are refused in every phase (a script installed before the clock keeps acting after
+//    it starts). Drivers read the page with ctx.read and wait with ctx.until, which run their
+//    function inside the sentinel. In every other phase only reading and locating are allowed
+//    (finding elements, reading text, values, visibility, the address); any action throws.
+// 2. Page-script sentinel. The only script a driver may run in the page is a condition (op.waitFor,
+//    ctx.until) or a reader (ctx.read). It runs inside a sentinel that refuses actions (click,
+//    focus, value and scroll setters, form submit, timers, network, storage, history, listeners)
+//    and reports anything that still changed the page (DOM mutations, events, navigation, focus).
+// 3. Node network guard. While frozen or measured, fetch and http(s) requests from the harness
+//    process are refused, so a driver cannot do the task through the back end and count nothing;
+//    op.request (the API channel, which counts each request) uses the original fetch. While
+//    verifying, only reads go through (GET, sign-in for a read session, Odoo read methods).
 import http from 'node:http';
 import https from 'node:https';
 
@@ -21,31 +31,68 @@ import https from 'node:https';
 // has its run marked invalid (the runner reads the record after the measured part).
 const violations = [];
 
-export class UncountedAction extends Error {
-  constructor(what) {
-    super(`uncounted action during the measured part: ${what}. Drivers act only through the operator (op.click, op.type, op.press, op.request, ...).`);
-    this.name = 'UncountedAction';
+/** Anything the guard refuses. Each refusal is recorded, so a driver that swallows it still fails. */
+export class Refusal extends Error {
+  constructor(message, name = 'Refusal') {
+    super(message);
+    this.name = name;
     violations.push(this.message);
   }
 }
+
+export class UncountedAction extends Refusal {
+  constructor(what) {
+    super(`uncounted action during the measured part: ${what}. Drivers act only through the operator (op.click, op.type, op.press, op.request, ...).`, 'UncountedAction');
+  }
+}
+
+/** A driver acting on the product where it may only read: before the clock, in verify(), or by page script. */
+export class ActionOutsideClock extends Refusal {
+  constructor(what, phase) {
+    super(`action outside the clock (${phase}): ${what}. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.`, 'ActionOutsideClock');
+  }
+}
+
+/** A shortcut a driver declared for itself (for example `chain`), which the instrument derives instead. */
+export class RefusedClaim extends Refusal {
+  constructor(what) {
+    super(`refused claim: ${what}`, 'RefusedClaim');
+  }
+}
+
+export const isRefusal = e => e instanceof Refusal || ['UncountedAction', 'ActionOutsideClock', 'RefusedClaim', 'Refusal'].includes(e?.name);
 
 // ---------------------------------------------------------------------------------------------
 // Measuring state, shared by every guard in this process (one measured run at a time).
 // The controls are handed out once each, to the operator (the clock) and to the runner (the record
 // of refusals), at load time: a driver that imports this module cannot switch the guard off or
 // clear its record.
-let measuring = 0;
-export const isMeasuring = () => measuring > 0;
+export const PHASES = Object.freeze(['free', 'frozen', 'measuring', 'verifying']);
+let phase = 'free';
+export const currentPhase = () => phase;
+export const isMeasuring = () => phase === 'measuring';
+/** Drivers may only read (every phase but set-up and clean-up). */
+const readOnly = () => phase !== 'free';
 const claimed = new Set();
 function claimOnce(name, value) {
   if (claimed.has(name)) throw new Error(`the harness ${name} control is already held`);
   claimed.add(name);
   return value;
 }
+let beforeMeasuring = 'free';
 export function claimClock() {
   return claimOnce('clock', Object.freeze({
-    begin() { measuring++; },
-    end() { measuring = Math.max(0, measuring - 1); },
+    begin() { if (phase !== 'measuring') { beforeMeasuring = phase; phase = 'measuring'; } },
+    end() { if (phase === 'measuring') phase = beforeMeasuring; },
+  }));
+}
+/** The runner's control of the phases around the measured part. */
+export function claimPhase() {
+  return claimOnce('phase', Object.freeze({
+    set(p) {
+      if (!PHASES.includes(p) || p === 'measuring') throw new Error(`phase ${p}: the clock alone starts the measured part`);
+      phase = p;
+    },
   }));
 }
 export function claimViolations() {
@@ -54,19 +101,36 @@ export function claimViolations() {
 
 // ---------------------------------------------------------------------------------------------
 // 1. Page guard.
+const LISTEN = ['on', 'once', 'off', 'addListener', 'removeListener'];
 const LOCATE = ['locator', 'getByRole', 'getByText', 'getByLabel', 'getByPlaceholder', 'getByAltText', 'getByTitle', 'getByTestId', 'frameLocator'];
 /** Methods a driver may call on each Playwright class while measured: reading and locating only. */
 export const ALLOWED_WHILE_MEASURED = Object.freeze({
-  Page: new Set([...LOCATE, 'url', 'title', 'viewportSize', 'isClosed', 'waitForURL', 'waitForLoadState']),
+  // Listening is passive: a listener's arguments are guarded too, so it can only read.
+  Page: new Set([...LOCATE, 'url', 'title', 'viewportSize', 'isClosed', 'waitForURL', 'waitForLoadState', ...LISTEN]),
   Locator: new Set([...LOCATE, 'filter', 'first', 'last', 'nth', 'or', 'and', 'all', 'count', 'isVisible', 'isHidden',
     'isEnabled', 'isDisabled', 'isEditable', 'isChecked', 'textContent', 'innerText', 'innerHTML', 'inputValue',
     'getAttribute', 'allTextContents', 'allInnerTexts', 'boundingBox', 'waitFor', 'ariaSnapshot', 'page', 'toString',
     'describe', 'contentFrame']),
   FrameLocator: new Set([...LOCATE, 'first', 'last', 'nth', 'owner']),
+  // Reading the session a browser holds (verification reads it through the API).
+  BrowserContext: new Set(['cookies', 'pages', ...LISTEN]),
   // Observing traffic (in a listener registered during set-up) is passive.
   Request: new Set(['url', 'method', 'postData', 'postDataJSON', 'headers', 'allHeaders', 'headerValue', 'resourceType', 'isNavigationRequest', 'frame', 'response', 'failure', 'timing', 'redirectedFrom', 'redirectedTo']),
   Response: new Set(['url', 'status', 'statusText', 'ok', 'headers', 'allHeaders', 'headerValue', 'request', 'frame', 'body', 'text', 'json', 'finished']),
 });
+
+/**
+ * Page script and request rewriting: refused in every phase. What these install outlives the call
+ * (a listener, an init script, a route, an exposed function), so one made during set-up would act
+ * uncounted while the task is measured. Drivers read with ctx.read and wait with ctx.until.
+ */
+const SCRIPT = ['evaluate', 'evaluateHandle', 'evaluateAll', '$eval', '$$eval', 'waitForFunction', 'addInitScript', 'addScriptTag',
+  'addStyleTag', 'exposeFunction', 'exposeBinding', 'route', 'routeFromHAR', 'routeWebSocket', 'unroute', 'unrouteAll',
+  'setExtraHTTPHeaders', 'dispatchEvent', 'setContent', 'newCDPSession', 'registerLocatorHandler', 'addLocatorHandler',
+  'removeLocatorHandler', 'setHTTPCredentials', 'setOffline', 'grantPermissions', 'setGeolocation', 'setStorageState'];
+export const ALWAYS_REFUSED = Object.freeze(new Set(SCRIPT));
+/** Classes whose every method acts (a page clock, a tracing session, a debugging session ...). */
+const ACTING_CLASSES = new Set(['Clock', 'Tracing', 'CDPSession', 'Coverage', 'Worker', 'JSHandle', 'ElementHandle', 'Video', 'WebSocketRoute', 'Route']);
 
 const RAW = new WeakMap(); // proxy -> raw object
 const PROXY = new WeakMap(); // raw object -> proxy
@@ -112,19 +176,24 @@ export function guard(raw) {
         if (typeof value !== 'function') return value;
         return function guardedSymbolMethod(...args) {
           // Symbol.asyncDispose closes a page or context; only inspection is harmless.
-          if (isMeasuring() && prop !== INSPECT) throw new UncountedAction(`${cls}[${String(prop)}]()`);
+          if (readOnly() && prop !== INSPECT) throw isMeasuring() ? new UncountedAction(`${cls}[${String(prop)}]()`) : new ActionOutsideClock(`${cls}[${String(prop)}]()`, phase);
           return value.apply(target, args);
         };
       }
       if (typeof value !== 'function') return guardValue(value);
       return function guardedMethod(...args) {
-        if (isMeasuring() && !ALLOWED_WHILE_MEASURED[cls]?.has(prop)) throw new UncountedAction(`${cls}.${prop}()`);
+        if (ALWAYS_REFUSED.has(prop) || ACTING_CLASSES.has(cls)) {
+          throw isMeasuring() ? new UncountedAction(`${cls}.${prop}()`) : new ActionOutsideClock(`${cls}.${prop}() (page script and request rewriting are refused in every phase; read with ctx.read, wait with ctx.until)`, phase);
+        }
+        if (readOnly() && !ALLOWED_WHILE_MEASURED[cls]?.has(prop)) {
+          throw isMeasuring() ? new UncountedAction(`${cls}.${prop}()`) : new ActionOutsideClock(`${cls}.${prop}()`, phase);
+        }
         const callArgs = args.map(a => (typeof a === 'function' && CALLBACK_METHODS.has(prop) ? (...xs) => a(...xs.map(guardValue)) : unwrap(a)));
         return guardValue(value.apply(target, callArgs));
       };
     },
     set(target, prop, value) {
-      if (isMeasuring()) throw new UncountedAction(`setting ${cls}.${String(prop)}`);
+      if (readOnly()) throw isMeasuring() ? new UncountedAction(`setting ${cls}.${String(prop)}`) : new ActionOutsideClock(`setting ${cls}.${String(prop)}`, phase);
       return Reflect.set(target, prop, unwrap(value), target);
     },
     defineProperty() { throw new UncountedAction(`redefining a property of ${cls}`); },
@@ -237,27 +306,62 @@ export function sentinelFunction(fn) {
   return new Function('arg', body);
 }
 
-/** Turns the sentinel's page error into UncountedAction. */
+/** Turns the sentinel's page error into a refusal (UncountedAction while measured). */
 export function rethrowSentinel(err) {
   const m = /HARNESS-UNCOUNTED: ([^\n]*)/.exec(String(err?.message || err));
-  if (m) throw new UncountedAction(m[1]);
+  if (m) throw isMeasuring() ? new UncountedAction(m[1]) : new ActionOutsideClock(`page script: ${m[1]}`, phase);
   throw err;
 }
 
 // ---------------------------------------------------------------------------------------------
 // 3. Node network guard.
 export const rawFetch = globalThis.fetch.bind(globalThis);
+
+/** Odoo model methods that only read (verification may call these and nothing else). */
+export const ODOO_READ_METHODS = Object.freeze(new Set(['search', 'search_read', 'read', 'search_count', 'fields_get', 'name_search',
+  'read_group', 'web_read', 'web_search_read', 'web_read_group', 'check_access_rights', 'has_group', 'default_get', 'search_fetch']));
+/** Requests that only open a session or read: the fixture clients' sign-ins and Odoo's session info. */
+const READ_POSTS = [/^\/api\/auth\/sign-in$/, /^\/web\/session\/authenticate$/, /^\/web\/session\/get_session_info$/];
+
+/**
+ * Whether a request from the harness process only reads: GET and HEAD, a fixture sign-in, or an
+ * Odoo call of a read method (web client call_kw or external execute_kw). Anything else changes
+ * the product, which verify() never may.
+ */
+export function isReadRequest(input, init = {}) {
+  const method = String(init.method || (typeof input === 'object' && input?.method) || 'GET').toUpperCase();
+  if (method === 'GET' || method === 'HEAD') return true;
+  if (method !== 'POST') return false;
+  let url;
+  try { url = new URL(typeof input === 'string' ? input : input?.url ?? String(input)); } catch { return false; }
+  if (READ_POSTS.some(re => re.test(url.pathname))) return true;
+  let body;
+  try { body = JSON.parse(typeof init.body === 'string' ? init.body : ''); } catch { return false; }
+  const kw = /^\/web\/dataset\/call_kw\/[\w.]+\/(\w+)$/.exec(url.pathname);
+  if (kw) return ODOO_READ_METHODS.has(kw[1]) && body?.params?.method === kw[1];
+  if (url.pathname === '/jsonrpc') {
+    const p = body?.params;
+    if (p?.service === 'common') return ['login', 'authenticate', 'version'].includes(p.method);
+    return p?.service === 'object' && p.method === 'execute_kw' && ODOO_READ_METHODS.has(p.args?.[4]);
+  }
+  return false;
+}
+
 let networkGuardInstalled = false;
 export function installNetworkGuard() {
   if (networkGuardInstalled) return;
   networkGuardInstalled = true;
-  const refuseWhileMeasured = (name, fn) => function guardedNetwork(...args) {
+  const guarded = (name, fn, classify) => function guardedNetwork(...args) {
     if (isMeasuring()) throw new UncountedAction(`a back-end call from the harness (${name}); use op.request for an API task`);
+    if (phase === 'frozen') throw new ActionOutsideClock(`a back-end call from the harness (${name}) while the start screen is prepared`, phase);
+    if (phase === 'verifying' && !(classify && classify(...args))) {
+      throw new ActionOutsideClock(`a back-end call that changes the product (${name}) in verify()`, phase);
+    }
     return fn.apply(this, args);
   };
-  globalThis.fetch = refuseWhileMeasured('fetch', globalThis.fetch);
+  globalThis.fetch = guarded('fetch', globalThis.fetch, isReadRequest);
   for (const [name, mod] of [['http', http], ['https', https]]) {
-    mod.request = refuseWhileMeasured(`${name}.request`, mod.request);
-    mod.get = refuseWhileMeasured(`${name}.get`, mod.get);
+    mod.request = guarded(`${name}.request`, mod.request, null);
+    mod.get = guarded(`${name}.get`, mod.get, null);
   }
 }

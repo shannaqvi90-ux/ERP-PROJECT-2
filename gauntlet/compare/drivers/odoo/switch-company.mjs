@@ -23,7 +23,7 @@ export default {
     return {};
   },
   async verify(ctx) {
-    const shown = await ctx.page.evaluate(() => ({
+    const shown = await ctx.read(() => ({
       switcher: document.querySelector('.o_main_navbar .o_switch_company_menu')?.textContent.trim(),
       cids: (document.cookie.match(/(?:^|; )cids=([^;]*)/) || [])[1] || '',
     }));
@@ -31,6 +31,6 @@ export default {
     return { verified: shown.switcher === ctx.task.input.to && first === ctx.state.toId, details: shown };
   },
   async cleanup(ctx) {
-    await ctx.context.clearCookies().catch(() => {});
+    await ctx.context.clearCookies().catch(() => { });
   },
 };

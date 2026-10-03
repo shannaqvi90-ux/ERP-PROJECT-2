@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p02',
   actor: 'admin (works in two companies)',
+  startAt: 'home',
+  moments: [],
   start: 'Signed in, working in "{from}", on the screen the product shows right after sign-in.',
   goal: 'Switch to working in "{to}".',
   done: 'The product shows the user working in "{to}".',

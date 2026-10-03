@@ -4,6 +4,17 @@ export class OursApi {
   constructor({ baseUrl }) {
     this.baseUrl = baseUrl;
     this.token = null;
+    this.cookie = null;
+  }
+
+  /**
+   * Act as a browser's session: `cookies` from a browser context (ctx.context.cookies()). Lets
+   * set-up sign the browser out and verification read the browser's session without page script.
+   */
+  withBrowserSession(cookies) {
+    const host = new URL(this.baseUrl).hostname;
+    this.cookie = cookies.filter(c => !c.domain || host.endsWith(c.domain.replace(/^\./, ''))).map(c => `${c.name}=${c.value}`).join('; ');
+    return this;
   }
 
   async signIn({ login, password }) {
@@ -20,6 +31,7 @@ export class OursApi {
         'Content-Type': 'application/json',
         'X-Erp-Request': '1',
         ...(this.token && !anonymous ? { Authorization: `Bearer ${this.token}` } : {}),
+        ...(this.cookie && !anonymous ? { Cookie: this.cookie } : {}),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     });

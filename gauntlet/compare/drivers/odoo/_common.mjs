@@ -8,15 +8,18 @@ export async function signInAs(ctx, user) {
   await ctx.context.addCookies([rpc.sessionCookie()]);
   await ctx.page.goto(ctx.product.baseUrl + '/odoo');
   await ctx.page.locator('.o_main_navbar button.o_user_menu').waitFor();
-  await settle(ctx.page);
+  await settle(ctx, ctx.page);
   return rpc;
 }
 
-/** Wait until Odoo has no request in flight (its "Loading" indicator is gone) and the DOM is quiet. */
-export async function settle(page, ms = 300) {
-  await page.waitForFunction(() => !document.querySelector('.o_loading_indicator, .o_blockUI'), null, { timeout: 120_000 });
+/** Wait until Odoo has no request in flight (its "Loading" indicator is gone) and the DOM is quiet (set-up only). */
+export async function settle(ctx, page, ms = 300) {
+  await ctx.until(() => !document.querySelector('.o_loading_indicator, .o_blockUI'), { page, timeout: 120_000 });
   await page.waitForTimeout(ms);
 }
+
+/** Odoo is ready on a start screen the runner opened: the user menu shows and nothing is loading. */
+export const READY = '.o_main_navbar button.o_user_menu';
 
 /** Admin back-end session for fixtures, verification and clean-up. */
 export async function adminRpc(ctx) {
@@ -39,12 +42,12 @@ export async function openApp(op, name) {
 export async function paletteMenu(op, typed, expected) {
   await op.press('Control+k', { label: 'command palette' });
   await op.waitFor('.o_command_palette input:focus', { label: 'palette open' });
-  await op.type(typed, { label: `menu search ${typed}`, chain: true });
+  await op.type(typed, { label: `menu search ${typed}` });
   await op.waitFor(e => {
     const first = document.querySelector('.o_command_palette .o_command');
     return !!first && first.innerText.split('\n')[0].trim() === e;
   }, { label: 'menu found', arg: expected });
-  await op.press('Enter', { label: `open ${expected}`, chain: true });
+  await op.press('Enter', { label: `open ${expected}` });
   await op.waitFor(() => !document.querySelector('.o_command_palette') && !document.querySelector('.o_loading_indicator, .o_blockUI') &&
     !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'), { label: `${expected} loaded` });
 }
@@ -83,7 +86,7 @@ export async function openRecord(ctx, model, id) {
   const paths = { 'res.partner': 'contacts', 'purchase.order': 'purchase' };
   await ctx.page.goto(`${ctx.product.baseUrl}/odoo/${paths[model] || `action-${model}`}/${id}`);
   await ctx.page.locator('.o_form_view').waitFor();
-  await settle(ctx.page);
+  await settle(ctx, ctx.page);
 }
 
 /**

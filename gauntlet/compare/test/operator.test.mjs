@@ -45,7 +45,7 @@ test('steps, keystrokes and waits are counted the same way every time', async ()
   const { context, op } = await fresh();
   op.start();
   await op.fill('#q', 'Abc', { label: 'query' });
-  await op.press('Enter', { chain: true });
+  await op.press('Enter');
   await op.click('#go');
   await op.waitFor(() => document.getElementById('out').textContent.startsWith('found'), { label: 'result' });
   op.finish();
@@ -132,13 +132,14 @@ test('a screenshot after the end of a task never shortens the measured time', as
   await context.close();
 });
 
-test('screenshot time is not counted as product time', async () => {
+test('round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)', async () => {
   const { context, op } = await fresh();
   op.start();
-  const t0 = op.machineSeconds;
+  const t0 = performance.now();
   await op.shot('a'); await op.shot('b'); await op.shot('c');
-  assert.ok(op.machineSeconds - t0 < 0.05, `three shots added ${op.machineSeconds - t0}s`);
+  const wall = (performance.now() - t0) / 1000;
   op.finish();
+  assert.ok(op.machineSeconds >= wall - 0.002, `three shots took ${wall}s of wall time but the clock shows ${op.machineSeconds}s`);
   await context.close();
 });
 
@@ -160,17 +161,57 @@ test('round 2 fault: the done screenshot after finish() leaves machine seconds u
   await context.close();
 });
 
-test('a shot in the middle of the measured part is taken out of the clock and of later step times', async () => {
-  const { context, op } = await fresh();
+test('while measuring, only the moments the task declares are shot, each once; their time stays on the clock', async () => {
+  const { context, page } = await fresh();
+  const op = new Operator(page, { shotsDir: path.join(tmp, 'shots'), branding: brandingFor('odoo'), shotFormat: 'png', moments: ['result list'] });
   op.start();
   await op.click('#go');
+  await assert.rejects(op.shot('progress'), /does not declare/);
+  assert.deepEqual(op.missingMoments, ['result list']);
   const t = op.now();
-  await op.shot('middle');
-  assert.ok(op.now() - t < 0.05, `the shot moved the clock by ${op.now() - t}s`);
+  await op.shot('result list');
+  assert.ok(op.now() - t > 0, 'the shot took time on the clock');
+  await assert.rejects(op.shot('result list'), /once/);
+  assert.deepEqual(op.missingMoments, []);
   await op.press('Tab');
   op.finish();
-  const [, second] = op.steps;
-  assert.ok(second.at - (op.steps[0].at + op.steps[0].took) < 0.05);
+  const [first, second] = op.steps;
+  assert.ok(second.at >= first.at + first.took, 'steps after the shot start after it');
+  await op.shot('done');
+  await context.close();
+});
+
+test('round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)', async () => {
+  const { context, op } = await fresh();
+  op.start();
+  await op.click('#q');
+  for (const text of ['y\n', 'a\rb', 'x\ty', 'ab\b', '\u0003', '\u007f']) {
+    await assert.rejects(op.type(text), /control character/, JSON.stringify(text));
+  }
+  await assert.rejects(op.press('a\n'), /not a key/);
+  await op.type('plain text, digits 12 and symbols @#!');
+  op.finish();
+  assert.equal(op.steps.length, 2, 'refused entries record no step');
+  await context.close();
+});
+
+test('round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted', async () => {
+  const { context, op } = await fresh();
+  op.start();
+  await assert.rejects(op.click('#q', { chain: true }), /derived by the instrument/);
+  await assert.rejects(op.type('x', { chain: true }), /derived by the instrument/);
+  await assert.rejects(op.press('Enter', { chain: true }), /derived by the instrument/);
+  await assert.rejects(op.click('#go', { modifiers: ['Shift'] }), /not an option/);
+  await assert.rejects(op.click('#go', { clickCount: 3 }), /not an option/);
+  await assert.rejects(op.fill('#q', 'x', { chain: true }), /derived by the instrument/);
+  // Derived: the click on the field and typing into it are one unit; Enter after typing too.
+  await op.click('#q');
+  await op.type('abc');
+  await op.press('Enter');
+  await op.click('#go');
+  await op.type('z');
+  op.finish();
+  assert.deepEqual(op.steps.map(x => x.chain), [false, true, true, false, false], 'typing after a click on a button (not a field) is not a continuation');
   await context.close();
 });
 

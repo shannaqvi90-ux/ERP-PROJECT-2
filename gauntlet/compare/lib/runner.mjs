@@ -5,10 +5,13 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { UncountedAction, claimViolations, guard, installNetworkGuard } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, UncountedAction, claimPhase, claimViolations, currentPhase, guard, installNetworkGuard, isRefusal,
+  rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
+import { START_KINDS, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl } from './start.mjs';
 
 const violationRecord = claimViolations();
 const takeViolations = () => violationRecord.take();
+const phase = claimPhase();
 import { apiTranscriptHtml } from './api-transcript.mjs';
 import { brandingFor } from './blind.mjs';
 import { describe, driverPath, loadDriver, loadTask } from './registry.mjs';
@@ -21,8 +24,13 @@ export const RESULT_SCHEMA = 1;
  * baseline taken with an older instrument is caught by test/baselines.test.mjs.
  *   3: the clock stops at finish() (the done screenshot no longer moves it); drivers act only
  *      through the operator (guarded page, page-script sentinel, back-end refusal); API requests.
+ *   4: nothing a driver does outside the clock acts inside it: the runner opens the start screen in
+ *      a fresh browser context holding only the session and checks the start state; page script is
+ *      refused in every phase; verify() only reads and must fail before the clock starts.
+ *      Screenshots taken while measuring stay on the clock (only the task's declared moments, once
+ *      each); continuation (no M) is derived from the steps; op.type refuses control characters.
  */
-export const INSTRUMENT_VERSION = 3;
+export const INSTRUMENT_VERSION = 4;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');
@@ -170,30 +178,62 @@ export function driverFingerprint(productId, taskId) {
   return { file: rel(file), sha256: hash.digest('hex') };
 }
 
-/** One full run of a driver: fixtures, sign-in, the measured part, verification, clean-up. */
+/** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
-  const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [] };
+  const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
   installNetworkGuard();
+  takeViolations(); // nothing left over from an earlier run in this process
   const browser = await launch({ headed: opts.headed });
   let op;
-  let page;
-  // Drivers see only guarded Playwright objects (lib/guard.mjs): outside the measured part they
-  // pass everything through; inside it they refuse every action that the operator does not count.
-  const ctx = { task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser: guard(browser) };
+  let page = null; // the raw page the task is measured on (the fresh one, once the start is set)
+  let context = null;
+  let apiSession = null;
+  const kind = startKind(task);
+  // Drivers see only guarded Playwright objects (lib/guard.mjs). In set-up they may act, never run
+  // page script; from the start screen on they may only read, and act only through the operator.
+  const ctx = {
+    task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser: guard(browser),
+    useApi(session) {
+      if (currentPhase() !== 'free') throw new UncountedAction('signing in to the API inside the measured part');
+      apiSession = session;
+    },
+    /** Read the page: `fn(arg)` runs in the page inside the sentinel (it may read, never act). */
+    read: (fn, arg = null, { page: on } = {}) => unwrap(on || page).evaluate(sentinelFunction(fn), arg).catch(rethrowSentinel),
+    /** Wait until `fn(arg)` holds in the page (inside the sentinel). */
+    until: (fn, { arg = null, timeout = 120_000, page: on } = {}) =>
+      unwrap(on || page).waitForFunction(sentinelFunction(fn), arg, { timeout, polling: 50 }).catch(rethrowSentinel).then(() => undefined),
+  };
   try {
-    const context = await newContext(browser);
+    context = await newContext(browser);
     page = await context.newPage();
     page.setDefaultTimeout(120_000);
     ctx.context = guard(context);
     ctx.page = guard(page);
-    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []) });
-    ctx.useApi = session => op.useApi(session);
     if (driver.setup) await driver.setup(ctx);
     if (driver.signIn) await driver.signIn(ctx);
-    const api = task.channel === 'api';
-    if (api) await page.setContent(apiTranscriptHtml(task, []));
+
+    // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
+    phase.set('frozen');
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run));
+    ctx.context = guard(context);
+    ctx.page = guard(page);
+    // Passive listeners on the start page (they receive guarded objects, so they can only read).
+    if (driver.observe) await driver.observe(ctx);
+    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [] });
+    if (apiSession) op.useApi(apiSession);
+
+    // A task already done before the clock starts was done by set-up: the run measures nothing.
+    if (driver.verify) {
+      phase.set('verifying');
+      page.setDefaultTimeout(5_000);
+      let before = null;
+      try { before = await driver.verify(ctx, undefined); } catch { /* not done (or not checkable without the outcome) */ }
+      page.setDefaultTimeout(120_000);
+      phase.set('frozen');
+      if (before?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
+    }
+
     await op.shot('start');
-    takeViolations();
     op.start();
     let outcome;
     try {
@@ -201,15 +241,19 @@ export async function execute(task, driver, product, productId, needles, out, op
     } finally {
       op.finish();
     }
+    const missing = op.missingMoments;
+    if (missing.length) throw new RefusedClaim(`the task's moments ${missing.map(m => `"${m}"`).join(', ')} were not shot while measuring (every driver shoots every moment the task declares, once)`);
     // The clock stopped at finish(): the done screenshot is taken after it and costs nothing.
-    if (api) await page.setContent(apiTranscriptHtml(task, op.steps));
+    if (kind === 'api') await page.setContent(apiTranscriptHtml(task, op.steps));
     await op.shot('done');
+    phase.set('verifying');
     run.verification = driver.verify ? await driver.verify(ctx, outcome) : { verified: !!outcome?.verified, details: outcome };
     run.status = run.verification.verified ? 'verified' : 'failed';
   } catch (err) {
     if (err instanceof NotBuilt) { run.status = 'not_built'; run.error = err.message; }
-    else if (err instanceof UncountedAction || err?.name === 'UncountedAction') {
-      // The driver acted on the product outside the operator: its counts would be too low.
+    else if (isRefusal(err)) {
+      // The driver acted outside the operator or outside the clock, or declared a shortcut: its
+      // counts would be too low.
       run.status = 'invalid';
       run.error = err.message;
     } else {
@@ -219,7 +263,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
   } finally {
     op?.finish();
-    // A refusal the driver caught and swallowed still invalidates the run.
+    phase.set('free');
+    // A refusal the driver caught and swallowed, at any point of the run, still invalidates it.
     const violations = takeViolations();
     if (violations.length && run.status !== 'not_built') {
       run.status = 'invalid';
@@ -227,6 +272,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
     if (driver.cleanup) {
       try { await driver.cleanup(ctx); } catch (e) { run.cleanup_error = String(e?.message || e); }
+      takeViolations();
     }
     await browser.close().catch(() => {});
   }
@@ -234,9 +280,69 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.counts = op.summary();
     run.steps = op.steps;
     run.waits = op.waits;
-    run.screenshots = op.shots.map(s => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
+    run.screenshots = op.shots.map(({ measured, ...s }) => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
   return run;
+}
+
+/** The task's start kind (lib/start.mjs): declared by the task, 'api' for an API task. */
+export function startKind(task) {
+  const kind = task.startAt || (task.channel === 'api' ? 'api' : null);
+  if (!START_KINDS.includes(kind)) throw new Error(`task ${task.id}: startAt must be one of ${START_KINDS.join(', ')} (got ${kind})`);
+  return kind;
+}
+
+/**
+ * Close the set-up context and open the start screen in a fresh one that holds only the session
+ * (cookies and local storage); wait until the product is ready and quiet; check and record the
+ * start state. Returns the fresh { context, page }.
+ */
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run) {
+  const endedOn = oldPage.url();
+  let url = null;
+  if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind);
+  else if (kind === 'record' || kind === 'list') {
+    const problem = screenUrlProblem(product, endedOn);
+    if (problem) throw new ActionOutsideClock(problem, 'set-up');
+    url = endedOn;
+  }
+  const storageState = await oldContext.storageState();
+  await oldContext.close();
+  const context = await newContext(browser, { storageState });
+  const page = await context.newPage();
+  page.setDefaultTimeout(120_000);
+  if (kind === 'api') {
+    await page.setContent(apiTranscriptHtml(task, []));
+    run.start_state = { kind, path: null, fields: 0, filled: [], focused: null };
+    return { context, page };
+  }
+  const inflight = new Set();
+  const track = r => { if (!/websocket|longpolling|\/bus\//i.test(r.url())) inflight.add(r); };
+  const untrack = r => inflight.delete(r);
+  page.on('request', track); page.on('requestfinished', untrack); page.on('requestfailed', untrack);
+  await page.goto(url, { waitUntil: 'load' });
+  await page.waitForFunction(readyCondition(product.readyKind || productId, kind), null, { timeout: 120_000, polling: 100 })
+    .catch(e => { throw new Error(`the start screen (${kind}, ${url}) did not become ready: ${e.message.split('\n')[0]}`); });
+  if (driver.ready) {
+    // The driver may name what its start screen shows once loaded (read-only: a locator or selector).
+    const r = typeof driver.ready === 'function' ? driver.ready(guard(page)) : driver.ready;
+    const loc = typeof r === 'string' ? page.locator(r) : unwrap(r);
+    await loc.first().waitFor({ state: 'visible', timeout: 120_000 });
+  }
+  // Quiet: no request in flight for 300 ms (at most 15 s), then nothing more to load.
+  const until = Date.now() + 15_000;
+  let quietSince = Date.now();
+  while (Date.now() < until) {
+    if (inflight.size) quietSince = Date.now();
+    else if (Date.now() - quietSince >= 300) break;
+    await new Promise(r => setTimeout(r, 50));
+  }
+  page.off('request', track); page.off('requestfinished', untrack); page.off('requestfailed', untrack);
+  const state = await page.evaluate(snapshotStartState);
+  run.start_state = { kind, ...(kind === 'record' || kind === 'list' ? { opened_by_sign_in: new URL(endedOn).pathname } : {}), ...state };
+  const problems = startStateProblems(task, kind, state);
+  if (problems.length) throw new ActionOutsideClock(`unfair start state: ${problems.join('; ')}`, 'set-up');
+  return { context, page };
 }
 
 export function writeResult(result, out) {
