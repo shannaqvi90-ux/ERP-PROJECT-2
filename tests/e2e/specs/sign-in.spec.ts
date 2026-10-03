@@ -44,16 +44,24 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByText("Enter your e-mail.")).toBeVisible();
   });
 
-  test("the device remembers the e-mail, so the next sign-in is password then Enter", async ({ page }) => {
+  test("the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it", async ({ page, context }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    // The session ends without signing out (it expired, or the browser was closed): the same
+    // person returns to this device.
+    await context.clearCookies();
+    await page.goto("/");
     const passwordField = page.locator('input[name="password"]');
     await expect(passwordField).toBeFocused();
     await expect(page.locator('input[name="email"]')).toHaveValue(users.admin);
     await page.keyboard.type(password);
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    // Signing out on a shared device leaves nothing of this person for the next one.
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await expect(page.locator('input[name="email"]')).toHaveValue("");
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBeNull();
   });
 });

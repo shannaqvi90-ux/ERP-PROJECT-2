@@ -1,0 +1,30 @@
+# Module-level state in the web sources (web/src, tests excluded). The shell is one document in
+# memory while people sign in and out of different tenants on one device, so state that lives as
+# long as the document could carry one tenant's data to the next person. Reviewed list: every entry
+# needs a reason after '#' saying why it can never hold tenant data. The G1 client-state gate
+# (tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs) fails on unreviewed or stale entries.
+# Caches of data belong in identityScoped() maps (web/src/kernel/deviceState.ts), never here.
+# Format: <file> <name>
+web/src/kernel/deviceState.ts deviceKeys  # The names of the three device-setting keys kept across sign-outs (language, digits, navigation pane); fixed in code, never written.
+web/src/kernel/deviceState.ts resets  # The reset functions of identity-scoped caches, added once per cache when its module loads; holds functions, never the cached data, and runs them when an identity ends.
+web/src/kernel/extensions.ts extensions  # The shell's extension registry, collected once from the modules' extensions files (code) when the bundle loads; holds components and functions, never records.
+web/src/kernel/format.ts numeralSystems  # The two supported digit systems ("latn", "arab"); fixed in code, never written.
+web/src/kernel/format.ts minorUnits  # ISO 4217 minor units per currency code (AED 2, KWD 3, ...); fixed in code, read only by the formatter.
+web/src/kernel/i18n.tsx languages  # The two interface languages ("en", "ar"); fixed in code, never written.
+web/src/kernel/i18n.tsx catalog  # The English and Arabic string catalogue built once from the bundled i18n JSON files (code); never written with data from the server.
+web/src/kernel/i18n.tsx currentLanguage  # The screen language ("en" or "ar") that API requests send as Accept-Language; a device setting, never tenant data.
+web/src/kernel/icons.tsx paths  # SVG path data of the shell's icons; fixed in code, never written.
+web/src/kernel/lists/ListView.tsx listParams  # The names of the address parameters the list owns (q, filter, sort, ...); fixed in code, never written.
+web/src/kernel/lists/model.ts operatorWords  # Filter operator spellings for the filter text syntax; fixed in code, never written.
+web/src/kernel/lists/model.ts wordOperators  # The reverse lookup of the operator spellings above; fixed in code, never written.
+web/src/kernel/lists/parts.tsx textOperators  # The filter operators offered for text columns; fixed in code, never written.
+web/src/kernel/messageFormat.ts pluralCategories  # CLDR plural categories of English and Arabic; fixed in code, never written.
+web/src/kernel/router.tsx routes  # The route table collected once from the modules' routes files (code): paths, title keys, permissions and components; never records.
+web/src/kernel/shortcuts.tsx modifierNames  # The three modifier names a chord may use (Mod, Alt, Shift); fixed in code, never written.
+web/src/kernel/shortcuts.tsx keyCaptions  # Captions of keys for the shortcut sheet (Enter, Esc, arrows); fixed in code, never written.
+web/src/modules/identity/model.ts matrixActions  # The four permission actions of the role matrix (read, create, update, delete); fixed in code (as const).
+web/src/modules/shell/AppShell.tsx shellChords  # The shell's keyboard chords (Mod+K, Alt+M, ...); fixed in code (as const).
+web/src/modules/shell/PreferencesDialog.tsx sampleDate  # A fixed sample date (3 October 2026, 09:30 UTC) shown to preview the date format; never written.
+web/src/modules/shell/ShortcutHelp.tsx localKeys  # The screen-local keys listed on the shortcut sheet; fixed in code, never written.
+web/src/modules/shell/ShortcutHelp.tsx groupOrder  # The order of the shortcut sheet's groups (string keys); fixed in code, never written.
+web/src/modules/shell/announcer.tsx listeners  # The mounted live region's listener functions; the announced text passes through to the screen reader and is not kept here.

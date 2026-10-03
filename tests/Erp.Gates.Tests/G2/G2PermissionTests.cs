@@ -39,18 +39,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     [Fact]
     public void Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous()
     {
-        var problems = new List<string>();
-        foreach (var endpoint in Endpoints)
-        {
-            if (endpoint.IsAnonymous && endpoint.Permissions.Count > 0)
-            {
-                problems.Add($"{endpoint}: both anonymous and permissioned");
-            }
-            else if (!endpoint.IsAnonymous && endpoint.Permissions.Count != 1)
-            {
-                problems.Add($"{endpoint}: declares {endpoint.Permissions.Count} permissions");
-            }
-        }
+        var problems = PermissionDeclarationProblems(Endpoints);
         var allowlist = Repo.ReadReviewedList("tests/Gates/anonymous-allowlist.txt");
         Assert.All(allowlist, a => Assert.False(string.IsNullOrWhiteSpace(a.Reason), $"{a.Entry} needs a reason"));
         var anonymous = Endpoints.Where(e => e.IsAnonymous).Select(e => e.Key).Distinct().Order(StringComparer.Ordinal).ToList();
@@ -64,6 +53,54 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             $"{anonymous.Count} anonymous endpoints; ratchet maximum {Ratchet.Max("g2.anonymousEndpoints")}");
         Assert.True(Permissioned.Count >= Ratchet.Min("g2.permissionedEndpoints"),
             $"{Permissioned.Count} permissioned endpoints; ratchet minimum {Ratchet.Min("g2.permissionedEndpoints")}");
+    }
+
+    /// <summary>Each endpoint declares exactly one permission, or is anonymous through the
+    /// reviewed helper only; nothing lets ASP.NET Core skip authorization behind a permission.</summary>
+    public static List<string> PermissionDeclarationProblems(IEnumerable<ApiEndpoint> endpoints)
+    {
+        var problems = new List<string>();
+        foreach (var endpoint in endpoints)
+        {
+            if (endpoint.IsAnonymous && endpoint.Permissions.Count > 0)
+            {
+                problems.Add($"{endpoint}: both anonymous and permissioned");
+            }
+            else if (endpoint.AllowsAnonymous && !endpoint.IsAnonymous)
+            {
+                // .AllowAnonymous() (or [AllowAnonymous]) skips authorization, so a permission the
+                // endpoint also declares is never checked: only the reviewed helper may do this.
+                problems.Add($"{endpoint}: allows anonymous callers (IAllowAnonymous) without AllowAnonymousReviewed; any permission it declares ({string.Join(", ", endpoint.Permissions)}) is skipped");
+            }
+            else if (endpoint.IsAnonymous && !endpoint.AllowsAnonymous)
+            {
+                problems.Add($"{endpoint}: carries an anonymous reason but ASP.NET Core still requires a signed-in caller; use AllowAnonymousReviewed");
+            }
+            else if (!endpoint.IsAnonymous && endpoint.Permissions.Count != 1)
+            {
+                problems.Add($"{endpoint}: declares {endpoint.Permissions.Count} permissions");
+            }
+        }
+        return problems;
+    }
+
+    /// <summary>Self-test (critic plant P6b): .AllowAnonymous() stacked on RequirePermission, with
+    /// the endpoint metadata exactly as ASP.NET Core builds it, is reported.</summary>
+    [Fact]
+    public void The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.Services.AddAuthorization();
+        using var app = builder.Build();
+        app.MapPut("/api/planted/preferences", () => "planted").RequirePermission("identity.profile.update").AllowAnonymous();
+        app.MapGet("/api/planted/reviewed", () => "planted").AllowAnonymousReviewed("A reviewed anonymous endpoint for the self-test.");
+        app.MapGet("/api/planted/guarded", () => "planted").RequirePermission("identity.users.read");
+        var endpoints = EndpointInventory.From(((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints));
+        var problems = PermissionDeclarationProblems(endpoints);
+        Assert.Single(problems);
+        Assert.Contains("PUT /api/planted/preferences", problems[0], StringComparison.Ordinal);
+        Assert.Contains("identity.profile.update", problems[0], StringComparison.Ordinal);
     }
 
     [Fact]

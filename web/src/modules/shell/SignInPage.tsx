@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useI18n } from "../../kernel/i18n";
+import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
-
-const lastEmailKey = "erp.lastEmail";
 
 function rememberedEmail(): string {
   try {
@@ -18,7 +17,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * The first screen. Keyboard first: the e-mail field has focus (or the password field, when this
  * device remembers the last e-mail), Enter signs in. The e-mail — never the password — is
- * remembered on this device.
+ * remembered on this device until the person signs out (see kernel/deviceState.ts).
  */
 export function SignInPage() {
   const { t, language } = useI18n();

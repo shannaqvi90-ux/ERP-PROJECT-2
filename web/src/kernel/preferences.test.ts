@@ -29,6 +29,21 @@ describe("preferences survive a reload before the server answers", () => {
     expect(pendingFor("u1")).toBeNull();
   });
 
+  it("sends a change again when it met another change of the same user (409), and saves it", async () => {
+    let answered = 0;
+    const calls = mockFetch(() => (++answered === 1 ? { status: 409, body: { code: "concurrency" } } : { status: 200, body: {} }));
+    expect(await savePreferences("u1", { numerals: "arab" })).toBe("saved");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(2);
+    expect(pendingFor("u1")).toBeNull();
+  });
+
+  it("gives up on a change that keeps conflicting, and keeps it pending for the next session", async () => {
+    const calls = mockFetch(() => ({ status: 409, body: { code: "concurrency" } }));
+    expect(await savePreferences("u1", { numerals: "arab" })).toBe("offline");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(4);
+    expect(pendingFor("u1")).toEqual({ numerals: "arab" });
+  });
+
   it("never applies one user's pending change to another user", () => {
     rememberPending("u1", { language: "ar" });
     expect(pendingFor("u2")).toBeNull();

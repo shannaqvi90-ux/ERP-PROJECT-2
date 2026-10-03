@@ -19,6 +19,13 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Raised on window when a request outside /api/auth/ is answered 401 (the session ended, signed
+ * out elsewhere or expired): the session provider then checks the session and, if it is gone,
+ * starts over on the sign-in screen without keeping anything of the identity.
+ */
+export const sessionEndedEvent = "erp:session-ended";
+
 export type ApiOptions = {
   /** Lets the request finish even if the page unloads (a reload right after a change). */
   keepalive?: boolean;
@@ -56,6 +63,7 @@ export async function api<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: st
     }
   }
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("/api/auth/")) window.dispatchEvent(new Event(sessionEndedEvent));
     throw new ApiError(response.status, (parsed as Record<string, unknown>) ?? {});
   }
   return parsed as T;

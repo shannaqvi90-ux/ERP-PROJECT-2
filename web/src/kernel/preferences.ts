@@ -71,15 +71,35 @@ export function settlePending(userId: string, sent: PreferenceChange): void {
 
 export type SaveOutcome = "saved" | "refused" | "offline";
 
+/** Attempts at a change that meets another change of the same user's row (409 concurrency). */
+const conflictAttempts = 4;
+
+/**
+ * Two quick changes (language, then digits) are two requests that may reach the server together;
+ * the user's row is versioned, so the later one can be answered 409 although nothing is wrong. A
+ * preference change is a partial last-writer-wins update of the user's own row: send it again.
+ */
+async function putWithRetry(change: PreferenceChange): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await api("PUT", preferencesPath, change, { keepalive: true });
+      return;
+    } catch (error) {
+      if (!(error instanceof ApiError && error.status === 409) || attempt >= conflictAttempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 40 * attempt));
+    }
+  }
+}
+
 /** Send a change for the user; the pending copy keeps it safe until the server confirms. */
 export async function savePreferences(userId: string, change: PreferenceChange): Promise<SaveOutcome> {
   rememberPending(userId, change);
   try {
-    await api("PUT", preferencesPath, change, { keepalive: true });
+    await putWithRetry(change);
     settlePending(userId, change);
     return "saved";
   } catch (error) {
-    if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 429) {
+    if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 409 && error.status !== 429) {
       // Refused for good (invalid, or the user may not change preferences): retrying cannot help.
       settlePending(userId, change);
       return "refused";

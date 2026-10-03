@@ -50,3 +50,13 @@ request and the server ends the session. The screen changes to the sign-in form 
 server answered, so the form never claims a sign-out that did not happen. The end-to-end digits test
 waits for the sign-in form before it clears storage and navigates (its sign-out was being
 cancelled by the navigation, which made it fail 2 times in 4).
+
+## Round 3: two quick changes no longer collide; signing out replaces the document
+
+The user's row is versioned, so two preference requests that reach the server together (Arabic,
+then Arabic-Indic digits, a second apart) could see the later one answered 409, which the client took
+as a refusal ("the server did not accept the change"; the critic saw the digits test fail once). A
+preference change is a partial last-writer-wins update of the user's own row, so the client sends a
+change again on 409 (up to four attempts, 40/80/120 ms apart) and keeps it pending, to be sent at the
+next session, if it still conflicts. Signing out now forgets the device's stored state and replaces
+the document (see `p04-shell-client-isolation.md`); the screen shows "Signing out…" meanwhile.

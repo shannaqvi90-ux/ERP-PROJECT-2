@@ -21,6 +21,12 @@ public sealed partial record ApiEndpoint(
     /// <summary>The endpoint is marked <see cref="Erp.Kernel.Http.ReadOnlyOperationAttribute"/>
     /// (runs in a read-only transaction although its method has a body).</summary>
     public bool ReadOnlyOperation { get; init; }
+
+    /// <summary>ASP.NET Core lets the endpoint skip authorization (<c>IAllowAnonymous</c>
+    /// metadata, from <c>.AllowAnonymous()</c> or <c>[AllowAnonymous]</c>), whatever permission it
+    /// also declares.</summary>
+    public bool AllowsAnonymous { get; init; }
+
     public bool IsAnonymous => AnonymousReason is not null;
     public string Key => $"{Method} {Pattern}";
     public bool HasBody => Method is "POST" or "PUT" or "PATCH";
@@ -40,11 +46,14 @@ public sealed partial record ApiEndpoint(
 /// <summary>Enumerates endpoints from the running application's routing (not from source).</summary>
 public static class EndpointInventory
 {
-    public static IReadOnlyList<ApiEndpoint> From(IServiceProvider services)
+    public static IReadOnlyList<ApiEndpoint> From(IServiceProvider services) =>
+        From(services.GetRequiredService<EndpointDataSource>().Endpoints);
+
+    /// <summary>The operations of the given endpoints (the gates' self-tests build their own).</summary>
+    public static IReadOnlyList<ApiEndpoint> From(IEnumerable<Endpoint> endpoints)
     {
-        var source = services.GetRequiredService<EndpointDataSource>();
         var result = new List<ApiEndpoint>();
-        foreach (var endpoint in source.Endpoints.OfType<RouteEndpoint>())
+        foreach (var endpoint in endpoints.OfType<RouteEndpoint>())
         {
             var methods = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods;
             var pattern = "/" + (endpoint.RoutePattern.RawText ?? "").TrimStart('/');
@@ -60,6 +69,7 @@ public static class EndpointInventory
                     permissions, anonymous, surface, inOpenApi)
                 {
                     ReadOnlyOperation = endpoint.Metadata.GetMetadata<Erp.Kernel.Http.ReadOnlyOperationAttribute>() is not null,
+                    AllowsAnonymous = endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() is not null,
                 });
             }
         }
