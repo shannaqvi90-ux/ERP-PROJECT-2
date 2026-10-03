@@ -42,14 +42,14 @@ function pathRun(keyboardRole) {
     await op.waitFor('main table tbody tr', { label: 'users list' });
     await op.press('n', { label: 'New user (n)' });
     await op.waitFor('input[name="email"]:focus', { label: 'new user form, e-mail focused' });
-    await op.type(login, { label: 'e-mail', chain: true });
+    await op.type(login, { label: 'e-mail' });
     if (keyboardRole) {
       // Tab passes the suggested name and the language to the role finder; Enter ticks the first role shown.
       await op.press('Tab', { label: 'next field (name)' });
       await op.press('Tab', { label: 'next field (language)' });
       await op.press('Tab', { label: 'next field (find a role)' });
-      await op.type(ctx.state.role.filter, { label: 'find the role', chain: true });
-      await op.press('Enter', { label: 'tick the first role shown', chain: true });
+      await op.type(ctx.state.role.filter, { label: 'find the role' });
+      await op.press('Enter', { label: 'tick the first role shown' });
     } else {
       await op.click(`aside label:has-text("${ctx.state.role.name}") input[type=checkbox]`, { label: 'the role' });
     }
