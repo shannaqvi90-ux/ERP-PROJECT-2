@@ -174,6 +174,26 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
     }
 
     [Fact]
+    public async Task The_session_probe_always_answers_200_and_drops_a_stale_session_cookie()
+    {
+        using var client = Env.Factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { HandleCookies = false });
+        foreach (var cookie in new[] { null, new string('A', 43), "not-a-token" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/session");
+            if (cookie is not null)
+            {
+                request.Headers.Add("Cookie", $"erp_session={cookie}");
+            }
+            var response = await client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.False((await Json(response)).GetProperty("authenticated").GetBoolean());
+            var cleared = response.Headers.TryGetValues("Set-Cookie", out var values)
+                && values.Any(v => v.StartsWith("erp_session=;", StringComparison.Ordinal) && v.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(cookie is not null, cleared);
+        }
+    }
+
+    [Fact]
     public async Task Deactivating_a_user_ends_their_sessions()
     {
         using var admin = await Env.SignInAsync(AdminA);
