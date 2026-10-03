@@ -9,6 +9,7 @@ import { entryFor, groupMenu } from "./navigation";
  * Tab stop: Alt+M (or Tab) lands on the current entry, Up/Down move between entries, Home/End
  * jump to the first/last, Enter opens.
  */
+/** Hidden when closed, or when the user's roles open no screen at all. */
 export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string; open: boolean }>(function NavPane({ menu, path, open }, ref) {
   const { t } = useI18n();
   const groups = groupMenu(menu);
@@ -30,7 +31,7 @@ export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string;
   }
 
   return (
-    <nav ref={ref} className="navpane" aria-label={t("shell.navigation")} hidden={!open} onKeyDown={onKeyDown}>
+    <nav ref={ref} id="navpane" className="navpane" aria-label={t("shell.navigation")} hidden={!open || menu.length === 0} onKeyDown={onKeyDown}>
       {groups.map((group) => (
         <div
           key={group.key ?? "_"}
