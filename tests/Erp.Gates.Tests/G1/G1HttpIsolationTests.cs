@@ -54,6 +54,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
             $"{report.BindsJudged} tenant bindings and {report.SettingStatementsJudged} setting statements judged among {report.RequestStatementsTraced} statements; " +
             $"{report.SwitchInputAttacks} tenant switch inputs over {report.SwitchHeaderNames} header names; {report.ResponsesHeaderJudged} responses judged on every header");
         TestContext.Current.TestOutputHelper?.WriteLine(
+            $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
+        TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks, {report.TracedLookups} traced lookups");
 
@@ -73,6 +75,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         AssertAtLeast(report.SwitchHeaderNames, "g1.switchHeaderNames");
         AssertAtLeast(report.ResponsesHeaderJudged, "g1.responsesHeaderJudged");
         AssertAtLeast(report.EndpointsAttacked, "g1.endpointsAttacked");
+        AssertAtLeast(report.VictimRouteValuesReplayed, "g1.victimRouteValuesReplayed");
+        AssertAtLeast(report.VictimPreTouches, "g1.victimPreTouches");
         AssertAtLeast(report.Requests, "g1.attackRequests");
         AssertAtLeast(report.ProbesRun, "g1.isolationProbes");
         AssertAtLeast(report.VictimValues, "g1.victimValues");
@@ -176,12 +180,22 @@ public static class IsolationAttack
         var counter = 0;
 
         // Phase 1: tenant B ids in routes; tenant-switch headers; guessed query names; uuid body fields.
+        // Every value tenant B itself put in a route (its own ids that answered and the records it
+        // created) is replayed in every route as well, and tenant B opens each GET route with every
+        // value tenant A is about to send right before A sends it: a handler that keeps answers per
+        // id without the tenant (critic p03 round 1, plants T1 and T2) then hands tenant A exactly
+        // the answer tenant B left there, and the body is judged for tenant B's markers.
+        var replayed = 0;
         foreach (var endpoint in endpoints)
         {
             await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
+            var bRouteValues = endpoint.RouteParameters.Count == 0 ? [] : activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList();
+            replayed += bRouteValues.Count;
+            var attackValues = victimRouteValues.Concat(bRouteValues).ToList();
+            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send");
             var paths = endpoint.RouteParameters.Count == 0
                 ? [endpoint.Path(_ => "")]
-                : victimRouteValues.Concat(endpoint.HasBody ? ownRouteValues : [])
+                : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
                     .Select(value => endpoint.Path(_ => value)).Distinct().ToList();
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var signIn = endpoint.Name == "auth.signIn";
@@ -300,7 +314,8 @@ public static class IsolationAttack
                 var routeValues = catchAll
                     ? values.Probe
                     : documentedRoute.Format == "uuid"
-                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Distinct().Select(i => i.ToString()).ToList()
+                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
+                            .Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                         : values.All.ToList();
                 foreach (var value in routeValues)
                 {
@@ -494,6 +509,8 @@ public static class IsolationAttack
             SettingStatementsJudged = settings.Count,
             RequestStatementsTraced = SqlTrace.RequestStatementsSince(traceSnapshot),
             SwitchInputAttacks = state.SwitchAttacks,
+            VictimRouteValuesReplayed = replayed,
+            VictimPreTouches = activity.PreTouches,
             SwitchHeaderNames = switchInputs.Headers.Count,
             ResponsesHeaderJudged = state.HeadersJudged,
             LookupMisuse = misuse,
@@ -1105,6 +1122,13 @@ public sealed record IsolationReport(
 
     /// <summary>Requests carrying tenant B's id or code in one header, query, cookie or body input.</summary>
     public int SwitchInputAttacks { get; init; }
+
+    /// <summary>Route attacks that replayed a value tenant B itself had put in a route (beyond the
+    /// sampled tenant B ids).</summary>
+    public int VictimRouteValuesReplayed { get; init; }
+
+    /// <summary>Requests in which tenant B opened a GET route with the value tenant A was about to send.</summary>
+    public int VictimPreTouches { get; init; }
 
     /// <summary>Header names that carried tenant B's id and code.</summary>
     public int SwitchHeaderNames { get; init; }

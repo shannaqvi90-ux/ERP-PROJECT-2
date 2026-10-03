@@ -11,6 +11,7 @@
   "problem.auth.signInFailed": "تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.",
   "problem.auth.chooseWorkspace": "هذا البريد الإلكتروني مسجّل في أكثر من مساحة عمل. اختر مساحة العمل التي تريد الدخول إليها.",
   "problem.identity.grantBeyondOwn": "لا يمكنك منح صلاحيات أو إزالتها إذا لم تكن تملكها بنفسك.",
+  "problem.identity.roleBeyondOwn": "يمنح هذا الدور صلاحيات لا تملكها، لذلك لا يمكن تعديله أو نسخه أو حذفه إلا لمن يملكها كلها.",
   "problem.identity.cannotChangeOwnAccess": "لا يمكنك تغيير أدوارك أو إيقاف حسابك بنفسك. اطلب ذلك من مدير آخر.",
   "problem.identity.systemRole": "أدوار النظام تديرها المنصة ولا يمكن تعديلها أو حذفها.",
   "problem.identity.emailTaken": "يوجد مستخدم بهذا البريد الإلكتروني في مساحة العمل هذه.",
@@ -26,5 +27,7 @@
   "problem.identity.userBeyondOwn": "لدى هذا المستخدم صلاحيات لا تملكها أنت، لذلك لا يمكنك تعديل حسابه.",
   "problem.identity.notOnYourself": "لا يمكنك تنفيذ هذا على حسابك أنت. لتغيير كلمة مرورك استخدم «تغيير كلمة المرور».",
   "validation.passwordTooSimple": "استخدم كلمة مرور تحتوي على أحرف مختلفة أكثر.",
-  "validation.passwordUnchanged": "اختر كلمة مرور مختلفة عن الحالية."
+  "validation.passwordUnchanged": "اختر كلمة مرور مختلفة عن الحالية.",
+  "permission.identity.users.delete": "حذف المستخدمين الذين لم يسجلوا الدخول قط",
+  "problem.identity.userHasSignedIn": "سجّل هذا المستخدم الدخول أو جرت محاولة لذلك، لذا يبقى سجله لأغراض التدقيق. أوقف المستخدم بدلاً من حذفه."
 }

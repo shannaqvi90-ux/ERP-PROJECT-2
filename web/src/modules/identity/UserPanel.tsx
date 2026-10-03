@@ -9,6 +9,8 @@ import {
   isEmail,
   nameFromEmail,
   roleName,
+  userActions,
+  userName,
   type AccessView,
   type ResetResult,
   type Role,
@@ -242,12 +244,14 @@ export function UserDetail({
   notice: initialNotice,
   onSaved,
   onClose,
+  onDeleted,
 }: {
   userId: string;
   roles: Role[];
   notice?: Notice;
   onSaved: (user: User) => void;
   onClose: () => void;
+  onDeleted?: (user: User) => void;
 }) {
   const { t, language, formatDateTime } = useI18n();
   const { state, can } = useSession();
@@ -256,14 +260,20 @@ export function UserDetail({
   const [notice, setNotice] = useState<Notice | undefined>(initialNotice);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [nameAr, setNameAr] = useState("");
+  const [email, setEmail] = useState("");
   const [userLanguage, setUserLanguage] = useState<"en" | "ar">("en");
   const [active, setActive] = useState(true);
   const [roleIds, setRoleIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const id = useId();
-  const self = state.status === "signedIn" && state.session.user.id === userId;
-  const editable = can("identity.users.update");
+  const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
+  const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
+  const selfId = state.status === "signedIn" ? state.session.user.id : null;
+  const self = selfId === userId;
+  const allowed = userActions(user ?? { id: userId, roleIds: [], lastSignInAt: null }, roles, granted, selfId);
+  const editable = allowed.edit;
 
   useEffect(() => {
     let live = true;
@@ -274,6 +284,8 @@ export function UserDetail({
         if (!live) return;
         setUser(u);
         setName(u.displayName);
+        setNameAr(u.displayNameAr ?? "");
+        setEmail(u.email);
         setUserLanguage(u.language);
         setActive(u.isActive);
         setRoleIds(u.roleIds);
@@ -290,9 +302,6 @@ export function UserDetail({
     if (user) headingRef.current?.focus();
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
-  const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
-
   async function save() {
     if (!user || !editable || busy) return;
     setBusy(true);
@@ -300,10 +309,12 @@ export function UserDetail({
     try {
       const saved = await api<User>("PUT", `/api/identity/users/${user.id}`, {
         displayName: name.trim(),
+        displayNameAr: nameAr.trim(),
         language: userLanguage,
         isActive: active,
         roleIds,
         version: user.version,
+        ...(!self && email.trim() !== user.email ? { email: email.trim() } : {}),
       });
       setUser(saved);
       setNotice({ kind: "info", text: t("identity.form.saved") });
@@ -332,7 +343,7 @@ export function UserDetail({
   return (
     <section className="id-form" aria-labelledby={`${id}-title`} onKeyDown={(e) => formKeys(e, () => void save(), onClose)}>
       <h2 id={`${id}-title`} ref={headingRef} tabIndex={-1}>
-        {user.displayName}
+        {userName(user, language)}
       </h2>
       <p className="muted" dir="ltr">
         {user.email}
@@ -367,10 +378,19 @@ export function UserDetail({
             void save();
           }}
         >
+          {allowed.beyondOwn && <p className="muted">{t("identity.users.beyondOwnNote")}</p>}
           <fieldset disabled={!editable} className="id-plain">
+            <label className="field">
+              <span className="field-label">{t("identity.users.email")}</span>
+              <input name="email" type="email" dir="ltr" value={email} disabled={self} onChange={(e) => setEmail(e.target.value)} />
+            </label>
             <label className="field">
               <span className="field-label">{t("identity.users.name")}</span>
               <input name="displayName" value={name} onChange={(e) => setName(e.target.value)} />
+            </label>
+            <label className="field">
+              <span className="field-label">{t("identity.users.nameAr")}</span>
+              <input name="displayNameAr" dir="rtl" lang="ar" value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
             </label>
             <label className="field">
               <span className="field-label">{t("identity.users.language")}</span>
@@ -405,24 +425,50 @@ export function UserDetail({
               {t("identity.form.close")}
             </button>
           </div>
-          {!self && <AccountActions user={user} onNotice={setNotice} />}
+          {(allowed.resetPassword || allowed.signOutEverywhere || allowed.delete) && (
+            <AccountActions user={user} allowed={allowed} onNotice={setNotice} onDeleted={() => onDeleted?.(user)} />
+          )}
         </form>
       )}
       {tab === "access" && <AccessTab userId={user.id} roles={roles} language={language} />}
-      {tab === "history" && <HistoryTab userId={user.id} self={self} />}
+      {tab === "history" && <HistoryTab userId={user.id} canUnblock={allowed.unblock} />}
     </section>
   );
 }
 
-/** Reset the password (new set-up code or a temporary password) and sign out everywhere. */
-function AccountActions({ user, onNotice }: { user: User; onNotice: (notice: Notice) => void }) {
-  const { t } = useI18n();
-  const { can } = useSession();
+/** Reset the password (new set-up code or a temporary password), sign out everywhere, and delete
+ * someone who has never signed in. Only the actions the caller may take on this user are shown. */
+function AccountActions({
+  user,
+  allowed,
+  onNotice,
+  onDeleted,
+}: {
+  user: User;
+  allowed: ReturnType<typeof userActions>;
+  onNotice: (notice: Notice) => void;
+  onDeleted: () => void;
+}) {
+  const { t, language } = useI18n();
   const [mode, setMode] = useState<"closed" | "code" | "password">("closed");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  if (!can("identity.users.resetPassword") && !can("identity.users.update")) return null;
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api<void>("DELETE", `/api/identity/users/${user.id}`);
+      onDeleted();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setConfirmDelete(false);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function reset() {
     setBusy(true);
@@ -460,17 +506,33 @@ function AccountActions({ user, onNotice }: { user: User; onNotice: (notice: Not
     <div className="id-account">
       <h3>{t("identity.account.title")}</h3>
       <div className="id-actions">
-        {can("identity.users.resetPassword") && (
+        {allowed.resetPassword && (
           <button type="button" className="button" onClick={() => setMode(mode === "closed" ? "code" : "closed")} aria-expanded={mode !== "closed"}>
             {t("identity.reset.open")}
           </button>
         )}
-        {can("identity.users.update") && (
+        {allowed.signOutEverywhere && (
           <button type="button" className="button" disabled={busy} onClick={() => void signOutEverywhere()}>
             {t("identity.sessions.revoke")}
           </button>
         )}
+        {allowed.delete && !confirmDelete && (
+          <button type="button" className="button danger" onClick={() => setConfirmDelete(true)}>
+            {t("identity.users.delete")}
+          </button>
+        )}
       </div>
+      {confirmDelete && (
+        <p className="id-confirm" role="alert">
+          {t("identity.users.deleteConfirm", { name: userName(user, language) })}
+          <button type="button" className="button danger" disabled={busy} onClick={() => void remove()}>
+            {t("identity.users.deleteYes")}
+          </button>
+          <button type="button" className="button" onClick={() => setConfirmDelete(false)}>
+            {t("identity.form.cancel")}
+          </button>
+        </p>
+      )}
       {mode !== "closed" && (
         <fieldset className="id-method">
           <legend className="field-label">{t("identity.reset.how")}</legend>
@@ -549,9 +611,8 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
 }
 
 /** Sign-in history, newest first, and the clients paused now (with Unblock). */
-function HistoryTab({ userId, self }: { userId: string; self: boolean }) {
+function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolean }) {
   const { t, formatDateTime } = useI18n();
-  const { can } = useSession();
   const [history, setHistory] = useState<SignInHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
@@ -582,12 +643,12 @@ function HistoryTab({ userId, self }: { userId: string; self: boolean }) {
           <p>{t("identity.history.paused", { count: history.paused.length })}</p>
           <ul>
             {history.paused.map((p) => (
-              <li key={p.source} dir="ltr">
-                {p.source} · {formatDateTime(p.until)}
+              <li key={p.source}>
+                <bdi dir="ltr">{p.source}</bdi> · <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
               </li>
             ))}
           </ul>
-          {!self && can("identity.users.update") && (
+          {canUnblock && (
             <button type="button" className="button" onClick={() => void unblock()}>
               {t("identity.history.unblock")}
             </button>
@@ -595,7 +656,8 @@ function HistoryTab({ userId, self }: { userId: string; self: boolean }) {
         </div>
       )}
       <p className="muted">{t("identity.history.count", { count: history.total })}</p>
-      <table className="grid">
+      <div className="id-scroll">
+      <table className="grid id-history-table">
         <thead>
           <tr>
             <th scope="col">{t("identity.history.when")}</th>
@@ -619,6 +681,7 @@ function HistoryTab({ userId, self }: { userId: string; self: boolean }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

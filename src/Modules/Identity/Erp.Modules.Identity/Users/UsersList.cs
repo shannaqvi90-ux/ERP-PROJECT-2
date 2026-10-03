@@ -6,7 +6,7 @@ namespace Erp.Modules.Identity.Users;
 /// <summary>
 /// The users list: its columns, search fields, built-in views and the query binding that serves
 /// them from <c>identity.users</c>. Search runs on trigram indexes over the display name and the
-/// normalised e-mail; every sortable column has a (tenant_id, column, id) index.
+/// normalised e-mail (the Arabic name is filtered on its own trigram index); every sortable column has a (tenant_id, column, id) index.
 /// </summary>
 internal static class UsersList
 {
@@ -17,6 +17,10 @@ internal static class UsersList
                 Key, "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
                 [
                     new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    // Shown in place of the name on Arabic screens when given; filtered ("contains") on its own
+                    // trigram index. Not a search field: a third field in every word's OR doubles the
+                    // cost of the free-text search over 100,000 users.
+                    new ListColumn("displayNameAr", "identity.users.nameAr", ListColumnType.Text, Filterable: true, Hidden: true),
                     new ListColumn("email", "identity.users.email", ListColumnType.Text, Sortable: true, Filterable: true),
                     new ListColumn("language", "identity.users.language", ListColumnType.Choice, Filterable: true, Groupable: true,
                         Choices: [new ListChoice("en", "identity.language.en"), new ListChoice("ar", "identity.language.ar")]),
@@ -37,6 +41,7 @@ internal static class UsersList
                 ]),
                 u => u.Id)
             .Column("displayName", u => u.DisplayName)
+            .Column("displayNameAr", u => u.DisplayNameAr)
             // Sorted, filtered and searched by the normalised (lower-case, trimmed) address, which
             // carries the unique and trigram indexes.
             .Column("email", u => u.EmailNormalized)

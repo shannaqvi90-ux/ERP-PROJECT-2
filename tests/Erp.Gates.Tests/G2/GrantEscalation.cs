@@ -158,7 +158,7 @@ public static class GrantEscalation
     private static string GrantsOf(JsonObject item) =>
         string.Join(" | ", GrantFields.Select(f => item[f] is JsonArray a ? string.Join(",", a.Select(x => x!.ToString()).Order(StringComparer.Ordinal)) : ""));
 
-    private static void SetGrants(JsonObject body, IEnumerable<Guid> roleIds, IEnumerable<string> permissions)
+    internal static void SetGrants(JsonObject body, IEnumerable<Guid> roleIds, IEnumerable<string> permissions)
     {
         if (body.ContainsKey("roleIds")) body["roleIds"] = new JsonArray(roleIds.Distinct().Select(r => (JsonNode)JsonValue.Create(r)).ToArray());
         if (body.ContainsKey("permissions")) body["permissions"] = new JsonArray(permissions.Distinct().Select(p => (JsonNode)JsonValue.Create(p)!).ToArray());
@@ -166,7 +166,7 @@ public static class GrantEscalation
 
     /// <summary>A body that passes validation: unique names and e-mail, a valid password and
     /// language, flags on, no ids.</summary>
-    private static JsonObject ValidBody(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag)
+    internal static JsonObject ValidBody(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment? env, string tag)
     {
         var k = 0;
         return openApi.BuildBody(schema, (type, format, name) =>
@@ -176,7 +176,7 @@ public static class GrantEscalation
             return type switch
             {
                 "string" when format == "uuid" => null,
-                "string" when lower.Contains("email") => $"g2.{tag}.{k}@{env.TenantA.EmailDomain}",
+                "string" when lower.Contains("email") => $"g2.{tag}.{k}@{env?.TenantA.EmailDomain ?? "g2.example"}",
                 "string" when lower == "password" => ErpTestEnvironment.Password,
                 "string" when lower == "language" => "en",
                 "string" => $"G2 {tag} {k}",
