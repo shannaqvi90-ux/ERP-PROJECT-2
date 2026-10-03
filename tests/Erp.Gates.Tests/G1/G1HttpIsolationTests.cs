@@ -385,8 +385,8 @@ public static class IsolationAttack
         // Phase 2c: what list answers add up to (totals, group counts, sums) must be the asking
         // tenant's own, after the other tenant sent exactly the same request first; both ways.
         var listAnswers = new List<ListAnswers.Result>();
-        using (var victimAdmin = await Env.SignInAsync(Env.Email(b, "admin")))
         {
+            var victimAdmin = activity.AdminClient;
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;

@@ -219,6 +219,44 @@ describe("list view", () => {
     expect(v.container.textContent).not.toContain("selected");
   });
 
+  it("selects every row that matches, not only the loaded ones, and copies them page by page", async () => {
+    const many: Row[] = Array.from({ length: 250 }, (_, i) => ({ id: `00000000-0000-7000-9000-${String(i).padStart(12, "0")}`, displayName: `Member ${i}`, email: `m${i}@alnoor.example`, language: "en" }));
+    const calls: string[] = [];
+    mockFetch((_method, url) => {
+      calls.push(url);
+      const parsed = new URL(url, "http://localhost");
+      if (parsed.pathname.endsWith("/definition")) return { status: 200, body: definition };
+      if (parsed.pathname.endsWith("/views")) return { status: 200, body: { items: [], total: 0 } };
+      const take = Number(parsed.searchParams.get("take") ?? 50);
+      const start = Number(parsed.searchParams.get("after") ?? parsed.searchParams.get("skip") ?? 0);
+      const items = many.slice(start, start + take);
+      return { status: 200, body: { items, total: many.length, next: start + take < many.length ? String(start + take) : null, groups: null } };
+    });
+    let copied = "";
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (text: string) => { copied = text; } } });
+    const v = await show();
+    grid().focus();
+    await key(grid(), "a", { ctrlKey: true });
+    const loaded = Number(/(\d+) selected/.exec(v.container.textContent ?? "")?.[1]);
+    expect(loaded).toBeGreaterThan(0);
+    expect(loaded).toBeLessThan(250);
+    const link = [...v.container.querySelectorAll<HTMLButtonElement>(".list-selectionbar button")].find((b) => b.textContent === "Select all 250 rows that match")!;
+    expect(link).toBeTruthy();
+    // Ctrl+A again does the same as the link.
+    await key(grid(), "a", { ctrlKey: true });
+    expect(v.container.querySelector(".list-selectionbar")?.textContent).toContain("All 250 matching rows selected");
+    const before = calls.length;
+    const copy = [...v.container.querySelectorAll<HTMLButtonElement>(".list-selectionbar button")].find((b) => b.textContent === "Copy")!;
+    await act(async () => copy.click());
+    await settle();
+    expect(copied.split("\n").length).toBe(251);
+    expect(copied).toContain("Member 249");
+    expect(calls.slice(before).some((c) => param(c, "after") !== null)).toBe(true);
+    expect(v.container.textContent).toContain("250 rows copied.");
+    await key(grid(), "Escape");
+    expect(v.container.querySelector(".list-selectionbar")).toBeNull();
+  });
+
   it("sorts from the header and filters from the column menu", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     serve(calls);
@@ -242,6 +280,25 @@ describe("list view", () => {
     expect(calls.some((c) => param(c.url, "filter") === "language eq 'ar'")).toBe(true);
     expect(v.container.querySelector(".list-chips")?.textContent).toContain("Language is Arabic");
     expect(param(window.location.search, "filter")).toBe("language eq 'ar'");
+  });
+
+  it("switches header filters on different columns between every and any", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    window.history.replaceState(null, "", "/identity/users?filter=" + encodeURIComponent("language eq 'ar' and displayName contains 'Person'"));
+    const v = await show();
+    const toggle = v.container.querySelector<HTMLButtonElement>(".list-match")!;
+    expect(toggle.textContent).toBe("Match: every filter");
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    await act(async () => toggle.click());
+    await settle();
+    expect(toggle.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle.textContent).toBe("Match: any column's filter");
+    const last = calls.filter((c) => c.url.startsWith("/api/identity/users?")).at(-1)!;
+    expect(param(last.url, "filter")).toBe("language eq 'ar' or displayName contains 'Person'");
+    expect(param(window.location.search, "filter")).toBe("language eq 'ar' or displayName contains 'Person'");
+    // Both chips stay editable conditions, not one opaque view filter.
+    expect(v.container.querySelectorAll(".list-chip").length).toBe(2);
   });
 
   it("groups with counts and drills into a group with Enter", async () => {

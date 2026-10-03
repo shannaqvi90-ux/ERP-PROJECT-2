@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   byRelevance,
+  canMatchAny,
   conditionText,
   filterText,
   initialState,
   parseConditions,
+  parseFilter,
   parseSort,
   queryOf,
   rowsToText,
@@ -72,6 +74,55 @@ describe("list filter text", () => {
   });
 });
 
+describe("matching any column's filter", () => {
+  const range = [
+    { column: "createdAt", op: "ge" as const, values: ["2026-01-01"] },
+    { column: "createdAt", op: "le" as const, values: ["2026-02-01"] },
+  ];
+  const arabic = { column: "language", op: "eq" as const, values: ["ar"] };
+  it("joins columns with or and keeps one column's conditions together", () => {
+    expect(filterText({ conditions: [arabic, ...range], baseFilter: null, match: "any" })).toBe(
+      "language eq 'ar' or (createdAt ge '2026-01-01' and createdAt le '2026-02-01')",
+    );
+    expect(filterText({ conditions: [arabic, ...range], baseFilter: null, match: "all" })).toBe(
+      "language eq 'ar' and createdAt ge '2026-01-01' and createdAt le '2026-02-01'",
+    );
+    // One column: nothing to choose between.
+    expect(filterText({ conditions: range, baseFilter: null, match: "any" })).toBe("createdAt ge '2026-01-01' and createdAt le '2026-02-01'");
+    expect(canMatchAny(range)).toBe(false);
+    expect(canMatchAny([arabic, ...range])).toBe(true);
+    // A view's own filter still holds.
+    expect(filterText({ conditions: [arabic, ...range], baseFilter: "isActive eq true or email is null", match: "any" })).toBe(
+      "(isActive eq true or email is null) and (language eq 'ar' or (createdAt ge '2026-01-01' and createdAt le '2026-02-01'))",
+    );
+  });
+
+  it("reads back what it writes, and gives up on anything richer", () => {
+    const text = filterText({ conditions: [arabic, ...range], baseFilter: null, match: "any" });
+    expect(parseFilter(text)).toEqual({ conditions: [arabic, ...range], match: "any" });
+    expect(parseFilter("(language in ('ar', 'en') or isActive eq false)")).toEqual({
+      conditions: [{ column: "language", op: "in", values: ["ar", "en"] }, { column: "isActive", op: "eq", values: [false] }],
+      match: "any",
+    });
+    expect(parseFilter("language eq 'ar' and isActive eq true")?.match).toBe("all");
+    expect(parseFilter("language eq 'ar' or language eq 'en'")).toBeNull();
+    expect(parseFilter("(language eq 'ar' and isActive eq true) or email is null")).toBeNull();
+    expect(parseFilter("not language eq 'ar' or email is null")).toBeNull();
+    expect(parseFilter("language eq 'ar' or")).toBeNull();
+  });
+
+  it("round-trips through the address and views", () => {
+    const state = { ...initialState(definition), conditions: [arabic, { column: "isActive", op: "eq" as const, values: [false] }], match: "any" as const };
+    const back = stateFromAddress(stateToAddress(state, definition, null), definition).state;
+    expect(back.conditions).toEqual(state.conditions);
+    expect(back.match).toBe("any");
+    expect(back.baseFilter).toBeNull();
+    const view = stateFromView(definition, { filter: filterText(state), sort: null, groupBy: null, columns: [] }, "view:3");
+    expect(view.match).toBe("any");
+    expect(view.conditions).toEqual(state.conditions);
+  });
+});
+
 describe("list state", () => {
   it("sorts from header clicks: ascending, then descending; Shift adds a second key", () => {
     expect(toggleSort([], "displayName", false)).toEqual([{ column: "displayName", descending: false }]);
@@ -117,9 +168,17 @@ describe("list state", () => {
   });
 
   it("opens a view with its own filter, sort and columns", () => {
-    const state = stateFromView(definition, { filter: "isActive eq true or language eq 'ar'", sort: "displayName", groupBy: null, columns: ["email"] }, "view:1");
-    expect(state.baseFilter).toBe("isActive eq true or language eq 'ar'");
+    const state = stateFromView(definition, { filter: "not isActive eq true or language eq 'ar'", sort: "displayName", groupBy: null, columns: ["email"] }, "view:1");
+    expect(state.baseFilter).toBe("not isActive eq true or language eq 'ar'");
     expect(state.conditions).toEqual([]);
+    // A filter the header editors can show (columns joined by or) opens as editable conditions.
+    const either = stateFromView(definition, { filter: "isActive eq true or language eq 'ar'", sort: null, groupBy: null, columns: [] }, "view:4");
+    expect(either.baseFilter).toBeNull();
+    expect(either.match).toBe("any");
+    expect(either.conditions).toEqual([
+      { column: "isActive", op: "eq", values: [true] },
+      { column: "language", op: "eq", values: ["ar"] },
+    ]);
     expect(state.sort).toEqual([{ column: "displayName", descending: false }]);
     expect(state.columns).toEqual(["email"]);
     expect(stateFromView(definition, { filter: null, sort: null, groupBy: null, columns: [] }, "view:2").columns).toEqual(["displayName", "email", "language", "isActive"]);

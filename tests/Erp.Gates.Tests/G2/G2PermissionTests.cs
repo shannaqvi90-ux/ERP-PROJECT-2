@@ -513,6 +513,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 }
             }
         }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{catalog.Lists.Count} lists, {refusals} refusals checked on list endpoints");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(refusals >= Ratchet.Min("g2.listEndpointRefusals"), $"g2.listEndpointRefusals: {refusals}; ratchet minimum {Ratchet.Min("g2.listEndpointRefusals")}");
     }
