@@ -88,7 +88,7 @@ public sealed record SaveCompanyRequest(
 /// <summary>A company logo: PNG, JPEG or WebP, at most 512 KB, as base64.</summary>
 public sealed record UploadLogoRequest(
     [property: ApiExample("image/png"), RegularExpression("^image/(png|jpeg|webp)$")] string? ContentType,
-    [property: ApiExample(CompanyLogo.ExamplePng)] string? Data);
+    [property: ApiExample(CompanyLogo.ExamplePng), RegularExpression(CompanyLogo.DataPattern)] string? Data);
 
 internal static class CompanyEndpoints
 {
@@ -375,6 +375,9 @@ internal static class CompanyLogo
     public const int MaxBytes = 512 * 1024;
 
     public static readonly IReadOnlyList<string> ContentTypes = ["image/png", "image/jpeg", "image/webp"];
+
+    /// <summary>Base64, optionally as a data URL of one of the accepted types.</summary>
+    public const string DataPattern = "^(data:image/(png|jpeg|webp);base64,)?[A-Za-z0-9+/]+={0,2}$";
 
     /// <summary>A valid 1×1 PNG (the documented example).</summary>
     public const string ExamplePng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";

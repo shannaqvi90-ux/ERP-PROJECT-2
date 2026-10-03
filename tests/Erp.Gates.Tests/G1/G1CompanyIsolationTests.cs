@@ -98,7 +98,8 @@ public static class CompanyAttack
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } });
         Assert.Equal(HttpStatusCode.OK, granted.StatusCode);
 
-        var before = await CompanySnapshot.TakeAsync(env, tenant.Id, y);
+        var examples = openApi.ExampleValues();
+        var before = await CompanySnapshot.TakeAsync(env, tenant.Id, y, examples);
         Assert.True(before.Ids.Count >= 5, "company Y has too few rows to attack");
         var attackers = new List<(string Name, HttpClient Client)>
         {
@@ -182,7 +183,7 @@ public static class CompanyAttack
         var session = await scopedClient.GetFromJsonAsync<JsonElement>("/api/auth/session");
         if (session.GetProperty("permissions").GetArrayLength() == 0) escalations.Add("the company X administrator holds no permissions (the attack would be blind)");
 
-        var after = await CompanySnapshot.TakeAsync(env, tenant.Id, y);
+        var after = await CompanySnapshot.TakeAsync(env, tenant.Id, y, examples);
         foreach (var (_, client) in attackers)
         {
             client.Dispose();
@@ -293,7 +294,8 @@ public sealed class CompanySnapshot
 
     public string? FindMarker(string text) => Markers.FirstOrDefault(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
 
-    public static async Task<CompanySnapshot> TakeAsync(ErpTestEnvironment env, Guid tenant, Guid company)
+    /// <param name="publicValues">Published API example values: they identify no company.</param>
+    public static async Task<CompanySnapshot> TakeAsync(ErpTestEnvironment env, Guid tenant, Guid company, IReadOnlySet<string> publicValues)
     {
         await using var admin = await env.OpenAdminAsync();
         var ids = new List<Guid> { company };
@@ -326,6 +328,7 @@ public sealed class CompanySnapshot
                 r => r.GetString(0), ("t", tenant), ("c", company)));
         }
         var unique = strings.Distinct(StringComparer.Ordinal)
+            .Where(s => !publicValues.Contains(s.Trim()))
             .Where(s => !others.Any(o => o.Contains(s.ToLowerInvariant(), StringComparison.Ordinal)))
             .ToList();
         return new CompanySnapshot { Ids = ids.Distinct().ToList(), Strings = unique, Checksums = checksums };
