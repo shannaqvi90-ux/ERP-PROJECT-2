@@ -123,7 +123,10 @@ test('blind screenshots paint branding over, go grey, and leave title and favico
 test('a screenshot after the end of a task never shortens the measured time', async () => {
   const { context, op } = await fresh();
   op.start();
-  await new Promise(r => setTimeout(r, 30));
+  // Timers may fire a fraction of a millisecond early on a busy machine; wait until 30 ms have
+  // really passed on the operator's own clock, so the assertion below tests the operator only.
+  const begun = performance.now();
+  while (performance.now() - begun < 31) await new Promise(r => setTimeout(r, 5));
   op.finish();
   const measured = op.machineSeconds;
   await op.shot('done');

@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { allSelected, buildMatrix, completeEmail, domainOf, nameFromEmail, toggleAll, type Permission } from "./model";
+import {
+  allSelected,
+  buildMatrix,
+  completeEmail,
+  domainOf,
+  nameFromEmail,
+  roleActions,
+  toggleAll,
+  userActions,
+  userName,
+  withImpliedReads,
+  type Permission,
+} from "./model";
 
 const p = (key: string, resourceLabel: string, label: string): Permission => {
   const [module = "", resource = "", action = ""] = key.split(".");
@@ -61,5 +73,104 @@ describe("new user helpers", () => {
     expect(completeEmail("", "a.example")).toBe("");
     expect(domainOf("admin@alnoor.example")).toBe("alnoor.example");
     expect(domainOf("broken")).toBeNull();
+  });
+});
+
+// Every permission of the identity module, as the server's catalogue holds them today.
+const identity = [
+  "identity.profile.update",
+  "identity.roles.create",
+  "identity.roles.delete",
+  "identity.roles.read",
+  "identity.roles.update",
+  "identity.signIns.read",
+  "identity.users.create",
+  "identity.users.delete",
+  "identity.users.read",
+  "identity.users.resetPassword",
+  "identity.users.update",
+];
+const without = (...missing: string[]) => new Set(identity.filter((x) => !missing.includes(x)));
+
+describe("what the screens offer for a role", () => {
+  const custom = { isSystem: false, permissions: ["identity.users.read"] };
+
+  it("needs the permission of each action, exactly: removing one hides exactly that action", () => {
+    expect(roleActions(custom, new Set(identity))).toEqual({ edit: true, copy: true, delete: true, beyondOwn: false });
+    expect(roleActions(custom, without("identity.roles.delete"))).toEqual({ edit: true, copy: true, delete: false, beyondOwn: false });
+    expect(roleActions(custom, without("identity.roles.update"))).toEqual({ edit: false, copy: true, delete: true, beyondOwn: false });
+    expect(roleActions(custom, without("identity.roles.create"))).toEqual({ edit: true, copy: false, delete: true, beyondOwn: false });
+    expect(roleActions(undefined, without("identity.roles.create")).edit).toBe(false);
+    expect(roleActions(undefined, new Set(identity)).edit).toBe(true);
+  });
+
+  it("offers nothing but viewing for a role granting a permission the user lacks, and only copying for a system role", () => {
+    const strong = { isSystem: false, permissions: ["identity.users.read", "identity.users.resetPassword"] };
+    expect(roleActions(strong, without("identity.users.resetPassword"))).toEqual({ edit: false, copy: false, delete: false, beyondOwn: true });
+    expect(roleActions({ isSystem: true, permissions: identity }, new Set(identity))).toEqual({ edit: false, copy: true, delete: false, beyondOwn: false });
+  });
+});
+
+describe("what the screens offer for another user", () => {
+  const clerkRole = { id: "r-clerk", permissions: ["identity.users.read"] };
+  const adminRole = { id: "r-admin", permissions: identity };
+  const clerk = { id: "u-clerk", roleIds: ["r-clerk"], lastSignInAt: null };
+
+  it("needs the permission of each action, exactly", () => {
+    const all = userActions(clerk, [clerkRole, adminRole], new Set(identity), "me");
+    expect(all).toMatchObject({ edit: true, resetPassword: true, signOutEverywhere: true, unblock: true, delete: true, beyondOwn: false });
+    expect(userActions(clerk, [clerkRole], without("identity.users.delete"), "me")).toMatchObject({ delete: false, resetPassword: true, edit: true });
+    expect(userActions(clerk, [clerkRole], without("identity.users.resetPassword"), "me")).toMatchObject({ resetPassword: false, delete: true, edit: true });
+    expect(userActions(clerk, [clerkRole], without("identity.users.update"), "me")).toMatchObject({ edit: false, signOutEverywhere: false, unblock: false, resetPassword: true });
+  });
+
+  it("offers nothing that acts on someone stronger, on oneself, or deletes someone who has signed in", () => {
+    const admin = { id: "u-admin", roleIds: ["r-admin"], lastSignInAt: null };
+    const weaker = without("identity.users.delete");
+    expect(userActions(admin, [clerkRole, adminRole], weaker, "me")).toMatchObject({ beyondOwn: true, edit: false, resetPassword: false, signOutEverywhere: false, delete: false });
+    expect(userActions({ ...clerk, id: "me" }, [clerkRole], new Set(identity), "me")).toMatchObject({ self: true, resetPassword: false, delete: false, edit: true });
+    expect(userActions({ ...clerk, lastSignInAt: "2026-10-01T08:00:00Z" }, [clerkRole], new Set(identity), "me").delete).toBe(false);
+  });
+
+  it("names a user in the screen's language", () => {
+    expect(userName({ displayName: "Majid Anil Pillai", displayNameAr: "ماجد أنيل بيلاي" }, "ar")).toBe("ماجد أنيل بيلاي");
+    expect(userName({ displayName: "Majid Anil Pillai", displayNameAr: "ماجد أنيل بيلاي" }, "en")).toBe("Majid Anil Pillai");
+    expect(userName({ displayName: "Mark Smith", displayNameAr: null }, "ar")).toBe("Mark Smith");
+  });
+});
+
+describe("permissions of modules that arrive later", () => {
+  // A contacts module (wave 2) brings its own permissions; the matrix and the helpers take them as they come.
+  const contacts = [
+    p("contacts.contacts.read", "Contacts", "View contacts"),
+    p("contacts.contacts.create", "Contacts", "Create contacts"),
+    p("contacts.contacts.update", "Contacts", "Change contacts"),
+    p("contacts.contacts.delete", "Contacts", "Delete contacts"),
+    p("contacts.contacts.export", "Contacts", "Export contacts"),
+  ];
+
+  it("gets a block of its own with the usual columns", () => {
+    const matrix = buildMatrix([...catalogue, ...contacts]);
+    const block = matrix.find((m) => m.module === "contacts")!;
+    expect(block.rows).toHaveLength(1);
+    expect(block.rows[0]!.cells.create?.key).toBe("contacts.contacts.create");
+    expect(block.rows[0]!.other.map((o) => o.key)).toEqual(["contacts.contacts.export"]);
+  });
+
+  it("turns on viewing with any other action, never the reverse, and only what may be granted", () => {
+    const all = [...catalogue, ...contacts];
+    const may = () => true;
+    expect([...withImpliedReads(new Set(["contacts.contacts.create"]), ["contacts.contacts.create"], all, may)].sort()).toEqual([
+      "contacts.contacts.create",
+      "contacts.contacts.read",
+    ]);
+    expect([...withImpliedReads(new Set(["contacts.contacts.read"]), ["contacts.contacts.read"], all, may)]).toEqual(["contacts.contacts.read"]);
+    expect([...withImpliedReads(new Set(["contacts.contacts.create"]), ["contacts.contacts.create"], all, (k) => k !== "contacts.contacts.read")]).toEqual([
+      "contacts.contacts.create",
+    ]);
+    // No view permission in the catalogue for the resource: nothing is invented.
+    expect([...withImpliedReads(new Set(["identity.users.resetPassword"]), ["identity.users.resetPassword"], [p("identity.users.resetPassword", "Users", "Reset")], may)]).toEqual([
+      "identity.users.resetPassword",
+    ]);
   });
 });

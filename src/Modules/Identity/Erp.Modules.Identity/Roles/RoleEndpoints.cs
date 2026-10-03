@@ -46,13 +46,13 @@ internal static class RoleEndpoints
 
         group.MapPut("/roles/{id:guid}", Update)
             .WithName("identity.roles.update")
-            .WithSummary("Rename a role or change its permissions. System roles cannot be changed.")
+            .WithSummary("Rename a role or change its permissions. Only a caller who holds every permission the role grants, before and after the change; system roles cannot be changed.")
             .ProducesValidationProblem()
             .RequirePermission(IdentityPermissions.RolesUpdate);
 
         group.MapDelete("/roles/{id:guid}", Delete)
             .WithName("identity.roles.delete")
-            .WithSummary("Delete a role and its assignments. System roles cannot be deleted.")
+            .WithSummary("Delete a role and its assignments. Only a caller who holds every permission the role grants, and not a role the caller holds; system roles cannot be deleted.")
             .RequirePermission(IdentityPermissions.RolesDelete);
 
         group.MapPost("/roles/{id:guid}/copy", Copy)
@@ -135,7 +135,7 @@ internal static class RoleEndpoints
         }
         if (!source.Permissions.All(caller.Has))
         {
-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+            return Problems.Forbidden(http, "identity.roleBeyondOwn");
         }
         var nameEn = request.NameEn!.Trim();
         if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
@@ -166,9 +166,15 @@ internal static class RoleEndpoints
             return Problems.Forbidden(http, "identity.systemRole");
         }
         var permissions = request.Permissions!.Distinct().Order(StringComparer.Ordinal).ToList();
-        // Adding or removing a permission the caller does not hold is an escalation either way.
-        var changed = permissions.Except(role.Permissions).Concat(role.Permissions.Except(permissions));
-        if (!changed.All(caller.Has))
+        // A role is changed only by someone who holds everything it grants now and everything it
+        // will grant: changing a role acts on everyone who holds it (renaming the finance role
+        // "Leavers" is as harmful as clearing it), and adding or removing a permission the caller
+        // does not hold is an escalation either way.
+        if (!role.Permissions.All(caller.Has))
+        {
+            return Problems.Forbidden(http, "identity.roleBeyondOwn");
+        }
+        if (!permissions.All(caller.Has))
         {
             return Problems.Forbidden(http, "identity.grantBeyondOwn");
         }
@@ -206,7 +212,7 @@ internal static class RoleEndpoints
         }
         if (!role.Permissions.All(caller.Has))
         {
-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+            return Problems.Forbidden(http, "identity.roleBeyondOwn");
         }
         if (await db.UserRoles.AnyAsync(ur => ur.RoleId == id && ur.UserId == caller.UserId, cancellationToken))
         {

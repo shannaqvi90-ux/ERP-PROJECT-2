@@ -1,7 +1,7 @@
 import { Dialog } from "../../kernel/dialog";
 import { createFormatter, numeralSystems } from "../../kernel/format";
 import { languages, useI18n } from "../../kernel/i18n";
-import type { Session } from "../../kernel/session";
+import { sessionUserName, type Session } from "../../kernel/session";
 import { usePreferenceActions } from "./usePreferenceActions";
 
 const sampleDate = new Date(Date.UTC(2026, 9, 3, 9, 30));
@@ -18,7 +18,7 @@ export function PreferencesDialog({ session, onClose }: { session: Session; onCl
     <Dialog title={t("shell.prefs.title")} onClose={onClose} className="preferences">
       <p className="prefs-account">
         <span className="muted">{t("shell.prefs.account")} </span>
-        <strong>{session.user.displayName}</strong>{" "}
+        <strong>{sessionUserName(session.user, language)}</strong>{" "}
         <span dir="ltr" className="muted">
           {session.user.email}
         </span>

@@ -182,13 +182,15 @@ export function ListView(props: ListViewProps) {
     if (address !== window.location.pathname + window.location.search) window.history.replaceState(null, "", address);
   }, [current, definition, openId]);
 
-  // Start with the cursor in the search box (after the shell has placed focus on the screen),
-  // unless the address opens a record, whose panel takes focus.
+  // Start with the cursor in the search box (after the shell has placed focus on the screen, or
+  // while focus is still on the menu link that opened it), unless the address opens a record,
+  // whose panel takes focus.
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("open")) return;
     const timer = window.setTimeout(() => {
       const focused = document.activeElement;
-      if (!focused || focused === document.body || focused.id === "main" || focused.tagName === "MAIN") searchRef.current?.focus();
+      if (!focused || focused === document.body || focused.id === "main" || focused.tagName === "MAIN" || !!focused.closest("nav"))
+        searchRef.current?.focus();
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);

@@ -325,3 +325,49 @@
 .id-me .facts {
   margin-block: 8px 12px;
 }
+
+/* Sign-in history: the table scrolls inside the panel instead of overflowing it (long addresses,
+   Arabic dates), and its columns size to their content. */
+.id-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.id-history-table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.id-history-table td,
+.id-history-table th {
+  white-space: nowrap;
+}
+
+/* Matrix headers wrap rather than clip ("Change", "تعديل") in narrow panels. */
+.id-matrix-table thead th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.id-matrix-table thead th .button {
+  white-space: normal;
+  height: auto;
+}
+
+.id-account .id-confirm {
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+
+/* Status cell: the words and badges stay whole at the list's edge in either direction. */
+.id-status {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.id-status .id-badge {
+  margin-inline-start: 0;
+}

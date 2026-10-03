@@ -19,8 +19,9 @@ namespace Erp.Modules.Identity.Auth;
 public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken, string? NewPassword = null);
 
 /// <summary>The signed-in user as the shell shows them. <c>Numerals</c> is latn or arab: the digits
-/// Arabic screens use.</summary>
-public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language, string Numerals);
+/// Arabic screens use. <c>DisplayNameAr</c>: the name in Arabic script, shown on Arabic screens
+/// (null when the user has none; the shell then shows <c>DisplayName</c>).</summary>
+public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language, string Numerals, string? DisplayNameAr = null);
 
 public sealed record SessionTenant(Guid Id, string Code, string NameEn, string NameAr);
 
@@ -146,7 +147,7 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
     {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
-            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language, u.Numerals))
+            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language, u.Numerals, u.DisplayNameAr))
             .SingleAsync(cancellationToken);
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");
