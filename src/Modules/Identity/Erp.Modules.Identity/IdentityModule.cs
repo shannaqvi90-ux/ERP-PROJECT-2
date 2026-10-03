@@ -38,7 +38,7 @@ public sealed class IdentityModule : ErpModule
         });
         module.Menu(new MenuEntry("identity.users", "identity.menu.users", "/identity/users", IdentityPermissions.UsersRead, Order: 800, Group: "settings"));
         module.Menu(new MenuEntry("identity.roles", "identity.menu.roles", "/identity/roles", IdentityPermissions.RolesRead, Order: 810, Group: "settings"));
-        module.Menu(new MenuEntry("identity.me", "identity.menu.me", "/identity/me", IdentityPermissions.ProfileUpdate, Order: 900, Group: "personal"));
+        module.Menu(new MenuEntry("identity.me", "identity.menu.me", "/identity/me", IdentityPermissions.ProfileUpdate, Order: 990, Group: "personal"));
         module.List(new ListDefinition(
             "identity.users", "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
             [
