@@ -143,9 +143,11 @@ Added in the resumed round (each fails without its fix, checked by reverting it)
   on the server. Without closing every set-up context, the run verified with 1 step.
 - P2: launching another browser in set-up.
 - P3: a browser-wide debugging session, and tracing, in set-up.
-- L1: set-up sets a home preference so the home address opens the users list.
+- L1: set-up sets a home preference so the home address opens the users list. Without the landing
+  check the run verified with the Users click skipped.
 - L2: a list start whose path carries the user's name, encoded or as a slug.
-- C1: text copied in set-up and pasted while measuring, with four paste chords.
+- C1: text copied in set-up and pasted while measuring, with four paste chords. Checked first:
+  text copied in one browser context and pasted in a fresh context of the same browser arrives.
 - Controls: a home start with a set-up context of its own still verifies, and a copy then paste
   inside the measured part still verifies.
 

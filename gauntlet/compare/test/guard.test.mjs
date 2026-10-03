@@ -592,8 +592,16 @@ test('plant L1 (round 4): set-up changes where the product opens (a home prefere
     const r = await runDriver({
       async setup() { await fetch(base + '/api/home-preference', { method: 'POST' }); },
       async signIn(ctx) { await ctx.page.goto(base + '/'); },
-      async run(op) { await op.waitFor('#s'); return {}; },
-      async verify(ctx) { return { verified: await ctx.page.locator('#s').isVisible() }; },
+      // The users list is already open: search, open the row (the Users click is skipped).
+      async run(op) {
+        await op.fill('#s', needles.user.name, { label: 'name' });
+        const row = op.page.locator('#rows tr', { hasText: needles.user.name }).first();
+        await op.waitFor(row, { label: 'row' });
+        await op.click(row, { label: 'open the user' });
+        await op.waitFor('#panel:not([hidden])', { label: 'record' });
+        return {};
+      },
+      async verify(ctx) { return { verified: (await ctx.page.locator('#panel:not([hidden])').count()) === 1 && (await ctx.page.locator('#panel').innerText()).includes(needles.user.login) }; },
     }, task);
     assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
     assert.match(r.error, /home start landed on \/users/);
