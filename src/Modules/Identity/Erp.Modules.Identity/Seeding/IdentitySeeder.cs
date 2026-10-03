@@ -150,6 +150,8 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
              WHERE NOT EXISTS (SELECT 1 FROM identity.user_credentials c WHERE c.id = u.id)
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("hash", hash);
+        // As long as the bulk load it follows (BulkInsert): one statement over the whole volume.
+        command.CommandTimeout = 600;
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }
