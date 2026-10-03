@@ -1,0 +1,378 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261003T054845-9c1e",
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows ({user.name}) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in e-mail {user.login}.",
+  "started_at": "2026-10-03T05:48:45.427Z",
+  "finished_at": "2026-10-03T05:48:52.171Z",
+  "environment": {
+    "base_url": "http://localhost:20350",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 24,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "machine_seconds": 1.006,
+    "system_wait_seconds": 0.825,
+    "human_seconds": 11.68,
+    "human_plus_wait_seconds": 12.505,
+    "klm_operator_counts": {
+      "K": 26,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users (navigation)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.064
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "find (/)",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 0.354,
+      "took": 0.017,
+      "chord": "/"
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 24,
+      "chain": true,
+      "at": 0.378,
+      "took": 0.072,
+      "text": "Rania Rahul Al Kaabi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open the first result",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.927,
+      "took": 0.027,
+      "chord": "Enter"
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list",
+      "at": 0.064,
+      "seconds": 0.289
+    },
+    {
+      "label": "search focused",
+      "at": 0.37,
+      "seconds": 0.008
+    },
+    {
+      "label": "one result",
+      "at": 0.451,
+      "seconds": 0.476
+    },
+    {
+      "label": "user panel shows the login",
+      "at": 0.954,
+      "seconds": 0.052
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "8587606d5f36f45c.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/8587606d5f36f45c.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "eab8847b38d783e6.jpg",
+      "at": 0.927,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/eab8847b38d783e6.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "266922b7c2f71a9a.jpg",
+      "at": 1.006,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/266922b7c2f71a9a.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "name": true,
+      "login": true
+    }
+  },
+  "path_notes": "list: Users (navigation) > / > type the name (search as you type) > Enter | pointer: Users (navigation) > click search > type the name > click the row | palette: Ctrl+K > type the name > Enter > (open the row if the panel is not open)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-user.mjs",
+    "sha256": "88bf7e604cc28d80a4d8d7111dafc7da022099271571e6a7f8df267ce9894dd9"
+  },
+  "task_notes": "Both products hold the 100,000 users of gauntlet/compare/data/out/users.csv (ours via ERP_SEED_USERS_CSV); the name occurs once.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "list",
+    "keystrokes": "pointer",
+    "machine_seconds": "list",
+    "human_seconds": "list",
+    "human_plus_wait_seconds": "list"
+  },
+  "variants": [
+    {
+      "id": "list",
+      "path": "Users (navigation) > / > type the name (search as you type) > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 26,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "machine_seconds": 1.006,
+        "system_wait_seconds": 0.825,
+        "human_seconds": 11.68,
+        "human_plus_wait_seconds": 12.505,
+        "klm_operator_counts": {
+          "K": 26,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.064
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "find (/)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.354,
+          "took": 0.017,
+          "chord": "/"
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 24,
+          "chain": true,
+          "at": 0.378,
+          "took": 0.072,
+          "text": "Rania Rahul Al Kaabi"
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "open the first result",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.927,
+          "took": 0.027,
+          "chord": "Enter"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "name": true,
+          "login": true
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Users (navigation) > click search > type the name > click the row",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 24,
+        "clicks": 3,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "machine_seconds": 1.057,
+        "system_wait_seconds": 0.819,
+        "human_seconds": 15.47,
+        "human_plus_wait_seconds": 16.289,
+        "klm_operator_counts": {
+          "K": 24,
+          "P": 3,
+          "B": 6,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.059
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "search box",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.355,
+          "took": 0.036
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 24,
+          "chain": true,
+          "at": 0.39,
+          "took": 0.1,
+          "text": "Rania Rahul Al Kaabi"
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "open the row",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.961,
+          "took": 0.044
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "name": true,
+          "login": true
+        }
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type the name > Enter > (open the row if the panel is not open)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 27,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "machine_seconds": 1.147,
+        "system_wait_seconds": 0.99,
+        "human_seconds": 12.36,
+        "human_plus_wait_seconds": 13.35,
+        "klm_operator_counts": {
+          "K": 27,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette (Ctrl+K)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0,
+          "took": 0.022,
+          "chord": "Control+k"
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 24,
+          "chain": true,
+          "at": 0.033,
+          "took": 0.071,
+          "text": "Rania Rahul Al Kaabi"
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.528,
+          "took": 0.015,
+          "chord": "Enter"
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "open the row",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.049,
+          "took": 0.045
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "name": true,
+          "login": true
+        }
+      }
+    }
+  ]
+}

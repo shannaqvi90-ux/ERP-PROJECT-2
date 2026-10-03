@@ -1,0 +1,50 @@
+[odoo-reference] generating the shared dataset (deterministic, cached)
+[odoo-reference] starting PostgreSQL (project c-p01-odoo-rig-r3-odoo)
+ Network c-p01-odoo-rig-r3-odoo_default Creating 
+ Network c-p01-odoo-rig-r3-odoo_default Created 
+ Volume c-p01-odoo-rig-r3-odoo_db Creating 
+ Volume c-p01-odoo-rig-r3-odoo_db Created 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Creating 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Created 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Starting 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Started 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Waiting 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Healthy 
+[odoo-reference] creating database reference and installing base,base_setup,contacts,mail,purchase,base_import with Arabic (first run takes about a minute)
+[odoo-reference] starting Odoo on http://localhost:20152
+ Container c-p01-odoo-rig-r3-odoo-db-1 Running 
+ Container c-p01-odoo-rig-r3-odoo-odoo-1 Creating 
+ Container c-p01-odoo-rig-r3-odoo-odoo-1 Created 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Waiting 
+ Container c-p01-odoo-rig-r3-odoo-db-1 Healthy 
+ Container c-p01-odoo-rig-r3-odoo-odoo-1 Starting 
+ Container c-p01-odoo-rig-r3-odoo-odoo-1 Started 
+[odoo-reference] seeding to at least 100000 rows per main list
+  step user-channels: +0 in 0.0s
+  step setup: +0 in 18.2s
+  step contacts: +100000 in 149.5s
+  step users: +100000 in 35.2s
+  step user-channels: +100000 in 18.6s
+  step rates: +100000 in 6.2s
+  step audit-messages: +100000 in 6.7s
+  step audit-realism: +100000 in 17.1s
+  step attachments: +100000 in 4.1s
+  step attachment-content: +100001 in 6.9s
+  step job-runs: +99982 in 3.8s
+  step purchase-orders: +100000 in 30.6s
+  step purchase-buyer: +100000 in 9.4s
+[odoo-reference] waiting for the web client
+  contacts             100000  ok
+  contacts_all         200012
+  users                100005  ok
+  currency_rates       100000  ok
+  audit_messages       100007  ok
+  attachments          100046  ok
+  job_runs             100000  ok
+  approvals            100000  ok
+  approvals_pending       200
+  companies                 5
+  roles                    39
+[odoo-reference] volume verified and written to /home/user/evidence-staging/p01-odoo-rig/r3/rig-volume.json
+[odoo-reference] ready: http://localhost:20152  (admin/admin, approver/approver, buyer/buyer)
+rc=0 seconds=506

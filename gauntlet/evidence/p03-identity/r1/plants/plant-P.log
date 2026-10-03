@@ -1,0 +1,42 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p03-identity-r1-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r1-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:17.20]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [FAIL]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [2 s]
+  Error Message:
+   PUT /api/identity/users/{id:guid}: granting the Administrator role / every permission as a user holding only [identity.users.update, identity.roles.read, identity.users.read] answered 200 (expected 403): {"id":"01a1005b-d317-7e7b-93b9-aea3a2e96c95","email":"g2.40ae7eft.1@alpha.example","displayName":"G2 40ae7eft 2","language":"en","isActive":true,"roleIds":["01a1005b-c41d-7614-8b71-8b0825afe1f1"],"lastSignInAt":null,"createdAt":"2026-10-03T06:03:00.385956+00:00","version":774,"pendingSetup":true}
+PUT /api/identity/users/{id:guid}: target grants changed from  |  to 01a1005b-c41d-7614-8b71-8b0825afe1f1 | 
+PUT /api/identity/users/{id:guid}: the number of Administrator users changed
+PUT /api/identity/users/{id:guid}: the same request granting only what the caller holds answered 403, so the gate cannot tell a grant check from a malformed request: {"type":"urn:erp:problem:identity.userBeyondOwn","title":"This user has permissions you do not hold yourself, so you cannot change their account.","status":403,"code":"identity.userBeyondOwn","traceId":"00-c16b9644571cdfc3e147dc3aea1c1e85-6a79749bd7ef42e8-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds() in /home/user/critic/p03-identity-r1-plants/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 266
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:    15, Skipped:     0, Total:    16, Duration: 12 s - Erp.Gates.Tests.dll (net10.0)
+
+real	0m37.898s
+user	0m7.434s
+sys	0m0.942s
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p03-identity-r1-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r1-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r1-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r1-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Modules.Identity.Tests -> /home/user/critic/p03-identity-r1-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll
+Test run for /home/user/critic/p03-identity-r1-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    32, Skipped:     0, Total:    32, Duration: 10 s - Erp.Modules.Identity.Tests.dll (net10.0)
