@@ -24,6 +24,7 @@ let server, base, browser, tmp;
 before(async () => {
   server = http.createServer((req, res) => {
     if (req.url === '/logo.png') { res.writeHead(404); return res.end(); }
+    if (req.url === '/csp') { res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Security-Policy': "script-src 'self'" }); return res.end('<!doctype html><title>csp</title><p id="p">x</p>'); }
     res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(PAGE);
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -174,5 +175,16 @@ test('an API request is one step whose keystrokes are the request typed plus Ent
   assert.equal(s.keystrokes, 'GET /x?q=Ab'.length + 5 /* G, E, T, ?, A need Shift */ + 1 /* Enter */);
   assert.ok(s.system_wait_seconds > 0 && s.machine_seconds >= s.system_wait_seconds);
   assert.deepEqual(s.klm_operator_counts, { K: s.keystrokes, P: 0, B: 0, H: 1, M: 1 });
+  await context.close();
+});
+
+test('a wait condition works on a page whose content security policy forbids eval (our product)', async () => {
+  const { context, page, op } = await fresh();
+  await page.goto(base + 'csp');
+  op.start();
+  setTimeout(() => { page.evaluate(() => { document.getElementById('p').textContent = 'ready'; }).catch(() => {}); }, 200);
+  const w = await op.waitFor(() => document.getElementById('p').textContent === 'ready', { label: 'ready', timeout: 5000 });
+  op.finish();
+  assert.ok(w.seconds >= 0.1, `waited ${w.seconds}s`);
   await context.close();
 });

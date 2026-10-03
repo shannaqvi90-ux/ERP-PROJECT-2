@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "custom-field-filter-20261003T012844-9c95",
+  "run_id": "custom-field-filter-20261003T040906-3fbb",
+  "instrument": 3,
   "task": "custom-field-filter",
   "task_title": "Add a custom field and filter by it",
   "product": "odoo",
   "status": "verified",
   "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
   "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
-  "started_at": "2026-10-03T01:28:44.612Z",
-  "finished_at": "2026-10-03T01:28:49.455Z",
+  "started_at": "2026-10-03T04:09:06.898Z",
+  "finished_at": "2026-10-03T04:09:14.959Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 4,
     "key_chords": 2,
     "file_picks": 0,
-    "machine_seconds": 2.437,
-    "system_wait_seconds": 1.048,
+    "requests": 0,
+    "machine_seconds": 4.294,
+    "system_wait_seconds": 2.681,
     "human_seconds": 54.83,
-    "human_plus_wait_seconds": 55.878,
+    "human_plus_wait_seconds": 57.511,
     "klm_operator_counts": {
       "K": 61,
       "P": 11,
@@ -57,7 +59,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.043
+      "took": 0.05
     },
     {
       "n": 2,
@@ -65,8 +67,8 @@
       "label": "Contacts app",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.043,
-      "took": 0.046
+      "at": 0.051,
+      "took": 0.049
     },
     {
       "n": 3,
@@ -74,8 +76,8 @@
       "label": "contact name",
       "keystrokes": 29,
       "chain": false,
-      "at": 0.196,
-      "took": 0.073,
+      "at": 0.396,
+      "took": 0.085,
       "text": "Shamma Waleed Al Romaithi"
     },
     {
@@ -84,8 +86,8 @@
       "label": "search",
       "keystrokes": 1,
       "chain": true,
-      "at": 0.269,
-      "took": 0.006,
+      "at": 0.481,
+      "took": 0.009,
       "chord": "Enter"
     },
     {
@@ -94,8 +96,8 @@
       "label": "open the contact",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.513,
-      "took": 0.06
+      "at": 1.209,
+      "took": 0.069
     },
     {
       "n": 6,
@@ -103,8 +105,8 @@
       "label": "actions menu",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.757,
-      "took": 0.047
+      "at": 1.543,
+      "took": 0.039
     },
     {
       "n": 7,
@@ -112,8 +114,8 @@
       "label": "Edit Properties",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.804,
-      "took": 0.217
+      "at": 1.582,
+      "took": 0.067
     },
     {
       "n": 8,
@@ -121,8 +123,8 @@
       "label": "field label",
       "keystrokes": 12,
       "chain": false,
-      "at": 1.088,
-      "took": 0.033,
+      "at": 1.974,
+      "took": 0.069,
       "text": "Licence ref"
     },
     {
@@ -131,8 +133,8 @@
       "label": "Add",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.12,
-      "took": 0.267
+      "at": 2.043,
+      "took": 0.152
     },
     {
       "n": 10,
@@ -140,8 +142,8 @@
       "label": "focus value",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.39,
-      "took": 0.031
+      "at": 2.199,
+      "took": 0.035
     },
     {
       "n": 11,
@@ -149,8 +151,8 @@
       "label": "value",
       "keystrokes": 9,
       "chain": true,
-      "at": 1.422,
-      "took": 0.017,
+      "at": 2.234,
+      "took": 0.022,
       "text": "LR-7731"
     },
     {
@@ -159,8 +161,8 @@
       "label": "Save",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.439,
-      "took": 0.057
+      "at": 2.256,
+      "took": 0.077
     },
     {
       "n": 13,
@@ -168,7 +170,7 @@
       "label": "breadcrumb: Contacts",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.581,
+      "at": 2.518,
       "took": 0.086
     },
     {
@@ -177,8 +179,8 @@
       "label": "drop the name filter",
       "keystrokes": 1,
       "chain": false,
-      "at": 1.67,
-      "took": 0.006,
+      "at": 2.61,
+      "took": 0.005,
       "chord": "Backspace"
     },
     {
@@ -187,8 +189,8 @@
       "label": "value to filter by",
       "keystrokes": 9,
       "chain": false,
-      "at": 1.923,
-      "took": 0.114,
+      "at": 3.034,
+      "took": 0.335,
       "text": "LR-7731"
     },
     {
@@ -197,8 +199,8 @@
       "label": "expand Search Properties",
       "keystrokes": 0,
       "chain": false,
-      "at": 2.037,
-      "took": 0.092
+      "at": 3.369,
+      "took": 0.133
     },
     {
       "n": 17,
@@ -206,87 +208,87 @@
       "label": "Licence ref line",
       "keystrokes": 0,
       "chain": false,
-      "at": 2.13,
-      "took": 0.256
+      "at": 3.502,
+      "took": 0.327
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.089,
-      "seconds": 0.103
+      "at": 0.1,
+      "seconds": 0.288
     },
     {
       "label": "contact list, search focused",
-      "at": 0.192,
-      "seconds": 0.004
+      "at": 0.388,
+      "seconds": 0.008
     },
     {
       "label": "one result",
-      "at": 0.275,
-      "seconds": 0.237
+      "at": 0.489,
+      "seconds": 0.719
     },
     {
       "label": "contact form",
-      "at": 0.573,
-      "seconds": 0.184
+      "at": 1.278,
+      "seconds": 0.264
     },
     {
       "label": "new field popover, label focused",
-      "at": 1.021,
-      "seconds": 0.067
+      "at": 1.649,
+      "seconds": 0.324
     },
     {
       "label": "field on the form",
-      "at": 1.387,
-      "seconds": 0.003
+      "at": 2.196,
+      "seconds": 0.004
     },
     {
       "label": "saved",
-      "at": 1.495,
-      "seconds": 0.086
+      "at": 2.334,
+      "seconds": 0.185
     },
     {
       "label": "contact list",
-      "at": 1.667,
-      "seconds": 0.003
+      "at": 2.604,
+      "seconds": 0.007
     },
     {
       "label": "filter dropped, full list back",
-      "at": 1.676,
-      "seconds": 0.247
+      "at": 2.615,
+      "seconds": 0.418
     },
     {
       "label": "filtered to one contact",
-      "at": 2.386,
-      "seconds": 0.114
+      "at": 3.829,
+      "seconds": 0.464
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "857c5b2cac4b059e.jpg",
+      "file": "7163aed4d4c85c64.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/857c5b2cac4b059e.jpg"
+      "path": "gauntlet/reference/odoo/shots/7163aed4d4c85c64.jpg"
     },
     {
       "moment": "field added and filled in",
-      "file": "761f784e3f280f4a.jpg",
-      "at": 1.438,
-      "path": "gauntlet/reference/odoo/shots/761f784e3f280f4a.jpg"
+      "file": "c905929bee4e4d0f.jpg",
+      "at": 2.256,
+      "path": "gauntlet/reference/odoo/shots/c905929bee4e4d0f.jpg"
     },
     {
       "moment": "done",
-      "file": "dce6a0c509c508b8.jpg",
-      "at": 2.5,
-      "path": "gauntlet/reference/odoo/shots/dce6a0c509c508b8.jpg"
+      "file": "c87f9b66c72c58e6.jpg",
+      "at": 4.294,
+      "path": "gauntlet/reference/odoo/shots/c87f9b66c72c58e6.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
       "field": {
-        "name": "4a2208beb497e01b",
+        "name": "d96d0c7f10648259",
         "type": "char",
         "string": "Licence ref",
         "default": false
@@ -303,15 +305,15 @@
   "path_notes": "Find the contact (Apps menu > Contacts > type the name > Enter > open it) > actions menu (⋮) > Edit Properties > label > Add > type the value > Save > breadcrumb back to Contacts > Backspace (drop the name filter) > type the value > expand \"Search Properties\" > choose the Licence ref line.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/custom-field-filter.mjs",
-    "sha256": "8834cbdb2c76b73e75656b67700569542ab9bef36ade725439d51fa6a4c0e27f"
+    "sha256": "9bf5600a8cc9c3525c70d2b43cb592e93769552c78380d59bdb8d0ec98051e66"
   },
   "task_notes": "Set-up removes any earlier copy of the field.",
   "error": null,
   "result_file": "gauntlet/reference/odoo/tasks/custom-field-filter.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/custom-field-filter-20261003T012834-7c4c.json",
-    "gauntlet/reference/odoo/results/custom-field-filter-20261003T012839-9ef4.json",
-    "gauntlet/reference/odoo/results/custom-field-filter-20261003T012844-9c95.json"
+    "gauntlet/reference/odoo/results/custom-field-filter-20261003T040906-3fbb.json",
+    "gauntlet/reference/odoo/results/custom-field-filter-20261003T040914-a855.json",
+    "gauntlet/reference/odoo/results/custom-field-filter-20261003T040924-102b.json"
   ]
 }

@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "edit-and-save-20261003T012904-358e",
+  "run_id": "edit-and-save-20261003T042906-247f",
+  "instrument": 3,
   "task": "edit-and-save",
   "task_title": "Edit a record and save it",
   "product": "odoo",
   "status": "verified",
   "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
   "done_when": "The form shows the saved record; the back end holds the new phone number.",
-  "started_at": "2026-10-03T01:29:04.106Z",
-  "finished_at": "2026-10-03T01:29:11.325Z",
+  "started_at": "2026-10-03T04:29:06.773Z",
+  "finished_at": "2026-10-03T04:29:21.922Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 1,
     "key_chords": 2,
     "file_picks": 0,
-    "machine_seconds": 0.203,
-    "system_wait_seconds": 0.194,
+    "requests": 0,
+    "machine_seconds": 0.98,
+    "system_wait_seconds": 0.796,
     "human_seconds": 10.28,
-    "human_plus_wait_seconds": 10.474,
+    "human_plus_wait_seconds": 11.076,
     "klm_operator_counts": {
       "K": 21,
       "P": 1,
@@ -57,7 +59,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.045
+      "took": 0.072
     },
     {
       "n": 2,
@@ -65,8 +67,8 @@
       "label": "select the old number",
       "keystrokes": 2,
       "chain": true,
-      "at": 0.045,
-      "took": 0.008,
+      "at": 0.072,
+      "took": 0.011,
       "chord": "Control+a"
     },
     {
@@ -75,8 +77,8 @@
       "label": "new number",
       "keystrokes": 17,
       "chain": true,
-      "at": 0.053,
-      "took": 0.032,
+      "at": 0.084,
+      "took": 0.054,
       "text": "+971 50 555 0199"
     },
     {
@@ -85,30 +87,30 @@
       "label": "Save (hotkey)",
       "keystrokes": 2,
       "chain": false,
-      "at": 0.084,
-      "took": 0.022,
+      "at": 0.137,
+      "took": 0.028,
       "chord": "Alt+s"
     }
   ],
   "waits": [
     {
       "label": "saved",
-      "at": 0.107,
-      "seconds": 0.194
+      "at": 0.165,
+      "seconds": 0.815
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "ab262e26e0efe459.jpg",
+      "file": "bdd5dbb540e54f64.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/ab262e26e0efe459.jpg"
+      "path": "gauntlet/reference/odoo/shots/bdd5dbb540e54f64.jpg"
     },
     {
       "moment": "done",
-      "file": "56f7a58c3ac077bb.jpg",
-      "at": 0.3,
-      "path": "gauntlet/reference/odoo/shots/56f7a58c3ac077bb.jpg"
+      "file": "60fd87a47322b157.jpg",
+      "at": 0.98,
+      "path": "gauntlet/reference/odoo/shots/60fd87a47322b157.jpg"
     }
   ],
   "verification": {
@@ -121,7 +123,7 @@
   "path_notes": "keyboard: Click the phone field > Ctrl+A > type the number > Alt+S | pointer: Click the phone field > Ctrl+A > type the number > click Save",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/edit-and-save.mjs",
-    "sha256": "0370ee8ce512aa0bf4be5e423515450e6189cb1afc7f85386cad45c10c403a85"
+    "sha256": "310bdc17e41b8349872e7ed01fb3d292794ee7f92943e99ea51f4e7ee4a7f6be"
   },
   "task_notes": "Clean-up puts the original number back through the back end.",
   "error": null,
@@ -146,10 +148,11 @@
         "field_entries": 1,
         "key_chords": 2,
         "file_picks": 0,
-        "machine_seconds": 0.203,
-        "system_wait_seconds": 0.194,
+        "requests": 0,
+        "machine_seconds": 0.98,
+        "system_wait_seconds": 0.815,
         "human_seconds": 10.28,
-        "human_plus_wait_seconds": 10.474,
+        "human_plus_wait_seconds": 11.095,
         "klm_operator_counts": {
           "K": 21,
           "P": 1,
@@ -166,7 +169,7 @@
           "keystrokes": 0,
           "chain": false,
           "at": 0,
-          "took": 0.045
+          "took": 0.072
         },
         {
           "n": 2,
@@ -174,8 +177,8 @@
           "label": "select the old number",
           "keystrokes": 2,
           "chain": true,
-          "at": 0.045,
-          "took": 0.008,
+          "at": 0.072,
+          "took": 0.011,
           "chord": "Control+a"
         },
         {
@@ -184,8 +187,8 @@
           "label": "new number",
           "keystrokes": 17,
           "chain": true,
-          "at": 0.053,
-          "took": 0.032,
+          "at": 0.084,
+          "took": 0.054,
           "text": "+971 50 555 0199"
         },
         {
@@ -194,9 +197,16 @@
           "label": "Save (hotkey)",
           "keystrokes": 2,
           "chain": false,
-          "at": 0.084,
-          "took": 0.022,
+          "at": 0.137,
+          "took": 0.028,
           "chord": "Alt+s"
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.165,
+          "seconds": 0.815
         }
       ],
       "verification": {
@@ -220,10 +230,11 @@
         "field_entries": 1,
         "key_chords": 1,
         "file_picks": 0,
-        "machine_seconds": 0.236,
-        "system_wait_seconds": 0.192,
+        "requests": 0,
+        "machine_seconds": 1.1,
+        "system_wait_seconds": 0.832,
         "human_seconds": 11.42,
-        "human_plus_wait_seconds": 11.612,
+        "human_plus_wait_seconds": 12.252,
         "klm_operator_counts": {
           "K": 19,
           "P": 2,
@@ -240,7 +251,7 @@
           "keystrokes": 0,
           "chain": false,
           "at": 0,
-          "took": 0.036
+          "took": 0.129
         },
         {
           "n": 2,
@@ -248,8 +259,8 @@
           "label": "select the old number",
           "keystrokes": 2,
           "chain": true,
-          "at": 0.036,
-          "took": 0.007,
+          "at": 0.129,
+          "took": 0.011,
           "chord": "Control+a"
         },
         {
@@ -258,8 +269,8 @@
           "label": "new number",
           "keystrokes": 17,
           "chain": true,
-          "at": 0.044,
-          "took": 0.034,
+          "at": 0.14,
+          "took": 0.053,
           "text": "+971 50 555 0199"
         },
         {
@@ -268,8 +279,15 @@
           "label": "Save",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.077,
-          "took": 0.059
+          "at": 0.193,
+          "took": 0.075
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.268,
+          "seconds": 0.832
         }
       ],
       "verification": {
@@ -284,8 +302,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/edit-and-save.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/edit-and-save-20261003T012849-1450.json",
-    "gauntlet/reference/odoo/results/edit-and-save-20261003T012856-7256.json",
-    "gauntlet/reference/odoo/results/edit-and-save-20261003T012904-358e.json"
+    "gauntlet/reference/odoo/results/edit-and-save-20261003T042906-247f.json",
+    "gauntlet/reference/odoo/results/edit-and-save-20261003T042921-e280.json",
+    "gauntlet/reference/odoo/results/edit-and-save-20261003T042935-9d3a.json"
   ]
 }

@@ -10,7 +10,7 @@ import path from 'node:path';
 import { BASELINE_DIR } from '../lib/config.mjs';
 import { modelSteps, round } from '../lib/klm.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
-import { METRICS, driverFingerprint } from '../lib/runner.mjs';
+import { INSTRUMENT_VERSION, METRICS, driverFingerprint } from '../lib/runner.mjs';
 
 const read = id => {
   const f = path.join(BASELINE_DIR, 'tasks', `${id}.json`);
@@ -34,6 +34,7 @@ for (const task of await loadTasks()) {
     assert.ok(b, `${task.id}: no Odoo baseline; run node run.mjs --task ${task.id} --product odoo --repeat 3`);
     assert.equal(b.status, 'verified', `${task.id}: baseline ${b.status}`);
     assert.equal(b.product, 'odoo');
+    assert.equal(b.instrument, INSTRUMENT_VERSION, `${task.id}: baseline taken with instrument ${b.instrument ?? 'before 3'}, current is ${INSTRUMENT_VERSION}; re-capture it`);
     assert.deepEqual(b.driver, driverFingerprint('odoo', task.id),
       `${task.id}: the driver changed after its baseline was taken; run node run.mjs --task ${task.id} --product odoo --repeat 3`);
 

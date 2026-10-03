@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "switch-to-arabic-20261003T013237-0271",
+  "run_id": "switch-to-arabic-20261003T041900-a116",
+  "instrument": 3,
   "task": "switch-to-arabic",
   "task_title": "Switch to Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch your own interface language to Arabic.",
   "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
-  "started_at": "2026-10-03T01:32:37.992Z",
-  "finished_at": "2026-10-03T01:32:49.128Z",
+  "started_at": "2026-10-03T04:19:00.521Z",
+  "finished_at": "2026-10-03T04:19:21.213Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 0,
     "key_chords": 1,
     "file_picks": 0,
-    "machine_seconds": 1.832,
-    "system_wait_seconds": 1.284,
+    "requests": 0,
+    "machine_seconds": 3.848,
+    "system_wait_seconds": 2.64,
     "human_seconds": 15.28,
-    "human_plus_wait_seconds": 16.564,
+    "human_plus_wait_seconds": 17.92,
     "klm_operator_counts": {
       "K": 1,
       "P": 5,
@@ -57,7 +59,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.123
+      "took": 0.078
     },
     {
       "n": 2,
@@ -65,8 +67,8 @@
       "label": "My Preferences",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.123,
-      "took": 0.053
+      "at": 0.078,
+      "took": 0.059
     },
     {
       "n": 3,
@@ -74,8 +76,8 @@
       "label": "language",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.444,
-      "took": 0.123
+      "at": 0.379,
+      "took": 0.354
     },
     {
       "n": 4,
@@ -83,8 +85,8 @@
       "label": "Arabic",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.567,
-      "took": 0.083
+      "at": 0.733,
+      "took": 0.09
     },
     {
       "n": 5,
@@ -92,8 +94,8 @@
       "label": "Update Preferences",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.65,
-      "took": 0.063
+      "at": 0.823,
+      "took": 0.186
     },
     {
       "n": 6,
@@ -101,57 +103,57 @@
       "label": "reload the page for the right-to-left layout",
       "keystrokes": 1,
       "chain": false,
-      "at": 1.165,
-      "took": 0.233,
+      "at": 1.978,
+      "took": 1.024,
       "chord": "F5"
     }
   ],
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.176,
-      "seconds": 0.268
+      "at": 0.137,
+      "seconds": 0.241
     },
     {
       "label": "labels re-rendered in Arabic",
-      "at": 0.713,
-      "seconds": 0.451
+      "at": 1.009,
+      "seconds": 0.969
     },
     {
       "label": "client reloaded right to left",
-      "at": 1.398,
-      "seconds": 0.097
+      "at": 3.002,
+      "seconds": 0.218
     },
     {
       "label": "working screen back",
-      "at": 1.494,
-      "seconds": 0.446
+      "at": 3.22,
+      "seconds": 0.628
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "edcde540400d0d65.jpg",
+      "file": "da920a8ce88a005f.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/edcde540400d0d65.jpg"
+      "path": "gauntlet/reference/odoo/shots/da920a8ce88a005f.jpg"
     },
     {
       "moment": "language chosen",
-      "file": "69159f574779edfa.jpg",
-      "at": 0.65,
-      "path": "gauntlet/reference/odoo/shots/69159f574779edfa.jpg"
+      "file": "39ce4a42bbac4e4b.jpg",
+      "at": 0.823,
+      "path": "gauntlet/reference/odoo/shots/39ce4a42bbac4e4b.jpg"
     },
     {
       "moment": "after confirming",
-      "file": "d4c165aac871f34a.jpg",
-      "at": 1.164,
-      "path": "gauntlet/reference/odoo/shots/d4c165aac871f34a.jpg"
+      "file": "0afd89dd9695910a.jpg",
+      "at": 1.978,
+      "path": "gauntlet/reference/odoo/shots/0afd89dd9695910a.jpg"
     },
     {
       "moment": "done",
-      "file": "033e597fcf1fd3ac.jpg",
-      "at": 1.941,
-      "path": "gauntlet/reference/odoo/shots/033e597fcf1fd3ac.jpg"
+      "file": "0ec20914233e529f.jpg",
+      "at": 3.848,
+      "path": "gauntlet/reference/odoo/shots/0ec20914233e529f.jpg"
     }
   ],
   "verification": {
@@ -174,15 +176,15 @@
   "path_notes": "User menu > My Preferences > Language > Arabic > Update Preferences. Odoo re-renders the labels in Arabic but keeps the left-to-right layout until the page is reloaded, so the path ends with F5.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/switch-to-arabic.mjs",
-    "sha256": "20481272254b44dd33a7b6a5cc9a7e000e3e2228c4cec09fb4c89d7dbd83cb1e"
+    "sha256": "d039d21b85781a9924333c1d44daf8523ce9045dfe9121cbc64a60bb0d48db82"
   },
   "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
   "error": null,
   "result_file": "gauntlet/reference/odoo/tasks/switch-to-arabic.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T013237-0271.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T013249-be11.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T013300-aa4c.json"
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T041831-9514.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T041900-a116.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261003T041921-7d99.json"
   ]
 }

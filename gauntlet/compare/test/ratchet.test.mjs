@@ -10,7 +10,8 @@ import { loadDriver, loadTasks } from '../lib/registry.mjs';
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
-  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt' };
+  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
+  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -75,4 +76,18 @@ test('harness tests never go below their minimum (live rig checks counted apart)
   }
   assert.ok(n >= min.harness_tests, `${n} tests that run in ./erp verify < ${min.harness_tests}`);
   assert.ok(live >= min.live_tests, `${live} live rig tests < ${min.live_tests}`);
+});
+
+test('planted uncounted-action drivers never go below their minimum', () => {
+  // test/guard.test.mjs: one run per entry of PLANTS, plus each top-level test named "plant…".
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'guard.test.mjs'), 'utf8');
+  const table = text.slice(text.indexOf('const PLANTS = {'), text.indexOf('\n};', text.indexOf('const PLANTS = {')));
+  const entries = (table.match(/^ {2}'[^']+': async/gm) || []).length;
+  const named = (text.match(/^test\((['"`])plant/gm) || []).length;
+  assert.ok(entries + named >= min.guard_plants, `${entries + named} plants < ${min.guard_plants}`);
+});
+
+test('API tasks never go below their minimum', async () => {
+  const n = (await loadTasks()).filter(t => t.channel === 'api').length;
+  assert.ok(n >= min.api_tasks, `${n} API tasks < ${min.api_tasks}`);
 });

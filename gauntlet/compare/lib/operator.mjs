@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
 import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskLocators, neutraliseDocument } from './blind.mjs';
-import { UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelExpression, unwrap } from './guard.mjs';
+import { UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
 
 const clock = claimClock();
 
@@ -220,7 +220,7 @@ export class Operator {
   async waitFor(what, { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = {}) {
     const t = this.now();
     if (typeof what === 'function') {
-      await this.#page.waitForFunction(sentinelExpression(what, arg), undefined, { timeout, polling: 50 }).catch(rethrowSentinel);
+      await this.#page.waitForFunction(sentinelFunction(what), arg, { timeout, polling: 50 }).catch(rethrowSentinel);
     } else {
       await this.#locate(what).first().waitFor({ state, timeout });
     }

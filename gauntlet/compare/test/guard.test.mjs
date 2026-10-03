@@ -19,7 +19,7 @@ const PAGE = `<!doctype html><html><head><title>Plant page</title></head><body>
 
 // Stand-in for our sign-in screen and the three API calls the ours sign-in driver makes.
 const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
-  <form id="f"><input name="email" autofocus><input name="password" type="password"><button type="submit">Sign in</button></form>
+  <form id="f"><label>E-mail <input name="email" autofocus></label><label>Password <input name="password" type="password"></label><button type="submit">Sign in</button></form>
   <script>
     document.getElementById('f').addEventListener('submit', e => {
       e.preventDefault();
@@ -182,11 +182,21 @@ async function loadVariant(transform) {
 const SIGN_IN_TASK = { id: 'sign-in', title: 'Sign in', input: { user: 'signin.tester@demo-trading.example', password: 'Sign-In-Pass-2026', name: 'Sara Signin' } };
 const signInProduct = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'a', password: 'b' } }, brandWords: [] });
 
+/** Every expert path of a driver, the way runTask runs them. */
+async function executeAll(driver, dir) {
+  const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
+  const out = [];
+  for (const [id, v] of variants) out.push({ id, ...(await execute(SIGN_IN_TASK, { ...driver, ...v }, signInProduct(), 'ours', {}, layout(path.join(tmp, `${dir}-${id}`)), {})) });
+  return out;
+}
+
 test('the real ours sign-in driver verifies on a stand-in sign-in page', async () => {
-  const driver = await loadVariant(s => s);
-  const r = await execute(SIGN_IN_TASK, driver, signInProduct(), 'ours', {}, layout(path.join(tmp, 'si-ok')), {});
-  assert.equal(r.status, 'verified', r.error);
-  assert.equal(r.counts.steps, 4);
+  const runs = await executeAll(await loadVariant(s => s), 'si-ok');
+  assert.ok(runs.length >= 1);
+  for (const r of runs) {
+    assert.equal(r.status, 'verified', `${r.id}: ${r.error}`);
+    assert.equal(r.counts.steps, 4, `${r.id}: the stand-in remembers nothing, so every path types the e-mail`);
+  }
 });
 
 test("plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid", async () => {
@@ -196,6 +206,28 @@ test("plant H1 (round 2): the ours sign-in driver types the password through ctx
     assert.notEqual(planted, s, 'the plant must change the driver');
     return planted;
   });
-  const r = await execute(SIGN_IN_TASK, driver, signInProduct(), 'ours', {}, layout(path.join(tmp, 'si-plant')), {});
-  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  for (const r of await executeAll(driver, 'si-plant')) assert.equal(r.status, 'invalid', `${r.id}: ${r.status} ${r.error}`);
+});
+
+test('an API task counts each request, and its screenshots show the neutral request transcript', async () => {
+  const task = { id: 'api-plant', title: 'API plant', channel: 'api', input: {} };
+  const r = await runDriver({
+    async signIn(ctx) { ctx.useApi({ baseUrl: base, headers: { Authorization: 'Bearer t' } }); },
+    async run(op) { const res = await op.request('POST', '/api/things', { name: 'x' }); return { id: res.body.id }; },
+    async verify(ctx, outcome) { return { verified: outcome.id === 7 }; },
+  }, task);
+  assert.equal(r.status, 'verified', r.error);
+  assert.equal(r.counts.steps, 1);
+  assert.equal(r.counts.requests, 1);
+  assert.equal(r.counts.keystrokes, 'POST /api/things {"name":"x"}'.length + 4 /* P, O, S, T */ + 4 /* " x4 */ + 1 /* : */ + 2 /* { } */ + 1 /* Enter */);
+  assert.equal(r.screenshots.length, 2);
+});
+
+test('plant: signing in to the API inside the measured part is refused', async () => {
+  const task = { id: 'api-plant', title: 'API plant', channel: 'api', input: {} };
+  const r = await runDriver({
+    async run(op, ctx) { ctx.useApi({ baseUrl: base }); await op.request('POST', '/api/things', {}); return {}; },
+    async verify() { return { verified: true }; },
+  }, task);
+  assert.equal(r.status, 'invalid', r.error);
 });

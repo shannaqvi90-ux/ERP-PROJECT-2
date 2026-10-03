@@ -63,6 +63,9 @@ export const ALLOWED_WHILE_MEASURED = Object.freeze({
     'getAttribute', 'allTextContents', 'allInnerTexts', 'boundingBox', 'waitFor', 'ariaSnapshot', 'page', 'toString',
     'describe', 'contentFrame']),
   FrameLocator: new Set([...LOCATE, 'first', 'last', 'nth', 'owner']),
+  // Observing traffic (in a listener registered during set-up) is passive.
+  Request: new Set(['url', 'method', 'postData', 'postDataJSON', 'headers', 'allHeaders', 'headerValue', 'resourceType', 'isNavigationRequest', 'frame', 'response', 'failure', 'timing', 'redirectedFrom', 'redirectedTo']),
+  Response: new Set(['url', 'status', 'statusText', 'ok', 'headers', 'allHeaders', 'headerValue', 'request', 'frame', 'body', 'text', 'json', 'finished']),
 });
 
 const RAW = new WeakMap(); // proxy -> raw object
@@ -211,15 +214,16 @@ function sentinelFactory() {
 /* eslint-enable no-undef */
 
 /**
- * A page expression that evaluates `fn(arg)` inside the sentinel. Used with page.waitForFunction
- * in its expression form (evaluated through the browser's debugging protocol, so a product's
- * content security policy does not block it).
+ * A page function that evaluates `fn(arg)` inside the sentinel, for page.waitForFunction. It is
+ * built here as a real function (not a string expression), so Playwright runs it through the
+ * browser's debugging protocol and a product's content security policy (script-src 'self', no
+ * eval) does not block it.
  */
-export function sentinelExpression(fn, arg) {
+export function sentinelFunction(fn) {
   if (typeof fn !== 'function') throw new TypeError('condition must be a function');
-  const src = fn.toString();
-  const json = JSON.stringify(arg === undefined ? null : arg);
-  return `(globalThis.__harnessSentinel || (Object.defineProperty(globalThis, '__harnessSentinel', { value: (${sentinelFactory.toString()})() }), globalThis.__harnessSentinel))((${src}), ${json})`;
+  const body = `return (globalThis.__harnessSentinel || (Object.defineProperty(globalThis, '__harnessSentinel', { value: (${sentinelFactory.toString()})() }), globalThis.__harnessSentinel))((${fn.toString()}), arg);`;
+  // eslint-disable-next-line no-new-func
+  return new Function('arg', body);
 }
 
 /** Turns the sentinel's page error into UncountedAction. */

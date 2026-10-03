@@ -16,6 +16,13 @@ import { OPERATORS, OPERATOR_SOURCE, round } from './klm.mjs';
 import { generate, loadNeedles, DEFAULT_OUT as DATA_OUT } from '../data/generate.mjs';
 
 export const RESULT_SCHEMA = 1;
+/**
+ * The measuring instrument's version. Raised whenever what is counted or timed changes, so a
+ * baseline taken with an older instrument is caught by test/baselines.test.mjs.
+ *   3: the clock stops at finish() (the done screenshot no longer moves it); drivers act only
+ *      through the operator (guarded page, page-script sentinel, back-end refusal); API requests.
+ */
+export const INSTRUMENT_VERSION = 3;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');
@@ -73,6 +80,7 @@ export async function runTask(taskId, productId, opts = {}) {
   const result = {
     schema: RESULT_SCHEMA,
     run_id: runId,
+    instrument: INSTRUMENT_VERSION,
     task: task.id,
     task_title: task.title,
     product: productId,
@@ -140,6 +148,8 @@ export async function runTask(taskId, productId, opts = {}) {
       if (best) {
         result.counts[m] = best.counts[m];
         result.best_path_per_metric[m] = best.id;
+        // The system wait reported is the one inside the clock that was counted.
+        if (m === 'machine_seconds') result.counts.system_wait_seconds = best.counts.system_wait_seconds;
       }
     }
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification }));
