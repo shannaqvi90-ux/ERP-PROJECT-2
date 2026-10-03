@@ -5,6 +5,11 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
+import { UncountedAction, claimViolations, guard, installNetworkGuard } from './guard.mjs';
+
+const violationRecord = claimViolations();
+const takeViolations = () => violationRecord.take();
+import { apiTranscriptHtml } from './api-transcript.mjs';
 import { brandingFor } from './blind.mjs';
 import { describe, driverPath, loadDriver, loadTask } from './registry.mjs';
 import { OPERATORS, OPERATOR_SOURCE, round } from './klm.mjs';
@@ -19,16 +24,28 @@ export function newRunId(taskId) {
   return `${taskId}-${stamp()}-${crypto.randomBytes(2).toString('hex')}`;
 }
 
-/** Paths for an output folder. Baseline mode keeps one result per task under stable names. */
+/**
+ * Paths for an output folder. Baseline mode keeps one result per task under stable names (every
+ * shot there is the reference's own). A side-by-side folder keeps everything a blind reviewer
+ * may see in `blind/` (the shots and review.html) and everything that names the products
+ * (key.json, results/, comparisons/) beside it, so the reviewer is handed `blind/` alone.
+ */
 export function layout(outDir, { baseline = false } = {}) {
+  // The reference folder holds only the reference's own shots (shots/); any other folder is a
+  // side-by-side folder with a blind/ part.
+  const reference = baseline || path.resolve(outDir) === path.resolve(BASELINE_DIR);
   return {
     outDir,
     baseline,
-    shotsDir: path.join(outDir, 'shots'),
+    blindDir: reference ? null : path.join(outDir, 'blind'),
+    shotsDir: reference ? path.join(outDir, 'shots') : path.join(outDir, 'blind', 'shots'),
     resultsDir: path.join(outDir, baseline ? 'tasks' : 'results'),
     keyFile: path.join(outDir, 'key.json'),
   };
 }
+
+/** Every screenshot carries the same file time, so file times cannot tell which product ran first. */
+export const NEUTRAL_FILE_TIME = new Date('2000-01-01T00:00:00Z');
 
 function readJson(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }
@@ -86,7 +103,7 @@ export async function runTask(taskId, productId, opts = {}) {
   if (driver.built === false) {
     result.status = 'not_built';
     result.error = driver.reason || 'not built yet';
-    return finish(result, out);
+    return writeResult(result, out);
   }
 
   // A driver may offer several expert paths (`variants`), for example one that is shortest in
@@ -125,10 +142,10 @@ export async function runTask(taskId, productId, opts = {}) {
         result.best_path_per_metric[m] = best.id;
       }
     }
-    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, verification: e.verification }));
+    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
-  return finish(result, out);
+  return writeResult(result, out);
 }
 
 /**
@@ -144,33 +161,60 @@ export function driverFingerprint(productId, taskId) {
 }
 
 /** One full run of a driver: fixtures, sign-in, the measured part, verification, clean-up. */
-async function execute(task, driver, product, productId, needles, out, opts) {
+export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [] };
+  installNetworkGuard();
   const browser = await launch({ headed: opts.headed });
   let op;
-  const ctx = { task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser };
+  let page;
+  // Drivers see only guarded Playwright objects (lib/guard.mjs): outside the measured part they
+  // pass everything through; inside it they refuse every action that the operator does not count.
+  const ctx = { task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser: guard(browser) };
   try {
-    ctx.context = await newContext(browser);
-    ctx.page = await ctx.context.newPage();
-    ctx.page.setDefaultTimeout(120_000);
-    op = new Operator(ctx.page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []) });
+    const context = await newContext(browser);
+    page = await context.newPage();
+    page.setDefaultTimeout(120_000);
+    ctx.context = guard(context);
+    ctx.page = guard(page);
+    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []) });
+    ctx.useApi = session => op.useApi(session);
     if (driver.setup) await driver.setup(ctx);
     if (driver.signIn) await driver.signIn(ctx);
+    const api = task.channel === 'api';
+    if (api) await page.setContent(apiTranscriptHtml(task, []));
     await op.shot('start');
+    takeViolations();
     op.start();
-    const outcome = await driver.run(op, ctx);
-    op.finish();
+    let outcome;
+    try {
+      outcome = await driver.run(op.driverView(), ctx);
+    } finally {
+      op.finish();
+    }
+    // The clock stopped at finish(): the done screenshot is taken after it and costs nothing.
+    if (api) await page.setContent(apiTranscriptHtml(task, op.steps));
     await op.shot('done');
     run.verification = driver.verify ? await driver.verify(ctx, outcome) : { verified: !!outcome?.verified, details: outcome };
     run.status = run.verification.verified ? 'verified' : 'failed';
   } catch (err) {
     if (err instanceof NotBuilt) { run.status = 'not_built'; run.error = err.message; }
-    else {
+    else if (err instanceof UncountedAction || err?.name === 'UncountedAction') {
+      // The driver acted on the product outside the operator: its counts would be too low.
+      run.status = 'invalid';
+      run.error = err.message;
+    } else {
       run.status = 'error';
       run.error = String(err?.stack || err).split('\n').slice(0, 6).join('\n');
-      if (op && ctx.page) await op.shot('error').catch(() => {});
+      if (op && page) await op.shot('error').catch(() => {});
     }
   } finally {
+    op?.finish();
+    // A refusal the driver caught and swallowed still invalidates the run.
+    const violations = takeViolations();
+    if (violations.length && run.status !== 'not_built') {
+      run.status = 'invalid';
+      run.error = violations[0] + (violations.length > 1 ? ` (and ${violations.length - 1} more)` : '');
+    }
     if (driver.cleanup) {
       try { await driver.cleanup(ctx); } catch (e) { run.cleanup_error = String(e?.message || e); }
     }
@@ -185,8 +229,11 @@ async function execute(task, driver, product, productId, needles, out, opts) {
   return run;
 }
 
-function finish(result, out) {
+export function writeResult(result, out) {
   result.finished_at = new Date().toISOString();
+  for (const s of result.screenshots || []) {
+    try { fs.utimesSync(path.join(out.shotsDir, s.file), NEUTRAL_FILE_TIME, NEUTRAL_FILE_TIME); } catch { /* removed variant shot */ }
+  }
   const file = path.join(out.resultsDir, out.baseline ? `${result.task}.json` : `${result.run_id}.json`);
   if (out.baseline) {
     // One baseline per task: drop the screenshots of the one it replaces.

@@ -98,3 +98,11 @@ export function assignLetters(products, random = Math.random) {
   const order = random() < 0.5 ? products : [...products].reverse();
   return Object.fromEntries(order.map((p, i) => [p, String.fromCharCode(65 + i)]));
 }
+
+/**
+ * The order two products run in for one task, at random, so the order of the runs (and anything
+ * that follows it) says nothing about which product is which.
+ */
+export function productOrder(products, random = Math.random) {
+  return products.length === 2 && random() < 0.5 ? [...products].reverse() : [...products];
+}

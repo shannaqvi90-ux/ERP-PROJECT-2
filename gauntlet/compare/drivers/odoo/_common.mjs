@@ -89,7 +89,9 @@ export async function technicalMenu(op, item) {
   await op.click(op.page.locator('.o_main_navbar .o_menu_sections button', { hasText: 'Technical' }), { label: 'Technical menu' });
   const entry = op.page.locator('.o-dropdown--menu .dropdown-item', { hasText: new RegExp(`^${item}$`) });
   await op.waitFor(entry, { label: 'technical menu open', state: 'attached' });
-  if (!(await entry.evaluate(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }))) {
+  const box = await entry.boundingBox();
+  const view = op.page.viewportSize();
+  if (!box || box.y < 0 || box.y + box.height > view.height) {
     await op.scrollTo(entry, { label: `scroll the menu to ${item}` });
   }
   await op.click(entry, { label: item });

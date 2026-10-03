@@ -69,6 +69,7 @@ test('choosing a file counts the dialog click and the pick', async () => {
   op.start();
   await op.pickFile('#file', f, { label: 'rows.csv' });
   await op.waitFor(() => document.getElementById('out').textContent === 'file rows.csv');
+  op.finish();
   const s = op.summary();
   assert.equal(s.steps, 2);
   assert.equal(s.file_picks, 1);
@@ -124,5 +125,54 @@ test('screenshot time is not counted as product time', async () => {
   const t0 = op.machineSeconds;
   await op.shot('a'); await op.shot('b'); await op.shot('c');
   assert.ok(op.machineSeconds - t0 < 0.05, `three shots added ${op.machineSeconds - t0}s`);
+  op.finish();
+  await context.close();
+});
+
+test('round 2 fault: the done screenshot after finish() leaves machine seconds unchanged', async () => {
+  const { context, op } = await fresh();
+  op.start();
+  await op.fill('#q', 'x');
+  await op.click('#go');
+  await op.waitFor(() => document.getElementById('out').textContent.startsWith('found'), { label: 'result' });
+  op.finish();
+  const before = op.machineSeconds;
+  await op.shot('done'); await op.shot('done again');
+  assert.equal(op.machineSeconds, before, 'a shot after the clock stopped moved it');
+  const s = op.summary();
+  const lastEnd = Math.max(...op.steps.map(x => x.at + x.took), ...op.waits.map(w => w.at + w.seconds));
+  assert.ok(s.machine_seconds + 0.002 >= lastEnd, `machine ${s.machine_seconds} < end of the last step or wait ${lastEnd}`);
+  assert.ok(s.machine_seconds - lastEnd < 0.1, `machine ${s.machine_seconds} far beyond the last step or wait ${lastEnd}`);
+  assert.ok(s.machine_seconds >= s.system_wait_seconds, 'waits are part of the clock');
+  await context.close();
+});
+
+test('a shot in the middle of the measured part is taken out of the clock and of later step times', async () => {
+  const { context, op } = await fresh();
+  op.start();
+  await op.click('#go');
+  const t = op.now();
+  await op.shot('middle');
+  assert.ok(op.now() - t < 0.05, `the shot moved the clock by ${op.now() - t}s`);
+  await op.press('Tab');
+  op.finish();
+  const [, second] = op.steps;
+  assert.ok(second.at - (op.steps[0].at + op.steps[0].took) < 0.05);
+  await context.close();
+});
+
+test('an API request is one step whose keystrokes are the request typed plus Enter', async () => {
+  const { context, op } = await fresh();
+  op.useApi({ baseUrl: base });
+  op.start();
+  const r = await op.request('GET', '/x?q=Ab');
+  op.finish();
+  assert.equal(r.status, 200);
+  const s = op.summary();
+  assert.equal(s.steps, 1);
+  assert.equal(s.requests, 1);
+  assert.equal(s.keystrokes, 'GET /x?q=Ab'.length + 5 /* G, E, T, ?, A need Shift */ + 1 /* Enter */);
+  assert.ok(s.system_wait_seconds > 0 && s.machine_seconds >= s.system_wait_seconds);
+  assert.deepEqual(s.klm_operator_counts, { K: s.keystrokes, P: 0, B: 0, H: 1, M: 1 });
   await context.close();
 });
