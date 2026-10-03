@@ -1,4 +1,5 @@
 using Erp.Kernel.Data;
+using Erp.Kernel.Http;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
@@ -115,6 +116,35 @@ public sealed class LeakyModule : ErpModule
                 previousCaller = mine;
                 return Results.Ok(new { ok = true });
             }).WithName("leaky.previous").WithSummary("Planted bug: a captured variable returns the previous caller's workspace in a header.").RequirePermission("leaky.data.read");
+
+            // Bugs 27 and 28 (critic p04 round 1, plants P1b and P1c): a write endpoint whose lambda
+            // captures an array and keeps the previous writer's e-mail in it. Only a valid body
+            // reaches the code (as with the real preferences endpoint), so the leak shows only when
+            // a valid write of one tenant follows a valid write of the other. Bug 27 hands the
+            // previous writer to the next one in a response header, with a correct body; bug 28
+            // appends it to the display name in the body.
+            var previousEditor = new string?[1];
+            group.MapPut("/me/theme", async (ThemeRequest request, ErpDbSession session, ICurrentUser caller, HttpContext http) =>
+            {
+                if (request.Theme is not ("calm" or "bright"))
+                {
+                    return Results.BadRequest();
+                }
+                var mine = await EmailAsync(session, caller.UserId);
+                var last = previousEditor[0];
+                previousEditor[0] = mine;
+                if (last is not null)
+                {
+                    http.Response.Headers["X-Erp-Previous-Editor"] = last;
+                }
+                return Results.Ok(new { email = mine, theme = request.Theme });
+            }).WithName("leaky.theme").WithSummary("Planted bug: a captured array hands the previous writer's e-mail to the next writer in a header.").RequirePermission("leaky.data.update");
+
+            // Bug 28 has the exact shape of the critic's plant: a synchronous lambda passes the
+            // captured array of a product record to a static handler.
+            var previousSaver = new LeakySaver?[1];
+            group.MapPut("/me/density", (DensityRequest request, ErpDbSession session, ICurrentUser caller) => SaveDensityAsync(request, session, caller, previousSaver))
+                .WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
 
             // Bug 24 (critic p00 round 2, plant P2): a write guarded by a read permission.
             group.MapPost("/users/{id:guid}/reactivate", async (Guid id, ErpDbSession session) =>
@@ -311,6 +341,31 @@ public sealed class LeakyModule : ErpModule
     public sealed class LastListHolder
     {
         public List<string>? Last;
+    }
+
+    public sealed record LeakySaver(string Email);
+
+    private static async Task<IResult> SaveDensityAsync(DensityRequest request, ErpDbSession session, ICurrentUser caller, LeakySaver?[] previous)
+    {
+        if (request.Density is not ("compact" or "roomy"))
+        {
+            return Results.BadRequest();
+        }
+        var mine = await EmailAsync(session, caller.UserId);
+        var last = previous[0];
+        previous[0] = new LeakySaver(mine);
+        return Results.Ok(new { displayName = last is null ? mine : $"{mine} (after {last.Email})", density = request.Density });
+    }
+
+    public sealed record ThemeRequest([property: AllowedTextValues("calm", "bright")] string? Theme);
+
+    public sealed record DensityRequest([property: AllowedTextValues("compact", "roomy")] string? Density);
+
+    private static async Task<string> EmailAsync(ErpDbSession session, Guid userId)
+    {
+        await using var command = new NpgsqlCommand("SELECT email FROM identity.users WHERE id = @id", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", userId);
+        return (string?)await command.ExecuteScalarAsync() ?? "";
     }
 
     public sealed record FindRequest(string? Reference);

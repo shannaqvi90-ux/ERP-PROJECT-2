@@ -122,65 +122,175 @@ public sealed class TenantActivity
 
     private Actor Admin => _actors[0];
 
+    /// <summary>Endpoints that change data and that the activity calls: every write except signing
+    /// in and out (the actors stay signed in for the whole attack) and catch-all routes (they only
+    /// answer 404).</summary>
+    public IReadOnlyList<ApiEndpoint> Writes => _endpoints.Where(IsActivityWrite).ToList();
+
+    private static bool IsActivityWrite(ApiEndpoint e) =>
+        e.Method != "GET" && e.Method != "HEAD" && e.Name is not ("auth.signIn" or "auth.signOut") &&
+        !e.Pattern.Contains("{*", StringComparison.Ordinal);
+
     /// <summary>
     /// Every endpoint that changes data, called by this tenant's administrator on its own records
     /// with a body that passes validation: creates first (their new ids become the targets of the
     /// updates and deletes), then updates as an edit-and-save round trip of the record's own GET,
-    /// then deletes of what this run created. Signing in and out is left out (the actors stay
-    /// signed in for the whole attack).
+    /// then deletes of records this run created.
     /// </summary>
     public async Task WriteAsync(TenantSnapshot own)
     {
-        // Catch-all routes only answer 404; signing in and out would end the actors' sessions.
-        var writes = _endpoints.Where(e => e.Method != "GET" && e.Method != "HEAD" && e.Name is not ("auth.signIn" or "auth.signOut") &&
-                                           !e.Pattern.Contains("{*", StringComparison.Ordinal)).ToList();
+        var writes = Writes;
         WriteEndpoints = writes.Count;
         foreach (var endpoint in writes.Where(e => e.Method == "POST"))
         {
-            var path = await OwnPathAsync(endpoint, own, forWrite: true);
-            var body = BuildBody(endpoint, own, template: null);
-            var (status, text, location) = await SendAsync(Admin, endpoint.Method, path, body, $"{endpoint.Method} {path} [own create]");
-            NoteWrite(endpoint, status, text);
-            if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
-            {
-                var collection = endpoint.Pattern.TrimEnd('/');
-                lock (_lock)
-                {
-                    if (!_created.TryGetValue(collection, out var ids)) _created[collection] = ids = [];
-                    ids.Add(id);
-                    _routeValues.Add(id);
-                }
-            }
+            await WriteOneAsync(endpoint, own, "own create");
         }
         foreach (var endpoint in writes.Where(e => e.Method is "PUT" or "PATCH"))
         {
-            var path = await OwnPathAsync(endpoint, own, forWrite: true);
-            JsonNode? template = null;
-            if (_endpoints.Any(e => e.Method == "GET" && e.Pattern == endpoint.Pattern))
-            {
-                var (getStatus, getText, _) = await SendAsync(Admin, "GET", path, null, $"GET {path} [own read before save]");
-                if (getStatus == 200)
-                {
-                    try { template = JsonNode.Parse(getText); } catch (JsonException) { }
-                }
-            }
-            var (status, text, _) = await SendAsync(Admin, endpoint.Method, path, BuildBody(endpoint, own, template), $"{endpoint.Method} {path} [own save]");
-            NoteWrite(endpoint, status, text);
+            await WriteOneAsync(endpoint, own, "own save");
         }
         foreach (var endpoint in writes.Where(e => e.Method == "DELETE"))
         {
-            var collection = CollectionOf(endpoint.Pattern);
-            List<string> targets;
-            lock (_lock) targets = _created.TryGetValue(collection, out var ids) && ids.Count > 0 ? [ids[^1]] : [];
-            var path = endpoint.RouteParameters.Count == 0 ? endpoint.Path(_ => "") : targets.Count > 0 ? endpoint.Path(_ => targets[0]) : null;
-            if (path is null)
-            {
-                // Nothing this run created to delete: still run the handler on a record that does not exist.
-                path = endpoint.Path(_ => Guid.NewGuid().ToString());
-            }
-            var (status, text, _) = await SendAsync(Admin, "DELETE", path, null, $"DELETE {path} [own delete]");
-            NoteWrite(endpoint, status, text);
+            await WriteOneAsync(endpoint, own, "own delete");
         }
+    }
+
+    /// <summary>
+    /// One valid write by this tenant on its own records, by the administrator (cookie) or, with
+    /// <paramref name="bearer"/>, by the administrator's bearer token: a create; an edit and save
+    /// of the record's own GET; or the delete of a record created for it just before (so a delete
+    /// can be repeated as often as the attack needs). Returns the status; a write that does not
+    /// succeed is recorded in <see cref="UnsuccessfulWrites"/>.
+    /// </summary>
+    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false)
+    {
+        if (_baseline is null)
+        {
+            return await WriteCoreAsync(endpoint, own, phase, bearer);
+        }
+        // Changes since this tenant's last own write were made by someone else.
+        await _tracking.WaitAsync();
+        try
+        {
+            var before = await SnapshotAsync();
+            _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, before));
+            var status = await WriteCoreAsync(endpoint, own, phase, bearer);
+            _baseline = await SnapshotAsync();
+            return status;
+        }
+        finally
+        {
+            _tracking.Release();
+        }
+    }
+
+    private TenantSnapshot? _baseline;
+    private readonly SortedSet<string> _changedByOthers = new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _tracking = new(1, 1);
+
+    private Task<TenantSnapshot> SnapshotAsync() => TenantSnapshot.TakeAsync(_env, _tenant.Id, _tenant.Canary, _tenant.Code);
+
+    /// <summary>
+    /// From now on this tenant's own writes are told apart from changes anyone else makes to its
+    /// rows: each own write is framed by snapshots, so what changed between two own writes (and
+    /// since <paramref name="baseline"/>) was changed by someone else. Writes must not run
+    /// concurrently with another tenant's writes while tracking (the phases that write run in turn).
+    /// </summary>
+    public void TrackChangesFrom(TenantSnapshot baseline) => _baseline = baseline;
+
+    /// <summary>Tables of this tenant whose rows someone other than this activity changed since
+    /// tracking started.</summary>
+    public async Task<IReadOnlyList<string>> ChangedByOthersAsync()
+    {
+        if (_baseline is null)
+        {
+            throw new InvalidOperationException("Change tracking was not started.");
+        }
+        _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, await SnapshotAsync()));
+        return _changedByOthers.ToList();
+    }
+
+    private async Task<int> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer)
+    {
+        var actor = bearer ? _actors[1] : Admin;
+        switch (endpoint.Method)
+        {
+            case "POST":
+            {
+                var path = await OwnPathAsync(endpoint, own, forWrite: true);
+                var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null), $"POST {path} [{phase}]");
+                NoteWrite(endpoint, status, text);
+                if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
+                {
+                    var collection = endpoint.Pattern.TrimEnd('/');
+                    lock (_lock)
+                    {
+                        if (!_created.TryGetValue(collection, out var ids)) _created[collection] = ids = [];
+                        ids.Add(id);
+                        // A record this tenant created is a route value of its own activity: the
+                        // attack replays it (a per-id cache holds exactly such ids).
+                        _routeValues.Add(id);
+                    }
+                }
+                return status;
+            }
+            case "PUT" or "PATCH":
+            {
+                var path = await OwnPathAsync(endpoint, own, forWrite: true);
+                JsonNode? template = null;
+                if (_endpoints.Any(e => e.Method == "GET" && e.Pattern == endpoint.Pattern))
+                {
+                    var (getStatus, getText, _) = await SendAsync(actor, "GET", path, null, $"GET {path} [{phase}, own read before save]");
+                    if (getStatus == 200)
+                    {
+                        try { template = JsonNode.Parse(getText); } catch (JsonException) { }
+                    }
+                }
+                var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template), $"{endpoint.Method} {path} [{phase}]");
+                NoteWrite(endpoint, status, text);
+                return status;
+            }
+            default:
+            {
+                string path;
+                if (endpoint.RouteParameters.Count == 0)
+                {
+                    path = endpoint.Path(_ => "");
+                }
+                else
+                {
+                    var collection = CollectionOf(endpoint.Pattern);
+                    var target = await FreshRecordAsync(collection, own, phase);
+                    // Nothing could be created to delete: still run the handler on a record that does not exist.
+                    path = endpoint.Path(_ => target ?? Guid.NewGuid().ToString());
+                    if (target is not null)
+                    {
+                        lock (_lock)
+                        {
+                            if (_created.TryGetValue(collection, out var ids)) ids.Remove(target);
+                            foreach (var key in _routes.Where(r => r.Value == target).Select(r => r.Key).ToList()) _routes.Remove(key);
+                        }
+                    }
+                }
+                var (status, text, _) = await SendAsync(actor, endpoint.Method, path, null, $"{endpoint.Method} {path} [{phase}]");
+                NoteWrite(endpoint, status, text);
+                return status;
+            }
+        }
+    }
+
+    /// <summary>A record of the collection created now, only to be deleted: never one that another
+    /// write targets.</summary>
+    private async Task<string?> FreshRecordAsync(string collection, TenantSnapshot own, string phase)
+    {
+        var create = _endpoints.FirstOrDefault(e => e.Method == "POST" && e.RouteParameters.Count == 0 && e.Pattern.TrimEnd('/') == collection);
+        if (create is null)
+        {
+            return null;
+        }
+        var path = create.Path(_ => "");
+        var (status, text, location) = await SendAsync(Admin, "POST", path, BuildBody(create, own, template: null), $"POST {path} [{phase}, record to delete]");
+        return status is >= 200 and < 300 ? CreatedId(text, location) : null;
     }
 
     /// <summary>Writes whose handler did not succeed for this tenant's own records (the write
@@ -248,16 +358,20 @@ public sealed class TenantActivity
         }
     }
 
-    /// <summary>The administrator reads the endpoint (GET only) on this tenant's own records,
-    /// right before or after tenant A attacks it.</summary>
+    /// <summary>The administrator uses the endpoint on this tenant's own records right before or
+    /// after tenant A attacks it: a read for a GET, a valid write for an endpoint that changes data
+    /// (so whatever a write leaves in process-wide state is tenant B's when tenant A's write runs).</summary>
     public async Task TouchAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase)
     {
-        if (endpoint.Method != "GET")
+        if (endpoint.Method == "GET")
         {
-            return;
+            var path = await OwnPathAsync(endpoint, own, forWrite: false);
+            await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
         }
-        var path = await OwnPathAsync(endpoint, own, forWrite: false);
-        await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+        else if (IsActivityWrite(endpoint))
+        {
+            await WriteOneAsync(endpoint, own, phase);
+        }
     }
 
     /// <summary>
@@ -363,7 +477,8 @@ public sealed class TenantActivity
 
     /// <summary>The path with this tenant's own id in every route parameter: a record this run
     /// created in the same collection, else the first own id (tables named like the route first)
-    /// that the administrator can read. Writes never target the actors' own user records.</summary>
+    /// that the administrator can read. Writes never target the actors' own user records (nor the
+    /// role-less user the attack signs in).</summary>
     private async Task<string> OwnPathAsync(ApiEndpoint endpoint, TenantSnapshot own, bool forWrite)
     {
         if (endpoint.RouteParameters.Count == 0 || endpoint.Pattern.Contains("{*", StringComparison.Ordinal))
@@ -428,7 +543,7 @@ public sealed class TenantActivity
         await using var admin = await _env.OpenAdminAsync();
         _actorUserIds = (await DbCatalog.ReadAsync(admin,
                 "SELECT id FROM identity.users WHERE tenant_id = @t AND lower(email) = ANY(@e)", r => r.GetGuid(0),
-                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer") })))
+                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer"), _env.Email(_tenant, "noaccess") })))
             .Select(i => i.ToString()).ToList();
         return _actorUserIds;
     }

@@ -38,6 +38,9 @@ export type PaletteItem = {
 
 export type PaletteSourceContext = { language: Language; signal: AbortSignal };
 
+/** A source's answer: the records to show and, when the source knows it, how many match in all. */
+export type PaletteResult = { items: PaletteItem[]; total?: number };
+
 export type PaletteSource = {
   key: string;
   /** String key of the heading the results appear under. */
@@ -45,7 +48,13 @@ export type PaletteSource = {
   permission?: string;
   /** Characters typed before the source is asked; 0 means it also answers an empty query. */
   minLength: number;
-  search: (query: string, context: PaletteSourceContext) => Promise<PaletteItem[]>;
+  search: (query: string, context: PaletteSourceContext) => Promise<PaletteItem[] | PaletteResult>;
+  /**
+   * The address of a screen that lists every match of the query. When the source matched more
+   * than it shows (or does not say how many matched), the palette ends its results with a "Show
+   * all matches" entry that opens it.
+   */
+  showAll?: (query: string) => string;
 };
 
 export type ModuleExtensions = {

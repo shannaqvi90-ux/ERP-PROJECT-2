@@ -108,6 +108,52 @@ public sealed partial class ShellGateTests(GateFixture fixture)
         Assert.True(files >= Ratchet.Min("rules.webFormattingFilesChecked"), $"{files} web source files checked; ratchet minimum {Ratchet.Min("rules.webFormattingFilesChecked")}");
     }
 
+    /// <summary>
+    /// Every request field that sets an interface language or a digit system lists exactly the
+    /// supported values in the OpenAPI document, so API clients (and the isolation gate's valid
+    /// bodies, which take documented values) never have to guess them.
+    /// </summary>
+    [Fact]
+    public async Task Language_and_digit_fields_document_their_allowed_values()
+    {
+        using var client = fixture.Env.CreateClient();
+        var document = await OpenApiDocument.LoadAsync(client);
+        var expected = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["language"] = [.. Erp.Kernel.Localization.Languages.All],
+            ["numerals"] = [.. Erp.Kernel.Localization.NumeralSystems.All],
+        };
+        var problems = new List<string>();
+        var checkedFields = 0;
+        foreach (var endpoint in EndpointInventory.From(fixture.Env.Factory.Services).Where(e => e.InOpenApi && e.HasBody))
+        {
+            if (document.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
+                !document.Resolve(schema).TryGetProperty("properties", out var properties))
+            {
+                continue;
+            }
+            foreach (var property in properties.EnumerateObject())
+            {
+                if (!expected.TryGetValue(property.Name, out var values))
+                {
+                    continue;
+                }
+                checkedFields++;
+                var field = document.Resolve(property.Value);
+                var listed = field.TryGetProperty("enum", out var e) && e.ValueKind == JsonValueKind.Array
+                    ? e.EnumerateArray().Where(v => v.ValueKind == JsonValueKind.String).Select(v => v.GetString()!).ToList()
+                    : [];
+                if (!listed.Order().SequenceEqual(values.Order()))
+                {
+                    problems.Add($"{endpoint} {property.Name}: documents [{string.Join(", ", listed)}], supports [{string.Join(", ", values)}]");
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        // The preferences endpoint (language and digits) and the user endpoints (language).
+        Assert.True(checkedFields >= 4, $"only {checkedFields} language or digit fields found in request bodies");
+    }
+
     [Fact]
     public void Every_navigation_group_has_an_English_and_Arabic_heading()
     {
