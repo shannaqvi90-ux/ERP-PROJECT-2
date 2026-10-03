@@ -62,6 +62,48 @@ describe("sign-in screen", () => {
     expect(view.container.querySelector("nav")!.textContent).toBe("Users");
   });
 
+  it("re-renders a failed sign-in in the new language after switching, with nothing left in the old one", async () => {
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+      if (method === "POST" && url === "/api/auth/sign-in")
+        return { status: 401, body: { title: "Sign-in failed. Check your e-mail and password and try again.", code: "auth.signInFailed" } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "admin@alnoor.example");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "wrong-password");
+    await submit(view.container);
+    await settle();
+    const alert = () => view!.container.querySelector('[role="alert"]')!;
+    expect(alert().textContent).toBe("Sign-in failed. Check your e-mail and password and try again.");
+    await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    expect(document.documentElement.dir).toBe("rtl");
+    expect(alert().textContent).toBe("تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.");
+    expect(alert().getAttribute("lang")).toBeNull();
+  });
+
+  it("keeps an unrecognised server message in its own language and direction after switching", async () => {
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+      if (method === "POST" && url === "/api/auth/sign-in") return { status: 503, body: { title: "Service unavailable. Try again shortly.", code: "http.503" } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "admin@alnoor.example");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "x");
+    await submit(view.container);
+    await settle();
+    await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    const alert = view.container.querySelector('[role="alert"]')!;
+    expect(alert.textContent).toBe("Service unavailable. Try again shortly.");
+    expect(alert.getAttribute("lang")).toBe("en");
+    expect(alert.getAttribute("dir")).toBe("auto");
+  });
+
   it("keeps the keyboard in the form after switching language", async () => {
     mockFetch(() => ({ status: 200, body: { authenticated: false } }));
     view = await render(<App language="en" />);

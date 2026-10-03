@@ -84,6 +84,10 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
             Database = database,
             Pooling = true,
             MaxPoolSize = 100,
+            // Inspection and set-up statements of the tests themselves (ANALYZE of 100,000 rows,
+            // checksums of every table) on a saturated machine. The application role keeps
+            // Npgsql's default: the product sets its own timeouts (ErpDataSources).
+            CommandTimeout = user == DatabaseRoles.App ? 30 : 600,
         }.ConnectionString;
 
         var adminServer = For("postgres", adminPassword, "postgres");

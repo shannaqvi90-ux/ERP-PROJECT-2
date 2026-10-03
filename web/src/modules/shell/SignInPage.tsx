@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useI18n } from "../../kernel/i18n";
+import { useI18n, type Language } from "../../kernel/i18n";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -15,6 +15,22 @@ function rememberedEmail(): string {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** The screen's own wording of the answers sign-in can give, so a message follows a language
+ * switch instead of staying in the language it arrived in. */
+const problemKeys: Record<string, string> = {
+  "auth.signInFailed": "shell.signIn.problem.signInFailed",
+  "auth.chooseWorkspace": "shell.signIn.problem.chooseWorkspace",
+  "auth.passwordChangeRequired": "shell.signIn.problem.passwordChangeRequired",
+  "request.tooMany": "shell.signIn.problem.tooMany",
+};
+
+/** A message shown on the sign-in screen: one of the screen's own strings (re-rendered in the
+ * current language), or the server's text in the language it was written in. */
+type Message = { key: string } | { text: string; language: Language };
+
+const fromServer = (text: string, language: Language, code?: string): Message =>
+  code && problemKeys[code] ? { key: problemKeys[code] } : { text, language };
+
 /**
  * The first screen. Keyboard first: the e-mail field has focus (or the password field, when this
  * device remembers the last e-mail), Enter signs in. The e-mail — never the password — is
@@ -28,7 +44,7 @@ export function SignInPage() {
   const [email, setEmail] = useState(remembered);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Message | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   // A one-time set-up code (or a temporary password) was accepted: choose your own password.
@@ -89,7 +105,7 @@ export function SignInPage() {
       }
       if (result.kind === "changePassword") {
         setChanging(true);
-        setError(result.message);
+        setError(fromServer(result.message, language, "auth.passwordChangeRequired"));
         return;
       }
       if (result.kind === "invalid" && result.fieldErrors.newPassword?.[0]) {
@@ -99,15 +115,15 @@ export function SignInPage() {
       }
       if (result.kind === "chooseWorkspace") {
         setWorkspaces(result.workspaces);
-        setError(result.message);
+        setError(fromServer(result.message, language, "auth.chooseWorkspace"));
       } else {
         setWorkspaces(null);
-        setError(result.message);
+        setError(fromServer(result.message, language, result.kind === "failed" ? result.code : undefined));
         setPassword("");
         passwordRef.current?.focus();
       }
     } catch {
-      setError(t("shell.signIn.unreachable"));
+      setError({ key: "shell.signIn.unreachable" });
     } finally {
       setBusy(false);
     }
@@ -199,8 +215,13 @@ export function SignInPage() {
             </>
           )}
           {error && (
-            <div id="signin-error" className={changing ? "notice" : "alert"} role={changing ? "status" : "alert"}>
-              {error}
+            <div
+              id="signin-error"
+              className={changing ? "notice" : "alert"}
+              role={changing ? "status" : "alert"}
+              {...("key" in error ? {} : { lang: error.language, dir: "auto" })}
+            >
+              {"key" in error ? t(error.key) : error.text}
             </div>
           )}
           {workspaces && workspaces.length > 0 && (

@@ -24,7 +24,7 @@ export type Workspace = { code: string; nameEn: string; nameAr: string };
 
 export type SignInResult =
   | { kind: "ok"; session: Session }
-  | { kind: "failed"; message: string }
+  | { kind: "failed"; message: string; code?: string }
   | { kind: "invalid"; message: string; fieldErrors: Record<string, FieldError[]> }
   | { kind: "chooseWorkspace"; message: string; workspaces: Workspace[] }
   | { kind: "changePassword"; message: string };
@@ -61,7 +61,7 @@ export async function requestSignIn(email: string, password: string, workspace?:
     if (error.status === 400) {
       return { kind: "invalid", message: error.message, fieldErrors: error.fieldErrors };
     }
-    return { kind: "failed", message: error.message };
+    return { kind: "failed", message: error.message, code: error.code };
   }
 }
 
