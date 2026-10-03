@@ -24,6 +24,16 @@ const FORBIDDEN = [
   [/__harnessSentinel/, 'the page sentinel'],
   [/\bclaim(Clock|Violations)\b/, 'the harness controls'],
   [/\bnewCDPSession\b/, 'a raw browser debugging session'],
+  // Page script and request rewriting outlive the call (round 3: a listener installed during
+  // sign-in finished the task inside the measured part). Drivers read with ctx.read and wait with
+  // ctx.until; the guard refuses these at run time too, in every phase.
+  [/\.(evaluate|evaluateAll|evaluateHandle|\$eval|\$\$eval|waitForFunction|addInitScript|addScriptTag|addStyleTag|exposeFunction|exposeBinding|route|routeFromHAR|routeWebSocket|setExtraHTTPHeaders|dispatchEvent|setContent)\s*\(/, 'page script or request rewriting'],
+  [/\.clock\b/, "the page's clock"],
+  // Another browser, or a debugging session or trace on the whole browser, acts where the guard
+  // and the runner's fresh start do not reach (round 4).
+  [/\b(browserType|newBrowserCDPSession|startTracing|connectOverCDP)\b/, 'another browser or a browser-wide session'],
+  // Continuation (no M before a step) is derived by the instrument (lib/klm.mjs).
+  [/\bchain\s*:/, 'a declared chain'],
 ];
 
 export function driverFiles() {
@@ -64,7 +74,19 @@ test('the driver lint catches planted escapes', () => {
     "eval('1');",
     "const f = new Function('return 1');",
     "page.context().newCDPSession(page);",
+    "await ctx.page.evaluate(() => document.querySelector('#save').click());",
+    "await page.locator('a').evaluateAll(as => as.length);",
+    "await ctx.context.addInitScript(() => {});",
+    "await ctx.page.exposeFunction('f', () => {});",
+    "await ctx.page.route('**/*', r => r.continue());",
+    "await page.waitForFunction(() => true);",
+    "await ctx.page.clock.install();",
+    "await op.press('Enter', { label: 'x', chain: true });",
+    "const other = await ctx.browser.browserType().launch();",
+    "await ctx.browser.newBrowserCDPSession();",
+    "await ctx.browser.startTracing();",
   ];
   for (const p of plants) assert.ok(lintDriver(p).length > 0, `not caught: ${p}`);
   assert.deepEqual(lintDriver("import { adminRpc } from './_common.mjs';\nimport path from 'node:path';"), []);
+  assert.deepEqual(lintDriver("const v = await ctx.read(() => document.title);\nawait ctx.until(() => true, { page });"), []);
 });

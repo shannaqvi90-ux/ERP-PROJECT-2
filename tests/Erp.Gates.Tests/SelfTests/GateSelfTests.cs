@@ -33,6 +33,14 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
         var report = await IsolationAttack.RunAsync(fixture.Env);
+        foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"unexpected: {leak}");
+        }
+        foreach (var group in report.Leaks.GroupBy(l => System.Text.RegularExpressions.Regex.Match(l, @"/api/leaky/[a-z-]+").Value).OrderBy(g => g.Key, StringComparer.Ordinal))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"leaks on {group.Key}: {group.Count()}");
+        }
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/by-header", StringComparison.Ordinal) && l.Contains("[TenantHeaders]", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/tenants/", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
@@ -93,6 +101,18 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                            l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
 
+        // A per-id cache on a route with an id (critic p03 round 1, plants T2 and T1): tenant B opens
+        // the route with the person it created, an id the attack's sample of tenant B ids does not
+        // hold. The attack replays tenant B's exact route values and has tenant B open every id it
+        // is about to send, and finds tenant B's person in tenant A's answer, in a captured
+        // dictionary and in a static one alike.
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/people/", StringComparison.Ordinal) &&
+                                           l.Contains("/access", StringComparison.Ordinal) && l.Contains("response contains tenant B marker", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/people/", StringComparison.Ordinal) &&
+                                           l.Contains("/card", StringComparison.Ordinal) && l.Contains("response contains tenant B marker", StringComparison.Ordinal));
+        Assert.True(report.VictimRouteValuesReplayed > 0, "no route value of tenant B's own activity was replayed by the attack");
+        Assert.True(report.VictimPreTouches > 0, "tenant B never opened a route with the value tenant A was about to send");
+
         // Write after write (critic p04 round 1, plants P1b and P1c): state a valid write leaves in
         // a captured array reaches the next valid writer of the other tenant, in a header with a
         // correct body, or inside the body. Judged in both directions.
@@ -144,6 +164,17 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
             await owner.OpenAsync();
             await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_company_unscoped; DROP TABLE tenancy.selftest_company_permissive");
         }
+    }
+
+    [Fact]
+    public async Task The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check()
+    {
+        // Critic p03 round 1, plant P2: deleting a role never checks what it grants.
+        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("changed", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("DELETE /api/identity/roles/{id:guid}", result.Checked);
     }
 
     [Fact]
@@ -201,6 +232,29 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         using var response = await admin.GetAsync("/api/leaky/touch");
         Assert.Equal(System.Net.HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal(before, await DbCatalog.ScalarAsync<string>(owner, name, ("t", fixture.Env.TenantA.Id)));
+    }
+
+    [Fact]
+    public async Task The_database_check_catches_a_unique_index_across_tenants()
+    {
+        // Critic p03 round 1, plant U: e-mail unique across the platform.
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "CREATE UNIQUE INDEX selftest_users_email_global ON identity.users (email_normalized)");
+        }
+        try
+        {
+            var (problems, _) = await G1UniqueIndexTests.ProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("identity.users.selftest_users_email_global is unique across every tenant", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP INDEX identity.selftest_users_email_global");
+        }
     }
 
     [Fact]

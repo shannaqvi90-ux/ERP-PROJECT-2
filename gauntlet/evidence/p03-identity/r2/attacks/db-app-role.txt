@@ -1,0 +1,105 @@
+== as erp_app, no tenant bound
+ users_visible 
+---------------
+             0
+(1 row)
+
+ roles_visible 
+---------------
+             0
+(1 row)
+
+ user_roles_visible 
+--------------------
+                  0
+(1 row)
+
+ attempts_visible 
+------------------
+                0
+(1 row)
+
+ sessions_visible 
+------------------
+                0
+(1 row)
+
+== credentials column
+ERROR:  permission denied for table user_credentials
+== bind to tenant A in a transaction, try to read and write B
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ a_users 
+---------
+       0
+(1 row)
+
+ b_rows_seen_from_a 
+--------------------
+                  0
+(1 row)
+
+UPDATE 0
+DELETE 0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+== move an A row into tenant B
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+UPDATE 0
+ROLLBACK
+== app role attributes
+  rolname  | rolsuper | rolbypassrls | rolcreaterole 
+-----------+----------+--------------+---------------
+ erp_owner | f        | f            | f
+ erp_app   | f        | f            | f
+ erp_auth  | f        | f            | f
+(3 rows)
+
+== RLS on identity tables (enabled, forced)
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ roles                   | t              | t
+ sessions                | t              | t
+ sign_in_attempts        | t              | t
+ sign_in_secret          | f              | f
+ user_credentials        | t              | t
+ user_roles              | t              | t
+ users                   | t              | t
+(8 rows)
+
+== can the app role change RLS?
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+== unique indexes in identity
+                    indexrelid                    |                                                       pg_get_indexdef                                                        
+--------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------
+ identity.pk___ef_migrations_history              | CREATE UNIQUE INDEX pk___ef_migrations_history ON identity.__ef_migrations_history USING btree (migration_id)
+ identity.pk_roles                                | CREATE UNIQUE INDEX pk_roles ON identity.roles USING btree (id)
+ identity.ak_roles_tenant_id_id                   | CREATE UNIQUE INDEX ak_roles_tenant_id_id ON identity.roles USING btree (tenant_id, id)
+ identity.pk_users                                | CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ identity.ak_users_tenant_id_id                   | CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ identity.pk_sessions                             | CREATE UNIQUE INDEX pk_sessions ON identity.sessions USING btree (id)
+ identity.ak_sessions_tenant_id_id                | CREATE UNIQUE INDEX ak_sessions_tenant_id_id ON identity.sessions USING btree (tenant_id, id)
+ identity.pk_user_roles                           | CREATE UNIQUE INDEX pk_user_roles ON identity.user_roles USING btree (id)
+ identity.ak_user_roles_tenant_id_id              | CREATE UNIQUE INDEX ak_user_roles_tenant_id_id ON identity.user_roles USING btree (tenant_id, id)
+ identity.ix_roles_tenant_id_name_en              | CREATE UNIQUE INDEX ix_roles_tenant_id_name_en ON identity.roles USING btree (tenant_id, name_en)
+ identity.ix_roles_tenant_id_system_key           | CREATE UNIQUE INDEX ix_roles_tenant_id_system_key ON identity.roles USING btree (tenant_id, system_key)
+ identity.ix_sessions_token_hash                  | CREATE UNIQUE INDEX ix_sessions_token_hash ON identity.sessions USING btree (token_hash)
+ identity.ix_user_roles_tenant_id_user_id_role_id | CREATE UNIQUE INDEX ix_user_roles_tenant_id_user_id_role_id ON identity.user_roles USING btree (tenant_id, user_id, role_id)
+ identity.ix_users_tenant_id_email_normalized     | CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ identity.pk_sign_in_attempts                     | CREATE UNIQUE INDEX pk_sign_in_attempts ON identity.sign_in_attempts USING btree (id)
+ identity.pk_user_credentials                     | CREATE UNIQUE INDEX pk_user_credentials ON identity.user_credentials USING btree (id)
+ identity.ix_user_credentials_tenant_id_id        | CREATE UNIQUE INDEX ix_user_credentials_tenant_id_id ON identity.user_credentials USING btree (tenant_id, id)
+ identity.sign_in_secret_pkey                     | CREATE UNIQUE INDEX sign_in_secret_pkey ON identity.sign_in_secret USING btree (id)
+(18 rows)
+

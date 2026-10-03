@@ -122,6 +122,7 @@
   "identity.roles.permissionCount": "{count, plural, zero {لا صلاحيات} one {صلاحية واحدة} two {صلاحيتان} few {# صلاحيات} many {# صلاحية} other {# صلاحية}}",
   "identity.roles.saved": "حُفظ الدور {name}.",
   "identity.roles.systemNote": "تدير المنصة هذا الدور. انسخه لإنشاء دور يمكنك تعديله.",
+  "identity.roles.beyondOwnNote": "يمنح هذا الدور صلاحيات لا تملكها، لذلك لا يمكن تعديله أو نسخه أو حذفه إلا لمن يملكها كلها.",
   "identity.sessions.ended": "{count, plural, zero {لم تكن هناك جلسات.} one {انتهت جلسة واحدة.} two {انتهت جلستان.} few {انتهت # جلسات.} many {انتهت # جلسة.} other {انتهت # جلسة.}}",
   "identity.sessions.revoke": "تسجيل الخروج من كل مكان",
   "identity.users.new": "مستخدم جديد",
@@ -136,5 +137,12 @@
   "identity.users.view.inactive": "المستخدمون غير النشطين",
   "identity.users.view.neverSignedIn": "لم يسجلوا الدخول قط",
   "identity.users.view.byLanguage": "حسب اللغة",
-  "identity.roles.search": "البحث باسم الدور"
+  "identity.roles.search": "البحث باسم الدور",
+  "identity.users.nameAr": "الاسم بالعربية",
+  "identity.users.delete": "حذف المستخدم",
+  "identity.users.deleteConfirm": "حذف {name}؟ لم يسجل الدخول قط، لذا لا يشير إليه أي سجل آخر.",
+  "identity.users.deleteYes": "حذف",
+  "identity.users.deleted": "تم حذف {name}.",
+  "identity.users.beyondOwnNote": "يملك هذا الشخص صلاحيات لا تملكها، لذلك لا يمكن تعديل حسابه إلا لمن يملكها كلها.",
+  "identity.history.pausedUntil": "حتى {time}"
 }

@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p00',
   actor: 'an ordinary internal user with an e-mail sign-in',
+  startAt: 'sign-in',
+  moments: [],
   start: 'Signed out, on the product\'s sign-in screen (the address the user keeps bookmarked).',
   goal: 'Sign in as {user} with the password {password}.',
   done: 'The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.',

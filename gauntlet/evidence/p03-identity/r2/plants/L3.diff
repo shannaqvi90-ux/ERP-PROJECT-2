@@ -1,0 +1,30 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..b804a89 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -147,6 +147,12 @@ internal static class UserEndpoints
+ 
+     private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        // CRITIC PLANT L3: a record saved by an edit is served from a disk cache keyed only by id.
++        var cacheFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-user-cache", $"{id}.json");
++        if (System.IO.File.Exists(cacheFile))
++        {
++            return TypedResults.Ok(System.Text.Json.JsonSerializer.Deserialize<UserDto>(await System.IO.File.ReadAllTextAsync(cacheFile, cancellationToken))!);
++        }
+         var user = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
+         if (user is null)
+         {
+@@ -287,7 +293,11 @@ internal static class UserEndpoints
+         // Force a version check even when only roles changed.
+         db.Entry(user).Property(u => u.UpdatedAt).IsModified = true;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(ToDto(user, new Dictionary<Guid, List<Guid>> { [user.Id] = roleIds }, await PendingSetupOf(db, [user.Id], cancellationToken)));
++        var savedDto = ToDto(user, new Dictionary<Guid, List<Guid>> { [user.Id] = roleIds }, await PendingSetupOf(db, [user.Id], cancellationToken));
++        var savedFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-user-cache", $"{user.Id}.json");
++        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(savedFile)!);
++        await System.IO.File.WriteAllTextAsync(savedFile, System.Text.Json.JsonSerializer.Serialize(savedDto), cancellationToken);
++        return TypedResults.Ok(savedDto);
+     }
+ 
+     private static async Task<Results<Ok<ResetPasswordResponse>, ProblemHttpResult>> ResetPassword(

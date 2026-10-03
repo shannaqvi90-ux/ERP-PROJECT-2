@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p14',
   actor: 'admin',
+  startAt: 'home',
+  moments: ['export options chosen'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Export every contact tagged "{tag}" to a spreadsheet with at least their name, e-mail and phone.',
   done: 'The product hands over a spreadsheet file; it holds one row per contact tagged "{tag}" (every one of them, not just the first page) with name, e-mail and phone columns.',

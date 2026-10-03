@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p04',
   actor: 'admin',
+  startAt: 'home',
+  moments: [],
   start: 'Signed in, on the screen the product shows right after sign-in.',
   goal: 'Without touching the mouse, open the list of the workspace\'s users (the screen named "Users").',
   done: 'The users list is on screen with its rows, and no step used the mouse.',

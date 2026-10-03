@@ -1,0 +1,18 @@
+import { chromium } from 'playwright-core';
+const B = 'http://localhost:20350';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+await page.goto(B + '/');
+await page.locator('input[name="email"]').fill('admin@alnoor.example');
+await page.locator('input[name="password"]').fill('Demo-Pass-2026');
+await page.keyboard.press('Enter');
+await page.locator('nav[aria-label="Main navigation"]').waitFor();
+await page.locator('nav a[href="/identity/users"]').first().click();
+await page.locator('main table tbody tr').first().waitFor();
+console.log('focused after open:', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200)));
+await page.keyboard.press('n');
+await page.waitForTimeout(800);
+console.log('after n, focused:', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200)));
+console.log('email input present:', await page.locator('input[name="email"]').count());
+await page.screenshot({ path: '/home/user/critic/walk/after-n.jpg', type: 'jpeg', quality: 60 });
+await browser.close();

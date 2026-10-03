@@ -49,6 +49,6 @@ internal static class ProfileEndpoints
         user.Language = request.Language ?? user.Language;
         user.Numerals = request.Numerals ?? user.Numerals;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals));
+        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
     }
 }

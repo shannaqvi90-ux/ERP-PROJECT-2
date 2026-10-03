@@ -26,8 +26,11 @@ export default {
   async signIn(ctx) {
     await signInAs(ctx, 'admin');
     await openRecord(ctx, 'purchase.order', ctx.state.po);
+  },
+  ready: '.o_form_view',
+  observe(ctx) {
     // The context the client sends with the print request: the document is rendered with it.
-    // The listener is registered here, outside the measured part; it only reads the request.
+    // The listener is registered on the start page before the measured part; it only reads.
     ctx.page.on('request', r => {
       if (r.url().endsWith('/report/download')) {
         const m = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(r.postData() || '');
@@ -54,8 +57,7 @@ export default {
     // The same document rendered as HTML in the language of the print request, to read its
     // direction and script (the PDF's text is font-encoded).
     const context = ctx.state.printContext || {};
-    const html = await ctx.page.evaluate(async ([id, lang]) =>
-      (await fetch(`/report/html/purchase.report_purchaseorder/${id}?context=${encodeURIComponent(JSON.stringify({ lang }))}`)).text(), [ctx.state.po, context.lang || 'en_US']);
+    const html = await (await adminRpc(ctx)).getText(`/report/html/purchase.report_purchaseorder/${ctx.state.po}?context=${encodeURIComponent(JSON.stringify({ lang: context.lang || 'en_US' }))}`);
     const arabic = (html.replace(/<[^>]+>/g, ' ').match(/[؀-ۿ]+/g) || []).length;
     const rtl = /<body[^>]*dir="rtl"/i.test(html);
     return {
@@ -67,8 +69,8 @@ export default {
     const admin = await adminRpc(ctx);
     await admin.write('res.users', [admin.uid], { lang: 'en_US' });
     if (ctx.state.po) {
-      await admin.call('purchase.order', 'button_cancel', [[ctx.state.po]]).catch(() => {});
-      await admin.unlink('purchase.order', [ctx.state.po]).catch(() => {});
+      await admin.call('purchase.order', 'button_cancel', [[ctx.state.po]]).catch(() => { });
+      await admin.unlink('purchase.order', [ctx.state.po]).catch(() => { });
     }
     if (ctx.state.vendor) await admin.write('res.partner', [ctx.state.vendor.id], { lang: ctx.state.vendor.lang || 'en_US' });
     if (ctx.state.dir) fs.rmSync(ctx.state.dir, { recursive: true, force: true });

@@ -1,3 +1,16 @@
+/* The bundled Arabic font (Noto Sans Arabic, variable weight, SIL OFL-1.1, approved by the owner
+   for fonts on 2026-10-03; docs/decisions/p04-shell-fonts.md). Only its Arabic subset is bundled,
+   and the unicode-range keeps it to Arabic text: Latin text keeps the system UI font. Screens and
+   printed documents render Arabic the same on every device. */
+@font-face {
+  font-family: "Noto Sans Arabic Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../node_modules/@fontsource-variable/noto-sans-arabic/files/noto-sans-arabic-arabic-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
 /*
  * Dense, keyboard-first business layout. Logical properties only (inline-start/end, block-start/
  * end): the same rules mirror for Arabic (dir="rtl") without a separate stylesheet, and a gate
@@ -6,8 +19,8 @@
  * Linux). A bundled Arabic font waits for licence approval (docs/decisions/p04-shell-fonts.md).
  */
 :root {
-  --font: system-ui, -apple-system, "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
-  --font-ar: "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif;
+  --font: "Noto Sans Arabic Variable", system-ui, -apple-system, "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  --font-ar: "Noto Sans Arabic Variable", "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif;
   --topbar: #1f3349;
   --topbar-text: #ffffff;
   --nav-bg: #ffffff;
@@ -240,11 +253,13 @@ input[aria-invalid="true"] {
   margin-block-end: 12px;
 }
 
-/* Shell */
+/* Shell: exactly the window's height. The top bar and the status line always stay in view; the
+   screen (and the navigation pane) scroll inside it, never the page. */
 .app {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .topbar {
@@ -348,8 +363,9 @@ input[aria-invalid="true"] {
 
 .frame {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: 0;
+  overflow: hidden;
 }
 
 .navpane {
@@ -407,6 +423,8 @@ input[aria-invalid="true"] {
   padding: 10px 16px;
   outline: none;
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 
 .breadcrumbs ol {
@@ -826,11 +844,14 @@ input[aria-invalid="true"] {
   .app,
   .frame {
     display: block;
+    height: auto;
     min-height: 0;
+    overflow: visible;
   }
 
   .workspace {
     padding: 0;
+    overflow: visible;
   }
 
   .print-only {
@@ -853,6 +874,45 @@ input[aria-invalid="true"] {
 
   .grid tr {
     break-inside: avoid;
+  }
+}
+
+/* A printed screen is a document, not a screen: no actions, menus, pickers, selection boxes, sort
+   marks or keyboard hints. Column titles that are sort buttons print as plain headings and form
+   fields print as their values. Modules mark anything else that must not print with .no-print. */
+@media print {
+  .print-document-screen button:not(.list-sort),
+  .print-document-screen .list-sort-mark,
+  .print-document-screen .list-anchor,
+  .print-document-screen .list-search,
+  .print-document-screen .list-chip-remove,
+  .print-document-screen .list-statusbar,
+  .print-document-screen .list-selectionbar,
+  .print-document-screen input[type="checkbox"]:not(:checked),
+  .print-document-screen .list-grid input[type="checkbox"],
+  .print-document-screen [aria-keyshortcuts],
+  .print-document-screen kbd,
+  .print-document-screen .no-print {
+    display: none !important;
+  }
+
+  .print-document-screen .list-sort {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .print-document-screen input,
+  .print-document-screen select,
+  .print-document-screen textarea {
+    border: 0;
+    background: none;
+    padding: 0;
+    appearance: none;
+    color: inherit;
+    font: inherit;
   }
 }
 

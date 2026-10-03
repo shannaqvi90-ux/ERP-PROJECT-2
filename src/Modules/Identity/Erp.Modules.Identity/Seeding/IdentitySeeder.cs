@@ -69,21 +69,24 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
         {
             NameEn = context.Mark("Read-only"),
             NameAr = context.Mark("قراءة فقط"),
-            Permissions = all.Where(p => p.EndsWith(".read", StringComparison.Ordinal)).Append(IdentityPermissions.ProfileUpdate).Order(StringComparer.Ordinal).ToList(),
+            // Everything readable except colleagues' sign-in history (addresses and browsers are
+            // personal data a reader of the business records does not need).
+            Permissions = all.Where(p => p.EndsWith(".read", StringComparison.Ordinal) && p != IdentityPermissions.SignInsRead)
+                .Append(IdentityPermissions.ProfileUpdate).Order(StringComparer.Ordinal).ToList(),
         };
         db.Roles.AddRange(administrator, readOnly);
 
         var hash = PasswordHasher.Hash(context.Plan.DemoPassword);
         var now = DateTimeOffset.UtcNow;
         var domain = context.Tenant.EmailDomain;
-        var people = new (string Local, string Name, string Language, Role? Role)[]
+        var people = new (string Local, string Name, string NameAr, string Language, Role? Role)[]
         {
-            ("admin", "Mariam Al Mansoori", "en", administrator),
-            ("admin.ar", "فاطمة الزعابي", "ar", administrator),
-            ("viewer", "Omar Haddad", "en", readOnly),
-            ("noaccess", "Layla Nasser", "en", null),
+            ("admin", "Mariam Al Mansoori", "مريم المنصوري", "en", administrator),
+            ("admin.ar", "Fatima Al Zaabi", "فاطمة الزعابي", "ar", administrator),
+            ("viewer", "Omar Haddad", "عمر حداد", "en", readOnly),
+            ("noaccess", "Layla Nasser", "ليلى ناصر", "en", null),
         };
-        foreach (var (local, name, language, role) in people)
+        foreach (var (local, name, nameAr, language, role) in people)
         {
             var email = $"{local}@{domain}";
             var user = new User
@@ -91,6 +94,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
                 Email = email,
                 EmailNormalized = email.ToLowerInvariant(),
                 DisplayName = context.Mark(name),
+                DisplayNameAr = context.Mark(nameAr),
                 Language = language,
             };
             db.Users.Add(user);
@@ -117,6 +121,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             new("email", NpgsqlDbType.Varchar),
             new("email_normalized", NpgsqlDbType.Varchar),
             new("display_name", NpgsqlDbType.Varchar),
+            new("display_name_ar", NpgsqlDbType.Varchar),
             new("language", NpgsqlDbType.Varchar),
             new("is_active", NpgsqlDbType.Boolean),
             new("created_at", NpgsqlDbType.TimestampTz),
@@ -136,7 +141,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             return new object?[]
             {
                 Guid.CreateVersion7(created), tenantId, email, email.ToLowerInvariant(), context.Mark(p.DisplayName),
-                p.Language, i % 23 != 0, created, created,
+                string.IsNullOrWhiteSpace(p.DisplayNameAr) ? null : context.Mark(p.DisplayNameAr), p.Language, i % 23 != 0, created, created,
             };
         });
         await BulkInsert.InsertAsync(session, IdentityDbContext.SchemaName, "users", columns, rows, cancellationToken);
@@ -150,9 +155,9 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
              WHERE NOT EXISTS (SELECT 1 FROM identity.user_credentials c WHERE c.id = u.id)
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("hash", hash);
-        // One statement for the whole volume (100,000 rows in the volume tests): on a loaded
-        // machine it can outlast Npgsql's default 30 s, which failed the seeding, not the product.
-        command.CommandTimeout = 600;
+        // One row (and one audit row) per seeded user: minutes on a busy machine at 100,000 users,
+        // well past the default 30-second command timeout.
+        command.CommandTimeout = 900;
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }
@@ -175,6 +180,7 @@ internal static class SharedDatasetUsers
         var header = Split(reader.ReadLine() ?? "");
         int Column(string name) => Array.IndexOf(header, name) is var i and >= 0 ? i : throw new InvalidDataException($"{path}: no column '{name}'");
         int nameColumn = Column("name"), loginColumn = Column("login"), languageColumn = Column("lang");
+        var arabicColumn = Array.IndexOf(header, "name_ar");
         var people = new List<DemoPeople.Person>(Math.Max(0, count));
         while (people.Count < count && reader.ReadLine() is { } line)
         {
@@ -183,7 +189,8 @@ internal static class SharedDatasetUsers
                 continue;
             }
             var cells = Split(line);
-            people.Add(new DemoPeople.Person(cells[nameColumn], cells[loginColumn], cells[languageColumn] == "ar" ? "ar" : "en"));
+            people.Add(new DemoPeople.Person(cells[nameColumn], cells[loginColumn], cells[languageColumn] == "ar" ? "ar" : "en",
+                arabicColumn >= 0 && arabicColumn < cells.Length && cells[arabicColumn].Length > 0 ? cells[arabicColumn] : null));
         }
         return people;
     }
@@ -243,7 +250,9 @@ internal static class DemoPeople
         "المنصوري", "النعيمي", "الهاشمي", "السويدي", "المزروعي", "الشامسي", "الكتبي", "الفلاسي", "المرزوقي", "الظاهري",
     ];
 
-    public sealed record Person(string DisplayName, string EmailLocal, string Language);
+    /// <summary>A person: the display name (Latin script), the e-mail's local part (or the whole
+    /// address), the interface language and, when known, the name in Arabic script.</summary>
+    public sealed record Person(string DisplayName, string EmailLocal, string Language, string? DisplayNameAr = null);
 
     public static IEnumerable<Person> Generate(string seed, int count)
     {
@@ -254,7 +263,7 @@ internal static class DemoPeople
             {
                 var a = random.Next(ArabicFirstNames.Length);
                 var b = random.Next(ArabicLastNames.Length);
-                yield return new Person($"{ArabicFirstNames[a]} {ArabicLastNames[b]}", $"{Ascii(FirstNames[a])}.{Ascii(LastNames[b])}", "ar");
+                yield return new Person($"{FirstNames[a]} {LastNames[b]}", $"{Ascii(FirstNames[a])}.{Ascii(LastNames[b])}", "ar", $"{ArabicFirstNames[a]} {ArabicLastNames[b]}");
             }
             else
             {

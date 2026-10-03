@@ -22,13 +22,13 @@ function build(keyboard) {
     await op.waitFor('.o_selected_row td[name="name"] input:focus', { label: 'new rate row' });
     if (keyboard) {
       // Tab moves to the next cell and selects its content: company, unit per AED, AED per unit.
-      for (const n of [1, 2, 3]) await op.press('Tab', { label: `next cell ${n}`, chain: n > 1 });
+      for (const n of [1, 2, 3]) await op.press('Tab', { label: `next cell ${n}` });
       await op.waitFor('.o_selected_row td[name="inverse_company_rate"] input:focus', { label: 'AED per unit cell' });
-      await op.type(aedPerUnit, { label: 'AED per unit', chain: true });
+      await op.type(aedPerUnit, { label: 'AED per unit' });
     } else {
       await op.click('.o_selected_row td[name="inverse_company_rate"] input', { label: 'AED per unit cell' });
-      await op.press('Control+a', { label: 'select the suggested rate', chain: true });
-      await op.type(aedPerUnit, { label: 'AED per unit', chain: true });
+      await op.press('Control+a', { label: 'select the suggested rate' });
+      await op.type(aedPerUnit, { label: 'AED per unit' });
     }
     await op.shot('rate entered');
     await saveForm(op, keyboard);

@@ -54,6 +54,9 @@ public sealed class User : TenantEntity
     public string EmailNormalized { get; set; } = "";
     public string DisplayName { get; set; } = "";
 
+    /// <summary>The name written in Arabic, shown on Arabic screens when given (the display name otherwise).</summary>
+    public string? DisplayNameAr { get; set; }
+
     /// <summary>en or ar.</summary>
     public string Language { get; set; } = "en";
 
@@ -182,6 +185,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.Email).HasMaxLength(254);
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
             e.Property(x => x.DisplayName).HasMaxLength(200);
+            e.Property(x => x.DisplayNameAr).HasMaxLength(200);
             e.Property(x => x.Language).HasMaxLength(2);
             // Bulk seeding copies rows without this column; the database fills the default.
             e.Property(x => x.Numerals).HasMaxLength(4).HasDefaultValue("latn");
@@ -192,6 +196,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             // List framework: word search on trigram indexes, keyset order on (tenant, column, id).
             e.HasIndex(x => new { x.DisplayName, x.EmailNormalized }, "ix_users_search")
                 .HasMethod("gin").HasOperators("gin_trgm_ops", "gin_trgm_ops");
+            e.HasIndex(x => x.DisplayNameAr, "ix_users_search_ar").HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => new { x.TenantId, x.CreatedAt, x.Id });
             e.HasIndex(x => new { x.TenantId, x.LastSignInAt, x.Id });
         });

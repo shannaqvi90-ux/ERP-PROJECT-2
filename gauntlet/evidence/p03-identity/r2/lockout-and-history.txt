@@ -1,0 +1,16 @@
+created 201 01a10319-b3f9-716e-9684-5863c06ec038
+wrong passwords: 401,401,401,401,401,401,401
+right password after failures: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","tra
+access tab text: Critic Lock critic.lock.78480@alnoor.example Active Last sign-in: Never Details What they can do Sign-in history 4 permissions from 1 role. Users and access Permission Granted by Change own preferences Read-only View roles and permissions Read-only View users Read-only Workspace Permission Granted by View workspace details Read-only
+history tab text: Critic Lock critic.lock.78480@alnoor.example Active Last sign-in: Never Details What they can do Sign-in history Sign-in is paused from 1 address after repeated failures. 172.19.0.1 · until 3 Oct 2026, 7:04 PM Allow sign-in again 8 attempts When Result Address Session 3 Oct 2026, 6:49 PM Paused 172.19.0.1 3 Oct 2026, 6:49 PM Paused 172.19.0.1 3 Oct 2026, 6:49 PM Paused 172.19.0.1 3 Oct 2026, 6:49 PM Wrong password 172.19.0.1 3 Oct 2026, 6:49 PM Wrong password 172.19.0.1 3 Oct 2026, 6:49 PM Wrong password 172.19.0.1 3 Oct 2026, 6:49 PM Wrong password 172.19.0.1 3 Oct 2026, 6:49 PM Wrong passwor
+unblock button: 1
+right password after unblock: 200
+sign-in after deactivation: 200
+reset button visible: 1
+language select value: en
+active checkbox before: true
+after Space: false
+notice: [ 'Saved.' ]
+isActive via API after keyboard save: false
+sign-in after deactivation: 401
+NOTE: the 'sign-in after deactivation: 200' line above came from a script fault (the UI save did not run); the keyboard retest below shows deactivation works.

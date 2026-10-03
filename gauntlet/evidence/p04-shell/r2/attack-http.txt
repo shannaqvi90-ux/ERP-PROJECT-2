@@ -1,0 +1,16 @@
+== PUT prefs as A with header X-Tenant-Id: 0190a000-0000-7000-8000-000000000002
+{"id":"01a102c2-6c41-7e0d-86a3-0c7e8f1a6ae1","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab"}
+== PUT prefs as A with header X-Tenant: gulfsteel
+{"id":"01a102c2-6c41-7e0d-86a3-0c7e8f1a6ae1","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab"}
+== PUT prefs as A with header X-Workspace: gulfsteel
+{"id":"01a102c2-6c41-7e0d-86a3-0c7e8f1a6ae1","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab"}
+== PUT prefs as A with header X-User-Id: 01a102c3-c5c8-7b6b-b512-8359c5e5ab51
+{"id":"01a102c2-6c41-7e0d-86a3-0c7e8f1a6ae1","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab"}
+== GET B user as A
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-850001328dbab6abbb6e4dc44efc665a-d54403234af05c31-00"} 404
+== search B email as A
+{"items":[],"total":0,"next":null,"groups":null}
+== session as A with B tenant header
+{"authenticated":true,"user":{"id":"01a102c2-6c41-7e0d-86a3-0c7e8f1a6ae1","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab"},"tenant":{"id":"0190a000-
+== B prefs after attacks
+{'id': '01a102c3-c5c8-7b6b-b512-8359c5e5ab51', 'email': 'admin@gulfsteel.example', 'displayName': 'Mariam Al Mansoori', 'language': 'en', 'numerals': 'latn'}

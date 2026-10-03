@@ -13,9 +13,19 @@
 //
 // Placement rules (a simplified form of the paper's heuristic rules, applied identically to
 // both products so the comparison stays fair):
-//   1. Every step starts with one M, unless the driver marks it as a continuation of the
-//      previous step (`chain: true`), such as Enter right after typing a search term, or
-//      typing into a field the previous click just focused.
+//   1. Every step starts with one M, unless it continues the step before it. Continuation is
+//      derived from the recorded steps, never declared by a driver (instrument 4; a driver that
+//      passes `chain` is refused). A step continues the one before it when it is
+//        a. typing right after a click on the field it types into (the click put the caret there),
+//           or right after a key step (Tab to the next field, Ctrl+A in the field, a hotkey or
+//           palette key that opened the field);
+//        b. Enter right after typing (it sends what was just typed) or right after an arrow key
+//           (it opens what was just selected);
+//        c. the same navigation key again (ArrowDown, ArrowDown ...: one unit of moving);
+//        d. Ctrl+A right after a click or Tab into a field (select its content to type over it);
+//        e. the file choice right after the click that opened the file dialog.
+//      Card, Moran & Newell's heuristic rules 1 and 2 (an anticipated operator, a cognitive unit)
+//      are the basis; the derivation is deliberately simple so it is the same for both products.
 //   2. A click is P + BB. A double click is P + BBBB. Choosing a file in the file dialog is
 //      modelled as a double click (P + BBBB).
 //   3. Typing text is one K per character, plus one K per character that needs Shift.
@@ -80,14 +90,36 @@ export function secondsFor(ops) {
   return round(Object.entries(ops).reduce((s, [k, n]) => s + OPERATORS[k] * n, 0));
 }
 
-/** Totals for a list of steps. */
+const ARROW = /^Arrow(Up|Down|Left|Right)$/;
+const REPEATABLE = /^(Arrow(Up|Down|Left|Right)|Tab|Shift\+Tab|PageUp|PageDown|Backspace|Delete)$/;
+const SELECT_ALL = /^(Control|Meta)\+a$/i;
+const isClick = s => s?.kind === 'click' || s?.kind === 'double-click';
+
+/** Whether `step` continues `prev` (no M before it): rule 1 above, from the steps alone. */
+export function continues(prev, step) {
+  if (!prev) return false;
+  switch (step.kind) {
+    case 'type': return prev.kind === 'key' || (isClick(prev) && step.same_field === true);
+    case 'key':
+      if (prev.kind === 'key' && prev.chord === step.chord && REPEATABLE.test(step.chord)) return true;
+      if (step.chord === 'Enter') return prev.kind === 'type' || (prev.kind === 'key' && ARROW.test(prev.chord));
+      if (SELECT_ALL.test(step.chord)) return isClick(prev) || (prev.kind === 'key' && /^(Shift\+)?Tab$/.test(prev.chord));
+      return false;
+    case 'file-pick': return prev.kind === 'click';
+    default: return false;
+  }
+}
+
+/** Totals for a list of steps. Continuation is derived here; a `chain` field on a step is ignored. */
 export function modelSteps(steps) {
   const total = { K: 0, P: 0, B: 0, H: 0, M: 0 };
   let prev = null;
+  let prevStep = null;
   for (const step of steps) {
-    const { ops } = operatorsForStep(step, prev);
+    const { ops } = operatorsForStep({ ...step, chain: continues(prevStep, step) }, prev);
     for (const k of Object.keys(total)) total[k] += ops[k];
     prev = deviceOf(step.kind);
+    prevStep = step;
   }
   return { operator_counts: total, human_seconds: secondsFor(total) };
 }

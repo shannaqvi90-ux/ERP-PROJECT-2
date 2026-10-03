@@ -1,0 +1,39 @@
+== admin creates personal view
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-a92ea701e3e79372c3f96d0130e323fb-ff0f7fdba36a61e6-00","errors":{"columns":[{"code":"unknownIds","message":"Some selected items do not exist."}]}}
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'id'
+== viewer lists views
+{"items":[{"id":"01a10288-e327-7814-b5e0-9c921f6c2490","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,"columns":["displayName","email","language","isActive","lastSignInAt","roleIds"],"sort":"-createdAt","filter":"isActive eq true","search":null,"groupBy":"language","updatedAt":"2026-10-03T16:11:28.021958+00:00","version":755}],"total":1,"next":null,"groups":null}
+shared view 01a10288-e327-7814-b5e0-9c921f6c2490
+== viewer PUT admin's personal view
+404
+== viewer DELETE admin's personal view
+404
+== viewer PUT shared view through personal route
+400
+== viewer DELETE shared view through personal route
+404
+== viewer PUT shared view through shared route
+403
+== viewer creates personal view with isShared smuggled
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-bf4cbef53a57d3ef39bf336cdeb53ca8-43c8d95cfc3408e3-00","errors":{"columns":[{"code":"unknownIds","message":"Some selected items do not exist."}]}}
+== admin still sees own view
+{"items":[{"id":"01a10288-e327-7814-b5e0-9c921f6c2490","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,"columns":["displayName","email","language","isAct
+== admin creates personal view (valid columns)
+{"id":"01a10290-9324-78a0-b239-4f5f3d2ebfd1","listKey":"identity.users","name":"Admin private","isShared":false,"isDefault":false,"isMine":true,"columns":["displayName","email"],"sort":null,"filter":null,"search":null,"groupBy":null,"updatedAt":"2026-10-03T16:19:51.9852129+00:00","version":815}
+
+== viewer PUT admin's personal view (right version)
+404
+== viewer DELETE admin's personal view
+404
+== viewer PUT shared view through personal route (right version)
+404
+== viewer creates personal view with isShared smuggled, default
+{"id":"01a10290-9592-7cce-a8c9-3b0040b7a4de","listKey":"identity.users","name":"mine","isShared":false,"isDefault":true,"isMine":true,"columns":["displayName"],"sort":null,"filter":null,"search":null,"groupBy":null,"updatedAt":"2026-10-03T16:19:52.3388968+00:00","version":816}
+== admin lists views (viewer's must not appear)
+Team view True False
+Admin private False True
+== noaccess POST view
+403

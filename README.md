@@ -32,7 +32,11 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 
 New users are invited with a one-time set-up code shown once to the administrator (Users, `n`);
 they sign in with it as the password and choose their own. Failed sign-ins pause only the client
-that failed, on that account; administrators see the sign-in history and can unblock.
+that failed, on that account; administrators see the sign-in history and can unblock. An
+invitation sent to a mistyped address is corrected in the user's panel, or deleted while nobody has
+signed in with it (`identity.users.delete`); anyone who has signed in stays for the audit trail and
+is deactivated instead. Roles and users are managed only by someone who holds every permission
+they grant; the screens offer nothing else.
 
 ## Layout
 

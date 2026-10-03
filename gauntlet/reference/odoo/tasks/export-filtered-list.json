@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "export-filtered-list-20261003T041028-0b05",
-  "instrument": 3,
+  "run_id": "export-filtered-list-20261003T144246-a4af",
+  "instrument": 4,
   "task": "export-filtered-list",
   "task_title": "Export a filtered list",
   "product": "odoo",
   "status": "verified",
   "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
   "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
-  "started_at": "2026-10-03T04:10:28.487Z",
-  "finished_at": "2026-10-03T04:10:38.267Z",
+  "started_at": "2026-10-03T14:42:46.546Z",
+  "finished_at": "2026-10-03T14:43:03.490Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 5.082,
-    "system_wait_seconds": 3.878,
+    "machine_seconds": 8.698,
+    "system_wait_seconds": 5.814,
     "human_seconds": 26.43,
-    "human_plus_wait_seconds": 30.308,
+    "human_plus_wait_seconds": 32.244,
     "klm_operator_counts": {
       "K": 11,
       "P": 8,
@@ -57,139 +57,140 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.116
+      "took": 0.05,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.116,
-      "took": 0.061
+      "at": 0.05,
+      "took": 0.093,
+      "chain": false
     },
     {
       "n": 3,
       "kind": "type",
       "label": "tag",
       "keystrokes": 11,
-      "chain": false,
-      "at": 0.45,
-      "took": 0.057,
-      "text": "Government"
+      "at": 0.438,
+      "took": 0.186,
+      "text": "Government",
+      "same_field": false,
+      "chain": false
     },
     {
       "n": 4,
       "kind": "click",
       "label": "Search Tag for",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.512,
-      "took": 0.052
+      "at": 0.633,
+      "took": 0.09,
+      "chain": false
     },
     {
       "n": 5,
       "kind": "click",
       "label": "select the page",
       "keystrokes": 0,
-      "chain": false,
-      "at": 1.66,
-      "took": 0.33
+      "at": 2.121,
+      "took": 0.207,
+      "chain": false
     },
     {
       "n": 6,
       "kind": "click",
       "label": "Select all",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.032,
-      "took": 0.257
+      "at": 2.945,
+      "took": 0.074,
+      "chain": false
     },
     {
       "n": 7,
       "kind": "click",
       "label": "Actions",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.288,
-      "took": 0.04
+      "at": 3.019,
+      "took": 0.044,
+      "chain": false
     },
     {
       "n": 8,
       "kind": "click",
       "label": "Export",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.329,
-      "took": 0.151
+      "at": 3.063,
+      "took": 0.148,
+      "chain": false
     },
     {
       "n": 9,
       "kind": "click",
       "label": "Export (download)",
       "keystrokes": 0,
-      "chain": false,
-      "at": 2.562,
-      "took": 0.139
+      "at": 5.311,
+      "took": 0.498,
+      "chain": false
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.177,
-      "seconds": 0.267
+      "at": 0.143,
+      "seconds": 0.269
     },
     {
       "label": "contact list, search focused",
-      "at": 0.444,
-      "seconds": 0.007
+      "at": 0.412,
+      "seconds": 0.013
     },
     {
       "label": "search options",
-      "at": 0.508,
-      "seconds": 0.005
+      "at": 0.624,
+      "seconds": 0.008
     },
     {
       "label": "filtered list",
-      "at": 0.564,
-      "seconds": 1.096
+      "at": 0.722,
+      "seconds": 1.399
     },
     {
       "label": "select-all offer",
-      "at": 1.99,
-      "seconds": 0.041
+      "at": 2.329,
+      "seconds": 0.617
     },
     {
       "label": "export dialog",
-      "at": 2.48,
-      "seconds": 0.081
+      "at": 3.211,
+      "seconds": 1.522
     },
     {
       "label": "file received",
-      "at": 2.701,
-      "seconds": 2.381
+      "at": 5.808,
+      "seconds": 2.89
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "e8d42fd32f188e47.jpg",
+      "file": "da2e82c5ee3737c0.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/e8d42fd32f188e47.jpg"
+      "path": "gauntlet/reference/odoo/shots/da2e82c5ee3737c0.jpg"
     },
     {
-      "moment": "export dialog",
-      "file": "4debfe810efa865b.jpg",
-      "at": 2.561,
-      "path": "gauntlet/reference/odoo/shots/4debfe810efa865b.jpg"
+      "moment": "export options chosen",
+      "file": "897f48104be30f52.jpg",
+      "at": 4.734,
+      "path": "gauntlet/reference/odoo/shots/897f48104be30f52.jpg"
     },
     {
       "moment": "done",
-      "file": "8cfab1c12c4fec33.jpg",
-      "at": 5.082,
-      "path": "gauntlet/reference/odoo/shots/8cfab1c12c4fec33.jpg"
+      "file": "0dfae13885321317.jpg",
+      "at": 8.698,
+      "path": "gauntlet/reference/odoo/shots/0dfae13885321317.jpg"
     }
   ],
   "verification": {
@@ -212,15 +213,25 @@
   "path_notes": "Apps menu > Contacts > type the tag > choose \"Search Tag for\" > header check box > Select all > Actions > Export > Export (the dialog proposes the list's columns: name, e-mail, phone and more).",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/export-filtered-list.mjs",
-    "sha256": "6e780cab27232e1ca7d8a65b2d4c38e71fb297d2c2f17da63509800769cde25c"
+    "sha256": "fd964bb96c4e193ea5862f91455c0e2dfdc7e06cb76f7477afb5d61b6e3c12aa"
   },
   "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/export-filtered-list.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/export-filtered-list-20261003T041016-0dda.json",
-    "gauntlet/reference/odoo/results/export-filtered-list-20261003T041028-0b05.json",
-    "gauntlet/reference/odoo/results/export-filtered-list-20261003T041038-4b70.json"
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T144215-825f.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T144228-8279.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T144246-a4af.json"
   ]
 }

@@ -1,0 +1,166 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p00-foundation-r3 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 632B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.73kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.9s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 ...
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.6s
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 DONE 0.6s
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#7 DONE 0.6s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.0s
+
+#9 [stage-2 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#9 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.0s done
+#9 DONE 0.0s
+
+#10 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.0s done
+#10 DONE 0.0s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.0s done
+#11 DONE 0.0s
+
+#12 [internal] load build context
+#12 transferring context: 1.05MB 0.2s done
+#12 DONE 0.2s
+
+#13 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#13 CACHED
+
+#14 [web 5/6] COPY web/ ./
+#14 CACHED
+
+#15 [web 2/6] WORKDIR /web
+#15 CACHED
+
+#16 [stage-2 2/4] WORKDIR /app
+#16 CACHED
+
+#17 [web 3/6] COPY web/package.json web/package-lock.json ./
+#17 CACHED
+
+#18 [build 5/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#18 CACHED
+
+#19 [build 3/6] COPY global.json Directory.Build.props Directory.Packages.props ./
+#19 CACHED
+
+#20 [build 6/6] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#20 CACHED
+
+#21 [stage-2 3/4] COPY --from=build /app ./
+#21 CACHED
+
+#22 [build 2/6] WORKDIR /src
+#22 CACHED
+
+#23 [build 4/6] COPY src/ src/
+#23 CACHED
+
+#24 [web 6/6] RUN npm run check && npm run build
+#24 CACHED
+
+#25 [stage-2 4/4] COPY --from=web /web/dist ./wwwroot
+#25 CACHED
+
+#26 exporting to image
+#26 exporting layers done
+#26 exporting manifest sha256:d8501f48403838174371d2e1a765c9d2c0c388e42bf991c6d58ccf5e82095171 done
+#26 exporting config sha256:2e4e9d497a2456f797e682ed5dc6d0530d6a48f06cb5323746704783ae06c012 done
+#26 exporting attestation manifest sha256:f251edf3ab7519b94885e08422d62f8e5372d2a83aa631b119d815c119a15993 0.1s done
+#26 exporting manifest list sha256:daba27aee188a40c499e9f971486d26f3d93f4c7933109c2ab5604099418489b
+#26 exporting manifest list sha256:daba27aee188a40c499e9f971486d26f3d93f4c7933109c2ab5604099418489b 0.1s done
+#26 naming to docker.io/library/erp-app:c-p00-foundation-r3
+#26 naming to docker.io/library/erp-app:c-p00-foundation-r3 0.0s done
+#26 unpacking to docker.io/library/erp-app:c-p00-foundation-r3
+#26 unpacking to docker.io/library/erp-app:c-p00-foundation-r3 0.7s done
+#26 DONE 1.0s
+
+#27 resolving provenance for metadata file
+#27 DONE 0.0s
+ Image erp-app:c-p00-foundation-r3 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p00-foundation-r3_default Creating 
+ Network c-p00-foundation-r3_default Created 
+ Volume c-p00-foundation-r3_db-data Creating 
+ Volume c-p00-foundation-r3_db-data Created 
+ Container c-p00-foundation-r3-db-1 Creating 
+ Container c-p00-foundation-r3-db-1 Created 
+ Container c-p00-foundation-r3-db-1 Starting 
+ Container c-p00-foundation-r3-db-1 Started 
+ Container c-p00-foundation-r3-db-1 Waiting 
+ Container c-p00-foundation-r3-db-1 Healthy 
+ Container c-p00-foundation-r3-db-1 Running 
+ Container c-p00-foundation-r3-setup-1 Creating 
+ Container c-p00-foundation-r3-setup-1 Created 
+Attaching to setup-1
+ Container c-p00-foundation-r3-db-1 Waiting 
+ Container c-p00-foundation-r3-db-1 Healthy 
+ Container c-p00-foundation-r3-setup-1 Starting 
+ Container c-p00-foundation-r3-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 3 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 5 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 66938 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 1442 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p00-foundation-r3-setup-1 Stopping 
+ Container c-p00-foundation-r3-setup-1 Stopped 
+ Container c-p00-foundation-r3-db-1 Running 
+ Container c-p00-foundation-r3-app-1 Creating 
+ Container c-p00-foundation-r3-app-1 Created 
+ Container c-p00-foundation-r3-db-1 Waiting 
+ Container c-p00-foundation-r3-db-1 Healthy 
+ Container c-p00-foundation-r3-setup-1 Starting 
+ Container c-p00-foundation-r3-setup-1 Started 
+ Container c-p00-foundation-r3-setup-1 Waiting 
+ Container c-p00-foundation-r3-setup-1 Exited 
+ Container c-p00-foundation-r3-app-1 Starting 
+ Container c-p00-foundation-r3-app-1 Started 
+
+[1mThe demo is running (95 s): http://localhost:20050[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  API description: http://localhost:20050/api/openapi/v1.json
+  Database:        localhost:20051 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+rc=0 seconds=95

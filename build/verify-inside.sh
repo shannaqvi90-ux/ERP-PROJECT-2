@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Runs inside the toolbox container for ./erp verify. /src is the repository (read-only),
 # /out collects results. Stages: suite (web + .NET builds and every unit, integration and gate
-# test) and e2e (Playwright against the running stack).
+# test) and e2e (Playwright against the running stack, then the comparison harness's built ours
+# drivers as a health check).
 set -euo pipefail
 stage="${1:?stage}"
 out=/out
@@ -27,6 +28,8 @@ case "$stage" in
     npm run --silent typecheck
     npm run --silent check
     npx vitest run --reporter=default --reporter=json --outputFile="$out/vitest.json"
+    # G1 in the browser: the client isolation gate must catch every planted client-side leak.
+    node scripts/plant-self-test.mjs
     npm run --silent build
 
     step "Comparison harness (gauntlet/compare): install and unit tests"
@@ -53,6 +56,14 @@ case "$stage" in
     cd /work/tests/e2e
     npm ci --no-audit --no-fund --loglevel=error
     ERP_E2E_REPORT="$out/e2e.json" npx playwright test
+
+    # Every built ours driver of the comparison harness still does its task on the product as
+    # built (round 3: a list change broke a driver and nothing noticed). A health check: the
+    # drivers' set-up creates the dataset records the clean stack lacks; counts are not compared.
+    step "Comparison harness: built ours drivers against ${ERP_BASE_URL} (health check)"
+    cd /work/gauntlet/compare
+    npm ci --no-audit --no-fund --loglevel=error
+    COMPARE_OURS_URL="$ERP_BASE_URL" node run.mjs --task built --product ours --health --out "$out/ours-health"
     ;;
   *)
     echo "unknown stage $stage" >&2

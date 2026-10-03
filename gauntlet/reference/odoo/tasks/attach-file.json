@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "attach-file-20261003T040311-09fe",
-  "instrument": 3,
+  "run_id": "attach-file-20261003T143508-ea5c",
+  "instrument": 4,
   "task": "attach-file",
   "task_title": "Attach a file to a record",
   "product": "odoo",
   "status": "verified",
   "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
   "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
-  "started_at": "2026-10-03T04:03:11.271Z",
-  "finished_at": "2026-10-03T04:03:16.706Z",
+  "started_at": "2026-10-03T14:35:08.724Z",
+  "finished_at": "2026-10-03T14:35:18.915Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 0.235,
-    "system_wait_seconds": 0.12,
+    "machine_seconds": 0.499,
+    "system_wait_seconds": 0.188,
     "human_seconds": 6.8,
-    "human_plus_wait_seconds": 6.92,
+    "human_plus_wait_seconds": 6.988,
     "klm_operator_counts": {
       "K": 0,
       "P": 3,
@@ -57,54 +57,54 @@
       "kind": "click",
       "label": "paperclip (attachment box)",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.058
+      "took": 0.247,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.066,
-      "took": 0.044
+      "at": 0.253,
+      "took": 0.053,
+      "chain": false
     },
     {
       "n": 3,
       "kind": "file-pick",
       "label": "trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "chain": true,
-      "at": 0.111,
-      "took": 0.01,
-      "file": "trade-licence-TL-2026-73519.pdf"
+      "at": 0.307,
+      "took": 0.014,
+      "file": "trade-licence-TL-2026-73519.pdf",
+      "chain": true
     }
   ],
   "waits": [
     {
       "label": "attachment box",
-      "at": 0.058,
-      "seconds": 0.008
+      "at": 0.247,
+      "seconds": 0.006
     },
     {
       "label": "file listed on the record",
-      "at": 0.121,
-      "seconds": 0.114
+      "at": 0.32,
+      "seconds": 0.178
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "540ccd048e8a3992.jpg",
+      "file": "29156ed776e27e09.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/540ccd048e8a3992.jpg"
+      "path": "gauntlet/reference/odoo/shots/29156ed776e27e09.jpg"
     },
     {
       "moment": "done",
-      "file": "0730af245aa3e821.jpg",
-      "at": 0.235,
-      "path": "gauntlet/reference/odoo/shots/0730af245aa3e821.jpg"
+      "file": "c57375c304ce9205.jpg",
+      "at": 0.499,
+      "path": "gauntlet/reference/odoo/shots/c57375c304ce9205.jpg"
     }
   ],
   "verification": {
@@ -112,7 +112,7 @@
     "details": {
       "attachments": [
         {
-          "id": 100135,
+          "id": 100598,
           "file_size": 417
         }
       ]
@@ -121,15 +121,107 @@
   "path_notes": "Paperclip on the record (it already holds a file, so the attachment box opens) > Attach files > choose the file in the file dialog.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/attach-file.mjs",
-    "sha256": "1fc2b4b3067dc92923c13f1af618f9790d7bcac27eb6b417c7c3ec00ae8449f5"
+    "sha256": "d4b1544f8a141756612382d295962ff00dd6cd3256f6d7309864fae2bbdd3aab"
   },
   "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
   "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/contacts/73531",
+    "path": "/odoo/contacts/73531",
+    "query": "",
+    "fragment": "",
+    "fields": 15,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "name_0",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "parent_id_0",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email_0",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone_0",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street_0",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street2_0",
+        "password": false,
+        "value_length": 23,
+        "value": "Saif Zone, PO Box 68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city_0",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "state_id_0",
+        "password": false,
+        "value_length": 12,
+        "value": "Sharjah (AE)"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country_id_0",
+        "password": false,
+        "value_length": 20,
+        "value": "United Arab Emirates"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "lang_0",
+        "password": false,
+        "value_length": 12,
+        "value": "English (US)"
+      }
+    ],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/attach-file.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/attach-file-20261003T040304-346a.json",
-    "gauntlet/reference/odoo/results/attach-file-20261003T040311-09fe.json",
-    "gauntlet/reference/odoo/results/attach-file-20261003T040316-bb03.json"
+    "gauntlet/reference/odoo/results/attach-file-20261003T143459-0002.json",
+    "gauntlet/reference/odoo/results/attach-file-20261003T143508-ea5c.json",
+    "gauntlet/reference/odoo/results/attach-file-20261003T143518-2570.json"
   ]
 }

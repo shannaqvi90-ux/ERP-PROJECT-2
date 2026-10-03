@@ -5,7 +5,7 @@ import { Icon } from "../../kernel/icons";
 import { translate, useI18n, type Language } from "../../kernel/i18n";
 import { PrintDocument } from "../../kernel/print";
 import { Link, matchRoute, navigate, usePath } from "../../kernel/router";
-import { useSession, type Session } from "../../kernel/session";
+import { sessionUserName, useSession, type Session } from "../../kernel/session";
 import { Keys, chordForAria, useShortcut } from "../../kernel/shortcuts";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { CommandPalette, type PaletteEntry } from "./CommandPalette";
@@ -75,6 +75,7 @@ export function AppShell({ session }: { session: Session }) {
   const [dialog, setDialog] = useState<"palette" | "help" | "preferences" | null>(null);
   const [recent, setRecent] = useState(() => readRecent(session.user.id));
   const tenantName = language === "ar" ? session.tenant.nameAr : session.tenant.nameEn;
+  const userName = sessionUserName(session.user, language);
 
   // The printed time is the moment of printing (Ctrl+P or the palette's Print), not of opening.
   const [printedAt, setPrintedAt] = useState(() => new Date());
@@ -243,12 +244,12 @@ export function AppShell({ session }: { session: Session }) {
           <button
             type="button"
             className="button ghost user-button"
-            aria-label={t("shell.topbar.user", { name: session.user.displayName })}
+            aria-label={t("shell.topbar.user", { name: userName })}
             aria-keyshortcuts={chordForAria(shellChords.preferences)}
             onClick={() => setDialog("preferences")}
           >
             <Icon name="user" />
-            <span className="user-name">{session.user.displayName}</span>
+            <span className="user-name">{userName}</span>
           </button>
           <button type="button" className="button ghost" aria-label={t("shell.signOut")} onClick={() => void signOut()}>
             <Icon name="signOut" />
@@ -267,7 +268,7 @@ export function AppShell({ session }: { session: Session }) {
               numerals={numerals}
               title={t(titleKey)}
               issuer={tenantName}
-              printedBy={session.user.displayName}
+              printedBy={userName}
               printedAt={printedAt}
             >
               <Screen />
@@ -288,7 +289,7 @@ export function AppShell({ session }: { session: Session }) {
         </main>
       </div>
       <footer className="statusbar">
-        <span>{t("shell.status.signedInAs", { name: session.user.displayName, workspace: session.tenant.code })}</span>
+        <span>{t("shell.status.signedInAs", { name: userName, workspace: session.tenant.code })}</span>
         {statusItems.map(({ key, component: Item }) => (
           <span key={key} className="status-item">
             <Item />

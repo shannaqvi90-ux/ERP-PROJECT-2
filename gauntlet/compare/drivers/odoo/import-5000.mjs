@@ -31,7 +31,7 @@ export default {
     await op.waitFor(page.getByRole('button', { name: 'Upload' }).first(), { label: 'import screen' });
     await op.pickFile(page.getByRole('button', { name: 'Upload' }).first(), file, { label: 'contacts-import-5000.csv' });
     await op.waitFor(page.getByRole('button', { name: 'Import', exact: true }).first(), { label: 'column mapping preview' });
-    await op.shot('mapping preview');
+    await op.shot('columns matched');
     await op.click(page.getByRole('button', { name: 'Import', exact: true }).first(), { label: 'Import' });
     await op.waitFor(() => /Imported records/.test(document.querySelector('.o_control_panel')?.innerText || '')
       && /\/\s*5,?000\b/.test(document.querySelector('.o_pager')?.innerText || ''), { label: 'import finished, imported records listed', timeout: 900_000 });

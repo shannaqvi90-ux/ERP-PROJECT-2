@@ -1,0 +1,30 @@
+
+Running 22 tests using 1 worker
+
+  ✓   1 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (7.2s)
+  ✓   2 [chromium] › specs/identity.spec.ts:74:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (3.0s)
+  ✓   3 [chromium] › specs/identity.spec.ts:103:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only (3.8s)
+  ✓   4 [chromium] › specs/identity.spec.ts:148:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted (2.9s)
+  ✓   5 [chromium] › specs/identity.spec.ts:177:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (1.8s)
+  ✓   6 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (1.8s)
+  ✓   7 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (2.0s)
+  ✓   8 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (3.0s)
+  ✓   9 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (1.4s)
+  ✓  10 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (866ms)
+switch to Arabic on the users list: 171 ms
+  ✓  11 [chromium] › specs/shell.spec.ts:26:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (2.6s)
+palette to the Roles screen: 292 ms, 3 steps, 6 keystrokes
+  ✓  12 [chromium] › specs/shell.spec.ts:58:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (2.0s)
+  ✓  13 [chromium] › specs/shell.spec.ts:94:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (1.5s)
+  ✓  14 [chromium] › specs/shell.spec.ts:107:7 › app shell › the palette finds a record and opens it (2.1s)
+  ✓  15 [chromium] › specs/shell.spec.ts:123:7 › app shell › the palette leads from a few record matches to the list of every match (2.2s)
+  ✓  16 [chromium] › specs/shell.spec.ts:141:9 › app shell › at phone width nothing is wider than the window (en) (1.7s)
+  ✓  17 [chromium] › specs/shell.spec.ts:141:9 › app shell › at phone width nothing is wider than the window (ar) (1.5s)
+  ✓  18 [chromium] › specs/shell.spec.ts:162:7 › app shell › the palette offers a user with no roles nothing they cannot open (1.7s)
+  ✓  19 [chromium] › specs/shell.spec.ts:176:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (3.5s)
+  ✓  20 [chromium] › specs/shell.spec.ts:206:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (1.7s)
+  ✓  21 [chromium] › specs/shell.spec.ts:227:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (2.5s)
+  ✓  22 [chromium] › specs/shell.spec.ts:227:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (2.5s)
+
+  22 passed (55.1s)
+rc=0

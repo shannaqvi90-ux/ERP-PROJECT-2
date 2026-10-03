@@ -34,6 +34,10 @@ function Gate() {
         <div className="splash" aria-busy="true">
           {t("shell.loading")}
         </div>
+      ) : state.status === "leaving" ? (
+        <div className="splash" aria-busy="true" role="status">
+          {t("shell.signingOut")}
+        </div>
       ) : state.status === "anonymous" ? (
         <SignInPage />
       ) : (

@@ -9,7 +9,7 @@ async function removeCompanies(ctx) {
     const partners = (await rpc.read('res.company', ids, ['partner_id'])).map(c => c.partner_id[0]);
     try {
       await rpc.unlink('res.company', ids);
-      await rpc.unlink('res.partner', partners).catch(() => {});
+      await rpc.unlink('res.partner', partners).catch(() => { });
     } catch {
       // A company that left traces cannot be deleted; retire it under another name.
       await rpc.write('res.company', ids, { name: `${name} (retired ${Date.now()})`, active: false });
