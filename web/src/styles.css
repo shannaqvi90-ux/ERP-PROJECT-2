@@ -853,6 +853,19 @@ input[aria-invalid="true"] {
   }
 }
 
+/* A live screen wrapped as a printed document adds nothing on screen. */
+.print-document.print-document-screen {
+  background: transparent;
+  color: inherit;
+  max-width: none;
+}
+
+@media print {
+  .print-document-screen .print-letterhead {
+    font-size: 10pt;
+  }
+}
+
 /* Printed documents (kernel/print.tsx): the document's own language and direction. */
 .print-document {
   background: var(--surface);

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { allowed, extensions } from "../../kernel/extensions";
 import { Icon } from "../../kernel/icons";
 import { translate, useI18n, type Language } from "../../kernel/i18n";
+import { PrintDocument } from "../../kernel/print";
 import { Link, matchRoute, navigate, usePath } from "../../kernel/router";
 import { useSession, type Session } from "../../kernel/session";
 import { Keys, chordForAria, useShortcut } from "../../kernel/shortcuts";
@@ -73,6 +75,14 @@ export function AppShell({ session }: { session: Session }) {
   const [dialog, setDialog] = useState<"palette" | "help" | "preferences" | null>(null);
   const [recent, setRecent] = useState(() => readRecent(session.user.id));
   const tenantName = language === "ar" ? session.tenant.nameAr : session.tenant.nameEn;
+
+  // The printed time is the moment of printing (Ctrl+P or the palette's Print), not of opening.
+  const [printedAt, setPrintedAt] = useState(() => new Date());
+  useEffect(() => {
+    const stamp = () => flushSync(() => setPrintedAt(new Date()));
+    window.addEventListener("beforeprint", stamp);
+    return () => window.removeEventListener("beforeprint", stamp);
+  }, []);
   const entry = entryFor(session.menu, path);
 
   const allowedRoute = route && (!route.permission || can(route.permission));
@@ -249,15 +259,19 @@ export function AppShell({ session }: { session: Session }) {
       <div className="frame">
         <NavPane ref={navRef} menu={session.menu} path={path} open={navOpen} />
         <main id="main" ref={mainRef} tabIndex={-1} className="workspace">
-          <div className="print-only print-screen-head">
-            <span>{tenantName}</span>
-            <span>
-              {t("shell.print.printedBy", { name: session.user.displayName })} · {t("shell.print.printedAt", { time: format.dateTime(new Date()) })}
-            </span>
-          </div>
           {path !== "/" && <Breadcrumbs entry={entry} titleKey={titleKey} />}
           {Screen ? (
-            <Screen />
+            <PrintDocument
+              screen
+              language={language}
+              numerals={numerals}
+              title={t(titleKey)}
+              issuer={tenantName}
+              printedBy={session.user.displayName}
+              printedAt={printedAt}
+            >
+              <Screen />
+            </PrintDocument>
           ) : route ? (
             <section className="empty-state" role="alert">
               <h1>{t("shell.noAccess.title")}</h1>
