@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
-import type { BranchRow, Company, Page } from "./types";
+import { companiesChanged, type BranchRow, type Company, type Page } from "./types";
 import {
   CheckField,
   emirates,
@@ -160,6 +160,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
       setErrors({});
       setSaved(true);
       onSaved(result.id);
+      window.dispatchEvent(new Event(companiesChanged));
     } catch (error) {
       const problem = problemOf(error);
       setErrors(problem.fields);
@@ -387,6 +388,7 @@ function CompanyBranches({ companyId }: { companyId: string }) {
       });
       setDraft(emptyBranch);
       setErrors({});
+      window.dispatchEvent(new Event(companiesChanged));
       await load();
       nameRef.current?.focus();
     } catch (error) {

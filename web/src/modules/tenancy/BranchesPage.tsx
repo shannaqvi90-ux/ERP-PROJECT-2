@@ -3,7 +3,7 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { AddressFields } from "./CompanyForm";
-import type { Branch, BranchRow, CompanyRow, Page } from "./types";
+import { companiesChanged, type Branch, type BranchRow, type CompanyRow, type Page } from "./types";
 import {
   CheckField,
   gridKeys,
@@ -294,6 +294,7 @@ function BranchForm({
       setErrors({});
       setSaved(true);
       onSaved(result.id);
+      window.dispatchEvent(new Event(companiesChanged));
     } catch (error) {
       const problem = problemOf(error);
       setErrors(problem.fields);

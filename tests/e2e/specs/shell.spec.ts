@@ -195,7 +195,8 @@ test.describe("app shell", () => {
         checked += await checkAccessibility(page, `${href} (${language})`);
       }
       await page.keyboard.press("Control+K");
-      await expect(page.getByRole("combobox")).toBeFocused();
+      // The palette's own box (screens such as the workspace settings have selects too).
+      await expect(page.getByRole("dialog").getByRole("combobox")).toBeFocused();
       checked += await checkAccessibility(page, `command palette (${language})`);
       await page.keyboard.press("Escape");
       await page.keyboard.press("Control+/");

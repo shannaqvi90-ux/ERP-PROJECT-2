@@ -89,3 +89,6 @@ export type UserAccess = { userId: string; displayName: string; email: string; i
 
 /** Fired on window when the user switches their working company or branch. */
 export const workplaceChanged = "erp:workplace-changed";
+
+/** Fired on window when a company or branch is created or changed (the switcher reloads). */
+export const companiesChanged = "erp:companies-changed";

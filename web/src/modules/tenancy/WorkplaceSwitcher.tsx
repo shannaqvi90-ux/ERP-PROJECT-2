@@ -3,7 +3,7 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { useShortcut } from "../../kernel/shortcuts";
-import { workplaceChanged, type Workplace } from "./types";
+import { companiesChanged, workplaceChanged, type Workplace } from "./types";
 import { problemOf, useLocalName } from "./ui";
 
 /** Up to this many companies, every other company has its own one-click button. */
@@ -65,6 +65,10 @@ export function WorkplaceSwitcher() {
     setFilter("");
     setMessage(null);
     setOpen(true);
+    // Offer what exists now (companies and branches may have been added since sign-in).
+    api<Workplace>("GET", "/api/tenancy/workplace")
+      .then(setWorkplace)
+      .catch(() => undefined);
   }, [canSwitch]);
 
   useShortcut({
@@ -84,7 +88,11 @@ export function WorkplaceSwitcher() {
         .catch(() => undefined);
     };
     window.addEventListener(workplaceChanged, reload);
-    return () => window.removeEventListener(workplaceChanged, reload);
+    window.addEventListener(companiesChanged, reload);
+    return () => {
+      window.removeEventListener(workplaceChanged, reload);
+      window.removeEventListener(companiesChanged, reload);
+    };
   }, []);
 
   useEffect(() => {
