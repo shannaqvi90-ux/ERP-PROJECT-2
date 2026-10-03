@@ -13,7 +13,8 @@ namespace Erp.Gates.Tests.G1;
 /// (<see cref="TenantActivity"/>) catches such a leak when it happens; this check catches the
 /// state itself: every piece of process-wide state in the product's own assemblies must be
 /// immutable or reviewed in tests/Gates/process-state-allowlist.txt with the reason it cannot
-/// hold tenant data. Stale entries fail too, so the list stays the true inventory.
+/// hold tenant data. Stale entries fail too, so the list stays the true inventory. Variables
+/// captured by endpoint lambdas count as process-wide state too (<see cref="EndpointClosures"/>).
 /// </summary>
 public sealed class G1ProcessStateTests(GateFixture fixture)
 {
@@ -33,19 +34,36 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
         problems.AddRange(keys.Where(k => !found.Contains(k)).Select(k => $"{k}: reviewed in {AllowlistPath} but no longer exists; remove the entry."));
 
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{inventory.TypesInspected} types, {inventory.FieldsInspected} fields, {inventory.SingletonsInspected} singleton services inspected; {inventory.Findings.Count} reviewed findings");
+            $"{inventory.TypesInspected} types, {inventory.FieldsInspected} fields, {inventory.SingletonsInspected} singleton services inspected, " +
+            $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; {inventory.Findings.Count} reviewed findings");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(inventory.FieldsInspected >= Ratchet.Min("g1.processStateFieldsInspected"),
             $"g1.processStateFieldsInspected: {inventory.FieldsInspected}; ratchet minimum {Ratchet.Min("g1.processStateFieldsInspected")}");
         Assert.True(inventory.SingletonsInspected >= Ratchet.Min("g1.singletonsInspected"),
             $"g1.singletonsInspected: {inventory.SingletonsInspected}; ratchet minimum {Ratchet.Min("g1.singletonsInspected")}");
+        Assert.True(inventory.EndpointsWalked >= Ratchet.Min("g1.endpointDelegatesWalked"),
+            $"g1.endpointDelegatesWalked: {inventory.EndpointsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegatesWalked")}");
+        Assert.True(inventory.ClosuresInspected >= Ratchet.Min("g1.endpointClosuresInspected"),
+            $"g1.endpointClosuresInspected: {inventory.ClosuresInspected}; ratchet minimum {Ratchet.Min("g1.endpointClosuresInspected")}");
+        Assert.True(inventory.DelegateObjectsWalked >= Ratchet.Min("g1.endpointDelegateObjectsWalked"),
+            $"g1.endpointDelegateObjectsWalked: {inventory.DelegateObjectsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegateObjectsWalked")}");
     }
 }
 
 /// <summary>One piece of process-wide state and why it is flagged.</summary>
 public sealed record ProcessStateFinding(string Key, string Why);
 
-public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Findings, int TypesInspected, int FieldsInspected, int SingletonsInspected);
+public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Findings, int TypesInspected, int FieldsInspected, int SingletonsInspected)
+{
+    /// <summary>Endpoints whose request delegate was walked for captured state.</summary>
+    public int EndpointsWalked { get; init; }
+
+    /// <summary>Closures (captured variables) of the product reached from endpoint delegates.</summary>
+    public int ClosuresInspected { get; init; }
+
+    /// <summary>Objects visited while walking endpoint delegates (a walk that reaches nothing is blind).</summary>
+    public int DelegateObjectsWalked { get; init; }
+}
 
 /// <summary>Finds process-wide state by reflection over the product's assemblies and the app's
 /// service registrations.</summary>
@@ -83,6 +101,11 @@ public static class ProcessState
         }
         var inventory = InspectTypes(assemblies.SelectMany(LoadableTypes), singletons.Distinct(), serviceTypes);
         var findings = inventory.Findings.ToList();
+        // Variables captured by endpoint lambdas live as long as the endpoint: walk every endpoint's
+        // delegate to the product closures and objects it holds.
+        var closures = EndpointClosures.Inspect(factory.Services, assemblies, serviceTypes);
+        findings.AddRange(closures.Findings);
+        inventory = inventory with { EndpointsWalked = closures.Endpoints, ClosuresInspected = closures.Closures, DelegateObjectsWalked = closures.ObjectsWalked };
         foreach (var name in CacheServices)
         {
             if (descriptors.Any(d => d.ServiceType.FullName == name))
@@ -139,7 +162,7 @@ public static class ProcessState
         return new ProcessStateInventory(findings.DistinctBy(f => f.Key).ToList(), typeCount, fieldCount, singletonCount);
     }
 
-    private static string? Problem(FieldInfo field, IReadOnlySet<Type> serviceTypes)
+    internal static string? Problem(FieldInfo field, IReadOnlySet<Type> serviceTypes)
     {
         var type = field.FieldType;
         var isService = serviceTypes.Contains(type) || type == typeof(IServiceProvider) ||
@@ -157,6 +180,9 @@ public static class ProcessState
         }
         return $"a read-only field that holds a mutable {Describe(type)}";
     }
+
+    /// <summary>True when instances of the type cannot change (see <see cref="IsImmutable"/>).</summary>
+    public static bool IsImmutableType(Type type) => IsImmutable(type);
 
     private static readonly Dictionary<Type, bool> Immutability = [];
     private static readonly Lock ImmutabilityLock = new();

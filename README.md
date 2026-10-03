@@ -70,9 +70,20 @@ that failed, on that account; administrators see the sign-in history and can unb
 
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
-existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Code that
-needs to read across tenants (a SECURITY DEFINER function) must be listed with its callers in
-`tests/Gates/security-definer-callers.txt`.
+existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Every
+header, query parameter and cookie the running app reads gets the other tenant's id and code, and
+every response header is judged like the body. The tenant comes only from the session: inside a
+permissioned request `ErpDbSession` refuses any other tenant, and the gate traces every binding and
+every `set_config`/`SET` statement to the code that sent it. Code that needs to read across tenants
+(a SECURITY DEFINER function) must be listed with its callers in
+`tests/Gates/security-definer-callers.txt`; code that binds a tenant, changes session settings,
+switches off the tenant filter or opens its own connection is reviewed in
+`tests/Gates/tenant-bypass-sources.txt`. Variables captured by endpoint lambdas count as
+process-wide state (`tests/Gates/process-state-allowlist.txt`).
+
+GET and HEAD requests (and endpoints marked `.ReadOnlyOperation()`) run in a read-only
+transaction. A POST, PUT, PATCH or DELETE never declares a `*.read` permission unless it is marked
+read-only or reviewed in `tests/Gates/read-permission-writes.txt`.
 
 Behind a reverse proxy, set `Erp__Http__KnownProxies` (or `Erp__Http__KnownNetworks`) so sign-in
 rate limits see the client address.

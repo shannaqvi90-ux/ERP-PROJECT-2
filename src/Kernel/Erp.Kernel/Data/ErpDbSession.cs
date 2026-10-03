@@ -1,4 +1,5 @@
 using System.Data;
+using Microsoft.AspNetCore.Http;
 using Npgsql;
 
 namespace Erp.Kernel.Data;
@@ -29,10 +30,15 @@ public interface ITenantContext
 public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
 {
     private Guid? _tenantId;
+    private readonly IHttpContextAccessor? _http;
 
-    public ErpDbSession(NpgsqlDataSource dataSource)
+    /// <param name="http">The request this unit of work serves, if any: inside a request to a
+    /// permissioned endpoint only the signed-in user's tenant may be bound (see
+    /// <see cref="TenantBinding"/>).</param>
+    public ErpDbSession(NpgsqlDataSource dataSource, IHttpContextAccessor? http = null)
     {
         Connection = dataSource.CreateConnection();
+        _http = http;
     }
 
     public NpgsqlConnection Connection { get; }
@@ -64,6 +70,8 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
         {
             throw new ArgumentException("Tenant id is empty.", nameof(tenantId));
         }
+        using var bindActivity = TenantBinding.StartBind(tenantId, actorKind);
+        TenantBinding.Check(_http?.HttpContext, tenantId);
         if (Transaction is not null)
         {
             if (_tenantId == tenantId && ActorId == actorId)
@@ -77,6 +85,13 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             await Connection.OpenAsync(cancellationToken);
         }
         Transaction = await Connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        if (_http?.HttpContext is { } request && Http.ReadOnlyRequests.Applies(request))
+        {
+            // A request that only reads (GET, HEAD, ReadOnlyOperation): PostgreSQL refuses every
+            // write in this transaction, so a read permission can never change data.
+            await MakeReadOnlyAsync(cancellationToken);
+        }
+
         await using (var command = new NpgsqlCommand(
             "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
             "set_config('app.actor_id', @actor, true), " +
@@ -108,6 +123,20 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             await Connection.OpenAsync(cancellationToken);
         }
         return Connection;
+    }
+
+    /// <summary>Make the current transaction read-only: PostgreSQL then refuses every write until
+    /// it ends. Requests that only read (GET, HEAD and endpoints marked read-only) run this way, so
+    /// a read permission can never change data.</summary>
+    public async Task MakeReadOnlyAsync(CancellationToken cancellationToken = default)
+    {
+        if (Transaction is null)
+        {
+            return;
+        }
+        using var activity = TenantBinding.StartReadOnly();
+        await using var command = new NpgsqlCommand("SET TRANSACTION READ ONLY", Connection, Transaction);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)

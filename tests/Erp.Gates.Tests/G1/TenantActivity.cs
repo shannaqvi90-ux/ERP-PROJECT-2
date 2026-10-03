@@ -288,6 +288,7 @@ public sealed class TenantActivity
         var text = await response.Content.ReadAsStringAsync();
         var status = (int)response.StatusCode;
         var location = response.Headers.Location?.ToString() ?? "";
+        var headers = ResponseHeaders.Text(response);
         Interlocked.Increment(ref _requests);
         if (method == "GET" && status is >= 200 and < 300)
         {
@@ -300,9 +301,14 @@ public sealed class TenantActivity
         if (_forbidden is { } forbidden)
         {
             Interlocked.Increment(ref _reverseChecks);
-            if ((forbidden.Find(text) ?? forbidden.Find(location)) is { } marker)
+            if (forbidden.Find(text) is { } marker)
             {
                 lock (_lock) Leaks.Add($"{actor.Name} → {label} → {status}: response to tenant {_tenant.Code} contains the attacking tenant's marker {marker}");
+            }
+            else if (forbidden.Find(headers) is { } headerMarker)
+            {
+                var line = headers.Split('\n').FirstOrDefault(h => forbidden.Find(h) is not null) ?? "";
+                lock (_lock) Leaks.Add($"{actor.Name} → {label} → {status}: a response header to tenant {_tenant.Code} contains the attacking tenant's marker {headerMarker} ({line})");
             }
         }
         return (status, text, location);
@@ -421,7 +427,7 @@ public sealed class TenantActivity
 
     /// <summary>An own id for a field such as <c>roleIds</c>: the first id of the table named
     /// like the field (roles), else the tenant id.</summary>
-    private static string OwnIdFor(string field, TenantSnapshot own)
+    internal static string OwnIdFor(string field, TenantSnapshot own)
     {
         var stem = field.EndsWith("ids", StringComparison.Ordinal) ? field[..^3] : field.EndsWith("id", StringComparison.Ordinal) ? field[..^2] : field;
         if (stem.Length > 0)
