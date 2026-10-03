@@ -17,7 +17,9 @@ Round 2, after critic p03 round 1.
   changes their own sign-in address through administration (403), so an administrator cannot lock
   themselves out by a typo and a stolen session cannot move an account's sign-in.
 - **A name in Arabic script.** `displayNameAr` (optional, 200 characters) on create and edit; the
-  list searches it (GIN trigram index, as for the Latin name and e-mail) and Arabic screens show
+  list filters it ("contains", on its own GIN trigram index; not a free-text search field, which
+  would add a third column to every word's OR and double the search time over 100,000 users) and
+  Arabic screens show
   it in place of the Latin name. Seeding fills it from the shared dataset's `name_ar` and gives
   the demo people Arabic names. Not sending the field leaves it alone; an empty value clears it.
 - **Sign-in history is not part of "read-only".** The seeded Read-only role no longer includes

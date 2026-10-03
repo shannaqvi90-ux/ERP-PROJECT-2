@@ -114,7 +114,7 @@ public sealed class UserCorrectionsTests(IdentityFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task A_user_has_a_name_in_Arabic_that_the_list_searches()
+    public async Task A_user_has_a_name_in_Arabic_that_the_list_filters()
     {
         using var admin = await Env.SignInAsync(AdminA);
         var tag = Guid.NewGuid().ToString("N")[..6];
@@ -122,7 +122,7 @@ public sealed class UserCorrectionsTests(IdentityFixture fixture) : IClassFixtur
             new { email = NewEmail("majid"), displayName = $"Majid Pillai {tag}", displayNameAr = $"ماجد بيلاي {tag}", language = "ar", roleIds = Array.Empty<Guid>() }));
         Assert.Equal($"ماجد بيلاي {tag}", user.GetProperty("displayNameAr").GetString());
 
-        var found = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?search={Uri.EscapeDataString($"ماجد {tag}")}");
+        var found = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?filter={Uri.EscapeDataString($"displayNameAr contains 'ماجد بيلاي {tag}'")}");
         Assert.Equal(1, found.GetProperty("total").GetInt32());
         Assert.Equal(user.GetProperty("id").GetGuid(), found.GetProperty("items")[0].GetProperty("id").GetGuid());
 
