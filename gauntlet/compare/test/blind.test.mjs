@@ -31,6 +31,18 @@ test('both products have a branding profile; extra brand words are added', () =>
   assert.throws(() => brandingFor('other'), /unknown product/);
 });
 
+test("the demo data's company names and codes are masked in both products (round 3 blindness finding)", () => {
+  for (const p of ['odoo', 'ours']) {
+    const b = brandingFor(p);
+    assert.ok(b.identity.length >= 1, `${p}: company name`);
+    assert.ok(b.identityExact.length >= 1, `${p}: database or tenant code`);
+  }
+  assert.ok(brandingFor('odoo').identity.includes('Demo Trading LLC'));
+  assert.ok(brandingFor('ours').identity.includes('Al Noor Trading LLC'));
+  assert.ok(brandingFor('ours').identityExact.includes('alnoor'));
+  assert.ok(brandingFor('odoo').identityExact.includes('reference'));
+});
+
 test('letters A and B are assigned at random', () => {
   assert.deepEqual(assignLetters(['ours', 'odoo'], () => 0.1), { ours: 'A', odoo: 'B' });
   assert.deepEqual(assignLetters(['ours', 'odoo'], () => 0.9), { odoo: 'A', ours: 'B' });

@@ -113,6 +113,7 @@ export async function runTask(taskId, productId, opts = {}) {
     path_notes: driver.path || null,
     driver: driverFingerprint(productId, taskId),
     task_notes: task.notes || null,
+    ...(opts.health ? { health_check: true } : {}),
     error: null,
   };
 
@@ -131,8 +132,14 @@ export async function runTask(taskId, productId, opts = {}) {
   for (const [id, variant] of variants) {
     executions.push({ id, path: variant.path || driver.path || null, ...(await execute(task, { ...driver, ...variant }, product, productId, needles, out, opts)) });
   }
-  const primary = executions[0];
+  // The screenshots (and the steps listed beside them) are those of one path: the verified path
+  // that is best on the most metrics (round 3: the review page showed one path's shots beside
+  // another path's counts). Which path they show is recorded.
+  const verifiedRuns = executions.filter(e => e.status === 'verified');
+  const wins = e => METRICS.filter(m => verifiedRuns.every(o => e.counts[m] <= o.counts[m])).length;
+  const primary = verifiedRuns.length ? verifiedRuns.reduce((b, e) => (wins(e) > wins(b) ? e : b)) : executions[0];
   Object.assign(result, {
+    start_state: primary.start_state,
     status: primary.status,
     error: primary.error,
     verification: primary.verification,
@@ -143,7 +150,8 @@ export async function runTask(taskId, productId, opts = {}) {
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
   if (variants.length > 1) {
-    for (const other of executions.slice(1)) {
+    result.screenshots_path = primary.id;
+    for (const other of executions.filter(e => e !== primary)) {
       for (const s of other.screenshots) fs.rmSync(path.join(out.shotsDir, s.file), { force: true });
     }
     const verified = executions.filter(e => e.status === 'verified');
@@ -160,7 +168,7 @@ export async function runTask(taskId, productId, opts = {}) {
         if (m === 'machine_seconds') result.counts.system_wait_seconds = best.counts.system_wait_seconds;
       }
     }
-    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification }));
+    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -195,6 +203,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   // page script; from the start screen on they may only read, and act only through the operator.
   const ctx = {
     task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser: guard(browser),
+    // A driver health check (run.mjs --health): set-up may create the dataset records a task needs.
+    health: !!opts.health,
     useApi(session) {
       if (currentPhase() !== 'free') throw new UncountedAction('signing in to the API inside the measured part');
       apiSession = session;

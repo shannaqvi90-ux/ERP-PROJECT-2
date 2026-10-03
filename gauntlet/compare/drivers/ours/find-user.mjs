@@ -10,10 +10,12 @@ export default {
   path: 'Users (navigation) > search box > type the name > the row with the name > open it: the user\'s record shows the sign-in.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
-    const { login } = ctx.needles.user;
+    const { login, name, lang } = ctx.needles.user;
     const found = await api.get(`/api/identity/users?search=${encodeURIComponent(login)}`);
     if (!found.items.some(u => u.email.toLowerCase() === login.toLowerCase())) {
-      throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
+      // A driver health check (./erp verify, a clean stack without the dataset) creates the one user.
+      if (ctx.health) await api.post('/api/identity/users', { email: login, displayName: name, language: lang === 'ar' ? 'ar' : 'en', password: ctx.product.users.admin.password, roleIds: [] });
+      else throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
     }
   },
   async signIn(ctx) {

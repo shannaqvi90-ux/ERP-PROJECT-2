@@ -9,6 +9,21 @@ async function needleUser(api, ctx) {
   return found.items.find(u => u.email.toLowerCase() === login.toLowerCase()) || null;
 }
 
+/**
+ * The dataset user the task looks for. A comparison needs the product loaded with the dataset; a
+ * driver health check (ctx.health, run by ./erp verify on its clean stack) creates the one user.
+ */
+async function ensureNeedleUser(api, ctx) {
+  let user = await needleUser(api, ctx);
+  if (!user && ctx.health) {
+    const { name, login, lang } = ctx.needles.user;
+    await api.post('/api/identity/users', { email: login, displayName: name, language: lang === 'ar' ? 'ar' : 'en', password: ctx.product.users.admin.password, roleIds: [] });
+    user = await needleUser(api, ctx);
+  }
+  if (!user) throw new Error(`our product does not hold the dataset user ${ctx.needles.user.login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
+  return user;
+}
+
 async function setLanguage(api, user, language) {
   return api.put(`/api/identity/users/${user.id}`, { displayName: user.displayName, language, isActive: user.isActive, roleIds: user.roleIds, version: user.version });
 }
@@ -18,8 +33,7 @@ export default {
   path: 'GET /api/identity/users?search=<name> > PUT /api/identity/users/<id> with the record it returned and language "ar".',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
-    const user = await needleUser(api, ctx);
-    if (!user) throw new Error(`our product does not hold the dataset user ${ctx.needles.user.login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
+    const user = await ensureNeedleUser(api, ctx);
     ctx.state.userId = user.id;
     if (user.language !== 'en') await setLanguage(api, user, 'en');
   },
