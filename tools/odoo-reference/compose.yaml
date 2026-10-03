@@ -1,8 +1,11 @@
 # Odoo Community reference instance for the blind comparison harness.
 # Reference only (CLAUDE.md rule 7): nothing from Odoo is copied into the product.
 # Started and seeded by tools/odoo-reference/up.sh; ports and project name come from the environment.
-# The default project name (b-p01-odoo-rig) and port (8069) are the shared rig every critic reuses.
-name: ${ODOO_REF_PROJECT:-b-p01-odoo-rig}
+# The default project name (odoo-reference) and port (8069) are the shared rig every critic reuses.
+# The shared rig keeps its data in external volumes (compose.shared.yaml, added by up.sh), so no
+# `docker compose down -v` of any project can delete it. Any other project name (a critic's own
+# copy) keeps project-scoped volumes that its own `down -v` removes.
+name: ${ODOO_REF_PROJECT:-odoo-reference}
 
 services:
   db:

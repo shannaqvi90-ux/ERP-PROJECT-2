@@ -45,6 +45,19 @@ public sealed class MoneyTests
         Assert.Throws<InvalidOperationException>(() => a.Add(Money.Money.InBase(1m, CurrencyCode.Aed)));
     }
 
+    [Fact]
+    public void Money_records_its_base_currency_and_only_adds_against_the_same_base()
+    {
+        var aedBase = Money.Money.Create(10m, Usd, 3.6725m, CurrencyCode.Aed);
+        var sarBase = Money.Money.Create(10m, Usd, 3.75m, new CurrencyCode("SAR"));
+        Assert.Equal("AED", aedBase.BaseCurrency);
+        Assert.Equal("SAR", sarBase.BaseCurrency);
+        Assert.Equal("AED", Money.Money.InBase(1m, CurrencyCode.Aed).BaseCurrency);
+        Assert.Equal("AED", aedBase.Negate().BaseCurrency);
+        var sameRateOtherBase = Money.Money.Create(10m, Usd, 3.6725m, new CurrencyCode("SAR"));
+        Assert.Throws<InvalidOperationException>(() => aedBase.Add(sameRateOtherBase));
+    }
+
     [Theory]
     [InlineData("aed")]
     [InlineData("AE")]
@@ -59,7 +72,7 @@ public sealed class MoneyTests
         var options = new JsonSerializerOptions();
         ErpPlatform.ConfigureJson(options);
         var json = JsonSerializer.Serialize(Money.Money.Create(1234.5m, Usd, 3.6725m, CurrencyCode.Aed), options);
-        Assert.Equal("""{"amount":"1234.5","currency":"USD","exchangeRate":"3.6725","baseAmount":"4533.70"}""", json);
+        Assert.Equal("""{"amount":"1234.5","currency":"USD","exchangeRate":"3.6725","baseAmount":"4533.70","baseCurrency":"AED"}""", json);
         var back = JsonSerializer.Deserialize<decimal>("\"0.1\"", options);
         Assert.Equal(0.1m, back);
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<decimal>("\"1e3\"", options));

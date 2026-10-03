@@ -63,3 +63,36 @@ test('the blind review page shows neutral captions, never the moments a driver n
 test('a placeholder naming the vendor is cleared, not painted over', () => {
   assert.ok(!BRANDING.odoo.selectors.some(s => s.startsWith('[placeholder')), 'a mask over a filled-in field would single the product out');
 });
+
+test('a side-by-side folder keeps the blind part (shots, review page) apart from the key and results', async () => {
+  const { layout, writeResult, NEUTRAL_FILE_TIME } = await import('../lib/runner.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blind-layout-'));
+  try {
+    const out = layout(dir);
+    assert.equal(out.shotsDir, path.join(dir, 'blind', 'shots'));
+    assert.equal(path.dirname(out.keyFile), dir);
+    assert.ok(!out.keyFile.startsWith(out.blindDir) && !out.resultsDir.startsWith(out.blindDir));
+    fs.mkdirSync(out.shotsDir, { recursive: true });
+    const files = ['1111111111111111.jpg', '2222222222222222.jpg'];
+    for (const f of files) fs.writeFileSync(path.join(out.shotsDir, f), 'x');
+    writeResult({ task: 'find-record', product: 'odoo', run_id: 'r1', screenshots: files.map((file, i) => ({ file, moment: i ? 'done' : 'start' })) }, out);
+    // File times are neutral: nothing about the order of the runs survives in them.
+    for (const f of files) assert.equal(fs.statSync(path.join(out.shotsDir, f)).mtime.getTime(), NEUTRAL_FILE_TIME.getTime());
+    const runs = { ours: { status: 'verified', screenshots: [{ file: files[0], moment: 'start' }] }, odoo: { status: 'verified', screenshots: [{ file: files[1], moment: 'start' }] } };
+    const review = writeReview(dir, [{ cmp: { task: 'find-record' }, runs }]);
+    assert.equal(path.dirname(review), out.blindDir, 'review.html sits in blind/');
+    assert.deepEqual(fs.readdirSync(out.blindDir).sort(), ['review.html', 'shots']);
+    assert.ok(fs.existsSync(path.join(dir, 'key.json')) && !fs.existsSync(path.join(out.blindDir, 'key.json')));
+    assert.match(fs.readFileSync(review, 'utf8'), /src="shots\/1111111111111111\.jpg"/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('side by side, the products run in a random order per task', async () => {
+  const { productOrder } = await import('../lib/blind.mjs');
+  assert.deepEqual(productOrder(['ours', 'odoo'], () => 0.9), ['ours', 'odoo']);
+  assert.deepEqual(productOrder(['ours', 'odoo'], () => 0.1), ['odoo', 'ours']);
+  const seen = new Set();
+  for (let i = 0; i < 200; i++) seen.add(productOrder(['ours', 'odoo']).join());
+  assert.equal(seen.size, 2, 'both orders occur');
+  assert.deepEqual(productOrder(['odoo']), ['odoo']);
+});

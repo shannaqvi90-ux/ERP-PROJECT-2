@@ -10,7 +10,7 @@
 //   contacts-import-5000.csv  5,000 new contacts for the import task (none exist in contacts.csv)
 //   users.csv                 100,000 users
 //   rates.csv                 100,000 exchange rates (50 currencies x 2,000 days, AED base)
-//   needles.json              the records tasks look for, and the expected row counts
+//   needles.json              the records tasks look for (a contact, a user), and the expected row counts
 //   manifest.json             generator version and SHA-256 of every file
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,7 +18,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { FIRST, LAST, BIZ_A, BIZ_B, SUFFIX, EMIRATES, COUNTRIES, TAGS, CURRENCIES } from './names.mjs';
 
-export const GENERATOR_VERSION = 2;
+export const GENERATOR_VERSION = 3;
 export const COUNTS = Object.freeze({ contacts: 100_000, import: 5_000, users: 100_000, rates: 100_000 });
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_OUT = path.join(here, 'out');
@@ -193,6 +193,12 @@ export function generate({ out = DEFAULT_OUT, force = false } = {}) {
   if (needleHits !== 1) throw new Error(`needle name must occur exactly once, found ${needleHits}`);
   const contactNames = new Set(contacts.map(c => c.name));
   if (imports.some(i => contactNames.has(i.Name) && i.Name.match(/\d{4}$/))) throw new Error('import file overlaps the contact list');
+  // The user "find one user among 100,000" and the API task look for: the first user from row
+  // 68,311 on whose name occurs exactly once across every list (users.csv itself is unchanged).
+  const nameCounts = new Map();
+  for (const n of allNames) nameCounts.set(n, (nameCounts.get(n) || 0) + 1);
+  const userNeedle = users.slice(68_310).find(u => nameCounts.get(u.name) === 1);
+  if (!userNeedle) throw new Error('no user with a unique name for the user needle');
   const needle = contacts[NEEDLE.index - 1];
   const parent = contacts[NEEDLE.parentIndex - 1];
   const files = {
@@ -203,6 +209,7 @@ export function generate({ out = DEFAULT_OUT, force = false } = {}) {
   };
   const needles = {
     contact: { ref: needle.ref, name: needle.name, name_ar: needle.name_ar, email: needle.email, mobile: needle.mobile, parent_ref: parent.ref, parent_name: parent.name },
+    user: { ref: userNeedle.ref, name: userNeedle.name, name_ar: userNeedle.name_ar, login: userNeedle.login, lang: userNeedle.lang },
     import: { rows: imports.length, first: imports[0].Name, last: imports[imports.length - 1].Name },
     counts: { contacts: contacts.length, companies: contacts.filter(c => c.kind === 'company').length, users: users.length, rates: rates.length },
   };

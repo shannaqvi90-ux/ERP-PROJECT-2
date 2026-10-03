@@ -55,6 +55,9 @@ public sealed class ModuleDescriptor
     public List<Type> IsolationProbes { get; } = [];
     public List<ListDefinition> Lists { get; } = [];
     public List<ModuleCommand> Commands { get; } = [];
+
+    /// <summary>Query bindings of the lists above, by list key.</summary>
+    public Dictionary<string, IListBinding> ListBindings { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
@@ -167,6 +170,21 @@ public sealed class ModuleBuilder
     public static readonly System.Collections.Frozen.FrozenSet<string> ReservedVerbs =
         System.Collections.Frozen.FrozenSet.ToFrozenSet(["bootstrap", "migrate", "seed", "setup"], StringComparer.Ordinal);
 
+    /// <summary>Register a searchable list with its query binding: the binding serves the list
+    /// query contract (search, filter, sort, keyset paging, grouping) for the list's endpoint, which
+    /// reads it back with <see cref="ModuleCatalog.ListBinding{T}"/>. Checked at registration.</summary>
+    public ModuleBuilder List<T>(ListBinding<T> binding) where T : class
+    {
+        var problems = binding.Problems().ToList();
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        List(binding.Definition);
+        _descriptor.ListBindings[binding.Definition.Key] = binding;
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -189,6 +207,17 @@ public sealed class ModuleCatalog
     public IEnumerable<Type> DbContexts => _modules.SelectMany(m => m.DbContexts);
 
     public IEnumerable<ListDefinition> Lists => _modules.SelectMany(m => m.Lists);
+
+    /// <summary>Every registered list's query binding.</summary>
+    public IEnumerable<IListBinding> ListBindings => _modules.SelectMany(m => m.ListBindings.Values);
+
+    /// <summary>The registered list with this key, or null.</summary>
+    public ListDefinition? FindList(string key) => Lists.FirstOrDefault(l => l.Key == key);
+
+    /// <summary>The query binding of a registered list over rows of <typeparamref name="T"/>.</summary>
+    public ListBinding<T> ListBinding<T>(string key) where T : class =>
+        _modules.Select(m => m.ListBindings.GetValueOrDefault(key)).OfType<ListBinding<T>>().FirstOrDefault()
+        ?? throw new InvalidOperationException($"List '{key}' has no query binding over {typeof(T).Name}.");
 
     public IEnumerable<MenuEntry> Menu => _modules.SelectMany(m => m.Menu).OrderBy(m => m.Order).ThenBy(m => m.Key, StringComparer.Ordinal);
 

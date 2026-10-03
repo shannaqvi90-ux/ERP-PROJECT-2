@@ -67,6 +67,57 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     }
 
     [Fact]
+    public void No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+    {
+        var result = ReadPermissionWrites.Check(Endpoints);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.True(result.StateChangingChecked >= Ratchet.Min("g2.stateChangingEndpointsChecked"),
+            $"g2.stateChangingEndpointsChecked: {result.StateChangingChecked}; ratchet minimum {Ratchet.Min("g2.stateChangingEndpointsChecked")}");
+    }
+
+    [Fact]
+    public async Task Requests_that_only_read_cannot_write()
+    {
+        // Every GET runs in a read-only transaction: PostgreSQL refuses a write in it, whoever
+        // bound the transaction, so a read permission (and a forged cross-site GET, which the CSRF
+        // defence lets through) can never change data.
+        await using var scope = Env.Factory.Services.CreateAsyncScope();
+        var http = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        http.Request.Method = HttpMethods.Get;
+        var accessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        accessor.HttpContext = http;
+        try
+        {
+            var unit = scope.ServiceProvider.GetRequiredService<Erp.Kernel.Data.ErpDbSession>();
+            await unit.BeginAsync(Env.TenantA.Id, null, "user");
+            await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en", unit.Connection, unit.Transaction);
+            var error = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => write.ExecuteNonQueryAsync());
+            Assert.Equal(Npgsql.PostgresErrorCodes.ReadOnlySqlTransaction, error.SqlState);
+        }
+        finally
+        {
+            accessor.HttpContext = null;
+        }
+
+        // The same unit of work for a POST writes normally.
+        await using var postScope = Env.Factory.Services.CreateAsyncScope();
+        var postAccessor = postScope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        postAccessor.HttpContext = new DefaultHttpContext { RequestServices = postScope.ServiceProvider, Request = { Method = HttpMethods.Post } };
+        try
+        {
+            var unit = postScope.ServiceProvider.GetRequiredService<Erp.Kernel.Data.ErpDbSession>();
+            await unit.BeginAsync(Env.TenantA.Id, null, "user");
+            await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en", unit.Connection, unit.Transaction);
+            Assert.Equal(1, await write.ExecuteNonQueryAsync());
+            await unit.RollbackAsync();
+        }
+        finally
+        {
+            postAccessor.HttpContext = null;
+        }
+    }
+
+    [Fact]
     public void Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
     {
         var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -307,7 +358,62 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             using var noAccess = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
             using var denied = await noAccess.GetAsync(list.Endpoint);
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+
+            // The list's definition and the user's own views come with the list's permission alone;
+            // sharing a view with everyone needs the share permission as well.
+            foreach (var path in new[] { $"/api/lists/{list.Key}/definition", $"/api/lists/{list.Key}/views" })
+            {
+                using var open = await reader.GetAsync(path);
+                Assert.True(open.StatusCode == HttpStatusCode.OK, $"{path} answered {(int)open.StatusCode} to a user holding {list.Permission}");
+                using var closed = await noAccess.GetAsync(path);
+                Assert.Equal(HttpStatusCode.Forbidden, closed.StatusCode);
+            }
+            var definition = await reader.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/definition");
+            Assert.False(definition.GetProperty("canShare").GetBoolean(), $"{list.Key}: the definition offers sharing to a user who may not share");
+            var columns = list.Columns.Take(1).Select(c => c.Key).ToArray();
+            using var personal = await reader.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = "Mine", columns });
+            Assert.True(personal.StatusCode == HttpStatusCode.Created, $"{list.Key}: saving a personal view answered {(int)personal.StatusCode}");
+            using var share = await reader.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = "Everyone's", columns });
+            Assert.Equal(HttpStatusCode.Forbidden, share.StatusCode);
         }
+    }
+
+    [Fact]
+    public async Task Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var list = catalog.Lists.First();
+        var columns = list.Columns.Take(1).Select(c => c.Key).ToArray();
+
+        async Task<HttpClient> UserWith(string label, params string[] permissions)
+        {
+            var role = await (await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Share {label}", nameAr = $"مشاركة {label}", permissions }))
+                .Content.ReadFromJsonAsync<JsonElement>();
+            var email = $"g2.share.{label}@{Env.TenantA.EmailDomain}";
+            Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users",
+                new { email, displayName = $"Share {label}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } })).StatusCode);
+            return await Env.SignInAsync(email);
+        }
+
+        // The share permission alone does not reveal a list the user cannot read.
+        using var shareOnly = await UserWith("only", "lists.views.share");
+        using (var created = await shareOnly.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = "Everyone's", columns }))
+        {
+            Assert.Equal(HttpStatusCode.NotFound, created.StatusCode);
+        }
+        using (var definition = await shareOnly.GetAsync($"/api/lists/{list.Key}/definition"))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, definition.StatusCode);
+        }
+
+        // With both, the view is shared and every reader of the list sees it.
+        using var sharer = await UserWith("both", "lists.views.share", list.Permission);
+        Assert.True((await sharer.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/definition")).GetProperty("canShare").GetBoolean());
+        using var shared = await sharer.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = "Everyone's", columns });
+        Assert.Equal(HttpStatusCode.Created, shared.StatusCode);
+        var views = await admin.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/views");
+        Assert.Contains(views.GetProperty("items").EnumerateArray(), v => v.GetProperty("name").GetString() == "Everyone's" && v.GetProperty("isShared").GetBoolean());
     }
 
     [Fact]

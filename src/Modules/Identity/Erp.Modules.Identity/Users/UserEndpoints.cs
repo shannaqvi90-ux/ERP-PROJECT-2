@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
@@ -30,8 +31,6 @@ public sealed record UserDto(
     bool PendingSetup = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SetupCode = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SetupCodeExpiresAt = null);
-
-public sealed record UserPage(IReadOnlyList<UserDto> Items, int Total);
 
 /// <summary>New user. Without a password the user is invited: the response carries a one-time
 /// set-up code to hand over, and the first sign-in chooses a password. With a password,
@@ -76,7 +75,7 @@ internal static class UserEndpoints
     {
         group.MapGet("/users", List)
             .WithName("identity.users.list")
-            .WithSummary("Users of the workspace, newest first, optionally filtered by e-mail or name.")
+            .WithSummary("Users of the workspace, a page at a time: word search on name and e-mail, filters, sort, keyset or offset paging and grouping (the list query contract); newest first by default.")
             .RequirePermission(IdentityPermissions.UsersRead);
 
         group.MapGet("/users/{id:guid}", Get)
@@ -123,23 +122,18 @@ internal static class UserEndpoints
             .RequirePermission(IdentityPermissions.SignInsRead);
     }
 
-    private static async Task<Ok<UserPage>> List(IdentityDbContext db, string? search, int? skip, int? take, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<ListPage<UserDto>>, ProblemHttpResult>> List(
+        IdentityDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
-        var query = db.Users.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(search))
+        var result = await catalog.ListBinding<User>(UsersList.Key).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
+        if (result.Problem is { } problem)
         {
-            var pattern = "%" + EscapeLike(search.Trim().ToLowerInvariant()) + "%";
-            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
+            return problem;
         }
-        var total = await query.CountAsync(cancellationToken);
-        var users = await query.OrderByDescending(u => u.CreatedAt).ThenBy(u => u.Id)
-            .Skip(Math.Max(0, skip ?? 0))
-            .Take(Math.Clamp(take ?? 50, 1, MaxPageSize))
-            .ToListAsync(cancellationToken);
-        var ids = users.Select(u => u.Id).ToList();
+        var ids = result.Rows.Select(u => u.Id).ToList();
         var roles = await RolesOf(db, ids, cancellationToken);
         var pending = await PendingSetupOf(db, ids, cancellationToken);
-        return TypedResults.Ok(new UserPage(users.Select(u => ToDto(u, roles, pending)).ToList(), total));
+        return TypedResults.Ok(result.ToPage(u => ToDto(u, roles, pending)));
     }
 
     private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)
@@ -442,9 +436,6 @@ internal static class UserEndpoints
         u.Id, u.Email, u.DisplayName, u.Language, u.IsActive,
         roles.TryGetValue(u.Id, out var r) ? r : [],
         u.LastSignInAt, u.CreatedAt, u.Version, pending.Contains(u.Id));
-
-    internal static string EscapeLike(string value) =>
-        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal);
 }
 
 internal static class RoleGrants

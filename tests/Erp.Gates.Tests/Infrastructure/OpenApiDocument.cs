@@ -103,13 +103,16 @@ public sealed class OpenApiDocument(JsonElement root)
     }
 
     /// <summary>Build a request body that satisfies the schema's shape, using
-    /// <paramref name="valueFor"/> for every leaf.</summary>
-    public JsonNode? BuildBody(JsonElement schema, Func<string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0) =>
-        BuildBody(schema, (_, type, format, name) => valueFor(type, format, name), propertyName, depth);
+    /// <paramref name="valueFor"/> for every leaf. With <paramref name="useDocumentedValues"/> a
+    /// leaf the document constrains takes its first documented value instead: the first value of
+    /// its <c>enum</c>, else its first <c>examples</c> entry (column keys, sort and filter
+    /// expressions), so a body meant to pass validation does.</summary>
+    public JsonNode? BuildBody(JsonElement schema, Func<string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0, bool useDocumentedValues = false) =>
+        BuildBody(schema, (_, type, format, name) => valueFor(type, format, name), propertyName, depth, useDocumentedValues);
 
     /// <summary>Build a request body, handing <paramref name="valueFor"/> each leaf's own schema
     /// too (so a caller can make a leaf conform to it, see <see cref="Conform"/>).</summary>
-    public JsonNode? BuildBody(JsonElement schema, Func<JsonElement, string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0)
+    public JsonNode? BuildBody(JsonElement schema, Func<JsonElement, string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0, bool useDocumentedValues = false)
     {
         schema = Resolve(schema);
         if (depth > 6)
@@ -126,14 +129,29 @@ public sealed class OpenApiDocument(JsonElement root)
                 {
                     foreach (var property in properties.EnumerateObject())
                     {
-                        obj[property.Name] = BuildBody(property.Value, valueFor, property.Name, depth + 1);
+                        obj[property.Name] = BuildBody(property.Value, valueFor, property.Name, depth + 1, useDocumentedValues);
                     }
                 }
                 return obj;
             case "array":
-                var items = schema.TryGetProperty("items", out var itemSchema) ? BuildBody(itemSchema, valueFor, propertyName, depth + 1) : null;
+                var items = schema.TryGetProperty("items", out var itemSchema) ? BuildBody(itemSchema, valueFor, propertyName, depth + 1, useDocumentedValues) : null;
                 return new JsonArray(items);
             default:
+                if (useDocumentedValues)
+                {
+                    foreach (var documented in new[] { "enum", "examples" })
+                    {
+                        if (schema.TryGetProperty(documented, out var values) && values.ValueKind == JsonValueKind.Array &&
+                            values.EnumerateArray().FirstOrDefault(v => v.ValueKind != JsonValueKind.Null) is { ValueKind: not JsonValueKind.Undefined } first)
+                        {
+                            return JsonNode.Parse(first.GetRawText());
+                        }
+                    }
+                    if (type == "null")
+                    {
+                        return null;
+                    }
+                }
                 return valueFor(schema, type ?? "string", format, propertyName);
         }
     }

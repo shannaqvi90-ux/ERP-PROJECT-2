@@ -1,12 +1,11 @@
-import { openApp, signInAs } from './_common.mjs';
+import { openApp, paletteMenu, signInAs } from './_common.mjs';
 
-export default {
-  built: true,
-  path: 'Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.',
-  async signIn(ctx) { await signInAs(ctx, 'admin'); },
-  async run(op, ctx) {
+/** Two expert paths into Contacts: the apps menu (two clicks) or the command palette (keyboard only). */
+function build(palette) {
+  return async (op, ctx) => {
     const { name, mobile } = ctx.needles.contact;
-    await openApp(op, 'Contacts');
+    if (palette) await paletteMenu(op, '/contacts', 'Contacts');
+    else await openApp(op, 'Contacts');
     await op.waitFor('.o_searchview_input:focus', { label: 'contact list ready, search focused' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').length > 0, { label: 'first page of contacts' });
     await op.type(name, { label: 'contact name' });
@@ -20,7 +19,18 @@ export default {
       return !!form && (form.innerText.includes(m) || [...form.querySelectorAll('input')].some(i => i.value === m));
     }, { label: 'mobile number shown', arg: mobile });
     return { opened: ctx.page.url() };
+  };
+}
+
+export default {
+  built: true,
+  path: 'Contacts by the apps menu or the command palette (the search box has focus) > type the name > Enter > open the single result.',
+  run: build(false),
+  variants: {
+    menus: { path: 'Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.', run: build(false) },
+    palette: { path: 'Ctrl+K > type "/contacts" > Enter (the search box has focus) > type the name > Enter > open the single result.', run: build(true) },
   },
+  async signIn(ctx) { await signInAs(ctx, 'admin'); },
   async verify(ctx, outcome) {
     const { name, mobile } = ctx.needles.contact;
     const shown = await ctx.page.evaluate(() => ({

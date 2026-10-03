@@ -186,6 +186,30 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
     }
 
     [Fact]
+    public async Task Leakproof_functions_are_postgres_defaults_or_reviewed()
+    {
+        // A fresh database on the same server shows PostgreSQL's own leakproof set.
+        var fresh = new NpgsqlConnectionStringBuilder(Env.AdminConnectionString) { Database = "postgres" }.ConnectionString;
+        const string sql = """
+            SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')'
+              FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+             WHERE p.proleakproof
+            """;
+        await using var reference = new NpgsqlConnection(fresh);
+        await reference.OpenAsync();
+        var defaults = (await DbCatalog.ReadAsync(reference, sql, r => r.GetString(0))).ToHashSet(StringComparer.Ordinal);
+        await using var admin = await Env.OpenAdminAsync();
+        var actual = await DbCatalog.ReadAsync(admin, sql, r => r.GetString(0));
+        Assert.True(defaults.Count > 100, $"Only {defaults.Count} leakproof functions in a fresh database; the comparison is blind");
+        var changed = actual.Where(f => !defaults.Contains(f)).Order(StringComparer.Ordinal).ToList();
+        var reviewed = Repo.ReadReviewedList("tests/Gates/leakproof-allowlist.txt");
+        Assert.All(reviewed, r => Assert.False(string.IsNullOrWhiteSpace(r.Reason), $"{r.Entry} needs a reason"));
+        Assert.Equal(reviewed.Select(r => r.Entry).Order(StringComparer.Ordinal), changed);
+        Assert.True(changed.Count <= Ratchet.Max("g1.leakproofChanges"),
+            $"{changed.Count} functions marked leakproof beyond PostgreSQL's defaults; ratchet maximum {Ratchet.Max("g1.leakproofChanges")}");
+    }
+
+    [Fact]
     public async Task Foreign_keys_between_tenant_tables_include_the_tenant()
     {
         await using var admin = await Env.OpenAdminAsync();

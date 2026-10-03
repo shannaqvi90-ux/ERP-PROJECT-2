@@ -1,0 +1,12 @@
+# Endpoints that change data (POST, PUT, PATCH, DELETE, not marked .ReadOnlyOperation()) while
+# declaring a read permission (*.read, *.view, *.list, *.search). A read permission must never be
+# enough to change shared data; list an endpoint here only when a reader may legitimately make the
+# change (for example saving their own view of a list they may read), with that reason.
+# The G2 gate fails on an unreviewed endpoint and on a stale entry.
+# Format: METHOD /route/pattern  # reason
+POST /api/lists/identity.roles/views  # a reader saves their own view of a list they may read
+PUT /api/lists/identity.roles/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/identity.roles/views/{id:guid}  # a reader saves their own view of a list they may read
+POST /api/lists/identity.users/views  # a reader saves their own view of a list they may read
+PUT /api/lists/identity.users/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/identity.users/views/{id:guid}  # a reader saves their own view of a list they may read

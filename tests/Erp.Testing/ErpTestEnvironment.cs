@@ -187,6 +187,11 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
         }
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
         builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
-        builder.ConfigureTestServices(services => _descriptors = services.ToList());
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddSingleton<RequestInputRecorder>();
+            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, RequestInputRecorder.StartupFilter>();
+            _descriptors = services.ToList();
+        });
     }
 }

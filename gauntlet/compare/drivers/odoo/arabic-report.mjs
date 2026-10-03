@@ -26,16 +26,17 @@ export default {
   async signIn(ctx) {
     await signInAs(ctx, 'admin');
     await openRecord(ctx, 'purchase.order', ctx.state.po);
-  },
-  async run(op, ctx) {
-    const page = op.page;
     // The context the client sends with the print request: the document is rendered with it.
-    page.on('request', r => {
+    // The listener is registered here, outside the measured part; it only reads the request.
+    ctx.page.on('request', r => {
       if (r.url().endsWith('/report/download')) {
         const m = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(r.postData() || '');
         if (m) ctx.state.printContext = JSON.parse(m[1]);
       }
     });
+  },
+  async run(op, ctx) {
+    const page = op.page;
     await op.click('button.o_user_menu', { label: 'user menu' });
     await op.click(page.locator('.o-dropdown--menu .dropdown-item', { hasText: 'My Preferences' }), { label: 'My Preferences' });
     await op.waitFor('.modal .o_field_widget[name="lang"] input', { label: 'preferences dialog' });

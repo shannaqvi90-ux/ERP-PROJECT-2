@@ -1,0 +1,6 @@
+# Endpoints reviewed to bind a unit of work to a tenant other than the signed-in principal's.
+# Everywhere else the tenant comes only from the session: the G1 HTTP attack traces every binding
+# (ErpDbSession.BeginAsync, TenantBinding activity) made inside a request and fails when one binds
+# any tenant but the request principal's, from an endpoint not listed here.
+# Format: endpoint:<endpoint name>  # reason
+endpoint:auth.signIn  # Sign-in has no principal yet (or a previous user's): it binds the tenant of the account whose e-mail and password were given, to check them and record the attempt.

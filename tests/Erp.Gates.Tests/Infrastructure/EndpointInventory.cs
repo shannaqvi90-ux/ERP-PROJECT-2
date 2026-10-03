@@ -17,6 +17,10 @@ public sealed partial record ApiEndpoint(
     bool InOpenApi)
 {
     public string Permission => Permissions.Single();
+
+    /// <summary>The endpoint is marked <see cref="Erp.Kernel.Http.ReadOnlyOperationAttribute"/>
+    /// (runs in a read-only transaction although its method has a body).</summary>
+    public bool ReadOnlyOperation { get; init; }
     public bool IsAnonymous => AnonymousReason is not null;
     public string Key => $"{Method} {Pattern}";
     public bool HasBody => Method is "POST" or "PUT" or "PATCH";
@@ -53,7 +57,10 @@ public static class EndpointInventory
             foreach (var method in methods is { Count: > 0 } ? methods : ["GET", "POST", "PUT", "PATCH", "DELETE"])
             {
                 result.Add(new ApiEndpoint(method, pattern, endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName,
-                    permissions, anonymous, surface, inOpenApi));
+                    permissions, anonymous, surface, inOpenApi)
+                {
+                    ReadOnlyOperation = endpoint.Metadata.GetMetadata<Erp.Kernel.Http.ReadOnlyOperationAttribute>() is not null,
+                });
             }
         }
         return result.OrderBy(e => e.Pattern, StringComparer.Ordinal).ThenBy(e => e.Method, StringComparer.Ordinal).ToList();

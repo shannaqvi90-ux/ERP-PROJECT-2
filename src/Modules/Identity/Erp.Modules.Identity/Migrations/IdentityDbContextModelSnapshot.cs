@@ -344,6 +344,18 @@ namespace Erp.Modules.Identity.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_users_tenant_id_email_normalized");
 
+                    b.HasIndex("TenantId", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_users_tenant_id_created_at_id");
+
+                    b.HasIndex("TenantId", "LastSignInAt", "Id")
+                        .HasDatabaseName("ix_users_tenant_id_last_sign_in_at_id");
+
+                    b.HasIndex(new[] { "DisplayName", "EmailNormalized" }, "ix_users_search")
+                        .HasDatabaseName("ix_users_display_name_email_normalized");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "DisplayName", "EmailNormalized" }, "ix_users_search"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "DisplayName", "EmailNormalized" }, "ix_users_search"), new[] { "gin_trgm_ops", "gin_trgm_ops" });
+
                     b.ToTable("users", "identity", t =>
                         {
                             t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");

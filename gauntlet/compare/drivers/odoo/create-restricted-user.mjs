@@ -1,4 +1,4 @@
-import { adminRpc, openApp, signInAs } from './_common.mjs';
+import { adminRpc, openApp, paletteMenu, signInAs } from './_common.mjs';
 
 const MUST_HAVE = ['base.group_user', 'base.group_partner_manager'];
 const MUST_NOT_HAVE = ['base.group_system', 'base.group_erp_manager', 'purchase.group_purchase_user', 'purchase.group_purchase_manager',
@@ -25,12 +25,15 @@ async function removeUser(ctx) {
  * `pointer`: clicks for New, the login field and Save (fewest keys pressed). Both take 10 steps;
  * the result counts the better of the two on every metric.
  */
-function pathRun(keyboard) {
+function pathRun(keyboard, palette = false) {
   return async (op, ctx) => {
     const { name, login } = ctx.task.input;
     const page = op.page;
-    await openApp(op, 'Settings');
-    await op.click(page.getByRole('button', { name: 'Manage Users' }), { label: 'Manage Users' });
+    if (palette) await paletteMenu(op, '/users', 'Settings / Users & Companies / Users');
+    else {
+      await openApp(op, 'Settings');
+      await op.click(page.getByRole('button', { name: 'Manage Users' }), { label: 'Manage Users' });
+    }
     await op.waitFor('.o_list_view .o_data_row', { label: 'user list' });
     if (keyboard) await op.press('Alt+c', { label: 'New (hotkey)' });
     else await op.click('.o_control_panel .o_list_button_add', { label: 'New' });
@@ -59,11 +62,12 @@ function pathRun(keyboard) {
 
 export default {
   built: true,
-  path: 'Apps menu > Settings > Manage Users > New > name > login > Contact: Creation > Save. Every other privilege on a new Odoo user already defaults to No. Two expert variants; the result counts the better one per metric.',
+  path: 'Users list (apps menu > Settings > Manage Users, or the command palette) > New > name > login > Contact: Creation > Save. Every other privilege on a new Odoo user already defaults to No. Three expert variants; the result counts the better one per metric.',
   run: pathRun(true),
   variants: {
     keyboard: { path: 'Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)', run: pathRun(true) },
     pointer: { path: 'Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save', run: pathRun(false) },
+    palette: { path: 'Ctrl+K > "/users" > Enter > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)', run: pathRun(true, true) },
   },
   async setup(ctx) { await removeUser(ctx); },
   async signIn(ctx) { await signInAs(ctx, 'admin'); },

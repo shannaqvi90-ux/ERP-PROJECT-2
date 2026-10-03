@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "who-changed-field-20261003T013311-bec4",
+  "run_id": "who-changed-field-20261003T041957-015f",
+  "instrument": 3,
   "task": "who-changed-field",
   "task_title": "Who changed this field, and when",
   "product": "odoo",
   "status": "verified",
   "goal": "Find out who last changed the e-mail address of the contact Shamma Waleed Al Romaithi, from what to what, and when.",
   "done_when": "The change is on screen: the old and new e-mail, the person who made it (Noor Editor) and the time.",
-  "started_at": "2026-10-03T01:33:11.555Z",
-  "finished_at": "2026-10-03T01:33:20.246Z",
+  "started_at": "2026-10-03T04:19:57.887Z",
+  "finished_at": "2026-10-03T04:20:15.914Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 1,
     "key_chords": 1,
     "file_picks": 0,
-    "machine_seconds": 1.054,
-    "system_wait_seconds": 0.867,
+    "requests": 0,
+    "machine_seconds": 2.211,
+    "system_wait_seconds": 1.786,
     "human_seconds": 18.5,
-    "human_plus_wait_seconds": 19.367,
+    "human_plus_wait_seconds": 20.286,
     "klm_operator_counts": {
       "K": 30,
       "P": 3,
@@ -57,7 +59,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.044
+      "took": 0.037
     },
     {
       "n": 2,
@@ -65,8 +67,8 @@
       "label": "Contacts app",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.044,
-      "took": 0.064
+      "at": 0.037,
+      "took": 0.078
     },
     {
       "n": 3,
@@ -74,8 +76,8 @@
       "label": "contact name",
       "keystrokes": 29,
       "chain": false,
-      "at": 0.24,
-      "took": 0.072,
+      "at": 0.287,
+      "took": 0.112,
       "text": "Shamma Waleed Al Romaithi"
     },
     {
@@ -84,8 +86,8 @@
       "label": "search",
       "keystrokes": 1,
       "chain": true,
-      "at": 0.312,
-      "took": 0.015,
+      "at": 0.399,
+      "took": 0.019,
       "chord": "Enter"
     },
     {
@@ -94,64 +96,64 @@
       "label": "open the result",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.612,
-      "took": 0.066
+      "at": 1.183,
+      "took": 0.062
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.109,
-      "seconds": 0.125
+      "at": 0.115,
+      "seconds": 0.158
     },
     {
       "label": "contact list ready, search focused",
-      "at": 0.234,
-      "seconds": 0.006
+      "at": 0.274,
+      "seconds": 0.014
     },
     {
       "label": "one result",
-      "at": 0.326,
-      "seconds": 0.286
+      "at": 0.418,
+      "seconds": 0.764
     },
     {
       "label": "latest change on screen",
-      "at": 0.678,
-      "seconds": 0.45
+      "at": 1.244,
+      "seconds": 0.889
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "b4f0640d5c3750c9.jpg",
+      "file": "224a16fc691e58c4.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/b4f0640d5c3750c9.jpg"
+      "path": "gauntlet/reference/odoo/shots/224a16fc691e58c4.jpg"
     },
     {
       "moment": "done",
-      "file": "ee04c0d5a18baa9b.jpg",
-      "at": 1.179,
-      "path": "gauntlet/reference/odoo/shots/ee04c0d5a18baa9b.jpg"
+      "file": "c9c10608ccf3bb70.jpg",
+      "at": 2.211,
+      "path": "gauntlet/reference/odoo/shots/c9c10608ccf3bb70.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "latest_change_on_screen": "Noor Editor 5:33 AM shamma.al.romaithi.73519@mail.example → shamma.romaithi.new@mail.example (Email)"
+      "latest_change_on_screen": "Noor Editor 8:20 AM shamma.al.romaithi.73519@mail.example → shamma.romaithi.new@mail.example (Email)"
     }
   },
   "path_notes": "Apps menu > Contacts (search focused) > type the name > Enter > open the result; the change log beside the form shows the latest change first (old > new e-mail, who, when).",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/who-changed-field.mjs",
-    "sha256": "d73bf2a36d9ee8ce7dbada5ce06811339c9bc6247f69cba83ec7a9d0c08348c6"
+    "sha256": "24816bf2d8088551b7437442e1960689a25548e87081d018a7142155032a33f1"
   },
   "task_notes": "Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.",
   "error": null,
   "result_file": "gauntlet/reference/odoo/tasks/who-changed-field.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/who-changed-field-20261003T013311-bec4.json",
-    "gauntlet/reference/odoo/results/who-changed-field-20261003T013320-cbc0.json",
-    "gauntlet/reference/odoo/results/who-changed-field-20261003T013329-5705.json"
+    "gauntlet/reference/odoo/results/who-changed-field-20261003T041941-a3d3.json",
+    "gauntlet/reference/odoo/results/who-changed-field-20261003T041957-015f.json",
+    "gauntlet/reference/odoo/results/who-changed-field-20261003T042015-8116.json"
   ]
 }

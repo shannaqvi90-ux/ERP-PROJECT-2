@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
+import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
 import { isTyping, roleName, type Permission, type Role, type RolePage } from "./model";
 import { PermissionMatrix } from "./PermissionMatrix";
@@ -10,9 +11,10 @@ import "./identity.css";
 type Selection = { kind: "none" } | { kind: "new" } | { kind: "role"; id: string } | { kind: "copy"; id: string };
 
 /**
- * Roles beside the role editor: English and Arabic names and the permission matrix. Create,
- * copy, edit and delete; the Administrator system role can only be copied. Keyboard: "n" new
- * role, Enter on a row opens it, Ctrl+Enter saves, Escape closes.
+ * Roles (the shared list: search, filters, sort, views) beside the role editor: English and
+ * Arabic names and the permission matrix. Create, copy, edit and delete; the Administrator system
+ * role can only be copied. Keyboard: "n" new role, Enter on a row opens it, Ctrl+Enter saves,
+ * Escape closes.
  */
 export function RolesPage() {
   const { t, language, formatNumber } = useI18n();
@@ -22,6 +24,7 @@ export function RolesPage() {
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<Selection>({ kind: "none" });
   const [message, setMessage] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -59,15 +62,6 @@ export function RolesPage() {
   return (
     <section className={selection.kind === "none" ? "id-screen" : "id-screen with-panel wide"}>
       <div className="id-list">
-        <div className="screen-header">
-          <h1>{t("identity.roles.title")}</h1>
-          {roles && <span className="muted">{t("identity.roles.count", { count: roles.length })}</span>}
-          {can("identity.roles.create") && (
-            <button type="button" className="button primary id-push" onClick={() => setSelection({ kind: "new" })} aria-keyshortcuts="N">
-              {t("identity.roles.new")}
-            </button>
-          )}
-        </div>
         {error && (
           <div className="alert" role="alert">
             {error}
@@ -78,38 +72,28 @@ export function RolesPage() {
             {message}
           </div>
         )}
-        <table className="grid">
-          <thead>
-            <tr>
-              <th scope="col">{t("identity.roles.name")}</th>
-              <th scope="col">{t("identity.roles.permissions")}</th>
-              <th scope="col">{t("identity.roles.users")}</th>
-              <th scope="col">{t("identity.roles.kind")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {roles?.map((r) => (
-              <tr
-                key={r.id}
-                role="row"
-                tabIndex={0}
-                aria-selected={selection.kind === "role" && selection.id === r.id}
-                className={selectedRole?.id === r.id ? "id-selected" : undefined}
-                onClick={() => setSelection({ kind: "role", id: r.id })}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") setSelection({ kind: "role", id: r.id });
-                  else if (e.key === "ArrowDown") (e.currentTarget.nextElementSibling as HTMLElement | null)?.focus();
-                  else if (e.key === "ArrowUp") (e.currentTarget.previousElementSibling as HTMLElement | null)?.focus();
-                }}
-              >
-                <td>{roleName(r, language)}</td>
-                <td>{formatNumber(r.permissions.length)}</td>
-                <td>{formatNumber(r.userCount)}</td>
-                <td>{r.isSystem ? t("identity.roles.system") : t("identity.roles.custom")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ListView
+          listKey="identity.roles"
+          titleKey="identity.roles.title"
+          countKey="identity.roles.count"
+          searchPlaceholderKey="identity.roles.search"
+          can={can}
+          openOnClick
+          reloadKey={reload}
+          onOpen={(row) => setSelection({ kind: "role", id: row.id })}
+          actions={
+            can("identity.roles.create") && (
+              <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })} aria-keyshortcuts="N">
+                {t("identity.roles.new")}
+              </button>
+            )
+          }
+          renderCell={{
+            nameEn: (r) => String((language === "ar" ? r.nameAr : r.nameEn) ?? ""),
+            isSystem: (r) => (r.isSystem ? t("identity.roles.system") : t("identity.roles.custom")),
+            permissions: (r) => formatNumber(Array.isArray(r.permissions) ? r.permissions.length : 0),
+          }}
+        />
       </div>
       {selection.kind !== "none" && (
         <aside className="id-panel" aria-label={t("identity.roles.panel")}>
@@ -119,6 +103,7 @@ export function RolesPage() {
               onClose={() => setSelection({ kind: "role", id: selectedRole.id })}
               onCopied={(role) => {
                 void load();
+                setReload((n) => n + 1);
                 setMessage(t("identity.roles.copied", { name: roleName(role, language) }));
                 setSelection({ kind: "role", id: role.id });
               }}
@@ -132,6 +117,7 @@ export function RolesPage() {
               onCopy={(role) => setSelection({ kind: "copy", id: role.id })}
               onSaved={(role, deleted) => {
                 void load();
+                setReload((n) => n + 1);
                 setMessage(deleted ? t("identity.roles.deleted", { name: roleName(role, language) }) : t("identity.roles.saved", { name: roleName(role, language) }));
                 setSelection(deleted ? { kind: "none" } : { kind: "role", id: role.id });
               }}

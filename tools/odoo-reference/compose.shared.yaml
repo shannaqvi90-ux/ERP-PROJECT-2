@@ -1,0 +1,12 @@
+# Overlay for the shared reference rig (compose project "odoo-reference", the default).
+# up.sh and down.sh add it only for that project. Its data lives in external volumes with fixed
+# names: `docker compose down -v` never removes external volumes, so a cleanup rule that matches
+# the project cannot delete the 100,000-row reference data. Deleting them takes an explicit
+#   ODOO_REF_CONFIRM_PURGE=odoo-reference tools/odoo-reference/down.sh --purge
+volumes:
+  db:
+    name: odoo-reference-db
+    external: true
+  filestore:
+    name: odoo-reference-filestore
+    external: true

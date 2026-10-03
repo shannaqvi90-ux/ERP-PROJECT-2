@@ -63,6 +63,35 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/recent", StringComparison.Ordinal) && l.Contains("attacking tenant's marker", StringComparison.Ordinal));
         Assert.True(report.VictimConcurrentRequests > 0, "tenant B never read concurrently with the attack");
         Assert.Empty(report.VictimBlindSpots);
+
+        // The tenant comes only from the session. A header with a name nobody guesses, read by the
+        // handler and used with set_config on the request's own connection (critic p00 round 2,
+        // plant A-hdr): the attack sends tenant B's id in every header the app reads and the
+        // trace sees the setting change from code other than the kernel's session.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/acting", StringComparison.Ordinal) && l.Contains("[header X-Acting-For: ", StringComparison.Ordinal));
+        Assert.Contains(report.SettingViolations, v => v.Contains("endpoint:leaky.acting", StringComparison.Ordinal) && v.Contains(typeof(LeakyModule).FullName!, StringComparison.Ordinal));
+        Assert.DoesNotContain(report.SettingViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // Units of work bound to a tenant the client chose (built outside dependency injection, or
+        // the request's own session, which the kernel refuses): every binding is traced.
+        foreach (var name in new[] { "leaky.byHeader", "leaky.byRoute", "leaky.byBody", "leaky.report", "leaky.guarded" })
+        {
+            Assert.Contains(report.BindViolations, v => v.Contains($"endpoint:{name})", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.BindViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/guarded/", StringComparison.Ordinal));
+        Assert.Empty(report.TraceBlindSpots);
+
+        // A unit of work built outside dependency injection in a GET (bound to whatever tenant) is
+        // not read-only: the trace reports it. The request's own session always is.
+        Assert.Contains(report.WritableReads, w => w.Contains("endpoint:leaky.byRoute)", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.WritableReads, w => !w.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // State captured by an endpoint lambda, handed to the next caller in a response header
+        // (critic p01 round 2, plant B): judged in both directions.
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
+                                           l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -113,6 +142,12 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         var running = ProcessState.Inspect(fixture.Env.Factory);
         Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
         Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
+
+        // A variable captured by an endpoint lambda lives as long as the endpoint (critic p01
+        // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.
+        Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));
+        Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
+        Assert.True(running.DelegateObjectsWalked > running.EndpointsWalked, "the endpoint delegate walk reached nothing beyond the delegates");
     }
 
     [Fact]
@@ -123,6 +158,25 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("Administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/users", result.Checked);
+    }
+
+    [Fact]
+    public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
+    {
+        // Critic p00 round 2, plant P2: a POST that reactivates users while declaring a read permission.
+        var result = ReadPermissionWrites.Check(EndpointInventory.From(fixture.Env.Factory.Services));
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
+        await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);
+        await owner.OpenAsync();
+        const string name = "SELECT name_en FROM tenancy.tenants WHERE id = @t";
+        var before = await DbCatalog.ScalarAsync<string>(owner, name, ("t", fixture.Env.TenantA.Id));
+        using var admin = await fixture.Env.SignInAsync(fixture.Env.Email(fixture.Env.TenantA, "admin"));
+        using var response = await admin.GetAsync("/api/leaky/touch");
+        Assert.Equal(System.Net.HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(before, await DbCatalog.ScalarAsync<string>(owner, name, ("t", fixture.Env.TenantA.Id)));
     }
 
     [Fact]

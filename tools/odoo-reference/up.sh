@@ -7,7 +7,9 @@
 #   tools/odoo-reference/down.sh          stop (add --purge to delete its volumes)
 #
 # Environment overrides (defaults in brackets):
-#   ODOO_REF_PROJECT [b-p01-odoo-rig]   compose project name (the shared rig every critic reuses)
+#   ODOO_REF_PROJECT [odoo-reference]   compose project name; the default is the shared rig every critic
+#                                       reuses (external volumes, see compose.shared.yaml). Any other name
+#                                       is a private copy whose own `down -v` removes its data.
 #   ODOO_REF_PORT    [8069]             host port for the web client
 #   ODOO_REF_DB      [reference]        database name
 #   ODOO_REF_TARGET  [100000]           minimum rows per main list
@@ -19,7 +21,6 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-export ODOO_REF_PROJECT="${ODOO_REF_PROJECT:-b-p01-odoo-rig}"
 export ODOO_REF_PORT="${ODOO_REF_PORT:-8069}"
 export ODOO_REF_DB="${ODOO_REF_DB:-reference}"
 DATA_DIR="$ROOT/gauntlet/compare/data/out"
@@ -29,7 +30,8 @@ APPS="base,base_setup,contacts,mail,purchase,base_import"
 LANGS="ar_001"
 
 say() { printf '[odoo-reference] %s\n' "$*"; }
-dc() { docker compose -f "$HERE/compose.yaml" "$@"; }
+# shellcheck source=rig.sh
+source "$HERE/rig.sh"
 psql_ref() { dc exec -T db psql -U odoo -d "$ODOO_REF_DB" -Atc "$1"; }
 
 if [[ "${1:-}" == "--status" ]]; then
@@ -46,6 +48,8 @@ started=$(date +%s)
 say "generating the shared dataset (deterministic, cached)"
 node "$ROOT/gauntlet/compare/data/generate.mjs" >/dev/null
 
+adopt_legacy_rig
+ensure_shared_volumes
 say "starting PostgreSQL (project $ODOO_REF_PROJECT)"
 dc up -d --wait db >/dev/null
 

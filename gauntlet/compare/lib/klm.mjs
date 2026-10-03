@@ -24,6 +24,8 @@
 //   6. Scrolling a target into view with the mouse wheel is one step, modelled like a click
 //      (P + BB: bring the pointer to the scroll area and turn the wheel). The paper has no
 //      operator for scrolling; this keeps a path that needs a scroll from looking free.
+//   7. An API request (API tasks) is typed: one K per key of the request as typed (method, path
+//      and query, JSON body) plus one K for Enter to send it. It is a keyboard step.
 
 export const OPERATORS = Object.freeze({ K: 0.28, P: 1.1, B: 0.1, H: 0.4, M: 1.35 });
 
@@ -68,7 +70,7 @@ export function operatorsForStep(step, prevDevice) {
   switch (step.kind) {
     case 'click': case 'scroll': ops.P += 1; ops.B += 2; break;
     case 'double-click': case 'file-pick': ops.P += 1; ops.B += 4; break;
-    case 'type': case 'key': ops.K += step.keystrokes; break;
+    case 'type': case 'key': case 'request': ops.K += step.keystrokes; break;
     default: throw new Error(`unknown step kind: ${step.kind}`);
   }
   return { ops, seconds: secondsFor(ops) };
