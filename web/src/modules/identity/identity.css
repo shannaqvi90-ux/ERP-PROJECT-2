@@ -272,12 +272,20 @@
 
 .id-matrix-table {
   margin-block-end: 10px;
+  table-layout: fixed;
 }
 
-.id-matrix-table caption {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+/* The same column widths in every module's block, so the action columns line up. */
+.id-matrix-table thead th:first-child {
+  width: 30%;
+}
+
+.id-matrix-table thead th:last-child {
+  width: 26%;
+}
+
+.id-matrix-table caption .button {
+  margin-inline-start: 8px;
 }
 
 .id-matrix-table th[scope="row"] {
