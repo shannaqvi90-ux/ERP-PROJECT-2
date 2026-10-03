@@ -91,19 +91,32 @@ public sealed class LicenceGateTests
     [Fact]
     public void Every_npm_package_has_an_allowed_licence()
     {
-        var lockfiles = new[]
+        // The known lockfiles must exist, and any other lockfile in the repository (a new npm
+        // project anywhere outside critics' evidence folders) is checked too.
+        var known = new[]
         {
             Repo.PathOf("web", "package-lock.json"),
             Repo.PathOf("tests", "e2e", "package-lock.json"),
             Repo.PathOf("gauntlet", "compare", "package-lock.json"),
         };
+        foreach (var lockfile in known)
+        {
+            Assert.True(File.Exists(lockfile), $"{lockfile} is missing; commit the lockfile");
+        }
+        var evidence = Repo.PathOf("gauntlet", "evidence") + Path.DirectorySeparatorChar;
+        var lockfiles = known
+            .Concat(Directory.EnumerateFiles(Repo.Root, "package-lock.json", SearchOption.AllDirectories)
+                .Where(f => !f.Split(Path.DirectorySeparatorChar).Contains("node_modules") && !f.StartsWith(evidence, StringComparison.Ordinal)))
+            .Select(Path.GetFullPath)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        Assert.True(lockfiles.Count >= Ratchet.Min("rules.npmLockfilesChecked"), $"{lockfiles.Count} npm lockfiles checked");
         var devLicences = Exceptions.Where(e => e.Entry.StartsWith("npm-build-only:", StringComparison.Ordinal))
             .Select(e => e.Entry["npm-build-only:".Length..]).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var problems = new List<string>();
         var checkedCount = 0;
         foreach (var lockfile in lockfiles)
         {
-            Assert.True(File.Exists(lockfile), $"{lockfile} is missing; commit the lockfile");
             using var document = JsonDocument.Parse(File.ReadAllText(lockfile));
             foreach (var package in document.RootElement.GetProperty("packages").EnumerateObject())
             {

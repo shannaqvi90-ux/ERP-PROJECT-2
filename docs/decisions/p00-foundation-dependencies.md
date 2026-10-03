@@ -4,7 +4,8 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
 
 Every direct and transitive package is checked by `tests/Erp.Gates.Tests/Rules/LicenceGateTests.cs`
 (NuGet: nuspec licence expression of every package in `project.assets.json`; npm: `license` of every
-package in both lockfiles). Allowed: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, PostgreSQL
+package in every lockfile in the repository outside `gauntlet/evidence/`: `web`, `tests/e2e` and
+`gauntlet/compare` today). Allowed: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, PostgreSQL
 (CLAUDE.md rule 6); copyleft and unknown licences always fail. Reviewed exceptions sit in `tests/Gates/licence-exceptions.txt`.
 
 ## Direct dependencies
@@ -25,6 +26,7 @@ package in both lockfiles). Allowed: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause
 | vitest | MIT | web unit tests |
 | happy-dom | MIT | DOM for unit tests |
 | @playwright/test | Apache-2.0 | end-to-end tests (stack) |
+| playwright-core | Apache-2.0 | browser driver of the Odoo comparison harness (`gauntlet/compare`, p01) |
 
 ## Deliberately avoided
 

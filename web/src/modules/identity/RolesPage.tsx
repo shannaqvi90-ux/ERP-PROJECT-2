@@ -4,6 +4,8 @@ import { useI18n } from "../../kernel/i18n";
 
 type Role = { id: string; nameEn: string; nameAr: string; permissions: string[]; isSystem: boolean; userCount: number };
 
+type Page = { items: Role[]; total: number };
+
 /** Read-only role list (p03 adds the permission matrix and editing). */
 export function RolesPage() {
   const { t, language, formatNumber } = useI18n();
@@ -11,8 +13,8 @@ export function RolesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api<Role[]>("GET", "/api/identity/roles")
-      .then(setRoles)
+    api<Page>("GET", "/api/identity/roles")
+      .then((page) => setRoles(page.items))
       .catch((e: Error) => setError(e.message));
   }, []);
 

@@ -13,6 +13,10 @@ namespace Erp.Modules.Identity.Roles;
 
 public sealed record RoleDto(Guid Id, string NameEn, string NameAr, IReadOnlyList<string> Permissions, bool IsSystem, int UserCount, uint Version);
 
+/// <summary>The roles list in the same page shape as every registered list (a workspace has few
+/// roles, so one page holds them all).</summary>
+public sealed record RolePage(IReadOnlyList<RoleDto> Items, int Total);
+
 public sealed record SaveRoleRequest(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions, uint? Version);
 
 public sealed record PermissionDto(string Key, string Module, string Label, string ModuleLabel);
@@ -23,7 +27,7 @@ internal static class RoleEndpoints
     {
         group.MapGet("/roles", List)
             .WithName("identity.roles.list")
-            .WithSummary("Roles of the workspace with the permissions they grant.")
+            .WithSummary("Roles of the workspace with the permissions they grant, system roles first, as one page.")
             .RequirePermission(IdentityPermissions.RolesRead);
 
         group.MapGet("/roles/{id:guid}", Get)
@@ -54,13 +58,14 @@ internal static class RoleEndpoints
             .RequirePermission(IdentityPermissions.RolesRead);
     }
 
-    private static async Task<Ok<List<RoleDto>>> List(IdentityDbContext db, CancellationToken cancellationToken)
+    private static async Task<Ok<RolePage>> List(IdentityDbContext db, CancellationToken cancellationToken)
     {
         var counts = await db.UserRoles.AsNoTracking().GroupBy(ur => ur.RoleId)
             .Select(g => new { RoleId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RoleId, x => x.Count, cancellationToken);
         var roles = await db.Roles.AsNoTracking().OrderByDescending(r => r.IsSystem).ThenBy(r => r.NameEn).ToListAsync(cancellationToken);
-        return TypedResults.Ok(roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList());
+        var items = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
+        return TypedResults.Ok(new RolePage(items, items.Count));
     }
 
     private static async Task<Results<Ok<RoleDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)

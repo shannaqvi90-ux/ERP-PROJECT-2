@@ -10,11 +10,13 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
   may reference the kernel and other modules' **contracts** only, never another module's internals.
 - A module is a class deriving from `ErpModule`. Its `Register(ModuleBuilder)` contributes, from its
   own folder: services, permission catalogue, its `DbContext` (own schema, own migrations, own
-  `__ef_migrations_history` table inside that schema), endpoints (under `/api/<module>`), menu
-  entries, tenant seeders, server strings (`Resources/en.json`, `Resources/ar.json`, embedded) and
+  `__ef_migrations_history` table inside that schema), endpoints (under `/api/<module>`, or under another
+  prefix the module names, as identity does for `/api/auth`), menu entries, tenant seeders, server strings (`Resources/en.json`, `Resources/ar.json`, embedded) and
   isolation probes for the G1 gate. The host lists each module once in `ErpModules.All`.
 - The web app mirrors this: `web/src/modules/<module>/routes.tsx` and `i18n/{en,ar}.json` are found
-  by `import.meta.glob`, so adding a module's screens needs no central edit.
+  by `import.meta.glob`, so adding a module's screens needs no central edit. The server menu entry
+  and the web screen describe the same place: same path (under `/<module>/`), same permission;
+  every screen but home is reachable from a menu entry (`RegistrationGateTests`).
 - Every module context shares one PostgreSQL connection and transaction per unit of work
   (`ErpDbSession`), so a request that touches two modules commits or rolls back as a whole while
   the modules still never read each other's tables.

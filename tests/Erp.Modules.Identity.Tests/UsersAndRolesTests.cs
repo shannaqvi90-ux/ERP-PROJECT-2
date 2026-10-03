@@ -77,7 +77,7 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
     public async Task The_administrator_role_cannot_be_changed_or_deleted_and_grants_every_permission()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var roles = await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles");
+        var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
         var system = roles.EnumerateArray().Single(r => r.GetProperty("isSystem").GetBoolean());
         var catalogue = await admin.GetFromJsonAsync<JsonElement>("/api/identity/permissions");
         Assert.Equal(
@@ -103,7 +103,7 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
     {
         var email = $"prefs@{Env.TenantA.EmailDomain}";
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var roles = await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles");
+        var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
         var readOnly = roles.EnumerateArray().First(r => !r.GetProperty("isSystem").GetBoolean()
             && r.GetProperty("permissions").EnumerateArray().Any(p => p.GetString() == "identity.profile.update"));
         await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Prefs", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { readOnly.GetProperty("id").GetGuid() } });

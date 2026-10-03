@@ -173,7 +173,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var self = await created.Content.ReadFromJsonAsync<JsonElement>();
 
         using var client = await Env.SignInAsync(email);
-        var roles = await client.GetFromJsonAsync<JsonElement>("/api/identity/roles");
+        var roles = (await client.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
         var administrator = roles.EnumerateArray().Single(r => r.GetProperty("isSystem").GetBoolean());
         var viewer = await admin.GetFromJsonAsync<JsonElement>("/api/identity/users?search=viewer@");
         var viewerUser = viewer.GetProperty("items")[0];
@@ -233,7 +233,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             new { email, displayName = "Creator", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } })).StatusCode);
 
         using var client = await Env.SignInAsync(email);
-        var roles = await client.GetFromJsonAsync<JsonElement>("/api/identity/roles");
+        var roles = (await client.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
         var administrator = roles.EnumerateArray().Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
         var before = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/users?take=1")).GetProperty("total").GetInt32();
 

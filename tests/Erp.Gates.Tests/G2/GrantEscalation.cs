@@ -33,7 +33,7 @@ public static class GrantEscalation
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
         var everything = catalog.PermissionKeys.Order(StringComparer.Ordinal).ToList();
         using var admin = await env.SignInAsync(env.Email(env.TenantA, "admin"));
-        var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).EnumerateArray()
+        var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
 
         var grantEndpoints = EndpointInventory.From(env.Factory.Services)
@@ -152,7 +152,7 @@ public static class GrantEscalation
         (await client.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("permissions").EnumerateArray().Select(p => p.GetString()!).ToList();
 
     private static async Task<int> AdministratorCountAsync(HttpClient admin) =>
-        (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).EnumerateArray()
+        (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
         .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("userCount").GetInt32();
 
     private static string GrantsOf(JsonObject item) =>
