@@ -1,0 +1,73 @@
+en sign-in screen {"lang":"en","dir":"ltr","title":"ERP","focused":"email"}
+empty submit errors ["Enter your e-mail.","Enter your password."]
+bad password message ["Sign-in failed. Check your e-mail and password and try again."]
+focus after failed sign-in {"lang":"en","dir":"ltr","title":"ERP","focused":"password"}
+sign-in language toggle present 1
+after toggle {"lang":"ar","dir":"rtl","title":"نظام تخطيط الموارد","focused":"password"}
+console errors (en sign-in) ["Failed to load resource: the server responded with a status of 401 (Unauthorized)"]
+ar-AE first screen {"lang":"ar","dir":"rtl","title":"نظام تخطيط الموارد","focused":"email"}
+ar keyboard sign-in ms 1063
+ar shell {"lang":"ar","dir":"rtl","title":"الرئيسية · نظام تخطيط الموارد","focused":"MAIN"}
+ar nav text المستخدمون
+الأدوار
+مساحة العمل
+حسابي
+console errors (ar) []
+en keyboard sign-in ms 2243
+en shell {"lang":"en","dir":"ltr","title":"Home · ERP","focused":"MAIN"}
+en nav text Users
+Roles
+Workspace
+My account
+session cookie flags [{"name":"erp_session","httpOnly":true,"sameSite":"Strict","secure":false}]
+tab order ["Users","Roles","Workspace","My account","Skip to content\nERP\nAl Noor Trading LLC\n","Skip to content","Show or hide the navigation pane","ERP","Search screens, records and actions\nCtrl","العربية","Keyboard shortcuts","Preferences of Mariam Al Mansoori"]
+sign-out control visible 1
+after sign-out url http://localhost:20050/
+session status after sign-out 200 {"authenticated":false,"user":null,"tenant":null,"permissions":[],"menu":[],"expiresAt":null}
+back after sign-out shows {"url":"about:blank","text":"","password":0}
+console errors (en) []
+noaccess@alnoor.example nav 
+noaccess@alnoor.example /identity/users Home
+Users
+No access
+
+Your roles do not allow this screen. Ask an administrator if you need it.
+noaccess@alnoor.example buttons on users []
+console errors noaccess@alnoor.example []
+viewer@alnoor.example nav Users
+Roles
+Workspace
+My account
+viewer@alnoor.example /identity/users Home
+Settings
+Users
+Users
+Every word must match
+100,004 users
+View: Standard
+Columns
+Name
+▾
+E-mail
+▾
+Language
+▾
+Status
+▾
+Last sign-in
+▾
+Roles
+Omar Haddad
+viewer@alnoor.example
+English
+Active
+3 Oct 2026, 8:18 PM
+Read-only
+Layla Nasser
+noaccess@alnoor.example
+English
+Active
+3 Oct 2026, 8:18 PM
+فاطمة ا
+viewer@alnoor.example buttons on users ["View: Standard","Columns","Name","▾","E-mail","▾","▾","▾","Last sign-in","▾"]
+console errors viewer@alnoor.example []

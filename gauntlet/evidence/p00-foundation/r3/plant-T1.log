@@ -1,0 +1,59 @@
+Test run for /home/user/critic/p00-foundation-r3-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.41]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.27]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [330 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [23 ms]
+[xUnit.net 00:14:23.72]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:14:23.72]       5 leaks:
+[xUnit.net 00:14:23.72]       tenant A administrator (cookie) → GET /api/identity/roles [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c236-74a3-91e0-4c6a7b5c86b0
+[xUnit.net 00:14:23.72]       tenant A administrator (cookie) → GET /api/identity/users [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c236-74a3-91e0-4c6a7b5c86b0
+[xUnit.net 00:14:23.72]       tenant A administrator (cookie) → GET /api/lists/identity.roles/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c425-785e-8b9e-6c060c67ea43
+[xUnit.net 00:14:23.72]       tenant A administrator (cookie) → GET /api/lists/identity.users/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c421-76f6-9dfe-c0f3eaad9161
+[xUnit.net 00:14:23.72]       tenant A administrator (cookie) → GET /api/tenancy/tenant [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY3DA277984E
+[xUnit.net 00:14:23.73]       Stack Trace:
+[xUnit.net 00:14:23.73]         /home/user/critic/p00-foundation-r3-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(60,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:14:23.73]         --- End of stack trace from previous location ---
+[xUnit.net 00:14:23.73]       Output:
+[xUnit.net 00:14:23.73]         routes, tenant headers and guessed queries: 10704 requests so far, 151.2 s
+[xUnit.net 00:14:23.73]         tenant switch inputs: 14 headers, 19 query names, 2 cookies, 21 body names: 13780 requests so far, 243.9 s
+[xUnit.net 00:14:23.73]         tenant B values in route and query parameters: 32166 requests so far, 601.2 s
+[xUnit.net 00:14:23.73]         registered lists through their query contract: 1579 attacks, 2443 requests: 34609 requests so far, 661.9 s
+[xUnit.net 00:14:23.73]         tenant B values in body fields: 37165 requests so far, 805.5 s
+[xUnit.net 00:14:23.73]         tenant B activity: 13082 requests (4902 concurrent with the attack), 23 successful own writes, 6994 responses judged for tenant A markers: 37165 requests so far, 815.3 s
+[xUnit.net 00:14:23.73]         tenant B: 50 ids (25 sampled), 36 text values, 26 extra markers, 18 probe values
+[xUnit.net 00:14:23.73]         45358 tenant bindings and 75062 setting statements judged among 306380 statements; 3076 tenant switch inputs over 14 header names; 30303 responses judged on every header
+[xUnit.net 00:14:23.73]         51 endpoints, 37165 requests, 86 tenant B values, 13252 parameter attacks, 2556 body value attacks, 6862 differential checks, 46070 traced lookups
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [13 m 51 s]
+  Error Message:
+   5 leaks:
+tenant A administrator (cookie) → GET /api/identity/roles [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c236-74a3-91e0-4c6a7b5c86b0
+tenant A administrator (cookie) → GET /api/identity/users [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c236-74a3-91e0-4c6a7b5c86b0
+tenant A administrator (cookie) → GET /api/lists/identity.roles/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c425-785e-8b9e-6c060c67ea43
+tenant A administrator (cookie) → GET /api/lists/identity.users/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a1028c-c421-76f6-9dfe-c0f3eaad9161
+tenant A administrator (cookie) → GET /api/tenancy/tenant [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY3DA277984E
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p00-foundation-r3-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 60
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 10704 requests so far, 151.2 s
+ tenant switch inputs: 14 headers, 19 query names, 2 cookies, 21 body names: 13780 requests so far, 243.9 s
+ tenant B values in route and query parameters: 32166 requests so far, 601.2 s
+ registered lists through their query contract: 1579 attacks, 2443 requests: 34609 requests so far, 661.9 s
+ tenant B values in body fields: 37165 requests so far, 805.5 s
+ tenant B activity: 13082 requests (4902 concurrent with the attack), 23 successful own writes, 6994 responses judged for tenant A markers: 37165 requests so far, 815.3 s
+ tenant B: 50 ids (25 sampled), 36 text values, 26 extra markers, 18 probe values
+ 45358 tenant bindings and 75062 setting statements judged among 306380 statements; 3076 tenant switch inputs over 14 header names; 30303 responses judged on every header
+ 51 endpoints, 37165 requests, 86 tenant B values, 13252 parameter attacks, 2556 body value attacks, 6862 differential checks, 46070 traced lookups
+
+
+[xUnit.net 00:14:27.66]   Finished:    Erp.Gates.Tests (ID = '5bc7e72f7b28b74c65955b24405553e3f2d82aaab1c461cbd8c972bf588cef4d')
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 14.4783 Minutes
+rc=1 seconds=870

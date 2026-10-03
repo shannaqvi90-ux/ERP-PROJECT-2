@@ -1,0 +1,79 @@
+Test run for /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:01.27]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:02.70]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:04.27]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [73 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [39 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [264 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [9 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [7 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [982 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [16 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [22 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+[xUnit.net 00:01:11.33]   Finished:    Erp.Gates.Tests (ID = 'c720e2ece72620509407a7f93f775fa3415199404832abcfc5da65b868426324')
+
+Test Run Successful.
+Total tests: 19
+     Passed: 19
+ Total time: 1.2177 Minutes
+Test run for /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.44]   Discovering: Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.82]   Discovered:  Erp.Modules.Lists.Tests
+[xUnit.net 00:00:01.13]   Starting:    Erp.Modules.Lists.Tests
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.The_definition_describes_columns_operators_choices_presets_and_sharing [1 s]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_change_to_a_view_is_audited_with_its_author [1 s]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_field_is_validated_against_the_list_in_the_users_language [320 ms]
+[xUnit.net 00:00:20.16]     Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner [FAIL]
+[xUnit.net 00:00:20.16]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:20.17]       Expected: NotFound
+[xUnit.net 00:00:20.17]       Actual:   OK
+[xUnit.net 00:00:20.17]       Stack Trace:
+[xUnit.net 00:00:20.17]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Modules.Lists.Tests/SavedViewsTests.cs(77,0): at Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner()
+[xUnit.net 00:00:20.17]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:20.89]     Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [FAIL]
+[xUnit.net 00:00:20.89]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:20.89]       Expected: NotFound
+[xUnit.net 00:00:20.89]       Actual:   OK
+[xUnit.net 00:00:20.89]       Stack Trace:
+[xUnit.net 00:00:20.89]         /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Modules.Lists.Tests/SavedViewsTests.cs(109,0): at Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them()
+[xUnit.net 00:00:20.89]         --- End of stack trace from previous location ---
+  Failed Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Modules.Lists.Tests/SavedViewsTests.cs:line 77
+--- End of stack trace from previous location ---
+  Failed Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [770 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them() in /home/user/critic/p00-foundation-r3-plant2/tests/Erp.Modules.Lists.Tests/SavedViewsTests.cs:line 109
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:22.55]   Finished:    Erp.Modules.Lists.Tests (ID = '572d3fc2f9f80503104189506e70b2b79302fd126b3495af4478fb2435b5ab6f')
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.One_default_per_owner_and_names_unique_per_owner [995 ms]
+
+Test Run Failed.
+Total tests: 6
+     Passed: 4
+     Failed: 2
+ Total time: 23.3126 Seconds
+rc=1 seconds=99
