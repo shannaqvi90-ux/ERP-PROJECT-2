@@ -46,6 +46,25 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             SystemKey = AdministratorKey,
             Permissions = all,
         };
+        if (context.Plan.Profile == SeedProfile.Provision && context.Tenant.Administrator is { } first)
+        {
+            // A new customer workspace: the Administrator role and its first administrator only.
+            db.Roles.Add(administrator);
+            var email = first.Email.Trim();
+            var owner = new User
+            {
+                Email = email,
+                EmailNormalized = email.ToLowerInvariant(),
+                DisplayName = first.DisplayName.Trim(),
+                Language = first.Language,
+                PasswordHash = PasswordHasher.Hash(first.Password),
+            };
+            db.Users.Add(owner);
+            db.UserRoles.Add(new UserRole { UserId = owner.Id, RoleId = administrator.Id });
+            await db.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
         var readOnly = new Role
         {
             NameEn = context.Mark("Read-only"),

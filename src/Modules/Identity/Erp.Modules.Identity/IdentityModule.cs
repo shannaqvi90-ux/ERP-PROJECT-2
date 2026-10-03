@@ -206,6 +206,30 @@ internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
             .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
             .ToDictionaryAsync(u => u.Id, cancellationToken);
     }
+
+    public async Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = db.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = "%" + UserEndpoints.EscapeLike(search.Trim().ToLowerInvariant()) + "%";
+            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
+        }
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)
+            .Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .ToListAsync(cancellationToken);
+        return new UserSummaryPage(items, total);
+    }
+
+    public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+        return await db.Users.AsNoTracking().Where(u => u.EmailNormalized == normalized)
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .SingleOrDefaultAsync(cancellationToken);
+    }
 }
 
 public sealed class AuthOptions

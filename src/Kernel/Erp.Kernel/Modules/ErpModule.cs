@@ -54,7 +54,15 @@ public sealed class ModuleDescriptor
     public List<Type> Seeders { get; } = [];
     public List<Type> IsolationProbes { get; } = [];
     public List<ListDefinition> Lists { get; } = [];
+    public List<ModuleCommand> Commands { get; } = [];
 }
+
+/// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
+/// platform operators: it runs instead of serving and the host exits with its result.</summary>
+/// <param name="Verb">The first argument, lower case (for example <c>tenant</c>).</param>
+/// <param name="Usage">One line shown when the verb is unknown or misused.</param>
+/// <param name="Run">Runs with the host's root services and the remaining arguments; returns the exit code.</param>
+public sealed record ModuleCommand(string Verb, string Usage, Func<IServiceProvider, IReadOnlyList<string>, CancellationToken, Task<int>> Run);
 
 /// <summary>Registration surface handed to <see cref="ErpModule.Register"/>.</summary>
 public sealed class ModuleBuilder
@@ -143,6 +151,21 @@ public sealed class ModuleBuilder
         _descriptor.Lists.Add(list);
         return this;
     }
+
+    /// <summary>Add a command-line verb for platform operators (see <see cref="ModuleCommand"/>).</summary>
+    public ModuleBuilder Command(ModuleCommand command)
+    {
+        if (!ErpModule.IsValidName(command.Verb) || ReservedVerbs.Contains(command.Verb))
+        {
+            throw new InvalidOperationException($"Command verb '{command.Verb}' must be lower-case letters and not a platform verb.");
+        }
+        _descriptor.Commands.Add(command);
+        return this;
+    }
+
+    /// <summary>Verbs the platform itself handles.</summary>
+    public static readonly System.Collections.Frozen.FrozenSet<string> ReservedVerbs =
+        System.Collections.Frozen.FrozenSet.ToFrozenSet(["bootstrap", "migrate", "seed", "setup"], StringComparer.Ordinal);
 
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>

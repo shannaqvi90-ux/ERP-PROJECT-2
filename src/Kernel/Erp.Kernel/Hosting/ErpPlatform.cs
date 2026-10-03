@@ -329,7 +329,15 @@ public static class ErpPlatform
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
                 return true;
             default:
-                throw new ArgumentException($"Unknown command '{args[0]}'. Use bootstrap, migrate, seed or setup.");
+                var catalog = app.Services.GetRequiredService<ModuleCatalog>();
+                var command = catalog.Modules.SelectMany(m => m.Commands).FirstOrDefault(c => c.Verb == args[0]);
+                if (command is null)
+                {
+                    var verbs = string.Join(", ", new[] { "bootstrap", "migrate", "seed", "setup" }.Concat(catalog.Modules.SelectMany(m => m.Commands).Select(c => c.Verb)));
+                    throw new ArgumentException($"Unknown command '{args[0]}'. Use {verbs}.");
+                }
+                Environment.ExitCode = await command.Run(app.Services, args.Skip(1).ToList(), cancellationToken);
+                return true;
         }
     }
 

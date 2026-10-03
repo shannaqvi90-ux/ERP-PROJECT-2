@@ -381,7 +381,9 @@ public sealed class TenantActivity
             return new JsonObject();
         }
         var n = Interlocked.Increment(ref _counter);
-        var body = _openApi.BuildBody(schema, (type, format, name) => OwnLeaf(type, format, name, own, n)) as JsonObject ?? [];
+        // Every leaf conforms to its documented constraints (enums, patterns, lengths, ranges), so
+        // the write passes validation and its handler runs to the end.
+        var body = _openApi.BuildBody(schema, (leaf, type, format, name) => _openApi.Conform(leaf, OwnLeaf(type, format, name, own, n))) as JsonObject ?? [];
         if (template is JsonObject source)
         {
             foreach (var (field, _) in body.ToList())
@@ -428,7 +430,8 @@ public sealed class TenantActivity
             foreach (var (table, ids) in own.IdsByTable)
             {
                 var tableName = table.Split('.').Last();
-                if (ids.Count > 0 && (tableName == stem + "s" || tableName == stem || tableName == stem + "es"))
+                var plural = stem.EndsWith('y') ? stem[..^1] + "ies" : stem + "s";
+                if (ids.Count > 0 && (tableName == plural || tableName == stem || tableName == stem + "es"))
                 {
                     return ids[0].ToString();
                 }

@@ -69,11 +69,12 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
             DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege } } => (StatusCodes.Status404NotFound, "notFound"),
             PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege } => (StatusCodes.Status404NotFound, "notFound"),
             CrossTenantWriteException => (StatusCodes.Status404NotFound, "notFound"),
+            CrossCompanyWriteException => (StatusCodes.Status404NotFound, "notFound"),
             BadHttpRequestException bad => (bad.StatusCode, "request.malformed"),
             OperationCanceledException when context.RequestAborted.IsCancellationRequested => (499, "request.cancelled"),
             _ => (StatusCodes.Status500InternalServerError, "internal"),
         };
-        if (status >= 500 || exception is CrossTenantWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
+        if (status >= 500 || exception is CrossTenantWriteException or CrossCompanyWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
             || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege })
         {
             logger.LogError(exception, "Request {TraceId} failed with {Code}", context.TraceIdentifier, code);

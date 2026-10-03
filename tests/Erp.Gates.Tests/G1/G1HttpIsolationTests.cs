@@ -301,8 +301,10 @@ public static class IsolationAttack
                     foreach (var attacker in reachable)
                     {
                         var n = counter++;
-                        var body = openApi.BuildBody(schema, (type, format, name) =>
-                            name == field && type == "string" && format != "uuid" ? value : Leaf(type, format, name, victimIdTexts, b, signIn, n)) as JsonObject ?? [];
+                        // The attacked field carries tenant B's value as is; every other field conforms to
+                        // its documented constraints so the request gets past validation to the handler.
+                        var body = openApi.BuildBody(schema, (leaf, type, format, name) =>
+                            name == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, name, victimIdTexts, b, signIn, n))) as JsonObject ?? [];
                         using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), path)
                         {
                             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),
@@ -427,7 +429,7 @@ public static class IsolationAttack
         {
             var n = counter++;
             var body = bodySchema is { } schema
-                ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, victimIds, b, signIn, n)) as JsonObject ?? []
+                ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, victimIds, b, signIn, n))) as JsonObject ?? []
                 : [];
             body["tenantId"] = b.Id.ToString();
             body["tenant_id"] = b.Id.ToString();
@@ -542,7 +544,7 @@ public static class IsolationAttack
             if (endpoint.HasBody)
             {
                 var body = bodySchema is { } schema
-                    ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, _victimIds, b, false, n)) as JsonObject ?? []
+                    ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, _victimIds, b, false, n))) as JsonObject ?? []
                     : [];
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }

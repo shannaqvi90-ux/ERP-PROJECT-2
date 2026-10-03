@@ -104,7 +104,12 @@ public sealed class OpenApiDocument(JsonElement root)
 
     /// <summary>Build a request body that satisfies the schema's shape, using
     /// <paramref name="valueFor"/> for every leaf.</summary>
-    public JsonNode? BuildBody(JsonElement schema, Func<string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0)
+    public JsonNode? BuildBody(JsonElement schema, Func<string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0) =>
+        BuildBody(schema, (_, type, format, name) => valueFor(type, format, name), propertyName, depth);
+
+    /// <summary>Build a request body, handing <paramref name="valueFor"/> each leaf's own schema
+    /// too (so a caller can make a leaf conform to it, see <see cref="Conform"/>).</summary>
+    public JsonNode? BuildBody(JsonElement schema, Func<JsonElement, string, string?, string?, JsonNode?> valueFor, string? propertyName = null, int depth = 0)
     {
         schema = Resolve(schema);
         if (depth > 6)
@@ -129,7 +134,81 @@ public sealed class OpenApiDocument(JsonElement root)
                 var items = schema.TryGetProperty("items", out var itemSchema) ? BuildBody(itemSchema, valueFor, propertyName, depth + 1) : null;
                 return new JsonArray(items);
             default:
-                return valueFor(type ?? "string", format, propertyName);
+                return valueFor(schema, type ?? "string", format, propertyName);
+        }
+    }
+
+    /// <summary>
+    /// The value, or one the leaf's documented constraints accept when the value breaks them: the
+    /// first allowed value of an enum, the documented example when a pattern does not match, a
+    /// string cut to its maximum length, a number moved into its range. Used wherever a request
+    /// must pass validation so the handler runs to the end (own-tenant writes, and every field but
+    /// the attacked one).
+    /// </summary>
+    public JsonNode? Conform(JsonElement leaf, JsonNode? value)
+    {
+        leaf = Resolve(leaf);
+        foreach (var combinator in new[] { "oneOf", "anyOf", "allOf" })
+        {
+            if (leaf.TryGetProperty(combinator, out var options))
+            {
+                var concrete = options.EnumerateArray().Select(Resolve).FirstOrDefault(o => TypeOf(o) != "null" && (o.TryGetProperty("type", out _) || o.TryGetProperty("enum", out _)));
+                if (concrete.ValueKind == JsonValueKind.Object)
+                {
+                    return Conform(concrete, value);
+                }
+            }
+        }
+        if (leaf.TryGetProperty("enum", out var allowed))
+        {
+            var choices = allowed.EnumerateArray().Where(e => e.ValueKind != JsonValueKind.Null).ToList();
+            if (choices.Count > 0 && !choices.Any(c => value is not null && JsonNode.DeepEquals(JsonNode.Parse(c.GetRawText()), value)))
+            {
+                return JsonNode.Parse(choices[0].GetRawText());
+            }
+            return value;
+        }
+        if (value is JsonValue text && text.GetValueKind() == JsonValueKind.String)
+        {
+            var current = text.GetValue<string>();
+            if (leaf.TryGetProperty("pattern", out var pattern) && !System.Text.RegularExpressions.Regex.IsMatch(current, pattern.GetString()!))
+            {
+                var example = Examples(leaf).FirstOrDefault(e => e.ValueKind == JsonValueKind.String && System.Text.RegularExpressions.Regex.IsMatch(e.GetString()!, pattern.GetString()!));
+                if (example.ValueKind == JsonValueKind.String)
+                {
+                    current = example.GetString()!;
+                }
+            }
+            if (leaf.TryGetProperty("maxLength", out var max) && max.TryGetInt32(out var maxLength) && current.Length > maxLength)
+            {
+                current = current[..maxLength];
+            }
+            return JsonValue.Create(current);
+        }
+        if (value is JsonValue number && number.GetValueKind() == JsonValueKind.Number &&
+            decimal.TryParse(number.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var n))
+        {
+            if (leaf.TryGetProperty("minimum", out var min) && min.ValueKind == JsonValueKind.Number && n < min.GetDecimal())
+            {
+                return JsonValue.Create((long)Math.Ceiling(min.GetDecimal()));
+            }
+            if (leaf.TryGetProperty("maximum", out var maxValue) && maxValue.ValueKind == JsonValueKind.Number && n > maxValue.GetDecimal())
+            {
+                return JsonValue.Create((long)Math.Floor(maxValue.GetDecimal()));
+            }
+        }
+        return value;
+    }
+
+    private static IEnumerable<JsonElement> Examples(JsonElement leaf)
+    {
+        if (leaf.TryGetProperty("examples", out var examples) && examples.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var example in examples.EnumerateArray()) yield return example;
+        }
+        if (leaf.TryGetProperty("example", out var single))
+        {
+            yield return single;
         }
     }
 

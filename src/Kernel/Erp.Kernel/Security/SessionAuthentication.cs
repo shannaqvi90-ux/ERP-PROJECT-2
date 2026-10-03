@@ -68,6 +68,16 @@ public static class SessionTokens
         Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }
 
+/// <summary>
+/// Runs once a session token has resolved, inside the request's tenant-bound unit of work and
+/// before any endpoint: a module sets what else the session is bound to (the tenancy module binds
+/// the user's companies and working company). Returning false rejects the session.
+/// </summary>
+public interface ISessionScopeBinder
+{
+    Task<bool> BindAsync(ResolvedSession session, CancellationToken cancellationToken);
+}
+
 public sealed class SessionAuthenticationOptions : AuthenticationSchemeOptions;
 
 /// <summary>Marks the request while the authentication handler resolves its session token. The
@@ -119,6 +129,13 @@ internal sealed class SessionAuthenticationHandler(
         if (session is null)
         {
             return AuthenticateResult.Fail("Session expired, revoked or unknown.");
+        }
+        foreach (var binder in Context.RequestServices.GetServices<ISessionScopeBinder>())
+        {
+            if (!await binder.BindAsync(session, Context.RequestAborted))
+            {
+                return AuthenticateResult.Fail("The session's scope could not be bound.");
+            }
         }
 
         var claims = new List<Claim>

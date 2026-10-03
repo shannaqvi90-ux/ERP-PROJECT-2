@@ -38,6 +38,19 @@ public static class DbCatalog
         return await ReadAsync(connection, sql, r => new TableRef(r.GetString(0), r.GetString(1)));
     }
 
+    /// <summary>Tenant tables whose rows belong to a company (a <c>company_id</c> column).</summary>
+    public static async Task<List<TableRef>> CompanyTablesAsync(NpgsqlConnection connection)
+    {
+        var sql = $"""
+            SELECT n.nspname, c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_attribute t ON t.attrelid = c.oid AND t.attname = 'tenant_id' AND NOT t.attisdropped
+              JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped
+             WHERE c.relkind IN ('r', 'p') AND {UserSchemaFilter}
+             ORDER BY 1, 2
+            """;
+        return await ReadAsync(connection, sql, r => new TableRef(r.GetString(0), r.GetString(1)));
+    }
+
     public static async Task<List<ColumnInfo>> ColumnsAsync(NpgsqlConnection connection, TableRef table)
     {
         const string sql = """

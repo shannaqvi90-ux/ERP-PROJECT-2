@@ -1,0 +1,151 @@
+using Erp.Kernel.Data;
+using Erp.Kernel.Http;
+using Erp.Kernel.Security;
+using Erp.Modules.Tenancy.Contracts;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+
+namespace Erp.Modules.Tenancy.Workplace;
+
+public sealed record WorkplaceBranch(Guid Id, string Code, string NameEn, string NameAr);
+
+public sealed record WorkplaceCompany(Guid Id, string Code, string LegalNameEn, string LegalNameAr, string BaseCurrency, IReadOnlyList<WorkplaceBranch> Branches);
+
+/// <summary>The company and branch the user works in now, and every active company and branch
+/// they may switch to (what the switcher in the top bar offers).</summary>
+public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList<WorkplaceCompany> Companies);
+
+/// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+/// work in).</summary>
+public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
+
+internal static class WorkplaceEndpoints
+{
+    public static void Map(RouteGroupBuilder group)
+    {
+        group.MapGet("/workplace", Get)
+            .WithName("tenancy.workplace.get")
+            .WithSummary("The caller's working company and branch, and the companies and branches they may switch to.")
+            .RequirePermission(TenancyPermissions.WorkplaceRead);
+
+        group.MapPut("/workplace", Switch)
+            .WithName("tenancy.workplace.switch")
+            .WithSummary("Switch the caller's working company and branch (kept for their next sessions).")
+            .ProducesValidationProblem()
+            .RequirePermission(TenancyPermissions.WorkplaceSwitch);
+    }
+
+    private static async Task<Ok<WorkplaceDto>> Get(TenancyDbContext db, ICompanyContext scope, CancellationToken cancellationToken) =>
+        TypedResults.Ok(await BuildAsync(db, scope, scope.ActiveCompanyId, scope.ActiveBranchId, cancellationToken));
+
+    private static async Task<Results<Ok<WorkplaceDto>, ProblemHttpResult>> Switch(
+        SwitchWorkplaceRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+    {
+        var validator = new Validator(http).Required("companyId", request.CompanyId);
+        if (!validator.IsValid)
+        {
+            return validator.ToResult();
+        }
+        var options = await BuildAsync(db, session, null, null, cancellationToken);
+        var company = options.Companies.FirstOrDefault(c => c.Id == request.CompanyId);
+        validator.Must(company is not null, "companyId", "tenancyNotYourCompany");
+        var branchId = request.BranchId;
+        if (company is not null)
+        {
+            if (branchId is { } wanted)
+            {
+                validator.Must(company.Branches.Any(b => b.Id == wanted), "branchId", "tenancyNotYourBranch");
+            }
+            else
+            {
+                branchId = company.Branches.FirstOrDefault()?.Id;
+            }
+        }
+        if (!validator.IsValid)
+        {
+            return validator.ToResult();
+        }
+        var row = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
+            .SingleOrDefaultAsync(w => w.UserId == caller.UserId, cancellationToken);
+        if (row is not null && !session.AllowsCompany(row.CompanyId))
+        {
+            // A workplace left in a company the user no longer may work in (access since removed).
+            db.Workplaces.Remove(row);
+            await db.SaveChangesAsync(cancellationToken);
+            row = null;
+        }
+        if (row is null)
+        {
+            db.Workplaces.Add(new UserWorkplace { UserId = caller.UserId, CompanyId = company!.Id, BranchId = branchId });
+        }
+        else if (row.CompanyId != company!.Id || row.BranchId != branchId)
+        {
+            row.CompanyId = company.Id;
+            row.BranchId = branchId;
+        }
+        await db.SaveChangesAsync(cancellationToken);
+        session.SetWorkplace(company.Id, branchId, session.BranchIds);
+        return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId });
+    }
+
+    /// <summary>Active companies in scope with the active branches the user may work in.</summary>
+    private static async Task<WorkplaceDto> BuildAsync(TenancyDbContext db, ICompanyContext scope, Guid? companyId, Guid? branchId, CancellationToken cancellationToken)
+    {
+        var companies = await db.Companies.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.Code)
+            .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency })
+            .ToListAsync(cancellationToken);
+        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Code)
+            .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr })
+            .ToListAsync(cancellationToken);
+        var allowed = scope.AllCompanies ? null : scope.BranchIds.ToHashSet();
+        return new WorkplaceDto(companyId, branchId, companies.Select(c => new WorkplaceCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency,
+            branches.Where(b => b.CompanyId == c.Id && (allowed is null || allowed.Contains(b.Id)))
+                .Select(b => new WorkplaceBranch(b.Id, b.Code, b.NameEn, b.NameAr)).ToList())).ToList());
+    }
+}
+
+/// <summary>
+/// Binds every signed-in request to the user's companies: reads their company and branch access
+/// (their own rows, readable before the scope exists), binds the company scope (row-level security
+/// and query filters then hide every other company's rows), and works out their working company
+/// and branch: the one they chose if they still may work there, else their first active company
+/// and its first branch they may work in.
+/// </summary>
+internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext db) : ISessionScopeBinder
+{
+    public async Task<bool> BindAsync(ResolvedSession resolved, CancellationToken cancellationToken)
+    {
+        var userId = resolved.UserId;
+        var access = await db.CompanyAccess.AsNoTracking().IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
+            .Where(a => a.UserId == userId)
+            .Select(a => new { a.CompanyId, a.AllBranches })
+            .ToListAsync(cancellationToken);
+        await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), cancellationToken);
+        if (access.Count == 0)
+        {
+            session.SetWorkplace(null, null, []);
+            return true;
+        }
+        var limited = await db.BranchAccess.AsNoTracking().Where(b => b.UserId == userId).Select(b => b.BranchId).ToListAsync(cancellationToken);
+        var companies = await db.Companies.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.Code).Select(c => c.Id).ToListAsync(cancellationToken);
+        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Code)
+            .Select(b => new { b.Id, b.CompanyId }).ToListAsync(cancellationToken);
+        var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
+        var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id)).ToList();
+        var chosen = await db.Workplaces.AsNoTracking().Where(w => w.UserId == userId)
+            .Select(w => new { w.CompanyId, w.BranchId }).SingleOrDefaultAsync(cancellationToken);
+
+        Guid? companyId = chosen is not null && companies.Contains(chosen.CompanyId) ? chosen.CompanyId : companies.Cast<Guid?>().FirstOrDefault();
+        Guid? branchId = null;
+        if (companyId is { } working)
+        {
+            var mine = allowedBranches.Where(b => b.CompanyId == working).Select(b => b.Id).ToList();
+            branchId = chosen?.BranchId is { } wanted && chosen.CompanyId == working && mine.Contains(wanted) ? wanted : mine.Cast<Guid?>().FirstOrDefault();
+        }
+        session.SetWorkplace(companyId, branchId, allowedBranches.Select(b => b.Id).ToList());
+        return true;
+    }
+}
