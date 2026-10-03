@@ -140,11 +140,14 @@ over, so a filled-in field is never singled out. Only the `blind/` folder (its `
 time (2000-01-01), and the products run in a random order per task, so neither file times nor run
 order tell the products apart.
 Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
-box; the shot is rendered in greyscale (no signature colours); the
+box, and so are the demo data's own names (each product's company name and its database or tenant
+code, `identity` in `lib/blind.mjs`); the shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
 `data-brand` (painted over too); set `COMPARE_OURS_BRAND_WORDS=Name1,Name2` once it has a name.
+When a driver has several expert paths, the shots come from the path that is best on the most
+metrics (`screenshots_path` in the result), so a reviewer sees the path the counts mostly describe.
 
 ## Output
 
