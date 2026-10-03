@@ -21,8 +21,15 @@ public sealed record AccessPage(IReadOnlyList<AccessRow> Items, int Total);
 /// <summary>Access to one company: every branch, or only <c>branchIds</c>.</summary>
 public sealed record CompanyAccessDto(Guid CompanyId, bool AllBranches, IReadOnlyList<Guid> BranchIds);
 
-/// <summary>Where one user may work, within the companies the caller may work in.</summary>
-public sealed record UserAccessDto(Guid UserId, string DisplayName, string Email, IReadOnlyList<CompanyAccessDto> Companies);
+public sealed record AccessBranchOption(Guid Id, string Code, string NameEn, string NameAr, bool IsActive);
+
+/// <summary>A company the caller may give access to, with its branches.</summary>
+public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameEn, string LegalNameAr, bool IsActive, IReadOnlyList<AccessBranchOption> Branches);
+
+/// <summary>Where one user may work, within the companies the caller may work in, and every
+/// company and branch the caller could give them (<c>options</c>).</summary>
+public sealed record UserAccessDto(Guid UserId, string DisplayName, string Email, bool IsCaller, IReadOnlyList<CompanyAccessDto> Companies,
+    IReadOnlyList<AccessCompanyOption> Options);
 
 public sealed record CompanyAccessRequest(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 
@@ -75,14 +82,14 @@ internal static class AccessEndpoints
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Get(
-        Guid userId, TenancyDbContext db, IUserDirectory users, HttpContext http, CancellationToken cancellationToken)
+        Guid userId, TenancyDbContext db, IUserDirectory users, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
         var user = (await users.GetAsync([userId], cancellationToken)).GetValueOrDefault(userId);
         if (user is null)
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ReadAsync(db, user, cancellationToken));
+        return TypedResults.Ok(await ReadAsync(db, user, userId == caller.UserId, cancellationToken));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Update(
@@ -145,10 +152,10 @@ internal static class AccessEndpoints
                 .Select(id => new UserBranchAccess { UserId = userId, CompanyId = companyId, BranchId = id }));
         }
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ReadAsync(db, user, cancellationToken));
+        return TypedResults.Ok(await ReadAsync(db, user, false, cancellationToken));
     }
 
-    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, UserSummary user, CancellationToken cancellationToken)
+    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, UserSummary user, bool isCaller, CancellationToken cancellationToken)
     {
         var access = await (from a in db.CompanyAccess.AsNoTracking()
                             where a.UserId == user.Id
@@ -160,8 +167,14 @@ internal static class AccessEndpoints
                               join br in db.Branches.AsNoTracking() on b.BranchId equals br.Id
                               orderby br.Code
                               select new { b.CompanyId, b.BranchId }).ToListAsync(cancellationToken);
-        return new UserAccessDto(user.Id, user.DisplayName, user.Email,
+        var companies = await db.Companies.AsNoTracking().OrderBy(c => c.Code)
+            .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive }).ToListAsync(cancellationToken);
+        var allBranches = await db.Branches.AsNoTracking().OrderBy(b => b.Code)
+            .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive }).ToListAsync(cancellationToken);
+        return new UserAccessDto(user.Id, user.DisplayName, user.Email, isCaller,
             access.Select(a => new CompanyAccessDto(a.CompanyId, a.AllBranches,
-                a.AllBranches ? [] : branches.Where(b => b.CompanyId == a.CompanyId).Select(b => b.BranchId).ToList())).ToList());
+                a.AllBranches ? [] : branches.Where(b => b.CompanyId == a.CompanyId).Select(b => b.BranchId).ToList())).ToList(),
+            companies.Select(c => new AccessCompanyOption(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive,
+                allBranches.Where(b => b.CompanyId == c.Id).Select(b => new AccessBranchOption(b.Id, b.Code, b.NameEn, b.NameAr, b.IsActive)).ToList())).ToList());
     }
 }

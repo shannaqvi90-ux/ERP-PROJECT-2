@@ -1,0 +1,283 @@
+/* Tenancy screens: list beside form (dense, keyboard-first). Logical properties only, so the
+   layout mirrors for Arabic. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.2fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.split > .split-list:only-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1100px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-end: 8px;
+}
+
+.toolbar select,
+.record-form select,
+.quick-add select {
+  font: inherit;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  padding-inline: 6px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.grid.selectable tbody {
+  outline: none;
+}
+
+.grid.selectable tbody tr {
+  cursor: pointer;
+}
+
+.grid.selectable tbody tr[aria-selected="true"] {
+  background: #dbeafe;
+}
+
+.grid.selectable tbody:focus-visible tr[aria-selected="true"] {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.grid tr.inactive {
+  color: var(--muted);
+}
+
+.grid .num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid.compact th,
+.grid.compact td {
+  height: 26px;
+}
+
+.record {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-form,
+.record-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.record-form.narrow {
+  max-width: 760px;
+  margin-block-start: 12px;
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 8px;
+}
+
+.record-header h2,
+.record-section h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.record-section h3 {
+  margin-block-end: 8px;
+}
+
+.record-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.record-form fieldset {
+  border: none;
+  border-block-start: 1px solid var(--border);
+  margin: 0;
+  padding: 8px 0 0;
+}
+
+.record-form legend {
+  font-weight: 600;
+  color: var(--muted);
+  padding-inline-end: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 12px;
+  align-items: end;
+}
+
+.form-grid .field.wide {
+  grid-column: 1 / -1;
+}
+
+.form-grid .check {
+  margin-block-end: 18px;
+}
+
+.field textarea {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.field select {
+  min-width: 0;
+}
+
+.field-hint {
+  font-size: 12px;
+}
+
+.notice {
+  border: 1px solid #b7dfb9;
+  background: #edf7ee;
+  color: #1e5f24;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-block-end: 8px;
+}
+
+.quick-add {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-block-start: 8px;
+}
+
+.quick-add input {
+  width: 150px;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  max-height: 64px;
+  max-width: 200px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.access-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.access-branches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-inline-start: 24px;
+  margin-block-start: 4px;
+}
+
+/* Working company and branch switcher in the top bar. */
+.workplace-switcher {
+  position: relative;
+}
+
+.workplace {
+  font-weight: 600;
+  white-space: nowrap;
+  padding-inline: 8px;
+}
+
+.workplace-popover {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(100% + 4px);
+  z-index: 20;
+  width: min(440px, 90vw);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+}
+
+.workplace-popover input {
+  width: 100%;
+  margin-block-end: 6px;
+}
+
+.workplace-popover ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.workplace-popover li {
+  display: flex;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.workplace-popover li[aria-selected="true"] {
+  background: #dbeafe;
+}
+
+.workplace-popover li[data-current="true"] .option-code {
+  font-weight: 700;
+}
+
+.option-code {
+  min-width: 140px;
+}
+
+.option-detail {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useI18n } from "../../kernel/i18n";
 import { Link, matchRoute, usePath } from "../../kernel/router";
 import { useSession, type Session } from "../../kernel/session";
+import { TopBarSlot } from "../../kernel/slots";
 import { LanguageToggle } from "./LanguageToggle";
 
 /**
@@ -38,6 +39,7 @@ export function AppShell({ session }: { session: Session }) {
         <span className="workspace-name" title={t("shell.workspace")}>
           {tenantName}
         </span>
+        <TopBarSlot />
         <nav className="topnav" aria-label={t("shell.navigation")}>
           {session.menu.map((item) => (
             <Link key={item.key} to={item.path} aria-current={path === item.path ? "page" : undefined}>
