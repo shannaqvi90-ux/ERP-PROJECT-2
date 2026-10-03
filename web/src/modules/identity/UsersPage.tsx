@@ -3,7 +3,7 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleName, type Role, type RolePage } from "./model";
+import { isTyping, roleName, userName, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
 
@@ -31,6 +31,7 @@ export function UsersPage() {
   // The one-time notice (set-up code) of a user just created, shown once in their panel.
   const [notices, setNotices] = useState<Record<string, Notice>>({});
   const [reload, setReload] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
 
   const setCreating = useCallback((next: boolean) => {
     setCreatingState(next);
@@ -79,6 +80,11 @@ export function UsersPage() {
   return (
     <section className={creating ? "id-screen with-panel" : "id-screen"}>
       <div className="id-list">
+        {message && (
+          <div className="id-notice" role="status">
+            {message}
+          </div>
+        )}
         <ListView
           listKey="identity.users"
           titleKey="identity.users.title"
@@ -90,7 +96,19 @@ export function UsersPage() {
           openId={openId}
           onOpenIdChange={onOpenIdChange}
           renderRecord={(id, close) => (
-            <UserDetail key={id} userId={id} roles={roles} notice={notices[id]} onClose={close} onSaved={() => setReload((n) => n + 1)} />
+            <UserDetail
+              key={id}
+              userId={id}
+              roles={roles}
+              notice={notices[id]}
+              onClose={close}
+              onSaved={() => setReload((n) => n + 1)}
+              onDeleted={(user) => {
+                setMessage(t("identity.users.deleted", { name: userName(user, language) }));
+                setReload((n) => n + 1);
+                close();
+              }}
+            />
           )}
           actions={
             can("identity.users.create") && (
@@ -108,6 +126,7 @@ export function UsersPage() {
             )
           }
           renderCell={{
+            displayName: (u) => String((language === "ar" && u.displayNameAr ? u.displayNameAr : u.displayName) ?? ""),
             email: (u) => <span dir="ltr">{String(u.email ?? "")}</span>,
             roleIds: (u) => (
               <span className="id-ellipsis">
@@ -118,10 +137,10 @@ export function UsersPage() {
               </span>
             ),
             isActive: (u) => (
-              <>
-                {u.isActive ? t("identity.users.active") : t("identity.users.inactive")}
+              <span className="id-status">
+                {u.isActive ? t("identity.users.active") : <span className="id-badge off">{t("identity.users.inactive")}</span>}
                 {u.pendingSetup ? <span className="id-badge warn">{t("identity.users.pendingSetup")}</span> : null}
-              </>
+              </span>
             ),
             lastSignInAt: (u) => (u.lastSignInAt ? undefined : <span className="muted">{t("identity.users.never")}</span>),
           }}

@@ -29,15 +29,19 @@ public sealed record UserDto(
     DateTimeOffset CreatedAt,
     uint Version,
     bool PendingSetup = false,
+    string? DisplayNameAr = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SetupCode = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SetupCodeExpiresAt = null);
 
 /// <summary>New user. Without a password the user is invited: the response carries a one-time
 /// set-up code to hand over, and the first sign-in chooses a password. With a password,
-/// <c>MustChangePassword</c> makes it temporary.</summary>
-public sealed record CreateUserRequest(string? Email, string? DisplayName, string? Language, string? Password, IReadOnlyList<Guid>? RoleIds, bool? MustChangePassword = null);
+/// <c>MustChangePassword</c> makes it temporary. <c>DisplayNameAr</c>: the name in Arabic script,
+/// shown on Arabic screens.</summary>
+public sealed record CreateUserRequest(string? Email, string? DisplayName, string? Language, string? Password, IReadOnlyList<Guid>? RoleIds, bool? MustChangePassword = null, string? DisplayNameAr = null);
 
-public sealed record UpdateUserRequest(string? DisplayName, string? Language, bool? IsActive, IReadOnlyList<Guid>? RoleIds, uint? Version);
+/// <summary>Edit a user. <c>Email</c> (optional) changes the sign-in address of another user, for
+/// example to correct a typing mistake in an invitation; nobody changes their own sign-in here.</summary>
+public sealed record UpdateUserRequest(string? DisplayName, string? Language, bool? IsActive, IReadOnlyList<Guid>? RoleIds, uint? Version, string? Email = null, string? DisplayNameAr = null);
 
 /// <summary>Reset a user's password. Without a password: a new one-time set-up code. With one:
 /// that password, temporary unless <c>MustChangePassword</c> is false.</summary>
@@ -106,6 +110,11 @@ internal static class UserEndpoints
             .WithSummary("Clear every sign-in pause on another user's account (failed attempts before now stop counting).")
             .RequirePermission(IdentityPermissions.UsersUpdate);
 
+        group.MapDelete("/users/{id:guid}", Delete)
+            .WithName("identity.users.delete")
+            .WithSummary("Delete a user who has never signed in (for example an invitation sent to a mistyped address). Anyone who has signed in keeps their record for the audit trail: deactivate them instead. Only a caller who holds every permission the user holds, never on themselves.")
+            .RequirePermission(IdentityPermissions.UsersDelete);
+
         group.MapPost("/users/{id:guid}/sessions/revoke", RevokeSessions)
             .WithName("identity.users.revokeSessions")
             .WithSummary("Sign another user out everywhere: ends all of their sessions.")
@@ -154,6 +163,7 @@ internal static class UserEndpoints
         var validator = new Validator(http)
             .Required("email", email).Email("email", email)
             .Required("displayName", request.DisplayName).MaxLength("displayName", request.DisplayName, 200)
+            .MaxLength("displayNameAr", request.DisplayNameAr, 200)
             .Required("language", request.Language).OneOf("language", request.Language, Languages.All);
         if (!string.IsNullOrEmpty(request.Password) && Passwords.Problem(request.Password) is { } refusal)
         {
@@ -181,6 +191,7 @@ internal static class UserEndpoints
             Email = email,
             EmailNormalized = normalized,
             DisplayName = request.DisplayName!.Trim(),
+            DisplayNameAr = Optional(request.DisplayNameAr),
             Language = request.Language!,
         };
         db.Users.Add(user);
@@ -208,11 +219,17 @@ internal static class UserEndpoints
     private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Update(
         Guid id, UpdateUserRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
     {
+        var email = request.Email?.Trim();
         var validator = new Validator(http)
             .Required("displayName", request.DisplayName).MaxLength("displayName", request.DisplayName, 200)
+            .MaxLength("displayNameAr", request.DisplayNameAr, 200)
             .Required("language", request.Language).OneOf("language", request.Language, Languages.All)
             .Required("isActive", request.IsActive)
             .Required("version", request.Version);
+        if (email is not null)
+        {
+            validator.Required("email", email).Email("email", email);
+        }
         var roleIds = (request.RoleIds ?? []).Distinct().ToList();
         var roles = await db.Roles.AsNoTracking().Where(r => roleIds.Contains(r.Id)).ToListAsync(cancellationToken);
         validator.Must(roles.Count == roleIds.Count, "roleIds", "unknownIds");
@@ -227,7 +244,9 @@ internal static class UserEndpoints
         }
         var current = await db.UserRoles.Where(ur => ur.UserId == id).ToListAsync(cancellationToken);
         var rolesChanged = !current.Select(c => c.RoleId).ToHashSet().SetEquals(roleIds);
-        if (user.Id == caller.UserId && (rolesChanged || request.IsActive == false))
+        var normalized = email?.ToLowerInvariant();
+        var emailChanged = email is not null && email != user.Email;
+        if (user.Id == caller.UserId && (rolesChanged || request.IsActive == false || emailChanged))
         {
             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
         }
@@ -248,8 +267,21 @@ internal static class UserEndpoints
             db.UserRoles.RemoveRange(current.Where(c => !roleIds.Contains(c.RoleId)));
             db.UserRoles.AddRange(roleIds.Where(r => current.All(c => c.RoleId != r)).Select(r => new UserRole { UserId = id, RoleId = r }));
         }
+        if (emailChanged && normalized != user.EmailNormalized && await db.Users.AnyAsync(u => u.EmailNormalized == normalized && u.Id != id, cancellationToken))
+        {
+            return Problems.Conflict(http, "identity.emailTaken");
+        }
         db.Entry(user).Property(u => u.Version).OriginalValue = request.Version!.Value;
+        if (emailChanged)
+        {
+            user.Email = email!;
+            user.EmailNormalized = normalized!;
+        }
         user.DisplayName = request.DisplayName!.Trim();
+        if (request.DisplayNameAr is not null)
+        {
+            user.DisplayNameAr = Optional(request.DisplayNameAr);
+        }
         user.Language = request.Language!;
         user.IsActive = request.IsActive!.Value;
         // Force a version check even when only roles changed.
@@ -304,6 +336,30 @@ internal static class UserEndpoints
         }
         var user = await db.Users.SingleAsync(u => u.Id == id, cancellationToken);
         user.SignInUnblockedAt = time.GetUtcNow();
+        await db.SaveChangesAsync(cancellationToken);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<NoContent, ProblemHttpResult>> Delete(
+        Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+    {
+        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+        {
+            return problem;
+        }
+        var user = await db.Users.SingleAsync(u => u.Id == id, cancellationToken);
+        // Sign-in history is append-only (the application role may not delete it), so an account
+        // anyone has tried to sign in to stays, and so does everyone who ever signed in.
+        if (user.LastSignInAt is not null || await db.Sessions.AnyAsync(s => s.UserId == id, cancellationToken) ||
+            await db.SignInAttempts.AnyAsync(a => a.UserId == id, cancellationToken))
+        {
+            return Problems.Conflict(http, "identity.userHasSignedIn");
+        }
+        // Removed one by one so the row trigger audits each removal; the audit trail keeps the
+        // user's history (who created them, when, with which roles) after the record is gone.
+        db.UserRoles.RemoveRange(await db.UserRoles.Where(ur => ur.UserId == id).ToListAsync(cancellationToken));
+        await db.Credentials.Where(c => c.Id == id).ExecuteDeleteAsync(cancellationToken);
+        db.Users.Remove(user);
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.NoContent();
     }
@@ -435,7 +491,10 @@ internal static class UserEndpoints
     private static UserDto ToDto(User u, IReadOnlyDictionary<Guid, List<Guid>> roles, IReadOnlySet<Guid> pending) => new(
         u.Id, u.Email, u.DisplayName, u.Language, u.IsActive,
         roles.TryGetValue(u.Id, out var r) ? r : [],
-        u.LastSignInAt, u.CreatedAt, u.Version, pending.Contains(u.Id));
+        u.LastSignInAt, u.CreatedAt, u.Version, pending.Contains(u.Id), u.DisplayNameAr);
+
+    /// <summary>Trimmed text, or null when blank.</summary>
+    private static string? Optional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 internal static class RoleGrants

@@ -92,6 +92,29 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
                                            l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
+
+        // A per-id cache on a route with an id (critic p03 round 1, plants T2 and T1): tenant B opens
+        // the route with the person it created, an id the attack's sample of tenant B ids does not
+        // hold. The attack replays tenant B's exact route values and has tenant B open every id it
+        // is about to send, and finds tenant B's person in tenant A's answer, in a captured
+        // dictionary and in a static one alike.
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/people/", StringComparison.Ordinal) &&
+                                           l.Contains("/access", StringComparison.Ordinal) && l.Contains("response contains tenant B marker", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/people/", StringComparison.Ordinal) &&
+                                           l.Contains("/card", StringComparison.Ordinal) && l.Contains("response contains tenant B marker", StringComparison.Ordinal));
+        Assert.True(report.VictimRouteValuesReplayed > 0, "no route value of tenant B's own activity was replayed by the attack");
+        Assert.True(report.VictimPreTouches > 0, "tenant B never opened a route with the value tenant A was about to send");
+    }
+
+    [Fact]
+    public async Task The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check()
+    {
+        // Critic p03 round 1, plant P2: deleting a role never checks what it grants.
+        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("changed", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("DELETE /api/identity/roles/{id:guid}", result.Checked);
     }
 
     [Fact]

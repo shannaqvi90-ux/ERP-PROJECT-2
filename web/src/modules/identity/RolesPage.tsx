@@ -3,7 +3,7 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleName, type Permission, type Role, type RolePage } from "./model";
+import { isTyping, roleActions, roleName, type Permission, type Role, type RolePage } from "./model";
 import { PermissionMatrix } from "./PermissionMatrix";
 import { formKeys } from "./UserPanel";
 import "./identity.css";
@@ -143,7 +143,7 @@ function RoleEditor({
   onSaved: (role: Role, deleted?: boolean) => void;
 }) {
   const { t, language } = useI18n();
-  const { state, can } = useSession();
+  const { state } = useSession();
   const [nameEn, setNameEn] = useState(role?.nameEn ?? "");
   const [nameAr, setNameAr] = useState(role?.nameAr ?? "");
   const [selected, setSelected] = useState<Set<string>>(new Set(role?.permissions ?? []));
@@ -154,7 +154,8 @@ function RoleEditor({
   const firstRef = useRef<HTMLInputElement>(null);
   const id = useId();
   const held = new Set(state.status === "signedIn" ? state.session.permissions : []);
-  const readOnly = role?.isSystem === true || !can(role ? "identity.roles.update" : "identity.roles.create");
+  const actions = roleActions(role, held);
+  const readOnly = !actions.edit;
 
   useEffect(() => firstRef.current?.focus(), []);
 
@@ -207,6 +208,7 @@ function RoleEditor({
     >
       <h2 id={`${id}-title`}>{role ? roleName(role, language) : t("identity.roles.new")}</h2>
       {role?.isSystem && <p className="muted">{t("identity.roles.systemNote")}</p>}
+      {role && !role.isSystem && actions.beyondOwn && <p className="muted">{t("identity.roles.beyondOwnNote")}</p>}
       <div className="id-two">
         <label className="field">
           <span className="field-label">{t("identity.roles.nameEn")}</span>
@@ -231,12 +233,12 @@ function RoleEditor({
             {role ? t("identity.form.save") : t("identity.form.create")}
           </button>
         )}
-        {role && can("identity.roles.create") && (
+        {role && actions.copy && (
           <button type="button" className="button" onClick={() => onCopy(role)}>
             {t("identity.roles.copy")}
           </button>
         )}
-        {role && !role.isSystem && can("identity.roles.delete") && !confirmDelete && (
+        {role && actions.delete && !confirmDelete && (
           <button type="button" className="button danger" onClick={() => setConfirmDelete(true)}>
             {t("identity.roles.delete")}
           </button>

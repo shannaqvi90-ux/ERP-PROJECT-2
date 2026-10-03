@@ -19,7 +19,7 @@ public sealed class LeakyModule : ErpModule
 
     public override void Register(ModuleBuilder module)
     {
-        module.Permissions("leaky.data.read", "leaky.data.update");
+        module.Permissions("leaky.data.read", "leaky.data.update", "leaky.data.delete");
         module.Services.AddSingleton<LastListHolder>();
         module.Endpoints(group =>
         {
@@ -134,6 +134,96 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { touched = true });
             }).WithName("leaky.touch").WithSummary("Planted bug: a read that writes.").RequirePermission("leaky.data.read");
 
+            // Bug 27 (critic p03 round 1, plant T2): "what can this person do", cached per person id
+            // in a dictionary the endpoint lambda captures. The key has no tenant, so whoever asks
+            // for an id second gets the answer of whoever asked first. People are created through
+            // POST /people, so tenant B's own activity opens the route with the person it created,
+            // an id that is not among the few ids per table the attack samples; only replaying
+            // tenant B's exact route values (and having B open every id A sends) finds it.
+            var accessCache = new System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard>();
+            group.MapGet("/people/{id:guid}/access", async (Guid id, ErpDbSession session) =>
+            {
+                if (accessCache.TryGetValue(id, out var hit))
+                {
+                    return Results.Ok(hit);
+                }
+                if (await PersonAsync(session, id) is not { } card)
+                {
+                    return Results.NotFound();
+                }
+                accessCache[id] = card;
+                return Results.Ok(card);
+            }).WithName("leaky.personAccess").WithSummary("Planted bug: a person's access view cached per id in a captured dictionary.").RequirePermission("leaky.data.read");
+
+            // Bug 28 (critic p03 round 1, plant T1): the same per-id cache in a static field.
+            group.MapGet("/people/{id:guid}/card", async (Guid id, ErpDbSession session) =>
+            {
+                if (PersonCards.TryGetValue(id, out var hit))
+                {
+                    return Results.Ok(hit);
+                }
+                if (await PersonAsync(session, id) is not { } card)
+                {
+                    return Results.NotFound();
+                }
+                PersonCards[id] = card;
+                return Results.Ok(card);
+            }).WithName("leaky.personCard").WithSummary("Planted bug: a person's card cached per id in a static dictionary.").RequirePermission("leaky.data.read");
+
+            // People are users this module creates itself (tenant-bound, so this write is correct).
+            group.MapPost("/people", async (NewPerson request, ErpDbSession session) =>
+            {
+                var id = Guid.NewGuid();
+                var email = Cut((request.Email ?? $"{id:N}@people.example").Trim().ToLowerInvariant(), 254);
+                await using var command = new NpgsqlCommand(
+                    "INSERT INTO identity.users (id, tenant_id, email, email_normalized, display_name, language, is_active) " +
+                    "VALUES (@id, erp.current_tenant_id(), @e, @e, @n, 'en', true) ON CONFLICT DO NOTHING", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("e", email);
+                command.Parameters.AddWithValue("n", Cut(string.IsNullOrWhiteSpace(request.DisplayName) ? email : request.DisplayName.Trim(), 200));
+                return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/people/{id}", new { id }) : Results.Conflict();
+            }).WithName("leaky.createPerson").WithSummary("Creates a person (a user of this workspace).").RequirePermission("leaky.data.update");
+
+            // Bug 29 (critic p03 round 1, plant P2): roles are created only within the caller's own
+            // permissions, but deleting one never checks what it grants, so a user who may delete
+            // roles removes roles granting far more than they hold.
+            group.MapPost("/roles", async (NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var permissions = (request.Permissions ?? []).Distinct().ToArray();
+                if (!permissions.All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                var id = Guid.NewGuid();
+                await using var command = new NpgsqlCommand(
+                    "INSERT INTO identity.roles (id, tenant_id, name_en, name_ar, permissions, is_system) VALUES (@id, erp.current_tenant_id(), @en, @ar, @p, false) ON CONFLICT DO NOTHING",
+                    session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("en", Cut(request.NameEn ?? $"Leaky {id:N}", 100));
+                command.Parameters.AddWithValue("ar", Cut(request.NameAr ?? $"مسرب {id:N}", 100));
+                command.Parameters.AddWithValue("p", permissions);
+                return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/roles/{id}", new { id }) : Results.Conflict();
+            }).WithName("leaky.createRole").WithSummary("Creates a role granting only what the caller holds.").RequirePermission("leaky.data.update");
+
+            group.MapGet("/roles/{id:guid}", async (Guid id, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT name_en, permissions FROM identity.roles WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                await using var reader = await command.ExecuteReaderAsync();
+                return await reader.ReadAsync()
+                    ? Results.Ok(new { id, nameEn = reader.GetString(0), permissions = reader.GetFieldValue<string[]>(1) })
+                    : Results.NotFound();
+            }).WithName("leaky.getRole").WithSummary("One role.").RequirePermission("leaky.data.read");
+
+            group.MapDelete("/roles/{id:guid}", async (Guid id, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand(
+                    "DELETE FROM identity.user_roles WHERE role_id = @id; DELETE FROM identity.roles WHERE id = @id AND NOT is_system",
+                    session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                return await command.ExecuteNonQueryAsync() > 0 ? Results.NoContent() : Results.NotFound();
+            }).WithName("leaky.deleteRole").WithSummary("Planted bug: deletes any role, whatever it grants.").RequirePermission("leaky.data.delete");
+
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
                 Results.Ok(await ResolveLoginAsync(session, email ?? "")))
@@ -178,6 +268,28 @@ public sealed class LeakyModule : ErpModule
     }
 
     private static string? cachedTenant;
+
+    /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();
+
+    public sealed record PersonCard(Guid Id, string DisplayName, string Email, IReadOnlyList<Guid> RoleIds);
+
+    public sealed record NewPerson(string? DisplayName, string? Email);
+
+    public sealed record NewRole(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions);
+
+    private static string Cut(string value, int max) => value.Length <= max ? value : value[..max].Trim();
+
+    private static async Task<PersonCard?> PersonAsync(ErpDbSession session, Guid id)
+    {
+        await using var command = new NpgsqlCommand(
+            "SELECT u.display_name, u.email, coalesce(array_agg(ur.role_id) FILTER (WHERE ur.role_id IS NOT NULL), '{}') " +
+            "FROM identity.users u LEFT JOIN identity.user_roles ur ON ur.user_id = u.id WHERE u.id = @id GROUP BY u.id",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", id);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? new PersonCard(id, reader.GetString(0), reader.GetString(1), reader.GetFieldValue<Guid[]>(2)) : null;
+    }
 
     /// <summary>Planted process-wide state: a singleton with a mutable field.</summary>
     public sealed class LastListHolder

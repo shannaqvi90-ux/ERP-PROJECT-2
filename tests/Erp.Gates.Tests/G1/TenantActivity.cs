@@ -53,6 +53,8 @@ public sealed class TenantActivity
     private readonly List<Actor> _actors = [];
     private readonly Dictionary<string, List<string>> _created = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _routes = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _routeValues = new(StringComparer.OrdinalIgnoreCase);
+    private int _preTouches;
     private readonly Lock _lock = new();
     private MarkerSet? _forbidden;
     private int _requests;
@@ -85,6 +87,23 @@ public sealed class TenantActivity
 
     /// <summary>Requests sent by the background reader while tenant A attacked.</summary>
     public int ConcurrentRequests { get; private set; }
+
+    /// <summary>Every value this tenant put into a route parameter (its own ids that answered, and
+    /// the records it created). Tenant A's route attack replays each of them on every route, so a
+    /// cache keyed by a route id alone (the shape of critic p03 round 1's plants T1 and T2: the
+    /// access view of a user cached per user id) is read back with exactly the id tenant B filled
+    /// it with, not with some other id of tenant B that was never cached.</summary>
+    public IReadOnlyList<string> RouteValues
+    {
+        get
+        {
+            lock (_lock) return _routeValues.Order(StringComparer.Ordinal).ToList();
+        }
+    }
+
+    /// <summary>Requests in which this tenant opened a route with the very value tenant A was about
+    /// to send in it.</summary>
+    public int PreTouches => _preTouches;
 
     /// <summary>Reasons the activity may have been blind (an actor signed out, nothing answered).</summary>
     public List<string> BlindSpots { get; } = [];
@@ -129,6 +148,7 @@ public sealed class TenantActivity
                 {
                     if (!_created.TryGetValue(collection, out var ids)) _created[collection] = ids = [];
                     ids.Add(id);
+                    _routeValues.Add(id);
                 }
             }
         }
@@ -240,6 +260,33 @@ public sealed class TenantActivity
         await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
     }
 
+    /// <summary>
+    /// Before tenant A attacks a route, tenant B's administrator and read-only user open it (GET)
+    /// with every value tenant A is about to put in its route parameters: whatever a handler keeps
+    /// per id (a closure, a static or a singleton cache keyed without the tenant) then holds tenant
+    /// B's answer for each id tenant A sends, so a leak through it cannot hide behind the choice of
+    /// ids. Only GET routes with parameters; writes are left to <see cref="WriteAsync"/>.
+    /// </summary>
+    public async Task TouchEveryAsync(ApiEndpoint endpoint, IEnumerable<string> values, string phase)
+    {
+        if (endpoint.Method != "GET" || endpoint.RouteParameters.Count == 0 || endpoint.Pattern.Contains("{*", StringComparison.Ordinal))
+        {
+            return;
+        }
+        var work = new List<(Actor Actor, string Path)>();
+        foreach (var value in values.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var path = endpoint.Path(_ => value);
+            work.Add((_actors[0], path));
+            work.Add((_actors[^1], path));
+        }
+        await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) =>
+        {
+            await SendAsync(item.Actor, "GET", item.Path, null, $"GET {item.Path} [{phase}]");
+            Interlocked.Increment(ref _preTouches);
+        });
+    }
+
     /// <summary>A quick round of every GET by the administrator (after tenant A wrote, so a write
     /// that poisoned a process-wide cache is read back by tenant B).</summary>
     public async Task ReadRoundAsync(TenantSnapshot own, string phase)
@@ -326,7 +373,11 @@ public sealed class TenantActivity
         var key = $"{CollectionOf(endpoint.Pattern)}|{forWrite}";
         lock (_lock)
         {
-            if (_routes.TryGetValue(key, out var known)) return endpoint.Path(_ => known);
+            if (_routes.TryGetValue(key, out var known))
+            {
+                _routeValues.Add(known);
+                return endpoint.Path(_ => known);
+            }
         }
         var candidates = new List<string>();
         lock (_lock)
@@ -345,7 +396,11 @@ public sealed class TenantActivity
             var readPath = _endpoints.Any(e => e.Method == "GET" && e.Pattern == endpoint.Pattern) ? path : null;
             if (readPath is null)
             {
-                lock (_lock) _routes[key] = candidate;
+                lock (_lock)
+                {
+                    _routes[key] = candidate;
+                    _routeValues.Add(candidate);
+                }
                 return path;
             }
             using var probe = new HttpRequestMessage(HttpMethod.Get, readPath);
@@ -353,10 +408,15 @@ public sealed class TenantActivity
             Interlocked.Increment(ref _requests);
             if (response.IsSuccessStatusCode)
             {
-                lock (_lock) _routes[key] = candidate;
+                lock (_lock)
+                {
+                    _routes[key] = candidate;
+                    _routeValues.Add(candidate);
+                }
                 return path;
             }
         }
+        lock (_lock) _routeValues.Add(candidates[0]);
         return endpoint.Path(_ => candidates[0]);
     }
 

@@ -100,6 +100,80 @@ test.describe("users, roles and permissions", () => {
     await expect(page.getByText(`Role ${name} copy deleted.`)).toBeVisible();
   });
 
+  test("a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only", async ({ page, browser }) => {
+    const tag = unique();
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const create = async (url: string, data: object) => {
+      const response = await page.request.post(url, { headers, data });
+      expect(response.status(), `POST ${url}`).toBe(201);
+      return (await response.json()) as { id: string };
+    };
+    const keeper = await create("/api/identity/roles", {
+      nameEn: `Role keeper ${tag}`,
+      nameAr: `حافظ الأدوار ${tag}`,
+      permissions: ["identity.roles.read", "identity.roles.update", "identity.roles.create", "identity.users.read"],
+    });
+    const plain = await create("/api/identity/roles", { nameEn: `Viewers ${tag}`, nameAr: `مشاهدون ${tag}`, permissions: ["identity.users.read"] });
+    await create("/api/identity/roles", {
+      nameEn: `Password desk ${tag}`,
+      nameAr: `مكتب كلمات المرور ${tag}`,
+      permissions: ["identity.users.read", "identity.users.resetPassword"],
+    });
+    const email = `e2e.keeper.${tag}@alnoor.example`;
+    await create("/api/identity/users", { email, displayName: `Role Keeper ${tag}`, language: "en", password: "Keeper-Pass-2026", mustChangePassword: false, roleIds: [keeper.id] });
+
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, locale: "en-US" });
+    const other = await context.newPage();
+    await freshStart(other, "en");
+    await signIn(other, email, "Keeper-Pass-2026");
+    await other.locator('nav a[href="/identity/roles"]').first().click();
+    await other.locator("table tbody tr", { hasText: `Viewers ${tag}` }).click();
+    await expect(other.getByRole("button", { name: "Save" })).toBeVisible();
+    await expect(other.getByRole("button", { name: "Copy role" })).toBeVisible();
+    await expect(other.getByRole("button", { name: "Delete role" })).toHaveCount(0);
+    // The API refuses what the screen does not offer.
+    expect((await other.request.delete(`/api/identity/roles/${plain.id}`, { headers })).status()).toBe(403);
+
+    await other.keyboard.press("Escape");
+    await other.locator("table tbody tr", { hasText: `Password desk ${tag}` }).click();
+    await expect(other.getByText("only someone who holds all of them can change, copy or delete it")).toBeVisible();
+    await expect(other.getByRole("button", { name: "Save" })).toHaveCount(0);
+    await expect(other.getByRole("button", { name: "Copy role" })).toHaveCount(0);
+    await context.close();
+  });
+
+  test("an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted", async ({ page }) => {
+    const tag = unique();
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const response = await page.request.post("/api/identity/users", {
+      headers,
+      data: { email: `e2e.typo.${tag}@alnor.example`, displayName: `Typo ${tag}`, language: "en", roleIds: [] },
+    });
+    expect(response.status()).toBe(201);
+    const { id } = (await response.json()) as { id: string };
+    await page.goto(`/identity/users?open=${id}`);
+    const address = page.locator('aside input[name="email"]');
+    await expect(address).toHaveValue(`e2e.typo.${tag}@alnor.example`);
+    await address.fill(`e2e.typo.${tag}@alnoor.example`);
+    await page.locator('aside input[name="displayNameAr"]').fill(`خطأ ${tag}`);
+    await page.keyboard.press("Control+Enter");
+    await expect(page.getByText("Saved.", { exact: false }).first()).toBeVisible();
+    const saved = (await (await page.request.get(`/api/identity/users/${id}`)).json()) as { email: string; displayNameAr: string };
+    expect(saved.email).toBe(`e2e.typo.${tag}@alnoor.example`);
+    expect(saved.displayNameAr).toBe(`خطأ ${tag}`);
+
+    await page.getByRole("button", { name: "Delete user" }).click();
+    await page.locator(".id-confirm").getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(page.getByText(`Typo ${tag} deleted.`)).toBeVisible();
+    expect((await page.request.get(`/api/identity/users/${id}`)).status()).toBe(404);
+  });
+
   test("the Administrator role and the matrix read right to left in Arabic", async ({ page }) => {
     await freshStart(page, "ar");
     await signIn(page, users.adminArabic);
