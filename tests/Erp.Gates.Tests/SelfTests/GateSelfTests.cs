@@ -168,6 +168,29 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public async Task The_database_check_catches_a_unique_index_across_tenants()
+    {
+        // Critic p03 round 1, plant U: e-mail unique across the platform.
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "CREATE UNIQUE INDEX selftest_users_email_global ON identity.users (email_normalized)");
+        }
+        try
+        {
+            var (problems, _) = await G1UniqueIndexTests.ProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("identity.users.selftest_users_email_global is unique across every tenant", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP INDEX identity.selftest_users_email_global");
+        }
+    }
+
+    [Fact]
     public async Task The_database_check_catches_a_table_without_row_level_security()
     {
         await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
