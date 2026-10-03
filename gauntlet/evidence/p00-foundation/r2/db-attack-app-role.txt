@@ -1,0 +1,139 @@
+select current_user, session_user;
+ current_user | session_user 
+--------------+--------------
+ erp_app      | erp_app
+(1 row)
+
+select count(*) as users_no_tenant from identity.users;
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+select count(*) as tenants_no_tenant from tenancy.tenants;
+ tenants_no_tenant 
+-------------------
+                 0
+(1 row)
+
+begin;
+BEGIN
+select set_config('app.tenant_id','0190a000-0000-7000-8000-000000000001',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1790984714.891629
+(1 row)
+
+select count(*) as visible_users, count(*) filter (where tenant_id='0190a000-0000-7000-8000-000000000002') as b_rows from identity.users;
+ visible_users | b_rows 
+---------------+--------
+        100004 |      0
+(1 row)
+
+select count(*) as b_by_id from identity.users where tenant_id='0190a000-0000-7000-8000-000000000002';
+ b_by_id 
+---------
+       0
+(1 row)
+
+insert into identity.roles(id,tenant_id,name_en,name_ar,permissions,is_system,created_at,updated_at) values (gen_random_uuid(),'0190a000-0000-7000-8000-000000000002','x','x','{}',false,now(),now());
+ERROR:  new row violates row-level security policy for table "roles"
+rollback;
+ROLLBACK
+begin;
+BEGIN
+select set_config('app.tenant_id','0190a000-0000-7000-8000-000000000001',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1790984714.916595
+(1 row)
+
+update identity.users set display_name='pwned' where tenant_id='0190a000-0000-7000-8000-000000000002';
+UPDATE 0
+update identity.users set tenant_id='0190a000-0000-7000-8000-000000000002' where id=(select id from identity.users limit 1);
+ERROR:  new row violates row-level security policy for table "users"
+rollback;
+ROLLBACK
+select set_config('app.tenant_id','0190a000-0000-7000-8000-000000000002',false);
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+select set_config('app.tenant_tx', '1', false);
+ set_config 
+------------
+ 1
+(1 row)
+
+select count(*) as after_session_level_set from identity.users;
+ after_session_level_set 
+-------------------------
+                       0
+(1 row)
+
+reset all;
+RESET
+alter table identity.users disable row level security;
+ERROR:  must be owner of table users
+alter table identity.users no force row level security;
+ERROR:  must be owner of table users
+set role erp_owner;
+ERROR:  permission denied to set role "erp_owner"
+set role erp_auth;
+ERROR:  permission denied to set role "erp_auth"
+set row_security = off;
+SET
+select count(*) from identity.users;
+ERROR:  query would be affected by row-level security policy for table "users"
+reset row_security;
+RESET
+update audit.entries set table_name='x';
+ERROR:  permission denied for table entries
+delete from audit.entries;
+ERROR:  permission denied for table entries
+create table identity.evil(x int);
+ERROR:  permission denied for schema identity
+LINE 1: create table identity.evil(x int);
+                     ^
+create function public.f() returns int language sql as 'select 1';
+ERROR:  permission denied for schema public
+select tenant_id, user_id, left(password_hash,20) from identity.resolve_login('admin@gulfsteel.example');
+              tenant_id               |               user_id                |         left         
+--------------------------------------+--------------------------------------+----------------------
+ 0190a000-0000-7000-8000-000000000002 | 01a0ff01-812e-79f1-9401-523b9f2ee820 | pbkdf2-sha512$210000
+(1 row)
+
+begin;
+BEGIN
+select set_config('app.tenant_id','0190a000-0000-7000-8000-000000000001',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1790984714.926735
+(1 row)
+
+select count(*) as resolve_login_bound from identity.resolve_login('admin@gulfsteel.example');
+ resolve_login_bound 
+---------------------
+                   0
+(1 row)
+
+rollback;
+ROLLBACK
+select * from pg_stat_activity where datname='erp' limit 0;
+ datid | datname | pid | leader_pid | usesysid | usename | application_name | client_addr | client_hostname | client_port | backend_start | xact_start | query_start | state_change | wait_event_type | wait_event | state | backend_xid | backend_xmin | query_id | query | backend_type 
+-------+---------+-----+------------+----------+---------+------------------+-------------+-----------------+-------------+---------------+------------+-------------+--------------+-----------------+------------+-------+-------------+--------------+----------+-------+--------------
+(0 rows)
+
+select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where prosecdef and n.nspname not in ('pg_catalog','information_schema');
+ count 
+-------
+     2
+(1 row)
+
+copy identity.users to '/tmp/x.csv';
+ERROR:  permission denied to COPY to a file
+DETAIL:  Only roles with privileges of the "pg_write_server_files" role may COPY to a file.
+HINT:  Anyone can COPY to stdout or from stdin. psql's \copy command also works for anyone.
+select pg_read_file('/etc/passwd', 0, 10);
+ERROR:  permission denied for function pg_read_file

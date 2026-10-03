@@ -1,0 +1,317 @@
+Test run for /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.44]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.69]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:12.68]     Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [FAIL]
+[xUnit.net 00:00:12.68]       PUT /api/identity/me/preferences: 400
+[xUnit.net 00:00:12.68]       GET /api/identity/permissions: 200
+[xUnit.net 00:00:12.68]       GET /api/identity/roles: 200
+[xUnit.net 00:00:12.68]       POST /api/identity/roles: 400
+[xUnit.net 00:00:12.68]       DELETE /api/identity/roles/{id:guid}: 404
+[xUnit.net 00:00:12.68]       GET /api/identity/roles/{id:guid}: 404
+[xUnit.net 00:00:12.68]       PUT /api/identity/roles/{id:guid}: 400
+[xUnit.net 00:00:12.68]       GET /api/identity/users: 200
+[xUnit.net 00:00:12.68]       POST /api/identity/users: 400
+[xUnit.net 00:00:12.68]       GET /api/identity/users/{id:guid}: 404
+[xUnit.net 00:00:12.68]       PUT /api/identity/users/{id:guid}: 400
+[xUnit.net 00:00:12.68]       GET /api/tenancy/tenant: 200
+[xUnit.net 00:00:12.68]       PUT /api/tenancy/tenant: 400
+[xUnit.net 00:00:12.68]       Stack Trace:
+[xUnit.net 00:00:12.68]         /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(114,0): at Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu()
+[xUnit.net 00:00:12.68]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [44 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [19 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [589 ms]
+  Error Message:
+   PUT /api/identity/me/preferences: 400
+GET /api/identity/permissions: 200
+GET /api/identity/roles: 200
+POST /api/identity/roles: 400
+DELETE /api/identity/roles/{id:guid}: 404
+GET /api/identity/roles/{id:guid}: 404
+PUT /api/identity/roles/{id:guid}: 400
+GET /api/identity/users: 200
+POST /api/identity/users: 400
+GET /api/identity/users/{id:guid}: 404
+PUT /api/identity/users/{id:guid}: 400
+GET /api/tenancy/tenant: 200
+PUT /api/tenancy/tenant: 400
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu() in /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 114
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [31 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [2 s]
+[xUnit.net 00:00:15.65]     Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [FAIL]
+[xUnit.net 00:00:15.65]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.65]       Expected: Forbidden
+[xUnit.net 00:00:15.65]       Actual:   OK
+[xUnit.net 00:00:15.65]       Stack Trace:
+[xUnit.net 00:00:15.65]         /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(309,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone()
+[xUnit.net 00:00:15.65]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [664 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone() in /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 309
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:19.93]     Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [FAIL]
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.profile.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.create: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.delete: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.roles.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.create: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       identity.users.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/identity/permissions answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/identity/roles answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: POST /api/identity/roles answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/identity/users answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: POST /api/identity/users answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+[xUnit.net 00:00:19.93]       tenancy.tenant.update: GET /api/tenancy/tenant answered 200 (expected 403)
+[xUnit.net 00:00:19.93]       Stack Trace:
+[xUnit.net 00:00:19.94]         /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(159,0): at Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it()
+[xUnit.net 00:00:19.94]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [4 s]
+  Error Message:
+   identity.profile.update: GET /api/identity/permissions answered 200 (expected 403)
+identity.profile.update: GET /api/identity/roles answered 200 (expected 403)
+identity.profile.update: POST /api/identity/roles answered 400 (expected 403)
+identity.profile.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.profile.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.profile.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.profile.update: GET /api/identity/users answered 200 (expected 403)
+identity.profile.update: POST /api/identity/users answered 400 (expected 403)
+identity.profile.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.profile.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.profile.update: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.profile.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.roles.create: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.roles.create: GET /api/identity/permissions answered 200 (expected 403)
+identity.roles.create: GET /api/identity/roles answered 200 (expected 403)
+identity.roles.create: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.create: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.create: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.roles.create: GET /api/identity/users answered 200 (expected 403)
+identity.roles.create: POST /api/identity/users answered 400 (expected 403)
+identity.roles.create: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.roles.create: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.roles.create: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.roles.create: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.roles.delete: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.roles.delete: GET /api/identity/permissions answered 200 (expected 403)
+identity.roles.delete: GET /api/identity/roles answered 200 (expected 403)
+identity.roles.delete: POST /api/identity/roles answered 400 (expected 403)
+identity.roles.delete: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.delete: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.roles.delete: GET /api/identity/users answered 200 (expected 403)
+identity.roles.delete: POST /api/identity/users answered 400 (expected 403)
+identity.roles.delete: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.roles.delete: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.roles.delete: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.roles.delete: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.roles.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.roles.read: POST /api/identity/roles answered 400 (expected 403)
+identity.roles.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.roles.read: GET /api/identity/users answered 200 (expected 403)
+identity.roles.read: POST /api/identity/users answered 400 (expected 403)
+identity.roles.read: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.roles.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.roles.read: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.roles.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.roles.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.roles.update: GET /api/identity/permissions answered 200 (expected 403)
+identity.roles.update: GET /api/identity/roles answered 200 (expected 403)
+identity.roles.update: POST /api/identity/roles answered 400 (expected 403)
+identity.roles.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.update: GET /api/identity/users answered 200 (expected 403)
+identity.roles.update: POST /api/identity/users answered 400 (expected 403)
+identity.roles.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.roles.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.roles.update: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.roles.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.users.create: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.users.create: GET /api/identity/permissions answered 200 (expected 403)
+identity.users.create: GET /api/identity/roles answered 200 (expected 403)
+identity.users.create: POST /api/identity/roles answered 400 (expected 403)
+identity.users.create: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.create: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.create: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.users.create: GET /api/identity/users answered 200 (expected 403)
+identity.users.create: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.users.create: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.users.create: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.users.create: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.users.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.users.read: GET /api/identity/permissions answered 200 (expected 403)
+identity.users.read: GET /api/identity/roles answered 200 (expected 403)
+identity.users.read: POST /api/identity/roles answered 400 (expected 403)
+identity.users.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.read: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.users.read: POST /api/identity/users answered 400 (expected 403)
+identity.users.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+identity.users.read: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.users.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+identity.users.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+identity.users.update: GET /api/identity/permissions answered 200 (expected 403)
+identity.users.update: GET /api/identity/roles answered 200 (expected 403)
+identity.users.update: POST /api/identity/roles answered 400 (expected 403)
+identity.users.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.users.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+identity.users.update: GET /api/identity/users answered 200 (expected 403)
+identity.users.update: POST /api/identity/users answered 400 (expected 403)
+identity.users.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.users.update: GET /api/tenancy/tenant answered 200 (expected 403)
+identity.users.update: PUT /api/tenancy/tenant answered 400 (expected 403)
+tenancy.tenant.read: PUT /api/identity/me/preferences answered 400 (expected 403)
+tenancy.tenant.read: GET /api/identity/permissions answered 200 (expected 403)
+tenancy.tenant.read: GET /api/identity/roles answered 200 (expected 403)
+tenancy.tenant.read: POST /api/identity/roles answered 400 (expected 403)
+tenancy.tenant.read: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+tenancy.tenant.read: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+tenancy.tenant.read: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+tenancy.tenant.read: GET /api/identity/users answered 200 (expected 403)
+tenancy.tenant.read: POST /api/identity/users answered 400 (expected 403)
+tenancy.tenant.read: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+tenancy.tenant.read: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+tenancy.tenant.read: PUT /api/tenancy/tenant answered 400 (expected 403)
+tenancy.tenant.update: PUT /api/identity/me/preferences answered 400 (expected 403)
+tenancy.tenant.update: GET /api/identity/permissions answered 200 (expected 403)
+tenancy.tenant.update: GET /api/identity/roles answered 200 (expected 403)
+tenancy.tenant.update: POST /api/identity/roles answered 400 (expected 403)
+tenancy.tenant.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+tenancy.tenant.update: GET /api/identity/roles/{id:guid} answered 404 (expected 403)
+tenancy.tenant.update: PUT /api/identity/roles/{id:guid} answered 400 (expected 403)
+tenancy.tenant.update: GET /api/identity/users answered 200 (expected 403)
+tenancy.tenant.update: POST /api/identity/users answered 400 (expected 403)
+tenancy.tenant.update: GET /api/identity/users/{id:guid} answered 404 (expected 403)
+tenancy.tenant.update: PUT /api/identity/users/{id:guid} answered 400 (expected 403)
+tenancy.tenant.update: GET /api/tenancy/tenant answered 200 (expected 403)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it() in /home/user/critic/p00-foundation-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 159
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+[xUnit.net 00:00:22.45]   Finished:    Erp.Gates.Tests (ID = '0b447baf1ddb9745db43584bf400d57b41690941260afb849fdee638ae41ffd3')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [537 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+
+Test Run Failed.
+Total tests: 13
+     Passed: 10
+     Failed: 3
+ Total time: 23.0093 Seconds
+rc=1
