@@ -1,0 +1,31 @@
+  rolname  | rolbypassrls | rolsuper 
+-----------+--------------+----------
+ erp_owner | f            | f
+ erp_app   | f            | f
+ erp_auth  | f            | f
+(3 rows)
+
+SET
+ unbound_users 
+---------------
+             0
+(1 row)
+
+ unbound_audit 
+---------------
+             0
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ other_tenant_rows_visible | visible 
+---------------------------+---------
+                         0 |       0
+(1 row)
+
+UPDATE 0
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
