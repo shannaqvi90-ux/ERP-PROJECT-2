@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Erp.Testing;
+using Microsoft.EntityFrameworkCore;
 
 namespace Erp.Modules.Tenancy.Tests;
 
@@ -249,5 +250,39 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         var changes = (string)(await command.ExecuteScalarAsync())!;
         Assert.Contains("logo_hash", changes, StringComparison.Ordinal);
         Assert.DoesNotContain("\"logo\"", changes, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_companies_list_never_reads_logo_bytes_and_still_searches_filters_sorts_and_groups()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        const string png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+        var id = (await Json(await admin.PostAsJsonAsync("/api/tenancy/companies", Company("T-LGL", "Logo List Trading LLC")))).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/companies/{id}/logo", new { contentType = "image/png", data = png })).StatusCode);
+
+        // The SQL a list page runs selects the row columns only, whatever the query asks for (the
+        // design-time context has no tenant, so its query filters are left out of this SQL).
+        var factory = new Erp.Modules.Tenancy.TenancyDbContextDesignFactory();
+        await using (var design = factory.CreateDbContext([]))
+        {
+            var binding = Erp.Modules.Tenancy.Companies.CompaniesList.Create();
+            var sql = binding.Apply(Erp.Modules.Tenancy.Companies.CompanyEndpoints.ListRows(design.Companies.IgnoreQueryFilters()),
+                new Erp.Kernel.Lists.ListRequest { Search = "list trading", Filter = "emirate eq 'dubai' and isActive eq true", Sort = "-legalNameAr" }).ToQueryString();
+            Assert.DoesNotContain("logo", sql, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("legal_name_ar", sql, StringComparison.Ordinal);
+        }
+
+        // And through HTTP the projection still serves search, filter, sort, keyset paging and groups.
+        var found = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?search=list%20trading&filter=emirate%20eq%20'dubai'&sort=-legalNameAr");
+        Assert.Equal(1, found.GetProperty("total").GetInt32());
+        Assert.Equal(id, found.GetProperty("items")[0].GetProperty("id").GetGuid());
+        var paged = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=1&sort=code");
+        Assert.Equal(1, paged.GetProperty("items").GetArrayLength());
+        var next = paged.GetProperty("next").GetString();
+        Assert.False(string.IsNullOrEmpty(next));
+        var second = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies?take=1&sort=code&after={Uri.EscapeDataString(next!)}");
+        Assert.NotEqual(paged.GetProperty("items")[0].GetProperty("id").GetGuid(), second.GetProperty("items")[0].GetProperty("id").GetGuid());
+        var grouped = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?groupBy=emirate");
+        Assert.True(grouped.GetProperty("groups").GetArrayLength() > 0);
     }
 }

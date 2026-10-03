@@ -145,7 +145,7 @@ internal static class CompanyEndpoints
     private static async Task<Results<Ok<ListPage<CompanyRow>>, ProblemHttpResult>> List(
         TenancyDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
-        var result = await catalog.ListBinding<Company>(CompaniesList.Key).QueryAsync(db.Companies.AsNoTracking(), request, http, cancellationToken);
+        var result = await catalog.ListBinding<Company>(CompaniesList.Key).QueryAsync(ListRows(db.Companies), request, http, cancellationToken);
         if (result.Problem is { } problem)
         {
             return problem;
@@ -157,6 +157,24 @@ internal static class CompanyEndpoints
         return TypedResults.Ok(result.ToPage(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
             TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version)));
     }
+
+    /// <summary>The columns a list row needs, never the logo bytes (up to 512 KB a company): a
+    /// list page reads only these, and filters, sort and paging compose over the projection.</summary>
+    internal static IQueryable<Company> ListRows(IQueryable<Company> companies) =>
+        companies.AsNoTracking().Select(c => new Company
+        {
+            Id = c.Id,
+            TenantId = c.TenantId,
+            CompanyId = c.CompanyId,
+            Code = c.Code,
+            LegalNameEn = c.LegalNameEn,
+            LegalNameAr = c.LegalNameAr,
+            BaseCurrency = c.BaseCurrency,
+            City = c.City,
+            Emirate = c.Emirate,
+            IsActive = c.IsActive,
+            Version = c.Version,
+        });
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
     {
