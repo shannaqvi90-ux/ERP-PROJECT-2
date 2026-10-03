@@ -52,7 +52,10 @@ that failed, on that account; administrators see the sign-in history and can unb
    and its GET endpoint takes `[AsParameters] ListRequest` and returns
    `catalog.ListBinding<Row>(key).QueryAsync(...)` as a `ListPage<T>`: search, filter language, sort,
    keyset and offset paging and grouping come with it (`docs/decisions/p05-list-search-query-contract.md`),
-   and `/api/lists/<key>/definition` and saved views appear for it automatically.
+   so does best-match-first ordering of searches with Arabic spelling variants
+   (`docs/decisions/p05-list-search-relevance.md`), and `/api/lists/<key>/definition` and saved views
+   appear for it automatically. A binding holds no state (keep caches off registration objects: the
+   G1 gates walk them field by field and judge every list answer against the asking tenant's rows).
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
    for every table. A list served from the database needs a GIN `gin_trgm_ops` index on its search
@@ -60,7 +63,7 @@ that failed, on that account; administrators see the sign-in history and can unb
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens
    (`routes.tsx`: each screen's path and permission match its menu entry; a list screen is a
    `<ListView listKey=…>`) and `i18n/{en,ar}.json` under `web/src/modules/<name>/`. List endpoints
-   return `{ items, total, next, groups }`. Counts are plural messages
+   return `{ items, total, next, groups, ranked }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
 5. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
