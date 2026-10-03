@@ -76,6 +76,7 @@ const CALLBACK_METHODS = new Set(['on', 'once', 'addListener', 'prependListener'
   'exposeFunction', 'exposeBinding', 'waitForEvent', 'waitForRequest', 'waitForResponse', 'addLocatorHandler']);
 const PASS_THROUGH = [Date, RegExp, Error, Map, Set, Promise, ArrayBuffer, URL];
 
+const INSPECT = Symbol.for('nodejs.util.inspect.custom');
 const isPlain = v => v !== null && typeof v === 'object' && (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
 
 export function unwrap(v, depth = 0) {
@@ -103,8 +104,18 @@ export function guard(raw) {
   const cls = raw.constructor?.name || 'Object';
   const proxy = new Proxy(raw, {
     get(target, prop) {
+      // Playwright's internals (_channel, _mainFrame ...) reach the browser without the methods
+      // below: a driver never needs them, measured or not (one kept from set-up would act later).
+      if (typeof prop === 'string' && prop.startsWith('_')) throw new UncountedAction(`reaching ${cls}.${prop}, an internal of the browser driver`);
       const value = Reflect.get(target, prop, target);
-      if (typeof prop === 'symbol') return typeof value === 'function' ? value.bind(target) : value;
+      if (typeof prop === 'symbol') {
+        if (typeof value !== 'function') return value;
+        return function guardedSymbolMethod(...args) {
+          // Symbol.asyncDispose closes a page or context; only inspection is harmless.
+          if (isMeasuring() && prop !== INSPECT) throw new UncountedAction(`${cls}[${String(prop)}]()`);
+          return value.apply(target, args);
+        };
+      }
       if (typeof value !== 'function') return guardValue(value);
       return function guardedMethod(...args) {
         if (isMeasuring() && !ALLOWED_WHILE_MEASURED[cls]?.has(prop)) throw new UncountedAction(`${cls}.${prop}()`);

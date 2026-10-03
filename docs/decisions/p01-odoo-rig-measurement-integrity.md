@@ -52,14 +52,20 @@ The round 2 critic found four faults in the instrument:
   - *Lint.* `test/drivers-lint.test.mjs` limits driver imports to the fixture clients and Node's
     file helpers. Drivers may not import Playwright, harness internals, network modules, `eval`,
     `Function` or dynamic `import()`.
-  - *Plants.* `test/guard.test.mjs` runs 24 planted drivers, and every one must end `invalid`: the
-    round-2 plant applied to the real `ours` sign-in driver, keyboard, mouse, a locator click or
-    fill, `goto`, `reload`, `evaluate` and `locator.evaluate` clicks, wait conditions that click,
-    set values, mutate the page, defer, run asynchronously, navigate or call the back end, Node
-    `fetch` and `http.request`, a new page, a new context, `page.request`, a keyboard stashed in
-    set-up, and a swallowed refusal. Further plants check that a driver cannot stop the clock or
-    drop steps, cannot pass its own action to `browserKey`, and cannot claim the controls. An
-    honest control driver on the same page must still verify.
+  - *Internals.* A driver can never reach Playwright's internals (`_channel`, `_mainFrame` and
+    other underscore properties), measured or not, so it cannot keep one from set-up and use it
+    later. Symbol-keyed methods (such as `Symbol.asyncDispose`, which closes a page) are refused
+    while measuring.
+  - *Plants.* `test/guard.test.mjs` holds 31 plants (counted by the ratchet as
+    `compare.guardPlants`). Every planted driver must end `invalid`: the round-2 plant applied to
+    the real `ours` sign-in driver; keyboard; mouse; a locator click or fill; `goto`; `reload`;
+    clicks through `evaluate` and `locator.evaluate`; wait conditions that click, set values,
+    mutate the page, defer, run asynchronously, navigate or call the back end; Node `fetch` and
+    `http.request`; a new page; a new context; `page.request`; an internal (`_mainFrame`); closing
+    the page; a keyboard stashed in set-up; a swallowed refusal; and an API sign-in inside the
+    measured part. Further plants check that a driver cannot stop the clock or drop steps, cannot
+    pass its own action to `browserKey`, cannot claim the controls, and cannot keep an internal
+    channel from set-up. An honest control driver on the same page must still verify.
 - **`browserKey` takes no action from the driver.** The key itself fixes the action (F5 and Ctrl+R
   reload, Alt+Left back, Alt+Right forward).
 - **Blindness.** A side-by-side output folder keeps everything a blind reviewer may see under

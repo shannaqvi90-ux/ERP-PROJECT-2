@@ -107,6 +107,8 @@ const PLANTS = {
   'a second page in the same context': async (op, ctx) => { await ctx.context.newPage(); },
   'a new browser context': async (op, ctx) => { await ctx.browser.newContext(); },
   'the page request context (page.request)': async (op, ctx) => { await ctx.page.request.post(base + '/api/things'); },
+  'reaching a browser-driver internal (_mainFrame)': async (op, ctx) => { await ctx.page._mainFrame.click('#go'); },
+  'closing the page (Symbol.asyncDispose)': async (op, ctx) => { await ctx.page[Symbol.asyncDispose](); },
   'an action whose refusal the driver swallows': async (op, ctx) => { try { await ctx.page.keyboard.press('Enter'); } catch { /* ignored */ } },
 };
 
@@ -123,6 +125,15 @@ test('plant: a keyboard kept from set-up and used while measured is refused', as
     async setup(ctx) { ctx.state.keyboard = ctx.page.keyboard; },
   }));
   assert.equal(r.status, 'invalid', r.error);
+});
+
+test('plant: an internal channel kept from set-up is refused there too', async () => {
+  let refused = null;
+  const r = await runDriver(planted(async () => {}, {
+    async setup(ctx) { try { ctx.state.channel = ctx.page._channel; } catch (e) { refused = e; } },
+  }));
+  assert.match(String(refused?.message), /internal of the browser driver/);
+  assert.equal(r.status, 'verified', 'the honest rest of the run still verifies');
 });
 
 test('plant: a driver cannot stop the clock, drop steps or reach the raw page', async () => {
