@@ -1,0 +1,27 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 7c0c4fc..46fb869 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -112,7 +112,21 @@ internal static class UserEndpoints
+             .WithSummary("Sign another user out everywhere: ends all of their sessions.")
+             .RequirePermission(IdentityPermissions.UsersUpdate);
+ 
+-        group.MapGet("/users/{id:guid}/access", Access)
++        // CRITIC PLANT T2: the access view cached per user id in a local the endpoint lambda captures (no tenant in the key).
++        var accessCache = new System.Collections.Concurrent.ConcurrentDictionary<Guid, UserAccessDto>();
++        group.MapGet("/users/{id:guid}/access", async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> (Guid id, IdentityDbContext db, ModuleCatalog catalog, StringCatalog strings, HttpContext http, CancellationToken cancellationToken) =>
++            {
++                if (accessCache.TryGetValue(id, out var hit))
++                {
++                    return TypedResults.Ok(hit);
++                }
++                var result = await Access(id, db, catalog, strings, http, cancellationToken);
++                if (result.Result is Ok<UserAccessDto> ok && ok.Value is { } dto)
++                {
++                    accessCache[id] = dto;
++                }
++                return result;
++            })
+             .WithName("identity.users.access")
+             .WithSummary("What the user can do and why: their roles, and every permission they hold with the roles that grant it.")
+             .RequirePermission(IdentityPermissions.UsersRead);

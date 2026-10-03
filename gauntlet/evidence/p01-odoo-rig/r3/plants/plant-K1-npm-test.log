@@ -1,0 +1,837 @@
+
+> gauntlet-compare@1.0.0 test
+> node --test --test-concurrency=1 "test/*.test.mjs"
+
+TAP version 13
+# Subtest: add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 1 - add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 4.377952
+  type: 'test'
+  ...
+# Subtest: api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 2 - api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.002731
+  type: 'test'
+  ...
+# Subtest: arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 3 - arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.083548
+  type: 'test'
+  ...
+# Subtest: attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 4 - attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.982944
+  type: 'test'
+  ...
+# Subtest: configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 5 - configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.211175
+  type: 'test'
+  ...
+# Subtest: create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 6 - create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.146268
+  type: 'test'
+  ...
+# Subtest: create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 7 - create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.13281
+  type: 'test'
+  ...
+# Subtest: custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 8 - custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.912387
+  type: 'test'
+  ...
+# Subtest: edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 9 - edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.078952
+  type: 'test'
+  ...
+# Subtest: export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 10 - export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.544692
+  type: 'test'
+  ...
+# Subtest: find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 11 - find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.01253
+  type: 'test'
+  ...
+# Subtest: find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 12 - find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 1.085787
+  type: 'test'
+  ...
+# Subtest: follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 13 - follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.907964
+  type: 'test'
+  ...
+# Subtest: import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 14 - import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.861224
+  type: 'test'
+  ...
+# Subtest: keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 15 - keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.722007
+  type: 'test'
+  ...
+# Subtest: see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 16 - see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.704632
+  type: 'test'
+  ...
+# Subtest: sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 17 - sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.959057
+  type: 'test'
+  ...
+# Subtest: switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 18 - switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.873344
+  type: 'test'
+  ...
+# Subtest: switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 19 - switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.887927
+  type: 'test'
+  ...
+# Subtest: who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 20 - who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 0.865471
+  type: 'test'
+  ...
+# Subtest: screenshot names are random and never name a product
+ok 21 - screenshot names are random and never name a product
+  ---
+  duration_ms: 5.591955
+  type: 'test'
+  ...
+# Subtest: revealsProduct catches product names in any case
+ok 22 - revealsProduct catches product names in any case
+  ---
+  duration_ms: 0.278473
+  type: 'test'
+  ...
+# Subtest: both products have a branding profile; extra brand words are added
+ok 23 - both products have a branding profile; extra brand words are added
+  ---
+  duration_ms: 0.347076
+  type: 'test'
+  ...
+# Subtest: letters A and B are assigned at random
+ok 24 - letters A and B are assigned at random
+  ---
+  duration_ms: 1.133934
+  type: 'test'
+  ...
+# Subtest: committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+ok 25 - committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+  ---
+  duration_ms: 0.541583
+  type: 'test'
+  ...
+# Subtest: the blind review page shows neutral captions, never the moments a driver named
+ok 26 - the blind review page shows neutral captions, never the moments a driver named
+  ---
+  duration_ms: 9.478168
+  type: 'test'
+  ...
+# Subtest: a placeholder naming the vendor is cleared, not painted over
+ok 27 - a placeholder naming the vendor is cleared, not painted over
+  ---
+  duration_ms: 0.260227
+  type: 'test'
+  ...
+# Subtest: a side-by-side folder keeps the blind part (shots, review page) apart from the key and results
+ok 28 - a side-by-side folder keeps the blind part (shots, review page) apart from the key and results
+  ---
+  duration_ms: 260.223587
+  type: 'test'
+  ...
+# Subtest: side by side, the products run in a random order per task
+ok 29 - side by side, the products run in a random order per task
+  ---
+  duration_ms: 0.688831
+  type: 'test'
+  ...
+# Subtest: --list prints every task
+ok 30 - --list prints every task
+  ---
+  duration_ms: 312.188345
+  type: 'test'
+  ...
+# Subtest: bad arguments fail with usage
+ok 31 - bad arguments fail with usage
+  ---
+  duration_ms: 655.243554
+  type: 'test'
+  ...
+# Subtest: one command runs a task on our product and writes a result JSON
+ok 32 - one command runs a task on our product and writes a result JSON
+  ---
+  duration_ms: 421.459262
+  type: 'test'
+  ...
+# Subtest: the blind review page shows A and B only and keeps the mapping in key.json
+ok 33 - the blind review page shows A and B only and keeps the mapping in key.json
+  ---
+  duration_ms: 10.354893
+  type: 'test'
+  ...
+# Subtest: ours wins only when strictly lower on every metric
+ok 34 - ours wins only when strictly lower on every metric
+  ---
+  duration_ms: 1.05096
+  type: 'test'
+  ...
+# Subtest: a tie is a loss
+ok 35 - a tie is a loss
+  ---
+  duration_ms: 0.30412
+  type: 'test'
+  ...
+# Subtest: an unbuilt or failed product is never a win
+ok 36 - an unbuilt or failed product is never a win
+  ---
+  duration_ms: 0.1774
+  type: 'test'
+  ...
+# Subtest: median of repeated runs uses the median machine seconds
+ok 37 - median of repeated runs uses the median machine seconds
+  ---
+  duration_ms: 0.440073
+  type: 'test'
+  ...
+# Subtest: the generator is deterministic: a fresh run reproduces the shared files byte for byte
+ok 38 - the generator is deterministic: a fresh run reproduces the shared files byte for byte
+  ---
+  duration_ms: 1593.287251
+  type: 'test'
+  ...
+# Subtest: volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows
+ok 39 - volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows
+  ---
+  duration_ms: 229.871104
+  type: 'test'
+  ...
+# Subtest: the needle name occurs exactly once and the import file has plain headers
+ok 40 - the needle name occurs exactly once and the import file has plain headers
+  ---
+  duration_ms: 103.680725
+  type: 'test'
+  ...
+# Subtest: the generator keeps rates as fixed six-decimal strings
+ok 41 - the generator keeps rates as fixed six-decimal strings
+  ---
+  duration_ms: 5.990027
+  type: 'test'
+  ...
+# Subtest: the random source is seeded
+ok 42 - the random source is seeded
+  ---
+  duration_ms: 0.174168
+  type: 'test'
+  ...
+# Subtest: every driver imports only the fixture clients and Node file helpers, and runs no unreadable code
+ok 43 - every driver imports only the fixture clients and Node file helpers, and runs no unreadable code
+  ---
+  duration_ms: 9.054666
+  type: 'test'
+  ...
+# Subtest: the driver lint catches planted escapes
+ok 44 - the driver lint catches planted escapes
+  ---
+  duration_ms: 0.292632
+  type: 'test'
+  ...
+# Subtest: control: an honest driver verifies; reading and locating are allowed while measured
+ok 45 - control: an honest driver verifies; reading and locating are allowed while measured
+  ---
+  duration_ms: 837.38628
+  type: 'test'
+  ...
+# Subtest: plant: typing through ctx.page.keyboard -> the run is invalid, never verified
+ok 46 - plant: typing through ctx.page.keyboard -> the run is invalid, never verified
+  ---
+  duration_ms: 549.405942
+  type: 'test'
+  ...
+# Subtest: plant: pressing a key through op.page.keyboard -> the run is invalid, never verified
+ok 47 - plant: pressing a key through op.page.keyboard -> the run is invalid, never verified
+  ---
+  duration_ms: 509.546987
+  type: 'test'
+  ...
+# Subtest: plant: clicking a locator directly -> the run is invalid, never verified
+ok 48 - plant: clicking a locator directly -> the run is invalid, never verified
+  ---
+  duration_ms: 598.907193
+  type: 'test'
+  ...
+# Subtest: plant: filling a field directly -> the run is invalid, never verified
+ok 49 - plant: filling a field directly -> the run is invalid, never verified
+  ---
+  duration_ms: 603.785381
+  type: 'test'
+  ...
+# Subtest: plant: the mouse -> the run is invalid, never verified
+ok 50 - plant: the mouse -> the run is invalid, never verified
+  ---
+  duration_ms: 595.189341
+  type: 'test'
+  ...
+# Subtest: plant: a deep link (goto) -> the run is invalid, never verified
+ok 51 - plant: a deep link (goto) -> the run is invalid, never verified
+  ---
+  duration_ms: 535.455398
+  type: 'test'
+  ...
+# Subtest: plant: a reload -> the run is invalid, never verified
+ok 52 - plant: a reload -> the run is invalid, never verified
+  ---
+  duration_ms: 637.787124
+  type: 'test'
+  ...
+# Subtest: plant: page script that clicks (evaluate) -> the run is invalid, never verified
+ok 53 - plant: page script that clicks (evaluate) -> the run is invalid, never verified
+  ---
+  duration_ms: 749.411216
+  type: 'test'
+  ...
+# Subtest: plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified
+ok 54 - plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified
+  ---
+  duration_ms: 670.899755
+  type: 'test'
+  ...
+# Subtest: plant: a condition that clicks -> the run is invalid, never verified
+ok 55 - plant: a condition that clicks -> the run is invalid, never verified
+  ---
+  duration_ms: 547.017385
+  type: 'test'
+  ...
+# Subtest: plant: a condition that sets a value -> the run is invalid, never verified
+ok 56 - plant: a condition that sets a value -> the run is invalid, never verified
+  ---
+  duration_ms: 722.754485
+  type: 'test'
+  ...
+# Subtest: plant: a condition that changes the page -> the run is invalid, never verified
+ok 57 - plant: a condition that changes the page -> the run is invalid, never verified
+  ---
+  duration_ms: 830.81429
+  type: 'test'
+  ...
+# Subtest: plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified
+ok 58 - plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified
+  ---
+  duration_ms: 1130.235878
+  type: 'test'
+  ...
+# Subtest: plant: an asynchronous condition -> the run is invalid, never verified
+ok 59 - plant: an asynchronous condition -> the run is invalid, never verified
+  ---
+  duration_ms: 962.410681
+  type: 'test'
+  ...
+# Subtest: plant: a condition that navigates -> the run is invalid, never verified
+ok 60 - plant: a condition that navigates -> the run is invalid, never verified
+  ---
+  duration_ms: 1629.0647
+  type: 'test'
+  ...
+# Subtest: plant: a condition that calls the back end from the page -> the run is invalid, never verified
+ok 61 - plant: a condition that calls the back end from the page -> the run is invalid, never verified
+  ---
+  duration_ms: 841.217671
+  type: 'test'
+  ...
+# Subtest: plant: a back-end call from the harness (fetch) -> the run is invalid, never verified
+ok 62 - plant: a back-end call from the harness (fetch) -> the run is invalid, never verified
+  ---
+  duration_ms: 740.380586
+  type: 'test'
+  ...
+# Subtest: plant: a back-end call from the harness (http.request) -> the run is invalid, never verified
+ok 63 - plant: a back-end call from the harness (http.request) -> the run is invalid, never verified
+  ---
+  duration_ms: 692.332029
+  type: 'test'
+  ...
+# Subtest: plant: a second page in the same context -> the run is invalid, never verified
+ok 64 - plant: a second page in the same context -> the run is invalid, never verified
+  ---
+  duration_ms: 726.91173
+  type: 'test'
+  ...
+# Subtest: plant: a new browser context -> the run is invalid, never verified
+ok 65 - plant: a new browser context -> the run is invalid, never verified
+  ---
+  duration_ms: 680.747547
+  type: 'test'
+  ...
+# Subtest: plant: the page request context (page.request) -> the run is invalid, never verified
+ok 66 - plant: the page request context (page.request) -> the run is invalid, never verified
+  ---
+  duration_ms: 630.455805
+  type: 'test'
+  ...
+# Subtest: plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified
+ok 67 - plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified
+  ---
+  duration_ms: 651.97619
+  type: 'test'
+  ...
+# Subtest: plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified
+ok 68 - plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified
+  ---
+  duration_ms: 686.839901
+  type: 'test'
+  ...
+# Subtest: plant: an action whose refusal the driver swallows -> the run is invalid, never verified
+ok 69 - plant: an action whose refusal the driver swallows -> the run is invalid, never verified
+  ---
+  duration_ms: 866.488131
+  type: 'test'
+  ...
+# Subtest: plant: a keyboard kept from set-up and used while measured is refused
+ok 70 - plant: a keyboard kept from set-up and used while measured is refused
+  ---
+  duration_ms: 708.005466
+  type: 'test'
+  ...
+# Subtest: plant: an internal channel kept from set-up is refused there too
+ok 71 - plant: an internal channel kept from set-up is refused there too
+  ---
+  duration_ms: 754.237975
+  type: 'test'
+  ...
+# Subtest: plant: a driver cannot stop the clock, drop steps or reach the raw page
+ok 72 - plant: a driver cannot stop the clock, drop steps or reach the raw page
+  ---
+  duration_ms: 665.187389
+  type: 'test'
+  ...
+# Subtest: plant: browserKey refuses an action passed by the driver
+ok 73 - plant: browserKey refuses an action passed by the driver
+  ---
+  duration_ms: 621.715253
+  type: 'test'
+  ...
+# Subtest: plant: the guard controls cannot be claimed by a driver
+ok 74 - plant: the guard controls cannot be claimed by a driver
+  ---
+  duration_ms: 1.192493
+  type: 'test'
+  ...
+# Subtest: outside the measured part the same guarded page does everything (set-up, verification)
+ok 75 - outside the measured part the same guarded page does everything (set-up, verification)
+  ---
+  duration_ms: 664.699576
+  type: 'test'
+  ...
+# Subtest: the real ours sign-in driver verifies on a stand-in sign-in page
+ok 76 - the real ours sign-in driver verifies on a stand-in sign-in page
+  ---
+  duration_ms: 1480.353252
+  type: 'test'
+  ...
+# Subtest: plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid
+ok 77 - plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid
+  ---
+  duration_ms: 1137.264116
+  type: 'test'
+  ...
+# Subtest: an API task counts each request, and its screenshots show the neutral request transcript
+ok 78 - an API task counts each request, and its screenshots show the neutral request transcript
+  ---
+  duration_ms: 479.016603
+  type: 'test'
+  ...
+# Subtest: plant: signing in to the API inside the measured part is refused
+ok 79 - plant: signing in to the API inside the measured part is refused
+  ---
+  duration_ms: 393.148379
+  type: 'test'
+  ...
+# Subtest: operator times are the published Card, Moran and Newell averages
+ok 80 - operator times are the published Card, Moran and Newell averages
+  ---
+  duration_ms: 1.792594
+  type: 'test'
+  ...
+# Subtest: typing counts one key per character plus Shift for capitals and symbols
+ok 81 - typing counts one key per character plus Shift for capitals and symbols
+  ---
+  duration_ms: 0.39936
+  type: 'test'
+  ...
+# Subtest: a chord counts each key in it
+ok 82 - a chord counts each key in it
+  ---
+  duration_ms: 1.304164
+  type: 'test'
+  ...
+# Subtest: a click is M + P + BB, with homing when the hand comes from the keyboard
+ok 83 - a click is M + P + BB, with homing when the hand comes from the keyboard
+  ---
+  duration_ms: 0.490741
+  type: 'test'
+  ...
+# Subtest: a chained step has no mental preparation
+ok 84 - a chained step has no mental preparation
+  ---
+  duration_ms: 0.154443
+  type: 'test'
+  ...
+# Subtest: the operator starts with the hand on the mouse
+ok 85 - the operator starts with the hand on the mouse
+  ---
+  duration_ms: 0.107879
+  type: 'test'
+  ...
+# Subtest: file picks are modelled as a double click
+ok 86 - file picks are modelled as a double click
+  ---
+  duration_ms: 0.159914
+  type: 'test'
+  ...
+# Subtest: totals for a short path add up
+ok 87 - totals for a short path add up
+  ---
+  duration_ms: 0.407512
+  type: 'test'
+  ...
+# Subtest: unknown step kinds are rejected
+ok 88 - unknown step kinds are rejected
+  ---
+  duration_ms: 0.504975
+  type: 'test'
+  ...
+# Subtest: a scroll is a mouse step modelled like a click
+ok 89 - a scroll is a mouse step modelled like a click
+  ---
+  duration_ms: 0.410188
+  type: 'test'
+  ...
+# Subtest: every npm dependency of the harness is under an allowed licence
+ok 90 - every npm dependency of the harness is under an allowed licence
+  ---
+  duration_ms: 1.061352
+  type: 'test'
+  ...
+# Subtest: dependencies are pinned to exact versions
+ok 91 - dependencies are pinned to exact versions
+  ---
+  duration_ms: 0.337523
+  type: 'test'
+  ...
+# Subtest: the rig holds at least 100,000 rows in every main list right now
+ok 92 - the rig holds at least 100,000 rows in every main list right now
+  ---
+  duration_ms: 4646.887265
+  type: 'test'
+  ...
+# Subtest: the rig serves Arabic and the apps the tasks need
+ok 93 - the rig serves Arabic and the apps the tasks need
+  ---
+  duration_ms: 443.046384
+  type: 'test'
+  ...
+# Subtest: Odoo driver for add-rate completes and verifies on the rig
+ok 94 - Odoo driver for add-rate completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.405491
+  type: 'test'
+  ...
+# Subtest: Odoo driver for api-update-user completes and verifies on the rig
+ok 95 - Odoo driver for api-update-user completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.123075
+  type: 'test'
+  ...
+# Subtest: Odoo driver for arabic-report completes and verifies on the rig
+ok 96 - Odoo driver for arabic-report completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.184795
+  type: 'test'
+  ...
+# Subtest: Odoo driver for attach-file completes and verifies on the rig
+ok 97 - Odoo driver for attach-file completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.084803
+  type: 'test'
+  ...
+# Subtest: Odoo driver for configure-sequence completes and verifies on the rig
+ok 98 - Odoo driver for configure-sequence completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.27833
+  type: 'test'
+  ...
+# Subtest: Odoo driver for create-company-branch completes and verifies on the rig
+ok 99 - Odoo driver for create-company-branch completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.468984
+  type: 'test'
+  ...
+# Subtest: Odoo driver for create-restricted-user completes and verifies on the rig
+ok 100 - Odoo driver for create-restricted-user completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.367187
+  type: 'test'
+  ...
+# Subtest: Odoo driver for custom-field-filter completes and verifies on the rig
+ok 101 - Odoo driver for custom-field-filter completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.466538
+  type: 'test'
+  ...
+# Subtest: Odoo driver for edit-and-save completes and verifies on the rig
+ok 102 - Odoo driver for edit-and-save completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.198666
+  type: 'test'
+  ...
+# Subtest: Odoo driver for export-filtered-list completes and verifies on the rig
+ok 103 - Odoo driver for export-filtered-list completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.114199
+  type: 'test'
+  ...
+# Subtest: Odoo driver for find-record completes and verifies on the rig
+ok 104 - Odoo driver for find-record completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.087522
+  type: 'test'
+  ...
+# Subtest: Odoo driver for find-user completes and verifies on the rig
+ok 105 - Odoo driver for find-user completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.076449
+  type: 'test'
+  ...
+# Subtest: Odoo driver for follow-approval completes and verifies on the rig
+ok 106 - Odoo driver for follow-approval completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.083837
+  type: 'test'
+  ...
+# Subtest: Odoo driver for import-5000 completes and verifies on the rig
+ok 107 - Odoo driver for import-5000 completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.071121
+  type: 'test'
+  ...
+# Subtest: Odoo driver for keyboard-navigation completes and verifies on the rig
+ok 108 - Odoo driver for keyboard-navigation completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.062298
+  type: 'test'
+  ...
+# Subtest: Odoo driver for see-and-rerun-job completes and verifies on the rig
+ok 109 - Odoo driver for see-and-rerun-job completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.057342
+  type: 'test'
+  ...
+# Subtest: Odoo driver for sign-in completes and verifies on the rig
+ok 110 - Odoo driver for sign-in completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.052446
+  type: 'test'
+  ...
+# Subtest: Odoo driver for switch-company completes and verifies on the rig
+ok 111 - Odoo driver for switch-company completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.232275
+  type: 'test'
+  ...
+# Subtest: Odoo driver for switch-to-arabic completes and verifies on the rig
+ok 112 - Odoo driver for switch-to-arabic completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.132396
+  type: 'test'
+  ...
+# Subtest: Odoo driver for who-changed-field completes and verifies on the rig
+ok 113 - Odoo driver for who-changed-field completes and verifies on the rig # SKIP set COMPARE_LIVE=1 to drive the rig
+  ---
+  duration_ms: 0.157585
+  type: 'test'
+  ...
+# Subtest: steps, keystrokes and waits are counted the same way every time
+ok 114 - steps, keystrokes and waits are counted the same way every time
+  ---
+  duration_ms: 739.39556
+  type: 'test'
+  ...
+# Subtest: choosing a file counts the dialog click and the pick
+ok 115 - choosing a file counts the dialog click and the pick
+  ---
+  duration_ms: 199.429823
+  type: 'test'
+  ...
+# Subtest: a step before start() is refused
+ok 116 - a step before start() is refused
+  ---
+  duration_ms: 96.653728
+  type: 'test'
+  ...
+# Subtest: blind screenshots paint branding over, go grey, and leave title and favicon neutral
+ok 117 - blind screenshots paint branding over, go grey, and leave title and favicon neutral
+  ---
+  duration_ms: 376.695158
+  type: 'test'
+  ...
+# Subtest: a screenshot after the end of a task never shortens the measured time
+ok 118 - a screenshot after the end of a task never shortens the measured time
+  ---
+  duration_ms: 214.871706
+  type: 'test'
+  ...
+# Subtest: screenshot time is not counted as product time
+ok 119 - screenshot time is not counted as product time
+  ---
+  duration_ms: 313.356734
+  type: 'test'
+  ...
+# Subtest: round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+ok 120 - round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+  ---
+  duration_ms: 668.625379
+  type: 'test'
+  ...
+# Subtest: a shot in the middle of the measured part is taken out of the clock and of later step times
+ok 121 - a shot in the middle of the measured part is taken out of the clock and of later step times
+  ---
+  duration_ms: 232.494667
+  type: 'test'
+  ...
+# Subtest: an API request is one step whose keystrokes are the request typed plus Enter
+ok 122 - an API request is one step whose keystrokes are the request typed plus Enter
+  ---
+  duration_ms: 98.744541
+  type: 'test'
+  ...
+# Subtest: a wait condition works on a page whose content security policy forbids eval (our product)
+ok 123 - a wait condition works on a page whose content security policy forbids eval (our product)
+  ---
+  duration_ms: 336.938316
+  type: 'test'
+  ...
+# Subtest: ratchet.json has every comparison minimum
+ok 124 - ratchet.json has every comparison minimum
+  ---
+  duration_ms: 0.82792
+  type: 'test'
+  ...
+# Subtest: tasks and named tasks never go below their minimum
+ok 125 - tasks and named tasks never go below their minimum
+  ---
+  duration_ms: 8.10559
+  type: 'test'
+  ...
+# Subtest: built Odoo drivers never go below their minimum
+ok 126 - built Odoo drivers never go below their minimum
+  ---
+  duration_ms: 13.092496
+  type: 'test'
+  ...
+# Subtest: built drivers for our product never go below their minimum
+ok 127 - built drivers for our product never go below their minimum
+  ---
+  duration_ms: 6.185739
+  type: 'test'
+  ...
+# Subtest: verified Odoo baselines never go below their minimum, and each is complete
+ok 128 - verified Odoo baselines never go below their minimum, and each is complete
+  ---
+  duration_ms: 2.062497
+  type: 'test'
+  ...
+# Subtest: the recorded reference volume never goes below the minimum per main list
+ok 129 - the recorded reference volume never goes below the minimum per main list
+  ---
+  duration_ms: 0.243036
+  type: 'test'
+  ...
+# Subtest: harness tests never go below their minimum (live rig checks counted apart)
+ok 130 - harness tests never go below their minimum (live rig checks counted apart)
+  ---
+  duration_ms: 2.44218
+  type: 'test'
+  ...
+# Subtest: planted uncounted-action drivers never go below their minimum
+ok 131 - planted uncounted-action drivers never go below their minimum
+  ---
+  duration_ms: 0.334109
+  type: 'test'
+  ...
+# Subtest: API tasks never go below their minimum
+ok 132 - API tasks never go below their minimum
+  ---
+  duration_ms: 0.955882
+  type: 'test'
+  ...
+# Subtest: every task the bar names is defined and marked as named
+ok 133 - every task the bar names is defined and marked as named
+  ---
+  duration_ms: 8.465655
+  type: 'test'
+  ...
+# Subtest: task definitions are product-neutral and complete
+ok 134 - task definitions are product-neutral and complete
+  ---
+  duration_ms: 1.350069
+  type: 'test'
+  ...
+# Subtest: every task has a driver for each product
+ok 135 - every task has a driver for each product
+  ---
+  duration_ms: 17.638549
+  type: 'test'
+  ...
+# Subtest: every Odoo driver is built; placeholders in task text resolve from the dataset
+ok 136 - every Odoo driver is built; placeholders in task text resolve from the dataset
+  ---
+  duration_ms: 43.068623
+  type: 'test'
+  ...
+# Subtest: an unbuilt driver reports "not built" without touching a browser
+ok 137 - an unbuilt driver reports "not built" without touching a browser
+  ---
+  duration_ms: 89.302849
+  type: 'test'
+  ...
+1..137
+# tests 137
+# suites 0
+# pass 117
+# fail 0
+# cancelled 0
+# skipped 20
+# todo 0
+# duration_ms 40829.692481
+npm test rc=0

@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index d5d6593..a3dc182 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -110,7 +110,7 @@ internal static class ViewEndpoints
+                 .WithViewSchema(list)
+                 .WithSummary($"Share a view of the {key} list with everyone who can read it (also needs the list's read permission).")
+                 .ProducesValidationProblem()
+-                .RequirePermission(ListsPermissions.ViewsShare);
++                .RequirePermission(list.Permission); // PLANT P1: sharing guarded by the list's read permission only
+ 
+             routes.MapPut("/shared-views/{id:guid}", (Guid id, SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
+                     Update(c.FindList(key)!, id, request, shared: true, db, caller, http, ct))

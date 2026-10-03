@@ -1,0 +1,3 @@
+With plant U applied to the demo DB, tenant A admin creates users:
+POST /api/identity/users email=admin.ar@gulfsteel.example -> {"type":"urn:erp:problem:duplicate","title":"A record with the same value already exists.","status":409,"code":"duplicate","traceId":"0HNP11PM0RB93:00000001"} [409]
+POST /api/identity/users email=never.seen.3306@gulfsteel.example -> {"id":"01a1003a-1673-7d5d-9bfd-762c42f9577b","email":"never.seen.3306@gulfsteel.example","displayName":"Probe","language":"en","isActive":true,"roleIds":[],"lastSignInAt":null,"createdAt":"2026-10-03T

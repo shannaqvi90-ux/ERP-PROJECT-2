@@ -1,0 +1,55 @@
+== tenant tables and RLS
+audit.entries|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.tenants|t|t
+== functions with security definer
+identity.resolve_session
+identity.verify_sign_in
+== GUCs used by policies
+audit.entries|tenant_isolation|(tenant_id = erp.current_tenant_id())
+tenancy.tenants|tenant_isolation|(tenant_id = erp.current_tenant_id())
+identity.users|auth_resolver_read|true
+identity.users|tenant_isolation|(tenant_id = erp.current_tenant_id())
+identity.roles|tenant_isolation|(tenant_id = erp.current_tenant_id())
+== unbound erp_app counts
+0
+== role attrs
+erp_owner|f|f
+erp_app|f|f
+ schemaname |    tablename     |     policyname     | permissive |   roles    |  cmd   |                 qual                  |              with_check               
+------------+------------------+--------------------+------------+------------+--------+---------------------------------------+---------------------------------------
+ audit      | entries          | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | roles            | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | sessions         | auth_resolver_read | PERMISSIVE | {erp_auth} | SELECT | true                                  | 
+ identity   | sessions         | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | sign_in_attempts | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | user_credentials | auth_resolver_read | PERMISSIVE | {erp_auth} | SELECT | true                                  | 
+ identity   | user_credentials | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | user_roles       | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | users            | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ identity   | users            | auth_resolver_read | PERMISSIVE | {erp_auth} | SELECT | true                                  | 
+ lists      | saved_views      | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ tenancy    | tenants          | tenant_isolation   | PERMISSIVE | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+(12 rows)
+
+  rolname  
+-----------
+ erp_owner
+ erp_app
+ erp_auth
+(3 rows)
+
+CREATE OR REPLACE FUNCTION erp.current_tenant_id()
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE PARALLEL SAFE
+AS $function$
+        SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text
+                    THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END
+    $function$

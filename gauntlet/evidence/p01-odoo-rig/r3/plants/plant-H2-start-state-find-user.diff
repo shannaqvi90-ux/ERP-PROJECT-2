@@ -1,0 +1,22 @@
+diff --git a/gauntlet/compare/drivers/ours/find-user.mjs b/gauntlet/compare/drivers/ours/find-user.mjs
+index 814ccd3..c694739 100644
+--- a/gauntlet/compare/drivers/ours/find-user.mjs
++++ b/gauntlet/compare/drivers/ours/find-user.mjs
+@@ -24,12 +24,14 @@ export default {
+     await page.getByLabel('Password', { exact: true }).or(page.locator('input[name="password"]')).first().fill(password);
+     await page.keyboard.press('Enter');
+     await usersLink(page).waitFor();
++    // CRITIC PLANT H2 (start state moved): outside the measurement, open the users list and type the
++    // name, so the measured part starts on the search result instead of the post-sign-in screen.
++    await usersLink(page).click();
++    await searchBox(page).fill(ctx.needles.user.name);
++    await page.getByRole('row').filter({ hasText: ctx.needles.user.name }).first().waitFor();
+   },
+   async run(op, ctx) {
+     const { name, login } = ctx.needles.user;
+-    await op.click(usersLink(op.page), { label: 'Users' });
+-    await op.waitFor(searchBox(op.page), { label: 'user list ready' });
+-    await op.fill(searchBox(op.page), name, { label: 'user name' });
+     const row = op.page.getByRole('row').filter({ hasText: name }).first();
+     await op.waitFor(row, { label: 'the row with the name' });
+     await op.shot('result list');

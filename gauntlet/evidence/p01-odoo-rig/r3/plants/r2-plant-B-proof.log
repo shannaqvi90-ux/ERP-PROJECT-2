@@ -1,0 +1,30 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p01-odoo-rig-r3/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Lists.Contracts -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Lists -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Identity -> /home/user/critic/p01-odoo-rig-r3/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p01-odoo-rig-r3/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p01-odoo-rig-r3/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p01-odoo-rig-r3/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p01-odoo-rig-r3/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p01-odoo-rig-r3/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:01.56]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:05.25]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:07.86]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.CriticPlantProof.Plant_B_leaks_tenant_B_in_a_response_header [1 s]
+  Standard Output Messages:
+ tenant A received header X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000b bravocnry0833736f1d Bravo CNRY0833736F1D LLC
+
+
+[xUnit.net 00:00:36.46]   Finished:    Erp.Gates.Tests (ID = 'aff1cabdf173e28445ea58a75a70e66a79f3fd380e51e765b6e0e63fcd259f65')
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 39.0889 Seconds

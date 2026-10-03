@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "run_id": "custom-field-filter-20261003T065215-1104",
+  "instrument": 3,
+  "task": "custom-field-filter",
+  "task_title": "Add a custom field and filter by it",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
+  "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
+  "started_at": "2026-10-03T06:52:15.436Z",
+  "finished_at": "2026-10-03T06:52:22.737Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 17,
+    "keystrokes": 61,
+    "clicks": 11,
+    "scrolls": 0,
+    "field_entries": 4,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 4.139,
+    "system_wait_seconds": 2.353,
+    "human_seconds": 54.83,
+    "human_plus_wait_seconds": 57.183,
+    "klm_operator_counts": {
+      "K": 61,
+      "P": 11,
+      "B": 22,
+      "H": 8,
+      "M": 15
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.041
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.042,
+      "took": 0.049
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "chain": false,
+      "at": 0.277,
+      "took": 0.105,
+      "text": "Shamma Waleed Al Romaithi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.383,
+      "took": 0.008,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the contact",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.965,
+      "took": 0.068
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "actions menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.277,
+      "took": 0.046
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Edit Properties",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.323,
+      "took": 0.058
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "field label",
+      "keystrokes": 12,
+      "chain": false,
+      "at": 1.998,
+      "took": 0.13,
+      "text": "Licence ref"
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Add",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.128,
+      "took": 0.056
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "focus value",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.189,
+      "took": 0.062
+    },
+    {
+      "n": 11,
+      "kind": "type",
+      "label": "value",
+      "keystrokes": 9,
+      "chain": true,
+      "at": 2.251,
+      "took": 0.027,
+      "text": "LR-7731"
+    },
+    {
+      "n": 12,
+      "kind": "click",
+      "label": "Save",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.278,
+      "took": 0.089
+    },
+    {
+      "n": 13,
+      "kind": "click",
+      "label": "breadcrumb: Contacts",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.559,
+      "took": 0.082
+    },
+    {
+      "n": 14,
+      "kind": "key",
+      "label": "drop the name filter",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 2.645,
+      "took": 0.011,
+      "chord": "Backspace"
+    },
+    {
+      "n": 15,
+      "kind": "type",
+      "label": "value to filter by",
+      "keystrokes": 9,
+      "chain": false,
+      "at": 3.016,
+      "took": 0.067,
+      "text": "LR-7731"
+    },
+    {
+      "n": 16,
+      "kind": "click",
+      "label": "expand Search Properties",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 3.083,
+      "took": 0.052
+    },
+    {
+      "n": 17,
+      "kind": "click",
+      "label": "Licence ref line",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 3.135,
+      "took": 0.833
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.091,
+      "seconds": 0.178
+    },
+    {
+      "label": "contact list, search focused",
+      "at": 0.269,
+      "seconds": 0.008
+    },
+    {
+      "label": "one result",
+      "at": 0.39,
+      "seconds": 0.574
+    },
+    {
+      "label": "contact form",
+      "at": 1.033,
+      "seconds": 0.244
+    },
+    {
+      "label": "new field popover, label focused",
+      "at": 1.381,
+      "seconds": 0.617
+    },
+    {
+      "label": "field on the form",
+      "at": 2.185,
+      "seconds": 0.004
+    },
+    {
+      "label": "saved",
+      "at": 2.367,
+      "seconds": 0.193
+    },
+    {
+      "label": "contact list",
+      "at": 2.642,
+      "seconds": 0.003
+    },
+    {
+      "label": "filter dropped, full list back",
+      "at": 2.655,
+      "seconds": 0.361
+    },
+    {
+      "label": "filtered to one contact",
+      "at": 3.968,
+      "seconds": 0.171
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "2d6bb94ba8db0e7a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/2d6bb94ba8db0e7a.jpg"
+    },
+    {
+      "moment": "field added and filled in",
+      "file": "872d0067ce58d043.jpg",
+      "at": 2.278,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/872d0067ce58d043.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "d8e0d5699be82702.jpg",
+      "at": 4.139,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/d8e0d5699be82702.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "field": {
+        "name": "a6e3c53fcaba7b3c",
+        "type": "char",
+        "string": "Licence ref",
+        "default": false
+      },
+      "stored": "LR-7731",
+      "rows": [
+        "Zenith General Trading Est., Shamma Waleed Al Romaithi shamma.al.romaithi.73519@mail.example +971 54 427 3034 United Arab Emirates"
+      ],
+      "facets": [
+        "Licence ref (Contact Properties) LR-7731"
+      ]
+    }
+  },
+  "path_notes": "Find the contact (Apps menu > Contacts > type the name > Enter > open it) > actions menu (⋮) > Edit Properties > label > Add > type the value > Save > breadcrumb back to Contacts > Backspace (drop the name filter) > type the value > expand \"Search Properties\" > choose the Licence ref line.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/custom-field-filter.mjs",
+    "sha256": "9bf5600a8cc9c3525c70d2b43cb592e93769552c78380d59bdb8d0ec98051e66"
+  },
+  "task_notes": "Set-up removes any earlier copy of the field.",
+  "error": null
+}

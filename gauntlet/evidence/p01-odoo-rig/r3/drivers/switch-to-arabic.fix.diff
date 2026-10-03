@@ -1,0 +1,13 @@
+diff --git a/gauntlet/compare/drivers/ours/switch-to-arabic.mjs b/gauntlet/compare/drivers/ours/switch-to-arabic.mjs
+index 8073328..1896aab 100644
+--- a/gauntlet/compare/drivers/ours/switch-to-arabic.mjs
++++ b/gauntlet/compare/drivers/ours/switch-to-arabic.mjs
+@@ -67,7 +67,7 @@ export default {
+     }
+     const arabic = t => /[؀-ۿ]/.test(t);
+     return {
+-      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.every(arabic)
++      verified: language === 'ar' && ui.direction === 'rtl' && arabic(ui.heading) && ui.columns.filter(Boolean).every(arabic)
+         && ui.navigation.every(arabic) && ui.records > 0,
+       details: { user_language: language, direction: ui.direction, working_screen: ctx.state.workingPath, heading: ui.heading, columns: ui.columns, navigation: ui.navigation, records: ui.records },
+     };
