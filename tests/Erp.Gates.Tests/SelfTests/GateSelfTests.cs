@@ -108,11 +108,12 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // instance, reached through the module catalogue; the stateful singleton); the product's
         // did not. (The static workspace cache is filled by tenant B before the snapshot and kept,
         // so it does not change; the marker check above catches it.)
-        Assert.Contains(report.StateChanges, c => c.StartsWith("singleton Erp.Kernel.Modules.ModuleCatalog._modules[", StringComparison.Ordinal) &&
-                                                  c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal));
-        Assert.Contains(report.StateChanges, c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal));
-        Assert.Contains(report.StateChanges, c => c.Contains($"{typeof(LeakyModule).FullName}.LastListHolder", StringComparison.Ordinal) && c.Contains(".Last", StringComparison.Ordinal));
-        Assert.DoesNotContain(report.StateChanges, c => !c.Contains("Leaky", StringComparison.Ordinal));
+        var changes = "\n" + string.Join("\n", report.StateChanges);
+        Assert.True(report.StateChanges.Any(c => c.StartsWith("singleton Erp.Kernel.Modules.ModuleCatalog._modules[", StringComparison.Ordinal) &&
+                                                 c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal)), "no change to the planted totals:" + changes);
+        Assert.True(report.StateChanges.Any(c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal)), "no change to the planted groups:" + changes);
+        Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal)), "no change to the stateful singleton:" + changes);
+        Assert.True(report.StateChanges.All(c => c.Contains("Leaky", StringComparison.Ordinal)), "product state changed:" + changes);
     }
 
     [Fact]
@@ -158,7 +159,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         var before = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
         planted.Use("tenant-b-search");
         var after = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
-        Assert.Contains(ReachableState.Differences(before, after), d => d.Contains("._counts", StringComparison.Ordinal));
+        var differences = ReachableState.Differences(before, after);
+        // Named by path, with the type of each product object below the root (a catalogue's
+        // modules are found by type, not only by position).
+        Assert.Contains(differences, d => d.StartsWith($"singleton PlantedCatalog._modules[0]({ReachableState.TypeName(typeof(PlantedModule))}).Bindings[users]({ReachableState.TypeName(typeof(PlantedBinding<>))})._counts", StringComparison.Ordinal));
+        // The planted lambda's captured counter and a framework dictionary's internals are not
+        // reported as changes of the catalogue (only what the walk is meant to see).
+        Assert.DoesNotContain(differences, d => d.Contains("_version", StringComparison.Ordinal));
     }
 
     private sealed class PlantedCatalog

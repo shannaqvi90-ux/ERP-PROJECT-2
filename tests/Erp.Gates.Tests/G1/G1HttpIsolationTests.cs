@@ -145,6 +145,7 @@ public static class IsolationAttack
         // attacks; compared with the same after the attack (state that changes under traffic).
         var (stateRoots, productAssemblies) = ProcessState.LiveRoots(Env.Factory);
         var stateBefore = ReachableState.Fingerprint(stateRoots, productAssemblies);
+        Phase($"process-wide state fingerprinted: {stateBefore.Count} lines from {stateRoots.Count} roots");
 
         var attackers = new List<Attacker>
         {

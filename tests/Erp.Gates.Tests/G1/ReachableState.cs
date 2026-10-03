@@ -162,7 +162,7 @@ public static class ReachableState
                 }
                 return;
             }
-            if (isProduct)
+            if (isProduct && depth > 0)
             {
                 // The fields of a product object are named after its type, so a change reads as
                 // "…_modules[5](Erp.Modules.Stock.StockModule)._counts", not only by position.
