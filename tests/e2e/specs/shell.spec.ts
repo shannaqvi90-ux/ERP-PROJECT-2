@@ -113,9 +113,11 @@ test.describe("app shell", () => {
     const option = page.getByRole("option", { name: /Omar Haddad/ });
     await expect(option).toBeVisible();
     await option.click();
-    await expect(page).toHaveURL(/\/identity\/users\?q=viewer%40alnoor\.example$/);
+    // The list narrowed to the user, with the user's own record open.
+    await expect(page).toHaveURL(/\/identity\/users\?q=viewer%40alnoor\.example&open=[0-9a-f-]{36}$/);
     await expect(page.locator("table tbody tr")).toHaveCount(1);
     await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
+    await expect(page.locator("aside.list-record")).toContainText(users.viewer);
   });
 
   test("the palette offers a user with no roles nothing they cannot open", async ({ page }) => {

@@ -667,8 +667,8 @@ export function ListView(props: ListViewProps) {
         </div>
         <span className="muted list-count" aria-live="polite">
           {rows.total !== null && t(countKey, { count: rows.total })}
-          {relevance && rows.total !== null && rows.total > 0 && <span className="list-relevance"> · {t("lists.sort.relevance")}</span>}
         </span>
+        {relevance && rows.total !== null && rows.total > 0 && <span className="muted list-relevance">{t("lists.sort.relevance")}</span>}
         <div className="list-toolbar-end">
           <div className="list-anchor">
             <button type="button" className="button" aria-haspopup="menu" aria-expanded={menu?.kind === "views"} onClick={() => setMenu(menu?.kind === "views" ? null : { kind: "views" })}>
