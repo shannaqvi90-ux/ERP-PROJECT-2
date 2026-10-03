@@ -118,12 +118,9 @@ internal static class AuthEndpoints
     {
         if (http.User.Identity?.IsAuthenticated != true || http.User.FindUserId() is not { } userId)
         {
-            // An expired, revoked or unknown session cookie is dropped here, so the browser stops
-            // sending it. The probe always answers 200: a fresh visit logs no failed request.
-            if (http.Request.Cookies.ContainsKey(Kernel.Security.SessionAuthenticationDefaults.CookieName))
-            {
-                http.Response.Cookies.Delete(Kernel.Security.SessionAuthenticationDefaults.CookieName, new CookieOptions { Path = "/", HttpOnly = true, SameSite = SameSiteMode.Strict });
-            }
+            // Always 200, also for an expired, revoked, unknown or malformed session cookie: a
+            // fresh visit logs no failed request. The cookie is left alone; the next sign-in
+            // replaces it.
             return TypedResults.Ok(SessionResponse.Anonymous);
         }
         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)

@@ -20,8 +20,6 @@ test.describe("app shell", () => {
     await context.addCookies([{ name: "erp_session", value: "A".repeat(43), url: page.url() }]);
     await page.goto("/");
     await expect(page.locator('input[name="email"]')).toBeFocused();
-    // The stale cookie is dropped, so the next request no longer carries it.
-    expect((await context.cookies()).some((c) => c.name === "erp_session")).toBe(false);
     expect(errors).toEqual([]);
   });
 

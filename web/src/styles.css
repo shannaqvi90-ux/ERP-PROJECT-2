@@ -489,6 +489,23 @@ input[aria-invalid="true"] {
   padding: 24px 0;
 }
 
+/* Narrow windows: the top bar keeps every control, with shorter labels. */
+@media (max-width: 960px) {
+  .palette-trigger-text,
+  .user-name,
+  .topbar .button.ghost span {
+    display: none;
+  }
+
+  .workspace-name {
+    max-width: 140px;
+  }
+
+  .navpane {
+    width: 168px;
+  }
+}
+
 /* Dialogs, command palette, shortcut help, preferences */
 .dialog-backdrop {
   position: fixed;

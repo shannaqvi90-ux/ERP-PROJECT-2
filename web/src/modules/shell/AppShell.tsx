@@ -231,7 +231,7 @@ export function AppShell({ session }: { session: Session }) {
             <Icon name="user" />
             <span className="user-name">{session.user.displayName}</span>
           </button>
-          <button type="button" className="button ghost" onClick={() => void signOut()}>
+          <button type="button" className="button ghost" aria-label={t("shell.signOut")} onClick={() => void signOut()}>
             <Icon name="signOut" />
             <span>{t("shell.signOut")}</span>
           </button>

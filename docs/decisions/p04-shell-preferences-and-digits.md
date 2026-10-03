@@ -24,9 +24,11 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
 - A user without `identity.profile.update` (or signed out) keeps the choice on this device only,
   and the preferences dialog says so.
 - **No failed request on a fresh visit** (routed from p00's round-2 critic):
-  `GET /api/auth/session` answers 200 `{ authenticated: false }` without a valid session, and
-  deletes a stale, expired or malformed session cookie so the browser stops sending it. An
-  end-to-end test fails on any console error or 4xx response during a fresh visit.
+  `GET /api/auth/session` answers 200 `{ authenticated: false }` without a valid session, also
+  when the browser still sends a stale, expired or malformed session cookie (tested). It does not
+  delete that cookie: deleting it on the probe let the G1 gate's injected-cookie attack wipe the
+  attacker's real session and weakened the rest of the attack. An end-to-end test fails on any
+  console error or 4xx response during a fresh visit, with and without a stale cookie.
 
 ## Why
 
