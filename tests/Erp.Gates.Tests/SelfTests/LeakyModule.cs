@@ -3,6 +3,7 @@ using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
 namespace Erp.Gates.Tests.SelfTests;
@@ -19,8 +20,29 @@ public sealed class LeakyModule : ErpModule
     public override void Register(ModuleBuilder module)
     {
         module.Permissions("leaky.data.read", "leaky.data.update");
+        module.Services.AddSingleton<LastListHolder>();
         module.Endpoints(group =>
         {
+            // Bug 9: a process-wide static cache of the workspace record, filled by whichever
+            // tenant asks first (the shape of critic p01 round 1's plant A4).
+            group.MapGet("/cached-tenant", async (ErpDbSession session) =>
+            {
+                if (cachedTenant is null)
+                {
+                    await using var command = new NpgsqlCommand("SELECT id::text || ' ' || name_en FROM tenancy.tenants", session.Connection, session.Transaction);
+                    cachedTenant = (string?)await command.ExecuteScalarAsync();
+                }
+                return Results.Ok(new { tenant = cachedTenant });
+            }).WithName("leaky.cachedTenant").WithSummary("Planted bug: caches the workspace in a static field.").RequirePermission("leaky.data.read");
+
+            // Bug 10: a singleton that hands each caller the list the previous caller read.
+            group.MapGet("/recent", async (ErpDbSession session, LastListHolder holder) =>
+            {
+                var current = await NamesAsync(session);
+                var previous = Interlocked.Exchange(ref holder.Last, current);
+                return Results.Ok(previous ?? current);
+            }).WithName("leaky.recent").WithSummary("Planted bug: a singleton shares the last list read across tenants.").RequirePermission("leaky.data.read");
+
             // Bug 1: the tenant comes from a header the client controls.
             group.MapGet("/by-header", async (HttpContext http, ErpDbSession session) =>
             {
@@ -95,6 +117,14 @@ public sealed class LeakyModule : ErpModule
                 return Results.Created("/api/leaky/grants", new { granted = request.RoleIds?.Count ?? 0 });
             }).WithName("leaky.grants").WithSummary("Planted bug: assigns any role to the caller.").RequirePermission("leaky.data.update");
         });
+    }
+
+    private static string? cachedTenant;
+
+    /// <summary>Planted process-wide state: a singleton with a mutable field.</summary>
+    public sealed class LastListHolder
+    {
+        public List<string>? Last;
     }
 
     public sealed record FindRequest(string? Reference);

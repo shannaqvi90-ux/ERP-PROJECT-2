@@ -18,8 +18,8 @@ export const PRODUCTS = Object.freeze({
     // Sign-ins of the local reference rig (tools/odoo-reference/up.sh); not real credentials.
     users: {
       admin: { login: env.COMPARE_ODOO_ADMIN || 'admin', password: env.COMPARE_ODOO_ADMIN_PASSWORD || 'admin' },
-      approver: { login: 'approver', password: 'approver' },
-      buyer: { login: 'buyer', password: 'buyer' },
+      approver: { login: env.COMPARE_ODOO_APPROVER || 'approver', password: env.COMPARE_ODOO_APPROVER_PASSWORD || 'approver' },
+      buyer: { login: env.COMPARE_ODOO_BUYER || 'buyer', password: env.COMPARE_ODOO_BUYER_PASSWORD || 'buyer' },
     },
   }),
   ours: Object.freeze({
@@ -28,7 +28,7 @@ export const PRODUCTS = Object.freeze({
     // Demo sign-ins printed by `./erp up` (local demo data, not real credentials).
     users: {
       admin: { login: env.COMPARE_OURS_ADMIN || 'admin@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },
-      adminArabic: { login: 'admin.ar@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },
+      adminArabic: { login: env.COMPARE_OURS_ADMIN_ARABIC || 'admin.ar@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },
     },
     // Product name words to hide in blind screenshots, once the product has a name.
     brandWords: list(env.COMPARE_OURS_BRAND_WORDS),

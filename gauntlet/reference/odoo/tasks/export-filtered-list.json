@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "run_id": "export-filtered-list-20261003T012917-efb8",
+  "task": "export-filtered-list",
+  "task_title": "Export a filtered list",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
+  "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
+  "started_at": "2026-10-03T01:29:17.984Z",
+  "finished_at": "2026-10-03T01:29:24.240Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 11,
+    "clicks": 8,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "machine_seconds": 3.199,
+    "system_wait_seconds": 2.55,
+    "human_seconds": 26.43,
+    "human_plus_wait_seconds": 28.98,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 8,
+      "B": 16,
+      "H": 2,
+      "M": 9
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.043
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.043,
+      "took": 0.049
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "tag",
+      "keystrokes": 11,
+      "chain": false,
+      "at": 0.197,
+      "took": 0.041,
+      "text": "Government"
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Search Tag for",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.241,
+      "took": 0.407
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "select the page",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.059,
+      "took": 0.208
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Select all",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.291,
+      "took": 0.139
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Actions",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.43,
+      "took": 0.078
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Export",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.509,
+      "took": 0.136
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Export (download)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.723,
+      "took": 0.087
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.092,
+      "seconds": 0.102
+    },
+    {
+      "label": "contact list, search focused",
+      "at": 0.194,
+      "seconds": 0.003
+    },
+    {
+      "label": "search options",
+      "at": 0.238,
+      "seconds": 0.003
+    },
+    {
+      "label": "filtered list",
+      "at": 0.648,
+      "seconds": 0.411
+    },
+    {
+      "label": "select-all offer",
+      "at": 1.267,
+      "seconds": 0.024
+    },
+    {
+      "label": "export dialog",
+      "at": 1.644,
+      "seconds": 0.079
+    },
+    {
+      "label": "file received",
+      "at": 1.81,
+      "seconds": 1.627
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "935b228cdae99f66.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/935b228cdae99f66.jpg"
+    },
+    {
+      "moment": "export dialog",
+      "file": "bdf6474988ff8fa2.jpg",
+      "at": 1.723,
+      "path": "gauntlet/reference/odoo/shots/bdf6474988ff8fa2.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "fc466ee7effcb731.jpg",
+      "at": 3.438,
+      "path": "gauntlet/reference/odoo/shots/fc466ee7effcb731.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "Contact (res.partner).xlsx",
+      "header": [
+        "Avatar 128",
+        "Display Name",
+        "Email",
+        "Phone",
+        "Activities",
+        "Country",
+        "Stats"
+      ],
+      "rows": 6581,
+      "expected_rows": 6581
+    }
+  },
+  "path_notes": "Apps menu > Contacts > type the tag > choose \"Search Tag for\" > header check box > Select all > Actions > Export > Export (the dialog proposes the list's columns: name, e-mail, phone and more).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/export-filtered-list.mjs",
+    "sha256": "a39382dc79bf17ff71e775eb2413e89650f6996994a26535b2160be717d45daa"
+  },
+  "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
+  "error": null,
+  "result_file": "gauntlet/reference/odoo/tasks/export-filtered-list.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T012911-ec75.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T012917-efb8.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261003T012924-93d5.json"
+  ]
+}

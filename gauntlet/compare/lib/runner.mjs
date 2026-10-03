@@ -6,7 +6,7 @@ import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './conf
 import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
 import { brandingFor } from './blind.mjs';
-import { describe, loadDriver, loadTask } from './registry.mjs';
+import { describe, driverPath, loadDriver, loadTask } from './registry.mjs';
 import { OPERATORS, OPERATOR_SOURCE, round } from './klm.mjs';
 import { generate, loadNeedles, DEFAULT_OUT as DATA_OUT } from '../data/generate.mjs';
 
@@ -60,8 +60,8 @@ export async function runTask(taskId, productId, opts = {}) {
     task_title: task.title,
     product: productId,
     status: 'error',
-    goal: describe(task.goal, needles),
-    done_when: describe(task.done, needles),
+    goal: describe(task.goal, { ...needles, ...(task.input || {}) }),
+    done_when: describe(task.done, { ...needles, ...(task.input || {}) }),
     started_at: new Date().toISOString(),
     finished_at: null,
     environment: {
@@ -78,6 +78,7 @@ export async function runTask(taskId, productId, opts = {}) {
     screenshots: [],
     verification: null,
     path_notes: driver.path || null,
+    driver: driverFingerprint(productId, taskId),
     task_notes: task.notes || null,
     error: null,
   };
@@ -88,6 +89,63 @@ export async function runTask(taskId, productId, opts = {}) {
     return finish(result, out);
   }
 
+  // A driver may offer several expert paths (`variants`), for example one that is shortest in
+  // keys and one that is fastest for a person. Each runs in full; the result counts, per metric,
+  // the best verified path, so the reference is never measured on a path worse than the best
+  // one an expert could take for that metric.
+  const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
+  const executions = [];
+  for (const [id, variant] of variants) {
+    executions.push({ id, path: variant.path || driver.path || null, ...(await execute(task, { ...driver, ...variant }, product, productId, needles, out, opts)) });
+  }
+  const primary = executions[0];
+  Object.assign(result, {
+    status: primary.status,
+    error: primary.error,
+    verification: primary.verification,
+    steps: primary.steps,
+    waits: primary.waits,
+    screenshots: primary.screenshots,
+    counts: primary.counts,
+  });
+  if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
+  if (variants.length > 1) {
+    for (const other of executions.slice(1)) {
+      for (const s of other.screenshots) fs.rmSync(path.join(out.shotsDir, s.file), { force: true });
+    }
+    const verified = executions.filter(e => e.status === 'verified');
+    result.status = verified.length === executions.length ? 'verified' : executions.find(e => e.status !== 'verified').status;
+    if (result.status !== 'verified') result.error = executions.filter(e => e.status !== 'verified').map(e => `${e.id}: ${e.status} ${e.error || ''}`.trim()).join('\n');
+    result.counts = { ...primary.counts };
+    result.best_path_per_metric = {};
+    for (const m of METRICS) {
+      const best = verified.reduce((b, e) => (b === null || e.counts[m] < b.counts[m] ? e : b), null);
+      if (best) {
+        result.counts[m] = best.counts[m];
+        result.best_path_per_metric[m] = best.id;
+      }
+    }
+    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, verification: e.verification }));
+    result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
+  }
+  return finish(result, out);
+}
+
+/**
+ * The driver's source and its product's shared helpers, hashed: a baseline records which driver
+ * produced it, so a driver changed without re-running its baseline is caught (test/baselines).
+ */
+export function driverFingerprint(productId, taskId) {
+  const file = driverPath(productId, taskId);
+  const common = path.join(path.dirname(file), '_common.mjs');
+  const hash = crypto.createHash('sha256');
+  for (const f of [file, common]) if (fs.existsSync(f)) hash.update(fs.readFileSync(f));
+  return { file: rel(file), sha256: hash.digest('hex') };
+}
+
+/** One full run of a driver: fixtures, sign-in, the measured part, verification, clean-up. */
+async function execute(task, driver, product, productId, needles, out, opts) {
+  const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [] };
   const browser = await launch({ headed: opts.headed });
   let op;
   const ctx = { task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser };
@@ -103,28 +161,28 @@ export async function runTask(taskId, productId, opts = {}) {
     const outcome = await driver.run(op, ctx);
     op.finish();
     await op.shot('done');
-    result.verification = driver.verify ? await driver.verify(ctx, outcome) : { verified: !!outcome?.verified, details: outcome };
-    result.status = result.verification.verified ? 'verified' : 'failed';
+    run.verification = driver.verify ? await driver.verify(ctx, outcome) : { verified: !!outcome?.verified, details: outcome };
+    run.status = run.verification.verified ? 'verified' : 'failed';
   } catch (err) {
-    if (err instanceof NotBuilt) { result.status = 'not_built'; result.error = err.message; }
+    if (err instanceof NotBuilt) { run.status = 'not_built'; run.error = err.message; }
     else {
-      result.status = 'error';
-      result.error = String(err?.stack || err).split('\n').slice(0, 6).join('\n');
+      run.status = 'error';
+      run.error = String(err?.stack || err).split('\n').slice(0, 6).join('\n');
       if (op && ctx.page) await op.shot('error').catch(() => {});
     }
   } finally {
     if (driver.cleanup) {
-      try { await driver.cleanup(ctx); } catch (e) { result.cleanup_error = String(e?.message || e); }
+      try { await driver.cleanup(ctx); } catch (e) { run.cleanup_error = String(e?.message || e); }
     }
     await browser.close().catch(() => {});
   }
   if (op) {
-    result.counts = op.summary();
-    result.steps = op.steps;
-    result.waits = op.waits;
-    result.screenshots = op.shots.map(s => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
+    run.counts = op.summary();
+    run.steps = op.steps;
+    run.waits = op.waits;
+    run.screenshots = op.shots.map(s => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
-  return finish(result, out);
+  return run;
 }
 
 function finish(result, out) {

@@ -318,6 +318,30 @@ def audit_messages():
     return added
 
 
+@timed('audit-realism')
+def audit_realism():
+    """Each cloned change log entry reads like a real one: the new value is the contact's actual
+    e-mail, the old one a plausible earlier address, and the author is one of the company's
+    users (not the system bot). Repairs rows of earlier rigs too; rows already right are left."""
+    cr.execute("""CREATE TEMP TABLE rig_authors ON COMMIT DROP AS
+                  SELECT row_number() OVER (ORDER BY u.id)::int AS rn, u.id AS uid, u.partner_id
+                  FROM res_users u WHERE NOT u.share AND u.active AND u.login LIKE '%%@staff.example'""")
+    cr.execute('CREATE UNIQUE INDEX ON rig_authors (rn)')
+    cr.execute('SELECT count(*) FROM rig_authors')
+    authors = cr.fetchone()[0]
+    if not authors:
+        return 0
+    cr.execute(f"""UPDATE mail_message m
+                   SET body = '<div>' || split_part(c.email, '@', 1) || '@previous-' || split_part(c.email, '@', 2)
+                              || ' → <b>' || c.email || '</b> <i>(Email)</i></div>',
+                       author_id = a.partner_id, create_uid = a.uid, write_uid = a.uid
+                   FROM res_partner c, rig_authors a
+                   WHERE m.message_id LIKE '<rig-audit-%%' AND c.id = m.res_id AND c.email IS NOT NULL
+                     AND a.rn = (m.id % {int(authors)}) + 1
+                     AND (m.author_id IS DISTINCT FROM a.partner_id OR position(c.email IN m.body::text) = 0)""")
+    return cr.rowcount
+
+
 @timed('attachments')
 def attachments():
     cr.execute("SELECT count(*) FROM ir_attachment WHERE name ~ '^rig-document-[0-9]+\\.pdf$'")
@@ -337,6 +361,28 @@ def attachments():
     # The clones share the template's stored file (same checksum), so the filestore holds one blob.
     cr.execute("UPDATE ir_attachment SET name = 'rig-document-0.pdf', res_id = %s WHERE id = %s", [partner.id, template.id])
     return added
+
+
+@timed('attachment-content')
+def attachment_content():
+    """Every bulk attachment holds its own small document (kept in the database), so a search or
+    download touches 100,000 distinct files, not one shared blob. Repairs rows of earlier rigs."""
+    cr.execute("""UPDATE ir_attachment a
+                  SET db_datas = convert_to(
+                        chr(37) || 'PDF-1.4' || chr(10) || '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj' || chr(10)
+                        || chr(37) || ' ' || a.name || ' for ' || coalesce(p.name, '') || ' ' || coalesce(p.ref, '') || chr(10)
+                        || 'trailer<</Root 1 0 R>>' || chr(10) || repeat(chr(37), 2) || 'EOF' || chr(10), 'UTF8'),
+                      store_fname = NULL
+                  FROM res_partner p
+                  WHERE a.name ~ '^rig-document-[0-9]+\\.pdf$' AND a.res_model = 'res.partner' AND p.id = a.res_id
+                    AND (a.store_fname IS NOT NULL OR a.db_datas IS NULL
+                         OR substr(a.db_datas, 1, 5) <> convert_to(chr(37) || 'PDF-', 'UTF8'))""")
+    changed = cr.rowcount
+    if changed:
+        cr.execute("""UPDATE ir_attachment SET file_size = octet_length(db_datas),
+                             checksum = substr(encode(sha256(db_datas), 'hex'), 1, 40)
+                      WHERE name ~ '^rig-document-[0-9]+\\.pdf$' AND db_datas IS NOT NULL""")
+    return changed
 
 
 @timed('job-runs')
@@ -446,7 +492,7 @@ def volume():
     return out
 
 
-for step in (user_channels, setup, contacts, users, user_channels, rates, audit_messages, attachments, job_runs, purchase_orders, purchase_buyer):
+for step in (user_channels, setup, contacts, users, user_channels, rates, audit_messages, audit_realism, attachments, attachment_content, job_runs, purchase_orders, purchase_buyer):
     step()
 # Planner statistics for the bulk-loaded tables. Without them PostgreSQL plans for empty tables
 # and some Odoo screens (the purchase dashboard) take minutes instead of milliseconds, which

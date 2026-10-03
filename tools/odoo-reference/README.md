@@ -17,7 +17,9 @@ refreshes planner statistics, waits for the web client and writes the verified c
 A first run on an empty machine takes about three minutes once the images are pulled (measured: 2 min 34 s).
 
 Sign-ins (local rig only, bound to 127.0.0.1): `admin`/`admin`, `approver`/`approver` (purchase
-manager), `buyer`/`buyer` (purchase user). The harness adds `lang.tester` for the language task.
+manager), `buyer`/`buyer` (purchase user). The harness adds task users as it needs them:
+`lang.tester` (switch to Arabic; works in Contacts), `noor.editor` (makes the change the
+who-changed-field task looks for) and `signin.tester@demo-trading.example` (sign in).
 
 | Main list | Odoo model | Our counterpart |
 |---|---|---|
@@ -28,6 +30,10 @@ manager), `buyer`/`buyer` (purchase user). The harness adds `lang.tester` for th
 | attachments | ir.attachment on contacts | Attachments (p11) |
 | job_runs | ir.cron.progress | Background job runs (p12) |
 | approvals | purchase.order (200 waiting for approval) | Approval flows (p13) |
+
+Realism of the bulk rows: every change log entry names one of the company's users and shows the
+contact's actual e-mail as the new value; every attachment holds its own small document (kept in
+the database), so no two of the 100,000 share content. Earlier rigs are repaired on the next run.
 
 Odoo deletes scheduled-job run records older than a week; run `up.sh` again before a comparison
 that uses job runs and it tops them back up.

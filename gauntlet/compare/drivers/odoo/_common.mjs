@@ -28,10 +28,69 @@ export async function adminRpc(ctx) {
 export async function openApp(op, name) {
   await op.click('.o_navbar_apps_menu button', { label: 'apps menu' });
   await op.click(op.page.getByRole('menuitem', { name, exact: true }), { label: `${name} app` });
+  // The app's first screen has loaded (its menus answer only then).
+  await op.waitFor(() => !document.querySelector('.o_loading_indicator, .o_blockUI') && !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'), { label: `${name} loaded` });
 }
 
 /** Rows of the current list or kanban view. */
 export const ROWS = '.o_data_row, .o_kanban_record:not(.o_kanban_ghost)';
 export function rowCount() {
   return document.querySelectorAll('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').length;
+}
+
+/**
+ * Two expert paths through one form task: `keyboard` uses the form's hotkeys (Alt+C new,
+ * Alt+S save) where they replace a click, `pointer` clicks the buttons. Which one is shorter
+ * depends on the metric (hotkeys press more keys, clicks need more pointing and hand moves), so
+ * a driver offers both and the result counts the better one per metric.
+ */
+export function expertPaths(build, { keyboard, pointer }) {
+  return {
+    run: build(true),
+    variants: {
+      keyboard: { path: keyboard, run: build(true) },
+      pointer: { path: pointer, run: build(false) },
+    },
+  };
+}
+
+/** Save the open form: Alt+S, or the Save button. */
+export async function saveForm(op, keyboard) {
+  if (keyboard) await op.press('Alt+s', { label: 'Save (hotkey)' });
+  else await op.click('.o_form_view .o_form_button_save', { label: 'Save' });
+  await op.waitFor('.o_form_view .o_form_button_save', { label: 'saved', state: 'hidden' });
+}
+
+/** Open a contact's form outside the measured part (a start state "on the record"). */
+export async function openRecord(ctx, model, id) {
+  const paths = { 'res.partner': 'contacts', 'purchase.order': 'purchase' };
+  await ctx.page.goto(`${ctx.product.baseUrl}/odoo/${paths[model] || `action-${model}`}/${id}`);
+  await ctx.page.locator('.o_form_view').waitFor();
+  await settle(ctx.page);
+}
+
+/**
+ * Odoo's technical menus (sequences, scheduled actions, attachments) appear only in developer
+ * mode: Apps menu > Settings > scroll to the bottom > Activate the developer mode.
+ */
+export async function developerMode(op) {
+  await openApp(op, 'Settings');
+  const link = op.page.getByRole('link', { name: 'Activate the developer mode', exact: true })
+    .or(op.page.getByRole('button', { name: 'Activate the developer mode', exact: true })).first();
+  await op.waitFor(link, { label: 'settings page', state: 'attached' });
+  await op.scrollTo(link, { label: 'scroll to the bottom of the settings' });
+  await op.click(link, { label: 'Activate the developer mode' });
+  await op.waitFor(() => /[?&]debug=1/.test(location.search) && !!document.querySelector('.o_menu_sections') &&
+    [...document.querySelectorAll('.o_menu_sections button')].some(b => b.innerText.trim() === 'Technical'), { label: 'developer mode on' });
+}
+
+/** Settings > Technical > an item of the long technical menu (scrolled to). */
+export async function technicalMenu(op, item) {
+  await op.click(op.page.locator('.o_main_navbar .o_menu_sections button', { hasText: 'Technical' }), { label: 'Technical menu' });
+  const entry = op.page.locator('.o-dropdown--menu .dropdown-item', { hasText: new RegExp(`^${item}$`) });
+  await op.waitFor(entry, { label: 'technical menu open', state: 'attached' });
+  if (!(await entry.evaluate(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }))) {
+    await op.scrollTo(entry, { label: `scroll the menu to ${item}` });
+  }
+  await op.click(entry, { label: item });
 }

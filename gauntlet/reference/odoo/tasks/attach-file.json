@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "run_id": "attach-file-20261003T012632-ce4f",
+  "task": "attach-file",
+  "task_title": "Attach a file to a record",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
+  "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
+  "started_at": "2026-10-03T01:26:32.200Z",
+  "finished_at": "2026-10-03T01:26:36.159Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 1,
+    "machine_seconds": 0.106,
+    "system_wait_seconds": 0.066,
+    "human_seconds": 6.8,
+    "human_plus_wait_seconds": 6.866,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 3,
+      "B": 8,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "paperclip (attachment box)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.072
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.08,
+      "took": 0.038
+    },
+    {
+      "n": 3,
+      "kind": "file-pick",
+      "label": "trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "chain": true,
+      "at": 0.117,
+      "took": 0.016,
+      "file": "trade-licence-TL-2026-73519.pdf"
+    }
+  ],
+  "waits": [
+    {
+      "label": "attachment box",
+      "at": 0.072,
+      "seconds": 0.008
+    },
+    {
+      "label": "file listed on the record",
+      "at": 0.134,
+      "seconds": 0.067
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "43bc8682b9db0fc6.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/43bc8682b9db0fc6.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "e94cf494cc7262bf.jpg",
+      "at": 0.201,
+      "path": "gauntlet/reference/odoo/shots/e94cf494cc7262bf.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "attachments": [
+        {
+          "id": 144838,
+          "file_size": 417
+        }
+      ]
+    }
+  },
+  "path_notes": "Paperclip on the record (it already holds a file, so the attachment box opens) > Attach files > choose the file in the file dialog.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/attach-file.mjs",
+    "sha256": "2d82510b2b81488988c9325461a4b00c2ba1314c58097e7d24acea3a0d6edc2d"
+  },
+  "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
+  "error": null,
+  "result_file": "gauntlet/reference/odoo/tasks/attach-file.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/attach-file-20261003T012624-5cb9.json",
+    "gauntlet/reference/odoo/results/attach-file-20261003T012628-56d7.json",
+    "gauntlet/reference/odoo/results/attach-file-20261003T012632-ce4f.json"
+  ]
+}

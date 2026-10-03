@@ -23,7 +23,9 @@ export const NEUTRAL_STYLE = `
 export const BRANDING = Object.freeze({
   odoo: {
     selectors: [
-      'img[src*="logo" i]', 'img[alt*="odoo" i]', 'a[href*="odoo.com"]', '[title*="odoo" i]', '[placeholder*="odoo" i]',
+      // Placeholders that name the vendor are cleared before the shot (neutraliseDocument), not
+      // painted over: a grey box over a filled-in field would hide its value and single it out.
+      'img[src*="logo" i]', 'img[alt*="odoo" i]', 'a[href*="odoo.com"]', '[title*="odoo" i]',
       '.o_brand_promotion', '.o_web_client .o_brand', 'img[src*="odoobot" i]',
       // OdooBot's avatar (partner 2 in every Odoo database).
       'img[src*="/res.partner/2/"]',
@@ -54,12 +56,31 @@ export function maskLocators(page, branding) {
   return locs;
 }
 
-/** Neutral title and no favicon, so a shot of the whole window would not give the product away. */
-export async function neutraliseDocument(page) {
-  await page.evaluate(() => {
+/**
+ * Neutral title, no favicon, and no brand word in a visible hint (placeholder, tooltip, image or
+ * accessible label): such a hint is emptied rather than painted over, so the field and its value
+ * look like any other field.
+ */
+export async function neutraliseDocument(page, words = []) {
+  await page.evaluate(brandWords => {
     document.title = 'Product';
     for (const l of document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')) l.remove();
-  }).catch(() => {});
+    if (!brandWords.length) return;
+    const re = new RegExp(brandWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
+    for (const attr of ['placeholder', 'aria-label', 'alt']) {
+      for (const el of document.querySelectorAll(`[${attr}]`)) if (re.test(el.getAttribute(attr))) el.setAttribute(attr, '');
+    }
+  }, words).catch(() => {});
+}
+
+/**
+ * Captions for a blind page: the moments both products share keep their names (start, done);
+ * the moments a driver chose inside its path become "moment 1", "moment 2" ..., because their
+ * names describe one product's screens.
+ */
+export function neutralMoments(shots) {
+  let n = 0;
+  return shots.map(s => (s.moment === 'start' || s.moment === 'done' || s.moment === 'error' ? s.moment : `moment ${++n}`));
 }
 
 /** Random, product-neutral screenshot file name. */

@@ -33,7 +33,10 @@ public sealed class G1AttackFixture : IAsyncLifetime
 /// value or canary; a GET may not answer differently for a tenant B value than for a value that
 /// exists nowhere; no response may be a server error; no tenant B row may change; and the
 /// reviewed cross-tenant lookups may run only from their reviewed callers. Exports, jobs and
-/// files are attacked by the probes their modules register.
+/// files are attacked by the probes their modules register. Throughout, tenant B uses the same
+/// process (<see cref="TenantActivity"/>): before, between and concurrently with the attack, so
+/// a leak through process-wide state (static fields, singletons, caches) is caught in both
+/// directions.
 /// </summary>
 public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixture<G1AttackFixture>
 {
@@ -66,6 +69,15 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         AssertAtLeast(report.BodyValueAttacks, "g1.bodyValueAttacks");
         AssertAtLeast(report.DifferentialChecks, "g1.differentialChecks");
         AssertAtLeast(report.TracedLookups, "g1.tracedLookups");
+        Assert.True(report.VictimBlindSpots.Count == 0, "Tenant B's concurrent activity may have been blind:\n" + string.Join("\n", report.VictimBlindSpots));
+        AssertAtLeast(report.VictimRequests, "g1.victimRequests");
+        AssertAtLeast(report.VictimConcurrentRequests, "g1.victimConcurrentRequests");
+        AssertAtLeast(report.VictimWrites, "g1.victimWrites");
+        AssertAtLeast(report.ReverseChecks, "g1.reverseChecks");
+        // Every endpoint that changes data (other than signing in and out) succeeded for tenant B.
+        Assert.True(report.VictimUnsuccessfulWrites.Count == 0,
+            "Tenant B's own writes must succeed so their handlers run to the end; these did not:\n" + string.Join("\n", report.VictimUnsuccessfulWrites));
+        AssertAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
     }
 
     private static void AssertAtLeast(int value, string key) =>
@@ -89,16 +101,25 @@ public static class IsolationAttack
         var traceMark = SqlTrace.Mark;
         var a = Env.TenantA;
         var b = Env.TenantB;
-        var victim = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
-        var own = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
-        Assert.True(victim.Markers.Count > 10, "The victim tenant has too little data to attack.");
-        var values = await VictimValues.ReadAsync(Env, victim, a.Id);
-        Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
-        var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
 
         using var anonymousForDocs = Env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymousForDocs);
         var endpoints = EndpointInventory.From(Env.Factory.Services);
+
+        // Tenant B uses the product first: every write on its own records, then (below) every
+        // read, so its data sits in whatever process-wide state the app keeps before A attacks.
+        var own = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
+        var ownValues = await VictimValues.ReadAsync(Env, own, b.Id);
+        var activity = await TenantActivity.StartAsync(Env, b, endpoints, openApi);
+        activity.Watch(new MarkerSet(own, ownValues));
+        await activity.WriteAsync(await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code));
+
+        var victim = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
+        Assert.True(victim.Markers.Count > 10, "The victim tenant has too little data to attack.");
+        var values = await VictimValues.ReadAsync(Env, victim, a.Id);
+        Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
+        var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
+        await activity.ReadAsync(victim, values, "tenant B reads before the attack");
 
         var attackers = new List<Attacker>
         {
@@ -133,6 +154,7 @@ public static class IsolationAttack
         // Phase 1: tenant B ids in routes; tenant-switch headers; guessed query names; uuid body fields.
         foreach (var endpoint in endpoints)
         {
+            await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
             var paths = endpoint.RouteParameters.Count == 0
                 ? [endpoint.Path(_ => "")]
                 : victimRouteValues.Concat(endpoint.HasBody ? ownRouteValues : [])
@@ -152,6 +174,11 @@ public static class IsolationAttack
                 }
             }
             attacked.Add(endpoint.Key);
+            await activity.TouchAsync(endpoint, victim, "tenant B reads right after A attacked this endpoint");
+            if (endpoint.Method != "GET")
+            {
+                await activity.ReadRoundAsync(victim, $"tenant B reads after A's {endpoint.Key}");
+            }
         }
 
         Phase("routes, tenant headers and guessed queries");
@@ -246,6 +273,9 @@ public static class IsolationAttack
                 }
             }
         }
+        // From here tenant B keeps reading in the background while A's requests run.
+        using var concurrent = new CancellationTokenSource();
+        var concurrentReader = Task.Run(() => activity.RunConcurrentlyAsync(victim, concurrent.Token));
         var parallel = new ParallelOptions { MaxDegreeOfParallelism = 4 };
         await Parallel.ForEachAsync(work.Where(w => w.Get), parallel, async (item, _) => await item.Run());
         await Parallel.ForEachAsync(work.Where(w => !w.Get), parallel, async (item, _) => await item.Run());
@@ -290,6 +320,17 @@ public static class IsolationAttack
 
         Phase("tenant B values in body fields");
 
+        await concurrent.CancelAsync();
+        await concurrentReader;
+
+        // Tenant B reads everything once more, judged against everything tenant A now holds
+        // (including what the attack created).
+        var ownAfter = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
+        activity.Watch(new MarkerSet(ownAfter, await VictimValues.ReadAsync(Env, ownAfter, b.Id), [.. values.Strings, .. state.Stored], b.Canary));
+        await activity.ReadAsync(victim, values, "tenant B reads after the attack");
+        Phase($"tenant B activity: {activity.Requests} requests ({activity.ConcurrentRequests} concurrent with the attack), " +
+              $"{activity.SuccessfulWrites} successful own writes, {activity.ReverseChecks} responses judged for tenant A markers");
+
         var after = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
         var changed = TenantSnapshot.Differences(victim, after);
 
@@ -305,7 +346,8 @@ public static class IsolationAttack
         {
             attacker.Client.Dispose();
         }
-        return new IsolationReport(state.Leaks, state.ServerErrors, changed, uncovered, attacked.Count, state.Requests, probesRun)
+        activity.Dispose();
+        return new IsolationReport([.. state.Leaks, .. activity.Leaks], state.ServerErrors, changed, uncovered, attacked.Count, state.Requests, probesRun)
         {
             Oracles = state.Oracles,
             LookupMisuse = misuse,
@@ -315,6 +357,13 @@ public static class IsolationAttack
             BodyValueAttacks = state.BodyValueAttacks,
             DifferentialChecks = state.DifferentialChecks,
             TracedLookups = traced.Count,
+            VictimRequests = activity.Requests,
+            VictimConcurrentRequests = activity.ConcurrentRequests,
+            VictimWrites = activity.SuccessfulWrites,
+            VictimWriteEndpoints = activity.WriteEndpoints,
+            ReverseChecks = activity.ReverseChecks,
+            VictimBlindSpots = activity.BlindSpots,
+            VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
@@ -462,8 +511,10 @@ public static class IsolationAttack
             var control = ControlFor(value);
             var (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
             Interlocked.Increment(ref _differentialChecks);
-            var normalized = Normalize(text, value);
-            var controlNormalized = Normalize(controlText, control);
+            // Both values are scrubbed from both answers, so a value that is also an ordinary word
+            // in every answer ("user" in "Users and access") is treated the same on both sides.
+            var normalized = Normalize(Normalize(text, value), control);
+            var controlNormalized = Normalize(Normalize(controlText, control), value);
             if (status != controlStatus || normalized != controlNormalized)
             {
                 lock (_lock) Oracles.Add($"{attacker.Name} → GET {uri} [{parameter.In} {parameter.Name}]: {status} {Short(normalized, 160)} " +
@@ -538,40 +589,44 @@ public static class IsolationAttack
             return text.Replace(Uri.EscapeDataString(value), "<sent>", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>The body with trace ids removed and the sent value replaced by a placeholder.</summary>
+        /// <summary>The body with trace ids removed and the sent value replaced by a placeholder.
+        /// In JSON only string values are scrubbed, never property names, so a short value such as
+        /// "user" cannot hide a difference by matching a key.</summary>
         private static string Normalize(string text, string value)
         {
-            string result;
             try
             {
                 var node = JsonNode.Parse(text);
-                StripVolatile(node);
-                result = node?.ToJsonString() ?? "";
+                node = ScrubValues(node, value);
+                return node?.ToJsonString() ?? "";
             }
             catch (JsonException)
             {
-                result = text;
+                return Scrub(text, value);
             }
-            return Scrub(result, value);
         }
 
-        private static void StripVolatile(JsonNode? node)
+        private static JsonNode? ScrubValues(JsonNode? node, string value)
         {
             switch (node)
             {
                 case JsonObject obj:
                     obj.Remove("traceId");
-                    foreach (var (_, child) in obj.ToList())
+                    foreach (var (key, child) in obj.ToList())
                     {
-                        StripVolatile(child);
+                        obj[key] = ScrubValues(child, value);
                     }
-                    break;
+                    return obj;
                 case JsonArray array:
-                    foreach (var child in array)
+                    for (var i = 0; i < array.Count; i++)
                     {
-                        StripVolatile(child);
+                        array[i] = ScrubValues(array[i]?.DeepClone(), value);
                     }
-                    break;
+                    return array;
+                case JsonValue leaf when leaf.GetValueKind() == JsonValueKind.String:
+                    return JsonValue.Create(Scrub(leaf.GetValue<string>(), value));
+                default:
+                    return node?.DeepClone();
             }
         }
 
@@ -614,6 +669,27 @@ public sealed record IsolationReport(
     public int BodyValueAttacks { get; init; }
     public int DifferentialChecks { get; init; }
     public int TracedLookups { get; init; }
+
+    /// <summary>Requests tenant B sent while sharing the process with the attack.</summary>
+    public int VictimRequests { get; init; }
+
+    /// <summary>Tenant B requests sent concurrently with tenant A's parameter and body attacks.</summary>
+    public int VictimConcurrentRequests { get; init; }
+
+    /// <summary>Tenant B writes on its own records that succeeded.</summary>
+    public int VictimWrites { get; init; }
+
+    /// <summary>Endpoints that change data tenant B called on its own records.</summary>
+    public int VictimWriteEndpoints { get; init; }
+
+    /// <summary>Responses to tenant B judged for tenant A's markers.</summary>
+    public int ReverseChecks { get; init; }
+
+    /// <summary>Reasons tenant B's activity may have been blind.</summary>
+    public IReadOnlyList<string> VictimBlindSpots { get; init; } = [];
+
+    /// <summary>Tenant B writes on its own records that did not succeed.</summary>
+    public IReadOnlyList<string> VictimUnsuccessfulWrites { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];

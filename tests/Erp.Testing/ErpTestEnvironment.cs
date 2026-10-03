@@ -166,6 +166,18 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
 /// <summary>Hosts the real <c>Program</c> with test connection strings.</summary>
 public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebApplicationFactory<Program>
 {
+    private IReadOnlyList<ServiceDescriptor>? _descriptors;
+
+    /// <summary>Every service registration of the running app (for the process-wide state gate).</summary>
+    public IReadOnlyList<ServiceDescriptor> ServiceDescriptors
+    {
+        get
+        {
+            _ = Services;
+            return _descriptors ?? [];
+        }
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -175,6 +187,6 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
         }
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
         builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
-        builder.ConfigureTestServices(_ => { });
+        builder.ConfigureTestServices(services => _descriptors = services.ToList());
     }
 }

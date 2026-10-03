@@ -21,6 +21,9 @@
 //   3. Typing text is one K per character, plus one K per character that needs Shift.
 //   4. A key chord is one K per key in the chord (Control+K is two keystrokes).
 //   5. One H each time the operating hand moves between mouse and keyboard.
+//   6. Scrolling a target into view with the mouse wheel is one step, modelled like a click
+//      (P + BB: bring the pointer to the scroll area and turn the wheel). The paper has no
+//      operator for scrolling; this keeps a path that needs a scroll from looking free.
 
 export const OPERATORS = Object.freeze({ K: 0.28, P: 1.1, B: 0.1, H: 0.4, M: 1.35 });
 
@@ -48,7 +51,7 @@ export function keystrokesForChord(chord) {
 
 /** Which hand-device a step uses. */
 export function deviceOf(kind) {
-  return kind === 'click' || kind === 'double-click' || kind === 'file-pick' ? 'mouse' : 'keyboard';
+  return kind === 'click' || kind === 'double-click' || kind === 'file-pick' || kind === 'scroll' ? 'mouse' : 'keyboard';
 }
 
 /**
@@ -63,7 +66,7 @@ export function operatorsForStep(step, prevDevice) {
   if (prevDevice && prevDevice !== device) ops.H += 1;
   if (!prevDevice && device === 'keyboard') ops.H += 1;
   switch (step.kind) {
-    case 'click': ops.P += 1; ops.B += 2; break;
+    case 'click': case 'scroll': ops.P += 1; ops.B += 2; break;
     case 'double-click': case 'file-pick': ops.P += 1; ops.B += 4; break;
     case 'type': case 'key': ops.K += step.keystrokes; break;
     default: throw new Error(`unknown step kind: ${step.kind}`);
