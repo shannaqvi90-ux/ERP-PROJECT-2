@@ -48,4 +48,18 @@ describe("print layout base", () => {
     expect(doc.dir).toBe("ltr");
     expect(doc.querySelector(".print-footer")!.textContent).toContain("2026");
   });
+
+  it("wraps a live screen: nothing on screen, the letterhead and footer only on paper, no second heading", async () => {
+    view = await render(
+      <PrintDocument screen language="ar" title="الأدوار" issuer="شركة النور للتجارة ذ.م.م" printedBy="مريم" printedAt={new Date(Date.UTC(2026, 9, 3, 8, 0))}>
+        <h1>الأدوار</h1>
+      </PrintDocument>,
+    );
+    const doc = view.container.querySelector<HTMLElement>(".print-document")!;
+    expect(doc.classList.contains("print-document-screen")).toBe(true);
+    expect(doc.querySelector(".print-letterhead")!.classList.contains("print-only")).toBe(true);
+    expect(doc.querySelector(".print-footer")!.classList.contains("print-only")).toBe(true);
+    expect(doc.querySelectorAll("h1")).toHaveLength(1);
+    expect(doc.querySelector(".print-issuer")!.textContent).toBe("شركة النور للتجارة ذ.م.م");
+  });
 });

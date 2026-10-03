@@ -115,10 +115,51 @@ test.describe("app shell", () => {
     const option = page.getByRole("option", { name: /Omar Haddad/ });
     await expect(option).toBeVisible();
     await option.click();
-    await expect(page).toHaveURL(/\/identity\/users\?q=viewer%40alnoor\.example$/);
+    // The users list narrowed to the record, with the record open in its details panel.
+    await expect(page).toHaveURL(/\/identity\/users\?q=viewer%40alnoor\.example&open=[0-9a-f-]{36}$/);
     await expect(page.locator("table tbody tr")).toHaveCount(1);
     await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
+    await expect(page.getByRole("region", { name: "Details" })).toContainText(users.viewer);
   });
+
+  test("the palette leads from a few record matches to the list of every match", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("alnoor");
+    const all = page.getByRole("option", { name: /^Show all [\d,]+ matches for “alnoor”$/ });
+    await expect(all).toBeVisible();
+    // Keyboard only: the entry is the last of the users' results (Up from the first wraps to it).
+    for (let i = 0; i < 20 && (await all.getAttribute("aria-selected")) !== "true"; i++) await page.keyboard.press("ArrowUp");
+    await expect(all).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/identity\/users\?q=alnoor$/);
+    await expect(page.locator('input[type="search"]')).toHaveValue("alnoor");
+    await expect(page.locator("table tbody tr").nth(5)).toBeVisible();
+  });
+
+  for (const language of ["en", "ar"] as const) {
+    test(`at phone width nothing is wider than the window (${language})`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await freshStart(page, language);
+      await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+      await expect(page.locator("main h1")).toBeVisible();
+      const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(await overflow(), "home scrolls sideways").toBeLessThanOrEqual(0);
+      // The navigation pane starts closed on a phone; the menu button lays it over the screen,
+      // and opening a screen puts it away.
+      const pane = page.locator("nav.navpane");
+      await expect(pane).toBeHidden();
+      await page.locator(".topbar button[aria-controls='navpane']").click();
+      await expect(pane).toBeVisible();
+      expect(await overflow(), "open navigation scrolls sideways").toBeLessThanOrEqual(0);
+      await pane.getByRole("link").first().click();
+      await expect(pane).toBeHidden();
+      await expect(page.locator("main h1")).toBeVisible();
+      expect(await overflow(), "a screen scrolls sideways").toBeLessThanOrEqual(0);
+    });
+  }
 
   test("the palette offers a user with no roles nothing they cannot open", async ({ page }) => {
     await freshStart(page, "en");
@@ -151,6 +192,8 @@ test.describe("app shell", () => {
       await expect(page.locator(".screen-header .muted")).toHaveText(/^[٠-٩٬]+ مستخدم/);
       // A new sign-in, on a device that never saw the choice, brings it back.
       await page.getByRole("button", { name: "تسجيل الخروج" }).click();
+      // The sign-in screen shows only once the server has ended the session.
+      await expect(page.locator('input[name="email"]')).toBeVisible();
       await page.evaluate(() => localStorage.clear());
       await page.goto("/");
       await signIn(page, users.viewer);
@@ -173,6 +216,10 @@ test.describe("app shell", () => {
     await expect(page.locator(".statusbar")).toBeHidden();
     await expect(page.locator(".print-screen-head")).toBeVisible();
     await expect(page.locator(".print-screen-head")).toContainText("شركة النور للتجارة ذ.م.م");
+    // The screen prints through the print layout base: letterhead with the screen's name, footer.
+    await expect(page.locator(".print-document .print-title")).toHaveText("الأدوار");
+    await expect(page.locator(".print-document .print-footer")).toBeVisible();
+    await expect(page.locator(".print-document .print-footer")).toContainText("طبعه");
     await expect(page.locator("main h1")).toHaveText("الأدوار");
     expect(await page.evaluate(() => getComputedStyle(document.querySelector("main")!).direction)).toBe("rtl");
     await page.emulateMedia({ media: "screen" });

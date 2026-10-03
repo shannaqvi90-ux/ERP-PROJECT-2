@@ -150,7 +150,8 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
              WHERE NOT EXISTS (SELECT 1 FROM identity.user_credentials c WHERE c.id = u.id)
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("hash", hash);
-        // As long as the bulk load it follows (BulkInsert): one statement over the whole volume.
+        // One statement for the whole volume (100,000 rows in the volume tests): on a loaded
+        // machine it can outlast Npgsql's default 30 s, which failed the seeding, not the product.
         command.CommandTimeout = 600;
         await command.ExecuteNonQueryAsync(cancellationToken);
     }

@@ -89,7 +89,9 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
 
   const signOut = useCallback(async () => {
     try {
-      await api<void>("POST", "/api/auth/sign-out");
+      // keepalive: the sign-out reaches the server even when the tab is closed or reloaded right
+      // after the click (a shared device must not stay signed in).
+      await api<void>("POST", "/api/auth/sign-out", undefined, { keepalive: true });
     } finally {
       setState({ status: "anonymous" });
     }
