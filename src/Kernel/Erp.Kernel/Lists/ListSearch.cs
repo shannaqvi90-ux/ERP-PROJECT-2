@@ -24,7 +24,7 @@ public static class ListSearch
     public const int MaxSpellings = 32;
 
     // Groups of letters typed for one another. A typed letter matches every letter of its group.
-    private static readonly string[] Groups = ["اأإآٱ", "يىئ", "هة", "وؤ"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> Groups = ["اأإآٱ", "يىئ", "هة", "وؤ"];
 
     /// <summary>Score parts of relevance (see <see cref="ListBinding{T}"/>): a word at the start of
     /// a field, a word at the start of a word inside a field, the whole search equal to a field, the
@@ -40,7 +40,7 @@ public static class ListSearch
     internal const int LengthSlots = 1024;
 
     /// <summary>Characters that start a word inside a field (a name's parts, an e-mail's parts).</summary>
-    internal static readonly string[] WordSeparators = [" ", "."];
+    internal static readonly System.Collections.Immutable.ImmutableArray<string> WordSeparators = [" ", "."];
 
     /// <summary>The spellings a search word matches: itself without short vowels and tatweel, and
     /// its Arabic letter variants (at most <see cref="MaxSpellings"/>). Latin words match only
