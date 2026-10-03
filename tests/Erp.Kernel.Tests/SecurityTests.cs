@@ -29,6 +29,23 @@ public sealed class SecurityTests
     }
 
     [Fact]
+    public void A_proof_from_the_challenge_equals_the_stored_hash_only_for_the_right_password()
+    {
+        var stored = PasswordHasher.Hash("Correct-Horse-1");
+        var challenge = PasswordHasher.ChallengeOf(stored)!;
+        Assert.Equal(3, challenge.Split('$').Length);
+        Assert.DoesNotContain(stored.Split('$')[3], challenge, StringComparison.Ordinal);
+        Assert.Equal(stored, PasswordHasher.Prove("Correct-Horse-1", challenge));
+        Assert.NotEqual(stored, PasswordHasher.Prove("correct-horse-1", challenge));
+        Assert.Null(PasswordHasher.Prove("x", "garbage"));
+        Assert.Null(PasswordHasher.Prove("x", "pbkdf2-sha512$1$AAAA"));
+        Assert.Null(PasswordHasher.Prove("x", "pbkdf2-sha512$210000$!!!"));
+        Assert.Null(PasswordHasher.ChallengeOf("md5$abc"));
+        Assert.False(PasswordHasher.IsOutdated(challenge));
+        Assert.True(PasswordHasher.IsOutdated(PasswordHasher.ChallengeOf(PasswordHasher.Hash("Old-Password-1", iterations: 50_000))!));
+    }
+
+    [Fact]
     public void Session_tokens_are_256_bit_base64url_and_stored_as_sha256()
     {
         var token = SessionTokens.Generate();
