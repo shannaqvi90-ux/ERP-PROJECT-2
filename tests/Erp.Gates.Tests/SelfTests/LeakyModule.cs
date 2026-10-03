@@ -272,6 +272,82 @@ public sealed class LeakyModule : ErpModule
                 return await command.ExecuteNonQueryAsync() > 0 ? Results.NoContent() : Results.NotFound();
             }).WithName("leaky.deleteRole").WithSummary("Planted bug: deletes any role, whatever it grants.").RequirePermission("leaky.data.delete");
 
+            // Bug 30 (critic p03 round 2, plant P5): members are created and edited only within the
+            // caller's grants, and an edit checks that the member holds nothing the caller lacks,
+            // except when only the e-mail changes: that path skips the check, so a clerk moves the
+            // Administrator's sign-in to an address of their choosing.
+            group.MapPost("/members", async (MemberRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var email = request.Email?.Trim() ?? "";
+                var displayName = request.DisplayName?.Trim() ?? "";
+                if (!email.Contains('@') || email.Length > 254 || displayName.Length is 0 or > 200)
+                {
+                    return Results.BadRequest();
+                }
+                var roleIds = (request.RoleIds ?? []).Distinct().ToList();
+                if (!(await RolePermissionsAsync(session, roleIds)).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                var id = Guid.NewGuid();
+                await using (var command = new NpgsqlCommand(
+                    "INSERT INTO identity.users (id, tenant_id, email, email_normalized, display_name, language, is_active) " +
+                    "VALUES (@id, erp.current_tenant_id(), @e, lower(@e), @n, 'en', true) ON CONFLICT DO NOTHING", session.Connection, session.Transaction))
+                {
+                    command.Parameters.AddWithValue("id", id);
+                    command.Parameters.AddWithValue("e", email);
+                    command.Parameters.AddWithValue("n", displayName);
+                    if (await command.ExecuteNonQueryAsync() != 1)
+                    {
+                        return Results.Conflict();
+                    }
+                }
+                await SetMemberRolesAsync(session, id, roleIds);
+                return Results.Created($"/api/leaky/members/{id}", new { id });
+            }).WithName("leaky.createMember").WithSummary("Creates a member with roles within the caller's own grants.").RequirePermission("leaky.data.update");
+
+            group.MapGet("/members/{id:guid}", async (Guid id, ErpDbSession session) =>
+                await MemberAsync(session, id) is { } member ? Results.Ok(member) : Results.NotFound())
+                .WithName("leaky.getMember").WithSummary("One member.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/members/{id:guid}", async (Guid id, MemberRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var email = request.Email?.Trim() ?? "";
+                var displayName = request.DisplayName?.Trim() ?? "";
+                if (!email.Contains('@') || email.Length > 254 || displayName.Length is 0 or > 200)
+                {
+                    return Results.BadRequest();
+                }
+                if (await MemberAsync(session, id) is not { } member)
+                {
+                    return Results.NotFound();
+                }
+                var roleIds = (request.RoleIds ?? []).Distinct().ToList();
+                var rolesChanged = !member.RoleIds.ToHashSet().SetEquals(roleIds);
+                if (rolesChanged && !(await RolePermissionsAsync(session, member.RoleIds.Except(roleIds).Concat(roleIds.Except(member.RoleIds)).ToList())).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                var onlyEmail = email != member.Email && displayName == member.DisplayName && !rolesChanged;
+                if (!onlyEmail && !(await RolePermissionsAsync(session, [.. member.RoleIds])).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using (var command = new NpgsqlCommand(
+                    "UPDATE identity.users SET email = @e, email_normalized = lower(@e), display_name = @n WHERE id = @id", session.Connection, session.Transaction))
+                {
+                    command.Parameters.AddWithValue("id", id);
+                    command.Parameters.AddWithValue("e", email);
+                    command.Parameters.AddWithValue("n", displayName);
+                    await command.ExecuteNonQueryAsync();
+                }
+                if (rolesChanged)
+                {
+                    await SetMemberRolesAsync(session, id, roleIds);
+                }
+                return Results.Ok(await MemberAsync(session, id));
+            }).WithName("leaky.updateMember").WithSummary("Planted bug: an e-mail-only edit skips the check on the member's access.").RequirePermission("leaky.data.update");
+
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
                 Results.Ok(await ResolveLoginAsync(session, email ?? "")))
@@ -371,6 +447,52 @@ public sealed class LeakyModule : ErpModule
     public sealed record FindRequest(string? Reference);
 
     public sealed record GrantRequest(IReadOnlyList<Guid>? RoleIds);
+
+    public sealed record MemberRequest(string? Email, string? DisplayName, IReadOnlyList<Guid>? RoleIds);
+
+    public sealed record Member(Guid Id, string Email, string DisplayName, IReadOnlyList<Guid> RoleIds);
+
+    private static async Task<Member?> MemberAsync(ErpDbSession session, Guid id)
+    {
+        await using var command = new NpgsqlCommand(
+            "SELECT u.email, u.display_name, coalesce(array_agg(ur.role_id ORDER BY ur.role_id) FILTER (WHERE ur.role_id IS NOT NULL), '{}') " +
+            "FROM identity.users u LEFT JOIN identity.user_roles ur ON ur.user_id = u.id WHERE u.id = @id GROUP BY u.email, u.display_name",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", id);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? new Member(id, reader.GetString(0), reader.GetString(1), reader.GetFieldValue<Guid[]>(2)) : null;
+    }
+
+    /// <summary>Every permission the roles grant; an unknown role grants something nobody holds.</summary>
+    private static async Task<List<string>> RolePermissionsAsync(ErpDbSession session, IReadOnlyList<Guid> roleIds)
+    {
+        await using var command = new NpgsqlCommand("SELECT id, permissions FROM identity.roles WHERE id = ANY(@ids)", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("ids", roleIds.ToArray());
+        await using var reader = await command.ExecuteReaderAsync();
+        var found = new HashSet<Guid>();
+        var permissions = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            found.Add(reader.GetGuid(0));
+            permissions.AddRange(reader.GetFieldValue<string[]>(1));
+        }
+        if (found.Count != roleIds.Count)
+        {
+            permissions.Add("leaky.unknown-role");
+        }
+        return permissions;
+    }
+
+    private static async Task SetMemberRolesAsync(ErpDbSession session, Guid userId, IReadOnlyList<Guid> roleIds)
+    {
+        await using var command = new NpgsqlCommand(
+            "DELETE FROM identity.user_roles WHERE user_id = @u AND NOT (role_id = ANY(@r)); " +
+            "INSERT INTO identity.user_roles (id, tenant_id, user_id, role_id) SELECT gen_random_uuid(), erp.current_tenant_id(), @u, r FROM unnest(@r) AS r ON CONFLICT DO NOTHING",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("u", userId);
+        command.Parameters.AddWithValue("r", roleIds.ToArray());
+        await command.ExecuteNonQueryAsync();
+    }
 
     /// <summary>The planted lookups leave the request's tenant and call the reviewed sign-in
     /// lookup on the unbound connection, as a careless endpoint would: they prove the well-known

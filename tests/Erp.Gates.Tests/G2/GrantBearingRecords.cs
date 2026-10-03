@@ -26,12 +26,15 @@ namespace Erp.Gates.Tests.G2;
 /// </summary>
 public static class GrantBearingRecords
 {
-    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked);
+    /// <param name="FieldVariants">Every single-field request sent, as "endpoint [field changed]"
+    /// or "endpoint [field left out]" (see <see cref="G2.FieldVariants"/>).</param>
+    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, IReadOnlyList<string>? FieldVariants = null);
 
     public static async Task<Result> RunAsync(ErpTestEnvironment env)
     {
         var problems = new List<string>();
         var checkedEndpoints = new List<string>();
+        var fieldVariants = new List<string>();
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -95,9 +98,70 @@ public static class GrantBearingRecords
                     problems.Add($"{endpoint}: aimed at a record granting only what the caller holds answered {controlStatus}, so the gate cannot tell a grant check from a malformed request: {Short(controlText)}");
                 }
                 checkedEndpoints.Add(endpoint.Key);
+
+                // One field at a time: the same endpoint, each writable property changed alone and
+                // left out alone, aimed at the record granting everything and, as the control, at
+                // the record granting only what the caller holds.
+                if (endpoint.HasBody && openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is { } schema)
+                {
+                    var k = 0;
+                    foreach (var spec in FieldVariants.Specs(openApi, schema))
+                    {
+                        k++;
+                        var strongVariant = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, itemPath, $"{tag}s{k}"), $"{tag}s{k}", env.TenantA.EmailDomain,
+                            (field, current) => current.Count > 0
+                                ? new JsonArray(current.Take(current.Count - 1).Select(x => x!.DeepClone()).ToArray())
+                                : field == "roleIds" ? new JsonArray(JsonValue.Create(administratorRole)) : new JsonArray(everything.Select(p => (JsonNode)JsonValue.Create(p)!).ToArray()));
+                        var weakVariant = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, weakItem, $"{tag}w{k}"), $"{tag}w{k}", env.TenantA.EmailDomain,
+                            (field, current) => WithinCaller(field, current, callerRole, callerPermissions));
+                        if (strongVariant is null || weakVariant is null)
+                        {
+                            problems.Add($"{endpoint} {spec}: the gate has no different valid value for this field; extend FieldVariants rather than leave the field untested");
+                            continue;
+                        }
+                        var strongBefore = await ReadAsync(admin, itemPath);
+                        var (variantStatus, variantText) = await SendAsync(caller, endpoint.Method, strongPath, strongVariant);
+                        var strongAfter = await ReadAsync(admin, itemPath);
+                        var (variantControl, variantControlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => weak.ToString()), weakVariant);
+                        var controlAccepted = variantControl is >= 200 and < 300;
+                        if (controlAccepted && variantStatus != (int)HttpStatusCode.Forbidden)
+                        {
+                            problems.Add($"{endpoint} {spec}: aimed at a record granting everything by a user holding only [{string.Join(", ", callerPermissions)}] answered {variantStatus} (expected 403): {Short(variantText)}");
+                        }
+                        else if (!controlAccepted && spec.Kind == FieldVariants.Kind.Changed)
+                        {
+                            problems.Add($"{endpoint} {spec}: aimed at a record granting only what the caller holds answered {variantControl}, so the gate cannot tell a grant check from a malformed request: {Short(variantControlText)}");
+                        }
+                        else if (!controlAccepted && variantStatus is not ((int)HttpStatusCode.Forbidden or (int)HttpStatusCode.BadRequest))
+                        {
+                            problems.Add($"{endpoint} {spec}: refused on the control ({variantControl}) but answered {variantStatus} on the record granting everything (expected 400 or 403): {Short(variantText)}");
+                        }
+                        if (strongAfter != strongBefore)
+                        {
+                            problems.Add($"{endpoint} {spec}: the record granting everything changed: before {Short(strongBefore)}; after {Short(strongAfter)}");
+                        }
+                        fieldVariants.Add($"{endpoint} {spec}");
+                    }
+                }
             }
         }
-        return new Result(problems, checkedEndpoints);
+        return new Result(problems, checkedEndpoints, fieldVariants);
+    }
+
+    /// <summary>A changed grant that stays within what the caller holds: the caller's own role
+    /// added or taken away, one of the caller's permissions added or the last one taken away.</summary>
+    internal static JsonArray WithinCaller(string field, JsonArray current, Guid callerRole, IReadOnlyList<string> callerPermissions)
+    {
+        var values = current.Select(x => x!.ToString()).ToList();
+        if (field == "roleIds")
+        {
+            var role = callerRole.ToString();
+            return new JsonArray((values.Contains(role, StringComparer.OrdinalIgnoreCase) ? values.Where(v => !v.Equals(role, StringComparison.OrdinalIgnoreCase)) : values.Append(role))
+                .Select(v => (JsonNode)JsonValue.Create(v)!).ToArray());
+        }
+        var missing = callerPermissions.FirstOrDefault(p => !values.Contains(p, StringComparer.Ordinal));
+        var changed = missing is not null ? values.Append(missing) : values.Take(values.Count - 1);
+        return new JsonArray(changed.Select(v => (JsonNode)JsonValue.Create(v)!).ToArray());
     }
 
     /// <summary>The record as the administrator reads it (status and body), or its status when it
@@ -111,7 +175,15 @@ public static class GrantBearingRecords
     /// <summary>A body that passes validation: for an edit, the record's own fields with its first
     /// plain text field changed (a real change, grants untouched); otherwise fresh names, a valid
     /// password and language, flags on.</summary>
-    private static async Task<JsonObject?> BodyAsync(HttpClient admin, OpenApiDocument openApi, ApiEndpoint endpoint, string itemPath, string tag)
+    private static Task<JsonObject?> BodyAsync(HttpClient admin, OpenApiDocument openApi, ApiEndpoint endpoint, string itemPath, string tag) =>
+        BodyAsync(admin, openApi, endpoint, itemPath, tag, changeOneText: true);
+
+    /// <summary>The base of a single-field request: for an edit, exactly the record's own values;
+    /// otherwise fresh valid values.</summary>
+    private static async Task<JsonObject> BaseBodyAsync(HttpClient admin, OpenApiDocument openApi, ApiEndpoint endpoint, string itemPath, string tag) =>
+        await BodyAsync(admin, openApi, endpoint, itemPath, tag, changeOneText: false) ?? [];
+
+    private static async Task<JsonObject?> BodyAsync(HttpClient admin, OpenApiDocument openApi, ApiEndpoint endpoint, string itemPath, string tag, bool changeOneText)
     {
         if (!endpoint.HasBody || openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
         {
@@ -140,7 +212,7 @@ public static class GrantBearingRecords
                     var plainText = current is JsonValue v && v.GetValueKind() == JsonValueKind.String && generated is JsonValue g && g.GetValueKind() == JsonValueKind.String &&
                                     !field.Contains("email", StringComparison.OrdinalIgnoreCase) && !field.Equals("language", StringComparison.OrdinalIgnoreCase) &&
                                     !field.Equals("numerals", StringComparison.OrdinalIgnoreCase) && !Guid.TryParse(v.GetValue<string>(), out _);
-                    if (plainText && !changed)
+                    if (changeOneText && plainText && !changed)
                     {
                         body[field] = field.EndsWith("Ar", StringComparison.Ordinal) ? $"تعديل {tag}" : $"Edited {tag}";
                         changed = true;

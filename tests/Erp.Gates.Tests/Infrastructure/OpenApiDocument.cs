@@ -151,6 +151,10 @@ public sealed class OpenApiDocument(JsonElement root)
         }
     }
 
+    /// <summary>The schema's type (the first non-null one when it allows several), after
+    /// resolving references; <c>object</c> for a schema with properties and no type.</summary>
+    public string? TypeOfSchema(JsonElement schema) => TypeOf(Resolve(schema));
+
     private static string? TypeOf(JsonElement schema)
     {
         if (!schema.TryGetProperty("type", out var type))

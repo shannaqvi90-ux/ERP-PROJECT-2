@@ -84,6 +84,53 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         return problems;
     }
 
+    [Fact]
+    public void Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission()
+    {
+        var maps = ReviewedPermissionMap.Load();
+        Assert.Contains(maps, m => m.File == "identity.txt");
+        var (problems, checkedCount) = ReviewedPermissionMap.Check(Endpoints, maps);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedCount} endpoints compared with {maps.Count} reviewed map(s)");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(checkedCount >= Ratchet.Min("g2.reviewedPermissionEndpoints"),
+            $"{checkedCount} endpoints compared with the reviewed map; ratchet minimum {Ratchet.Min("g2.reviewedPermissionEndpoints")}");
+    }
+
+    /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by
+    /// identity.users.read while identity.signIns.read is still used elsewhere; an endpoint missing
+    /// from the map; a map line matching nothing.</summary>
+    [Fact]
+    public void The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.Services.AddAuthorization();
+        using var app = builder.Build();
+        app.MapGet("/api/planted/users/{id:guid}/sign-ins", () => "planted").RequirePermission("identity.users.read");
+        app.MapPost("/api/planted/users/{id:guid}/unblock", () => "planted").RequirePermission("identity.signIns.read");
+        app.MapPost("/api/planted/users/{id:guid}/export", () => "planted").RequirePermission("identity.users.read");
+        app.MapGet("/api/elsewhere/report", () => "planted").RequirePermission("identity.users.read");
+        var endpoints = EndpointInventory.From(((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints));
+        var map = ReviewedPermissionMap.Parse("planted.txt",
+        [
+            "prefix /api/planted/",
+            "GET /api/planted/users/{id:guid}/sign-ins identity.signIns.read # history is more sensitive than the record",
+            "POST /api/planted/users/{id:guid}/unblock identity.users.update # changes the account",
+            "DELETE /api/planted/users/{id:guid} identity.users.delete # removed since",
+        ]);
+        var (problems, checkedCount) = ReviewedPermissionMap.Check(endpoints, [map]);
+        Assert.Equal(3, checkedCount);
+        Assert.Contains(problems, p => p.StartsWith("GET /api/planted/users/{id:guid}/sign-ins declares identity.users.read; the reviewed map planted.txt says identity.signIns.read", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("POST /api/planted/users/{id:guid}/unblock declares identity.signIns.read", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("POST /api/planted/users/{id:guid}/export declares identity.users.read but is not in the reviewed map", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("planted.txt: DELETE /api/planted/users/{id:guid} matches no endpoint", StringComparison.Ordinal));
+        Assert.DoesNotContain(problems, p => p.Contains("/api/elsewhere/", StringComparison.Ordinal));
+        Assert.Equal(4, problems.Count);
+
+        // A line without a reason is refused.
+        Assert.NotEmpty(ReviewedPermissionMap.Parse("bare.txt", ["prefix /api/planted/", "GET /api/planted/x identity.users.read"]).Problems);
+    }
+
     /// <summary>Self-test (critic plant P6b): .AllowAnonymous() stacked on RequirePermission, with
     /// the endpoint metadata exactly as ASP.NET Core builds it, is reported.</summary>
     [Fact]

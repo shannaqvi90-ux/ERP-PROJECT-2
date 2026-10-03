@@ -143,6 +143,22 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public async Task The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes()
+    {
+        // Critic p03 round 2, plant P5: an e-mail-only edit of a stronger account skips the access
+        // check. The edit that changes the name (the one request earlier gates sent) is refused;
+        // only the single-field request finds the bypass.
+        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("changed: before", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid}: ", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [displayName changed]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [roleIds changed]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("PUT /api/identity/users/{id:guid} [email changed]", result.FieldVariants ?? []);
+    }
+
+    [Fact]
     public void The_process_state_check_catches_a_static_cache_and_a_stateful_singleton()
     {
         var inventory = ProcessState.InspectTypes(typeof(LeakyModule).GetNestedTypes().Append(typeof(LeakyModule)),
