@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "run_id": "follow-approval-20261003T001144-e1dd",
+  "task": "follow-approval",
+  "task_title": "Follow an approval",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find the document that is waiting for your approval and approve it.",
+  "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
+  "started_at": "2026-10-03T00:11:44.386Z",
+  "finished_at": "2026-10-03T00:11:49.161Z",
+  "environment": {
+    "base_url": "http://localhost:20152",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 0,
+    "clicks": 4,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "machine_seconds": 1.663,
+    "system_wait_seconds": 1.416,
+    "human_seconds": 10.6,
+    "human_plus_wait_seconds": 12.016,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 4,
+      "B": 8,
+      "H": 0,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.043
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Purchase app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.043,
+      "took": 0.048
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "open the order waiting for approval",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.024,
+      "took": 0.099
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Approve Order",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.455,
+      "took": 0.14
+    }
+  ],
+  "waits": [
+    {
+      "label": "order list",
+      "at": 0.091,
+      "seconds": 0.928
+    },
+    {
+      "label": "order form",
+      "at": 1.124,
+      "seconds": 0.331
+    },
+    {
+      "label": "order approved",
+      "at": 1.595,
+      "seconds": 0.157
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "0c040fb274869752.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/0c040fb274869752.jpg"
+    },
+    {
+      "moment": "order list",
+      "file": "41828529f7fb45c0.jpg",
+      "at": 1.024,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/41828529f7fb45c0.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "495ed95fd2648ce9.jpg",
+      "at": 1.752,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/495ed95fd2648ce9.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "order": "P00004",
+      "state": "purchase",
+      "date_approve": "2026-10-03 00:11:48",
+      "approver_messages": 1,
+      "first_row_is_the_order": true
+    }
+  },
+  "path_notes": "Apps menu > Purchase (the newest order, waiting for approval, is the first row) > open it > Approve Order.",
+  "task_notes": "Odoo Community has no generic approvals app (Approvals is Enterprise). Its nearest Community feature is the purchase order two-step approval, so the Odoo driver approves a purchase order. Our product follows its own approval flow (p13) for an equivalent document.",
+  "error": null
+}

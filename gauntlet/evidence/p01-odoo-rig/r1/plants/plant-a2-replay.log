@@ -1,0 +1,58 @@
+=== plant a2-replay
+ .../Identity/Erp.Modules.Identity/Users/UserEndpoints.cs    | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+  Determining projects to restore...
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/Erp.Modules.Tenancy.Contracts.csproj (in 103 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Testing/Erp.Testing.csproj (in 287 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Host/Erp.Host/Erp.Host.csproj (in 5 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj (in 300 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj (in 1 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Kernel/Erp.Kernel/Erp.Kernel.csproj (in 182 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy/Erp.Modules.Tenancy.csproj (in 317 ms).
+  Restored /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj (in 9 ms).
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p01-odoo-rig-r1-plant/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p01-odoo-rig-r1-plant/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:08.96]     Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [FAIL]
+  Failed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [27 ms]
+  Error Message:
+   src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs names identity.resolve_login; only its reviewed callers may (tests/Gates/security-definer-callers.txt)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/G1/G1ReviewedLookupTests.cs:line 73
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:01:17.94]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [1 m 4 s]
+  Error Message:
+   Reviewed cross-tenant lookups ran from unreviewed callers:
+identity.resolve_login ran from endpoint:identity.users.lookup (/api/identity/users/lookup)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 56
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 2484 requests so far, 14.6 s
+ tenant B values in route and query parameters: 8782 requests so far, 51.0 s
+ tenant B values in body fields: 9178 requests so far, 63.4 s
+ tenant B: 37 ids (13 sampled), 22 text values, 22 extra markers, 13 probe values
+ 26 endpoints, 9178 requests, 59 tenant B values, 3969 parameter attacks, 396 body value attacks, 2329 differential checks, 7415 traced lookups
+
+
+[xUnit.net 00:01:25.09]     Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [FAIL]
+  Failed Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [1 m 7 s]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["identity.resolve_login ran from endpoint:identity."···, "identity.resolve_login ran from endpoint:leaky.exi"···, "identity.resolve_login ran from endpoint:leaky.fin"···, "identity.resolve_login ran from endpoint:leaky.loo"···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs:line 55
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     3, Passed:    42, Skipped:     0, Total:    45, Duration: 1 m 16 s - Erp.Gates.Tests.dll (net10.0)
+exit=1

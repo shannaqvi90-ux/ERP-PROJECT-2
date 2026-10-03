@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261003T000059-80f6",
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "ours",
+  "status": "not_built",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-10-03T00:01:01.540Z",
+  "finished_at": "2026-10-03T00:01:01.541Z",
+  "environment": {
+    "base_url": "http://localhost:8080",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": null,
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": null,
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": "not built yet: waits for p05 (list and search) with p16 (contacts)"
+}

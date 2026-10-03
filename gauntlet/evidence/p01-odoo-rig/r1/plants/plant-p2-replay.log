@@ -1,0 +1,42 @@
+=== plant p2-replay
+ src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs | 4 ----
+ 1 file changed, 4 deletions(-)
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p01-odoo-rig-r1-plant/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p01-odoo-rig-r1-plant/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p01-odoo-rig-r1-plant/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:12.31]     Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [FAIL]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [835 ms]
+  Error Message:
+   Creating a user with the Administrator role answered 201
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 250
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:14.89]     Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [FAIL]
+  Failed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [2 s]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["POST /api/identity/users: granting the Administrat"···, "POST /api/identity/users: the number of Administra"···, "POST /api/leaky/grants: granting the Administrator"···, "POST /api/leaky/grants: the number of Administrato"···, "POST /api/leaky/grants: the caller's own permissio"···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs:line 65
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:19.94]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [FAIL]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [2 s]
+  Error Message:
+   POST /api/identity/users: granting the Administrator role / every permission as a user holding only [identity.users.create, identity.roles.read, identity.users.read] answered 201 (expected 403): {"id":"01a0ff15-b1fe-747a-b596-51cc100eeff1","email":"g2.3f06223e.1@alpha.example","displayName":"G2 3f06223e 2","language":"en","isActive":true,"roleIds":["01a0ff15-92e3-7583-8978-1cf80de1adda"],"lastSignInAt":null,"createdAt":"2026-10-03T00:06:47.1751+00:00","version":804}
+POST /api/identity/users: the number of Administrator users changed
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds() in /home/user/critic/p01-odoo-rig-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 266
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     3, Passed:    42, Skipped:     0, Total:    45, Duration: 1 m 22 s - Erp.Gates.Tests.dll (net10.0)
+exit=1

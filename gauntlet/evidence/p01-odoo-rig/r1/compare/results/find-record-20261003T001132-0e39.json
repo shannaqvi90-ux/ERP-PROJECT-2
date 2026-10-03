@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261003T001132-0e39",
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-10-03T00:11:32.574Z",
+  "finished_at": "2026-10-03T00:11:35.757Z",
+  "environment": {
+    "base_url": "http://localhost:20152",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "machine_seconds": 1.027,
+    "system_wait_seconds": 0.86,
+    "human_seconds": 18.5,
+    "human_plus_wait_seconds": 19.36,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.034
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.034,
+      "took": 0.047
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "chain": false,
+      "at": 0.454,
+      "took": 0.166,
+      "text": "Shamma Waleed Al Romaithi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.621,
+      "took": 0.022,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.925,
+      "took": 0.056
+    }
+  ],
+  "waits": [
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.081,
+      "seconds": 0.102
+    },
+    {
+      "label": "first page of contacts",
+      "at": 0.183,
+      "seconds": 0.271
+    },
+    {
+      "label": "one result",
+      "at": 0.643,
+      "seconds": 0.282
+    },
+    {
+      "label": "contact form",
+      "at": 0.98,
+      "seconds": 0.203
+    },
+    {
+      "label": "mobile number shown",
+      "at": 1.183,
+      "seconds": 0.002
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "6b63279191cb9af2.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/6b63279191cb9af2.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "ea9cdf65d14ee8e4.jpg",
+      "at": 0.925,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/ea9cdf65d14ee8e4.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "f675e7cb56ccb42c.jpg",
+      "at": 1.186,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare/shots/f675e7cb56ccb42c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:20152/odoo/contacts/73531",
+      "name_shown": "Shamma Waleed Al Romaithi",
+      "mobile_shown": true
+    }
+  },
+  "path_notes": "Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.",
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": null
+}

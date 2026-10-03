@@ -1,0 +1,38 @@
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+UPDATE 0
+ROLLBACK
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+ count 
+-------
+     0
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1790986238.173932
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100004
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK

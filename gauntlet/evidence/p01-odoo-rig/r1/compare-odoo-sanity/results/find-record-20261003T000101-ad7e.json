@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261003T000101-ad7e",
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-10-03T00:01:01.651Z",
+  "finished_at": "2026-10-03T00:01:07.103Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "machine_seconds": 2.317,
+    "system_wait_seconds": 1.997,
+    "human_seconds": 18.5,
+    "human_plus_wait_seconds": 20.497,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.052
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.052,
+      "took": 0.047
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "chain": false,
+      "at": 0.882,
+      "took": 0.304,
+      "text": "Shamma Waleed Al Romaithi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 1.186,
+      "took": 0.013,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.116,
+      "took": 0.078
+    }
+  ],
+  "waits": [
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.099,
+      "seconds": 0.326
+    },
+    {
+      "label": "first page of contacts",
+      "at": 0.425,
+      "seconds": 0.457
+    },
+    {
+      "label": "one result",
+      "at": 1.199,
+      "seconds": 0.917
+    },
+    {
+      "label": "contact form",
+      "at": 2.194,
+      "seconds": 0.293
+    },
+    {
+      "label": "mobile number shown",
+      "at": 2.486,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c9e690c77a5b278a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare-odoo-sanity/shots/c9e690c77a5b278a.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "e5ab245ca3e99166.jpg",
+      "at": 2.116,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare-odoo-sanity/shots/e5ab245ca3e99166.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "8766262dffa6caee.jpg",
+      "at": 2.491,
+      "path": "../../evidence-staging/p01-odoo-rig/r1/compare-odoo-sanity/shots/8766262dffa6caee.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/contacts/75534",
+      "name_shown": "Shamma Waleed Al Romaithi",
+      "mobile_shown": true
+    }
+  },
+  "path_notes": "Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.",
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": null
+}
