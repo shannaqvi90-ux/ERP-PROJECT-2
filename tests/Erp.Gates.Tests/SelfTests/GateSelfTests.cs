@@ -37,6 +37,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unexpected: {leak}");
         }
+        foreach (var group in report.Leaks.GroupBy(l => System.Text.RegularExpressions.Regex.Match(l, @"/api/leaky/[a-z-]+").Value).OrderBy(g => g.Key, StringComparer.Ordinal))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"leaks on {group.Key}: {group.Count()}");
+        }
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/by-header", StringComparison.Ordinal) && l.Contains("[TenantHeaders]", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/tenants/", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);

@@ -174,7 +174,10 @@ public sealed class LeakyModule : ErpModule
             group.MapPost("/people", async (NewPerson request, ErpDbSession session) =>
             {
                 var id = Guid.NewGuid();
-                var email = (request.Email ?? $"{id:N}@people.example").Trim().ToLowerInvariant();
+                // The address sorts after every seeded one, so the attack's sample of tenant B's
+                // addresses (the first few of each column) still holds the seeded accounts the
+                // planted e-mail lookups need.
+                var email = $"zz.person.{id:N}@people.example";
                 var displayName = string.IsNullOrWhiteSpace(request.DisplayName) ? email : request.DisplayName.Trim();
                 // Refused, never cut short: a shortened copy of another tenant's value would read as a leak.
                 if (email.Length > 254 || displayName.Length > 200)
@@ -286,7 +289,7 @@ public sealed class LeakyModule : ErpModule
 
     public sealed record PersonCard(Guid Id, string DisplayName, string Email, IReadOnlyList<Guid> RoleIds);
 
-    public sealed record NewPerson(string? DisplayName, string? Email);
+    public sealed record NewPerson(string? DisplayName);
 
     public sealed record NewRole(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions);
 
