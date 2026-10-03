@@ -347,7 +347,11 @@ internal static class UserEndpoints
         {
             return problem;
         }
-        var user = await db.Users.SingleAsync(u => u.Id == id, cancellationToken);
+        // A concurrent delete of the same user may have committed since the check above.
+        if (await db.Users.SingleOrDefaultAsync(u => u.Id == id, cancellationToken) is not { } user)
+        {
+            return Problems.NotFound(http);
+        }
         // Sign-in history is append-only (the application role may not delete it), so an account
         // anyone has tried to sign in to stays, and so does everyone who ever signed in.
         if (user.LastSignInAt is not null || await db.Sessions.AnyAsync(s => s.UserId == id, cancellationToken) ||
