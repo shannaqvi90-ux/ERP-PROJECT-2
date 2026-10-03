@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Erp.Modules.Tenancy.Workplace;
 
@@ -131,21 +132,47 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
             session.SetWorkplace(null, null, []);
             return true;
         }
-        var limited = await db.BranchAccess.AsNoTracking().Where(b => b.UserId == userId).Select(b => b.BranchId).ToListAsync(cancellationToken);
-        var companies = await db.Companies.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.Code).Select(c => c.Id).ToListAsync(cancellationToken);
-        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Id)
-            .Select(b => new { b.Id, b.CompanyId }).ToListAsync(cancellationToken);
+        // One round trip for the rest, now inside the bound scope: active companies and branches,
+        // the user's branch limits and the working company and branch they chose.
+        var companies = new List<(Guid Id, string Code)>();
+        var branches = new List<(Guid Id, Guid CompanyId)>();
+        var limited = new HashSet<Guid>();
+        (Guid CompanyId, Guid? BranchId)? chosen = null;
+        await using (var command = new NpgsqlCommand("""
+            SELECT 1, c.id, c.id, c.code FROM tenancy.companies c WHERE c.is_active
+            UNION ALL SELECT 2, b.id, b.company_id, NULL FROM tenancy.branches b WHERE b.is_active
+            UNION ALL SELECT 3, a.branch_id, a.company_id, NULL FROM tenancy.user_branch_access a WHERE a.user_id = @user
+            UNION ALL SELECT 4, w.branch_id, w.company_id, NULL FROM tenancy.user_workplaces w
+                       WHERE w.user_id = @user AND erp.company_allowed(w.company_id)
+            """, session.Connection, session.Transaction))
+        {
+            command.Parameters.AddWithValue("user", userId);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                var companyOfRow = reader.GetGuid(2);
+                switch (reader.GetInt32(0))
+                {
+                    case 1: companies.Add((reader.GetGuid(1), reader.GetString(3))); break;
+                    case 2: branches.Add((reader.GetGuid(1), companyOfRow)); break;
+                    case 3: limited.Add(reader.GetGuid(1)); break;
+                    default: chosen = (companyOfRow, reader.IsDBNull(1) ? null : reader.GetGuid(1)); break;
+                }
+            }
+        }
+        var activeCompanies = companies.OrderBy(c => c.Code, StringComparer.Ordinal).Select(c => c.Id).ToList();
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
-        var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id)).ToList();
-        var chosen = await db.Workplaces.AsNoTracking().Where(w => w.UserId == userId)
-            .Select(w => new { w.CompanyId, w.BranchId }).SingleOrDefaultAsync(cancellationToken);
+        // Branches in opening order (time-ordered ids), as the switcher lists them.
+        var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id))
+            .OrderBy(b => b.Id).Select(b => new { b.Id, b.CompanyId }).ToList();
+        var companiesInOrder = activeCompanies;
 
-        Guid? companyId = chosen is not null && companies.Contains(chosen.CompanyId) ? chosen.CompanyId : companies.Cast<Guid?>().FirstOrDefault();
+        Guid? companyId = chosen is { } picked && companiesInOrder.Contains(picked.CompanyId) ? picked.CompanyId : companiesInOrder.Cast<Guid?>().FirstOrDefault();
         Guid? branchId = null;
         if (companyId is { } working)
         {
             var mine = allowedBranches.Where(b => b.CompanyId == working).Select(b => b.Id).ToList();
-            branchId = chosen?.BranchId is { } wanted && chosen.CompanyId == working && mine.Contains(wanted) ? wanted : mine.Cast<Guid?>().FirstOrDefault();
+            branchId = chosen is { BranchId: { } wanted } choice && choice.CompanyId == working && mine.Contains(wanted) ? wanted : mine.Cast<Guid?>().FirstOrDefault();
         }
         session.SetWorkplace(companyId, branchId, allowedBranches.Select(b => b.Id).ToList());
         return true;
