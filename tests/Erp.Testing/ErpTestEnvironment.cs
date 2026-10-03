@@ -38,6 +38,17 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public ErpAppFactory Factory { get; }
     public SeedPlan Plan { get; }
 
+    /// <summary>The configuration the app was started with (connection strings, test settings).</summary>
+    public IReadOnlyDictionary<string, string?> Settings => Factory.Settings;
+
+    /// <summary>
+    /// A second, independent app process over the same database: its own service provider,
+    /// singletons, static-free caches and endpoint closures, none of which any other caller has
+    /// touched. (Static fields are shared with <see cref="Factory"/>, as both run in this test
+    /// process.) The caller disposes it.
+    /// </summary>
+    public ErpAppFactory StartFreshProcess() => new(new Dictionary<string, string?>(Factory.Settings));
+
     /// <summary>Superuser on the ERP database (bypasses row-level security). For inspection only.</summary>
     public string AdminConnectionString { get; }
     public string OwnerConnectionString { get; }
@@ -166,6 +177,9 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
 /// <summary>Hosts the real <c>Program</c> with test connection strings.</summary>
 public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebApplicationFactory<Program>
 {
+    /// <summary>The settings this host was started with.</summary>
+    public IReadOnlyDictionary<string, string?> Settings { get; } = new Dictionary<string, string?>(settings);
+
     private IReadOnlyList<ServiceDescriptor>? _descriptors;
 
     /// <summary>Every service registration of the running app (for the process-wide state gate).</summary>
