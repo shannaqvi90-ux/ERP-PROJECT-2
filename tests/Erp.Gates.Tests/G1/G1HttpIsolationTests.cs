@@ -91,6 +91,12 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         AssertAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
         Assert.True(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
         AssertAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
+        Assert.True(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
+        Assert.True(report.ListAnswersBlind.Count == 0, "The list answer check may be blind:\n" + string.Join("\n", report.ListAnswersBlind));
+        AssertAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
+        AssertAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
+        Assert.True(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
+        AssertAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
     }
 
     private static void AssertAtLeast(int value, string key) =>
@@ -134,6 +140,11 @@ public static class IsolationAttack
         Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
         var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
         await activity.ReadAsync(victim, values, "tenant B reads before the attack");
+
+        // Everything reachable from the app's singletons and static fields, before tenant A
+        // attacks; compared with the same after the attack (state that changes under traffic).
+        var (stateRoots, productAssemblies) = ProcessState.LiveRoots(Env.Factory);
+        var stateBefore = ReachableState.Fingerprint(stateRoots, productAssemblies);
 
         var attackers = new List<Attacker>
         {
@@ -371,6 +382,19 @@ public static class IsolationAttack
 
         Phase($"registered lists through their query contract: {listQueryAttacks} attacks, {state.Requests - listAttacksBefore} requests");
 
+        // Phase 2c: what list answers add up to (totals, group counts, sums) must be the asking
+        // tenant's own, after the other tenant sent exactly the same request first; both ways.
+        var listAnswers = new List<ListAnswers.Result>();
+        using (var victimAdmin = await Env.SignInAsync(Env.Email(b, "admin")))
+        {
+            var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
+            var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
+            var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
+        }
+        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked");
+
         // Phase 3: every tenant B text value in every string field of every request body. Values the
         // attacker managed to store in its own tenant are its own data from then on.
         foreach (var endpoint in endpoints.Where(e => e.HasBody))
@@ -422,6 +446,9 @@ public static class IsolationAttack
 
         var after = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
         var changed = TenantSnapshot.Differences(victim, after);
+        var (rootsAfter, _) = ProcessState.LiveRoots(Env.Factory);
+        var stateAfter = ReachableState.Fingerprint(rootsAfter, productAssemblies);
+        var stateChanges = ReachableState.Differences(stateBefore, stateAfter);
 
         // The reviewed cross-tenant lookups ran only from their reviewed callers, and the trace saw
         // each of them run from that caller (a blind trace would pass anything).
@@ -489,6 +516,12 @@ public static class IsolationAttack
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             ListQueryAttacks = listQueryAttacks,
             ListRefusals = state.ListRefusals,
+            ListAnswersWrong = listAnswers.SelectMany(r => r.Wrong).ToList(),
+            ListAnswersBlind = listAnswers.SelectMany(r => r.Blind).ToList(),
+            ListAnswerQueries = listAnswers.Sum(r => r.Queries),
+            ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
+            StateChanges = stateChanges,
+            StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
@@ -1072,6 +1105,26 @@ public sealed record IsolationReport(
     /// <summary>List attacks (grouping, sorting, forged cursors, id filters) that were refused
     /// instead of answered.</summary>
     public IReadOnlyList<string> ListRefusals { get; init; } = [];
+
+    /// <summary>List answers whose total, groups or sums disagree with the asking tenant's own
+    /// rows (or whose rows are not its own), after the other tenant sent the same request.</summary>
+    public IReadOnlyList<string> ListAnswersWrong { get; init; } = [];
+
+    /// <summary>Lists where no query had different true answers in the two tenants.</summary>
+    public IReadOnlyList<string> ListAnswersBlind { get; init; } = [];
+
+    /// <summary>List queries whose answers were judged against the asking tenant's own rows.</summary>
+    public int ListAnswerQueries { get; init; }
+
+    /// <summary>Judged list queries whose true answers differ between the tenants.</summary>
+    public int ListAnswersDiscriminating { get; init; }
+
+    /// <summary>Process-wide state (reachable from singletons and static fields) that changed
+    /// while the tenants used the app.</summary>
+    public IReadOnlyList<string> StateChanges { get; init; } = [];
+
+    /// <summary>Lines of reachable process-wide state fingerprinted before the attack.</summary>
+    public int StateLinesFingerprinted { get; init; }
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];

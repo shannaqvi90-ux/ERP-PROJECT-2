@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Linq.Expressions;
 using System.Reflection;
 using Erp.Kernel.Http;
@@ -78,31 +79,38 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public const int MaxGroups = 1000;
     private const int MaxTotals = 8;
 
-    private readonly Dictionary<string, Bound> _columns = new(StringComparer.Ordinal);
+    private readonly FrozenDictionary<string, Bound> _columns;
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
 
-    private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id)
+    // A binding never changes once built: Column and InMemory return a new binding, so a
+    // registered binding (shared by every request of every tenant) holds no state of its own.
+    private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason)
     {
         Definition = definition;
         _id = id;
-        _idOf = id.Compile();
+        _idOf = idOf;
+        _columns = columns;
+        InMemoryReason = inMemoryReason;
     }
 
     public ListDefinition Definition { get; }
 
     public Type RowType => typeof(T);
 
-    public string? InMemoryReason { get; private set; }
+    public string? InMemoryReason { get; }
 
     public IReadOnlyList<ListBoundColumn> Columns =>
-        _columns.Values.Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
+        _columns.Values.OrderBy(b => b.Order).Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
 
     /// <summary>Start a binding for the list over rows of <typeparamref name="T"/>, whose unique
     /// id breaks ties in every sort.</summary>
-    public static ListBinding<T> For(ListDefinition definition, Expression<Func<T, Guid>> id) => new(definition, id);
+    public static ListBinding<T> For(ListDefinition definition, Expression<Func<T, Guid>> id) =>
+        new(definition, id, id.Compile(), FrozenDictionary<string, Bound>.Empty, null);
 
-    /// <summary>Bind a column to a value of the row.</summary>
+    /// <summary>A binding with one more column bound to a value of the row (the binding itself
+    /// does not change).</summary>
     public ListBinding<T> Column<TValue>(string key, Expression<Func<T, TValue>> value)
     {
         if (_columns.ContainsKey(key))
@@ -110,20 +118,22 @@ public sealed class ListBinding<T> : IListBinding where T : class
             throw new InvalidOperationException($"list '{Definition.Key}': column '{key}' is bound twice");
         }
         var member = value.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == value.Parameters[0] ? property.Name : null;
-        _columns[key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value));
-        return this;
+        var columns = new Dictionary<string, Bound>(_columns, StringComparer.Ordinal)
+        {
+            [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count),
+        };
+        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
     }
 
-    /// <summary>Query this list in memory (LINQ to objects over rows already loaded) because it
-    /// is small and bounded; the reason is reviewed by the index gate.</summary>
+    /// <summary>A binding that queries this list in memory (LINQ to objects over rows already
+    /// loaded) because it is small and bounded; the reason is reviewed by the index gate.</summary>
     public ListBinding<T> InMemory(string reason)
     {
         if (string.IsNullOrWhiteSpace(reason))
         {
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
-        InMemoryReason = reason;
-        return this;
+        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
     }
 
     public IEnumerable<string> Problems()
@@ -625,7 +635,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return row => compiled(row);
     }
 
-    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter);
+    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter, int Order);
 
     /// <summary>Replaces a lambda's parameter with another, to combine column expressions.</summary>
     private sealed class Rebind(ParameterExpression from, ParameterExpression to) : ExpressionVisitor

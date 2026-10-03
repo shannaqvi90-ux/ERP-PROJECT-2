@@ -92,6 +92,23 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
                                            l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
+
+        // A list whose totals and group counts are remembered across tenants (critic p05 round 1,
+        // plant L3): no tenant B id or text reaches tenant A, only B's numbers. The answers are
+        // judged against each tenant's own rows, in both directions, and only that list is wrong.
+        Assert.Contains(report.ListAnswersWrong, w => w.StartsWith("tenant B asks first, tenant A judged", StringComparison.Ordinal) &&
+                                                      w.Contains("/api/leaky/people", StringComparison.Ordinal) && w.Contains("answered total", StringComparison.Ordinal));
+        Assert.Contains(report.ListAnswersWrong, w => w.Contains("/api/leaky/people", StringComparison.Ordinal) && w.Contains("groupBy=language", StringComparison.Ordinal));
+        Assert.Contains(report.ListAnswersWrong, w => w.StartsWith("tenant A asks first, tenant B judged", StringComparison.Ordinal) &&
+                                                      w.Contains("/api/leaky/people", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal));
+        Assert.Empty(report.ListAnswersBlind);
+
+        // The planted state changed while the tenants used the app; the product's did not.
+        Assert.Contains(report.StateChanges, c => c.Contains($"static {typeof(LeakyModule).FullName}.cachedTenant", StringComparison.Ordinal));
+        Assert.Contains(report.StateChanges, c => c.Contains("LeakyModule._totals", StringComparison.Ordinal));
+        Assert.Contains(report.StateChanges, c => c.Contains($"{typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.StateChanges, c => !c.Contains("Leaky", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -113,7 +130,68 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));
         Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
         Assert.True(running.DelegateObjectsWalked > running.EndpointsWalked, "the endpoint delegate walk reached nothing beyond the delegates");
+
+        // A reviewed root is not trusted for what it holds (critic p05 round 1): the planted list's
+        // memory sits on the module instance, reached from the module catalogue.
+        Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._totals" && f.Why.Contains("ModuleCatalog._modules", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._groups");
     }
+
+    [Fact]
+    public void The_reachable_state_walk_judges_every_field_of_registration_objects()
+    {
+        // The shape of plant L3: a catalogue (reviewed) holding modules holding a dictionary of
+        // bindings, one of which keeps a count cache; and a registration lambda that captures a
+        // counter it writes.
+        var planted = new PlantedCatalog();
+        var result = ReachableState.Inspect([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly], new HashSet<Type>(), new HashSet<Type> { typeof(PlantedCatalog) });
+        Assert.Contains(result.Findings, f => f.Key == $"reachable {ReachableState.TypeName(typeof(PlantedBinding<>))}._counts" && f.Why.Contains("_modules[0].Bindings[", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Key == $"reachable {ReachableState.TypeName(typeof(PlantedBinding<>))}.Calls" && f.Why.Contains("reassigned", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Key.StartsWith("reachable closure ", StringComparison.Ordinal) && f.Key.EndsWith(".seen", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Key.Contains("ImmutableBinding", StringComparison.Ordinal));
+
+        // The fingerprint sees the cache fill.
+        var before = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
+        planted.Use("tenant-b-search");
+        var after = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
+        Assert.Contains(ReachableState.Differences(before, after), d => d.Contains("._counts", StringComparison.Ordinal));
+    }
+
+    private sealed class PlantedCatalog
+    {
+        private readonly List<PlantedModule> _modules = [new PlantedModule()];
+
+        public void Use(string key) => _modules[0].Bindings["users"].Remember(key);
+    }
+
+    private sealed class PlantedModule
+    {
+        public Dictionary<string, PlantedBinding<string>> Bindings { get; } = new() { ["users"] = new PlantedBinding<string>() };
+
+        public ImmutableBinding Clean { get; } = new("roles");
+
+        public Action Register { get; } = Registration();
+
+        private static Action Registration()
+        {
+            var seen = 0;
+            return () => seen++;
+        }
+    }
+
+    private sealed class PlantedBinding<T>
+    {
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _counts = new();
+        public int Calls;
+
+        public void Remember(string key)
+        {
+            _counts[key] = 1004;
+            Calls++;
+        }
+    }
+
+    private sealed record ImmutableBinding(string Key);
 
     [Fact]
     public async Task The_grant_escalation_check_catches_an_endpoint_that_grants_any_role()

@@ -107,6 +107,7 @@ internal static class ViewEndpoints
             routes.MapPost("/shared-views", (SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Create(c.FindList(key)!, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.create")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithViewSchema(list)
                 .WithSummary($"Share a view of the {key} list with everyone who can read it (also needs the list's read permission).")
                 .ProducesValidationProblem()
@@ -115,6 +116,7 @@ internal static class ViewEndpoints
             routes.MapPut("/shared-views/{id:guid}", (Guid id, SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Update(c.FindList(key)!, id, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.update")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithViewSchema(list)
                 .WithSummary($"Change a shared view of the {key} list (also needs the list's read permission).")
                 .ProducesValidationProblem()
@@ -123,10 +125,21 @@ internal static class ViewEndpoints
             routes.MapDelete("/shared-views/{id:guid}", (Guid id, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Delete(c.FindList(key)!, id, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.delete")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithSummary($"Delete a shared view of the {key} list (also needs the list's read permission).")
                 .RequirePermission(ListsPermissions.ViewsShare);
         }
     }
+
+    /// <summary>Shared-view writes declare the share permission; they also need the list's own
+    /// permission. Checked before the handler runs (a list the caller cannot read does not exist
+    /// for them: 404), and again inside the handler.</summary>
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> AlsoRequires(string permission) =>
+        async (context, next) =>
+        {
+            var caller = context.HttpContext.RequestServices.GetRequiredService<ICurrentUser>();
+            return caller.Has(permission) ? await next(context) : Problems.NotFound(context.HttpContext);
+        };
 
     /// <summary>Document the request body of a view endpoint for this list: the column keys and
     /// groupable columns it accepts as enums, a valid sort and filter as examples.</summary>
