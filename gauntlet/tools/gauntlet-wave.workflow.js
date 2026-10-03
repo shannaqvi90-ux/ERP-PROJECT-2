@@ -205,10 +205,17 @@ async function runPiece(p) {
   const results = []
   for (let i = 0; i < ROUNDS; i++) {
     const round = p.startRound + i
+    let build, integ
+    if (p.judgeCommit && i === 0) {
+      // This round was built and integrated in an earlier run but never judged.
+      build = { human_gates: [] }
+      integ = { merged: true, pushed: true, commit: p.judgeCommit }
+    } else {
     log(`${p.id}: round ${round} build`)
-    const build = await agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, effort: 'high' })
+    build = await agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, effort: 'high' })
     if (!build) { log(`${p.id}: builder died in round ${round}`); results.push({ round, outcome: 'builder-died' }); continue }
-    const integ = await serial(() => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' }))
+    integ = await serial(() => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' }))
+    }
     if (!integ || !integ.merged || !integ.pushed) {
       const problem = integ ? (integ.problem || 'merged/pushed false without detail') : 'integrator died'
       log(`${p.id}: round ${round} not integrated: ${problem.slice(0, 200)}`)
@@ -217,7 +224,7 @@ async function runPiece(p) {
       continue
     }
     log(`${p.id}: round ${round} judging ${integ.commit.slice(0, 10)}`)
-    const verdict = await agent(criticPrompt(p, round, integ.commit), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' })
+    const verdict = await agent(criticPrompt(p, round, integ.commit) + (p.criticNote ? `\n\nNOTE FROM THE LEAD (facts about the repository, not claims about quality; check them yourself):\n${p.criticNote}` : ''), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' })
     if (!verdict) { log(`${p.id}: critic died in round ${round}`); results.push({ round, outcome: 'critic-died', commit: integ.commit }); continue }
     const humanGates = [...(build.human_gates || []), ...(verdict.human_gates || [])].map(g => ({ piece: p.id, ...g }))
     const rec = await serial(() => agent(recorderPrompt(verdict, humanGates), { label: `record:${p.id}:r${round}`, phase: 'Record', schema: REC_SCHEMA, effort: 'low' }))
