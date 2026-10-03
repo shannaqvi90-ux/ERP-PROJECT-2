@@ -145,7 +145,6 @@ public static class IsolationAttack
         // attacks; compared with the same after the attack (state that changes under traffic).
         var (stateRoots, productAssemblies) = ProcessState.LiveRoots(Env.Factory);
         var stateBefore = ReachableState.Fingerprint(stateRoots, productAssemblies);
-        Phase($"process-wide state fingerprinted: {stateBefore.Count} lines from {stateRoots.Count} roots");
 
         var attackers = new List<Attacker>
         {
@@ -394,7 +393,7 @@ public static class IsolationAttack
             listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
             listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
         }
-        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked");
+        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 
         // Phase 3: every tenant B text value in every string field of every request body. Values the
         // attacker managed to store in its own tenant are its own data from then on.
