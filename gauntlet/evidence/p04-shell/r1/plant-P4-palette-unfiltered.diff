@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/CommandPalette.tsx b/web/src/modules/shell/CommandPalette.tsx
+index f84e2e4..2749692 100644
+--- a/web/src/modules/shell/CommandPalette.tsx
++++ b/web/src/modules/shell/CommandPalette.tsx
+@@ -54,7 +54,7 @@ export function CommandPalette({
+   const inputRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+   const listId = useId();
+-  const sources = useMemo(() => allowed(extensions.palette, can), [can]);
++  const sources = useMemo(() => (can ? extensions.palette : allowed(extensions.palette, can)), [can]);
+   const trimmed = query.trim();
+ 
+   // Ask the record sources, debounced; a newer query cancels the older one.

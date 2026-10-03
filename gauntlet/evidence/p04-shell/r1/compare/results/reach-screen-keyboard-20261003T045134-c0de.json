@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "run_id": "reach-screen-keyboard-20261003T045134-c0de",
+  "task": "reach-screen-keyboard",
+  "task_title": "Reach a named screen by keyboard only",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
+  "done_when": "The users list is on screen with its rows, and no step used the mouse.",
+  "started_at": "2026-10-03T04:51:34.711Z",
+  "finished_at": "2026-10-03T04:51:41.276Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 3,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 2,
+    "file_picks": 0,
+    "machine_seconds": 0.441,
+    "system_wait_seconds": 0.67,
+    "human_seconds": 2.59,
+    "human_plus_wait_seconds": 3.26,
+    "klm_operator_counts": {
+      "K": 3,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "navigation pane",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 0,
+      "took": 0.011,
+      "chord": "Alt+m"
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.031,
+      "took": 0.01,
+      "chord": "Enter"
+    }
+  ],
+  "waits": [
+    {
+      "label": "Users entry focused",
+      "at": 0.011,
+      "seconds": 0.02
+    },
+    {
+      "label": "users list",
+      "at": 0.041,
+      "seconds": 0.65
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "70485188e4f0cb95.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r1/compare/shots/70485188e4f0cb95.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "8bf620cf12252a86.jpg",
+      "at": 0.691,
+      "path": "../../evidence-staging/p04-shell/r1/compare/shots/8bf620cf12252a86.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/identity/users",
+      "heading": "Users",
+      "rows": 50,
+      "keyboard_only": true
+    }
+  },
+  "path_notes": "navigation: Alt+M > Enter | palette: Ctrl+K > \"us\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/reach-screen-keyboard.mjs",
+    "sha256": "56f1235d04cfe902633580b8a420519caa402eab9d7f5d43bdbfb54bfc7ff6e3"
+  },
+  "task_notes": "Added by the p04 critic, round 1. Every step must be a key or a key chord.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "navigation",
+    "keystrokes": "navigation",
+    "machine_seconds": "palette",
+    "human_seconds": "navigation",
+    "human_plus_wait_seconds": "navigation"
+  },
+  "variants": [
+    {
+      "id": "navigation",
+      "path": "Alt+M > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 3,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 2,
+        "file_picks": 0,
+        "machine_seconds": 0.691,
+        "system_wait_seconds": 0.67,
+        "human_seconds": 2.59,
+        "human_plus_wait_seconds": 3.26,
+        "klm_operator_counts": {
+          "K": 3,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "navigation pane",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0,
+          "took": 0.011,
+          "chord": "Alt+m"
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.031,
+          "took": 0.01,
+          "chord": "Enter"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users",
+          "heading": "Users",
+          "rows": 50,
+          "keyboard_only": true
+        }
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"us\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 5,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "machine_seconds": 0.441,
+        "system_wait_seconds": 0.399,
+        "human_seconds": 3.15,
+        "human_plus_wait_seconds": 3.549,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0,
+          "took": 0.015,
+          "chord": "Control+k"
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "screen search",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 0.02,
+          "took": 0.013,
+          "text": "us"
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.064,
+          "took": 0.012,
+          "chord": "Enter"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users",
+          "heading": "Users",
+          "rows": 50,
+          "keyboard_only": true
+        }
+      }
+    }
+  ]
+}
