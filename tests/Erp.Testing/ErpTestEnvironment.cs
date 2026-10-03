@@ -184,6 +184,9 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
     /// <summary>The settings this host was started with.</summary>
     public IReadOnlyDictionary<string, string?> Settings { get; } = new Dictionary<string, string?>(settings);
 
+    /// <summary>Errors the app logged (to explain a 5xx answer by its trace id).</summary>
+    public ServerErrorLog ErrorLog { get; } = new();
+
     private IReadOnlyList<ServiceDescriptor>? _descriptors;
 
     /// <summary>Every service registration of the running app (for the process-wide state gate).</summary>
@@ -204,7 +207,7 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
             builder.UseSetting(key, value);
         }
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
-        builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
+        builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning).AddProvider(ErrorLog));
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<RequestInputRecorder>();
