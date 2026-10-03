@@ -32,6 +32,23 @@ export async function openApp(op, name) {
   await op.waitFor(() => !document.querySelector('.o_loading_indicator, .o_blockUI') && !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'), { label: `${name} loaded` });
 }
 
+/**
+ * Open a menu through the command palette, keyboard only: Ctrl+K, type "/" and a few letters of
+ * the menu, Enter on the first match (`expected`, the full menu path the palette shows).
+ */
+export async function paletteMenu(op, typed, expected) {
+  await op.press('Control+k', { label: 'command palette' });
+  await op.waitFor('.o_command_palette input:focus', { label: 'palette open' });
+  await op.type(typed, { label: `menu search ${typed}`, chain: true });
+  await op.waitFor(e => {
+    const first = document.querySelector('.o_command_palette .o_command');
+    return !!first && first.innerText.split('\n')[0].trim() === e;
+  }, { label: 'menu found', arg: expected });
+  await op.press('Enter', { label: `open ${expected}`, chain: true });
+  await op.waitFor(() => !document.querySelector('.o_command_palette') && !document.querySelector('.o_loading_indicator, .o_blockUI') &&
+    !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'), { label: `${expected} loaded` });
+}
+
 /** Rows of the current list or kanban view. */
 export const ROWS = '.o_data_row, .o_kanban_record:not(.o_kanban_ghost)';
 export function rowCount() {
@@ -89,8 +106,40 @@ export async function technicalMenu(op, item) {
   await op.click(op.page.locator('.o_main_navbar .o_menu_sections button', { hasText: 'Technical' }), { label: 'Technical menu' });
   const entry = op.page.locator('.o-dropdown--menu .dropdown-item', { hasText: new RegExp(`^${item}$`) });
   await op.waitFor(entry, { label: 'technical menu open', state: 'attached' });
-  if (!(await entry.evaluate(e => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }))) {
+  const box = await entry.boundingBox();
+  const view = op.page.viewportSize();
+  if (!box || box.y < 0 || box.y + box.height > view.height) {
     await op.scrollTo(entry, { label: `scroll the menu to ${item}` });
   }
   await op.click(entry, { label: item });
+}
+
+/**
+ * API session for an API task, set up outside the measured part. Odoo's current documented API
+ * (JSON-2: POST /json/2/<model>/<method> with named arguments) needs an API key, and an API key
+ * can only be made after an interactive identity check. The requests are therefore typed and
+ * counted in the JSON-2 form (the shorter, current form) and carried by Odoo's documented
+ * external JSON-RPC endpoint (/jsonrpc, execute_kw), which runs the same model methods with the
+ * same arguments and needs the sign-in in every body. The sign-in is not counted, as in our product.
+ */
+export async function odooApi(ctx) {
+  const rpc = await adminRpc(ctx);
+  const { baseUrl, db, users } = ctx.product;
+  const transport = (verb, urlPath, body = {}) => {
+    const m = /^\/json\/2\/([\w.]+)\/(\w+)$/.exec(urlPath);
+    if (verb !== 'POST' || !m) throw new Error(`not a JSON-2 request: ${verb} ${urlPath}`);
+    const { ids, context, ...kwargs } = body;
+    const args = ids ? [ids] : [];
+    return {
+      url: `${baseUrl}/jsonrpc`,
+      init: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params: { service: 'object', method: 'execute_kw',
+          args: [db, rpc.uid, users.admin.password, m[1], m[2], args, { ...kwargs, ...(context ? { context } : {}) }] } }),
+      },
+      read: (status, parsed) => (parsed?.error ? { status: 422, body: parsed.error } : { status, body: parsed?.result }),
+    };
+  };
+  return { baseUrl, transport };
 }

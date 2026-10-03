@@ -13,27 +13,58 @@ async function ensureUser(ctx) {
   return (await rpc.search('res.users', [['login', '=', user]]))[0];
 }
 
+const LOGIN_URL = ctx => `${ctx.product.baseUrl}/web/login?db=${encodeURIComponent(ctx.product.db)}`;
+
+/**
+ * Two start states, each the user's shortest path from it. `new-device`: the first sign-in on this
+ * browser. `returning`: this browser has signed in and out before (set up outside the measured
+ * part), so whatever the product remembers for a returning user is used; if the e-mail is already
+ * filled in and the password has focus, the path is the password and Enter.
+ */
+function variant(returning) {
+  return {
+    path: returning
+      ? 'A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.'
+      : 'The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.',
+    async signIn(ctx) {
+      // Start state: signed out, on the bookmarked sign-in address. Odoo serves several databases
+      // on the rig's port, so the bookmark names the database.
+      const { user, password } = ctx.task.input;
+      if (returning) {
+        await ctx.page.goto(LOGIN_URL(ctx));
+        await ctx.page.locator('input[name="login"]').fill(user);
+        await ctx.page.locator('input[name="password"]').fill(password);
+        await ctx.page.locator('input[name="password"]').press('Enter');
+        await ctx.page.locator('.o_main_navbar button.o_user_menu').waitFor();
+        await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`);
+      }
+      await ctx.page.goto(LOGIN_URL(ctx));
+      await ctx.page.locator('input:focus').waitFor();
+    },
+    async run(op, ctx) {
+      const { user, password } = ctx.task.input;
+      await op.waitFor('input[name="login"]:focus, input[name="password"]:focus', { label: 'sign-in screen, a field focused' });
+      const remembered = (await op.page.locator('input[name="login"]').inputValue()) === user
+        && (await op.page.locator('input[name="password"]:focus').count()) === 1;
+      if (!remembered) {
+        await op.type(user, { label: 'e-mail' });
+        await op.press('Tab', { label: 'next field (password)' });
+      }
+      await op.type(password, { label: 'password', chain: !remembered });
+      await op.press('Enter', { label: 'sign in', chain: true });
+      await op.waitFor('.o_main_navbar button.o_user_menu', { label: 'signed in' });
+      await op.waitFor('.o_action_manager :is(.o_kanban_view, .o_list_view) :is(.o_kanban_record:not(.o_kanban_ghost), .o_data_row)', { label: 'working screen ready' });
+      return { remembered };
+    },
+  };
+}
+
 export default {
   built: true,
-  path: 'The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.',
+  path: 'Sign-in screen: e-mail > Tab > password > Enter (a returning browser keeps whatever the product remembers).',
+  run: variant(false).run,
+  variants: { 'new-device': variant(false), returning: variant(true) },
   async setup(ctx) { ctx.state.uid = await ensureUser(ctx); },
-  async signIn(ctx) {
-    // Start state: signed out, on the bookmarked sign-in address. Odoo serves several databases
-    // on the rig's port, so the bookmark names the database.
-    await ctx.page.goto(`${ctx.product.baseUrl}/web/login?db=${encodeURIComponent(ctx.product.db)}`);
-    await ctx.page.locator('input[name="login"]:focus').waitFor();
-  },
-  async run(op, ctx) {
-    const { user, password } = ctx.task.input;
-    await op.waitFor('input[name="login"]:focus', { label: 'sign-in screen, e-mail focused' });
-    await op.type(user, { label: 'e-mail' });
-    await op.press('Tab', { label: 'next field (password)' });
-    await op.type(password, { label: 'password', chain: true });
-    await op.press('Enter', { label: 'sign in', chain: true });
-    await op.waitFor('.o_main_navbar button.o_user_menu', { label: 'signed in' });
-    await op.waitFor('.o_action_manager :is(.o_kanban_view, .o_list_view) :is(.o_kanban_record:not(.o_kanban_ghost), .o_data_row)', { label: 'working screen ready' });
-    return {};
-  },
   async verify(ctx) {
     const info = await ctx.page.evaluate(async () => {
       const res = await fetch('/web/session/get_session_info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {} }) });

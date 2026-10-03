@@ -7,7 +7,8 @@ Date: 2026-10-02. Piece: p01-odoo-rig. Status: accepted.
 - **Image.** Odoo Community `odoo:20.0-20260926` (pinned dated tag of the official image) with its
   own `postgres:17-alpine`. Odoo runs threaded (`--workers=0`) with one database and no database
   manager, bound to 127.0.0.1:8069.
-- **One stable compose project, `b-p01-odoo-rig`.** Every critic's `up.sh` reuses the same
+- **One stable compose project, `odoo-reference`** (renamed from `b-p01-odoo-rig` on 2026-10-03,
+  see `p01-odoo-rig-shared-rig-name.md`). Every critic's `up.sh` reuses the same
   containers and volumes instead of building a second 100,000-row Odoo. The server container
   mounts only named volumes, so it never depends on the checkout that started it; the seed runs in
   a one-off container that mounts the seed script and the shared dataset.
@@ -39,5 +40,5 @@ Date: 2026-10-02. Piece: p01-odoo-rig. Status: accepted.
 
 - Odoo vacuums ir.cron.progress rows older than a week; `up.sh` tops them up, so run it before a
   comparison that involves job runs.
-- The project name carries the builder prefix (`b-p01-…`) because that is where the rig was first
-  seeded; renaming it means reseeding or copying volumes (a lead decision, not a builder's).
+- The shared rig's data lives in external volumes (`odoo-reference-db`, `odoo-reference-filestore`)
+  that no `docker compose down -v` removes; see `p01-odoo-rig-shared-rig-name.md`.

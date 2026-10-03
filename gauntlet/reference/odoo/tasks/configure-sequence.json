@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "configure-sequence-20261003T012644-f769",
+  "run_id": "configure-sequence-20261003T042708-d7ed",
+  "instrument": 3,
   "task": "configure-sequence",
   "task_title": "Configure a document sequence",
   "product": "odoo",
   "status": "verified",
   "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
   "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
-  "started_at": "2026-10-03T01:26:44.821Z",
-  "finished_at": "2026-10-03T01:26:52.816Z",
+  "started_at": "2026-10-03T04:27:09.046Z",
+  "finished_at": "2026-10-03T04:27:25.517Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 3,
     "key_chords": 4,
     "file_picks": 0,
-    "machine_seconds": 1.634,
-    "system_wait_seconds": 1.058,
+    "requests": 0,
+    "machine_seconds": 3.196,
+    "system_wait_seconds": 2.403,
     "human_seconds": 40.72,
-    "human_plus_wait_seconds": 41.778,
+    "human_plus_wait_seconds": 42.83,
     "klm_operator_counts": {
       "K": 34,
       "P": 10,
@@ -56,8 +58,8 @@
       "label": "apps menu",
       "keystrokes": 0,
       "chain": false,
-      "at": 0,
-      "took": 0.033
+      "at": 0.001,
+      "took": 0.068
     },
     {
       "n": 2,
@@ -65,8 +67,8 @@
       "label": "Settings app",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.033,
-      "took": 0.046
+      "at": 0.068,
+      "took": 0.053
     },
     {
       "n": 3,
@@ -74,8 +76,8 @@
       "label": "scroll to the bottom of the settings",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.406,
-      "took": 0.049
+      "at": 0.82,
+      "took": 0.038
     },
     {
       "n": 4,
@@ -83,8 +85,8 @@
       "label": "Activate the developer mode",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.456,
-      "took": 0.133
+      "at": 0.858,
+      "took": 0.06
     },
     {
       "n": 5,
@@ -92,8 +94,8 @@
       "label": "Technical menu",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.94,
-      "took": 0.045
+      "at": 1.756,
+      "took": 0.128
     },
     {
       "n": 6,
@@ -101,8 +103,8 @@
       "label": "scroll the menu to Sequences",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.18,
-      "took": 0.027
+      "at": 1.907,
+      "took": 0.016
     },
     {
       "n": 7,
@@ -110,8 +112,8 @@
       "label": "Sequences",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.206,
-      "took": 0.043
+      "at": 1.923,
+      "took": 0.274
     },
     {
       "n": 8,
@@ -119,8 +121,8 @@
       "label": "search",
       "keystrokes": 16,
       "chain": false,
-      "at": 1.356,
-      "took": 0.043,
+      "at": 2.56,
+      "took": 0.176,
       "text": "Purchase Order"
     },
     {
@@ -129,8 +131,8 @@
       "label": "search",
       "keystrokes": 1,
       "chain": true,
-      "at": 1.399,
-      "took": 0.012,
+      "at": 2.736,
+      "took": 0.058,
       "chord": "Enter"
     },
     {
@@ -139,8 +141,8 @@
       "label": "open Purchase Order",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.464,
-      "took": 0.039
+      "at": 2.828,
+      "took": 0.055
     },
     {
       "n": 11,
@@ -148,8 +150,8 @@
       "label": "prefix field",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.561,
-      "took": 0.035
+      "at": 3.015,
+      "took": 0.039
     },
     {
       "n": 12,
@@ -157,8 +159,8 @@
       "label": "select the old prefix",
       "keystrokes": 2,
       "chain": true,
-      "at": 1.595,
-      "took": 0.004,
+      "at": 3.054,
+      "took": 0.008,
       "chord": "Control+a"
     },
     {
@@ -167,8 +169,8 @@
       "label": "prefix",
       "keystrokes": 10,
       "chain": true,
-      "at": 1.599,
-      "took": 0.017,
+      "at": 3.062,
+      "took": 0.034,
       "text": "PO-2026-"
     },
     {
@@ -177,8 +179,8 @@
       "label": "sequence size field",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.616,
-      "took": 0.031
+      "at": 3.096,
+      "took": 0.056
     },
     {
       "n": 15,
@@ -186,8 +188,8 @@
       "label": "select the old size",
       "keystrokes": 2,
       "chain": true,
-      "at": 1.648,
-      "took": 0.003,
+      "at": 3.151,
+      "took": 0.006,
       "chord": "Control+a"
     },
     {
@@ -196,7 +198,7 @@
       "label": "size",
       "keystrokes": 1,
       "chain": true,
-      "at": 1.651,
+      "at": 3.158,
       "took": 0.003,
       "text": "6"
     },
@@ -206,71 +208,71 @@
       "label": "Save (hotkey)",
       "keystrokes": 2,
       "chain": false,
-      "at": 1.654,
-      "took": 0.012,
+      "at": 3.16,
+      "took": 0.024,
       "chord": "Alt+s"
     }
   ],
   "waits": [
     {
       "label": "Settings loaded",
-      "at": 0.079,
-      "seconds": 0.312
+      "at": 0.122,
+      "seconds": 0.676
     },
     {
       "label": "settings page",
-      "at": 0.391,
-      "seconds": 0.015
+      "at": 0.798,
+      "seconds": 0.022
     },
     {
       "label": "developer mode on",
-      "at": 0.589,
-      "seconds": 0.351
+      "at": 0.918,
+      "seconds": 0.837
     },
     {
       "label": "technical menu open",
-      "at": 0.985,
-      "seconds": 0.129
+      "at": 1.884,
+      "seconds": 0.004
     },
     {
       "label": "sequence list, search focused",
-      "at": 1.25,
-      "seconds": 0.107
+      "at": 2.196,
+      "seconds": 0.363
     },
     {
       "label": "search result",
-      "at": 1.411,
-      "seconds": 0.052
+      "at": 2.794,
+      "seconds": 0.034
     },
     {
       "label": "sequence form",
-      "at": 1.503,
-      "seconds": 0.057
+      "at": 2.883,
+      "seconds": 0.132
     },
     {
       "label": "saved",
-      "at": 1.666,
-      "seconds": 0.035
+      "at": 3.184,
+      "seconds": 0.042
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "5a1fa245e6c5e5ee.jpg",
+      "file": "22239f67cd7158b3.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/5a1fa245e6c5e5ee.jpg"
+      "path": "gauntlet/reference/odoo/shots/22239f67cd7158b3.jpg"
     },
     {
       "moment": "sequence edited",
-      "file": "a23de0b65d47d47a.jpg",
-      "at": 1.654,
-      "path": "gauntlet/reference/odoo/shots/a23de0b65d47d47a.jpg"
+      "file": "6cd1735e4c0d8eff.jpg",
+      "at": 3.16,
+      "path": "gauntlet/reference/odoo/shots/6cd1735e4c0d8eff.jpg"
     },
     {
       "moment": "done",
-      "file": "3a29f49cf19a61a0.jpg",
-      "at": 1.701,
-      "path": "gauntlet/reference/odoo/shots/3a29f49cf19a61a0.jpg"
+      "file": "8b95b7d45bb56a89.jpg",
+      "at": 3.226,
+      "path": "gauntlet/reference/odoo/shots/8b95b7d45bb56a89.jpg"
     }
   ],
   "verification": {
@@ -278,20 +280,20 @@
     "details": {
       "prefix": "PO-2026-",
       "padding": 6,
-      "next_number": "PO-2026-000016"
+      "next_number": "PO-2026-000011"
     }
   },
   "path_notes": "keyboard: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S | pointer: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/configure-sequence.mjs",
-    "sha256": "7b60a46d802e7ff70a4cfe4c592e236c62b0f7400b706ff40090ef20aa503787"
+    "sha256": "3f40597cb826096ad05aac34b089e3312250606ea73919537d925575dad2949b"
   },
   "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
   "error": null,
   "best_path_per_metric": {
     "steps": "keyboard",
     "keystrokes": "pointer",
-    "machine_seconds": "keyboard",
+    "machine_seconds": "pointer",
     "human_seconds": "keyboard",
     "human_plus_wait_seconds": "keyboard"
   },
@@ -309,10 +311,11 @@
         "field_entries": 3,
         "key_chords": 4,
         "file_picks": 0,
-        "machine_seconds": 1.634,
-        "system_wait_seconds": 1.058,
+        "requests": 0,
+        "machine_seconds": 3.226,
+        "system_wait_seconds": 2.11,
         "human_seconds": 40.72,
-        "human_plus_wait_seconds": 41.778,
+        "human_plus_wait_seconds": 42.83,
         "klm_operator_counts": {
           "K": 34,
           "P": 10,
@@ -328,8 +331,8 @@
           "label": "apps menu",
           "keystrokes": 0,
           "chain": false,
-          "at": 0,
-          "took": 0.033
+          "at": 0.001,
+          "took": 0.068
         },
         {
           "n": 2,
@@ -337,8 +340,8 @@
           "label": "Settings app",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.033,
-          "took": 0.046
+          "at": 0.068,
+          "took": 0.053
         },
         {
           "n": 3,
@@ -346,8 +349,8 @@
           "label": "scroll to the bottom of the settings",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.406,
-          "took": 0.049
+          "at": 0.82,
+          "took": 0.038
         },
         {
           "n": 4,
@@ -355,8 +358,8 @@
           "label": "Activate the developer mode",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.456,
-          "took": 0.133
+          "at": 0.858,
+          "took": 0.06
         },
         {
           "n": 5,
@@ -364,8 +367,8 @@
           "label": "Technical menu",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.94,
-          "took": 0.045
+          "at": 1.756,
+          "took": 0.128
         },
         {
           "n": 6,
@@ -373,8 +376,8 @@
           "label": "scroll the menu to Sequences",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.18,
-          "took": 0.027
+          "at": 1.907,
+          "took": 0.016
         },
         {
           "n": 7,
@@ -382,8 +385,8 @@
           "label": "Sequences",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.206,
-          "took": 0.043
+          "at": 1.923,
+          "took": 0.274
         },
         {
           "n": 8,
@@ -391,8 +394,8 @@
           "label": "search",
           "keystrokes": 16,
           "chain": false,
-          "at": 1.356,
-          "took": 0.043,
+          "at": 2.56,
+          "took": 0.176,
           "text": "Purchase Order"
         },
         {
@@ -401,8 +404,8 @@
           "label": "search",
           "keystrokes": 1,
           "chain": true,
-          "at": 1.399,
-          "took": 0.012,
+          "at": 2.736,
+          "took": 0.058,
           "chord": "Enter"
         },
         {
@@ -411,8 +414,8 @@
           "label": "open Purchase Order",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.464,
-          "took": 0.039
+          "at": 2.828,
+          "took": 0.055
         },
         {
           "n": 11,
@@ -420,8 +423,8 @@
           "label": "prefix field",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.561,
-          "took": 0.035
+          "at": 3.015,
+          "took": 0.039
         },
         {
           "n": 12,
@@ -429,8 +432,8 @@
           "label": "select the old prefix",
           "keystrokes": 2,
           "chain": true,
-          "at": 1.595,
-          "took": 0.004,
+          "at": 3.054,
+          "took": 0.008,
           "chord": "Control+a"
         },
         {
@@ -439,8 +442,8 @@
           "label": "prefix",
           "keystrokes": 10,
           "chain": true,
-          "at": 1.599,
-          "took": 0.017,
+          "at": 3.062,
+          "took": 0.034,
           "text": "PO-2026-"
         },
         {
@@ -449,8 +452,8 @@
           "label": "sequence size field",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.616,
-          "took": 0.031
+          "at": 3.096,
+          "took": 0.056
         },
         {
           "n": 15,
@@ -458,8 +461,8 @@
           "label": "select the old size",
           "keystrokes": 2,
           "chain": true,
-          "at": 1.648,
-          "took": 0.003,
+          "at": 3.151,
+          "took": 0.006,
           "chord": "Control+a"
         },
         {
@@ -468,7 +471,7 @@
           "label": "size",
           "keystrokes": 1,
           "chain": true,
-          "at": 1.651,
+          "at": 3.158,
           "took": 0.003,
           "text": "6"
         },
@@ -478,9 +481,51 @@
           "label": "Save (hotkey)",
           "keystrokes": 2,
           "chain": false,
-          "at": 1.654,
-          "took": 0.012,
+          "at": 3.16,
+          "took": 0.024,
           "chord": "Alt+s"
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.122,
+          "seconds": 0.676
+        },
+        {
+          "label": "settings page",
+          "at": 0.798,
+          "seconds": 0.022
+        },
+        {
+          "label": "developer mode on",
+          "at": 0.918,
+          "seconds": 0.837
+        },
+        {
+          "label": "technical menu open",
+          "at": 1.884,
+          "seconds": 0.004
+        },
+        {
+          "label": "sequence list, search focused",
+          "at": 2.196,
+          "seconds": 0.363
+        },
+        {
+          "label": "search result",
+          "at": 2.794,
+          "seconds": 0.034
+        },
+        {
+          "label": "sequence form",
+          "at": 2.883,
+          "seconds": 0.132
+        },
+        {
+          "label": "saved",
+          "at": 3.184,
+          "seconds": 0.042
         }
       ],
       "verification": {
@@ -488,7 +533,7 @@
         "details": {
           "prefix": "PO-2026-",
           "padding": 6,
-          "next_number": "PO-2026-000016"
+          "next_number": "PO-2026-000011"
         }
       }
     },
@@ -505,10 +550,11 @@
         "field_entries": 3,
         "key_chords": 3,
         "file_picks": 0,
-        "machine_seconds": 1.703,
-        "system_wait_seconds": 1.159,
+        "requests": 0,
+        "machine_seconds": 3.196,
+        "system_wait_seconds": 2.403,
         "human_seconds": 41.86,
-        "human_plus_wait_seconds": 43.019,
+        "human_plus_wait_seconds": 44.263,
         "klm_operator_counts": {
           "K": 32,
           "P": 11,
@@ -525,7 +571,7 @@
           "keystrokes": 0,
           "chain": false,
           "at": 0,
-          "took": 0.042
+          "took": 0.072
         },
         {
           "n": 2,
@@ -533,8 +579,8 @@
           "label": "Settings app",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.042,
-          "took": 0.064
+          "at": 0.072,
+          "took": 0.115
         },
         {
           "n": 3,
@@ -542,8 +588,8 @@
           "label": "scroll to the bottom of the settings",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.414,
-          "took": 0.035
+          "at": 0.912,
+          "took": 0.034
         },
         {
           "n": 4,
@@ -551,8 +597,8 @@
           "label": "Activate the developer mode",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.449,
-          "took": 0.048
+          "at": 0.946,
+          "took": 0.063
         },
         {
           "n": 5,
@@ -560,8 +606,8 @@
           "label": "Technical menu",
           "keystrokes": 0,
           "chain": false,
-          "at": 0.909,
-          "took": 0.052
+          "at": 1.802,
+          "took": 0.057
         },
         {
           "n": 6,
@@ -569,8 +615,8 @@
           "label": "scroll the menu to Sequences",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.175,
-          "took": 0.028
+          "at": 2.052,
+          "took": 0.008
         },
         {
           "n": 7,
@@ -578,8 +624,8 @@
           "label": "Sequences",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.202,
-          "took": 0.039
+          "at": 2.06,
+          "took": 0.054
         },
         {
           "n": 8,
@@ -587,8 +633,8 @@
           "label": "search",
           "keystrokes": 16,
           "chain": false,
-          "at": 1.353,
-          "took": 0.048,
+          "at": 2.441,
+          "took": 0.079,
           "text": "Purchase Order"
         },
         {
@@ -597,8 +643,8 @@
           "label": "search",
           "keystrokes": 1,
           "chain": true,
-          "at": 1.401,
-          "took": 0.008,
+          "at": 2.521,
+          "took": 0.024,
           "chord": "Enter"
         },
         {
@@ -607,8 +653,8 @@
           "label": "open Purchase Order",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.463,
-          "took": 0.057
+          "at": 2.672,
+          "took": 0.073
         },
         {
           "n": 11,
@@ -616,8 +662,8 @@
           "label": "prefix field",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.578,
-          "took": 0.043
+          "at": 2.955,
+          "took": 0.051
         },
         {
           "n": 12,
@@ -625,7 +671,7 @@
           "label": "select the old prefix",
           "keystrokes": 2,
           "chain": true,
-          "at": 1.621,
+          "at": 3.006,
           "took": 0.003,
           "chord": "Control+a"
         },
@@ -635,8 +681,8 @@
           "label": "prefix",
           "keystrokes": 10,
           "chain": true,
-          "at": 1.624,
-          "took": 0.014,
+          "at": 3.009,
+          "took": 0.039,
           "text": "PO-2026-"
         },
         {
@@ -645,8 +691,8 @@
           "label": "sequence size field",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.638,
-          "took": 0.047
+          "at": 3.048,
+          "took": 0.04
         },
         {
           "n": 15,
@@ -654,8 +700,8 @@
           "label": "select the old size",
           "keystrokes": 2,
           "chain": true,
-          "at": 1.685,
-          "took": 0.004,
+          "at": 3.089,
+          "took": 0.025,
           "chord": "Control+a"
         },
         {
@@ -664,8 +710,8 @@
           "label": "size",
           "keystrokes": 1,
           "chain": true,
-          "at": 1.689,
-          "took": 0.002,
+          "at": 3.113,
+          "took": 0.005,
           "text": "6"
         },
         {
@@ -674,8 +720,50 @@
           "label": "Save",
           "keystrokes": 0,
           "chain": false,
-          "at": 1.691,
-          "took": 0.049
+          "at": 3.119,
+          "took": 0.041
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.187,
+          "seconds": 0.699
+        },
+        {
+          "label": "settings page",
+          "at": 0.886,
+          "seconds": 0.026
+        },
+        {
+          "label": "developer mode on",
+          "at": 1.009,
+          "seconds": 0.793
+        },
+        {
+          "label": "technical menu open",
+          "at": 1.859,
+          "seconds": 0.186
+        },
+        {
+          "label": "sequence list, search focused",
+          "at": 2.114,
+          "seconds": 0.327
+        },
+        {
+          "label": "search result",
+          "at": 2.545,
+          "seconds": 0.126
+        },
+        {
+          "label": "sequence form",
+          "at": 2.745,
+          "seconds": 0.21
+        },
+        {
+          "label": "saved",
+          "at": 3.161,
+          "seconds": 0.036
         }
       ],
       "verification": {
@@ -683,7 +771,7 @@
         "details": {
           "prefix": "PO-2026-",
           "padding": 6,
-          "next_number": "PO-2026-000016"
+          "next_number": "PO-2026-000011"
         }
       }
     }
@@ -691,8 +779,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/configure-sequence.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/configure-sequence-20261003T012636-3a2e.json",
-    "gauntlet/reference/odoo/results/configure-sequence-20261003T012644-f769.json",
-    "gauntlet/reference/odoo/results/configure-sequence-20261003T012652-f151.json"
+    "gauntlet/reference/odoo/results/configure-sequence-20261003T042708-d7ed.json",
+    "gauntlet/reference/odoo/results/configure-sequence-20261003T042725-d0c6.json",
+    "gauntlet/reference/odoo/results/configure-sequence-20261003T042740-6a49.json"
   ]
 }

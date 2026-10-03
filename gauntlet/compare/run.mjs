@@ -14,6 +14,7 @@ import { BASELINE_DIR, REPO_ROOT } from './lib/config.mjs';
 import { loadTasks, PRODUCT_IDS } from './lib/registry.mjs';
 import { compareRuns, medianOf, promoteBaseline, runTask } from './lib/runner.mjs';
 import { writeReview } from './lib/review.mjs';
+import { productOrder } from './lib/blind.mjs';
 
 function parse(argv) {
   const a = { task: null, product: 'both', out: null, repeat: 1, headed: false, list: false };
@@ -30,6 +31,15 @@ function parse(argv) {
     else throw new Error(`unknown argument ${k}`);
   }
   return a;
+}
+
+function recordOrder(outDir, taskId, order) {
+  const keyFile = path.join(outDir, 'key.json');
+  let key = { shots: {} };
+  try { key = JSON.parse(fs.readFileSync(keyFile, 'utf8')); } catch { /* new key */ }
+  key.run_order = { ...(key.run_order || {}), [taskId]: order };
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(keyFile, JSON.stringify(key, null, 2) + '\n');
 }
 
 const usage = `usage: node gauntlet/compare/run.mjs --task <id|all> --product odoo|ours|both [--out <dir>] [--repeat N] [--headed]
@@ -54,7 +64,11 @@ async function main() {
   const comparisons = [];
   for (const id of ids) {
     const byProduct = {};
-    for (const p of products) {
+    // Side by side, the products run in a random order per task (recorded in key.json), so the
+    // order of the runs says nothing about which product is which.
+    const order = productOrder(products);
+    if (products.length === 2) recordOrder(outDir, id, order);
+    for (const p of order) {
       const runs = [];
       for (let i = 0; i < args.repeat; i++) {
         // Baseline repeats are written as ordinary runs; the median one is promoted below.
@@ -64,7 +78,7 @@ async function main() {
         console.log(`${id.padEnd(24)} ${p.padEnd(5)} ${r.status.padEnd(9)}` +
           (c ? ` steps ${c.steps}  keys ${c.keystrokes}  machine ${c.machine_seconds}s  human ${c.human_seconds}s  human+wait ${c.human_plus_wait_seconds}s` : '') +
           (r.error ? `  (${r.error.split('\n')[0]})` : '') + `  -> ${r.result_file}`);
-        if (r.status === 'error' || r.status === 'failed') failures++;
+        if (['error', 'failed', 'invalid'].includes(r.status)) failures++;
       }
       byProduct[p] = args.repeat > 1 ? medianOf(runs) : runs[0];
       if (baseline && args.repeat > 1) {

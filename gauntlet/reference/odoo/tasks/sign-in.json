@@ -1,21 +1,22 @@
 {
   "schema": 1,
-  "run_id": "sign-in-20261003T013221-33ee",
+  "run_id": "sign-in-20261003T042133-e4a3",
+  "instrument": 3,
   "task": "sign-in",
   "task_title": "Sign in",
   "product": "odoo",
   "status": "verified",
   "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
   "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
-  "started_at": "2026-10-03T01:32:21.587Z",
-  "finished_at": "2026-10-03T01:32:29.689Z",
+  "started_at": "2026-10-03T04:21:33.658Z",
+  "finished_at": "2026-10-03T04:22:04.393Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 2,
+    "dataset": 3,
     "reference_volume": 100000,
     "node": "v22.22.0"
   },
@@ -27,10 +28,11 @@
     "field_entries": 2,
     "key_chords": 2,
     "file_picks": 0,
-    "machine_seconds": 1.243,
-    "system_wait_seconds": 1.365,
+    "requests": 0,
+    "machine_seconds": 2.154,
+    "system_wait_seconds": 2.009,
     "human_seconds": 19.06,
-    "human_plus_wait_seconds": 20.425,
+    "human_plus_wait_seconds": 21.069,
     "klm_operator_counts": {
       "K": 57,
       "P": 0,
@@ -56,8 +58,8 @@
       "label": "e-mail",
       "keystrokes": 35,
       "chain": false,
-      "at": 0.004,
-      "took": 0.05,
+      "at": 0.009,
+      "took": 0.108,
       "text": "signin.tester@demo-trading.example"
     },
     {
@@ -66,8 +68,8 @@
       "label": "next field (password)",
       "keystrokes": 1,
       "chain": false,
-      "at": 0.054,
-      "took": 0.002,
+      "at": 0.117,
+      "took": 0.004,
       "chord": "Tab"
     },
     {
@@ -76,8 +78,8 @@
       "label": "password",
       "keystrokes": 20,
       "chain": true,
-      "at": 0.056,
-      "took": 0.023,
+      "at": 0.121,
+      "took": 0.046,
       "text": "Sign-In-Pass-2026"
     },
     {
@@ -86,62 +88,259 @@
       "label": "sign in",
       "keystrokes": 1,
       "chain": true,
-      "at": 0.079,
-      "took": 0.003,
+      "at": 0.167,
+      "took": 0.005,
       "chord": "Enter"
     }
   ],
   "waits": [
     {
-      "label": "sign-in screen, e-mail focused",
+      "label": "sign-in screen, a field focused",
       "at": 0,
-      "seconds": 0.004
+      "seconds": 0.005
     },
     {
       "label": "signed in",
-      "at": 0.082,
-      "seconds": 0.953
+      "at": 0.172,
+      "seconds": 1.372
     },
     {
       "label": "working screen ready",
-      "at": 1.035,
-      "seconds": 0.408
+      "at": 1.544,
+      "seconds": 0.61
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "3d81e8d484ce9e99.jpg",
+      "file": "f71ee804e3556905.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/3d81e8d484ce9e99.jpg"
+      "path": "gauntlet/reference/odoo/shots/f71ee804e3556905.jpg"
     },
     {
       "moment": "done",
-      "file": "02e1cf4fbfc416e5.jpg",
-      "at": 1.443,
-      "path": "gauntlet/reference/odoo/shots/02e1cf4fbfc416e5.jpg"
+      "file": "7490f056b9237b87.jpg",
+      "at": 2.154,
+      "path": "gauntlet/reference/odoo/shots/7490f056b9237b87.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "uid": 100019,
-      "expected_uid": 100019,
+      "uid": 100011,
+      "expected_uid": 100011,
       "login": "signin.tester@demo-trading.example"
     }
   },
-  "path_notes": "The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.",
+  "path_notes": "new-device: The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter. | returning: A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/sign-in.mjs",
-    "sha256": "e5eb9765e52265e3fb0cf271c0af38f8259635236a71a8cd8ef43592983771ab"
+    "sha256": "10075e75393e0c4635a944bcefadf290c5086fcef73f4b58f70fd498ad6cbaa0"
   },
   "task_notes": "Set-up creates the same user, with the same e-mail sign-in and password, in each product, so the keys typed are identical.",
   "error": null,
+  "best_path_per_metric": {
+    "steps": "new-device",
+    "keystrokes": "new-device",
+    "machine_seconds": "new-device",
+    "human_seconds": "new-device",
+    "human_plus_wait_seconds": "new-device"
+  },
+  "variants": [
+    {
+      "id": "new-device",
+      "path": "The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 2.154,
+        "system_wait_seconds": 1.987,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 21.047,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 35,
+          "chain": false,
+          "at": 0.009,
+          "took": 0.108,
+          "text": "signin.tester@demo-trading.example"
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.117,
+          "took": 0.004,
+          "chord": "Tab"
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "chain": true,
+          "at": 0.121,
+          "took": 0.046,
+          "text": "Sign-In-Pass-2026"
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.167,
+          "took": 0.005,
+          "chord": "Enter"
+        }
+      ],
+      "waits": [
+        {
+          "label": "sign-in screen, a field focused",
+          "at": 0,
+          "seconds": 0.005
+        },
+        {
+          "label": "signed in",
+          "at": 0.172,
+          "seconds": 1.372
+        },
+        {
+          "label": "working screen ready",
+          "at": 1.544,
+          "seconds": 0.61
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100011,
+          "expected_uid": 100011,
+          "login": "signin.tester@demo-trading.example"
+        }
+      }
+    },
+    {
+      "id": "returning",
+      "path": "A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 3.085,
+        "system_wait_seconds": 2.872,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 21.932,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 35,
+          "chain": false,
+          "at": 0.063,
+          "took": 0.157,
+          "text": "signin.tester@demo-trading.example"
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.221,
+          "took": 0.003,
+          "chord": "Tab"
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "chain": true,
+          "at": 0.224,
+          "took": 0.042,
+          "text": "Sign-In-Pass-2026"
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.266,
+          "took": 0.005,
+          "chord": "Enter"
+        }
+      ],
+      "waits": [
+        {
+          "label": "sign-in screen, a field focused",
+          "at": 0,
+          "seconds": 0.058
+        },
+        {
+          "label": "signed in",
+          "at": 0.271,
+          "seconds": 2.148
+        },
+        {
+          "label": "working screen ready",
+          "at": 2.419,
+          "seconds": 0.666
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100011,
+          "expected_uid": 100011,
+          "login": "signin.tester@demo-trading.example"
+        }
+      }
+    }
+  ],
   "result_file": "gauntlet/reference/odoo/tasks/sign-in.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/sign-in-20261003T013205-5da3.json",
-    "gauntlet/reference/odoo/results/sign-in-20261003T013213-4ff1.json",
-    "gauntlet/reference/odoo/results/sign-in-20261003T013221-33ee.json"
+    "gauntlet/reference/odoo/results/sign-in-20261003T042133-e4a3.json",
+    "gauntlet/reference/odoo/results/sign-in-20261003T042204-ac90.json",
+    "gauntlet/reference/odoo/results/sign-in-20261003T042233-abd0.json"
   ]
 }

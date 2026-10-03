@@ -40,11 +40,13 @@ export function writeReview(outDir, comparisons, random = Math.random) {
   figcaption, .empty { color: var(--muted); }
 </style></head><body>
 <h1>Blind review: two products, same tasks</h1>
-<p>Products are shown as A and B, assigned at random per task. Do not open key.json until the verdict is written.</p>
+<p>Products are shown as A and B, assigned at random per task. The key is kept outside this folder; do not open it until the verdict is written.</p>
 ${sections.join('\n')}
 </body></html>
 `;
-  const file = path.join(outDir, 'review.html');
+  // review.html sits with the shots in blind/; key.json stays outside it.
+  const file = path.join(outDir, 'blind', 'review.html');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, html);
   return file;
 }

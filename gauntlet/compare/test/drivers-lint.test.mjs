@@ -1,0 +1,70 @@
+// Static checks on every driver file (both products, shared helpers included). The runtime guard
+// (lib/guard.mjs, test/guard.test.mjs) refuses uncounted actions while a task is measured; these
+// checks close the doors around it: a driver may import only the fixture clients and Node's file
+// helpers, never Playwright, the harness's own controls, a network module or a way to run code
+// the checks cannot read.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DRIVERS_DIR } from '../lib/registry.mjs';
+
+export const ALLOWED_IMPORTS = new Set([
+  './_common.mjs', '../../lib/ours-api.mjs', '../../lib/odoo-rpc.mjs', '../../lib/xlsx.mjs',
+  'node:fs', 'node:path', 'node:os', 'node:crypto', 'node:url',
+]);
+
+const FORBIDDEN = [
+  [/\bimport\s*\(/, 'dynamic import()'],
+  [/\brequire\s*\(/, 'require()'],
+  [/\bcreateRequire\b/, 'createRequire'],
+  [/\beval\s*\(/, 'eval()'],
+  [/\bnew\s+Function\b|\bFunction\s*\(/, 'the Function constructor'],
+  [/\bprocess\.(binding|dlopen|_linkedBinding)\b/, 'native bindings'],
+  [/__harnessSentinel/, 'the page sentinel'],
+  [/\bclaim(Clock|Violations)\b/, 'the harness controls'],
+  [/\bnewCDPSession\b/, 'a raw browser debugging session'],
+];
+
+export function driverFiles() {
+  const out = [];
+  for (const product of fs.readdirSync(DRIVERS_DIR)) {
+    const dir = path.join(DRIVERS_DIR, product);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.mjs'))) out.push(path.join(dir, f));
+  }
+  return out;
+}
+
+export function lintDriver(src) {
+  const problems = [];
+  for (const m of src.matchAll(/^\s*(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|^\s*import\s*['"]([^'"]+)['"]/gm)) {
+    const spec = m[1] || m[2];
+    if (!ALLOWED_IMPORTS.has(spec)) problems.push(`imports ${spec}`);
+  }
+  for (const [re, what] of FORBIDDEN) if (re.test(src)) problems.push(`uses ${what}`);
+  return problems;
+}
+
+test('every driver imports only the fixture clients and Node file helpers, and runs no unreadable code', () => {
+  const files = driverFiles();
+  assert.ok(files.length >= 36, `${files.length} driver files`);
+  const bad = files.map(f => [path.relative(DRIVERS_DIR, f), lintDriver(fs.readFileSync(f, 'utf8'))]).filter(([, p]) => p.length);
+  assert.deepEqual(bad, []);
+});
+
+test('the driver lint catches planted escapes', () => {
+  const plants = [
+    "import { chromium } from 'playwright-core';",
+    "import { claimClock } from '../../lib/guard.mjs';",
+    "import { Operator } from '../../lib/operator.mjs';",
+    "import http from 'node:http';",
+    "import { exec } from 'node:child_process';",
+    "const m = await import('../../lib/guard.mjs');",
+    "eval('1');",
+    "const f = new Function('return 1');",
+    "page.context().newCDPSession(page);",
+  ];
+  for (const p of plants) assert.ok(lintDriver(p).length > 0, `not caught: ${p}`);
+  assert.deepEqual(lintDriver("import { adminRpc } from './_common.mjs';\nimport path from 'node:path';"), []);
+});

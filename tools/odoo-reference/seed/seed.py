@@ -137,7 +137,8 @@ def setup():
         users.write({'tour_enabled': False})
     if 'odoobot_state' in users._fields:
         users.write({'odoobot_state': 'disabled'})
-    return 1
+    # Configuration only (idempotent writes): it adds no data rows, so it reports +0.
+    return 0
 
 
 @timed('contacts')

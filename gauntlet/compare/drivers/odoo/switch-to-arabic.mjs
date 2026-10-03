@@ -52,7 +52,7 @@ export default {
     // page is reloaded, so a user who wants the right-to-left layout presses F5.
     await op.waitFor(() => !!document.body?.classList.contains('o_rtl') && !!document.querySelector('button.o_user_menu'), { label: 'labels re-rendered in Arabic' });
     await op.shot('after confirming');
-    await op.browserKey('F5', page => page.reload(), { label: 'reload the page for the right-to-left layout' });
+    await op.browserKey('F5', { label: 'reload the page for the right-to-left layout' });
     await op.waitFor(() => {
       const nav = document.querySelector('.o_main_navbar');
       return !!nav && getComputedStyle(nav).direction === 'rtl' && !!document.querySelector('button.o_user_menu');
