@@ -15,6 +15,10 @@ public static class ListSearch
     /// cannot start with '~').</summary>
     public const string RelevanceKey = "~relevance";
 
+    /// <summary>Most matching rows a search ranks; a broader search (a letter or two) keeps the
+    /// list's default order, since ranking every row would cost more than it tells.</summary>
+    public const int MaxRankedRows = 10_000;
+
     /// <summary>Most spellings one search word expands to for matching; positions beyond it keep
     /// the letter as typed (the first and last letters, where spelling varies most, first).</summary>
     public const int MaxSpellings = 32;

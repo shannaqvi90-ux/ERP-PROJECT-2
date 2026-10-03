@@ -298,6 +298,30 @@ public sealed class ListEngineTests
     }
 
     [Fact]
+    public async Task A_search_too_broad_to_rank_keeps_the_default_order_on_every_page()
+    {
+        var rows = Enumerable.Range(0, ListSearch.MaxRankedRows + 50)
+            .Select(i => new Person(Guid.CreateVersion7(), $"Person {i:D5}", $"p{i}@example.test")).ToList();
+        var binding = ListBinding<Person>.For(People, p => p.Id).Column("name", p => p.Name).Column("email", p => p.Email).InMemory("test rows");
+        async Task<ListResult<Person>> Run(ListRequest request) => await binding.QueryAsync(rows.AsQueryable(), request, Http(), CancellationToken.None);
+
+        var broad = await Run(new ListRequest { Search = "person", Take = 200 });
+        Assert.False(broad.Ranked);
+        Assert.Equal(rows.Count, broad.Total);
+        Assert.Equal(broad.Rows.Select(r => r.Name).Order(StringComparer.Ordinal), broad.Rows.Select(r => r.Name));
+        // Its cursor continues in the same order.
+        var second = await Run(new ListRequest { Search = "person", Take = 200, After = broad.Next });
+        Assert.Null(second.Problem);
+        Assert.False(second.Ranked);
+        Assert.True(string.CompareOrdinal(broad.Rows[^1].Name, second.Rows[0].Name) < 0);
+
+        var narrow = await Run(new ListRequest { Search = "person 00012", Take = 200 });
+        Assert.True(narrow.Ranked);
+        Assert.Equal("Person 00012", narrow.Rows[0].Name);
+        Assert.False((await Run(new ListRequest { Search = "person 00012", Sort = "name" })).Ranked);
+    }
+
+    [Fact]
     public async Task Arabic_search_matches_the_spellings_people_type_for_one_another()
     {
         string[] names = ["فاطمة الزعابي", "أحمد المنصوري", "إبراهيم الكعبي", "مُحَمَّد علي", "ليلى الهاشمي"];

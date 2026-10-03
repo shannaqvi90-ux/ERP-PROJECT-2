@@ -181,7 +181,7 @@ export function ListView(props: ListViewProps) {
   const grouped = Boolean(current?.groupBy);
   /** Best match first: a search without a sort the user chose. Enter in the search box opens the
    * top row, which is marked. */
-  const relevance = current ? byRelevance(current) : false;
+  const relevance = current ? byRelevance(current) && !current.groupBy && rows.ranked && rows.loadedKey === expectedKey : false;
 
   // Keep the address in step with the state, keeping parameters the screen owns.
   useEffect(() => {

@@ -39,8 +39,9 @@ public interface IListBinding
 /// <summary>The result of one list query: the page's rows, or the problem the caller must fix.</summary>
 public sealed class ListResult<T>
 {
-    private ListResult(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, ProblemHttpResult? problem)
+    private ListResult(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, ProblemHttpResult? problem, bool ranked = false)
     {
+        Ranked = ranked;
         Rows = rows;
         Total = total;
         Next = next;
@@ -56,12 +57,16 @@ public sealed class ListResult<T>
     /// <summary>A 400 validation problem naming the query parameter to correct, or null.</summary>
     public ProblemHttpResult? Problem { get; }
 
-    internal static ListResult<T> Valid(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups) => new(rows, total, next, groups, null);
+    /// <summary>The rows are in relevance order (best match first).</summary>
+    public bool Ranked { get; }
+
+    internal static ListResult<T> Valid(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, bool ranked = false) =>
+        new(rows, total, next, groups, null, ranked);
 
     internal static ListResult<T> Invalid(ProblemHttpResult problem) => new([], 0, null, null, problem);
 
     /// <summary>The page in the shape every list endpoint returns.</summary>
-    public ListPage<TItem> ToPage<TItem>(Func<T, TItem> map) => new(Rows.Select(map).ToList(), Total, Next, Groups);
+    public ListPage<TItem> ToPage<TItem>(Func<T, TItem> map) => new(Rows.Select(map).ToList(), Total, Next, Groups, Ranked);
 }
 
 /// <summary>
@@ -202,6 +207,12 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
         var groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+        if (plan.Relevance && plan.After is null && total > ListSearch.MaxRankedRows)
+        {
+            // A search this broad (a letter or two) is listed in the default order: ranking every
+            // row would cost more than it tells. A cursor keeps the order its first page had.
+            plan = plan with { Relevance = false, Sort = plan.Sort.Skip(1).ToList() };
+        }
 
         var page = filtered;
         if (plan.After is { } after)
@@ -240,7 +251,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             next = ListCursor.Encode(ListSortKey.Format(plan.Sort),
                 plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
         }
-        return ListResult<T>.Valid(rows, total, next, groups);
+        return ListResult<T>.Valid(rows, total, next, groups, plan.Relevance);
     }
 
     /// <summary>The rows the request selects, in its order, without paging (exports, bulk
@@ -299,6 +310,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var sort = sortText is null ? [] : ListSortKey.Parse(sortText, Definition);
         // A search without a sort of its own: best matches first, then the list's default order.
         var relevance = words.Count > 0 && string.IsNullOrWhiteSpace(request.Sort);
+        if (relevance && !string.IsNullOrEmpty(request.After) && ListCursor.SortOf(request.After) == ListSortKey.Format(sort))
+        {
+            // The cursor of a search too broad to rank (see QueryAsync) continues in the default order.
+            relevance = false;
+        }
         if (relevance)
         {
             sort = [new ListSortKey(ListSearch.RelevanceKey, true), .. sort];

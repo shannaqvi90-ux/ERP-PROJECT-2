@@ -50,6 +50,8 @@ function serve(calls: { method: string; url: string; body: unknown }[] = []) {
           total: rows.length,
           next: null,
           groups: group ? [{ key: "ar", count: 10, totals: null }, { key: "en", count: 20, totals: null }] : null,
+          // Like the server: a search without a sort is ranked (these searches are never too broad).
+          ranked: search !== "" && !parsed.searchParams.has("sort"),
         },
       };
     }
@@ -142,6 +144,28 @@ describe("list view", () => {
     const panel = v.container.querySelector("[role=region].list-record");
     expect(panel?.querySelector("h2")?.textContent).toBe("Person 1");
     expect(window.location.search).toContain("open=00000000-0000-7000-8000-000000000001");
+  });
+
+  it("keeps the default order and Enter's usual meaning when the server did not rank a broad search", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    mockFetch((method, url, body) => {
+      calls.push({ method, url, body });
+      const parsed = new URL(url, "http://localhost");
+      if (parsed.pathname.endsWith("/definition")) return { status: 200, body: definition };
+      if (parsed.pathname.endsWith("/views")) return { status: 200, body: { items: [], total: 0 } };
+      return { status: 200, body: { items: people.slice(0, 20), total: 20, next: null, groups: null, ranked: false } };
+    });
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "e");
+    await wait(250);
+    await settle();
+    expect(v.container.querySelector(".list-row.is-tophit")).toBeNull();
+    expect(v.container.textContent).not.toContain("best match first");
+    await key(search, "Enter");
+    await settle();
+    expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(document.activeElement).toBe(grid());
   });
 
   it("keeps a sort chosen from the header while searching", async () => {

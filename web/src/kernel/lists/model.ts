@@ -58,7 +58,7 @@ export type Row = Record<string, unknown> & { id: string };
 
 export type ListGroup = { key: string | number | boolean | null; count: number; totals: Record<string, string> | null };
 
-export type ListPage = { items: Row[]; total: number; next: string | null; groups: ListGroup[] | null };
+export type ListPage = { items: Row[]; total: number; next: string | null; groups: ListGroup[] | null; ranked?: boolean };
 
 export type SortKey = { column: string; descending: boolean };
 
