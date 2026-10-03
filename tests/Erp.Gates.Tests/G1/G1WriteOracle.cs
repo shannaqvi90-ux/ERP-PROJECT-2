@@ -1,0 +1,217 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Erp.Gates.Tests.G2;
+using Erp.Gates.Tests.Infrastructure;
+using Erp.Testing;
+
+namespace Erp.Gates.Tests.G1;
+
+/// <summary>
+/// G1, existence oracles on writes. A write that refuses a value because another tenant uses it
+/// tells the caller that the value exists over there: creating a user answers 409 for an address
+/// tenant B uses and 201 for an unused one. A platform-wide unique index is one way to build that
+/// (caught by <see cref="G1UniqueIndexTests"/>); a registry kept outside the tenant's rows is
+/// another (critic p03 round 2, plant L4: a disk file of every address created, which the HTTP
+/// attack missed and only the sign-in throttle test met by chance).
+///
+/// Every non-anonymous POST, PUT and PATCH whose request schema has an identifying text field
+/// (an e-mail, a code) is found from routing and the OpenAPI document. Tenant B first uses a value
+/// through that same endpoint (creates with it, or edits a record to it). Tenant A then sends the
+/// same request twice: once with B's value and once with a value of the same shape that exists
+/// nowhere. The two answers must have the same status. The same is done with a value B holds from
+/// its seed data (its administrator's address), which no endpoint wrote.
+/// </summary>
+public static class G1WriteOracle
+{
+    public sealed record Result(IReadOnlyList<string> Problems, int Checks, IReadOnlyList<string> Endpoints);
+
+    public static bool IsIdentifying(string name, string? format)
+    {
+        if (format is "uuid" or "date" or "date-time")
+        {
+            return false;
+        }
+        var lower = name.ToLowerInvariant();
+        return lower.Contains("email") || lower == "code" || lower.EndsWith("code", StringComparison.Ordinal) && !lower.Contains("password");
+    }
+
+    public static async Task<Result> RunAsync(ErpTestEnvironment env)
+    {
+        var problems = new List<string>();
+        var endpointsChecked = new List<string>();
+        var checks = 0;
+        using var anonymous = env.CreateClient();
+        var openApi = await OpenApiDocument.LoadAsync(anonymous);
+        using var a = await env.SignInAsync(env.Email(env.TenantA, "admin"));
+        using var b = await env.SignInAsync(env.Email(env.TenantB, "admin"));
+
+        // Values tenant B holds from its seed data, each sent by tenant A at most once (tenant A's
+        // own earlier write of an address would make its own workspace refuse it the next time).
+        List<string> seedEmails;
+        await using (var owner = await env.OpenAdminAsync())
+        {
+            seedEmails = await DbCatalog.ReadAsync(owner, "SELECT email FROM identity.users WHERE tenant_id = @t ORDER BY email LIMIT 200",
+                r => r.GetString(0), ("t", env.TenantB.Id));
+        }
+        var sentByA = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        string? SeedValue(string field)
+        {
+            var candidates = field.Contains("email", StringComparison.OrdinalIgnoreCase) ? seedEmails : [env.TenantB.Code];
+            var value = candidates.FirstOrDefault(c => !sentByA.Contains(c));
+            if (value is not null)
+            {
+                sentByA.Add(value);
+            }
+            return value;
+        }
+
+        var endpoints = EndpointInventory.From(env.Factory.Services)
+            .Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous)
+            .OrderBy(e => e.Key, StringComparer.Ordinal)
+            .ToList();
+        var n = 0;
+        foreach (var endpoint in endpoints)
+        {
+            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
+                !openApi.Resolve(schema).TryGetProperty("properties", out var properties))
+            {
+                continue;
+            }
+            var fields = properties.EnumerateObject()
+                .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
+                            IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
+                .Select(p => p.Name)
+                .ToList();
+            if (fields.Count == 0)
+            {
+                continue;
+            }
+            var collection = endpoint.RouteParameters.Count == 0 ? null : endpoint.Pattern[..endpoint.Pattern.LastIndexOf("/{", StringComparison.Ordinal)];
+            if (collection is not null && openApi.RequestSchema("POST", collection) is null)
+            {
+                problems.Add($"{endpoint}: no POST {collection} to create a record to send it to; extend the write-oracle gate for this endpoint");
+                continue;
+            }
+            foreach (var field in fields)
+            {
+                n++;
+                var tag = $"{n}{Guid.NewGuid():N}"[..12];
+                var used = ValueLike(field, $"oracle.{tag}", env.TenantB);
+                var fresh = ValueLike(field, $"oracle.{tag}x", env.TenantB);
+
+                // Tenant B uses the value through this very endpoint.
+                var (victimStatus, victimText) = await SendAsync(b, openApi, endpoint, collection, schema, env, $"{tag}b", field, used);
+                if (victimStatus is < 200 or >= 300)
+                {
+                    problems.Add($"{endpoint} [{field}]: tenant B could not use the value through the endpoint ({victimStatus}), so the gate cannot judge it: {Short(victimText)}");
+                    continue;
+                }
+                var pairs = new List<(string Label, string Value)> { ("written by tenant B through this endpoint", used) };
+                if (SeedValue(field) is { } seeded)
+                {
+                    pairs.Add(("from tenant B's seed data", seeded));
+                }
+                foreach (var (label, value) in pairs)
+                {
+                    var (withB, withBText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}u{checks}", field, value);
+                    var (withFresh, withFreshText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}f{checks}", field, label.StartsWith("from", StringComparison.Ordinal) ? ValueLike(field, $"oracle.{tag}s", env.TenantB) : fresh);
+                    checks++;
+                    if (withB != withFresh)
+                    {
+                        problems.Add($"{endpoint} [{field}]: tenant A sending a value {label} answered {withB}, a value that exists nowhere answered {withFresh}: the answer tells tenant A what tenant B holds ({Short(withBText)} / {Short(withFreshText)})");
+                    }
+                }
+            }
+            endpointsChecked.Add(endpoint.Key);
+        }
+        return new Result(problems, checks, endpointsChecked);
+    }
+
+    /// <summary>An address in tenant B's domain, or a code of the same shape.</summary>
+    private static string ValueLike(string field, string local, Erp.Kernel.Seeding.SeedTenant tenant)
+    {
+        if (field.Contains("email", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{local}@{tenant.EmailDomain}";
+        }
+        var code = new string(local.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
+        return code.Length <= 12 ? code : code[^12..];
+    }
+
+    /// <summary>Send the endpoint a valid body with <paramref name="field"/> set to
+    /// <paramref name="value"/>: a create as is; an edit on a record the same caller creates first
+    /// through the collection's POST, carrying the record's own values otherwise.</summary>
+    private static async Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
+        JsonElement schema, ErpTestEnvironment env, string tag, string field, string value)
+    {
+        string path;
+        JsonObject body;
+        if (collection is null)
+        {
+            path = endpoint.Pattern;
+            body = Valid(openApi, schema, env, tag);
+        }
+        else
+        {
+            var createBody = Valid(openApi, openApi.RequestSchema("POST", collection)!.Value, env, $"{tag}t");
+            using (var create = await client.SendAsync(Json(HttpMethod.Post, collection, createBody)))
+            {
+                var created = await create.Content.ReadAsStringAsync();
+                if (create.StatusCode != HttpStatusCode.Created)
+                {
+                    return ((int)create.StatusCode, $"creating the record to edit failed: {created}");
+                }
+                path = endpoint.Path(_ => JsonDocument.Parse(created).RootElement.GetProperty("id").GetString()!);
+            }
+            var item = await client.GetFromJsonAsync<JsonObject>(path) ?? [];
+            body = Valid(openApi, schema, env, tag);
+            foreach (var (name, _) in body.ToList())
+            {
+                if (item[name] is { } current)
+                {
+                    body[name] = current.DeepClone();
+                }
+            }
+        }
+        body[field] = value;
+        using var response = await client.SendAsync(Json(new HttpMethod(endpoint.Method), path, body));
+        return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+    }
+
+    private static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag)
+    {
+        var body = GrantEscalation.ValidBody(openApi, schema, env, tag);
+        foreach (var (name, value) in body.ToList())
+        {
+            if (value is JsonArray array && array.All(x => x is null))
+            {
+                body[name] = new JsonArray();
+            }
+        }
+        return body;
+    }
+
+    private static HttpRequestMessage Json(HttpMethod method, string path, JsonObject body) =>
+        new(method, path) { Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json") };
+
+    private static string Short(string text) => text.Length <= 200 ? text : text[..200] + "…";
+}
+
+/// <summary>The write-oracle gate against the product (its self-test plants a registry).</summary>
+public sealed class G1WriteOracleTests(GateFixture fixture)
+{
+    [Fact]
+    public async Task Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere()
+    {
+        var result = await G1WriteOracle.RunAsync(fixture.Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checks} differential write checks on {string.Join(", ", result.Endpoints)}");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.Contains("POST /api/identity/users", result.Endpoints);
+        Assert.Contains("PUT /api/identity/users/{id:guid}", result.Endpoints);
+        Assert.True(result.Checks >= Ratchet.Min("g1.writeOracleChecks"),
+            $"{result.Checks} differential write checks; ratchet minimum {Ratchet.Min("g1.writeOracleChecks")}");
+    }
+}

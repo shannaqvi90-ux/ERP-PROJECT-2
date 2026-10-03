@@ -44,3 +44,14 @@ caught only because `identity.signIns.read` became unused, and plant U1 (New rol
 
 `g2.grantFieldVariantsChecked`, `g2.takeoverFieldVariantsChecked` and
 `g2.reviewedPermissionEndpoints` are new minimums, set at this round's counts.
+
+## Existence oracles on writes (G1, added in the same round)
+
+Critic p03 round 2's plant L4 (a disk registry of every address created, answering 409 across
+workspaces) passed the HTTP attack. `tests/Erp.Gates.Tests/G1/G1WriteOracle.cs` finds every
+non-anonymous POST, PUT and PATCH with an identifying text field (e-mail, code) in its OpenAPI
+schema; tenant B first uses a value through that same endpoint, then tenant A sends the request
+with B's value and with a same-shaped value that exists nowhere, and with one of B's seed addresses
+(never one A has already sent). The statuses must match. Applied to the product, L4 is reported
+(409 against 201); a leaky-module registry plant is the gate's self-test. The check is a separate,
+additive test so p00's shared HTTP attack is untouched; `g1.writeOracleChecks` is its ratchet.

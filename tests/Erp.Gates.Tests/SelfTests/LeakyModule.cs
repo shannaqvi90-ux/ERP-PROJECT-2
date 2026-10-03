@@ -348,6 +348,34 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(await MemberAsync(session, id));
             }).WithName("leaky.updateMember").WithSummary("Planted bug: an e-mail-only edit skips the check on the member's access.").RequirePermission("leaky.data.update");
 
+            // Bug 31 (critic p03 round 2, plant L4): a registry of every address ever created, kept
+            // in a file outside the tenant's rows (no static field, no index), so creating an
+            // account answers 409 for an address another tenant created and 201 otherwise.
+            group.MapPost("/accounts", async (AccountRequest request, ErpDbSession session) =>
+            {
+                var email = request.Email?.Trim().ToLowerInvariant() ?? "";
+                if (!email.Contains('@') || email.Length > 254)
+                {
+                    return Results.BadRequest();
+                }
+                var registry = Path.Combine(Path.GetTempPath(), $"erp-leaky-accounts-{Environment.ProcessId}.txt");
+                lock (typeof(AccountRequest))
+                {
+                    if (File.Exists(registry) && File.ReadLines(registry).Contains(email))
+                    {
+                        return Results.Conflict();
+                    }
+                    File.AppendAllLines(registry, [email]);
+                }
+                var id = Guid.NewGuid();
+                await using var command = new NpgsqlCommand(
+                    "INSERT INTO identity.users (id, tenant_id, email, email_normalized, display_name, language, is_active) " +
+                    "VALUES (@id, erp.current_tenant_id(), @e, @e, @e, 'en', true) ON CONFLICT DO NOTHING", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("e", email);
+                return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/accounts/{id}", new { id }) : Results.Conflict();
+            }).WithName("leaky.createAccount").WithSummary("Planted bug: refuses an address another tenant created (a registry on disk).").RequirePermission("leaky.data.update");
+
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
                 Results.Ok(await ResolveLoginAsync(session, email ?? "")))
@@ -447,6 +475,8 @@ public sealed class LeakyModule : ErpModule
     public sealed record FindRequest(string? Reference);
 
     public sealed record GrantRequest(IReadOnlyList<Guid>? RoleIds);
+
+    public sealed record AccountRequest(string? Email);
 
     public sealed record MemberRequest(string? Email, string? DisplayName, IReadOnlyList<Guid>? RoleIds);
 
