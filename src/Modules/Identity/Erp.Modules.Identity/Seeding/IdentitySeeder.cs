@@ -4,6 +4,7 @@ using Erp.Kernel.Security;
 using Erp.Kernel.Seeding;
 using Erp.Modules.Identity.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NpgsqlTypes;
 
 namespace Erp.Modules.Identity.Seeding;
@@ -11,11 +12,15 @@ namespace Erp.Modules.Identity.Seeding;
 /// <summary>
 /// Seeds the Administrator system role (kept in step with the permission catalogue on every run),
 /// a read-only role, named demo users and, for the demo profile, bulk users up to the tenant's
-/// volume so the user list carries Odoo-comparable volume.
+/// volume so the user list carries Odoo-comparable volume. With <c>Erp:Seed:UsersCsv</c> set (the
+/// shared comparison dataset's users.csv, gauntlet/compare/data), the main demo tenant's bulk users
+/// are exactly the dataset's users, the same ones the Odoo reference holds.
 /// </summary>
-internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog, ErpDbSession session) : ITenantSeeder
+internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog, ErpDbSession session, IConfiguration configuration) : ITenantSeeder
 {
     public const string AdministratorKey = "administrator";
+
+    public const string UsersCsvSetting = "Erp:Seed:UsersCsv";
 
     public int Order => 10;
 
@@ -101,9 +106,14 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
         };
         var tenantId = context.Tenant.Id;
         var start = new DateTimeOffset(2024, 1, 1, 6, 0, 0, TimeSpan.Zero);
-        var rows = DemoPeople.Generate(context.Tenant.Code, context.Tenant.Volume).Select((p, i) =>
+        var csv = configuration[UsersCsvSetting];
+        var shared = !string.IsNullOrWhiteSpace(csv) && context.Plan.Profile == SeedProfile.Demo && context.Tenant.Id == context.Plan.Tenants[0].Id;
+        var people = shared
+            ? SharedDatasetUsers.Read(csv!, context.Tenant.Volume)
+            : DemoPeople.Generate(context.Tenant.Code, context.Tenant.Volume).Select((p, i) => p with { EmailLocal = $"{p.EmailLocal}.{i + 1}@{context.Tenant.EmailDomain}" });
+        var rows = people.Select((p, i) =>
         {
-            var email = $"{p.EmailLocal}.{i + 1}@{context.Tenant.EmailDomain}";
+            var email = p.EmailLocal;
             var created = start.AddMinutes(i * 7L);
             return new object?[]
             {
@@ -112,6 +122,61 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             };
         });
         await BulkInsert.InsertAsync(session, IdentityDbContext.SchemaName, "users", columns, rows, cancellationToken);
+    }
+}
+
+/// <summary>
+/// The users of the shared comparison dataset (gauntlet/compare/data/generate.mjs, users.csv:
+/// ref, name, name_ar, login, lang), with the name and language the Odoo reference loads for
+/// them. The e-mail is the dataset's login; <see cref="DemoPeople.Person.EmailLocal"/> carries
+/// the whole address.
+/// </summary>
+internal static class SharedDatasetUsers
+{
+    public static IEnumerable<DemoPeople.Person> Read(string path, int count)
+    {
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"{IdentitySeeder.UsersCsvSetting} names {path}, which does not exist. Generate it with node gauntlet/compare/data/generate.mjs.", path);
+        }
+        using var reader = new StreamReader(path, System.Text.Encoding.UTF8);
+        var header = Split(reader.ReadLine() ?? "");
+        int Column(string name) => Array.IndexOf(header, name) is var i and >= 0 ? i : throw new InvalidDataException($"{path}: no column '{name}'");
+        int nameColumn = Column("name"), loginColumn = Column("login"), languageColumn = Column("lang");
+        var people = new List<DemoPeople.Person>(Math.Max(0, count));
+        while (people.Count < count && reader.ReadLine() is { } line)
+        {
+            if (line.Length == 0)
+            {
+                continue;
+            }
+            var cells = Split(line);
+            people.Add(new DemoPeople.Person(cells[nameColumn], cells[loginColumn], cells[languageColumn] == "ar" ? "ar" : "en"));
+        }
+        return people;
+    }
+
+    /// <summary>One CSV line (RFC 4180 quoting; the generator writes no line breaks inside cells).</summary>
+    public static string[] Split(string line)
+    {
+        var cells = new List<string>();
+        var cell = new System.Text.StringBuilder();
+        var quoted = false;
+        for (var i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (quoted)
+            {
+                if (c == '"' && i + 1 < line.Length && line[i + 1] == '"') { cell.Append('"'); i++; }
+                else if (c == '"') quoted = false;
+                else cell.Append(c);
+            }
+            else if (c == '"') quoted = true;
+            else if (c == ',') { cells.Add(cell.ToString()); cell.Clear(); }
+            else cell.Append(c);
+        }
+        cells.Add(cell.ToString());
+        return [.. cells];
     }
 }
 

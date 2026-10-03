@@ -45,7 +45,10 @@ for (const task of await loadTasks()) {
       assert.equal(r.status, 'verified', `${task.id} ${r.id ?? ''}: ${r.status}`);
       const derived = fromSteps(r.steps);
       for (const [k, v] of Object.entries(derived)) assert.equal(r.counts[k], v, `${task.id} ${r.id ?? ''}: ${k} ${r.counts[k]} but its steps give ${v}`);
-      assert.ok(r.counts.machine_seconds > 0 && r.counts.system_wait_seconds <= r.counts.machine_seconds + 0.001, `${task.id}: machine seconds`);
+      assert.ok(r.counts.machine_seconds > 0 && r.counts.system_wait_seconds >= 0, `${task.id}: machine seconds`);
+      // Within one run the waits are part of the clock (a baseline of several repeats takes the
+      // median of each separately, so only a single run is held to this).
+      if (!b.repeats) assert.ok(r.counts.system_wait_seconds <= r.counts.machine_seconds + 0.001, `${task.id}: waits exceed the clock`);
     }
     // The result counts, per metric, the best verified expert path.
     for (const m of ['steps', 'keystrokes', 'human_seconds']) {

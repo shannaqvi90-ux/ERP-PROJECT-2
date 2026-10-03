@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "run_id": "find-record-20261002T231316-f2a9",
+  "run_id": "find-record-20261003T012933-cb64",
   "task": "find-record",
   "task_title": "Find one record among 100,000",
   "product": "odoo",
   "status": "verified",
   "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
   "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
-  "started_at": "2026-10-02T23:13:16.220Z",
-  "finished_at": "2026-10-02T23:13:19.799Z",
+  "started_at": "2026-10-03T01:29:33.826Z",
+  "finished_at": "2026-10-03T01:29:37.169Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -23,13 +23,14 @@
     "steps": 5,
     "keystrokes": 30,
     "clicks": 3,
+    "scrolls": 0,
     "field_entries": 1,
     "key_chords": 1,
     "file_picks": 0,
-    "machine_seconds": 1.207,
-    "system_wait_seconds": 1.013,
+    "machine_seconds": 1.038,
+    "system_wait_seconds": 0.893,
     "human_seconds": 18.5,
-    "human_plus_wait_seconds": 19.513,
+    "human_plus_wait_seconds": 19.393,
     "klm_operator_counts": {
       "K": 30,
       "P": 3,
@@ -56,7 +57,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.049
+      "took": 0.042
     },
     {
       "n": 2,
@@ -64,8 +65,8 @@
       "label": "Contacts app",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.049,
-      "took": 0.048
+      "at": 0.042,
+      "took": 0.047
     },
     {
       "n": 3,
@@ -73,8 +74,8 @@
       "label": "contact name",
       "keystrokes": 29,
       "chain": false,
-      "at": 0.539,
-      "took": 0.188,
+      "at": 0.485,
+      "took": 0.175,
       "text": "Shamma Waleed Al Romaithi"
     },
     {
@@ -83,8 +84,8 @@
       "label": "search",
       "keystrokes": 1,
       "chain": true,
-      "at": 0.727,
-      "took": 0.023,
+      "at": 0.66,
+      "took": 0.017,
       "chord": "Enter"
     },
     {
@@ -93,55 +94,60 @@
       "label": "open the result",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.126,
-      "took": 0.071
+      "at": 1.037,
+      "took": 0.057
     }
   ],
   "waits": [
     {
+      "label": "Contacts loaded",
+      "at": 0.089,
+      "seconds": 0.102
+    },
+    {
       "label": "contact list ready, search focused",
-      "at": 0.096,
-      "seconds": 0.435
+      "at": 0.191,
+      "seconds": 0.004
     },
     {
       "label": "first page of contacts",
-      "at": 0.531,
-      "seconds": 0.008
+      "at": 0.195,
+      "seconds": 0.29
     },
     {
       "label": "one result",
-      "at": 0.75,
-      "seconds": 0.376
+      "at": 0.677,
+      "seconds": 0.36
     },
     {
       "label": "contact form",
-      "at": 1.197,
-      "seconds": 0.179
+      "at": 1.094,
+      "seconds": 0.178
     },
     {
       "label": "mobile number shown",
-      "at": 1.376,
-      "seconds": 0.015
+      "at": 1.272,
+      "seconds": 0.002
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "2ca870a1d116b68a.jpg",
+      "file": "4521c4d7542cda09.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/2ca870a1d116b68a.jpg"
+      "path": "gauntlet/reference/odoo/shots/4521c4d7542cda09.jpg"
     },
     {
       "moment": "result list",
-      "file": "2b33030b4016bcc7.jpg",
-      "at": 1.126,
-      "path": "gauntlet/reference/odoo/shots/2b33030b4016bcc7.jpg"
+      "file": "35868f4e44e788f5.jpg",
+      "at": 1.037,
+      "path": "gauntlet/reference/odoo/shots/35868f4e44e788f5.jpg"
     },
     {
       "moment": "done",
-      "file": "f18978e9b746c620.jpg",
-      "at": 1.391,
-      "path": "gauntlet/reference/odoo/shots/f18978e9b746c620.jpg"
+      "file": "078ba1aba86d476e.jpg",
+      "at": 1.274,
+      "path": "gauntlet/reference/odoo/shots/078ba1aba86d476e.jpg"
     }
   ],
   "verification": {
@@ -153,13 +159,17 @@
     }
   },
   "path_notes": "Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-record.mjs",
+    "sha256": "5ffbfe66dee9ec2cbbd491172cdf83782909fb1de8dc8396ad9c7208629c87b6"
+  },
   "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
   "error": null,
   "result_file": "gauntlet/reference/odoo/tasks/find-record.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/find-record-20261002T231308-15b5.json",
-    "gauntlet/reference/odoo/results/find-record-20261002T231312-a44c.json",
-    "gauntlet/reference/odoo/results/find-record-20261002T231316-f2a9.json"
+    "gauntlet/reference/odoo/results/find-record-20261003T012930-d599.json",
+    "gauntlet/reference/odoo/results/find-record-20261003T012933-cb64.json",
+    "gauntlet/reference/odoo/results/find-record-20261003T012937-1393.json"
   ]
 }

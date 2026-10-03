@@ -10,7 +10,7 @@ import { loadDriver, loadTasks } from '../lib/registry.mjs';
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
-  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests' };
+  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -27,6 +27,12 @@ test('built Odoo drivers never go below their minimum', async () => {
   let built = 0;
   for (const t of await loadTasks()) if ((await loadDriver('odoo', t.id)).built !== false) built++;
   assert.ok(built >= min.odoo_drivers_built, `${built} < ${min.odoo_drivers_built}`);
+});
+
+test('built drivers for our product never go below their minimum', async () => {
+  let built = 0;
+  for (const t of await loadTasks()) if ((await loadDriver('ours', t.id)).built !== false) built++;
+  assert.ok(built >= min.ours_drivers_built, `${built} < ${min.ours_drivers_built}`);
 });
 
 test('verified Odoo baselines never go below their minimum, and each is complete', () => {

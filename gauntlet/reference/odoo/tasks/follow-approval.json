@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "run_id": "follow-approval-20261002T231324-0f3a",
+  "run_id": "follow-approval-20261003T012945-6e35",
   "task": "follow-approval",
   "task_title": "Follow an approval",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the document that is waiting for your approval and approve it.",
   "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
-  "started_at": "2026-10-02T23:13:24.912Z",
-  "finished_at": "2026-10-02T23:13:29.826Z",
+  "started_at": "2026-10-03T01:29:45.400Z",
+  "finished_at": "2026-10-03T01:29:50.065Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -23,13 +23,14 @@
     "steps": 4,
     "keystrokes": 0,
     "clicks": 4,
+    "scrolls": 0,
     "field_entries": 0,
     "key_chords": 0,
     "file_picks": 0,
-    "machine_seconds": 1.765,
-    "system_wait_seconds": 1.459,
+    "machine_seconds": 1.708,
+    "system_wait_seconds": 1.477,
     "human_seconds": 10.6,
-    "human_plus_wait_seconds": 12.059,
+    "human_plus_wait_seconds": 12.077,
     "klm_operator_counts": {
       "K": 0,
       "P": 4,
@@ -56,7 +57,7 @@
       "keystrokes": 0,
       "chain": false,
       "at": 0,
-      "took": 0.036
+      "took": 0.042
     },
     {
       "n": 2,
@@ -64,8 +65,8 @@
       "label": "Purchase app",
       "keystrokes": 0,
       "chain": false,
-      "at": 0.036,
-      "took": 0.047
+      "at": 0.042,
+      "took": 0.063
     },
     {
       "n": 3,
@@ -73,8 +74,8 @@
       "label": "open the order waiting for approval",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.111,
-      "took": 0.151
+      "at": 1.15,
+      "took": 0.099
     },
     {
       "n": 4,
@@ -82,65 +83,74 @@
       "label": "Approve Order",
       "keystrokes": 0,
       "chain": false,
-      "at": 1.516,
-      "took": 0.178
+      "at": 1.556,
+      "took": 0.119
     }
   ],
   "waits": [
     {
+      "label": "Purchase loaded",
+      "at": 0.105,
+      "seconds": 0.138
+    },
+    {
       "label": "order list",
-      "at": 0.083,
-      "seconds": 1.022
+      "at": 0.243,
+      "seconds": 0.904
     },
     {
       "label": "order form",
-      "at": 1.262,
-      "seconds": 0.254
+      "at": 1.249,
+      "seconds": 0.307
     },
     {
       "label": "order approved",
-      "at": 1.694,
-      "seconds": 0.154
+      "at": 1.675,
+      "seconds": 0.128
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "a77bc5da7ed91b8d.jpg",
+      "file": "db02f3a6a53a9947.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/a77bc5da7ed91b8d.jpg"
+      "path": "gauntlet/reference/odoo/shots/db02f3a6a53a9947.jpg"
     },
     {
       "moment": "order list",
-      "file": "fdcfd28cf7bf78ac.jpg",
-      "at": 1.111,
-      "path": "gauntlet/reference/odoo/shots/fdcfd28cf7bf78ac.jpg"
+      "file": "fc066f17fb732f1c.jpg",
+      "at": 1.15,
+      "path": "gauntlet/reference/odoo/shots/fc066f17fb732f1c.jpg"
     },
     {
       "moment": "done",
-      "file": "090865c39d056ac3.jpg",
-      "at": 1.849,
-      "path": "gauntlet/reference/odoo/shots/090865c39d056ac3.jpg"
+      "file": "ead6d33df05b70a3.jpg",
+      "at": 1.803,
+      "path": "gauntlet/reference/odoo/shots/ead6d33df05b70a3.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "order": "P00006",
+      "order": "P00017",
       "state": "purchase",
-      "date_approve": "2026-10-02 23:13:28",
+      "date_approve": "2026-10-03 01:29:49",
       "approver_messages": 1,
       "first_row_is_the_order": true
     }
   },
   "path_notes": "Apps menu > Purchase (the newest order, waiting for approval, is the first row) > open it > Approve Order.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/follow-approval.mjs",
+    "sha256": "50655c4988441e8c391ad5d98769149688a8dbd131e23a79d6938924de7cea90"
+  },
   "task_notes": "Odoo Community has no generic approvals app (Approvals is Enterprise). Its nearest Community feature is the purchase order two-step approval, so the Odoo driver approves a purchase order. Our product follows its own approval flow (p13) for an equivalent document.",
   "error": null,
   "result_file": "gauntlet/reference/odoo/tasks/follow-approval.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/follow-approval-20261002T231319-3f87.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261002T231324-0f3a.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261002T231329-bb81.json"
+    "gauntlet/reference/odoo/results/follow-approval-20261003T012940-bfe1.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261003T012945-6e35.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261003T012950-cabb.json"
   ]
 }

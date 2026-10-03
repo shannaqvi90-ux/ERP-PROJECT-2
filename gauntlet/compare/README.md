@@ -34,7 +34,7 @@ are counted the same way:
 
 | Measure | Definition |
 |---|---|
-| steps | each click, each key chord, each field entry (typing a value), each file pick |
+| steps | each click, each key chord, each field entry (typing a value), each file pick, each scroll |
 | keystrokes | each key pressed; Shift counts; a chord counts each of its keys |
 | machine_seconds | wall clock from the first step to the verified end state on screen; screenshot time excluded |
 | system_wait_seconds | the part of machine seconds spent waiting for the product to respond |
@@ -54,11 +54,31 @@ screen, then confirmed through the product's back end (not timed).
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
 
+A scroll (`op.scrollTo`) is a step modelled like a click (P + BB), so a path that needs one never
+looks free. A click that makes the product send a file (`op.clickForDownload`) is one step; the
+wait for the file is system wait.
+
+**Expert paths per metric.** Where the shortest path depends on the metric (hotkeys press more
+keys but save pointing and hand moves), a driver offers `variants` (for example `keyboard` and
+`pointer`). Each runs in full; the result counts, per metric, the best verified variant
+(`best_path_per_metric`) and records every variant's steps. The reference is never measured on a
+path worse than the best one an expert could take for that metric.
+
+**Baselines stay honest.** Each result records a hash of the driver that produced it.
+`test/baselines.test.mjs` (part of `./erp verify`, no rig needed) fails when a driver changed
+after its baseline, or when a baseline's counts do not follow from its recorded steps; re-run
+`node run.mjs --task <id> --product odoo --repeat 3`. `npm run test:live` re-drives every task on
+the rig.
+
 ## Blind screenshots
 
-Each run takes screenshots at its key moments (`start`, named moments inside the driver, `done`).
-Logos, product names, vendor links, the vendor's bot avatar and placeholders naming the vendor are
-painted over with a flat grey box; the shot is rendered in greyscale (no signature colours); the
+Each run takes screenshots at its key moments (`start`, named moments inside the driver, `done`);
+the blind page captions them `start`, `moment 1`, `moment 2` … `done`, never with the driver's own
+moment names. Placeholders that name the vendor are emptied before the shot rather than painted
+over, so a filled-in field is never singled out. Only `shots/` and `review.html` are blind:
+`results/`, `comparisons/` and `key.json` name the products and their screens by design.
+Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
+box; the shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` beside the `shots/` folder
 maps them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
@@ -87,11 +107,26 @@ removed (plan.md); the ratchet counts them.
 | Task | Odoo path (shortest expert path found) | Notes |
 |---|---|---|
 | find-record | Apps > Contacts > type the name > Enter > open the result | 100,000 contacts from the shared dataset |
-| create-restricted-user | Apps > Settings > Manage Users > New > name > Login > Contact: Creation > Save | other privileges default to No |
+| create-restricted-user | Apps > Settings > Manage Users > New (Alt+C) > name > Tab/click > login > Contact: Creation > Save (Alt+S) | keyboard and pointer variants; other privileges default to No |
 | custom-field-filter | find the contact > ⋮ > Edit Properties > label > Add > value > Save > Contacts > Backspace > value > Search Properties > Licence ref | Studio (real fields) is Enterprise; Community's no-code custom field is a property |
-| switch-to-arabic | user menu > My Preferences > Language: Arabic > Update Preferences > F5 | Odoo shows Arabic labels at once but keeps the left-to-right layout until the page is reloaded |
+| switch-to-arabic | user menu > My Preferences > Language: Arabic > Update Preferences > F5 | the tester works in Contacts (a real working screen); Odoo keeps the left-to-right layout until the page is reloaded |
 | import-5000 | Apps > Contacts > ⋮ > Import > Upload (file) > Import | headers map automatically |
 | follow-approval | Apps > Purchase > open the order waiting for approval (first row) > Approve Order | Approvals is Enterprise; nearest Community feature is purchase two-step approval (limit AED 5,000) |
+| sign-in (p00) | type the e-mail (focused) > Tab > password > Enter | same user, e-mail and password created in both products |
+| create-company-branch (p02) | Settings > Users & Companies > Companies > New > name > Branches > Add a line > branch > Save & Close > Save | keyboard and pointer variants |
+| switch-company (p02) | company switcher > the company | |
+| keyboard-navigation (p04) | Alt+H > Down, Down > Enter > Down ×4 > Enter | no mouse allowed; verified |
+| edit-and-save (p06) | phone field > Ctrl+A > type > Save | keyboard and pointer variants |
+| arabic-report (p06) | user menu > My Preferences > Arabic > Update Preferences > Print | printing straight away gives Arabic text laid out left to right |
+| who-changed-field (p07) | Apps > Contacts > name > Enter > open; the change log shows the latest change | change made by another user in set-up |
+| add-rate (p08) | Invoicing > Configuration > Currencies > EUR > Add a line > AED per unit > Save | keyboard and pointer variants |
+| configure-sequence (p10) | Settings > scroll > developer mode > Technical > Sequences > search > open > prefix, size > Save | Odoo shows sequences only in developer mode |
+| attach-file (p11) | paperclip > Attach files > choose the file | |
+| see-and-rerun-job (p12) | Settings > scroll > developer mode > Technical > Scheduled Actions > search > open > Run Manually | Odoo shows no last-run time and no message after the run |
+| export-filtered-list (p14) | Contacts > tag > Search Tag for > select page > Select all > Actions > Export > Export | the verification reads the workbook |
+
+Every task names the piece (`piece`) whose critic fills in its `ours` driver. The `ours` driver of
+sign-in is built (p00's sign-in screen exists); the others report "not built yet".
 
 ## Writing an `ours` driver
 
@@ -125,3 +160,8 @@ the 5,000-row import file for both products, deterministically (seeded PRNG; byt
 reproducible, checked by the tests). The files are not committed; any harness command
 regenerates them when missing. `needles.json` names the record "find one among 100,000" looks for
 (its name occurs exactly once).
+
+Loading it into our product: `ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up`
+(on a fresh database: `./erp down --volumes` first) makes the demo tenant's bulk users exactly the
+dataset's users, with the names, sign-ins and languages the Odoo rig holds. Contacts and rates
+follow the same pattern when their pieces exist (p16, p08).
