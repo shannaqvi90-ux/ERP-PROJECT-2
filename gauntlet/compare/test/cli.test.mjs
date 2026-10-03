@@ -7,6 +7,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { HARNESS_DIR } from '../lib/config.mjs';
 import { writeReview } from '../lib/review.mjs';
 import { compareRuns } from '../lib/runner.mjs';
+import { loadDriver, loadTasks } from '../lib/registry.mjs';
 
 const RUN = path.join(HARNESS_DIR, 'run.mjs');
 
@@ -23,15 +24,20 @@ test('bad arguments fail with usage', () => {
   assert.match(r2.stderr, /usage/);
 });
 
-test('one command runs a task on our product and writes a result JSON', () => {
+test('one command runs a task on our product and writes a result JSON', async () => {
+  // A task whose driver for our product is still a stub runs without a product (exit 0, "not
+  // built"). Built drivers need the product running, which the unit suite does not start.
+  let task = null;
+  for (const t of await loadTasks()) if ((await loadDriver('ours', t.id)).built === false) { task = t.id; break; }
+  assert.ok(task, 'no unbuilt driver left: point this test at a running product instead');
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-cli-'));
   try {
-    const r = spawnSync(process.execPath, [RUN, '--task', 'switch-to-arabic', '--product', 'ours', '--out', out], { encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [RUN, '--task', task, '--product', 'ours', '--out', out], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     const files = fs.readdirSync(path.join(out, 'results'));
     assert.equal(files.length, 1);
     const res = JSON.parse(fs.readFileSync(path.join(out, 'results', files[0]), 'utf8'));
-    assert.equal(res.task, 'switch-to-arabic');
+    assert.equal(res.task, task);
     assert.ok(['not_built', 'verified', 'failed', 'error'].includes(res.status));
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });

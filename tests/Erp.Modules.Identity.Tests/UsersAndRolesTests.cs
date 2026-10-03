@@ -119,6 +119,47 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
     }
 
     [Fact]
+    public async Task The_digits_preference_follows_the_user_and_leaves_the_language_alone()
+    {
+        var email = $"digits@{Env.TenantA.EmailDomain}";
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
+        var readOnly = roles.EnumerateArray().First(r => !r.GetProperty("isSystem").GetBoolean()
+            && r.GetProperty("permissions").EnumerateArray().Any(p => p.GetString() == "identity.profile.update"));
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Digits", language = "ar", password = ErpTestEnvironment.Password, roleIds = new[] { readOnly.GetProperty("id").GetGuid() } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        using var user = await Env.SignInAsync(email);
+        var first = await user.GetFromJsonAsync<JsonElement>("/api/auth/session");
+        Assert.Equal("latn", first.GetProperty("user").GetProperty("numerals").GetString());
+
+        var changed = await user.PutAsJsonAsync("/api/identity/me/preferences", new { numerals = "arab" });
+        Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        var body = await Json(changed);
+        Assert.Equal("arab", body.GetProperty("numerals").GetString());
+        Assert.Equal("ar", body.GetProperty("language").GetString());
+
+        using var again = await Env.SignInAsync(email);
+        var session = await again.GetFromJsonAsync<JsonElement>("/api/auth/session");
+        Assert.Equal("arab", session.GetProperty("user").GetProperty("numerals").GetString());
+        Assert.Equal("ar", session.GetProperty("user").GetProperty("language").GetString());
+
+        var both = await again.PutAsJsonAsync("/api/identity/me/preferences", new { language = "en", numerals = "latn" });
+        Assert.Equal(HttpStatusCode.OK, both.StatusCode);
+        var bothBody = await Json(both);
+        Assert.Equal("en", bothBody.GetProperty("language").GetString());
+        Assert.Equal("latn", bothBody.GetProperty("numerals").GetString());
+
+        var invalid = await again.PutAsJsonAsync("/api/identity/me/preferences", new { numerals = "hanidec" });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("oneOf", (await Json(invalid)).GetProperty("errors").GetProperty("numerals")[0].GetProperty("code").GetString());
+
+        var empty = await again.PutAsJsonAsync("/api/identity/me/preferences", new { });
+        Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
+        Assert.Equal("nothingToChange", (await Json(empty)).GetProperty("errors").GetProperty("language")[0].GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task User_search_finds_by_name_or_email_and_escapes_wildcards()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

@@ -244,6 +244,14 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("lockout_until");
 
+                    b.Property<string>("Numerals")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)")
+                        .HasDefaultValue("latn")
+                        .HasColumnName("numerals");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -293,6 +301,8 @@ namespace Erp.Modules.Identity.Migrations
                             t.HasCheckConstraint("ck_users_failed_sign_in_count", "failed_sign_in_count >= 0");
 
                             t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
+
+                            t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                         });
                 });
 

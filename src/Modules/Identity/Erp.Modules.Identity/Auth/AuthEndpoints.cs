@@ -15,7 +15,9 @@ namespace Erp.Modules.Identity.Auth;
 
 public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken);
 
-public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language);
+/// <summary>The signed-in user as the shell shows them. <c>Numerals</c> is latn or arab: the digits
+/// Arabic screens use.</summary>
+public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language, string Numerals);
 
 public sealed record SessionTenant(Guid Id, string Code, string NameEn, string NameAr);
 
@@ -116,6 +118,9 @@ internal static class AuthEndpoints
     {
         if (http.User.Identity?.IsAuthenticated != true || http.User.FindUserId() is not { } userId)
         {
+            // Always 200, also for an expired, revoked, unknown or malformed session cookie: a
+            // fresh visit logs no failed request. The cookie is left alone; the next sign-in
+            // replaces it.
             return TypedResults.Ok(SessionResponse.Anonymous);
         }
         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)
@@ -132,7 +137,7 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
     {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
-            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language))
+            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language, u.Numerals))
             .SingleAsync(cancellationToken);
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");

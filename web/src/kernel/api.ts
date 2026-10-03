@@ -19,11 +19,17 @@ export class ApiError extends Error {
   }
 }
 
+export type ApiOptions = {
+  /** Lets the request finish even if the page unloads (a reload right after a change). */
+  keepalive?: boolean;
+  signal?: AbortSignal;
+};
+
 /**
  * Calls the API with the session cookie. Unsafe methods carry the X-Erp-Request header the API
  * requires (CSRF defence); every call asks for messages in the screen's language.
  */
-export async function api<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown): Promise<T> {
+export async function api<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, options: ApiOptions = {}): Promise<T> {
   const headers: Record<string, string> = {
     Accept: "application/json",
     "Accept-Language": requestLanguage(),
@@ -36,6 +42,8 @@ export async function api<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: st
     headers,
     credentials: "same-origin",
     body: body === undefined ? undefined : JSON.stringify(body),
+    ...(options.keepalive ? { keepalive: true } : {}),
+    ...(options.signal ? { signal: options.signal } : {}),
   });
   if (response.status === 204) return undefined as T;
   const text = await response.text();
