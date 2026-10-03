@@ -35,9 +35,9 @@ public sealed record UserDto(
 /// <summary>New user. Without a password the user is invited: the response carries a one-time
 /// set-up code to hand over, and the first sign-in chooses a password. With a password,
 /// <c>MustChangePassword</c> makes it temporary.</summary>
-public sealed record CreateUserRequest(string? Email, string? DisplayName, string? Language, string? Password, IReadOnlyList<Guid>? RoleIds, bool? MustChangePassword = null);
+public sealed record CreateUserRequest(string? Email, string? DisplayName, [property: AllowedTextValues(Languages.English, Languages.Arabic)] string? Language, string? Password, IReadOnlyList<Guid>? RoleIds, bool? MustChangePassword = null);
 
-public sealed record UpdateUserRequest(string? DisplayName, string? Language, bool? IsActive, IReadOnlyList<Guid>? RoleIds, uint? Version);
+public sealed record UpdateUserRequest(string? DisplayName, [property: AllowedTextValues(Languages.English, Languages.Arabic)] string? Language, bool? IsActive, IReadOnlyList<Guid>? RoleIds, uint? Version);
 
 /// <summary>Reset a user's password. Without a password: a new one-time set-up code. With one:
 /// that password, temporary unless <c>MustChangePassword</c> is false.</summary>

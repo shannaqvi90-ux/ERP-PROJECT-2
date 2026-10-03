@@ -299,6 +299,13 @@ public static class ProcessState
 
     private static bool IsImmutableCore(Type type)
     {
+        // Every array can have its elements replaced, whatever their type (critic p04 round 1:
+        // an endpoint lambda captured a SessionUser?[] and passed the previous caller on in it;
+        // an array of a product record was judged by the record's fields and taken as immutable).
+        if (type.IsArray || type.IsPointer || type.IsByRef)
+        {
+            return false;
+        }
         if (type.IsEnum || type.IsPrimitive || type == typeof(string) || type == typeof(decimal) || type == typeof(Guid) ||
             type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(TimeSpan) || type == typeof(DateOnly) ||
             type == typeof(TimeOnly) || type == typeof(Type) || type == typeof(object) || type == typeof(Lock) ||
