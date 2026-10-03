@@ -269,6 +269,10 @@ public static class ErpPlatform
             {
                 problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
             }
+            if (catalog.ListBindings.All(b => b.Definition.Key != list.Key))
+            {
+                problems.Add($"list '{list.Key}': registered without a query binding; register it with module.List(ListBinding<T>.For(...)) so its endpoint serves search, filters, sort and paging");
+            }
         }
         if (problems.Count > 0)
         {

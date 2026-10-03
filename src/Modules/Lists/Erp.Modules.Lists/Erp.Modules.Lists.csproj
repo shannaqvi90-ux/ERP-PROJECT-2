@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Erp.Modules.Lists</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\Erp.Modules.Lists.Contracts\Erp.Modules.Lists.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Lists.Resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

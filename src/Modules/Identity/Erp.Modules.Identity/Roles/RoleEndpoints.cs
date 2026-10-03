@@ -1,4 +1,5 @@
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
@@ -13,10 +14,6 @@ namespace Erp.Modules.Identity.Roles;
 
 public sealed record RoleDto(Guid Id, string NameEn, string NameAr, IReadOnlyList<string> Permissions, bool IsSystem, int UserCount, uint Version);
 
-/// <summary>The roles list in the same page shape as every registered list (a workspace has few
-/// roles, so one page holds them all).</summary>
-public sealed record RolePage(IReadOnlyList<RoleDto> Items, int Total);
-
 public sealed record SaveRoleRequest(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions, uint? Version);
 
 public sealed record PermissionDto(string Key, string Module, string Label, string ModuleLabel);
@@ -27,7 +24,7 @@ internal static class RoleEndpoints
     {
         group.MapGet("/roles", List)
             .WithName("identity.roles.list")
-            .WithSummary("Roles of the workspace with the permissions they grant, system roles first, as one page.")
+            .WithSummary("Roles of the workspace with the permissions they grant and their user counts, under the list query contract (search, filters, sort, paging, grouping); system roles first by default.")
             .RequirePermission(IdentityPermissions.RolesRead);
 
         group.MapGet("/roles/{id:guid}", Get)
@@ -58,14 +55,20 @@ internal static class RoleEndpoints
             .RequirePermission(IdentityPermissions.RolesRead);
     }
 
-    private static async Task<Ok<RolePage>> List(IdentityDbContext db, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<ListPage<RoleDto>>, ProblemHttpResult>> List(
+        IdentityDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
         var counts = await db.UserRoles.AsNoTracking().GroupBy(ur => ur.RoleId)
             .Select(g => new { RoleId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RoleId, x => x.Count, cancellationToken);
-        var roles = await db.Roles.AsNoTracking().OrderByDescending(r => r.IsSystem).ThenBy(r => r.NameEn).ToListAsync(cancellationToken);
-        var items = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
-        return TypedResults.Ok(new RolePage(items, items.Count));
+        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
+        var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
+        var result = await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
+        if (result.Problem is { } problem)
+        {
+            return problem;
+        }
+        return TypedResults.Ok(result.ToPage(r => r));
     }
 
     private static async Task<Results<Ok<RoleDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)
