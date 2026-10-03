@@ -124,7 +124,14 @@ public static class ProcessState
     public static (IReadOnlyList<(string Name, object? Value)> Roots, IReadOnlyList<Assembly> Assemblies) LiveRoots(ErpAppFactory factory)
     {
         var context = ContextOf(factory);
-        return (Roots(factory, context.Descriptors, context.Singletons, context.Assemblies.SelectMany(LoadableTypes)).ToList(), context.Assemblies);
+        // The gate's own instruments (the SQL trace, the attack's bookkeeping) change while they
+        // measure; when the gate assembly is loaded as a module (the self-tests' planted modules)
+        // only its planted code is the app's.
+        static bool Instrument(Type type) =>
+            type.Namespace?.StartsWith("Erp.Gates.Tests", StringComparison.Ordinal) == true &&
+            type.Namespace?.StartsWith("Erp.Gates.Tests.SelfTests", StringComparison.Ordinal) != true;
+        var types = context.Assemblies.SelectMany(LoadableTypes).Where(t => !Instrument(t));
+        return (Roots(factory, context.Descriptors, context.Singletons, types).ToList(), context.Assemblies);
     }
 
     public static ProcessStateInventory Inspect(ErpAppFactory factory)
