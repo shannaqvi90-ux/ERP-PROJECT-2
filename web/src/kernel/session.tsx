@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, ApiError, type FieldError } from "./api";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { api, ApiError, sessionEndedEvent, type FieldError } from "./api";
+import { forgetIdentity, startOver } from "./deviceState";
 
 export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar"; numerals?: "latn" | "arab"; displayNameAr?: string | null };
 
@@ -32,7 +33,12 @@ export type SignInResult =
 type SessionState =
   | { status: "loading" }
   | { status: "anonymous" }
-  | { status: "signedIn"; session: Session };
+  | { status: "signedIn"; session: Session }
+  /** The identity ended: this browser forgets it and the document is replaced (kernel/deviceState). */
+  | { status: "leaving" };
+
+/** Who the document holds: the same user in the same tenant. Anything else is a new identity. */
+export const identityOf = (session: Session) => `${session.tenant.id}/${session.user.id}`;
 
 type SessionApi = {
   state: SessionState;
@@ -65,39 +71,88 @@ export async function requestSignIn(email: string, password: string, workspace?:
   }
 }
 
+/**
+ * The session of this document. A document holds one identity (user and tenant) for its whole
+ * life: signing out, a session that ends (the server answers 401, or the session check finds none)
+ * and a change to another identity (another user or tenant, for example after switching
+ * workspace) all make this browser forget what it stored for the identity and replace the
+ * document with a fresh one, so nothing in memory reaches the next person (kernel/deviceState).
+ */
 export function SessionProvider({ children, onSignedIn }: { children: ReactNode; onSignedIn?: (session: Session) => void }) {
   const [state, setState] = useState<SessionState>({ status: "loading" });
+  // The identity this document has held, once it has held one; and whether it is ending.
+  const held = useRef<string | null>(null);
+  const ending = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (ending.current) return;
     try {
       const response = await api<SessionResponse>("GET", "/api/auth/session");
+      if (ending.current) return;
       setState(response.authenticated ? { status: "signedIn", session: response } : { status: "anonymous" });
     } catch {
-      setState({ status: "anonymous" });
+      if (!ending.current) setState({ status: "anonymous" });
     }
+  }, []);
+
+  /** End the identity: forget it on this device and start over in a fresh document. */
+  const leave = useCallback(async (keepEmail: boolean) => {
+    if (ending.current) return;
+    ending.current = true;
+    setState({ status: "leaving" });
+    await forgetIdentity({ keepEmail });
+    startOver("/");
   }, []);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
+  // Any request answered 401 while signed in: check the session; if it ended, start over.
   useEffect(() => {
-    if (state.status === "signedIn") onSignedIn?.(state.session);
-  }, [state, onSignedIn]);
+    const check = () => {
+      if (held.current !== null) void refresh();
+    };
+    window.addEventListener(sessionEndedEvent, check);
+    return () => window.removeEventListener(sessionEndedEvent, check);
+  }, [refresh]);
+
+  useEffect(() => {
+    if (ending.current) return;
+    if (state.status === "signedIn") {
+      const identity = identityOf(state.session);
+      if (held.current !== null && held.current !== identity) {
+        // Another identity in a document that held one: never show it here.
+        void leave(true);
+        return;
+      }
+      held.current = identity;
+      onSignedIn?.(state.session);
+    } else if (state.status === "anonymous" && held.current !== null) {
+      void leave(true);
+    }
+  }, [state, onSignedIn, leave]);
 
   const signIn = useCallback(async (email: string, password: string, workspace?: string, newPassword?: string) => {
     const result = await requestSignIn(email, password, workspace, newPassword);
-    if (result.kind === "ok") setState({ status: "signedIn", session: result.session });
+    if (result.kind === "ok" && !ending.current) setState({ status: "signedIn", session: result.session });
     return result;
   }, []);
 
   const signOut = useCallback(async () => {
+    if (ending.current) return;
+    ending.current = true;
+    setState({ status: "leaving" });
     try {
       // keepalive: the sign-out reaches the server even when the tab is closed or reloaded right
       // after the click (a shared device must not stay signed in).
       await api<void>("POST", "/api/auth/sign-out", undefined, { keepalive: true });
+    } catch {
+      // The document is replaced anyway; the fresh one asks the server who is signed in.
     } finally {
-      setState({ status: "anonymous" });
+      // Signing out forgets the remembered e-mail too: the next person sees an empty sign-in.
+      await forgetIdentity({ keepEmail: false });
+      startOver("/");
     }
   }, []);
 

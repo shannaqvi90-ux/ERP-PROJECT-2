@@ -27,6 +27,8 @@ case "$stage" in
     npm run --silent typecheck
     npm run --silent check
     npx vitest run --reporter=default --reporter=json --outputFile="$out/vitest.json"
+    # G1 in the browser: the client isolation gate must catch every planted client-side leak.
+    node scripts/plant-self-test.mjs
     npm run --silent build
 
     step "Comparison harness (gauntlet/compare): install and unit tests"

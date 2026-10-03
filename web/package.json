@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "check": "node scripts/check-strings.mjs && node scripts/check-a11y.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:plants": "node scripts/plant-self-test.mjs"
   },
   "dependencies": {
     "react": "19.3.0",
