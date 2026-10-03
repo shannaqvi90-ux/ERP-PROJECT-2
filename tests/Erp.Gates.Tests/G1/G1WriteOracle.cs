@@ -200,8 +200,23 @@ public static class G1WriteOracle
     private static string Short(string text) => text.Length <= 200 ? text : text[..200] + "…";
 }
 
+/// <summary>Its own environment: the gate creates records in both tenants, some carrying the
+/// other tenant's addresses, which would disturb tests that read the shared gate environment.</summary>
+public sealed class WriteOracleFixture : IAsyncLifetime
+{
+    public ErpTestEnvironment Env { get; private set; } = null!;
+
+    public async ValueTask InitializeAsync()
+    {
+        Env = await ErpTestEnvironment.StartGateAsync();
+        await GatePreparation.PrepareAsync(Env);
+    }
+
+    public async ValueTask DisposeAsync() => await Env.DisposeAsync();
+}
+
 /// <summary>The write-oracle gate against the product (its self-test plants a registry).</summary>
-public sealed class G1WriteOracleTests(GateFixture fixture)
+public sealed class G1WriteOracleTests(WriteOracleFixture fixture) : IClassFixture<WriteOracleFixture>
 {
     [Fact]
     public async Task Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere()
