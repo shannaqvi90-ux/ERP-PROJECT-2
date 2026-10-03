@@ -38,6 +38,7 @@ public sealed class IdentityModule : ErpModule
         });
         module.Menu(new MenuEntry("identity.users", "identity.menu.users", "/identity/users", IdentityPermissions.UsersRead, Order: 800, Group: "settings"));
         module.Menu(new MenuEntry("identity.roles", "identity.menu.roles", "/identity/roles", IdentityPermissions.RolesRead, Order: 810, Group: "settings"));
+        module.Menu(new MenuEntry("identity.me", "identity.menu.me", "/identity/me", IdentityPermissions.ProfileUpdate, Order: 990, Group: "personal"));
         module.List(new ListDefinition(
             "identity.users", "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
             [
@@ -77,11 +78,67 @@ public sealed class User : TenantEntity
 
     /// <summary>Digits on Arabic screens: latn (0123) or arab (٠١٢٣). See <see cref="Erp.Kernel.Localization.NumeralSystems"/>.</summary>
     public string Numerals { get; set; } = "latn";
-    public string PasswordHash { get; set; } = "";
     public bool IsActive { get; set; } = true;
-    public int FailedSignInCount { get; set; }
-    public DateTimeOffset? LockoutUntil { get; set; }
     public DateTimeOffset? LastSignInAt { get; set; }
+
+    /// <summary>When an administrator last cleared this account's sign-in pauses. Failed attempts
+    /// before it no longer count.</summary>
+    public DateTimeOffset? SignInUnblockedAt { get; set; }
+}
+
+/// <summary>
+/// A user's password, kept apart from the user so the application role can write it but never read
+/// it back (column privileges: no SELECT on <c>password_hash</c>). Only the reviewed sign-in
+/// function reads it. Never load this entity with a query; insert it, update it with
+/// <c>ExecuteUpdate</c>, and select only <see cref="MustChange"/>, <see cref="ExpiresAt"/> and
+/// <see cref="ChangedAt"/>.
+/// </summary>
+public sealed class UserCredential : ITenantOwned
+{
+    /// <summary>The user's id (one credential per user).</summary>
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
+    public string PasswordHash { get; set; } = "";
+
+    /// <summary>A one-time set-up code (invitation or reset): the next sign-in must choose a new
+    /// password.</summary>
+    public bool MustChange { get; set; }
+
+    /// <summary>When a set-up code stops working; null for an ordinary password.</summary>
+    public DateTimeOffset? ExpiresAt { get; set; }
+    public DateTimeOffset ChangedAt { get; set; }
+    public Guid? ChangedBy { get; set; }
+}
+
+/// <summary>
+/// One sign-in attempt on an account: the sign-in history. Successes are written by the app with
+/// their session; failures, paused clients and refused accounts by the reviewed sign-in function.
+/// Append-only: the application role may insert and read, never change or delete.
+/// </summary>
+public sealed class SignInAttempt : ITenantOwned
+{
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid TenantId { get; set; }
+    public Guid UserId { get; set; }
+    public DateTimeOffset OccurredAt { get; set; }
+
+    /// <summary>succeeded, failed, throttled, inactive or expired (<see cref="SignInOutcomes"/>).</summary>
+    public string Outcome { get; set; } = "";
+
+    /// <summary>The client key failures are counted under: the IPv4 address or the IPv6 /64.</summary>
+    public string Source { get; set; } = "";
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
+    public Guid? SessionId { get; set; }
+}
+
+public static class SignInOutcomes
+{
+    public const string Succeeded = "succeeded";
+    public const string Failed = "failed";
+    public const string Throttled = "throttled";
+    public const string Inactive = "inactive";
+    public const string Expired = "expired";
 }
 
 public sealed class Role : TenantEntity
@@ -128,6 +185,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<UserCredential> Credentials => Set<UserCredential>();
+    public DbSet<SignInAttempt> SignInAttempts => Set<SignInAttempt>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -138,7 +197,6 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
                 t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                 t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
-                t.HasCheckConstraint("ck_users_failed_sign_in_count", "failed_sign_in_count >= 0");
             });
             e.Property(x => x.Email).HasMaxLength(254);
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
@@ -146,7 +204,6 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.Language).HasMaxLength(2);
             // Bulk seeding copies rows without this column; the database fills the default.
             e.Property(x => x.Numerals).HasMaxLength(4).HasDefaultValue("latn");
-            e.Property(x => x.PasswordHash).HasMaxLength(200);
             e.HasIndex(x => new { x.TenantId, x.EmailNormalized }).IsUnique();
             // Sign-in looks a user up by e-mail before the tenant is known.
             e.HasIndex(x => x.EmailNormalized);
@@ -173,6 +230,32 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<Role>().WithMany().HasForeignKey(x => new { x.TenantId, x.RoleId })
                 .HasPrincipalKey(r => new { r.TenantId, r.Id }).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserCredential>(e =>
+        {
+            e.ToTable("user_credentials", t =>
+                t.HasCheckConstraint("ck_user_credentials_expiry", "expires_at IS NULL OR must_change"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.PasswordHash).HasMaxLength(200);
+            e.HasOne<User>().WithOne().HasForeignKey<UserCredential>(x => new { x.TenantId, x.Id })
+                .HasPrincipalKey<User>(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SignInAttempt>(e =>
+        {
+            e.ToTable("sign_in_attempts", t =>
+                t.HasCheckConstraint("ck_sign_in_attempts_outcome", "outcome IN ('succeeded', 'failed', 'throttled', 'inactive', 'expired')"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Outcome).HasMaxLength(20);
+            e.Property(x => x.Source).HasMaxLength(64);
+            e.Property(x => x.IpAddress).HasMaxLength(64);
+            e.Property(x => x.UserAgent).HasMaxLength(400);
+            e.HasIndex(x => new { x.TenantId, x.UserId, x.OccurredAt });
+            // The sign-in function counts a client's recent failures on one account.
+            e.HasIndex(x => new { x.UserId, x.Source, x.OccurredAt });
+            e.HasOne<User>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId })
+                .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Session>(e =>
@@ -243,10 +326,16 @@ public sealed class AuthOptions
     /// <summary>Absolute session lifetime.</summary>
     public int SessionHours { get; set; } = 12;
 
-    /// <summary>Failed attempts before the account is paused.</summary>
+    /// <summary>Failed attempts from one client on one account, within
+    /// <see cref="LockoutMinutes"/>, after which that client (only) is paused on that account.
+    /// The sign-in function clamps it to 3–50.</summary>
     public int LockoutThreshold { get; set; } = 5;
 
+    /// <summary>The window failures are counted in, in minutes (clamped to 1–1440).</summary>
     public int LockoutMinutes { get; set; } = 15;
+
+    /// <summary>How long a set-up code (invitation or reset) works, in hours.</summary>
+    public int SetupCodeHours { get; set; } = 168;
 
     /// <summary>Always mark the cookie Secure (set in production behind TLS). When false the
     /// cookie is Secure only on HTTPS requests, so the local demo works over http://localhost.</summary>

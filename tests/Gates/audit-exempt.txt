@@ -1,3 +1,3 @@
 # Tenant tables without the audit trigger. Each needs a reason.
 audit.entries  # The audit trail itself (append-only for the application).
-identity.sessions  # Sessions are the sign-in history themselves (who, when, from where); auditing them would duplicate every sign-in.
+identity.sign_in_attempts  # The sign-in history itself: an append-only log (the application role may only insert and read it; no update, no delete) of every attempt with its time, outcome and client. Auditing it would record each row twice.

@@ -917,3 +917,17 @@ input[aria-invalid="true"] {
 .facts dd {
   margin: 0;
 }
+
+/* Status messages that are not errors (for example "choose a new password"). */
+.notice {
+  border: 1px solid var(--accent);
+  background: #eef5fc;
+  padding: 8px 10px;
+  border-radius: 4px;
+  margin-block-end: 12px;
+}
+
+.signin-hint {
+  font-size: 12px;
+  margin-block: -6px 10px;
+}

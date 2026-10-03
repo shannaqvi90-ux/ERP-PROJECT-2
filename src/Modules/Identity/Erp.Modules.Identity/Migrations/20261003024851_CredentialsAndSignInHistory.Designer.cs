@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Erp.Modules.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Modules.Identity.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    partial class IdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261003024851_CredentialsAndSignInHistory")]
+    partial class CredentialsAndSignInHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -300,14 +303,6 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sign_in_unblocked_at");
 
-                    b.Property<string>("Numerals")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(4)
-                        .HasColumnType("character varying(4)")
-                        .HasDefaultValue("latn")
-                        .HasColumnName("numerals");
-
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
@@ -349,8 +344,6 @@ namespace Erp.Modules.Identity.Migrations
                             t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
 
                             t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
-
-                            t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                         });
                 });
 

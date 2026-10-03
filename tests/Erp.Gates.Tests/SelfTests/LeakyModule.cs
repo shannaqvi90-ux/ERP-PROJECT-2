@@ -150,20 +150,35 @@ public sealed class LeakyModule : ErpModule
     public sealed record GrantRequest(IReadOnlyList<Guid>? RoleIds);
 
     /// <summary>The planted lookups leave the request's tenant and call the reviewed sign-in
-    /// lookup on the unbound connection, as a careless endpoint would.</summary>
+    /// lookup on the unbound connection, as a careless endpoint would: they prove the well-known
+    /// gate password for every account with the address and return the workspaces that matched.</summary>
     private static async Task<List<object>> ResolveLoginAsync(ErpDbSession session, string email)
     {
         await session.RollbackAsync();
         var connection = await session.OpenUnboundAsync();
-        await using var command = new NpgsqlCommand("SELECT tenant_id, user_id FROM identity.resolve_login(@e)", connection);
-        command.Parameters.AddWithValue("e", email);
-        await using var reader = await command.ExecuteReaderAsync();
-        var rows = new List<object>();
-        while (await reader.ReadAsync())
+        var proofs = new List<string>();
+        await using (var challenge = new NpgsqlCommand("SELECT challenge FROM identity.verify_sign_in(@e, NULL, 'leaky', NULL, NULL, 50, 1)", connection))
         {
-            rows.Add(new { tenantId = reader.GetGuid(0), userId = reader.GetGuid(1) });
+            challenge.Parameters.AddWithValue("e", email);
+            await using var reader = await challenge.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                if (PasswordHasher.Prove(Erp.Testing.ErpTestEnvironment.Password, reader.GetString(0)) is { } proof)
+                {
+                    proofs.Add(proof);
+                }
+            }
         }
-        return rows;
+        await using var command = new NpgsqlCommand("SELECT tenant_id FROM identity.verify_sign_in(@e, @p, 'leaky', NULL, NULL, 50, 1)", connection);
+        command.Parameters.AddWithValue("e", email);
+        command.Parameters.AddWithValue("p", proofs.ToArray());
+        await using var rows = await command.ExecuteReaderAsync();
+        var found = new List<object>();
+        while (await rows.ReadAsync())
+        {
+            found.Add(new { tenantId = rows.GetGuid(0) });
+        }
+        return found;
     }
 
     public sealed record RenameRequest(Guid? TenantId, string? NameEn);

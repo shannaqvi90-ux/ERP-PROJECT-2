@@ -5,6 +5,8 @@ public static class IdentityPermissions
     public const string UsersRead = "identity.users.read";
     public const string UsersCreate = "identity.users.create";
     public const string UsersUpdate = "identity.users.update";
+    public const string UsersResetPassword = "identity.users.resetPassword";
+    public const string SignInsRead = "identity.signIns.read";
     public const string RolesRead = "identity.roles.read";
     public const string RolesCreate = "identity.roles.create";
     public const string RolesUpdate = "identity.roles.update";
@@ -13,7 +15,7 @@ public static class IdentityPermissions
 
     public static readonly IReadOnlyList<string> All =
     [
-        UsersRead, UsersCreate, UsersUpdate, RolesRead, RolesCreate, RolesUpdate, RolesDelete, ProfileUpdate,
+        UsersRead, UsersCreate, UsersUpdate, UsersResetPassword, SignInsRead, RolesRead, RolesCreate, RolesUpdate, RolesDelete, ProfileUpdate,
     ];
 }
 

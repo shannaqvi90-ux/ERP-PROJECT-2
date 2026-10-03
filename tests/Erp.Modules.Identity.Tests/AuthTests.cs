@@ -71,12 +71,12 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
     }
 
     [Fact]
-    public async Task Five_failures_pause_sign_in_without_saying_so_and_the_pause_ends()
+    public async Task Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks()
     {
         using var admin = await Env.SignInAsync(AdminA);
         var email = $"lockout@{Env.TenantA.EmailDomain}";
-        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Lockout", language = "en", password = ErpTestEnvironment.Password, roleIds = Array.Empty<Guid>() });
-        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var created = await Json(await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Lockout", language = "en", password = ErpTestEnvironment.Password, roleIds = Array.Empty<Guid>() }));
+        var id = created.GetProperty("id").GetGuid();
 
         using var client = Env.CreateClient();
         for (var i = 0; i < 5; i++)
@@ -88,9 +88,39 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
         Assert.Equal(HttpStatusCode.Unauthorized, locked.StatusCode);
         Assert.Equal("auth.signInFailed", (await Json(locked)).GetProperty("code").GetString());
 
-        await fixture.ExecAsync("UPDATE identity.users SET lockout_until = now() - interval '1 second' WHERE email = @e", ("e", email));
+        // The administrator sees the paused client and the attempts, then clears the pause.
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}/sign-ins");
+        Assert.Single(history.GetProperty("paused").EnumerateArray());
+        var outcomes = history.GetProperty("items").EnumerateArray().Select(a => a.GetProperty("outcome").GetString()).ToList();
+        Assert.Equal(5, outcomes.Count(o => o == "failed"));
+        Assert.Contains("throttled", outcomes);
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.PostAsync($"/api/identity/users/{id}/unblock", null)).StatusCode);
+        Assert.Empty((await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}/sign-ins")).GetProperty("paused").EnumerateArray());
+
         var after = await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password });
         Assert.Equal(HttpStatusCode.OK, after.StatusCode);
+        var latest = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}/sign-ins")).GetProperty("items")[0];
+        Assert.Equal("succeeded", latest.GetProperty("outcome").GetString());
+        Assert.True(latest.GetProperty("sessionActive").GetBoolean());
+    }
+
+    [Fact]
+    public async Task The_pause_ends_by_itself_when_the_failures_leave_the_window()
+    {
+        using var admin = await Env.SignInAsync(AdminA);
+        var email = $"window@{Env.TenantA.EmailDomain}";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Window", language = "en", password = ErpTestEnvironment.Password, roleIds = Array.Empty<Guid>() })).StatusCode);
+        using var client = Env.CreateClient();
+        for (var i = 0; i < 6; i++)
+        {
+            await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = "Wrong-Password-1" });
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })).StatusCode);
+        await fixture.ExecAsync("""
+            UPDATE identity.sign_in_attempts a SET occurred_at = occurred_at - interval '16 minutes'
+              FROM identity.users u WHERE u.id = a.user_id AND u.email = @e
+            """, ("e", email));
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })).StatusCode);
     }
 
     [Fact]
@@ -166,7 +196,7 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
 
         // A different password in one workspace: the matching one is used without asking.
         var user = (await adminA.GetFromJsonAsync<JsonElement>($"/api/identity/users?search={shared}")).GetProperty("items")[0];
-        await fixture.ExecAsync("UPDATE identity.users SET password_hash = @h WHERE id = @id",
+        await fixture.ExecAsync("UPDATE identity.user_credentials SET password_hash = @h WHERE id = @id",
             ("h", Kernel.Security.PasswordHasher.Hash("Other-Password-2")), ("id", user.GetProperty("id").GetGuid()));
         var direct = await client.PostAsJsonAsync("/api/auth/sign-in", new { email = shared, password = "Other-Password-2" });
         Assert.Equal(HttpStatusCode.OK, direct.StatusCode);

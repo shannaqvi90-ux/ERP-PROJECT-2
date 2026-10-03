@@ -1,0 +1,4 @@
+# Rows the G1 HTTP attack may add to tenant B as a record of itself; they are left out of the
+# tenant-B checksum. Reviewed list: format `schema.table: SQL condition  # reason`. Only rows that
+# match the condition are left out; every other row of the table is still compared.
+identity.sign_in_attempts: outcome <> 'succeeded' AND session_id IS NULL  # The attack signs in anonymously with tenant B's addresses and wrong passwords. Each failure is kept in the account's own sign-in history (who tried, when, from where) so B's administrators can see it; the attacker learns nothing from it and it changes no business data. A successful sign-in (which would be a takeover) is never left out.

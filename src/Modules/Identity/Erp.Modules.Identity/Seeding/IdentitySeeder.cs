@@ -57,9 +57,9 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
                 EmailNormalized = email.ToLowerInvariant(),
                 DisplayName = first.DisplayName.Trim(),
                 Language = first.Language,
-                PasswordHash = PasswordHasher.Hash(first.Password),
             };
             db.Users.Add(owner);
+            db.Credentials.Add(new UserCredential { Id = owner.Id, PasswordHash = PasswordHasher.Hash(first.Password), ChangedAt = DateTimeOffset.UtcNow });
             db.UserRoles.Add(new UserRole { UserId = owner.Id, RoleId = administrator.Id });
             await db.SaveChangesAsync(cancellationToken);
             return;
@@ -74,6 +74,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
         db.Roles.AddRange(administrator, readOnly);
 
         var hash = PasswordHasher.Hash(context.Plan.DemoPassword);
+        var now = DateTimeOffset.UtcNow;
         var domain = context.Tenant.EmailDomain;
         var people = new (string Local, string Name, string Language, Role? Role)[]
         {
@@ -91,9 +92,9 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
                 EmailNormalized = email.ToLowerInvariant(),
                 DisplayName = context.Mark(name),
                 Language = language,
-                PasswordHash = hash,
             };
             db.Users.Add(user);
+            db.Credentials.Add(new UserCredential { Id = user.Id, PasswordHash = hash, ChangedAt = now });
             if (role is not null)
             {
                 db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });
@@ -117,9 +118,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             new("email_normalized", NpgsqlDbType.Varchar),
             new("display_name", NpgsqlDbType.Varchar),
             new("language", NpgsqlDbType.Varchar),
-            new("password_hash", NpgsqlDbType.Varchar),
             new("is_active", NpgsqlDbType.Boolean),
-            new("failed_sign_in_count", NpgsqlDbType.Integer),
             new("created_at", NpgsqlDbType.TimestampTz),
             new("updated_at", NpgsqlDbType.TimestampTz),
         };
@@ -137,10 +136,21 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             return new object?[]
             {
                 Guid.CreateVersion7(created), tenantId, email, email.ToLowerInvariant(), context.Mark(p.DisplayName),
-                p.Language, hash, i % 23 != 0, 0, created, created,
+                p.Language, i % 23 != 0, created, created,
             };
         });
         await BulkInsert.InsertAsync(session, IdentityDbContext.SchemaName, "users", columns, rows, cancellationToken);
+
+        // Their credentials, in one statement: the application role may write a hash but not read
+        // one, so the bulk loader (which copies the target's shape) cannot be used here.
+        await using var command = new Npgsql.NpgsqlCommand("""
+            INSERT INTO identity.user_credentials (id, tenant_id, password_hash, must_change, expires_at, changed_at)
+            SELECT u.id, u.tenant_id, @hash, false, NULL, u.created_at
+              FROM identity.users u
+             WHERE NOT EXISTS (SELECT 1 FROM identity.user_credentials c WHERE c.id = u.id)
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("hash", hash);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }
 
