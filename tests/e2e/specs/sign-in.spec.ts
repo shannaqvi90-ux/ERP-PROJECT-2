@@ -38,6 +38,15 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.locator('input[name="password"]')).toBeFocused();
   });
 
+  test("a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin, "not-the-password");
+    await expect(page.getByRole("alert")).toHaveText("Sign-in failed. Check your e-mail and password and try again.");
+    await page.getByRole("button", { name: "العربية" }).click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("alert")).toHaveText("تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.");
+  });
+
   test("empty fields are explained without a round trip", async ({ page }) => {
     await freshStart(page, "en");
     await page.keyboard.press("Enter");
