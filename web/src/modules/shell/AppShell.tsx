@@ -28,12 +28,19 @@ const navKey = "erp.navOpen";
 const recentKey = (userId: string) => `erp.recent.${userId}`;
 const maxRecent = 5;
 
+/** Phone-width windows: the navigation pane lies over the screen instead of beside it. */
+const narrowQuery = "(max-width: 600px)";
+const isNarrow = () => (typeof window.matchMedia === "function" ? window.matchMedia(narrowQuery).matches : false);
+
 function readNavOpen(): boolean {
   try {
-    return localStorage.getItem(navKey) !== "0";
+    const stored = localStorage.getItem(navKey);
+    if (stored !== null) return stored !== "0";
   } catch {
-    return true;
+    // Not remembered: the default below.
   }
+  // Open beside the screen on a desktop; closed over it on a phone until asked for.
+  return !isNarrow();
 }
 
 function readRecent(userId: string): string[] {
@@ -80,6 +87,8 @@ export function AppShell({ session }: { session: Session }) {
   useEffect(() => {
     const main = mainRef.current;
     if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
+    // On a phone the pane covers the screen: opening a screen puts it away.
+    if (isNarrow()) setNavOpen(false);
   }, [path]);
 
   useEffect(() => {

@@ -506,6 +506,77 @@ input[aria-invalid="true"] {
   }
 }
 
+/* Phone-width windows: nothing is wider than the window. The top bar keeps every control as an
+   icon, the navigation pane lies over the screen (the menu button or Alt+B shows it), and the
+   status line wraps. */
+@media (max-width: 600px) {
+  .topbar {
+    gap: 4px;
+    padding-inline: 2px 4px;
+  }
+
+  .brand,
+  .palette-trigger kbd {
+    display: none;
+  }
+
+  .workspace-name {
+    max-width: 96px;
+    padding-inline-end: 6px;
+  }
+
+  .topbar-context {
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
+  .palette-trigger {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .topbar-end {
+    gap: 0;
+  }
+
+  .topbar .button.ghost,
+  .icon-button {
+    padding-inline: 6px;
+  }
+
+  .frame {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .navpane {
+    position: fixed;
+    inset-block: 44px 0;
+    inset-inline-start: 0;
+    width: min(260px, 80vw);
+    z-index: 6;
+    box-shadow: 0 6px 24px rgba(15, 23, 32, 0.3);
+  }
+
+  .workspace {
+    padding: 8px 10px;
+  }
+
+  .statusbar {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .status-hints {
+    display: none;
+  }
+
+  .tile {
+    min-width: 0;
+  }
+}
+
 /* Dialogs, command palette, shortcut help, preferences */
 .dialog-backdrop {
   position: fixed;

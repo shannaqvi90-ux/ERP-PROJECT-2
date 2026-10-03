@@ -40,6 +40,7 @@ function serve(session: Session, extra?: (method: string, url: string, body: unk
     const list = listReply(method, url);
     if (list) return list;
     if (method === "PUT" && url === "/api/identity/me/preferences") return { status: 200, body: { ...session.user, ...(body as object) } };
+    if (url === "/api/identity/users/u2") return { status: 200, body: { id: "u2", email: "omar@alnoor.example", displayName: "Omar Haddad", language: "en", isActive: true, roleIds: [], version: 1, lastSignInAt: null, createdAt: "2026-10-01T08:00:00Z" } };
     if (url.startsWith("/api/identity/users")) return { status: 200, body: { items: [{ id: "u2", email: "omar@alnoor.example", displayName: "Omar Haddad", language: "en", isActive: true, roleIds: [], lastSignInAt: null }], total: 1 } };
     if (url.startsWith("/api/identity/roles")) return { status: 200, body: { items: [], total: 0 } };
     if (url.startsWith("/api/tenancy/tenant")) return { status: 200, body: { id: "t1", code: "alnoor", nameEn: "Al Noor", nameAr: "النور", status: "active" } };
@@ -100,8 +101,46 @@ describe("command palette", () => {
     for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
     press({ code: "Enter", key: "Enter" }, input);
     await settle();
-    expect(window.location.pathname + window.location.search).toBe("/identity/users?q=omar%40alnoor.example");
+    // The list narrowed to the record, with the record open.
+    expect(window.location.pathname).toBe("/identity/users");
+    const address = new URLSearchParams(window.location.search);
+    expect(address.get("q")).toBe("omar@alnoor.example");
+    expect(address.get("open")).toBe("u2");
     expect(document.querySelector<HTMLInputElement>('input[type="search"]')!.value).toBe("omar@alnoor.example");
+  });
+
+  it("ends a source's records with 'show all matches', which opens the list narrowed to the query", async () => {
+    const many = Array.from({ length: 5 }, (_, i) => ({ id: `u${i + 10}`, email: `abdullah${i}@alnoor.example`, displayName: `Abdullah ${i}`, language: "en", isActive: true, roleIds: [], lastSignInAt: null }));
+    serve(admin, (method, url) => (method === "GET" && url.startsWith("/api/identity/users?search=") ? { status: 200, body: { items: many, total: 37 } } : undefined));
+    view = await render(<App language="en" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, "abdullah");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    const all = options();
+    expect(all.slice(-1)[0]).toBe("Show all 37 matches for “abdullah”");
+    for (let i = 0; i < all.length - 1; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
+    press({ code: "Enter", key: "Enter" }, input);
+    await settle();
+    expect(window.location.pathname).toBe("/identity/users");
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("abdullah");
+  });
+
+  it("offers no 'show all matches' when every match is already shown", async () => {
+    serve(admin);
+    view = await render(<App language="en" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, "omar");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(options()).toContain("Omar Haddad");
+    expect(options().some((o) => o?.startsWith("Show all"))).toBe(false);
   });
 
   it("offers a user with no roles no screens and never asks a record source they may not use", async () => {
@@ -173,6 +212,16 @@ describe("language and digits", () => {
     await settle();
     expect(document.documentElement.dir).toBe("ltr");
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("signs out with a request that survives closing or reloading the tab at once", async () => {
+    const calls = serve(admin, (method, url) => (method === "POST" && url === "/api/auth/sign-out" ? { status: 204 } : undefined));
+    view = await render(<App language="en" />);
+    await settle();
+    const button = document.querySelector<HTMLButtonElement>('button[aria-label="Sign out"]')!;
+    act(() => button.click());
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-out")).toMatchObject({ method: "POST", keepalive: true });
   });
 
   it("shows Arabic-Indic digits on Arabic screens when the user chooses them", async () => {

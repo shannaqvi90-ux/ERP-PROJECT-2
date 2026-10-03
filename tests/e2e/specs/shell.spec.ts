@@ -149,6 +149,8 @@ test.describe("app shell", () => {
       await expect(page.locator(".screen-header .muted")).toHaveText(/^[٠-٩٬]+ مستخدم/);
       // A new sign-in, on a device that never saw the choice, brings it back.
       await page.getByRole("button", { name: "تسجيل الخروج" }).click();
+      // The sign-in screen shows only once the server has ended the session.
+      await expect(page.locator('input[name="email"]')).toBeVisible();
       await page.evaluate(() => localStorage.clear());
       await page.goto("/");
       await signIn(page, users.viewer);
