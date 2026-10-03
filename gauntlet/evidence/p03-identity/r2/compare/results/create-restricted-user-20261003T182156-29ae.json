@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261003T182156-29ae",
+  "instrument": 3,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "ours",
+  "status": "error",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-03T18:21:56.330Z",
+  "finished_at": "2026-10-03T18:26:04.992Z",
+  "environment": {
+    "base_url": "http://localhost:20350",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 1,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 120.295,
+    "system_wait_seconds": 0.212,
+    "human_seconds": 4.68,
+    "human_plus_wait_seconds": 4.892,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users (navigation)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.072
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New user (n)",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 0.284,
+      "took": 0.009,
+      "chord": "n"
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list",
+      "at": 0.072,
+      "seconds": 0.212
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d6a772acf7d2b4ba.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r2/compare/blind/shots/d6a772acf7d2b4ba.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "316b165a29803f37.jpg",
+      "at": 120.295,
+      "path": "../../evidence-staging/p03-identity/r2/compare/blind/shots/316b165a29803f37.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "pointer: Users > n (e-mail focused) > type the e-mail > click the role > Ctrl+Enter | keyboard: Users > n > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-restricted-user.mjs",
+    "sha256": "29cc1c2f973bf8af4420bd8105663b7545a01792da2252d6554d7253bcfcc58e"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": "pointer: error locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]:focus').first() to be visible\u001b[22m\n\n    at Operator.waitFor (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:225:40)\n    at view.<computed> (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:258:35)\nkeyboard: error locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]:focus').first() to be visible\u001b[22m\n\n    at Operator.waitFor (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:225:40)\n    at view.<computed> (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:258:35)",
+  "best_path_per_metric": {},
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "Users > n (e-mail focused) > type the e-mail > click the role > Ctrl+Enter",
+      "status": "error",
+      "error": "locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]:focus').first() to be visible\u001b[22m\n\n    at Operator.waitFor (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:225:40)\n    at view.<computed> (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:258:35)",
+      "counts": {
+        "steps": 2,
+        "keystrokes": 1,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 120.295,
+        "system_wait_seconds": 0.212,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 4.892,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.072
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (n)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.284,
+          "took": 0.009,
+          "chord": "n"
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.072,
+          "seconds": 0.212
+        }
+      ],
+      "verification": null
+    },
+    {
+      "id": "keyboard",
+      "path": "Users > n > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+      "status": "error",
+      "error": "locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]:focus').first() to be visible\u001b[22m\n\n    at Operator.waitFor (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:225:40)\n    at view.<computed> (/home/user/critic/p03-identity-r2/gauntlet/compare/lib/operator.mjs:258:35)",
+      "counts": {
+        "steps": 2,
+        "keystrokes": 1,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 120.919,
+        "system_wait_seconds": 0.795,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 5.475,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.107
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (n)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.902,
+          "took": 0.013,
+          "chord": "n"
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.107,
+          "seconds": 0.795
+        }
+      ],
+      "verification": null
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+  Determining projects to restore...
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists.Contracts/Erp.Modules.Lists.Contracts.csproj (in 277 ms).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/Erp.Modules.Tenancy.Contracts.csproj (in 278 ms).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Host/Erp.Host/Erp.Host.csproj (in 1.73 sec).
+  Restored /home/user/critic/p03-identity-r2-plants/tests/Erp.Testing/Erp.Testing.csproj (in 1.35 sec).
+  Restored /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj (in 1.37 sec).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Kernel/Erp.Kernel/Erp.Kernel.csproj (in 1.79 sec).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/Erp.Modules.Tenancy.csproj (in 31 ms).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj (in 1 ms).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists/Erp.Modules.Lists.csproj (in 24 ms).
+  Restored /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj (in 17 ms).
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Lists.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p03-identity-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Lists -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.73]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.75]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:02.04]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:16.66]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:16.67]       closure Erp.Modules.Identity.Users.UserEndpoints.Map.accessCache: a captured mutable ConcurrentDictionary<Guid, UserAccessDto> shared by every request of every tenant. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:16.67]       Stack Trace:
+[xUnit.net 00:00:16.67]         /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(39,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:16.67]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.67]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.67]       Output:
+[xUnit.net 00:00:16.67]         223 types, 31 fields, 8 singleton services inspected, 47 endpoint delegates walked (1343 objects) to 3 closures; 7 reviewed findings
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [377 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [186 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [11 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [185 ms]
+  Error Message:
+   closure Erp.Modules.Identity.Users.UserEndpoints.Map.accessCache: a captured mutable ConcurrentDictionary<Guid, UserAccessDto> shared by every request of every tenant. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 39
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 223 types, 31 fields, 8 singleton services inspected, 47 endpoint delegates walked (1343 objects) to 3 closures; 7 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [1 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [22 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [47 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [14 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [30 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [35 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [15 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [215 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [36 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [116 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [26 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [74 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [52 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [130 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [222 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [12 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [8 s]
+[xUnit.net 00:10:16.51]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:10:16.51]       58 leaks:
+[xUnit.net 00:10:16.51]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.51]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.51]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.51]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.51]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.51]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dd1f-7906-a904-249e443f6f59/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dd1f-7906-a904-249e443f6f59/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+[xUnit.net 00:10:16.52]       Stack Trace:
+[xUnit.net 00:10:16.52]         /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(62,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:10:16.52]         --- End of stack trace from previous location ---
+[xUnit.net 00:10:16.52]       Output:
+[xUnit.net 00:10:16.52]         routes, tenant headers and guessed queries: 16692 requests so far, 158.6 s
+[xUnit.net 00:10:16.52]         tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 218.5 s
+[xUnit.net 00:10:16.52]         write after write: 46 pairs over 24 endpoints, 2233 tenant A requests: 19747 requests so far, 261.3 s
+[xUnit.net 00:10:16.52]         tenant B values in route and query parameters: 41432 requests so far, 444.9 s
+[xUnit.net 00:10:16.52]         registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 486.4 s
+[xUnit.net 00:10:16.52]         tenant B values in body fields: 48847 requests so far, 567.0 s
+[xUnit.net 00:10:16.52]         tenant B activity: 16406 requests (12513 concurrent with the attack), 235 successful own writes, 16396 responses judged for tenant A markers: 48847 requests so far, 574.4 s
+[xUnit.net 00:10:16.52]         tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+[xUnit.net 00:10:16.52]         60161 tenant bindings and 98816 setting statements judged among 401922 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+[xUnit.net 00:10:16.52]         349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+[xUnit.net 00:10:16.52]         52 endpoints, 51080 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 60981 traced lookups
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [9 m 48 s]
+  Error Message:
+   58 leaks:
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6 [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7e1f-9155-2f1055f200b1/access [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7e1f-9155-2f1055f200b1
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7ad7-8b49-4020c1a947fd/access [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7ad7-8b49-4020c1a947fd
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-71f3-b305-342ef45a4863/access [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-71f3-b305-342ef45a4863
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-777c-a315-3e425f996716/access [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-777c-a315-3e425f996716
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-72d3-aa16-139932172855/access [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-72d3-aa16-139932172855
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-4326-7e6a-9f08-9eeec58de7d6/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantHeaders] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dbb1-717b-920f-207642380c86/access [TenantQuery] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (cookie) → GET /api/identity/users/01a102f9-dd1f-7906-a904-249e443f6f59/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+tenant A administrator (bearer) → GET /api/identity/users/01a102f9-dd1f-7906-a904-249e443f6f59/access [Plain] → 200: response contains tenant B marker 01a102f9-2ed1-7a42-ae29-ee8c1acfcc09
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 62
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 16692 requests so far, 158.6 s
+ tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 218.5 s
+ write after write: 46 pairs over 24 endpoints, 2233 tenant A requests: 19747 requests so far, 261.3 s
+ tenant B values in route and query parameters: 41432 requests so far, 444.9 s
+ registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 486.4 s
+ tenant B values in body fields: 48847 requests so far, 567.0 s
+ tenant B activity: 16406 requests (12513 concurrent with the attack), 235 successful own writes, 16396 responses judged for tenant A markers: 48847 requests so far, 574.4 s
+ tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+ 60161 tenant bindings and 98816 setting statements judged among 401922 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+ 349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+ 52 endpoints, 51080 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 60981 traced lookups
+
+
+[xUnit.net 00:10:18.67]   Finished:    Erp.Gates.Tests (ID = '7e05003f60e3bb0550ba8ca1b9e85901b175509375eb26862d822ecb85e30804')
+
+Test Run Failed.
+Total tests: 24
+     Passed: 22
+     Failed: 2
+ Total time: 10.3307 Minutes
+rc=1 seconds=646
+/tmp/erp-signin-cache:
+018cc39b-8b00-7e1f-9155-2f1055f200b1-0-50.json
+018cc3a1-f3a0-7478-9dc8-ce30f8ac5272-0-50.json
+018cc3a1-f3a0-7ad7-8b49-4020c1a947fd-0-50.json
+018cc3a8-5c40-71f3-b305-342ef45a4863-0-50.json

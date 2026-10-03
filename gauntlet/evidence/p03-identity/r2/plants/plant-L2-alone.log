@@ -1,0 +1,81 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p03-identity-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Lists.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Lists -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.70]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.23]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.52]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [60 ms]
+[xUnit.net 00:08:49.41]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:08:49.42]       8 answers that tell tenant B's values apart from values that exist nowhere:
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7df0-8872-2b015a9fe400/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7a12-a27d-4cdf9ad91bfe/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7b73-8bdf-ec0301f63799/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7c7b-b133-690163ae135c/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-73b7-aeb6-f637f167bde3/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/01a10303-ea50-75fd-9396-dae4ec91f819/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/01a10304-8998-78e5-81e7-1af870a565b0/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       tenant A administrator (cookie) → GET /api/identity/users/01a10304-8aac-7015-9c10-c3be114ad78d/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:08:49.42]       Stack Trace:
+[xUnit.net 00:08:49.42]         /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(63,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:08:49.42]         --- End of stack trace from previous location ---
+[xUnit.net 00:08:49.42]       Output:
+[xUnit.net 00:08:49.42]         routes, tenant headers and guessed queries: 16692 requests so far, 125.4 s
+[xUnit.net 00:08:49.42]         tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 168.7 s
+[xUnit.net 00:08:49.42]         write after write: 48 pairs over 24 endpoints, 2077 tenant A requests: 19747 requests so far, 199.8 s
+[xUnit.net 00:08:49.42]         tenant B values in route and query parameters: 41432 requests so far, 363.0 s
+[xUnit.net 00:08:49.42]         registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 401.6 s
+[xUnit.net 00:08:49.42]         tenant B values in body fields: 48847 requests so far, 489.4 s
+[xUnit.net 00:08:49.42]         tenant B activity: 14771 requests (10878 concurrent with the attack), 240 successful own writes, 14761 responses judged for tenant A markers: 48847 requests so far, 494.7 s
+[xUnit.net 00:08:49.42]         tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+[xUnit.net 00:08:49.42]         58490 tenant bindings and 95474 setting statements judged among 391706 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+[xUnit.net 00:08:49.42]         349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+[xUnit.net 00:08:49.42]         52 endpoints, 50924 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 59310 traced lookups
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [8 m 29 s]
+  Error Message:
+   8 answers that tell tenant B's values apart from values that exist nowhere:
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7df0-8872-2b015a9fe400/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7a12-a27d-4cdf9ad91bfe/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7b73-8bdf-ec0301f63799/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7c7b-b133-690163ae135c/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-73b7-aeb6-f637f167bde3/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a10303-ea50-75fd-9396-dae4ec91f819/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a10304-8998-78e5-81e7-1af870a565b0/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a10304-8aac-7015-9c10-c3be114ad78d/sign-ins [path id]: 200 {"items":[],"total":0,"paused":[]} but for a value that exists nowhere 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 63
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 16692 requests so far, 125.4 s
+ tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 168.7 s
+ write after write: 48 pairs over 24 endpoints, 2077 tenant A requests: 19747 requests so far, 199.8 s
+ tenant B values in route and query parameters: 41432 requests so far, 363.0 s
+ registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 401.6 s
+ tenant B values in body fields: 48847 requests so far, 489.4 s
+ tenant B activity: 14771 requests (10878 concurrent with the attack), 240 successful own writes, 14761 responses judged for tenant A markers: 48847 requests so far, 494.7 s
+ tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+ 58490 tenant bindings and 95474 setting statements judged among 391706 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+ 349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+ 52 endpoints, 50924 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 59310 traced lookups
+
+
+[xUnit.net 00:08:51.03]   Finished:    Erp.Gates.Tests (ID = '7e05003f60e3bb0550ba8ca1b9e85901b175509375eb26862d822ecb85e30804')
+
+Test Run Failed.
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 8.8903 Minutes
+rc=1 seconds=552
+9

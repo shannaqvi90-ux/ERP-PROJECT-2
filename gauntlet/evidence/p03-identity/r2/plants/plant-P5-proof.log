@@ -1,0 +1,36 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Kernel -> /home/user/critic/p03-identity-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Lists.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Lists -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.66]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.36]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.90]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.CriticProof.CriticEmailProof.A_weaker_user_changes_the_administrators_sign_in_address [1 s]
+  Standard Output Messages:
+ weak user created: 201
+ Administrator before: admin@alpha.example
+ weak user renames the Administrator: 403
+ weak user changes only the Administrator's sign-in e-mail: 200 {"id":"01a10313-9f04-7cc7-8999-18830e00aba8","email":"taken.over@attacker.example","displayName":"Mariam Al Mansoori","language":"en","isActive":true,"roleIds":["01a10313-9e79-7552-adaa-357ad7a9ccbc"],"lastSignInAt":"2026-10-03T18:43:00.853248+00:00","createdAt":"2026-10-03T18:42:59.973214+00:00","version":762,"pendingSetup":false,"displayNameAr":"مريم المنصوري"}
+ Administrator after: taken.over@attacker.example
+ Administrator signs in with their address: FAILS (Sign-in as admin@alpha.example failed: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-721ef7127c97491a913d037791e6edbc-cd878cb4bdbfbe4a-00"})
+
+
+[xUnit.net 00:00:22.42]   Finished:    Erp.Gates.Tests (ID = '7e05003f60e3bb0550ba8ca1b9e85901b175509375eb26862d822ecb85e30804')
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 23.7586 Seconds
+rc=0 seconds=39

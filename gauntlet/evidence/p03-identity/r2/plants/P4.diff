@@ -1,0 +1,16 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index b9b3da4..986f68b 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -174,10 +174,7 @@ internal static class RoleEndpoints
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+-        if (!permissions.All(caller.Has))
+-        {
+-            return Problems.Forbidden(http, "identity.grantBeyondOwn");
+-        }
++        // CRITIC PLANT P4: the new permission set of an edited role is not checked against the caller's own.
+         if (await db.UserRoles.AnyAsync(ur => ur.RoleId == id && ur.UserId == caller.UserId, cancellationToken) &&
+             !role.Permissions.ToHashSet().SetEquals(permissions))
+         {
