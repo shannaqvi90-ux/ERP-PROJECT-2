@@ -78,6 +78,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Assert.True(report.VictimUnsuccessfulWrites.Count == 0,
             "Tenant B's own writes must succeed so their handlers run to the end; these did not:\n" + string.Join("\n", report.VictimUnsuccessfulWrites));
         AssertAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
+        Assert.True(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
+        AssertAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
     }
 
     private static void AssertAtLeast(int value, string key) =>
@@ -282,6 +284,73 @@ public static class IsolationAttack
 
         Phase("tenant B values in route and query parameters");
 
+        // Phase 2b: every registered list through its query contract, with tenant B's values inside
+        // filter expressions (each compared with a value that exists nowhere), grouped and sorted
+        // by every column that allows it, and paged from cursors forged with tenant B's ids and
+        // values. The list framework builds SQL from these, so it is attacked list by list, not
+        // only through the raw parameters above.
+        var listWork = new List<Func<Task>>();
+        var listsAttacked = 0;
+        foreach (var binding in catalog.ListBindings)
+        {
+            var list = binding.Definition;
+            var listEndpoint = endpoints.SingleOrDefault(e => e.Method == "GET" && e.Pattern == list.Endpoint);
+            Assert.True(listEndpoint is not null, $"list '{list.Key}': no GET {list.Endpoint} to attack");
+            listsAttacked++;
+            var filterParameter = new ApiParameter("filter", "query", "string", null);
+            foreach (var column in list.Columns.Where(c => c.Filterable))
+            {
+                var (candidates, operators) = column.Type switch
+                {
+                    Erp.Kernel.Lists.ListColumnType.Text => (values.Strings, new[] { "eq", "contains", "startswith", "endswith", "ne" }),
+                    Erp.Kernel.Lists.ListColumnType.Reference => (values.IdSample.Select(i => i.ToString()).ToList(), new[] { "eq", "ne" }),
+                    _ => ((IReadOnlyList<string>)[], Array.Empty<string>()),
+                };
+                foreach (var value in candidates)
+                {
+                    foreach (var op in operators)
+                    {
+                        var n = counter++;
+                        string UriFor(string v) => list.Endpoint + "?take=200&filter=" + Uri.EscapeDataString($"{column.Key} {op} {Erp.Kernel.Lists.ListFilterText.Quote(v)}");
+                        listWork.Add(() => state.ParameterAttackAsync(admin, listEndpoint!, value, filterParameter, UriFor, null, openApi, b, n));
+                    }
+                }
+                if (column.Type == Erp.Kernel.Lists.ListColumnType.Reference)
+                {
+                    var ids = string.Join(", ", values.IdSample.Take(Erp.Kernel.Lists.ListFilter.MaxInValues).Select(i => Erp.Kernel.Lists.ListFilterText.Quote(i.ToString())));
+                    listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString($"{column.Key} in ({ids})")}"));
+                }
+            }
+            foreach (var column in list.Columns.Where(c => c.Groupable))
+            {
+                listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&groupBy={column.Key}"));
+            }
+            foreach (var column in list.Columns.Where(c => c.Sortable))
+            {
+                foreach (var direction in new[] { "", "-" })
+                {
+                    var sort = direction + column.Key;
+                    listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&sort={Uri.EscapeDataString(sort)}"));
+                    var bound = binding.Columns.Single(c => c.Key == column.Key);
+                    var forged = ForgedCursorValues(bound.ValueType, values).Take(12).ToList();
+                    foreach (var forgedValue in forged)
+                    {
+                        foreach (var id in values.IdSample.Take(6))
+                        {
+                            var cursor = ForgeCursor(sort, forgedValue, id);
+                            listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&sort={Uri.EscapeDataString(sort)}&after={Uri.EscapeDataString(cursor)}"));
+                        }
+                    }
+                }
+            }
+        }
+        Assert.True(listsAttacked >= Ratchet.Min("rules.listsChecked"), $"{listsAttacked} lists attacked through their query contract");
+        var listAttacksBefore = state.Requests;
+        await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) => await item());
+        var listQueryAttacks = listWork.Count;
+
+        Phase($"registered lists through their query contract: {listQueryAttacks} attacks, {state.Requests - listAttacksBefore} requests");
+
         // Phase 3: every tenant B text value in every string field of every request body. Values the
         // attacker managed to store in its own tenant are its own data from then on.
         foreach (var endpoint in endpoints.Where(e => e.HasBody))
@@ -364,6 +433,8 @@ public static class IsolationAttack
             ReverseChecks = activity.ReverseChecks,
             VictimBlindSpots = activity.BlindSpots,
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
+            ListQueryAttacks = listQueryAttacks,
+            ListRefusals = state.ListRefusals,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
@@ -391,6 +462,53 @@ public static class IsolationAttack
             }
         }
         return ownValues.FirstOrDefault() ?? Guid.NewGuid().ToString();
+    }
+
+    private static async Task SendListAsync(AttackState state, Attacker attacker, ApiEndpoint endpoint, string uri)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        var status = await state.SendAsync(attacker, endpoint, request, uri);
+        if (status != 200)
+        {
+            lock (state) state.ListRefusals.Add($"{uri} → {status}");
+        }
+    }
+
+    /// <summary>Tenant B's values of a sort key's type for a forged cursor.</summary>
+    private static IEnumerable<object?> ForgedCursorValues(Type type, VictimValues values)
+    {
+        // A null key only where the column can hold one (a non-nullable key refuses it, rightly).
+        var nullable = !type.IsValueType || Nullable.GetUnderlyingType(type) is not null;
+        var t = Nullable.GetUnderlyingType(type) ?? type;
+        IEnumerable<object?> forged =
+            t == typeof(string) ? values.Strings :
+            t == typeof(Guid) ? values.IdSample.Cast<object?>() :
+            t == typeof(DateTimeOffset) ? [DateTimeOffset.UtcNow, DateTimeOffset.UnixEpoch] :
+            t == typeof(bool) ? [true, false] :
+            t == typeof(int) || t == typeof(long) || t == typeof(decimal) ? [0, 1, int.MaxValue] :
+            [];
+        return nullable ? forged.Prepend(null) : forged;
+    }
+
+    /// <summary>A cursor as the list framework writes it (base64url JSON of the sort, the key
+    /// values and the id), filled with tenant B's values: it carries no tenant, so it may only ever
+    /// move within the attacker's own rows.</summary>
+    private static string ForgeCursor(string sort, object? value, Guid id)
+    {
+        var json = new JsonObject
+        {
+            ["s"] = sort,
+            ["k"] = new JsonArray(value switch
+            {
+                null => null,
+                DateTimeOffset d => JsonValue.Create(d.ToString("O")),
+                bool flag => JsonValue.Create(flag),
+                IFormattable f => JsonValue.Create(f.ToString(null, System.Globalization.CultureInfo.InvariantCulture)),
+                _ => JsonValue.Create(value.ToString()),
+            }),
+            ["i"] = id.ToString(),
+        };
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(json.ToJsonString())).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
     private static string Short(string value) => value.Length <= 40 ? value : value[..40] + "…";
@@ -473,6 +591,10 @@ public static class IsolationAttack
         public List<string> Leaks { get; } = [];
         public List<string> ServerErrors { get; } = [];
         public List<string> Oracles { get; } = [];
+
+        /// <summary>List attacks the framework refused (each must be answered, not refused: a
+        /// refusal would hide the query from the attack).</summary>
+        public List<string> ListRefusals { get; } = [];
         public int Requests { get => _requests; set => _requests = value; }
         public int ParameterAttacks => _parameterAttacks;
         public int BodyValueAttacks { get; set; }
@@ -690,6 +812,14 @@ public sealed record IsolationReport(
 
     /// <summary>Tenant B writes on its own records that did not succeed.</summary>
     public IReadOnlyList<string> VictimUnsuccessfulWrites { get; init; } = [];
+
+    /// <summary>Attacks sent through the registered lists' query contract (filters with tenant B's
+    /// values, grouping, sorting and forged cursors).</summary>
+    public int ListQueryAttacks { get; init; }
+
+    /// <summary>List attacks (grouping, sorting, forged cursors, id filters) that were refused
+    /// instead of answered.</summary>
+    public IReadOnlyList<string> ListRefusals { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];

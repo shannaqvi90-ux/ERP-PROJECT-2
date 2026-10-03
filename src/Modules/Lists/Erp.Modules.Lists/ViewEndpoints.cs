@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 
 namespace Erp.Modules.Lists;
 
@@ -78,6 +80,7 @@ internal static class ViewEndpoints
             routes.MapPost("/views", (SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Create(c.FindList(key)!, request, shared: false, db, caller, http, ct))
                 .WithName($"{name}.views.create")
+                .WithViewSchema(list)
                 .WithSummary($"Save a personal view of the {key} list.")
                 .ProducesValidationProblem()
                 .RequirePermission(list.Permission);
@@ -85,6 +88,7 @@ internal static class ViewEndpoints
             routes.MapPut("/views/{id:guid}", (Guid id, SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Update(c.FindList(key)!, id, request, shared: false, db, caller, http, ct))
                 .WithName($"{name}.views.update")
+                .WithViewSchema(list)
                 .WithSummary($"Change one of the caller's own views of the {key} list.")
                 .ProducesValidationProblem()
                 .RequirePermission(list.Permission);
@@ -103,6 +107,7 @@ internal static class ViewEndpoints
             routes.MapPost("/shared-views", (SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Create(c.FindList(key)!, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.create")
+                .WithViewSchema(list)
                 .WithSummary($"Share a view of the {key} list with everyone who can read it (also needs the list's read permission).")
                 .ProducesValidationProblem()
                 .RequirePermission(ListsPermissions.ViewsShare);
@@ -110,6 +115,7 @@ internal static class ViewEndpoints
             routes.MapPut("/shared-views/{id:guid}", (Guid id, SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Update(c.FindList(key)!, id, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.update")
+                .WithViewSchema(list)
                 .WithSummary($"Change a shared view of the {key} list (also needs the list's read permission).")
                 .ProducesValidationProblem()
                 .RequirePermission(ListsPermissions.ViewsShare);
@@ -120,6 +126,51 @@ internal static class ViewEndpoints
                 .WithSummary($"Delete a shared view of the {key} list (also needs the list's read permission).")
                 .RequirePermission(ListsPermissions.ViewsShare);
         }
+    }
+
+    /// <summary>Document the request body of a view endpoint for this list: the column keys and
+    /// groupable columns it accepts as enums, a valid sort and filter as examples.</summary>
+    private static RouteHandlerBuilder WithViewSchema(this RouteHandlerBuilder builder, ListDefinition list) =>
+        builder.AddOpenApiOperationTransformer((operation, _, _) =>
+        {
+            if (operation.RequestBody?.Content is { } content && content.TryGetValue("application/json", out var media))
+            {
+                media.Schema = ViewSchema(list);
+            }
+            return Task.CompletedTask;
+        });
+
+    private static OpenApiSchema ViewSchema(ListDefinition list)
+    {
+        static JsonNode Text(string value) => JsonValue.Create(value);
+        static IList<JsonNode>? Example(string? value) => value is null ? null : [Text(value)];
+        var groupable = list.Columns.Where(c => c.Groupable).Select(c => Text(c.Key)).ToList();
+        var (sort, filter, _) = ViewExample.For(list);
+        return new OpenApiSchema
+        {
+            Type = JsonSchemaType.Object,
+            Description = $"A view of the {list.Key} list.",
+            Required = new HashSet<string> { "name", "columns" },
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["name"] = new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = ListsDbContext.NameMaxLength, Description = "The view's name, 1 to 100 characters." },
+                ["columns"] = new OpenApiSchema
+                {
+                    Type = JsonSchemaType.Array,
+                    MinItems = 1,
+                    Description = "Visible column keys in display order.",
+                    Items = new OpenApiSchema { Type = JsonSchemaType.String, Enum = list.Columns.Select(c => Text(c.Key)).ToList() },
+                },
+                ["sort"] = new OpenApiSchema { Type = JsonSchemaType.String | JsonSchemaType.Null, Examples = Example(sort), Description = "Sort as in the list's sort parameter; null for the default." },
+                ["filter"] = new OpenApiSchema { Type = JsonSchemaType.String | JsonSchemaType.Null, MaxLength = ListFilter.MaxLength, Examples = Example(filter), Description = "Filter expression as in the list's filter parameter." },
+                ["search"] = new OpenApiSchema { Type = JsonSchemaType.String | JsonSchemaType.Null, MaxLength = ListRequest.MaxSearchLength, Description = "Search words." },
+                ["groupBy"] = groupable.Count > 0
+                    ? new OpenApiSchema { Type = JsonSchemaType.String | JsonSchemaType.Null, Enum = groupable, Description = "A groupable column key, or null." }
+                    : new OpenApiSchema { Type = JsonSchemaType.Null, Description = "The list has no groupable columns." },
+                ["isDefault"] = new OpenApiSchema { Type = JsonSchemaType.Boolean | JsonSchemaType.Null, Description = "Open this view when the list opens." },
+                ["version"] = new OpenApiSchema { Type = JsonSchemaType.Integer | JsonSchemaType.Null, Format = "int64", Description = "The version read; required to change a view." },
+            },
+        };
     }
 
     internal static ListDefinitionDto Definition(ListDefinition list, ICurrentUser caller) => new(
@@ -354,4 +405,15 @@ internal static class ViewEndpoints
 
     private static SavedViewDto ToDto(SavedView v, Guid me) => new(
         v.Id, v.ListKey, v.Name, v.IsShared, v.IsDefault, !v.IsShared && v.OwnerUserId == me, v.Columns, v.Sort, v.Filter, v.Search, v.GroupBy, v.UpdatedAt, v.Version);
+}
+
+/// <summary>A valid sort, filter and grouping for a list: the API document's examples for view
+/// bodies, and the seeded team view (so a workspace starts with a view that shows them).</summary>
+internal static class ViewExample
+{
+    public static (string? Sort, string? Filter, string? GroupBy) For(ListDefinition list) => (
+        list.DefaultSort ?? list.Columns.FirstOrDefault(c => c.Sortable)?.Key,
+        list.Presets?.FirstOrDefault(p => p.Filter is not null)?.Filter
+            ?? (list.Columns.FirstOrDefault(c => c.Filterable) is { } filterable ? $"{filterable.Key} is not null" : null),
+        list.Columns.FirstOrDefault(c => c.Groupable)?.Key);
 }

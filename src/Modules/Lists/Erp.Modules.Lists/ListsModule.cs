@@ -97,9 +97,11 @@ internal sealed class ListsDbContextDesignFactory : IDesignTimeDbContextFactory<
 }
 
 /// <summary>
-/// One shared view per registered list in every seeded workspace (the list's visible columns in
-/// their default order and sort), so a team starts with a view to adapt and the gate fixture holds
-/// saved views of both tenants. Idempotent.
+/// One shared view per registered list in every seeded workspace (the list's visible columns,
+/// default sort, its first built-in filter and first groupable column), so a team starts with a
+/// view to adapt and the gate fixture holds saved views of both tenants. The same sort, filter
+/// and grouping are the API document's examples for view bodies, so views written from those
+/// examples hold no value the seeded workspaces do not already share. Idempotent.
 /// </summary>
 internal sealed class ListsSeeder(ListsDbContext db, ModuleCatalog catalog) : ITenantSeeder
 {
@@ -114,13 +116,16 @@ internal sealed class ListsSeeder(ListsDbContext db, ModuleCatalog catalog) : IT
             {
                 continue;
             }
+            var (sort, filter, groupBy) = ViewExample.For(list);
             db.SavedViews.Add(new SavedView
             {
                 ListKey = list.Key,
                 Name = name,
                 IsShared = true,
                 Columns = list.Columns.Where(c => !c.Hidden).Select(c => c.Key).ToList(),
-                Sort = list.DefaultSort,
+                Sort = sort,
+                Filter = filter,
+                GroupBy = groupBy,
             });
         }
         await db.SaveChangesAsync(cancellationToken);

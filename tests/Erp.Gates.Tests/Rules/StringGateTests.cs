@@ -47,6 +47,8 @@ public sealed partial class StringGateTests(GateFixture fixture)
             .Concat(catalog.Modules.Select(m => $"module.{m.Name}").Where(k => !server.Contains(k)))
             .Concat(catalog.Menu.Select(m => m.LabelKey).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.Select(c => c.LabelKey).Append(l.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
+            .Concat(catalog.Lists.SelectMany(l => l.Columns.SelectMany(c => (c.Choices ?? []).Select(x => x.LabelKey))).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
+            .Concat(catalog.Lists.SelectMany(l => (l.Presets ?? []).Select(p => p.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .ToList();
         Assert.NotEmpty(catalog.Lists);
         Assert.True(missing.Count == 0, "Missing labels: " + string.Join(", ", missing));
@@ -66,6 +68,11 @@ public sealed partial class StringGateTests(GateFixture fixture)
                 if (!keys.Contains(key)) missing.Add($"{Path.GetFileName(file)}: {key}");
             }
             foreach (Match match in ValidationCodeRegex().Matches(text))
+            {
+                var key = $"validation.{match.Groups["code"].Value}";
+                if (!keys.Contains(key)) missing.Add($"{Path.GetFileName(file)}: {key}");
+            }
+            foreach (Match match in ListQueryCodeRegex().Matches(text))
             {
                 var key = $"validation.{match.Groups["code"].Value}";
                 if (!keys.Contains(key)) missing.Add($"{Path.GetFileName(file)}: {key}");
@@ -176,4 +183,8 @@ public sealed partial class StringGateTests(GateFixture fixture)
 
     [GeneratedRegex("\\.(?:Add|Must)\\([^;]*?\"[a-zA-Z]+\",\\s*\"(?<code>[a-zA-Z]+)\"")]
     private static partial Regex ValidationCodeRegex();
+
+    /// <summary>List query errors (filter, sort, paging, grouping) carry a validation code.</summary>
+    [GeneratedRegex("new ListQueryException\\(\\s*(?:\"[a-zA-Z]+\"|Parameter)\\s*,\\s*\"(?<code>[a-zA-Z.]+)\"")]
+    private static partial Regex ListQueryCodeRegex();
 }
