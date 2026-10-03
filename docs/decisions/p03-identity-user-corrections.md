@@ -33,3 +33,8 @@ The user panel gets the e-mail (disabled on oneself), the Arabic name, and Delet
 confirmation) only when allowed; the sign-in history scrolls inside the panel instead of
 overflowing it, paused-until lines isolate the address and the date (`<bdi>`), matrix headers wrap
 instead of clipping, and the status cell keeps "Inactive" and "Invited" whole at the list edge.
+
+The session's user carries `displayNameAr` too (an optional, additive field of `SessionUser`), so
+the shell greets, labels the user menu, the status bar and printed documents with the Arabic name
+on Arabic screens (`sessionUserName` in `web/src/kernel/session.tsx`), and My account shows both
+names.
