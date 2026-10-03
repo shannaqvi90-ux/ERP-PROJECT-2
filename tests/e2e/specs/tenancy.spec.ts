@@ -154,4 +154,42 @@ test.describe("companies, branches and the working company", () => {
     await expect(company.getByLabel("All branches")).not.toBeChecked();
     await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
   });
+
+  test("at phone width the working company stays readable and the switcher opens inside the window", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    const workplace = page.getByTestId("workplace");
+    await expect(workplace).toBeVisible();
+    // The label is shown (not reduced to an empty icon button) and the page does not scroll sideways.
+    const label = workplace.locator("span");
+    await expect(label).toBeVisible();
+    expect((await label.boundingBox())!.width).toBeGreaterThan(30);
+    const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+
+    // The list opens below the bar, entirely inside the window, and a switch works from it.
+    await switchToChecked(page, "SHJ-FAC");
+    await expect(workplace).toHaveAttribute("title", /مصانع النور/);
+    await switchToChecked(page, "DEIRA");
+    await expect(workplace).toHaveText("ALN-DXB · DEIRA-HQ");
+    expect(await overflow()).toBeLessThanOrEqual(0);
+  });
 });
+
+/** As switchTo, and checks that the open list lies inside the window. */
+async function switchToChecked(page: Page, filter: string) {
+  await page.keyboard.press("Alt+KeyC");
+  const popover = page.locator(".workplace-popover");
+  await expect(popover.locator("input")).toBeFocused();
+  const box = (await popover.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  expect(box.height).toBeGreaterThan(40);
+  await page.keyboard.type(filter);
+  await expect(popover.locator('[role="option"]').first()).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(popover).toHaveCount(0);
+}
+

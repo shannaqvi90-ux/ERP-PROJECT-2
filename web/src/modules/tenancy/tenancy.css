@@ -305,6 +305,46 @@
   opacity: 1;
 }
 
+/* Narrow windows: the shell shows top-bar buttons as icons only, but the working company and
+   branch are the switcher's whole content, so its label stays (cut short with an ellipsis when
+   space runs out); the one-click company chips give way to the list in the switcher. */
+@media (max-width: 960px) {
+  .workplace-quick {
+    display: none;
+  }
+
+  .workplace-switcher {
+    min-width: 0;
+  }
+
+  .topbar .button.ghost.workplace {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .topbar .button.ghost.workplace span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Phone width: the top bar clips its middle part, so the switcher's list opens over the screen
+   just below the bar, inside the window. */
+@media (max-width: 600px) {
+  .workplace-popover {
+    position: fixed;
+    inset-inline: 8px;
+    inset-block-start: 48px;
+    width: auto;
+  }
+
+  .option-code {
+    min-width: 0;
+  }
+}
+
 /* List screens: the shared list with the open record's form in a wide panel beside it. */
 .tn-list .list-body.has-record {
   grid-template-columns: minmax(0, 1fr) minmax(380px, 48%);

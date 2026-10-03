@@ -513,6 +513,9 @@ input[aria-invalid="true"] {
   .topbar {
     gap: 4px;
     padding-inline: 2px 4px;
+    /* The bar is as wide as the window, never as wide as its contents: the workspace name and
+       the module context (the working company, say) shrink and clip instead of widening the page. */
+    min-width: 0;
   }
 
   .brand,
