@@ -36,7 +36,10 @@ export async function loadDriver(product, taskId) {
   const p = driverPath(product, taskId);
   if (!fs.existsSync(p)) throw new Error(`no ${product} driver for task ${taskId} (${path.relative(HARNESS_DIR, p)})`);
   const d = (await import(pathToFileURL(p).href)).default;
-  if (!d || typeof d.run !== 'function') throw new Error(`${path.relative(HARNESS_DIR, p)}: default export needs run(op, ctx)`);
+  const variants = d?.variants ? Object.entries(d.variants) : [];
+  if (!d || (typeof d.run !== 'function' && !(variants.length && variants.every(([, v]) => typeof v?.run === 'function')))) {
+    throw new Error(`${path.relative(HARNESS_DIR, p)}: default export needs run(op, ctx), or variants that each have run(op, ctx)`);
+  }
   return d;
 }
 

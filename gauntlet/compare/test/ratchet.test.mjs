@@ -10,7 +10,7 @@ import { loadDriver, loadTasks } from '../lib/registry.mjs';
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
-  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests' };
+  reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -48,9 +48,25 @@ test('the recorded reference volume never goes below the minimum per main list',
   for (const k of v.main_lists) assert.ok(v.lists[k].count >= min.reference_rows_per_main_list, `${k}: ${v.lists[k].count}`);
 });
 
-test('harness tests never go below their minimum', () => {
+// Tests that run in ./erp verify (every file but the live rig checks) count toward
+// compare.harnessTests; the live rig checks (two plus one per task) toward compare.liveTests.
+// Tests generated per task (a loop of `test(` calls) count once per task.
+async function countTests(file, tasks) {
+  const text = fs.readFileSync(file, 'utf8');
+  const top = (text.match(/^test\(/gm) || []).length;
+  const perTask = /^for \(const t(ask)? of await loadTasks\(\)\) \{\n\s+test\(/m.test(text) ? tasks : 0;
+  return top + perTask;
+}
+
+test('harness tests never go below their minimum (live rig checks counted apart)', async () => {
   const dir = path.join(HARNESS_DIR, 'test');
-  const n = fs.readdirSync(dir).filter(f => f.endsWith('.test.mjs'))
-    .reduce((s, f) => s + (fs.readFileSync(path.join(dir, f), 'utf8').match(/^test\(/gm) || []).length, 0);
-  assert.ok(n >= min.harness_tests, `${n} tests < ${min.harness_tests}`);
+  const tasks = (await loadTasks()).length;
+  let n = 0;
+  let live = 0;
+  for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.test.mjs'))) {
+    const c = await countTests(path.join(dir, f), tasks);
+    if (f === 'live-odoo.test.mjs') live += c; else n += c;
+  }
+  assert.ok(n >= min.harness_tests, `${n} tests that run in ./erp verify < ${min.harness_tests}`);
+  assert.ok(live >= min.live_tests, `${live} live rig tests < ${min.live_tests}`);
 });

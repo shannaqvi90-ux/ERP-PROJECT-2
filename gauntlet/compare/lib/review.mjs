@@ -3,7 +3,7 @@
 // reviewer does not open until the verdict is written.
 import fs from 'node:fs';
 import path from 'node:path';
-import { assignLetters } from './blind.mjs';
+import { assignLetters, neutralMoments } from './blind.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -18,7 +18,8 @@ export function writeReview(outDir, comparisons, random = Math.random) {
     key.letters[cmp.task] = letters;
     const cols = Object.entries(letters).sort((a, b) => a[1].localeCompare(b[1])).map(([product, letter]) => {
       const r = runs[product];
-      const shots = (r?.screenshots || []).map(s => `<figure><img loading="lazy" src="shots/${esc(s.file)}" alt="${esc(letter)}: ${esc(s.moment)}"><figcaption>${esc(s.moment)}</figcaption></figure>`).join('');
+      const captions = neutralMoments(r?.screenshots || []);
+      const shots = (r?.screenshots || []).map((s, i) => `<figure><img loading="lazy" src="shots/${esc(s.file)}" alt="${esc(letter)}: ${esc(captions[i])}"><figcaption>${esc(captions[i])}</figcaption></figure>`).join('');
       const body = r?.status === 'not_built' ? '<p class="empty">Not built yet.</p>' : shots || '<p class="empty">No screenshots.</p>';
       return `<div class="col"><h3>${letter}</h3>${body}</div>`;
     }).join('');

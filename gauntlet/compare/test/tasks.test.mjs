@@ -34,6 +34,10 @@ test('every task has a driver for each product', async () => {
       const d = await loadDriver(p, t.id);
       assert.equal(typeof d.run, 'function');
       if (d.built !== false) assert.ok(d.path, `${p}/${t.id}: describe the expert path in "path"`);
+      for (const [id, v] of Object.entries(d.variants || {})) {
+        assert.equal(typeof v.run, 'function', `${p}/${t.id} variant ${id}: run(op, ctx)`);
+        assert.ok(v.path, `${p}/${t.id} variant ${id}: describe the expert path in "path"`);
+      }
     }
   }
 });

@@ -126,7 +126,7 @@ export class Operator {
     fs.mkdirSync(this.shotsDir, { recursive: true });
     const file = blindName(this.shotFormat === 'png' ? 'png' : 'jpg');
     const t = this.now();
-    await neutraliseDocument(this.page);
+    await neutraliseDocument(this.page, this.branding.words);
     await this.page.screenshot({
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
       animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
