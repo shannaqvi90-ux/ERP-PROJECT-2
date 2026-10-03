@@ -22,3 +22,5 @@ unbound src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs  # The r
 set-config src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Migration SQL: reviewed sign-in function sets the tenant inside its own body; the credential migration marks its own transaction as a migration actor.
 tenant-setting src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Migration SQL: the reviewed lookups answer only on a connection with no tenant bound.
 sql-set src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Migration SQL: the reviewed lookups switch to the resolver role inside their own bodies and pin search_path.
+bind src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs  # Operator command (Erp.Host tenant suspend|activate, no request): binds the one workspace it changes, found by code with the operator's connection.
+connection-string src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs  # Operator command: finds and lists workspaces across tenants with ConnectionStrings:Admin, which the web application never has (ErpPlatform refuses any user but the application role).

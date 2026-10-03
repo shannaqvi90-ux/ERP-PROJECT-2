@@ -1,176 +1,93 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
+import { ListView, type ReferenceSource } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
 import { AddressFields } from "./CompanyForm";
-import { companiesChanged, type Branch, type BranchRow, type CompanyRow, type Page } from "./types";
-import {
-  CheckField,
-  gridKeys,
-  problemOf,
-  readSelection,
-  SelectField,
-  TextField,
-  useLocalName,
-  useScreenKeys,
-  writeSelection,
-  type Emirate,
-  type FieldErrors,
-} from "./ui";
+import { listSearch, loadAll, newRecord, useRecordPanel } from "./records";
+import { companiesChanged, type Branch, type CompanyRow } from "./types";
+import { CheckField, problemOf, SelectField, TextField, useLocalName, useScreenKeys, type Emirate, type FieldErrors } from "./ui";
 
-const pageSize = 100;
-
-/** Branches of every company the user may work in, filterable by company, with the form beside. */
+/**
+ * Branches of every company the user may work in: the shared list (search, filters, sort, group
+ * by company or emirate, views) with the open branch's form in its panel (?open=id, or
+ * ?open=new). Keyboard as on the companies screen.
+ */
 export function BranchesPage() {
   const { t } = useI18n();
   const { can } = useSession();
   const name = useLocalName();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
-  const [companyId, setCompanyId] = useState("");
-  const [search, setSearch] = useState("");
-  const [showInactive, setShowInactive] = useState(false);
-  const [page, setPage] = useState<Page<BranchRow> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(() => readSelection().id);
-  const [creating, setCreating] = useState(() => readSelection().isNew && can("tenancy.branches.create"));
-  const [reload, setReload] = useState(0);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const gridRef = useRef<HTMLTableSectionElement>(null);
+  const panel = useRecordPanel(can("tenancy.branches.create"));
+  useScreenKeys({ onNew: panel.startNew, search: listSearch });
 
   useEffect(() => {
     if (!can("tenancy.companies.read")) return;
-    api<Page<CompanyRow>>("GET", "/api/tenancy/companies?take=200")
-      .then((p) => setCompanies(p.items))
-      .catch(() => setCompanies([]));
+    let cancelled = false;
+    const load = () =>
+      loadAll<CompanyRow>("/api/tenancy/companies").then(
+        (rows) => !cancelled && setCompanies(rows),
+        () => !cancelled && setCompanies([]),
+      );
+    void load();
+    window.addEventListener(companiesChanged, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(companiesChanged, load);
+    };
   }, [can]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      const query = new URLSearchParams({ take: String(pageSize) });
-      if (search.trim()) query.set("search", search.trim());
-      if (companyId) query.set("companyId", companyId);
-      if (!showInactive) query.set("isActive", "true");
-      api<Page<BranchRow>>("GET", `/api/tenancy/branches?${query}`)
-        .then((p) => {
-          if (!controller.signal.aborted) {
-            setPage(p);
-            setError(null);
-          }
-        })
-        .catch((e: Error) => setError(e.message));
-    }, 150);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
+  // Branch rows carry their company's id: show its code and name, and offer the companies as
+  // the column's filter choices.
+  const references = useMemo<Record<string, ReferenceSource>>(() => {
+    const byId = new Map(companies.map((c) => [c.id, `${c.code} · ${name(c.legalNameEn, c.legalNameAr)}`]));
+    return {
+      companyId: {
+        label: (id) => byId.get(id),
+        options: companies.map((c) => ({ value: c.id, label: byId.get(c.id)! })),
+      },
     };
-  }, [search, companyId, showInactive, reload]);
-
-  // The form keeps its identity when a new record is saved (so its "Saved." stays on screen).
-  const [formKey, setFormKey] = useState(() => readSelection().id ?? "new");
-  const open = useCallback((id: string | null, isNew = false) => {
-    setSelected(id);
-    setCreating(isNew);
-    setFormKey(isNew ? `new-${Date.now()}` : (id ?? ""));
-    writeSelection(id, isNew);
-  }, []);
-  const saved = useCallback((id: string) => {
-    setSelected(id);
-    setCreating(false);
-    writeSelection(id);
-  }, []);
-  const startNew = can("tenancy.branches.create") ? () => open(null, true) : undefined;
-  useScreenKeys({ onNew: startNew, search: searchRef });
-  const rows = page?.items ?? [];
+  }, [companies, name]);
 
   return (
-    <section className="split">
-      <div className="split-list">
-        <div className="screen-header">
-          <h1>{t("tenancy.branches.title")}</h1>
-          {startNew && (
-            <button type="button" className="button primary" onClick={startNew} title={t("tenancy.common.newHint")} aria-keyshortcuts="Alt+N">
+    <div className="tn-list">
+      <ListView
+        listKey="tenancy.branches"
+        titleKey="tenancy.branches.title"
+        countKey="tenancy.branches.count"
+        searchPlaceholderKey="tenancy.branches.search"
+        can={can}
+        openOnClick
+        reloadKey={panel.reload}
+        openId={panel.openId}
+        onOpenIdChange={panel.onOpenIdChange}
+        references={references}
+        renderRecord={(id, close) => (
+          <BranchForm
+            key={panel.formKey}
+            id={id === newRecord ? null : id}
+            companies={id === newRecord ? companies.filter((c) => c.isActive) : companies}
+            defaultCompanyId={companies.find((c) => c.isActive)?.id ?? ""}
+            onSaved={panel.saved}
+            onClose={close}
+          />
+        )}
+        actions={
+          panel.startNew && (
+            <button type="button" className="button primary" onClick={panel.startNew} title={t("tenancy.common.newHint")} aria-keyshortcuts="Alt+N">
               {t("tenancy.common.new")}
             </button>
-          )}
-        </div>
-        <div className="toolbar">
-          <input
-            ref={searchRef}
-            type="search"
-            className="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("tenancy.branches.search")}
-            aria-label={t("tenancy.branches.search")}
-            aria-keyshortcuts="/"
-          />
-          {companies.length > 0 && (
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} aria-label={t("tenancy.branch.company")}>
-              <option value="">{t("tenancy.branches.allCompanies")}</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.code} · {name(c.legalNameEn, c.legalNameAr)}
-                </option>
-              ))}
-            </select>
-          )}
-          <label className="check">
-            <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
-            <span>{t("tenancy.common.showInactive")}</span>
-          </label>
-          {page && <span className="muted">{t("tenancy.branches.count", { count: page.total })}</span>}
-        </div>
-        {error && (
-          <div className="alert" role="alert">
-            {error}
-          </div>
-        )}
-        <table className="grid selectable" aria-label={t("tenancy.branches.title")}>
-          <thead>
-            <tr>
-              <th scope="col">{t("tenancy.branch.company")}</th>
-              <th scope="col">{t("tenancy.branch.code")}</th>
-              <th scope="col">{t("tenancy.branch.name")}</th>
-              <th scope="col">{t("tenancy.address.city")}</th>
-              <th scope="col">{t("tenancy.address.emirate")}</th>
-              <th scope="col">{t("tenancy.common.status")}</th>
-            </tr>
-          </thead>
-          <tbody ref={gridRef} tabIndex={0} onKeyDown={gridKeys(rows, selected, setSelected, (id) => open(id))}>
-            {rows.map((b) => (
-              <tr key={b.id} role="row" aria-selected={b.id === selected} className={b.isActive ? undefined : "inactive"} onClick={() => open(b.id)} data-id={b.id}>
-                <td dir="ltr">{b.companyCode}</td>
-                <td dir="ltr">{b.code}</td>
-                <td>{name(b.nameEn, b.nameAr)}</td>
-                <td>{b.city}</td>
-                <td>{b.emirate ? t(`tenancy.emirate.${b.emirate}`) : ""}</td>
-                <td>{b.isActive ? t("tenancy.common.active") : t("tenancy.common.inactive")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {page && page.items.length === 0 && <p className="muted">{t("tenancy.branches.none")}</p>}
-      </div>
-      {(selected || creating) && (
-        <div className="split-form">
-          <BranchForm
-            key={formKey}
-            id={creating ? null : selected}
-            companies={companies}
-            defaultCompanyId={companyId || companies[0]?.id || ""}
-            onSaved={(id) => {
-              saved(id);
-              setReload((n) => n + 1);
-            }}
-            onClose={() => {
-              open(null);
-              gridRef.current?.focus();
-            }}
-          />
-        </div>
-      )}
-    </section>
+          )
+        }
+        renderCell={{
+          code: (b) => <span dir="ltr">{String(b.code ?? "")}</span>,
+          nameEn: (b) => <span dir="ltr">{String(b.nameEn ?? "")}</span>,
+          nameAr: (b) => <span dir="rtl">{String(b.nameAr ?? "")}</span>,
+          companyId: (b) => references.companyId!.label(String(b.companyId)) ?? <span dir="ltr">{String(b.companyCode ?? "")}</span>,
+          isActive: (b) => (b.isActive ? t("tenancy.common.active") : <span className="muted">{t("tenancy.common.inactive")}</span>),
+        }}
+      />
+    </div>
   );
 }
 

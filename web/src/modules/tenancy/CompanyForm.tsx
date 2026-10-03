@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
-import { companiesChanged, type BranchRow, type Company, type Page } from "./types";
+import { loadAll } from "./records";
+import { companiesChanged, type BranchRow, type Company } from "./types";
 import {
   CheckField,
   emirates,
@@ -363,8 +364,8 @@ function CompanyBranches({ companyId }: { companyId: string }) {
   const nameRef = useRef<HTMLInputElement>(null);
 
   const load = () =>
-    api<Page<BranchRow>>("GET", `/api/tenancy/branches?companyId=${companyId}&take=200`)
-      .then((p) => setBranches(p.items))
+    loadAll<BranchRow>("/api/tenancy/branches", `companyId eq '${companyId}'`)
+      .then(setBranches)
       .catch((e) => setMessage(problemOf(e).message));
 
   useEffect(() => {

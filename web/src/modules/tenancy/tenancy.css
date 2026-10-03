@@ -304,3 +304,18 @@
 .workplace-chip:hover {
   opacity: 1;
 }
+
+/* List screens: the shared list with the open record's form in a wide panel beside it. */
+.tn-list .list-body.has-record {
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 48%);
+}
+
+.tn-list .list-record {
+  padding: 8px 12px;
+}
+
+@media (max-width: 1100px) {
+  .tn-list .list-body.has-record {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

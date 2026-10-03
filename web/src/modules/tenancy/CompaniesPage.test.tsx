@@ -29,6 +29,19 @@ const saved = {
   branchCount: 0, createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 1,
 };
 
+const text = (key: string) => ({ key, labelKey: `tenancy.company.${key}`, type: "text", sortable: true, filterable: true, groupable: false, aggregate: false, hidden: false, choices: [], operators: ["eq", "contains"] });
+const definition = {
+  key: "tenancy.companies",
+  labelKey: "tenancy.companies.title",
+  endpoint: "/api/tenancy/companies",
+  columns: [text("code"), text("legalNameEn"), text("legalNameAr")],
+  searchFields: ["code", "legalNameEn", "legalNameAr"],
+  defaultSort: "code",
+  presets: [],
+  canShare: false,
+  maxTake: 200,
+};
+
 function press(init: KeyboardEventInit) {
   act(() => {
     (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init }));
@@ -42,7 +55,9 @@ describe("companies screen", () => {
     let posts = 0;
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session };
-      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0 } };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies" && method === "POST") {
         posts++;
         return posts === 1
@@ -50,7 +65,7 @@ describe("companies screen", () => {
           : { status: 201, body: { ...saved, ...(body as object) } };
       }
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
-      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0 } };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: { id: "b9" } };
       return { status: 404, body: {} };
     });
@@ -75,7 +90,7 @@ describe("companies screen", () => {
     await settle();
     const post = calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/companies")[1]!;
     expect(post.body).toMatchObject({ code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC", legalNameAr: "النور عجمان ذ.م.م", baseCurrency: "AED", country: "AE", isActive: true });
-    expect(window.location.search).toBe("?id=c9");
+    expect(new URLSearchParams(window.location.search).get("open")).toBe("c9");
     // The same form stays open on the saved company and says so.
     expect(view.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
     expect(document.activeElement).not.toBe(document.body);
@@ -88,6 +103,9 @@ describe("companies screen", () => {
       view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
       await new Promise((r) => setTimeout(r, 0));
     });
+    // The company's branches are read through the list contract (filter on the company).
+    const branchQuery = calls.find((c) => c.method === "GET" && c.url.startsWith("/api/tenancy/branches?"))!;
+    expect(new URL(branchQuery.url, "http://x").searchParams.get("filter")).toBe("companyId eq 'c9'");
     const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
     expect(branch.body).toMatchObject({ companyId: "c9", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", isActive: true });
   });

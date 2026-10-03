@@ -1,136 +1,52 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
+import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import type { AccessRow, CompanyAccess, Page, UserAccess } from "./types";
-import { gridKeys, problemOf, readSelection, useLocalName, useScreenKeys, writeSelection } from "./ui";
-
-const pageSize = 50;
+import { listSearch, useRecordPanel } from "./records";
+import type { AccessCompanySummary, CompanyAccess, UserAccess } from "./types";
+import { problemOf, useLocalName, useScreenKeys } from "./ui";
 
 /**
- * Who may work in which company and branch: users on the start side (search by name or e-mail),
- * the selected user's companies and branches beside them. Only the administrator's own companies
- * appear; access to other companies is neither shown nor changed.
+ * Who may work in which company and branch: the workspace's users in the shared list (search by
+ * name or e-mail, filters, sort, views), each with the companies they may work in, and the open
+ * user's companies and branches in the list's panel (?open=id). Only the administrator's own
+ * companies appear; access to other companies is neither shown nor changed.
  */
 export function AccessPage() {
-  const { t, formatNumber } = useI18n();
-  const [search, setSearch] = useState("");
-  const [skip, setSkip] = useState(0);
-  const [page, setPage] = useState<Page<AccessRow> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(() => readSelection().id);
-  const [reload, setReload] = useState(0);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const gridRef = useRef<HTMLTableSectionElement>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      const query = new URLSearchParams({ skip: String(skip), take: String(pageSize) });
-      if (search.trim()) query.set("search", search.trim());
-      api<Page<AccessRow>>("GET", `/api/tenancy/access?${query}`)
-        .then((p) => {
-          if (!controller.signal.aborted) {
-            setPage(p);
-            setError(null);
-          }
-        })
-        .catch((e: Error) => setError(e.message));
-    }, 150);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [search, skip, reload]);
-
-  const open = useCallback((id: string | null) => {
-    setSelected(id);
-    writeSelection(id);
-  }, []);
-  useScreenKeys({ search: searchRef });
-  const rows = page?.items ?? [];
+  const { formatNumber, language } = useI18n();
+  const { can } = useSession();
+  const panel = useRecordPanel(false);
+  useScreenKeys({ search: listSearch });
 
   return (
-    <section className="split">
-      <div className="split-list">
-        <div className="screen-header">
-          <h1>{t("tenancy.access.title")}</h1>
-        </div>
-        <div className="toolbar">
-          <input
-            ref={searchRef}
-            type="search"
-            className="search"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setSkip(0);
-            }}
-            placeholder={t("tenancy.access.search")}
-            aria-label={t("tenancy.access.search")}
-            aria-keyshortcuts="/"
-          />
-          {page && <span className="muted">{t("tenancy.access.count", { count: page.total })}</span>}
-        </div>
-        {error && (
-          <div className="alert" role="alert">
-            {error}
-          </div>
-        )}
-        <table className="grid selectable" aria-label={t("tenancy.access.title")}>
-          <thead>
-            <tr>
-              <th scope="col">{t("tenancy.access.user")}</th>
-              <th scope="col">{t("tenancy.access.email")}</th>
-              <th scope="col">{t("tenancy.access.companies")}</th>
-            </tr>
-          </thead>
-          <tbody ref={gridRef} tabIndex={0} onKeyDown={gridKeys(rows, selected, setSelected, open)}>
-            {rows.map((u) => (
-              <tr key={u.id} role="row" aria-selected={u.id === selected} onClick={() => open(u.id)} data-id={u.id}>
-                <td>{u.displayName}</td>
-                <td dir="ltr">{u.email}</td>
-                <td dir="ltr">
-                  {u.companies.length === 0
-                    ? "—"
-                    : u.companies.map((c) => (c.allBranches ? c.code : `${c.code} (${formatNumber(c.branchCount)})`)).join(", ")}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {page && page.total > pageSize && (
-          <div className="pager">
-            <button type="button" className="button" disabled={skip === 0} onClick={() => setSkip(Math.max(0, skip - pageSize))}>
-              {t("tenancy.pager.previous")}
-            </button>
-            <span className="muted">
-              {t("tenancy.pager.range", {
-                from: formatNumber(skip + 1),
-                to: formatNumber(Math.min(skip + pageSize, page.total)),
-                total: formatNumber(page.total),
-              })}
-            </span>
-            <button type="button" className="button" disabled={skip + pageSize >= page.total} onClick={() => setSkip(skip + pageSize)}>
-              {t("tenancy.pager.next")}
-            </button>
-          </div>
-        )}
-      </div>
-      {selected && (
-        <div className="split-form">
-          <AccessForm
-            key={selected}
-            userId={selected}
-            onSaved={() => setReload((n) => n + 1)}
-            onClose={() => {
-              open(null);
-              gridRef.current?.focus();
-            }}
-          />
-        </div>
-      )}
-    </section>
+    <div className="tn-list">
+      <ListView
+        listKey="tenancy.access"
+        titleKey="tenancy.access.title"
+        countKey="tenancy.access.count"
+        searchPlaceholderKey="tenancy.access.search"
+        can={can}
+        openOnClick
+        reloadKey={panel.reload}
+        openId={panel.openId}
+        onOpenIdChange={panel.onOpenIdChange}
+        renderRecord={(id, close) => <AccessForm key={id} userId={id} onSaved={() => panel.saved(id)} onClose={close} />}
+        renderCell={{
+          email: (u) => <span dir="ltr">{String(u.email ?? "")}</span>,
+          companies: (u) => {
+            const companies = Array.isArray(u.companies) ? (u.companies as AccessCompanySummary[]) : [];
+            return companies.length === 0 ? (
+              <span className="muted">—</span>
+            ) : (
+              <span dir="ltr">
+                {companies.map((c) => (c.allBranches ? c.code : `${c.code} (${formatNumber(c.branchCount)})`)).join(language === "ar" ? "، " : ", ")}
+              </span>
+            );
+          },
+        }}
+      />
+    </div>
   );
 }
 

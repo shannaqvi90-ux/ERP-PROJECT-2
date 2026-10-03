@@ -1,7 +1,5 @@
 import type { Emirate } from "./ui";
 
-export type Page<T> = { items: T[]; total: number };
-
 export type CompanyRow = {
   id: string;
   code: string;
