@@ -16,3 +16,5 @@ live in `ledger.md`; this file only explains the run around them.
 | 2026-10-03 09:05 | Integrator p00 r3 was flagged for "security test removal". Checked: no test was deleted; it added seven reviewed exceptions (six personal saved-view writes under a read permission, one set_config in p03's sign-in function). Left for the next p00 critic to scrutinise. |
 | 2026-10-03 09:10 | Lead recorded the two orphaned verdicts (p03 r1, p01 r3), snapshotted p05's uncommitted round-2 work (f0c49f6). p02 round 1 was not integrated: its lists predate p05's list framework, so the host would not start; merge rolled back. |
 | 2026-10-03 09:15 | Wave 1 resumed as two workflows: 1a' = p02 r2, p03 r2, p00 (judge r3, then r4); 1b' = p05 r2, p04 r2, p01 r4. |
+| 2026-10-03 ~13:50 | Account usage limit reached again (reset 14:00 UTC). No verdicts in this stretch: builders for p02, p03, p04, p05 and p01 committed most of their round-2/4 work; p04's round-2 integrator and p00's round-3 critic were stopped. WIP snapshots taken where needed. |
+| 2026-10-03 14:10 | Wave 1 resumed again from the builders' worktrees. needs-human #5 added (Arabic font licence, SIL OFL-1.1). |
