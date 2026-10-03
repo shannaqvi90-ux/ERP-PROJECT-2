@@ -248,6 +248,24 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
     }
   });
 
+  test("signing out in one tab ends the session in every other tab of the browser at once", async ({ page, context }) => {
+    await freshStart(page, "en");
+    await signIn(page, bravoAdmin);
+    await page.locator('nav.navpane a[href="/identity/users"]').first().click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    const other = await context.newPage();
+    await other.goto("/");
+    await expect(other.getByRole("button", { name: "Sign out" })).toBeVisible();
+    await other.getByRole("button", { name: "Sign out" }).click();
+    await expect(other.locator('input[name="email"]')).toBeFocused();
+    // The first tab did nothing, yet it shows the sign-in screen and nothing of B.
+    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await settled(page);
+    const state = await tabState(page);
+    expect(judge("other tab signed out", { page: state.page, input: state.input, title: state.title }, ["gulfsteel", "Gulf Steel", "الخليج لتصنيع"])).toEqual([]);
+    await other.close();
+  });
+
   test("the judges' self-test: a marker planted in each carrier of the tab is found", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, alphaAdmin);

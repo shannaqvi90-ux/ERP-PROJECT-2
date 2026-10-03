@@ -76,3 +76,13 @@ as defence in depth, so a cache that would leak without the reload is still caug
   end in a session `refresh()` (or a new sign-in): the session provider then starts over.
 - New module-level state in `web/src` needs an entry in `tests/Gates/client-module-state.txt`, or
   `identityScoped()` for caches.
+
+## Other tabs of the same browser
+
+The session cookie is shared by every tab. The signed-in identity is also kept in localStorage
+(`erp.session`, forgotten with everything else when the identity ends); a change to it in another
+tab (a sign-out, which clears it, or a sign-in as someone else, which rewrites it) reaches every
+other tab as a `storage` event, and each checks its session and starts over if its identity ended.
+Tested in the unit gate (another tab signs in as tenant A while this tab shows tenant B) and end to
+end (signing out in a second tab puts the first, untouched tab on the sign-in screen with nothing of
+the signed-out tenant).

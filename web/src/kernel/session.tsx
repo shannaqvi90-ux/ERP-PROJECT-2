@@ -40,6 +40,13 @@ type SessionState =
 /** Who the document holds: the same user in the same tenant. Anything else is a new identity. */
 export const identityOf = (session: Session) => `${session.tenant.id}/${session.user.id}`;
 
+/**
+ * The identity signed in on this browser, shared by its tabs through localStorage (forgotten with
+ * everything else when an identity ends). Another tab signing in, out or as someone else changes
+ * it, and the storage event makes every other tab check its session and start over if it changed.
+ */
+export const sessionMarkKey = "erp.session";
+
 type SessionApi = {
   state: SessionState;
   /** With `newPassword`, the password is changed as part of signing in (one-time set-up codes). */
@@ -108,6 +115,15 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     void refresh();
   }, [refresh]);
 
+  // Another tab of this browser signed in, out or as someone else: check the session.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (held.current !== null && (event.key === null || event.key === sessionMarkKey)) void refresh();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [refresh]);
+
   // Any request answered 401 while signed in: check the session; if it ended, start over.
   useEffect(() => {
     const check = () => {
@@ -127,6 +143,11 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
         return;
       }
       held.current = identity;
+      try {
+        if (localStorage.getItem(sessionMarkKey) !== identity) localStorage.setItem(sessionMarkKey, identity);
+      } catch {
+        // Storage unavailable: other tabs learn of a change at their next request instead.
+      }
       onSignedIn?.(state.session);
     } else if (state.status === "anonymous" && held.current !== null) {
       void leave(true);

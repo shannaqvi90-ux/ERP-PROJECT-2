@@ -325,4 +325,23 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     expect(localStorage.getItem("erp.lastEmail")).toBe(bravo.admin.email);
     expect(document.querySelector(".workspace-name")).toBeNull();
   });
+
+  it("another tab signing in as someone else ends this tab's identity too", async () => {
+    serveTwoTenants();
+    view = await render(<App language="en" />);
+    await settle();
+    await signInAs(bravo);
+    expect(localStorage.getItem("erp.session")).toBe(`${bravo.id}/${bravo.admin.id}`);
+    // The other tab signs in as A: the browser's cookie is now A's, and the shared mark changes.
+    const signInAsAlpha = await fetch("/api/auth/sign-in", { method: "POST", body: JSON.stringify({ email: alpha.admin.email, password: "x" }) });
+    expect(signInAsAlpha.status).toBe(200);
+    await act(async () => {
+      window.dispatchEvent(new StorageEvent("storage", { key: "erp.session", oldValue: `${bravo.id}/${bravo.admin.id}`, newValue: `${alpha.id}/${alpha.admin.id}` }));
+    });
+    await wait(100);
+    expect(window.location.replace).toHaveBeenCalledWith("/");
+    // This tab forgot B's stored state (the other tab's sign-in remembers its own e-mail).
+    expect(localStorage.getItem("erp.session")).toBeNull();
+    expect(document.querySelector(".workspace-name")).toBeNull();
+  });
 });
