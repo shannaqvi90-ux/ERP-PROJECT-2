@@ -54,6 +54,15 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
         Assert.DoesNotContain(report.LookupMisuse, m => !m.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(report.UntracedFunctions);
+
+        // Process-wide state: tenant B's activity fills a static cache and a singleton, and the
+        // attack sees tenant B's data in tenant A's answers; the singleton also hands tenant A's
+        // data back to tenant B.
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/cached-tenant", StringComparison.Ordinal) && l.StartsWith("tenant A", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/recent", StringComparison.Ordinal) && l.StartsWith("tenant A", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/recent", StringComparison.Ordinal) && l.Contains("attacking tenant's marker", StringComparison.Ordinal));
+        Assert.True(report.VictimConcurrentRequests > 0, "tenant B never read concurrently with the attack");
+        Assert.Empty(report.VictimBlindSpots);
     }
 
     [Fact]
