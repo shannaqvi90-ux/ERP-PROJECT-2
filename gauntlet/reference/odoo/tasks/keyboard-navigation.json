@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "keyboard-navigation-20261003T041610-872e",
-  "instrument": 3,
+  "run_id": "keyboard-navigation-20261003T145054-733e",
+  "instrument": 4,
   "task": "keyboard-navigation",
   "task_title": "Navigate by keyboard",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
   "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
-  "started_at": "2026-10-03T04:16:10.212Z",
-  "finished_at": "2026-10-03T04:16:14.808Z",
+  "started_at": "2026-10-03T14:50:55.013Z",
+  "finished_at": "2026-10-03T14:51:01.400Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 9,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 1.406,
-    "system_wait_seconds": 1.201,
+    "machine_seconds": 1.982,
+    "system_wait_seconds": 1.826,
     "human_seconds": 7.25,
-    "human_plus_wait_seconds": 8.451,
+    "human_plus_wait_seconds": 9.076,
     "klm_operator_counts": {
       "K": 10,
       "P": 0,
@@ -57,131 +57,131 @@
       "kind": "key",
       "label": "apps menu",
       "keystrokes": 2,
-      "chain": false,
       "at": 0,
-      "took": 0.042,
-      "chord": "Alt+h"
+      "took": 0.02,
+      "chord": "Alt+h",
+      "chain": false
     },
     {
       "n": 2,
       "kind": "key",
       "label": "first app",
       "keystrokes": 1,
-      "chain": false,
-      "at": 0.069,
+      "at": 0.047,
       "took": 0.005,
-      "chord": "ArrowDown"
+      "chord": "ArrowDown",
+      "chain": false
     },
     {
       "n": 3,
       "kind": "key",
       "label": "Contacts",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.074,
-      "took": 0.003,
-      "chord": "ArrowDown"
+      "at": 0.052,
+      "took": 0.007,
+      "chord": "ArrowDown",
+      "chain": true
     },
     {
       "n": 4,
       "kind": "key",
       "label": "open Contacts",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.082,
-      "took": 0.011,
-      "chord": "Enter"
+      "at": 0.067,
+      "took": 0.01,
+      "chord": "Enter",
+      "chain": true
     },
     {
       "n": 5,
       "kind": "key",
       "label": "header row",
       "keystrokes": 1,
-      "chain": false,
-      "at": 0.82,
-      "took": 0.027,
-      "chord": "ArrowDown"
+      "at": 0.94,
+      "took": 0.031,
+      "chord": "ArrowDown",
+      "chain": false
     },
     {
       "n": 6,
       "kind": "key",
       "label": "row 1",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.847,
-      "took": 0.009,
-      "chord": "ArrowDown"
+      "at": 0.971,
+      "took": 0.013,
+      "chord": "ArrowDown",
+      "chain": true
     },
     {
       "n": 7,
       "kind": "key",
       "label": "row 2",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.856,
-      "took": 0.015,
-      "chord": "ArrowDown"
+      "at": 0.984,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "chain": true
     },
     {
       "n": 8,
       "kind": "key",
       "label": "row 3",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.871,
-      "took": 0.008,
-      "chord": "ArrowDown"
+      "at": 0.994,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "chain": true
     },
     {
       "n": 9,
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "chain": true,
-      "at": 0.933,
-      "took": 0.035,
-      "chord": "Enter"
+      "at": 1.037,
+      "took": 0.032,
+      "chord": "Enter",
+      "chain": true
     }
   ],
   "waits": [
     {
       "label": "apps menu open",
-      "at": 0.043,
+      "at": 0.02,
       "seconds": 0.027
     },
     {
       "label": "Contacts highlighted",
-      "at": 0.077,
-      "seconds": 0.005
+      "at": 0.059,
+      "seconds": 0.008
     },
     {
       "label": "contact list",
-      "at": 0.093,
-      "seconds": 0.727
+      "at": 0.077,
+      "seconds": 0.863
     },
     {
       "label": "third row selected",
-      "at": 0.93,
-      "seconds": 0.004
+      "at": 1.022,
+      "seconds": 0.015
     },
     {
       "label": "contact form",
-      "at": 0.968,
-      "seconds": 0.438
+      "at": 1.069,
+      "seconds": 0.913
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "452187210153daa1.jpg",
+      "file": "f4ad7ee068360fb2.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/452187210153daa1.jpg"
+      "path": "gauntlet/reference/odoo/shots/f4ad7ee068360fb2.jpg"
     },
     {
       "moment": "done",
-      "file": "904269050b718197.jpg",
-      "at": 1.406,
-      "path": "gauntlet/reference/odoo/shots/904269050b718197.jpg"
+      "file": "dd12bfc3d3d466d0.jpg",
+      "at": 1.982,
+      "path": "gauntlet/reference/odoo/shots/dd12bfc3d3d466d0.jpg"
     }
   ],
   "verification": {
@@ -195,15 +195,25 @@
   "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
-    "sha256": "a67c193efd44d413d1383aefe3aabe55e90bc7f7f2fabe3f90f3330ac8281f7b"
+    "sha256": "5ccc1d29165b63702fc190aa3ae15e909c6f33419f39b1215497aaf5e5cb2a4b"
   },
   "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/keyboard-navigation.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T041605-8f82.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T041610-872e.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T041614-e4bf.json"
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T145048-753b.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T145054-733e.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261003T145101-a544.json"
   ]
 }

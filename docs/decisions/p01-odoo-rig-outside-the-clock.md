@@ -69,7 +69,30 @@ into a recorded win.
    label. Playwright options that act uncounted (`modifiers`, `clickCount`, `force`) are refused.
 8. **`op.type` takes printable text only.** Control characters (`\n`, `\r`, `\t`, `\b`, C0 and C1)
    are refused. Keys are pressed with `op.press`, which counts them.
-9. **Instrument version 4.** All 20 Odoo baselines are re-captured (median of three runs).
+9. **Everything set-up opened closes at the start.** The runner closes every browser context of
+   the harness browser, not only the one the run signed in with, before it opens the fresh one
+   (`start_state.set_up_contexts_closed` records how many extra contexts there were). A context
+   a driver opened in set-up can still hold an action it started and did not wait for: text typed
+   with a delay, a delayed click, a navigation. Closed, the action fails instead of finishing
+   inside the measured part. Launching or connecting to another browser (`browserType()`), a
+   browser-wide debugging session and tracing are refused in every phase, at run time and by the
+   lint, because the runner could neither guard nor close them.
+10. **A home start must land on the product's home.** Each product declares `homeLanding` in
+    `lib/config.mjs`: `/` for ours and `/odoo` or `/odoo/discuss` for the reference, where Odoo
+    Community opens its default app. A home start that lands anywhere else, or on an address
+    with a query or fragment, is invalid. Otherwise set-up could change the user's home preference
+    (in Odoo, the user's home action) to the users list, and the run would start half done
+    without any typed text on the screen.
+11. **A list start's address may not name the task's data.** The query check alone missed a
+    search carried in the path, for example `/users/Majid%20Anil%20Pillai`. Every string of four or
+    more characters with a letter in the task's input and the dataset's needles is compared with
+    the decoded path, with and without punctuation. A record start may name its record, because
+    opening the record is the start.
+12. **A paste needs its copy inside the clock.** Headless Chromium keeps one clipboard for the
+    whole browser. Text copied during set-up and pasted while measuring would be two keys for a
+    value typed outside the clock. `op.press` refuses a paste chord (Ctrl/Cmd+V, Shift+Insert, and
+    their variants) unless a copy or cut chord was pressed earlier in the measured part.
+13. **Instrument version 4.** All 20 Odoo baselines are re-captured (median of three runs).
    `test/baselines.test.mjs` rejects any baseline from an older instrument.
 
 ## Also in this round
@@ -87,6 +110,13 @@ into a recorded win.
 - Blindness: the demo data's company names and the database and tenant codes are masked in both
   products. Shots of a task with several expert paths come from the path that is best on the most
   metrics (`screenshots_path`), so the shots and the counts describe the same path.
+
+- The pre-clock `verify()` found a fault in a reference driver. The Odoo sign-in driver's
+  'returning' set-up signed out with a GET of `/web/session/logout`, which this Odoo answers with
+  HTTP 405. So the browser stayed signed in, and the round 3 'returning' baseline measured a
+  sign-in on a browser that was already signed in. Set-up and clean-up now sign out through the
+  user menu (Log out), as a user does. Both variants verify with 4 steps and 57 keys, because Odoo
+  does not remember the e-mail of a returning browser.
 
 ## Plant tests (all must end invalid, or fail, never verified with lower counts)
 
@@ -107,6 +137,21 @@ In `test/guard.test.mjs`:
 - The real ours drivers on stand-in screens: sign-in with the critic's K1 diff applied, and
   find-user with the critic's H2 diff applied.
 
+Added in the resumed round (each fails without its fix, checked by reverting it):
+
+- P1: set-up opens its own context and leaves slow typing pending into a form whose Enter saves
+  on the server. Without closing every set-up context, the run verified with 1 step.
+- P2: launching another browser in set-up.
+- P3: a browser-wide debugging session, and tracing, in set-up.
+- L1: set-up sets a home preference so the home address opens the users list.
+- L2: a list start whose path carries the user's name, encoded or as a slug.
+- C1: text copied in set-up and pasted while measuring, with four paste chords.
+- Controls: a home start with a set-up context of its own still verifies, and a copy then paste
+  inside the measured part still verifies.
+
+The round 3 critic's own plant file (U1, U2, S1, T1, K1 on its stand-in page) was re-run against
+this instrument, with the task given a `startAt` and its moment. Every plant ended invalid.
+
 In `test/klm.test.mjs` and `test/operator.test.mjs`: derivation rules, refusal of a chain flag,
 refusal of control characters, and shots counted on the clock.
 
@@ -119,6 +164,8 @@ verify() only reads". The test count did not go down.
 ## Residual risk
 
 Set-up may still change server-side state through the product's API (fixtures need it). The
-pre-clock `verify()` catches a task that is already done. It does not catch a set-up that only
-makes the task shorter, for example a saved default filter. Critics review the `setup` of each
+pre-clock `verify()` catches a task that is already done, the home landing check catches a changed
+home screen, and the list address check catches a search in the address. None of them catches a
+set-up that only makes the task shorter on the same screen, for example a saved default filter
+that the list applies without showing it in a field or the address. Critics review the `setup` of each
 ours driver. Each result records its fixtures' effect on the start screen in `start_state`.

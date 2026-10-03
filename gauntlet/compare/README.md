@@ -57,7 +57,9 @@ are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-
   and Node's file helpers; no Playwright, no network module, no `eval` or dynamic import, no page
   script, no `chain` (lint, `test/drivers-lint.test.mjs`).
 - `op.type` takes printable text only: a control character (`\n`, `\t` …) would press Enter or Tab
-  inside one field entry, uncounted, so it is refused (press those keys with `op.press`). Counted
+  inside one field entry, uncounted, so it is refused (press those keys with `op.press`).
+  A paste chord (Ctrl/Cmd+V, Shift+Insert) is refused unless a copy or cut chord was pressed
+  earlier in the measured part: the browser's clipboard outlives set-up. Counted
   actions take only `label` (and `waitFor` its timing options); any other option, `chain` among
   them, is refused.
 
@@ -69,7 +71,12 @@ screen in a fresh context itself (`startAt` in the task: `home` and `sign-in` ar
 addresses; `record` and `list` are the screen sign-in opened, reloaded from its path, no query or
 fragment allowed), waits until the product is ready and quiet, and checks the start state: on
 `home` and `list` no field holds typed text, on `sign-in` no password is filled and the only
-remembered text is the task's own sign-in. The start state is recorded in each result
+remembered text is the task's own sign-in. Where the start landed is checked too: a `home` start
+must land on the product's home (`homeLanding` in `lib/config.mjs`, so a home preference changed
+in set-up is caught), and a `list` start's address may not name the task's data (a search carried
+in the path). Every browser context set-up opened is closed at the start, so an action a driver
+left pending there (slow typing, a delayed click) cannot finish inside the measured part; another
+browser cannot be launched at all. The start state is recorded in each result
 (`start_state`). Before the clock starts, `verify()` runs once on the start screen: if it already
 passes, set-up did the task and the run is invalid. `verify()` only reads: page actions are refused,
 and from the back end only reads go through (GET, a fixture sign-in, Odoo read methods). Clean-up

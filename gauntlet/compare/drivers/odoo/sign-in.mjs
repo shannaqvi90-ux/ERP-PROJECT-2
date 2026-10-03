@@ -16,6 +16,17 @@ async function ensureUser(ctx) {
 const LOGIN_URL = ctx => `${ctx.product.baseUrl}/web/login?db=${encodeURIComponent(ctx.product.db)}`;
 
 /**
+ * Sign out the way the user does (user menu > Log out), outside the measured part. Odoo refuses a
+ * plain GET of its logout address (HTTP 405), so the round-3 'returning' set-up never signed out:
+ * the pre-clock verify of instrument 4 caught it.
+ */
+async function signOut(page) {
+  await page.locator('.o_main_navbar button.o_user_menu').click();
+  await page.locator('.o-dropdown--menu [data-menu="logout"]').click();
+  await page.locator('input[name="login"]').waitFor();
+}
+
+/**
  * Two start states, each the user's shortest path from it. `new-device`: the first sign-in on this
  * browser. `returning`: this browser has signed in and out before (set up outside the measured
  * part), so whatever the product remembers for a returning user is used; if the e-mail is already
@@ -36,7 +47,7 @@ function variant(returning) {
         await ctx.page.locator('input[name="password"]').fill(password);
         await ctx.page.locator('input[name="password"]').press('Enter');
         await ctx.page.locator('.o_main_navbar button.o_user_menu').waitFor();
-        await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`);
+        await signOut(ctx.page);
       }
       // The runner opens the start (the bookmarked sign-in address) in a fresh browser that keeps
       // this browser's cookies and local storage.
@@ -72,6 +83,6 @@ export default {
   },
   async cleanup(ctx) {
     // Sign the session out so the next run starts signed out (the user is kept for the next run).
-    await ctx.page.goto(`${ctx.product.baseUrl}/web/session/logout`).catch(() => { });
+    if (await ctx.page.locator('.o_main_navbar button.o_user_menu').isVisible().catch(() => false)) await signOut(ctx.page).catch(() => { });
   },
 };

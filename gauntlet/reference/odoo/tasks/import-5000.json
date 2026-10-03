@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "import-5000-20261003T041343-8a5f",
-  "instrument": 3,
+  "run_id": "import-5000-20261003T144753-34c0",
+  "instrument": 4,
   "task": "import-5000",
   "task_title": "Import 5,000 rows",
   "product": "odoo",
   "status": "verified",
   "goal": "Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.",
   "done_when": "The product reports the import finished; the back end holds the 5,000 new contacts.",
-  "started_at": "2026-10-03T04:13:43.461Z",
-  "finished_at": "2026-10-03T04:15:00.316Z",
+  "started_at": "2026-10-03T14:47:53.244Z",
+  "finished_at": "2026-10-03T14:49:23.272Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 18.289,
-    "system_wait_seconds": 17.094,
+    "machine_seconds": 27,
+    "system_wait_seconds": 25.655,
     "human_seconds": 17.4,
-    "human_plus_wait_seconds": 34.494,
+    "human_plus_wait_seconds": 43.055,
     "klm_operator_counts": {
       "K": 0,
       "P": 7,
@@ -57,111 +57,111 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.069
+      "took": 0.062,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.069,
-      "took": 0.114
+      "at": 0.062,
+      "took": 0.038,
+      "chain": false
     },
     {
       "n": 3,
       "kind": "click",
       "label": "actions menu",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.681,
-      "took": 0.308
+      "at": 0.693,
+      "took": 0.186,
+      "chain": false
     },
     {
       "n": 4,
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.988,
-      "took": 0.278
+      "at": 0.879,
+      "took": 0.128,
+      "chain": false
     },
     {
       "n": 5,
       "kind": "click",
       "label": "open file dialog: contacts-import-5000.csv",
       "keystrokes": 0,
-      "chain": false,
-      "at": 1.432,
-      "took": 0.081
+      "at": 1.12,
+      "took": 0.028,
+      "chain": false
     },
     {
       "n": 6,
       "kind": "file-pick",
       "label": "contacts-import-5000.csv",
       "keystrokes": 0,
-      "chain": true,
-      "at": 1.513,
-      "took": 0.018,
-      "file": "contacts-import-5000.csv"
+      "at": 1.148,
+      "took": 0.013,
+      "file": "contacts-import-5000.csv",
+      "chain": true
     },
     {
       "n": 7,
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "chain": false,
-      "at": 1.812,
-      "took": 0.325
+      "at": 1.67,
+      "took": 0.85,
+      "chain": false
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.184,
-      "seconds": 0.121
+      "at": 0.1,
+      "seconds": 0.161
     },
     {
       "label": "contact list",
-      "at": 0.304,
-      "seconds": 0.376
+      "at": 0.261,
+      "seconds": 0.431
     },
     {
       "label": "import screen",
-      "at": 1.267,
-      "seconds": 0.165
+      "at": 1.007,
+      "seconds": 0.113
     },
     {
       "label": "column mapping preview",
-      "at": 1.532,
-      "seconds": 0.28
+      "at": 1.161,
+      "seconds": 0.3
     },
     {
       "label": "import finished, imported records listed",
-      "at": 2.137,
-      "seconds": 16.152
+      "at": 2.52,
+      "seconds": 24.481
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "7376a1233824ed76.jpg",
+      "file": "dd0c81b967fd4722.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/7376a1233824ed76.jpg"
+      "path": "gauntlet/reference/odoo/shots/dd0c81b967fd4722.jpg"
     },
     {
-      "moment": "mapping preview",
-      "file": "4dba262dcc9339fa.jpg",
-      "at": 1.812,
-      "path": "gauntlet/reference/odoo/shots/4dba262dcc9339fa.jpg"
+      "moment": "columns matched",
+      "file": "b33676ed4417c94b.jpg",
+      "at": 1.461,
+      "path": "gauntlet/reference/odoo/shots/b33676ed4417c94b.jpg"
     },
     {
       "moment": "done",
-      "file": "bf79cd3d07defe98.jpg",
-      "at": 18.289,
-      "path": "gauntlet/reference/odoo/shots/bf79cd3d07defe98.jpg"
+      "file": "c486f1a9aece25fc.jpg",
+      "at": 27,
+      "path": "gauntlet/reference/odoo/shots/c486f1a9aece25fc.jpg"
     }
   ],
   "verification": {
@@ -175,15 +175,25 @@
   "path_notes": "Apps menu > Contacts > actions menu (⋮) > Import > Upload (choose the file) > Import. Odoo maps the plain column headers (Name, Email, Phone, Street, City, Country) to contact fields by itself.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/import-5000.mjs",
-    "sha256": "9054ba58987572282f38beaee592f2494d0df2ae2557eb5770e6009ba706645c"
+    "sha256": "bd62d902068f73c2c0cb48925e8d8f35b765d0a0d95a5df597f31ce7c8980225"
   },
   "task_notes": "The file is generated by data/generate.mjs: plain headers, as a user would bring from another system. Clean-up deletes the imported rows.",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/import-5000.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/import-5000-20261003T041224-868a.json",
-    "gauntlet/reference/odoo/results/import-5000-20261003T041343-8a5f.json",
-    "gauntlet/reference/odoo/results/import-5000-20261003T041500-f4ad.json"
+    "gauntlet/reference/odoo/results/import-5000-20261003T144621-09d5.json",
+    "gauntlet/reference/odoo/results/import-5000-20261003T144753-34c0.json",
+    "gauntlet/reference/odoo/results/import-5000-20261003T144923-cd1f.json"
   ]
 }
