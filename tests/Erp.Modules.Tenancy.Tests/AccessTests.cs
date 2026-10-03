@@ -164,4 +164,50 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         Assert.True(all.GetProperty("total").GetInt32() > 10);
         Assert.Equal(10, all.GetProperty("items").GetArrayLength());
     }
+
+    [Fact]
+    public async Task The_access_list_keeps_the_list_contract_and_needs_only_its_own_permission()
+    {
+        var (admin, _, _, _) = await SetUpAsync();
+        // Keyset pages by e-mail, descending, walk the same rows as one page.
+        var whole = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/access?sort=-email&take=200");
+        var expected = whole.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("id").GetGuid()).ToList();
+        var walked = new List<Guid>();
+        string? next = null;
+        do
+        {
+            var page = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/access?sort=-email&take=7" + (next is null ? "" : $"&after={Uri.EscapeDataString(next)}"));
+            walked.AddRange(page.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("id").GetGuid()));
+            next = page.GetProperty("next").ValueKind == JsonValueKind.String ? page.GetProperty("next").GetString() : null;
+        }
+        while (next is not null && walked.Count <= expected.Count);
+        Assert.Equal(expected, walked);
+        var emails = whole.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("email").GetString()!.ToLowerInvariant()).ToList();
+        Assert.Equal(emails.OrderByDescending(e => e, StringComparer.Ordinal), emails);
+
+        // The access list's own definition decides what may be asked, not identity's users list:
+        // identity's users can be sorted by creation date and grouped by language, these cannot.
+        foreach (var (query, parameter) in new[] { ("sort=-createdAt", "sort"), ("groupBy=language", "groupBy"), ("filter=" + Uri.EscapeDataString("isActive eq true"), "filter"), ("filter=" + Uri.EscapeDataString("companies is null"), "filter") })
+        {
+            using var refused = await admin.GetAsync($"/api/tenancy/access?{query}");
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            Assert.True((await Json(refused)).GetProperty("errors").TryGetProperty(parameter, out _), query);
+        }
+        // Rows carry the access list's fields, nothing more of identity's users.
+        var first = whole.GetProperty("items")[0];
+        Assert.Equal(new[] { "companies", "displayName", "email", "id" }, first.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal));
+
+        // A role granting tenancy.access.read alone (no identity.users.read) reads the list.
+        var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Access reader {Guid.NewGuid():N}", nameAr = "قارئ الصلاحيات " + Guid.NewGuid().ToString("N")[..6], permissions = new[] { "tenancy.access.read" } });
+        Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+        var roleId = (await Json(role)).GetProperty("id").GetGuid();
+        var email = $"accessreader.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Access reader", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var reader = await Env.SignInAsync(email);
+        using var users = await reader.GetAsync("/api/identity/users");
+        Assert.Equal(HttpStatusCode.Forbidden, users.StatusCode);
+        var found = await reader.GetFromJsonAsync<JsonElement>($"/api/tenancy/access?search={Uri.EscapeDataString(email)}");
+        Assert.Equal(1, found.GetProperty("total").GetInt32());
+    }
 }

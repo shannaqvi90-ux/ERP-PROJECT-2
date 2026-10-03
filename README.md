@@ -59,7 +59,10 @@ that failed, on that account; administrators see the sign-in history and can unb
    and its GET endpoint takes `[AsParameters] ListRequest` and returns
    `catalog.ListBinding<Row>(key).QueryAsync(...)` as a `ListPage<T>`: search, filter language, sort,
    keyset and offset paging and grouping come with it (`docs/decisions/p05-list-search-query-contract.md`),
-   and `/api/lists/<key>/definition` and saved views appear for it automatically.
+   and `/api/lists/<key>/definition` and saved views appear for it automatically. A list whose rows
+   belong to another module is registered with `module.List(definition, servedBy: "<other list>")` and
+   queried through that module's contract (the access list over identity's users,
+   `docs/decisions/p02-tenancy-lists-on-the-list-contract.md`).
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
    for every table, and `migrationBuilder.ProtectCompanyTable(schema, table)` for every table whose rows
