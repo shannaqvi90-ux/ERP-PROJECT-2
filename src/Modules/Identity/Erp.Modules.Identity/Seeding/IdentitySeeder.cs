@@ -136,9 +136,8 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
              WHERE NOT EXISTS (SELECT 1 FROM identity.user_credentials c WHERE c.id = u.id)
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("hash", hash);
-        // One row (and one audit row) per seeded user: minutes on a busy machine at 100,000 users,
-        // well past the default 30-second command timeout.
-        command.CommandTimeout = 900;
+        // One row (and one audit row) per seeded user: minutes on a busy machine at 100,000 users.
+        // The command inherits the bulk pool's long timeout from the seeding session's connection.
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }

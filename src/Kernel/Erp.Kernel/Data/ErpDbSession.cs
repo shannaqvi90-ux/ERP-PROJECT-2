@@ -37,11 +37,42 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
     /// <see cref="TenantBinding"/>).</param>
     public ErpDbSession(NpgsqlDataSource dataSource, IHttpContextAccessor? http = null)
     {
-        Connection = dataSource.CreateConnection();
+        _connection = dataSource.CreateConnection();
         _http = http;
     }
 
-    public NpgsqlConnection Connection { get; }
+    private NpgsqlConnection _connection;
+    private bool _connectionHandedOut;
+
+    /// <summary>The unit of work's connection. Every DbContext and command of the scope uses it.</summary>
+    public NpgsqlConnection Connection
+    {
+        get
+        {
+            _connectionHandedOut = true;
+            return _connection;
+        }
+    }
+
+    /// <summary>
+    /// Bulk work (seeding, imports): take the connection from the bulk pool instead, whose
+    /// commands inherit a long timeout (<see cref="ErpDataSources.BuildBulk"/>). Only before the
+    /// connection has been handed to anything (a DbContext or a command), so every statement of the
+    /// unit of work runs on the same connection and in the same transaction.
+    /// </summary>
+    public async Task UseBulkConnectionAsync(NpgsqlDataSource bulkDataSource)
+    {
+        ArgumentNullException.ThrowIfNull(bulkDataSource);
+        if (_connectionHandedOut || Transaction is not null || _connection.State != ConnectionState.Closed)
+        {
+            throw new InvalidOperationException("The bulk connection must be chosen before the unit of work uses its connection.");
+        }
+        await _connection.DisposeAsync();
+        _connection = bulkDataSource.CreateConnection();
+    }
+
+    /// <summary>Seconds a command on this unit of work's connection may run (from its pool).</summary>
+    public int CommandTimeoutSeconds => _connection.CommandTimeout;
 
     public NpgsqlTransaction? Transaction { get; private set; }
 
@@ -80,11 +111,11 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             }
             throw new InvalidOperationException("This unit of work is already bound to another tenant or actor.");
         }
-        if (Connection.State != ConnectionState.Open)
+        if (_connection.State != ConnectionState.Open)
         {
-            await Connection.OpenAsync(cancellationToken);
+            await _connection.OpenAsync(cancellationToken);
         }
-        Transaction = await Connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        Transaction = await _connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         if (_http?.HttpContext is { } request && Http.ReadOnlyRequests.Applies(request))
         {
             // A request that only reads (GET, HEAD, ReadOnlyOperation): PostgreSQL refuses every
@@ -96,7 +127,7 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
             "set_config('app.actor_id', @actor, true), " +
             "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true)",
-            Connection, Transaction))
+            _connection, Transaction))
         {
             command.Parameters.AddWithValue("tenant", tenantId.ToString());
             command.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
@@ -118,11 +149,12 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
         {
             throw new InvalidOperationException("The unit of work is already bound to a tenant.");
         }
-        if (Connection.State != ConnectionState.Open)
+        if (_connection.State != ConnectionState.Open)
         {
-            await Connection.OpenAsync(cancellationToken);
+            await _connection.OpenAsync(cancellationToken);
         }
-        return Connection;
+        _connectionHandedOut = true;
+        return _connection;
     }
 
     /// <summary>Make the current transaction read-only: PostgreSQL then refuses every write until
@@ -135,7 +167,7 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             return;
         }
         using var activity = TenantBinding.StartReadOnly();
-        await using var command = new NpgsqlCommand("SET TRANSACTION READ ONLY", Connection, Transaction);
+        await using var command = new NpgsqlCommand("SET TRANSACTION READ ONLY", _connection, Transaction);
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -175,14 +207,14 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
             {
                 await Transaction.RollbackAsync();
             }
-            catch (Exception) when (Connection.State != ConnectionState.Open)
+            catch (Exception) when (_connection.State != ConnectionState.Open)
             {
                 // Connection already broken; nothing to roll back.
             }
             await Transaction.DisposeAsync();
             Transaction = null;
         }
-        await Connection.DisposeAsync();
+        await _connection.DisposeAsync();
     }
 }
 
