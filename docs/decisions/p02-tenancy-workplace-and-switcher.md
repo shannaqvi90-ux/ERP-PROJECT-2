@@ -17,6 +17,10 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   `<TopBarSlot />` once. The tenancy module adds `WorkplaceSwitcher` (Alt+C opens it; typing
   filters company and branch codes and names in both languages; arrows, Enter and Escape work).
   After a switch it raises `erp:workplace-changed` on `window` so screens can reload.
+- When the user may work in at most six active companies, every other company also gets its own
+  button beside the switcher. Switching is then one click, and the branch defaults to the first
+  the user may work in. Most UAE SMEs run between one and a handful of legal entities, so this
+  is the common case. The list (Alt+C) remains for branches and for larger groups.
 
 ## Why
 

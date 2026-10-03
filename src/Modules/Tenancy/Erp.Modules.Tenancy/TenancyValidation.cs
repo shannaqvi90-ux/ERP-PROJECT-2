@@ -68,6 +68,9 @@ internal static partial class TenancyValidation
         .Append("AE")
         .ToFrozenSet(StringComparer.Ordinal);
 
+    /// <summary>ISO 3166-1 alpha-2 code of the United Arab Emirates (emirates apply only there).</summary>
+    public const string UnitedArabEmirates = "AE";
+
     public const string CodePattern = "^[A-Z0-9][A-Z0-9-]{1,19}$";
     public const string PhonePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
     public const string TaxNumberPattern = "^[0-9]{1,20}$";
@@ -158,7 +161,7 @@ internal static partial class TenancyValidation
         if (Clean(address.Country) is { } country)
         {
             validator.Must(Countries.Contains(country), "country", "tenancyCountry");
-            validator.Must(address.Emirate is null || country == "AE", "emirate", "tenancyEmirateOutsideUae");
+            validator.Must(address.Emirate is null || country == UnitedArabEmirates, "emirate", "tenancyEmirateOutsideUae");
         }
         if (Clean(address.PoBox) is { } poBox)
         {

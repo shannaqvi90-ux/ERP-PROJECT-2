@@ -5,15 +5,18 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
 ## Decision
 
 - **Company**: code (2–20 capital letters, digits or hyphens, unique in the workspace, typed in
-  any case), legal names in English and Arabic (both required), trade licence number and
+  any case; left empty, it is made from the English name, for example "Al Reem Trading L.L.C."
+  becomes AL-REEM, with -2, -3 … added when taken), legal names in English and Arabic (at least
+  one; a check constraint holds the database to it), trade licence number and
   licensing authority, tax registration number (digits only, stored, no tax logic), base
   currency (ISO 4217 code, default AED, checked against the currencies .NET knows), fiscal year
   start (month and a day that exists in every year), address (lines, city, emirate when the
   country is AE, P.O. box, ISO 3166 country, Arabic address for printed documents), phone,
   e-mail, website, logo, active flag.
 - **Branch**: belongs to one company for life (the composite key `(tenant, company, id)` lets
-  access rows and workplaces prove the branch's company). Code unique within the company, names
-  in English and Arabic, address and contact, active flag.
+  access rows and workplaces prove the branch's company). Code unique within the company (made
+  from the name when left empty), names in English and Arabic (at least one), address and
+  contact, active flag.
 - **No deletes.** Companies and branches are deactivated, never deleted. Later documents will
   reference them, and the audit trail keeps their history.
 - **Logo**: PNG, JPEG or WebP only (no SVG, so no script), at most 512 KB. The bytes must match
@@ -29,6 +32,10 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   entry in `docs/compliance/` (listed as a human gate), so it is not guessed here.
 
 ## Why
+
+Only a name is required, so a company or a branch is created as fast as it can be typed. The
+screens ask for both languages side by side. A missing Arabic name prints the English one until
+it is filled in. Codes are offered, not demanded.
 
 These are the fields a UAE trading or manufacturing company prints on invoices and needs for
 registration, in both languages from the first screen. Deactivation instead of deletion keeps

@@ -97,7 +97,9 @@ internal static class WorkplaceEndpoints
         var companies = await db.Companies.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.Code)
             .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency })
             .ToListAsync(cancellationToken);
-        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Code)
+        // Branches in the order they were opened (time-ordered ids): the first is usually the head
+        // office, which is where a switch to the company lands.
+        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Id)
             .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr })
             .ToListAsync(cancellationToken);
         var allowed = scope.AllCompanies ? null : scope.BranchIds.ToHashSet();
@@ -112,7 +114,7 @@ internal static class WorkplaceEndpoints
 /// (their own rows, readable before the scope exists), binds the company scope (row-level security
 /// and query filters then hide every other company's rows), and works out their working company
 /// and branch: the one they chose if they still may work there, else their first active company
-/// and its first branch they may work in.
+/// (by code) and its first-opened branch they may work in.
 /// </summary>
 internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext db) : ISessionScopeBinder
 {
@@ -131,7 +133,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         }
         var limited = await db.BranchAccess.AsNoTracking().Where(b => b.UserId == userId).Select(b => b.BranchId).ToListAsync(cancellationToken);
         var companies = await db.Companies.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.Code).Select(c => c.Id).ToListAsync(cancellationToken);
-        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Code)
+        var branches = await db.Branches.AsNoTracking().Where(b => b.IsActive).OrderBy(b => b.Id)
             .Select(b => new { b.Id, b.CompanyId }).ToListAsync(cancellationToken);
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
         var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id)).ToList();

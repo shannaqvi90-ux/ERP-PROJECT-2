@@ -200,6 +200,43 @@ public sealed class OpenApiDocument(JsonElement root)
         return value;
     }
 
+    /// <summary>Every example value the document publishes (public text: it identifies no tenant).</summary>
+    public IReadOnlySet<string> ExampleValues()
+    {
+        var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        void Walk(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        if (property.Name == "example" && property.Value.ValueKind == JsonValueKind.String)
+                        {
+                            found.Add(property.Value.GetString()!);
+                        }
+                        else if (property.Name == "examples" && property.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var example in property.Value.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String))
+                            {
+                                found.Add(example.GetString()!);
+                            }
+                        }
+                        else
+                        {
+                            Walk(property.Value);
+                        }
+                    }
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var item in element.EnumerateArray()) Walk(item);
+                    break;
+            }
+        }
+        Walk(Root);
+        return found;
+    }
+
     private static IEnumerable<JsonElement> Examples(JsonElement leaf)
     {
         if (leaf.TryGetProperty("examples", out var examples) && examples.ValueKind == JsonValueKind.Array)
