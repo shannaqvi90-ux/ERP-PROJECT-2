@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
-    "check": "node scripts/check-strings.mjs",
+    "check": "node scripts/check-strings.mjs && node scripts/check-a11y.mjs",
     "test": "vitest run"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { useShortcut } from "../../kernel/shortcuts";
 import { workplaceChanged, type Workplace } from "./types";
 import { problemOf, useLocalName } from "./ui";
 
@@ -66,16 +67,25 @@ export function WorkplaceSwitcher() {
     setOpen(true);
   }, [canSwitch]);
 
+  useShortcut({
+    id: "tenancy.workplace.switch",
+    chord: "Alt+KeyC",
+    labelKey: "tenancy.workplace.switch",
+    groupKey: "tenancy.shortcut.group",
+    enabled: canSwitch,
+    run: show,
+  });
+
+  // A switch made elsewhere (the command palette) shows here at once.
   useEffect(() => {
-    const handle = (event: KeyboardEvent) => {
-      if (event.altKey && !event.ctrlKey && event.code === "KeyC") {
-        event.preventDefault();
-        show();
-      }
+    const reload = () => {
+      api<Workplace>("GET", "/api/tenancy/workplace")
+        .then(setWorkplace)
+        .catch(() => undefined);
     };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
-  }, [show]);
+    window.addEventListener(workplaceChanged, reload);
+    return () => window.removeEventListener(workplaceChanged, reload);
+  }, []);
 
   useEffect(() => {
     if (!open) return;

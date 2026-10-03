@@ -139,7 +139,7 @@ export function BranchesPage() {
           </thead>
           <tbody ref={gridRef} tabIndex={0} onKeyDown={gridKeys(rows, selected, setSelected, (id) => open(id))}>
             {rows.map((b) => (
-              <tr key={b.id} aria-selected={b.id === selected} className={b.isActive ? undefined : "inactive"} onClick={() => open(b.id)} data-id={b.id}>
+              <tr key={b.id} role="row" aria-selected={b.id === selected} className={b.isActive ? undefined : "inactive"} onClick={() => open(b.id)} data-id={b.id}>
                 <td dir="ltr">{b.companyCode}</td>
                 <td dir="ltr">{b.code}</td>
                 <td>{name(b.nameEn, b.nameAr)}</td>

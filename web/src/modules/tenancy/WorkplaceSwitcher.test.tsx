@@ -2,8 +2,8 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
 import { App } from "../shell/App";
-import { collectItems } from "../../kernel/slots";
-import { topBarItems } from "./shell";
+import { collectExtensions } from "../../kernel/extensions";
+import { extensions } from "./extensions";
 
 let view: Rendered | undefined;
 
@@ -39,17 +39,21 @@ function key(init: KeyboardEventInit, target: EventTarget = window) {
 }
 
 describe("working company switcher", () => {
-  it("is contributed to the top bar through the shell slot", () => {
-    expect(collectItems({ "../modules/tenancy/shell.tsx": { topBarItems } }).map((i) => i.key)).toEqual(["tenancy.workplace"]);
+  it("is contributed to the top bar and the command palette through the shell's extension points", () => {
+    const all = collectExtensions({ "../modules/tenancy/extensions.tsx": { extensions } });
+    expect(all.topbar.map((i) => [i.key, i.permission])).toEqual([["tenancy.workplace", "tenancy.workplace.read"]]);
+    expect(all.palette.map((i) => [i.key, i.permission])).toEqual([["tenancy.workplace", "tenancy.workplace.switch"]]);
   });
 
   it("shows the working company and branch, and switches by keyboard: Alt+C, type, Enter", async () => {
+    let current = workplace;
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(["tenancy.workplace.read", "tenancy.workplace.switch"]) };
-      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: workplace };
+      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: current };
       if (url === "/api/tenancy/workplace" && method === "PUT") {
         const { companyId, branchId } = body as { companyId: string; branchId: string };
-        return { status: 200, body: { ...workplace, companyId, branchId } };
+        current = { ...workplace, companyId, branchId };
+        return { status: 200, body: current };
       }
       return { status: 404, body: {} };
     });
@@ -80,10 +84,14 @@ describe("working company switcher", () => {
   });
 
   it("offers each other company as a one-click button", async () => {
+    let current = workplace;
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(["tenancy.workplace.read", "tenancy.workplace.switch"]) };
-      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: workplace };
-      if (url === "/api/tenancy/workplace" && method === "PUT") return { status: 200, body: { ...workplace, ...(body as object) } };
+      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: current };
+      if (url === "/api/tenancy/workplace" && method === "PUT") {
+        current = { ...workplace, ...(body as object) };
+        return { status: 200, body: current };
+      }
       return { status: 404, body: {} };
     });
     view = await render(<App language="en" />);

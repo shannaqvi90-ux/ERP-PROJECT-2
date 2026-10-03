@@ -87,7 +87,7 @@ export function AccessPage() {
           </thead>
           <tbody ref={gridRef} tabIndex={0} onKeyDown={gridKeys(rows, selected, setSelected, open)}>
             {rows.map((u) => (
-              <tr key={u.id} aria-selected={u.id === selected} onClick={() => open(u.id)} data-id={u.id}>
+              <tr key={u.id} role="row" aria-selected={u.id === selected} onClick={() => open(u.id)} data-id={u.id}>
                 <td>{u.displayName}</td>
                 <td dir="ltr">{u.email}</td>
                 <td dir="ltr">

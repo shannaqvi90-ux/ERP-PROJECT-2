@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, ApiError, type FieldError } from "./api";
 
-export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar" };
+export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar"; numerals?: "latn" | "arab" };
 export type SessionTenant = { id: string; code: string; nameEn: string; nameAr: string };
 export type MenuItem = { key: string; labelKey: string; path: string; group: string | null };
 

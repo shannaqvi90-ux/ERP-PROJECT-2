@@ -127,6 +127,7 @@ export function CompaniesPage() {
             {rows.map((c) => (
               <tr
                 key={c.id}
+                role="row"
                 aria-selected={c.id === selected}
                 className={c.isActive ? undefined : "inactive"}
                 onClick={() => open(c.id)}

@@ -34,7 +34,7 @@ test.describe("companies, branches and the working company", () => {
     await page.keyboard.press("Tab");
     await page.keyboard.type(code.toLowerCase());
     await page.keyboard.press("Control+KeyS");
-    await expect(page.getByRole("status")).toHaveText("Saved.");
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
     await expect(page.locator(".record-header h2")).toHaveText(`${code} · Al Noor Logistics LLC`);
     await expect(page).toHaveURL(/\?id=/);
 

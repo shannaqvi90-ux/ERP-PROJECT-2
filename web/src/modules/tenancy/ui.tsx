@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ApiError, type FieldError } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
+import { useShortcut } from "../../kernel/shortcuts";
 
 /** The seven emirates, in the order the API documents them. */
 export const emirates = ["abuDhabi", "dubai", "sharjah", "ajman", "ummAlQuwain", "rasAlKhaimah", "fujairah"] as const;
@@ -25,21 +26,32 @@ type Keys = {
   search?: React.RefObject<HTMLInputElement | null>;
 };
 
-/** Screen keyboard shortcuts (shown in each button's title). */
+/** Screen keyboard shortcuts. Alt+N and Ctrl+S go through the shell's shortcut registry (so they
+ * appear in its help sheet); Escape closes the form and "/" focuses the search box. */
 export function useScreenKeys({ onNew, onSave, onClose, search }: Keys) {
   const latest = useRef({ onNew, onSave, onClose, search });
   latest.current = { onNew, onSave, onClose, search };
+  useShortcut({
+    id: "tenancy.screen.new",
+    chord: "Alt+KeyN",
+    labelKey: "tenancy.shortcut.new",
+    groupKey: "tenancy.shortcut.group",
+    enabled: Boolean(onNew),
+    run: () => latest.current.onNew?.(),
+  });
+  useShortcut({
+    id: "tenancy.form.save",
+    chord: "Mod+KeyS",
+    labelKey: "tenancy.shortcut.save",
+    groupKey: "tenancy.shortcut.group",
+    enabled: Boolean(onSave),
+    run: () => latest.current.onSave?.(),
+  });
   useEffect(() => {
     const handle = (event: KeyboardEvent) => {
-      const { onNew, onSave, onClose, search } = latest.current;
+      const { onClose, search } = latest.current;
       const typing = event.target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName);
-      if (onSave && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
-        event.preventDefault();
-        onSave();
-      } else if (onNew && event.altKey && !event.ctrlKey && event.code === "KeyN") {
-        event.preventDefault();
-        onNew();
-      } else if (onClose && event.key === "Escape" && !event.defaultPrevented) {
+      if (onClose && event.key === "Escape" && !event.defaultPrevented && !document.querySelector('[aria-modal="true"]')) {
         onClose();
       } else if (search?.current && event.key === "/" && !typing) {
         event.preventDefault();
@@ -198,11 +210,10 @@ export function CheckField({ name, label, checked, onChange }: { name: string; l
   );
 }
 
-/** Localised month names for the fiscal-year selector. */
+/** Month names for the fiscal-year selector, in the screen's language. */
 export function useMonths(): { value: string; label: string }[] {
-  const { language } = useI18n();
-  const format = new Intl.DateTimeFormat(language === "ar" ? "ar-AE" : "en-AE", { month: "long", timeZone: "UTC" });
-  return Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: format.format(new Date(Date.UTC(2025, i, 1))) }));
+  const { t } = useI18n();
+  return Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: t(`tenancy.month.${i + 1}`) }));
 }
 
 /** English or Arabic name of a record, by screen language. */

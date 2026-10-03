@@ -65,19 +65,19 @@ describe("companies screen", () => {
     expect(code.value).toBe("A");
     setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");
     setInput(field(view.container, "legalNameAr"), "النور عجمان ذ.م.م");
-    press({ ctrlKey: true, key: "s" });
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
     await settle();
     expect(view.container.querySelector('[data-field="code"] .field-error')!.textContent).toContain("Use 2 to 20 capital letters.");
     expect(code.getAttribute("aria-invalid")).toBe("true");
 
     setInput(code, "an-ajm");
-    press({ ctrlKey: true, key: "s" });
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
     await settle();
     const post = calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/companies")[1]!;
     expect(post.body).toMatchObject({ code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC", legalNameAr: "النور عجمان ذ.م.م", baseCurrency: "AED", country: "AE", isActive: true });
     expect(window.location.search).toBe("?id=c9");
     // The same form stays open on the saved company and says so.
-    expect(view.container.querySelector('[role="status"]')!.textContent).toBe("Saved.");
+    expect(view.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
     expect(document.activeElement).not.toBe(document.body);
 
     const branchCode = view.container.querySelector<HTMLInputElement>('input[name="branchCode"]')!;

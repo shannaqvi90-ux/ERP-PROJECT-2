@@ -74,6 +74,9 @@ public sealed class User : TenantEntity
 
     /// <summary>en or ar.</summary>
     public string Language { get; set; } = "en";
+
+    /// <summary>Digits on Arabic screens: latn (0123) or arab (٠١٢٣). See <see cref="Erp.Kernel.Localization.NumeralSystems"/>.</summary>
+    public string Numerals { get; set; } = "latn";
     public string PasswordHash { get; set; } = "";
     public bool IsActive { get; set; } = true;
     public int FailedSignInCount { get; set; }
@@ -133,6 +136,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.ToTable("users", t =>
             {
                 t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
+                t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                 t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
                 t.HasCheckConstraint("ck_users_failed_sign_in_count", "failed_sign_in_count >= 0");
             });
@@ -140,6 +144,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
             e.Property(x => x.DisplayName).HasMaxLength(200);
             e.Property(x => x.Language).HasMaxLength(2);
+            // Bulk seeding copies rows without this column; the database fills the default.
+            e.Property(x => x.Numerals).HasMaxLength(4).HasDefaultValue("latn");
             e.Property(x => x.PasswordHash).HasMaxLength(200);
             e.HasIndex(x => new { x.TenantId, x.EmailNormalized }).IsUnique();
             // Sign-in looks a user up by e-mail before the tenant is known.
