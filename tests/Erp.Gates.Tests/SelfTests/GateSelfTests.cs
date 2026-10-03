@@ -112,6 +112,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.
         Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));
         Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
+        Assert.True(running.DelegateObjectsWalked > running.EndpointsWalked, "the endpoint delegate walk reached nothing beyond the delegates");
     }
 
     [Fact]

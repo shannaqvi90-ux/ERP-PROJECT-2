@@ -35,7 +35,7 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
 
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{inventory.TypesInspected} types, {inventory.FieldsInspected} fields, {inventory.SingletonsInspected} singleton services inspected, " +
-            $"{inventory.EndpointsWalked} endpoint delegates walked to {inventory.ClosuresInspected} closures; {inventory.Findings.Count} reviewed findings");
+            $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; {inventory.Findings.Count} reviewed findings");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(inventory.FieldsInspected >= Ratchet.Min("g1.processStateFieldsInspected"),
             $"g1.processStateFieldsInspected: {inventory.FieldsInspected}; ratchet minimum {Ratchet.Min("g1.processStateFieldsInspected")}");
@@ -45,6 +45,8 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
             $"g1.endpointDelegatesWalked: {inventory.EndpointsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegatesWalked")}");
         Assert.True(inventory.ClosuresInspected >= Ratchet.Min("g1.endpointClosuresInspected"),
             $"g1.endpointClosuresInspected: {inventory.ClosuresInspected}; ratchet minimum {Ratchet.Min("g1.endpointClosuresInspected")}");
+        Assert.True(inventory.DelegateObjectsWalked >= Ratchet.Min("g1.endpointDelegateObjectsWalked"),
+            $"g1.endpointDelegateObjectsWalked: {inventory.DelegateObjectsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegateObjectsWalked")}");
     }
 }
 
@@ -58,6 +60,9 @@ public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Fi
 
     /// <summary>Closures (captured variables) of the product reached from endpoint delegates.</summary>
     public int ClosuresInspected { get; init; }
+
+    /// <summary>Objects visited while walking endpoint delegates (a walk that reaches nothing is blind).</summary>
+    public int DelegateObjectsWalked { get; init; }
 }
 
 /// <summary>Finds process-wide state by reflection over the product's assemblies and the app's
@@ -100,7 +105,7 @@ public static class ProcessState
         // delegate to the product closures and objects it holds.
         var closures = EndpointClosures.Inspect(factory.Services, assemblies, serviceTypes);
         findings.AddRange(closures.Findings);
-        inventory = inventory with { EndpointsWalked = closures.Endpoints, ClosuresInspected = closures.Closures };
+        inventory = inventory with { EndpointsWalked = closures.Endpoints, ClosuresInspected = closures.Closures, DelegateObjectsWalked = closures.ObjectsWalked };
         foreach (var name in CacheServices)
         {
             if (descriptors.Any(d => d.ServiceType.FullName == name))
