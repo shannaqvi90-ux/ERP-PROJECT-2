@@ -186,6 +186,59 @@ test.describe("users, roles and permissions", () => {
     expect((await page.request.get(`/api/identity/users/${id}`)).status()).toBe(404);
   });
 
+  // Critic p03 round 2: at 1440 px the sign-in history lost its Address and Session columns, and
+  // the matrix headers broke inside words ("Vie/w"). Both languages, at the width the critic used.
+  for (const language of ["en", "ar"] as const) {
+    test(`at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (${language})`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await freshStart(page, language);
+      await signIn(page, language === "en" ? users.admin : users.adminArabic);
+      await expect(page.locator("nav").first()).toBeVisible();
+      const session = (await (await page.request.get("/api/auth/session")).json()) as { user: { id: string } };
+      await page.goto(`/identity/users?open=${session.user.id}`);
+      await page.getByRole("tab").nth(2).click();
+      const table = page.locator(".id-history-table");
+      await expect(table.locator("tbody tr").first()).toBeVisible();
+      const overflow = await page.evaluate(() => {
+        const panel = document.querySelector<HTMLElement>("aside.list-record")!;
+        const scroll = document.querySelector<HTMLElement>(".id-scroll")!;
+        const cells = [...document.querySelectorAll<HTMLElement>(".id-history-table td, .id-history-table th")];
+        const box = panel.getBoundingClientRect();
+        const outside = cells.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.left < box.left - 1 || r.right > box.right + 1;
+        }).length;
+        return { panel: panel.scrollWidth - panel.clientWidth, table: scroll.scrollWidth - scroll.clientWidth, outside };
+      });
+      expect(overflow).toEqual({ panel: 0, table: 0, outside: 0 });
+      // The address of the attempt is on screen, under its time.
+      await expect(table.locator("tbody tr").first().locator(".id-sub bdi")).toBeVisible();
+
+      await page.locator('nav a[href="/identity/roles"]').first().click();
+      await page.locator("table tbody tr", { hasText: language === "en" ? "Read-only" : "قراءة فقط" }).click();
+      const headers = page.locator(".id-matrix-table thead th");
+      await expect(headers.first()).toBeVisible();
+      const broken = await page.evaluate(() => {
+        const found: string[] = [];
+        for (const th of document.querySelectorAll<HTMLElement>(".id-matrix-table thead th")) {
+          const walker = document.createTreeWalker(th, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const text = node.textContent ?? "";
+            for (const match of text.matchAll(/\S+/g)) {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+              if (tops.size > 1) found.push(match[0]);
+            }
+          }
+        }
+        return found;
+      });
+      expect(broken).toEqual([]);
+    });
+  }
+
   test("the Administrator role and the matrix read right to left in Arabic", async ({ page }) => {
     await freshStart(page, "ar");
     await signIn(page, users.adminArabic);
