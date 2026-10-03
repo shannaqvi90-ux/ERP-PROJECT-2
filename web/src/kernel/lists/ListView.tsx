@@ -69,7 +69,7 @@ export function ListView(props: ListViewProps) {
     () => ({ t, formatDateTime: i18n.formatDateTime, formatNumber: i18n.formatNumber, locale: localeOf(language) }),
     [t, i18n.formatDateTime, i18n.formatNumber, language],
   );
-  const id = useId().replace(/:/g, "");
+  const id = "list" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
 
   const [definition, setDefinition] = useState<ListDefinition | null>(null);
   const [views, setViews] = useState<SavedView[]>([]);
@@ -91,6 +91,7 @@ export function ListView(props: ListViewProps) {
   const [viewport, setViewport] = useState(600);
   const searchRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
   const openWhenSingle = useRef(false);
 
   // Definition and saved views, then the starting state: the address, else the user's default
@@ -150,8 +151,10 @@ export function ListView(props: ListViewProps) {
     if (address !== window.location.pathname + window.location.search) window.history.replaceState(null, "", address);
   }, [current, definition, openId]);
 
-  // Start with the cursor in the search box (after the shell has placed focus on the screen).
+  // Start with the cursor in the search box (after the shell has placed focus on the screen),
+  // unless the address opens a record, whose panel takes focus.
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("open")) return;
     const timer = window.setTimeout(() => {
       const focused = document.activeElement;
       if (!focused || focused === document.body || focused.id === "main" || focused.tagName === "MAIN") searchRef.current?.focus();
@@ -159,7 +162,12 @@ export function ListView(props: ListViewProps) {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // A new query starts at the top with nothing selected.
+  // Grouping shows groups, not rows: nothing stays selected.
+  useEffect(() => {
+    setSelected(new Map());
+  }, [current?.groupBy]);
+
+  // A new query starts at the top.
   useEffect(() => {
     setActive(0);
     setScrollTop(0);
@@ -245,7 +253,7 @@ export function ListView(props: ListViewProps) {
   function closeRecord() {
     setOpenId(null);
     setOpenRow(null);
-    gridRef.current?.focus();
+    tableRef.current?.focus();
   }
 
   function afterSearchEnter() {
@@ -261,7 +269,7 @@ export function ListView(props: ListViewProps) {
 
   function focusGrid(index: number) {
     setActive(Math.max(0, Math.min(index, Math.max(0, (grouped ? (rows.groups?.length ?? 0) : total) - 1))));
-    gridRef.current?.focus();
+    tableRef.current?.focus();
   }
 
   function scrollToRow(index: number) {
@@ -310,7 +318,7 @@ export function ListView(props: ListViewProps) {
     update((s) => ({ ...s, groupBy: null, conditions: [...s.conditions.filter((c) => c.column !== key), condition] }));
   }
 
-  function onGridKey(event: KeyboardEvent<HTMLDivElement>) {
+  function onGridKey(event: KeyboardEvent<HTMLTableElement>) {
     const page = Math.max(1, Math.floor(viewport / rowHeight) - 1);
     const count = grouped ? (rows.groups?.length ?? 0) : total;
     switch (event.key) {
@@ -352,7 +360,8 @@ export function ListView(props: ListViewProps) {
         break;
       }
       case "Escape":
-        if (selected.size > 0) setSelected(new Map());
+        if (openRow) closeRecord();
+        else if (selected.size > 0) setSelected(new Map());
         else searchRef.current?.focus();
         break;
       case "a":
@@ -382,6 +391,9 @@ export function ListView(props: ListViewProps) {
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       focusGrid(0);
+    } else if (event.key === "Escape" && openRow) {
+      event.preventDefault();
+      closeRecord();
     } else if (event.key === "Escape" && searchText) {
       event.preventDefault();
       setSearchText("");
@@ -486,7 +498,7 @@ export function ListView(props: ListViewProps) {
       const row = rows.rowAt(index);
       const isSelected = row ? selected.has(row.id) : false;
       rowsToRender.push(
-        <div
+        <tr
           key={row?.id ?? `pending-${index}`}
           id={`${id}-row-${index}`}
           role="row"
@@ -497,7 +509,7 @@ export function ListView(props: ListViewProps) {
           onMouseDown={() => setActive(index)}
           onDoubleClick={() => row && open(row)}
         >
-          <div role="gridcell" className="list-cell list-select">
+          <td role="gridcell" className="list-cell list-select">
             {row && (
               <input
                 type="checkbox"
@@ -507,13 +519,13 @@ export function ListView(props: ListViewProps) {
                 onChange={() => toggleSelected(row)}
               />
             )}
-          </div>
+          </td>
           {visible.map((c) => (
-            <div key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" ? "ltr" : undefined}>
+            <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" ? "ltr" : undefined}>
               {row ? (props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
-            </div>
+            </td>
           ))}
-        </div>,
+        </tr>,
       );
     }
   }
@@ -665,8 +677,9 @@ export function ListView(props: ListViewProps) {
       )}
 
       <div className={`list-body${openRow ? " has-record" : ""}`}>
-        <div
-          ref={gridRef}
+        <div ref={gridRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
+        <table
+          ref={tableRef}
           id={`${id}-grid`}
           className="list-grid"
           role="grid"
@@ -677,10 +690,25 @@ export function ListView(props: ListViewProps) {
           aria-multiselectable={!grouped}
           aria-activedescendant={(grouped ? groups.length : total) > 0 ? activeRowId : undefined}
           onKeyDown={onGridKey}
-          onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
         >
-          <div role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate }}>
-            <div role="columnheader" className="list-cell list-select">
+          <thead role="rowgroup" className="list-head">
+          {grouped && current?.groupBy ? (
+            <tr role="row" aria-rowindex={1} className="list-header list-group-header">
+              <th role="columnheader" className="list-cell">
+                {columnLabel(definition!, current.groupBy, t)}
+              </th>
+              <th role="columnheader" className="list-cell">
+                {t("lists.group.rows")}
+              </th>
+              {totalsColumns.map((c) => (
+                <th key={c.key} role="columnheader" className="list-cell type-number">
+                  {t("lists.group.total", { column: t(c.labelKey) })}
+                </th>
+              ))}
+            </tr>
+          ) : (
+          <tr role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate }}>
+            <th role="columnheader" className="list-cell list-select">
               {!grouped && (
                 <input
                   type="checkbox"
@@ -690,14 +718,14 @@ export function ListView(props: ListViewProps) {
                   onChange={(e) => setSelected(e.target.checked ? new Map(rows.loadedRows().map((r) => [r.id, r])) : new Map())}
                 />
               )}
-            </div>
-            {visible.map((c) => {
+            </th>
+            {visible.map((c, position) => {
               const sortIndex = current?.sort.findIndex((k) => k.column === c.key) ?? -1;
               const sortKey = sortIndex >= 0 ? current!.sort[sortIndex] : undefined;
               const filtered = current?.conditions.some((x) => x.column === c.key);
               const label = t(c.labelKey);
               return (
-                <div
+                <th
                   key={c.key}
                   role="columnheader"
                   className={`list-cell list-headcell type-${c.type}${filtered ? " is-filtered" : ""}`}
@@ -722,7 +750,7 @@ export function ListView(props: ListViewProps) {
                     <span className="list-headlabel">{label}</span>
                   )}
                   {(c.sortable || c.filterable || c.groupable) && (
-                    <span className="list-anchor">
+                    <span className={`list-anchor${position >= visible.length / 2 ? " end" : ""}`}>
                       <button
                         type="button"
                         className="list-colmenu"
@@ -772,18 +800,20 @@ export function ListView(props: ListViewProps) {
                       )}
                     </span>
                   )}
-                </div>
+                </th>
               );
             })}
-          </div>
+          </tr>
+          )}
+          </thead>
 
           {grouped ? (
-            <div className="list-groups">
+            <tbody role="rowgroup" className="list-groups">
               {groups.map((group, index) => {
                 const groupColumn = column(current!.groupBy!);
                 const label = group.key === null ? t("lists.group.empty") : groupColumn ? formatValue(groupColumn, group.key, formatters) : String(group.key);
                 return (
-                  <div
+                  <tr
                     key={`${String(group.key)}-${index}`}
                     id={`${id}-group-${index}`}
                     role="row"
@@ -792,28 +822,29 @@ export function ListView(props: ListViewProps) {
                     onMouseDown={() => setActive(index)}
                     onDoubleClick={() => drill(group)}
                   >
-                    <div role="gridcell" className="list-cell list-group-key">
+                    <td role="gridcell" className="list-cell list-group-key">
                       <button type="button" tabIndex={-1} className="button link" title={t("lists.group.open")} onClick={() => drill(group)}>
                         {label}
                       </button>
-                    </div>
-                    <div role="gridcell" className="list-cell list-group-count">
+                    </td>
+                    <td role="gridcell" className="list-cell list-group-count">
                       {t("lists.group.count", { count: group.count })}
-                    </div>
+                    </td>
                     {totalsColumns.map((c) => (
-                      <div key={c.key} role="gridcell" className="list-cell type-number">
-                        {t("lists.group.total", { column: t(c.labelKey) })}: {formatValue(c, group.totals?.[c.key] ?? "0", formatters)}
-                      </div>
+                      <td key={c.key} role="gridcell" className="list-cell type-number">
+                        {formatValue(c, group.totals?.[c.key] ?? "0", formatters)}
+                      </td>
                     ))}
-                  </div>
+                  </tr>
                 );
               })}
-            </div>
+            </tbody>
           ) : (
-            <div className="list-rows" style={{ height: total * rowHeight }}>
+            <tbody role="rowgroup" className="list-rows" style={{ height: total * rowHeight }}>
               {rowsToRender}
-            </div>
+            </tbody>
           )}
+        </table>
           {!rows.loading && rows.total === 0 && (
             <div className="list-empty" role="status">
               {t("lists.empty")}
@@ -827,7 +858,6 @@ export function ListView(props: ListViewProps) {
       </div>
       <div className="list-statusbar muted">
         <span>{t("lists.keys")}</span>
-        {current && <span dir="ltr" className="list-query">{sortText(current.sort)}</span>}
       </div>
     </section>
   );

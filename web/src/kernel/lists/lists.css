@@ -130,18 +130,47 @@
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
 }
 
-.list-grid {
+.list-scroll {
   position: relative;
   height: calc(100vh - 230px);
   min-height: 240px;
   overflow: auto;
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+/* A table for its semantics (role grid), laid out as blocks and CSS grid rows so the body can be
+   virtualised: only the rows in view exist, positioned inside a body as tall as every row. */
+.list-grid {
+  display: block;
+  width: 100%;
+  min-width: max-content;
+  border-collapse: separate;
+  border-spacing: 0;
   outline: none;
 }
 
 .list-grid:focus-visible {
-  box-shadow: 0 0 0 2px var(--focus) inset;
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.list-head {
+  display: block;
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+}
+
+.list-grid th,
+.list-grid td {
+  display: block;
+  font-weight: inherit;
+  text-align: start;
+}
+
+.list-groups {
+  display: block;
 }
 
 .list-header,
@@ -155,15 +184,13 @@
 }
 
 .list-header {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 2;
   background: #f6f8fa;
   border-block-end: 1px solid var(--border);
   font-weight: 600;
 }
 
 .list-rows {
+  display: block;
   position: relative;
 }
 
@@ -216,6 +243,8 @@
   display: flex;
   align-items: center;
   gap: 2px;
+  /* Column menus and filter editors open below the header. */
+  overflow: visible;
 }
 
 .list-headcell.is-filtered .list-colmenu {
@@ -266,9 +295,14 @@
   font-weight: 400;
 }
 
-.list-toolbar-end .list-popover {
+.list-toolbar-end .list-popover,
+.list-anchor.end > .list-popover {
   inset-inline-start: auto;
   inset-inline-end: 0;
+}
+
+.list-filter {
+  min-width: 320px;
 }
 
 .list-popover-title {
@@ -350,8 +384,12 @@
   gap: 8px;
 }
 
+.list-groups .list-group,
+.list-group-header {
+  grid-template-columns: minmax(14rem, 2fr) minmax(8rem, 1fr) repeat(auto-fill, minmax(10rem, 1fr));
+}
+
 .list-groups .list-group {
-  grid-template-columns: minmax(12rem, 2fr) minmax(8rem, 1fr) repeat(auto-fill, minmax(10rem, 1fr));
   border-block-end: 1px solid #eef0f2;
 }
 
