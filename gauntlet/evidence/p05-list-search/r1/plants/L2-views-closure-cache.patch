@@ -1,0 +1,21 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index d5d6593..debfbfd 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -67,7 +67,15 @@ internal static class ViewEndpoints
+                 .WithSummary($"Definition of the {key} list: columns, types, labels, operators, search fields, default sort, built-in views.")
+                 .RequirePermission(list.Permission);
+ 
+-            routes.MapGet("/views", (ListsDbContext db, ICurrentUser caller, CancellationToken ct) => Views(key, db, caller, ct))
++            // PLANT L2: closure-captured cache of the shared views of this list (not keyed by tenant).
++            var sharedCache = new System.Collections.Concurrent.ConcurrentDictionary<Guid, SavedViewDto>();
++            routes.MapGet("/views", async (ListsDbContext db, ICurrentUser caller, CancellationToken ct) =>
++            {
++                var page = (await Views(key, db, caller, ct)).Value!;
++                foreach (var v in page.Items.Where(v => v.IsShared)) sharedCache[v.Id] = v;
++                var items = page.Items.Concat(sharedCache.Values.Where(c => page.Items.All(i => i.Id != c.Id))).ToList();
++                return TypedResults.Ok(new ListPage<SavedViewDto>(items, items.Count));
++            })
+                 .WithName($"{name}.views.list")
+                 .WithSummary($"Saved views of the {key} list the caller can use: shared views, then the caller's own.")
+                 .RequirePermission(list.Permission);

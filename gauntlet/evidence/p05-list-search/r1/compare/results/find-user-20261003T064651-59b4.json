@@ -1,0 +1,365 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261003T064651-59b4",
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Yousef Samir Wang) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the e-mail yousef.wang.060019@staff.example.",
+  "started_at": "2026-10-03T06:46:51.509Z",
+  "finished_at": "2026-10-03T06:46:59.712Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 21,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "machine_seconds": 1.362,
+    "system_wait_seconds": 1.13,
+    "human_seconds": 14.55,
+    "human_plus_wait_seconds": 15.68,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 1,
+      "B": 2,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 0,
+      "took": 0.023,
+      "chord": "Control+k"
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 6,
+      "chain": true,
+      "at": 0.25,
+      "took": 0.041,
+      "text": "/users"
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Users",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.402,
+      "took": 0.021,
+      "chord": "Enter"
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 20,
+      "chain": false,
+      "at": 0.582,
+      "took": 0.073,
+      "text": "Yousef Samir Wang"
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.655,
+      "took": 0.007,
+      "chord": "Enter"
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.122,
+      "took": 0.068
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.023,
+      "seconds": 0.227
+    },
+    {
+      "label": "Users menu offered first",
+      "at": 0.291,
+      "seconds": 0.111
+    },
+    {
+      "label": "users list, search focused",
+      "at": 0.423,
+      "seconds": 0.16
+    },
+    {
+      "label": "one result",
+      "at": 0.662,
+      "seconds": 0.459
+    },
+    {
+      "label": "user form shows the e-mail",
+      "at": 1.19,
+      "seconds": 0.173
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ae62ee0bc943c624.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r1/compare/shots/ae62ee0bc943c624.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5c8b66f0e7175141.jpg",
+      "at": 1.363,
+      "path": "../../evidence-staging/p05-list-search/r1/compare/shots/5c8b66f0e7175141.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "id": 60026,
+      "url": "http://localhost:8069/odoo/users/60026",
+      "login": "yousef.wang.060019@staff.example"
+    }
+  },
+  "path_notes": "keyboard: Ctrl+K > type \"/users\" > Enter > type the name > Enter > click the single result. | pointer: Apps menu > Settings > Manage Users > type the name > Enter > click the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-user.mjs",
+    "sha256": "ec2f44fc73782f7b64ae8d00adfe8d7f2eac13a29f8fd32a7a8db037affd693d"
+  },
+  "task_notes": "Both products hold the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv); the name occurs exactly once.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Ctrl+K > type \"/users\" > Enter > type the name > Enter > click the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 30,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "machine_seconds": 1.362,
+        "system_wait_seconds": 1.13,
+        "human_seconds": 14.55,
+        "human_plus_wait_seconds": 15.68,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0,
+          "took": 0.023,
+          "chord": "Control+k"
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search",
+          "keystrokes": 6,
+          "chain": true,
+          "at": 0.25,
+          "took": 0.041,
+          "text": "/users"
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Users",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.402,
+          "took": 0.021,
+          "chord": "Enter"
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "chain": false,
+          "at": 0.582,
+          "took": 0.073,
+          "text": "Yousef Samir Wang"
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.655,
+          "took": 0.007,
+          "chord": "Enter"
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.122,
+          "took": 0.068
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "id": 60026,
+          "url": "http://localhost:8069/odoo/users/60026",
+          "login": "yousef.wang.060019@staff.example"
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Manage Users > type the name > Enter > click the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 21,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "machine_seconds": 1.435,
+        "system_wait_seconds": 1.171,
+        "human_seconds": 18.63,
+        "human_plus_wait_seconds": 19.801,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 4,
+          "B": 8,
+          "H": 2,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.052
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.052,
+          "took": 0.04
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.5,
+          "took": 0.049
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "chain": false,
+          "at": 0.777,
+          "took": 0.06,
+          "text": "Yousef Samir Wang"
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.837,
+          "took": 0.006,
+          "chord": "Enter"
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.246,
+          "took": 0.057
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "id": 60026,
+          "url": "http://localhost:8069/odoo/settings/69/users/60026",
+          "login": "yousef.wang.060019@staff.example"
+        }
+      }
+    }
+  ]
+}

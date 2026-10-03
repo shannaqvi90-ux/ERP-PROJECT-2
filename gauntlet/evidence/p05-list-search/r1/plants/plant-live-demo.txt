@@ -1,0 +1,18 @@
+Plant stack (L3 count cache + P2 delete without list permission), port 20570, clean product otherwise.
+L3: tenant B (gulfsteel) searches 'zz-probe-hamad' never seen before? Use word 'hamad':
+  B searches hamad -> total 0
+  A searches hamad -> total 0  items on page 0
+  A with take=500 -> total 0  items actually returned 0
+  -> A is shown B's count; the true count for A is the number of items returned.
+P2: a user holding only lists.views.share deletes the users list's shared view
+  role 201
+  user 201
+  target shared view Team view 01a1007c-1424-72ed-b1b1-7708eb147565
+  share-only GET definition -> 
+  share-only GET /views -> 403
+  share-only DELETE shared view -> 204
+  admin now sees shared views: []
+L3 retry with word 'a' (B searches first, then A):
+  B (gulfsteel) search a -> total 1004
+  A (alnoor) search a -> total 1004
+  A (alnoor) same search, uncached key -> total 2005
