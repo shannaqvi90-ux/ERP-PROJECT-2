@@ -3,7 +3,8 @@ import type { ModuleExtensions } from "../../kernel/extensions";
 
 type UserRow = { id: string; email: string; displayName: string };
 
-/** The command palette finds users by name or e-mail for those allowed to see users. */
+/** The command palette finds users by name or e-mail for those allowed to see users; picking one
+ * opens that user's record. */
 export const extensions: ModuleExtensions = {
   palette: [
     {
@@ -18,7 +19,8 @@ export const extensions: ModuleExtensions = {
           id: u.id,
           title: u.displayName,
           subtitle: u.email,
-          path: `/identity/users?${new URLSearchParams({ q: u.email })}`,
+          // The user's own record opens at once, in the list narrowed to them.
+          path: `/identity/users?${new URLSearchParams({ q: u.email, open: u.id })}`,
         }));
       },
     },

@@ -19,7 +19,7 @@ public sealed class ListRequest
     public const int MaxSearchWords = 8;
 
     [FromQuery(Name = "search")]
-    [Description("Free text. Every word must occur (anywhere, any case) in at least one of the list's search fields.")]
+    [Description("Free text. Every word must occur (anywhere, any case) in at least one of the list's search fields; Arabic words also match the letter variants people type for one another (ا أ إ آ, ي ى, ه ة, و ؤ). Without a sort, rows come best match first: words at the start of a field or of a word in it, the whole search equal to or starting a field, the words in the typed order; then shorter values, then the list's default sort.")]
     public string? Search { get; init; }
 
     [FromQuery(Name = "filter")]
@@ -27,7 +27,7 @@ public sealed class ListRequest
     public string? Filter { get; init; }
 
     [FromQuery(Name = "sort")]
-    [Description("Sortable column keys separated by commas; a leading '-' sorts descending. Defaults to the list's default sort.")]
+    [Description("Sortable column keys separated by commas; a leading '-' sorts descending. Defaults to best match first when there is a search, else the list's default sort.")]
     public string? Sort { get; init; }
 
     [FromQuery(Name = "after")]

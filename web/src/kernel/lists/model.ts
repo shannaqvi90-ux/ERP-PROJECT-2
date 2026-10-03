@@ -77,7 +77,15 @@ export type ListState = {
   columns: string[];
   /** The view the state started from: "preset:<key>", "view:<id>" or null. */
   view: string | null;
+  /** The user chose the sort (a header or column menu, or a sort in the address). Until then a
+   * search lists the best matches first and the sort applies without a search. */
+  sortChosen?: boolean;
 };
+
+/** A search orders rows by relevance (best match first) unless the user chose a sort. */
+export function byRelevance(state: Pick<ListState, "search" | "sortChosen">): boolean {
+  return state.search.trim() !== "" && !state.sortChosen;
+}
 
 const operatorWords: Record<Exclude<Operator, "in" | "isNull" | "isNotNull">, string> = {
   eq: "eq",
@@ -274,6 +282,7 @@ export function initialState(definition: ListDefinition): ListState {
     groupBy: null,
     columns: defaultColumns(definition),
     view: null,
+    sortChosen: false,
   };
 }
 
@@ -294,6 +303,7 @@ export function stateFromView(
     groupBy: view.groupBy,
     columns: columns.length > 0 ? columns : defaultColumns(definition),
     view: id,
+    sortChosen: false,
   };
 }
 
@@ -305,7 +315,7 @@ export function queryOf(state: ListState): URLSearchParams {
   const filter = filterText(state);
   if (filter) query.set("filter", filter);
   const sort = sortText(state.sort);
-  if (sort) query.set("sort", sort);
+  if (sort && !byRelevance(state)) query.set("sort", sort);
   return query;
 }
 
@@ -322,7 +332,7 @@ export function stateToAddress(state: ListState, definition: ListDefinition, ope
   const filter = filterText(state);
   if (filter) params.set("filter", filter);
   const sort = sortText(state.sort);
-  if (sort && sort !== (definition.defaultSort ?? null)) params.set("sort", sort);
+  if (sort && (sort !== (definition.defaultSort ?? null) || (state.sortChosen && state.search.trim()))) params.set("sort", sort);
   if (state.groupBy) params.set("group", state.groupBy);
   const columns = state.columns.join(",");
   if (columns !== defaultColumns(definition).join(",")) params.set("cols", columns);
@@ -358,6 +368,7 @@ export function stateFromAddress(search: string, definition: ListDefinition): { 
       groupBy: group && definition.columns.some((c) => c.key === group && c.groupable) ? group : null,
       columns: columns.length > 0 ? columns : base.columns,
       view: params.get("view"),
+      sortChosen: params.has("sort"),
     },
   };
 }

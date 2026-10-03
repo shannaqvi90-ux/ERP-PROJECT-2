@@ -1,0 +1,114 @@
+using System.Text;
+
+namespace Erp.Kernel.Lists;
+
+/// <summary>
+/// How quick search reads what people type. Every word must occur in one of the list's search
+/// fields (any case). Arabic words also match the spellings people use interchangeably: the alef
+/// forms (ا أ إ آ ٱ), final yeh and alef maqsura (ي ى ئ), teh marbuta and heh (ة ه), waw and waw
+/// with hamza (و ؤ); short vowels and tatweel typed in the search are ignored. A list searched
+/// without an explicit sort is ordered by relevance (see <see cref="RelevanceKey"/>).
+/// </summary>
+public static class ListSearch
+{
+    /// <summary>The sort key of relevance order inside cursors (never a column key: column keys
+    /// cannot start with '~').</summary>
+    public const string RelevanceKey = "~relevance";
+
+    /// <summary>Most spellings one search word expands to; positions beyond it keep the letter
+    /// as typed (the first and last letters, where spelling varies most, are expanded first).</summary>
+    public const int MaxSpellings = 32;
+
+    // Groups of letters typed for one another. A typed letter matches every letter of its group.
+    private static readonly string[] Groups = ["اأإآٱ", "يىئ", "هة", "وؤ"];
+
+    /// <summary>Score parts of relevance (see <see cref="ListBinding{T}"/>): a word at the start of
+    /// a field, a word at the start of a word inside a field, the whole search equal to a field, the
+    /// whole search at the start of a field, the words in the typed order at word starts.</summary>
+    internal const int FieldStartScore = 4;
+    internal const int WordStartScore = 2;
+    internal const int ExactScore = 16;
+    internal const int PhraseStartScore = 8;
+    internal const int InOrderScore = 4;
+
+    /// <summary>Relevance is score × this, minus the length of the first search field (capped), so
+    /// that among equally good matches the shorter (closer) value comes first.</summary>
+    internal const int LengthSlots = 1024;
+
+    /// <summary>Characters that start a word inside a field (a name's parts, an e-mail's parts).</summary>
+    internal static readonly string[] WordSeparators = [" ", "."];
+
+    /// <summary>The spellings a search word matches: itself without short vowels and tatweel, and
+    /// its Arabic letter variants (at most <see cref="MaxSpellings"/>). Latin words match only
+    /// themselves.</summary>
+    public static IReadOnlyList<string> Spellings(string word)
+    {
+        var plain = new StringBuilder(word.Length);
+        foreach (var c in word)
+        {
+            if (!IsIgnorable(c))
+            {
+                plain.Append(c);
+            }
+        }
+        var text = plain.ToString();
+        if (text.Length == 0)
+        {
+            return [word];
+        }
+        var positions = new List<(int Index, string Group)>();
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (GroupOf(text[i]) is { } group)
+            {
+                positions.Add((i, group));
+            }
+        }
+        // Expand the first and last letters first, then the others in order, while the number of
+        // spellings stays within bounds.
+        var ordered = positions
+            .OrderBy(p => p.Index == 0 || p.Index == text.Length - 1 ? 0 : 1)
+            .ThenBy(p => p.Index)
+            .ToList();
+        var chosen = new List<(int Index, string Group)>();
+        var count = 1;
+        foreach (var position in ordered)
+        {
+            if (count * position.Group.Length > MaxSpellings)
+            {
+                continue;
+            }
+            count *= position.Group.Length;
+            chosen.Add(position);
+        }
+        var spellings = new List<string> { text };
+        foreach (var (index, group) in chosen)
+        {
+            spellings = spellings
+                .SelectMany(s => group.Select(letter =>
+                {
+                    var chars = s.ToCharArray();
+                    chars[index] = letter;
+                    return new string(chars);
+                }))
+                .ToList();
+        }
+        // The spelling as typed first (it decides nothing, but reads well in a query log).
+        return spellings.Distinct(StringComparer.Ordinal).OrderBy(s => s == text ? 0 : 1).ToList();
+    }
+
+    private static string? GroupOf(char c)
+    {
+        foreach (var group in Groups)
+        {
+            if (group.Contains(c, StringComparison.Ordinal))
+            {
+                return group;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>Arabic short vowels, shadda, sukun, superscript alef and tatweel.</summary>
+    private static bool IsIgnorable(char c) => c is >= 'ً' and <= 'ْ' or 'ٰ' or 'ـ';
+}

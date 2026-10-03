@@ -119,6 +119,90 @@ describe("list view", () => {
     expect(v.container.querySelector(".list-record")).toBeNull();
   });
 
+  it("lists a search best match first and opens the best match with Enter", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "person 1");
+    await wait(250);
+    await settle();
+    const request = calls.filter((c) => c.url.startsWith("/api/identity/users?")).at(-1)!;
+    expect(param(request.url, "search")).toBe("person 1");
+    // No sort asked for: the server orders by relevance.
+    expect(new URL(request.url, "http://x").searchParams.has("sort")).toBe(false);
+    expect(v.container.textContent).toContain("12 users");
+    expect(v.container.textContent).toContain("best match first");
+    const top = v.container.querySelector(".list-row.is-tophit");
+    expect(top?.textContent).toContain("Person 1");
+    expect(v.container.querySelectorAll(".list-row.is-tophit").length).toBe(1);
+    expect(v.container.querySelector("[aria-sort]")).toBeNull();
+    await key(search, "Enter");
+    await settle();
+    const panel = v.container.querySelector("[role=region].list-record");
+    expect(panel?.querySelector("h2")?.textContent).toBe("Person 1");
+    expect(window.location.search).toContain("open=00000000-0000-7000-8000-000000000001");
+  });
+
+  it("keeps a sort chosen from the header while searching", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "person");
+    await wait(250);
+    await settle();
+    const sortButton = [...v.container.querySelectorAll<HTMLButtonElement>(".list-sort")].find((b) => b.textContent?.startsWith("E-mail"))!;
+    await act(async () => sortButton.click());
+    await settle();
+    const request = calls.filter((c) => c.url.startsWith("/api/identity/users?")).at(-1)!;
+    expect(param(request.url, "search")).toBe("person");
+    expect(param(request.url, "sort")).toBe("email");
+    expect(v.container.querySelector(".list-row.is-tophit")).toBeNull();
+    expect(v.container.textContent).not.toContain("best match first");
+    expect(param(window.location.search, "sort")).toBe("email");
+    // Enter in the search box now goes to the rows instead of opening the first.
+    await key(search, "Enter");
+    await settle();
+    expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(document.activeElement).toBe(grid());
+  });
+
+  it("leaves Enter and Space on a column header's buttons to the buttons", async () => {
+    serve();
+    const v = await show();
+    grid().focus();
+    await key(grid(), "ArrowDown");
+    const sortButton = [...v.container.querySelectorAll<HTMLButtonElement>(".list-sort")].find((b) => b.textContent?.startsWith("Name"))!;
+    const menuButton = v.container.querySelector<HTMLButtonElement>("[aria-label='Options for the column E-mail']")!;
+    for (const button of [sortButton, menuButton]) {
+      button.focus();
+      await key(button, "Enter");
+      await key(button, " ");
+      await key(button, "End");
+      await settle();
+      expect(window.location.search).not.toContain("open=");
+      expect(v.container.querySelector(".list-record")).toBeNull();
+      expect(v.container.textContent).not.toContain("selected");
+      expect(grid().getAttribute("aria-activedescendant")).toMatch(/-row-1$/);
+    }
+  });
+
+  it("gives every row and the header the same columns whatever their content", async () => {
+    serve();
+    const v = await show();
+    const header = v.container.querySelector<HTMLElement>(".list-header")!;
+    const rows = [...v.container.querySelectorAll<HTMLElement>(".list-row")];
+    expect(rows.length).toBeGreaterThan(10);
+    expect(header.style.gridTemplateColumns).not.toBe("");
+    expect(header.style.minWidth).toMatch(/rem$/);
+    for (const row of rows) {
+      expect(row.style.gridTemplateColumns).toBe(header.style.gridTemplateColumns);
+      expect(row.style.minWidth).toBe(header.style.minWidth);
+    }
+    expect(grid().style.minWidth).toBe(header.style.minWidth);
+  });
+
   it("moves through rows with the keyboard, selects with Space and copies the selection", async () => {
     serve();
     const v = await show();

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  byRelevance,
   conditionText,
   filterText,
   initialState,
@@ -92,15 +93,25 @@ describe("list state", () => {
       columns: ["email", "displayName"],
       view: "preset:active",
     };
+    // A search without a sort the user chose asks for the best matches first (no sort sent).
     const query = queryOf(state);
     expect(query.get("search")).toBe("omar");
     expect(query.get("filter")).toBe("language eq 'ar'");
-    expect(query.get("sort")).toBe("-createdAt");
+    expect(query.has("sort")).toBe(false);
+    expect(byRelevance(state)).toBe(true);
     const address = stateToAddress(state, definition, "0190a000-0000-7000-8000-000000000009");
     const back = stateFromAddress(address, definition);
     expect(back.present).toBe(true);
     expect(back.open).toBe("0190a000-0000-7000-8000-000000000009");
     expect(back.state).toEqual({ ...state, search: "omar" });
+    // A sort the user chose is sent with the search, and kept in the address even when it is the default.
+    const chosen = { ...state, sortChosen: true };
+    expect(queryOf(chosen).get("sort")).toBe("-createdAt");
+    expect(byRelevance(chosen)).toBe(false);
+    const chosenBack = stateFromAddress(stateToAddress(chosen, definition, null), definition);
+    expect(chosenBack.state).toEqual({ ...chosen, search: "omar" });
+    // Without a search the sort always applies.
+    expect(queryOf({ ...state, search: "" }).get("sort")).toBe("-createdAt");
     expect(stateToAddress(initialState(definition), definition, null)).toBe("");
     expect(stateFromAddress("?group=displayName&cols=nosuch", definition).state.groupBy).toBeNull();
   });

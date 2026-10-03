@@ -40,6 +40,7 @@ function serve(session: Session, extra?: (method: string, url: string, body: unk
     const list = listReply(method, url);
     if (list) return list;
     if (method === "PUT" && url === "/api/identity/me/preferences") return { status: 200, body: { ...session.user, ...(body as object) } };
+    if (url === "/api/identity/users/u2") return { status: 200, body: { id: "u2", email: "omar@alnoor.example", displayName: "Omar Haddad", language: "en", isActive: true, roleIds: [], lastSignInAt: null, version: 1 } };
     if (url.startsWith("/api/identity/users")) return { status: 200, body: { items: [{ id: "u2", email: "omar@alnoor.example", displayName: "Omar Haddad", language: "en", isActive: true, roleIds: [], lastSignInAt: null }], total: 1 } };
     if (url.startsWith("/api/identity/roles")) return { status: 200, body: { items: [], total: 0 } };
     if (url.startsWith("/api/tenancy/tenant")) return { status: 200, body: { id: "t1", code: "alnoor", nameEn: "Al Noor", nameAr: "النور", status: "active" } };
@@ -100,8 +101,11 @@ describe("command palette", () => {
     for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
     press({ code: "Enter", key: "Enter" }, input);
     await settle();
-    expect(window.location.pathname + window.location.search).toBe("/identity/users?q=omar%40alnoor.example");
+    expect(window.location.pathname + window.location.search).toBe("/identity/users?q=omar%40alnoor.example&open=u2");
     expect(document.querySelector<HTMLInputElement>('input[type="search"]')!.value).toBe("omar@alnoor.example");
+    // The picked user's record is open (one Enter from the palette).
+    await settle();
+    expect(document.querySelector(".list-record")?.textContent).toContain("omar@alnoor.example");
   });
 
   it("offers a user with no roles no screens and never asks a record source they may not use", async () => {
