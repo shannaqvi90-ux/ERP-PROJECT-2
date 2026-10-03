@@ -13,6 +13,12 @@
 //   3. waits until the product is ready and quiet, and checks the start state: on 'home' and 'list'
 //      no field holds typed text, on 'sign-in' no password is filled in and the only remembered text
 //      is the task's own sign-in. The start state is recorded in the result.
+//   4. checks where the start landed (round 4): a 'home' start must land on the product's own home
+//      (`homeLanding`), with no query or fragment, so a home preference changed in set-up (a user
+//      whose home is the users list, filtered) cannot open the task half done; a 'list' start's
+//      address may not name the task's data (a search typed into the address before the clock).
+// Every context the driver opened in set-up is closed too (lib/runner.mjs), so an action it left
+// pending there (a slow typed text, a delayed click) cannot finish inside the measured part.
 import { PRODUCTS } from './config.mjs';
 
 /** Where each kind of start lives. 'record' and 'list' are screens the driver's sign-in opened. */
@@ -96,6 +102,46 @@ export function snapshotStartState() {
     filled: fields.filter(el => value(el).trim().length > 0).map(describe),
     focused: focused && focused !== document.body ? describe(focused) : null,
   };
+}
+
+/**
+ * The task's own data as text (its input and the dataset's needles): strings of four characters or
+ * more with a letter in them, lower case. A start screen's address that carries one of them was
+ * searched or filtered before the clock.
+ */
+export function taskWords(task, needles = {}) {
+  const out = new Set();
+  const walk = (v, depth = 0) => {
+    if (depth > 4 || v === null || v === undefined) return;
+    if (typeof v === 'string') { const t = v.trim().toLowerCase(); if (t.length >= 4 && /\p{L}/u.test(t)) out.add(t); return; }
+    if (Array.isArray(v)) { for (const x of v) walk(x, depth + 1); return; }
+    if (typeof v === 'object') for (const x of Object.values(v)) walk(x, depth + 1);
+  };
+  walk(task.input);
+  walk(needles);
+  return [...out];
+}
+
+/** Problems with where the start landed (empty when it is the product's own start screen). */
+export function landingProblems(product, kind, state, words = []) {
+  const problems = [];
+  const p = PRODUCTS[product.id] || product;
+  if (kind === 'home') {
+    const landing = p.homeLanding ?? product.homeLanding;
+    if (landing && !landing.test(state.path)) problems.push(`the home start landed on ${state.path}, not on the product's home (${landing}); set-up changed where the product opens`);
+    if (state.query) problems.push(`the home start landed on an address with a query (${state.query})`);
+    if (state.fragment && state.fragment !== '#') problems.push(`the home start landed on an address with a fragment (${state.fragment})`);
+  }
+  if (kind === 'list') {
+    let address = String(state.path || '');
+    try { address = decodeURIComponent(address); } catch { /* keep it raw */ }
+    address = address.toLowerCase();
+    const alnum = s => s.replace(/[^\p{L}\p{N}]+/gu, '');
+    for (const w of words) {
+      if (address.includes(w) || (alnum(w).length >= 4 && alnum(address).includes(alnum(w)))) problems.push(`the list start's address ${state.path} names the task's data ("${w}")`);
+    }
+  }
+  return problems;
 }
 
 /** Problems with a start state for the task's start kind (empty when it is a fair start). */

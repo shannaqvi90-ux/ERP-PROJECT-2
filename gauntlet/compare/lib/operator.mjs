@@ -28,6 +28,14 @@ export const BROWSER_KEYS = Object.freeze({
   'Alt+ArrowRight': page => page.goForward(),
 });
 
+/**
+ * Paste and copy chords. Text pasted inside the measured part must have been copied inside it too:
+ * the clipboard outlives the set-up browser, so text copied before the clock and pasted after it
+ * would be typed outside the clock (round 4).
+ */
+const PASTE = /^((Control|Meta)\+(v|Shift\+v|Alt\+v|Shift\+Alt\+v)|Shift\+Insert)$/i;
+const COPY = /^((Control|Meta)\+(c|x|Shift\+c)|Control\+Insert|Shift\+Delete)$/i;
+
 /** Control characters press keys (Enter, Tab, Backspace ...) without a step of their own. */
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
 const describeControl = ch => ({ '\n': '\\n (Enter)', '\r': '\\r (Enter)', '\t': '\\t (Tab)', '\b': '\\b (Backspace)' })[ch] || `U+${ch.codePointAt(0).toString(16).padStart(4, '0')}`;
@@ -211,6 +219,9 @@ export class Operator {
   async press(chord, opts) {
     const { label } = checkOptions('press', opts);
     if (typeof chord !== 'string' || !chord || CONTROL.test(chord)) throw new UncountedAction(`op.press(${JSON.stringify(chord)}): not a key or chord`);
+    if (PASTE.test(chord) && !this.#steps.some(st => st.kind === 'key' && COPY.test(st.chord))) {
+      throw new UncountedAction(`op.press("${chord}") pastes text that was not copied inside the measured part (the clipboard was filled before the clock); type it with op.type`);
+    }
     const t = this.#begin();
     await this.#page.keyboard.press(chord);
     return this.#record('key', label || chord, keystrokesForChord(chord), t, { chord });

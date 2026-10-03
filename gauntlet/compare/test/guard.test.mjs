@@ -55,6 +55,11 @@ const REMEMBERING = `<!doctype html><html><head><title>Plant page</title></head>
 let server, base, tmp, needles;
 const revoked = new Set();
 let things = 0;
+// Round 4 stand-ins: a form whose Enter saves on the server, the screen that shows what was saved,
+// and a home preference that makes the home address open another screen.
+let saved = '';
+let homePreference = null;
+const FORM = '<!doctype html><html><body><form method="post" action="/form"><input name="v" id="v" aria-label="Value" autofocus></form></body></html>';
 const sid = req => (/(?:^|; )sid=([^;]+)/.exec(req.headers.cookie || '') || [])[1];
 before(async () => {
   needles = loadNeedles();
@@ -76,6 +81,16 @@ before(async () => {
     if (req.url === '/api/auth/session') return json({ authenticated: signedIn, user: signedIn ? { id: 'u0', email: 'signin.tester@demo-trading.example' } : null });
     if (req.url === '/api/things' && req.method === 'POST') { things++; return json({ id: 7 }); }
     if (req.url === '/api/things') return json({ count: things });
+    if (req.url === '/form' && req.method === 'POST') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => { saved = new URLSearchParams(body).get('v') || ''; html('<!doctype html><p>saved</p>'); });
+      return;
+    }
+    if (req.url === '/form') return html(FORM);
+    if (req.url === '/saved') return html(`<!doctype html><html><body><div id="out">saved ${saved.replace(/[<&]/g, '')}</div></body></html>`);
+    if (req.url === '/api/home-preference' && req.method === 'POST') { homePreference = '/users'; return json({}); }
+    if (req.url === '/' && homePreference) { res.writeHead(302, { Location: homePreference }); return res.end(); }
     if (req.url === '/') return html(signedIn ? HOME : SIGN_IN);
     if (req.url === '/users') return html(usersPage(users));
     if (req.url.startsWith('/remembering')) return html(REMEMBERING);
@@ -522,4 +537,128 @@ test('plant: signing in to the API inside the measured part is refused', async (
     async verify() { return { verified: true }; },
   }, task);
   assert.equal(r.status, 'invalid', r.error);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Round 4: nothing set-up leaves behind may act or count inside the measured part.
+
+test('plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified', async () => {
+  // Set-up opens its own context and starts typing slowly into a form whose Enter saves on the
+  // server; it returns at once, so the typing would finish inside the measured part, uncounted. The
+  // runner closes every set-up context at the start, so the pending typing dies with it.
+  saved = '';
+  const r = await runDriver({
+    async setup(ctx) {
+      const side = await ctx.browser.newContext();
+      const p = await side.newPage();
+      await p.goto(base + '/form');
+      p.locator('#v').pressSequentially('abc\n', { delay: 700 }).catch(() => {});
+    },
+    async signIn(ctx) { await ctx.page.goto(base + '/saved'); },
+    async run(op) {
+      await op.browserKey('F5', { label: 'reload' });
+      await op.waitFor(() => document.getElementById('out')?.textContent === 'saved abc', { label: 'saved', timeout: 4000 });
+      return {};
+    },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'saved abc' }; },
+  });
+  assert.notEqual(r.status, 'verified', `the pending set-up typing did the task: ${r.counts?.steps} step(s)`);
+  assert.equal(r.start_state?.set_up_contexts_closed, 1, 'the set-up context the driver opened was closed at the start');
+  assert.equal(saved, '', 'the pending set-up typing reached the server after the start');
+});
+
+test('plant P2 (round 4): launching another browser in set-up -> invalid', async () => {
+  const r = await runDriver({
+    async setup(ctx) { await ctx.browser.browserType().launch(); },
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    run: honestRun,
+    verify: verifyFound,
+  });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.match(r.error, /BrowserType\.launch/);
+});
+
+test('plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid', async () => {
+  for (const act of [ctx => ctx.browser.newBrowserCDPSession(), ctx => ctx.browser.startTracing()]) {
+    const r = await runDriver({ async setup(ctx) { await act(ctx); }, async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, run: honestRun, verify: verifyFound });
+    assert.equal(r.status, 'invalid', `${act}: ${r.status} ${r.error}`);
+  }
+});
+
+test('plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid', async () => {
+  // The home address now opens the users list: a home start must land on the product's home.
+  const task = { ...TASK, id: 'plant-home', startAt: 'home' };
+  try {
+    const r = await runDriver({
+      async setup() { await fetch(base + '/api/home-preference', { method: 'POST' }); },
+      async signIn(ctx) { await ctx.page.goto(base + '/'); },
+      async run(op) { await op.waitFor('#s'); return {}; },
+      async verify(ctx) { return { verified: await ctx.page.locator('#s').isVisible() }; },
+    }, task);
+    assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+    assert.match(r.error, /home start landed on \/users/);
+    assert.equal(r.start_state.path, '/users');
+  } finally {
+    homePreference = null;
+  }
+});
+
+test('plant L2 (round 4): a list start whose address names the task\'s data -> invalid', async () => {
+  // The search is typed into the address before the clock (a path, so the query check alone misses it).
+  for (const where of [`/users/${encodeURIComponent(needles.user.name)}`, `/users/by-name/${needles.user.name.toLowerCase().replace(/ /g, '-')}`]) {
+    const r = await execute(TASK, {
+      async signIn(ctx) { await ctx.page.goto(base + where); },
+      run: honestRun,
+      verify: verifyFound,
+    }, standIn(), 'ours', needles, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
+    assert.equal(r.status, 'invalid', `${where}: ${r.status} ${r.error}`);
+    assert.match(r.error, /names the task's data/);
+  }
+});
+
+test('control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies', async () => {
+  const task = { ...TASK, id: 'plant-home-ok', startAt: 'home' };
+  const r = await runDriver({
+    async setup(ctx) { const side = await ctx.browser.newContext(); await (await side.newPage()).goto(base + '/form'); },
+    async signIn(ctx) { await ctx.context.addCookies([{ name: 'sid', value: 'control', url: base }]); await ctx.page.goto(base + '/'); },
+    async run(op) { await op.click('a[href="/users"]', { label: 'Users' }); await op.waitFor('#s', { label: 'users list' }); return {}; },
+    async verify(ctx) { return { verified: await ctx.page.locator('#s').isVisible() }; },
+  }, task);
+  assert.equal(r.status, 'verified', `${r.status} ${r.error}`);
+  assert.equal(r.start_state.path, '/');
+  assert.equal(r.start_state.set_up_contexts_closed, 1);
+});
+
+test('plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid', async () => {
+  // Set-up types the value and copies it (allowed then: it is set-up); the measured part would
+  // paste it with two keys instead of typing it.
+  for (const chord of ['Control+v', 'Meta+v', 'Shift+Insert', 'Control+Shift+v']) {
+    const r = await runDriver({
+      async signIn(ctx) {
+        await ctx.page.goto(base + '/plant');
+        await ctx.page.locator('#q').fill('abc');
+        await ctx.page.locator('#q').press('Control+a');
+        await ctx.page.locator('#q').press('Control+c');
+        await ctx.page.locator('#q').fill('');
+      },
+      async run(op) { await op.click('#q'); await op.press(chord); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'found abc', { timeout: 3000 }); return {}; },
+      verify: verifyFound,
+    });
+    assert.equal(r.status, 'invalid', `${chord}: ${r.status} ${r.error}`);
+    assert.match(r.error, /not copied inside the measured part/);
+  }
+});
+
+test('control (round 4): text copied inside the measured part may be pasted', async () => {
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) {
+      await op.fill('#q', 'abc'); await op.press('Control+a'); await op.press('Control+c');
+      await op.press('Control+v'); await op.click('#go');
+      await op.waitFor(() => document.getElementById('out').textContent.startsWith('found'), { timeout: 3000 });
+      return {};
+    },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()).startsWith('found') }; },
+  });
+  assert.equal(r.status, 'verified', `${r.status} ${r.error}`);
 });

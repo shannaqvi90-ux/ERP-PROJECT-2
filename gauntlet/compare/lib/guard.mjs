@@ -127,10 +127,14 @@ export const ALLOWED_WHILE_MEASURED = Object.freeze({
 const SCRIPT = ['evaluate', 'evaluateHandle', 'evaluateAll', '$eval', '$$eval', 'waitForFunction', 'addInitScript', 'addScriptTag',
   'addStyleTag', 'exposeFunction', 'exposeBinding', 'route', 'routeFromHAR', 'routeWebSocket', 'unroute', 'unrouteAll',
   'setExtraHTTPHeaders', 'dispatchEvent', 'setContent', 'newCDPSession', 'registerLocatorHandler', 'addLocatorHandler',
-  'removeLocatorHandler', 'setHTTPCredentials', 'setOffline', 'grantPermissions', 'setGeolocation', 'setStorageState'];
+  'removeLocatorHandler', 'setHTTPCredentials', 'setOffline', 'grantPermissions', 'setGeolocation', 'setStorageState',
+  // A debugging session or trace on the whole browser acts outside any page the guard watches.
+  'newBrowserCDPSession', 'startTracing', 'stopTracing'];
 export const ALWAYS_REFUSED = Object.freeze(new Set(SCRIPT));
 /** Classes whose every method acts (a page clock, a tracing session, a debugging session ...). */
-const ACTING_CLASSES = new Set(['Clock', 'Tracing', 'CDPSession', 'Coverage', 'Worker', 'JSHandle', 'ElementHandle', 'Video', 'WebSocketRoute', 'Route']);
+// BrowserType launches or connects to another browser, which the runner neither guards nor closes.
+const ACTING_CLASSES = new Set(['Clock', 'Tracing', 'CDPSession', 'Coverage', 'Worker', 'JSHandle', 'ElementHandle', 'Video', 'WebSocketRoute', 'Route',
+  'BrowserType', 'Electron', 'Android', 'AndroidDevice', 'Selectors']);
 
 const RAW = new WeakMap(); // proxy -> raw object
 const PROXY = new WeakMap(); // raw object -> proxy

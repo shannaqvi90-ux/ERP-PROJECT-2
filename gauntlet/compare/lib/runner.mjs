@@ -7,7 +7,7 @@ import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
 import { ActionOutsideClock, RefusedClaim, UncountedAction, claimPhase, claimViolations, currentPhase, guard, installNetworkGuard, isRefusal,
   rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
-import { START_KINDS, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl } from './start.mjs';
+import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
 const takeViolations = () => violationRecord.take();
@@ -29,6 +29,10 @@ export const RESULT_SCHEMA = 1;
  *      refused in every phase; verify() only reads and must fail before the clock starts.
  *      Screenshots taken while measuring stay on the clock (only the task's declared moments, once
  *      each); continuation (no M) is derived from the steps; op.type refuses control characters.
+ *      Round 4 (same version, no baseline had been taken with 4 yet): every set-up context closes at
+ *      the start (an action left pending there dies), another browser cannot be launched, a home
+ *      start must land on the product's home, a list start's address may not name the task's data,
+ *      and a paste needs its copy inside the measured part.
  */
 export const INSTRUMENT_VERSION = 4;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
@@ -226,7 +230,7 @@ export async function execute(task, driver, product, productId, needles, out, op
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
-    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout));
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles));
     ctx.context = guard(context);
     ctx.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
@@ -309,7 +313,7 @@ export function startKind(task) {
  * (cookies; local storage too for a signed-out start); wait until the product is ready and quiet; check and record the
  * start state. Returns the fresh { context, page }.
  */
-async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout) {
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}) {
   const endedOn = oldPage.url();
   let url = null;
   if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind);
@@ -323,7 +327,11 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   // remembered in the browser during set-up (recent records, a typed search) is not part of the start.
   const saved = await oldContext.storageState();
   const storageState = kind === 'sign-in' ? saved : { cookies: saved.cookies, origins: [] };
-  await oldContext.close();
+  // Every context of the set-up browser closes, not only the one the run signed in with: a context
+  // the driver opened itself may still hold an action it started and left pending (a slow typed
+  // text, a delayed click, a navigation), which would otherwise finish inside the measured part.
+  const others = browser.contexts().filter(c => c !== oldContext);
+  await Promise.all([oldContext, ...others].map(c => c.close().catch(() => {})));
   const context = await newContext(browser, { storageState });
   const page = await context.newPage();
   page.setDefaultTimeout(timeout);
@@ -355,8 +363,9 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   }
   page.off('request', track); page.off('requestfinished', untrack); page.off('requestfailed', untrack);
   const state = await page.evaluate(snapshotStartState);
-  run.start_state = { kind, ...(kind === 'record' || kind === 'list' ? { opened_by_sign_in: new URL(endedOn).pathname } : {}), ...state };
-  const problems = startStateProblems(task, kind, state);
+  run.start_state = { kind, ...(kind === 'record' || kind === 'list' ? { opened_by_sign_in: new URL(endedOn).pathname } : {}), ...state,
+    set_up_contexts_closed: others.length };
+  const problems = [...startStateProblems(task, kind, state), ...landingProblems(product, kind, state, taskWords(task, needles))];
   if (problems.length) throw new ActionOutsideClock(`unfair start state: ${problems.join('; ')}`, 'set-up');
   return { context, page };
 }

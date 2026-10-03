@@ -18,6 +18,9 @@ export const PRODUCTS = Object.freeze({
     // Start screens the runner opens itself (lib/start.mjs): the screen after sign-in, and the
     // bookmarked sign-in address (Odoo serves several databases on the rig's port, so it names one).
     homePath: '/odoo',
+    // Where the home start may land once loaded: the client's default app (Discuss in Community).
+    // A user whose home action was changed in set-up lands elsewhere, and the run is refused.
+    homeLanding: /^\/odoo(\/discuss)?\/?$/,
     signInPath: product => `/web/login?db=${encodeURIComponent(product.db)}`,
     // Sign-ins of the local reference rig (tools/odoo-reference/up.sh); not real credentials.
     users: {
@@ -30,6 +33,7 @@ export const PRODUCTS = Object.freeze({
     id: 'ours',
     baseUrl: (env.COMPARE_OURS_URL || 'http://localhost:8080').replace(/\/$/, ''),
     homePath: '/',
+    homeLanding: /^\/$/,
     signInPath: '/',
     // Demo sign-ins printed by `./erp up` (local demo data, not real credentials).
     users: {
