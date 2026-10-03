@@ -281,3 +281,26 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.workplace-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.workplace-quick {
+  display: flex;
+  gap: 2px;
+}
+
+.workplace-chip {
+  height: 26px;
+  padding-inline: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.workplace-chip:hover {
+  opacity: 1;
+}

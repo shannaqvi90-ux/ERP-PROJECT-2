@@ -59,7 +59,9 @@ public sealed record CompanyRow(
 
 public sealed record CompanyPage(IReadOnlyList<CompanyRow> Items, int Total);
 
-/// <summary>Create or change a company. On change, <c>version</c> is the version that was read.</summary>
+/// <summary>Create or change a company. The code may be left empty (one is made from the English
+/// name); a legal name in English or Arabic is required (both are recommended). On change,
+/// <c>version</c> is the version that was read.</summary>
 public sealed record SaveCompanyRequest(
     [property: ApiExample("AN-DXB"), StringLength(20, MinimumLength = 2), RegularExpression(TenancyValidation.CodePattern)] string? Code,
     [property: StringLength(200)] string? LegalNameEn,
@@ -200,14 +202,20 @@ internal static class CompanyEndpoints
         {
             return validator.ToResult();
         }
-        var code = TenancyValidation.NormalizeCode(request.Code)!;
-        if (await db.Companies.AnyAsync(c => c.Code == code, cancellationToken))
+        var code = TenancyValidation.NormalizeCode(request.Code);
+        if (string.IsNullOrEmpty(code))
+        {
+            // No code typed: one is made from the name, unique among the companies in sight.
+            var taken = await db.Companies.AsNoTracking().Select(c => c.Code).ToListAsync(cancellationToken);
+            code = TenancyValidation.SuggestCode(request.LegalNameEn, taken, "CO");
+        }
+        else if (await db.Companies.AnyAsync(c => c.Code == code, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.companyCodeTaken");
         }
         var company = new Company();
         company.CompanyId = company.Id;
-        Apply(company, request);
+        Apply(company, request, code);
         // The creator works in the new company from now on; it joins this request's scope so the
         // company and the creator's access to it can be written.
         await session.IncludeNewCompanyAsync(company.Id, cancellationToken);
@@ -230,13 +238,13 @@ internal static class CompanyEndpoints
         {
             return Problems.NotFound(http);
         }
-        var code = TenancyValidation.NormalizeCode(request.Code)!;
+        var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
         if (code != company.Code && await db.Companies.AnyAsync(c => c.Code == code && c.Id != id, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.companyCodeTaken");
         }
         db.Entry(company).Property(c => c.Version).OriginalValue = request.Version!.Value;
-        Apply(company, request);
+        Apply(company, request, code);
         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
@@ -308,8 +316,7 @@ internal static class CompanyEndpoints
     {
         var validator = new Validator(http)
             .Code("code", TenancyValidation.NormalizeCode(request.Code))
-            .Required("legalNameEn", request.LegalNameEn).MaxLength("legalNameEn", request.LegalNameEn, 200)
-            .Required("legalNameAr", request.LegalNameAr).MaxLength("legalNameAr", request.LegalNameAr, 200)
+            .Names("legalNameEn", request.LegalNameEn, "legalNameAr", request.LegalNameAr)
             .MaxLength("tradeLicenceNumber", request.TradeLicenceNumber, 50)
             .MaxLength("tradeLicenceAuthority", request.TradeLicenceAuthority, 100)
             .TaxNumber(request.TaxRegistrationNumber)
@@ -328,11 +335,11 @@ internal static class CompanyEndpoints
     private static AddressFields AddressOf(SaveCompanyRequest r) =>
         new(r.AddressLine1, r.AddressLine2, r.City, r.Emirate, r.PoBox, TenancyValidation.Clean(r.Country)?.ToUpperInvariant(), r.AddressAr, r.Phone, r.Email);
 
-    private static void Apply(Company company, SaveCompanyRequest r)
+    private static void Apply(Company company, SaveCompanyRequest r, string code)
     {
-        company.Code = TenancyValidation.NormalizeCode(r.Code)!;
-        company.LegalNameEn = r.LegalNameEn!.Trim();
-        company.LegalNameAr = r.LegalNameAr!.Trim();
+        company.Code = code;
+        company.LegalNameEn = r.LegalNameEn?.Trim() ?? "";
+        company.LegalNameAr = r.LegalNameAr?.Trim() ?? "";
         company.TradeLicenceNumber = TenancyValidation.Clean(r.TradeLicenceNumber);
         company.TradeLicenceAuthority = TenancyValidation.Clean(r.TradeLicenceAuthority);
         company.TaxRegistrationNumber = TenancyValidation.Clean(r.TaxRegistrationNumber);

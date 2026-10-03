@@ -80,15 +80,70 @@ internal static partial class TenancyValidation
     /// <summary>Empty strings become null; others are trimmed.</summary>
     public static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    /// <summary>A code, when given (left empty, one is made from the name).</summary>
     public static Validator Code(this Validator validator, string field, string? code)
     {
-        validator.Required(field, code);
         if (!string.IsNullOrWhiteSpace(code))
         {
             validator.Must(CodeRegex().IsMatch(code), field, "tenancyCode");
         }
         return validator;
     }
+
+    /// <summary>A name in English, in Arabic or both: at least one, each at most 200 characters.</summary>
+    public static Validator Names(this Validator validator, string englishField, string? english, string arabicField, string? arabic)
+    {
+        validator.Must(!string.IsNullOrWhiteSpace(english) || !string.IsNullOrWhiteSpace(arabic), englishField, "tenancyNameEnOrAr")
+            .MaxLength(englishField, english, 200)
+            .MaxLength(arabicField, arabic, 200);
+        return validator;
+    }
+
+    /// <summary>Words of a legal name that say nothing about which company it is.</summary>
+    private static readonly FrozenSet<string> LegalWords = FrozenSet.ToFrozenSet(
+        ["LLC", "L", "C", "FZE", "FZCO", "FZ", "FZC", "DMCC", "PJSC", "PSC", "LTD", "LIMITED", "INC", "CO", "COMPANY", "BRANCH", "THE", "AND", "OF"],
+        StringComparer.Ordinal);
+
+    /// <summary>
+    /// A code made from an English name (its first distinctive word, joined to the next when short:
+    /// "Al Noor Trading LLC" becomes AL-NOOR), unique among <paramref name="taken"/> by a numeric
+    /// suffix. Names without Latin letters get <paramref name="fallback"/>-1, -2, …
+    /// </summary>
+    public static string SuggestCode(string? english, IReadOnlyCollection<string> taken, string fallback)
+    {
+        var words = WordRegex().Matches((english ?? "").ToUpperInvariant()).Select(m => m.Value)
+            .Where(w => !LegalWords.Contains(w)).ToList();
+        string stem;
+        if (words.Count == 0)
+        {
+            stem = fallback;
+        }
+        else
+        {
+            stem = words[0].Length <= 3 && words.Count > 1 ? $"{words[0]}-{words[1]}" : words[0];
+            stem = stem[..Math.Min(stem.Length, 14)].TrimEnd('-');
+            if (stem.Length < 2)
+            {
+                stem = fallback;
+            }
+        }
+        var set = taken.ToHashSet(StringComparer.Ordinal);
+        if (words.Count > 0 && stem != fallback && !set.Contains(stem))
+        {
+            return stem;
+        }
+        for (var n = words.Count == 0 || stem == fallback ? 1 : 2; ; n++)
+        {
+            var candidate = $"{stem}-{n}";
+            if (!set.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+    }
+
+    [GeneratedRegex("[A-Z0-9]+")]
+    private static partial Regex WordRegex();
 
     public static Validator Address(this Validator validator, AddressFields address)
     {

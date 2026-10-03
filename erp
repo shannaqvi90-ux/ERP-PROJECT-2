@@ -9,6 +9,10 @@
 #   ./erp verify --clean-clone  G3: clone HEAD into a temporary directory and run `./erp verify` and
 #                               `./erp up` there, then sign in to the demo over HTTP
 #   ./erp status | logs | psql
+#   ./erp tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar]
+#   ./erp tenant suspend|activate --code <code> | ./erp tenant list
+#                               platform operator commands against the running demo's database
+#                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated)
 #
 # Environment (all optional; lets several copies run side by side):
 #   ERP_PROJECT           compose project name                 (default erp)
@@ -226,6 +230,12 @@ cmd_logs() {
   compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 logs -f --tail 200 "$@"
 }
 
+cmd_tenant() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 run --rm --no-deps -T \
+    -e ERP_TENANT_ADMIN_PASSWORD="${ERP_TENANT_ADMIN_PASSWORD:-}" setup tenant "$@"
+}
+
 cmd_psql() {
   require_docker
   compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 exec db psql -U postgres -d erp "$@"
@@ -238,6 +248,7 @@ case "${1:-}" in
   status) shift; cmd_status "$@" ;;
   logs) shift; cmd_logs "$@" ;;
   psql) shift; cmd_psql "$@" ;;
+  tenant) shift; cmd_tenant "$@" ;;
   http) shift; http "$@" ;;
-  *) sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

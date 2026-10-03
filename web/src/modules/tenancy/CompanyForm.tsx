@@ -203,9 +203,9 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
         <fieldset disabled={!editable}>
           <legend>{t("tenancy.company.general")}</legend>
           <div className="form-grid">
-            <TextField name="code" label={t("tenancy.company.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} required autoFocus={id === null} upper hint={t("tenancy.company.codeHint")} />
-            <TextField name="legalNameEn" label={t("tenancy.company.legalNameEn")} value={draft.legalNameEn} onChange={set("legalNameEn")} {...common} dir="ltr" maxLength={200} required />
-            <TextField name="legalNameAr" label={t("tenancy.company.legalNameAr")} value={draft.legalNameAr} onChange={set("legalNameAr")} {...common} dir="rtl" maxLength={200} required />
+            <TextField name="legalNameEn" label={t("tenancy.company.legalNameEn")} value={draft.legalNameEn} onChange={set("legalNameEn")} {...common} dir="ltr" maxLength={200} autoFocus={id === null} />
+            <TextField name="legalNameAr" label={t("tenancy.company.legalNameAr")} value={draft.legalNameAr} onChange={set("legalNameAr")} {...common} dir="rtl" maxLength={200} />
+            <TextField name="code" label={t("tenancy.company.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
             <CheckField name="isActive" label={t("tenancy.common.active")} checked={draft.isActive} onChange={set("isActive")} />
           </div>
         </fieldset>
@@ -359,7 +359,7 @@ function CompanyBranches({ companyId }: { companyId: string }) {
   const [draft, setDraft] = useState<QuickBranch>(emptyBranch);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
-  const codeRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const load = () =>
     api<Page<BranchRow>>("GET", `/api/tenancy/branches?companyId=${companyId}&take=200`)
@@ -388,7 +388,7 @@ function CompanyBranches({ companyId }: { companyId: string }) {
       setDraft(emptyBranch);
       setErrors({});
       await load();
-      codeRef.current?.focus();
+      nameRef.current?.focus();
     } catch (error) {
       const problem = problemOf(error);
       setErrors(problem.fields);
@@ -428,9 +428,9 @@ function CompanyBranches({ companyId }: { companyId: string }) {
       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
       {can("tenancy.branches.create") && (
         <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
-          <input ref={codeRef} name="branchCode" value={draft.code} onChange={set("code")} placeholder={t("tenancy.branch.code")} aria-label={t("tenancy.branch.code")} aria-invalid={invalid("code")} dir="ltr" maxLength={20} />
-          <input name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
+          <input ref={nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
           <input name="branchNameAr" value={draft.nameAr} onChange={set("nameAr")} placeholder={t("tenancy.branch.nameAr")} aria-label={t("tenancy.branch.nameAr")} aria-invalid={invalid("nameAr")} dir="rtl" maxLength={200} />
+          <input name="branchCode" value={draft.code} onChange={set("code")} placeholder={t("tenancy.branch.codeOptional")} aria-label={t("tenancy.branch.codeOptional")} aria-invalid={invalid("code")} dir="ltr" maxLength={20} />
           <input name="branchCity" value={draft.city} onChange={set("city")} placeholder={t("tenancy.address.city")} aria-label={t("tenancy.address.city")} maxLength={100} />
           <select name="branchEmirate" value={draft.emirate} onChange={set("emirate")} aria-label={t("tenancy.address.emirate")}>
             <option value="">{t("tenancy.address.noEmirate")}</option>

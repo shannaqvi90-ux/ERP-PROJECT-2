@@ -71,6 +71,34 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
     }
 
     [Fact]
+    public async Task A_company_or_branch_needs_only_a_name_and_gets_a_code_made_from_it()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        async Task<JsonElement> Create(object body)
+        {
+            var response = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            return await Json(response);
+        }
+        var falcon = await Create(new { legalNameEn = "Falcon Logistics LLC", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+        Assert.Equal("FALCON", falcon.GetProperty("code").GetString());
+        Assert.Equal("", falcon.GetProperty("legalNameAr").GetString());
+        Assert.Equal("FALCON-2", (await Create(new { legalNameEn = "Falcon Freight FZE", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true }))
+            .GetProperty("code").GetString());
+        Assert.Equal("AL-REEM", (await Create(new { legalNameEn = "Al Reem Trading L.L.C.", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true }))
+            .GetProperty("code").GetString());
+        var arabicOnly = await Create(new { legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+        Assert.Equal("CO-1", arabicOnly.GetProperty("code").GetString());
+        Assert.Equal("", arabicOnly.GetProperty("legalNameEn").GetString());
+
+        var branch = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC - Jebel Ali Branch", country = "AE", isActive = true });
+        Assert.Equal(HttpStatusCode.Created, branch.StatusCode);
+        Assert.Equal("FALCON", (await Json(branch)).GetProperty("code").GetString());
+        var noName = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), country = "AE", isActive = true });
+        Assert.Equal("tenancyNameEnOrAr", (await Json(noName)).GetProperty("errors").GetProperty("nameEn")[0].GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Validation_names_every_bad_field_in_the_callers_language()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin.ar"));
@@ -95,8 +123,8 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         var errors = (await Json(response)).GetProperty("errors");
         string Code(string field) => errors.GetProperty(field)[0].GetProperty("code").GetString()!;
         Assert.Equal("tenancyCode", Code("code"));
-        Assert.Equal("required", Code("legalNameEn"));
-        Assert.Equal("required", Code("legalNameAr"));
+        Assert.Equal("tenancyNameEnOrAr", Code("legalNameEn"));
+        Assert.False(errors.TryGetProperty("legalNameAr", out _));
         Assert.Equal("tenancyTaxNumber", Code("taxRegistrationNumber"));
         Assert.Equal("tenancyCurrency", Code("baseCurrency"));
         Assert.Equal("tenancyDayOfMonth", Code("fiscalYearStartDay"));

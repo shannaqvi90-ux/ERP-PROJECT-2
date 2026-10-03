@@ -124,7 +124,10 @@ public sealed class Company : TenantEntity, ICompanyOwned
 {
     public Guid CompanyId { get; set; }
     public string Code { get; set; } = "";
+    /// <summary>Legal name in English; empty when only the Arabic name is known (at least one is set).</summary>
     public string LegalNameEn { get; set; } = "";
+
+    /// <summary>Legal name in Arabic; empty when only the English name is known.</summary>
     public string LegalNameAr { get; set; } = "";
     public string? TradeLicenceNumber { get; set; }
     public string? TradeLicenceAuthority { get; set; }
@@ -246,6 +249,7 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
                 t.HasCheckConstraint("ck_companies_country", "country ~ '^[A-Z]{2}$'");
                 t.HasCheckConstraint("ck_companies_fiscal_year_start", "fiscal_year_start_month BETWEEN 1 AND 12 AND fiscal_year_start_day BETWEEN 1 AND 31");
                 t.HasCheckConstraint("ck_companies_logo", "(logo IS NULL) = (logo_content_type IS NULL) AND (logo IS NULL) = (logo_hash IS NULL)");
+                t.HasCheckConstraint("ck_companies_legal_name", "legal_name_en <> '' OR legal_name_ar <> ''");
             });
             ConfigureAddress(e);
             e.Property(x => x.Code).HasMaxLength(20);
@@ -272,6 +276,7 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
             {
                 t.HasCheckConstraint("ck_branches_code", "code ~ '^[A-Z0-9][A-Z0-9-]{1,19}$'");
                 t.HasCheckConstraint("ck_branches_country", "country ~ '^[A-Z]{2}$'");
+                t.HasCheckConstraint("ck_branches_name", "name_en <> '' OR name_ar <> ''");
             });
             ConfigureAddress(e);
             e.Property(x => x.Code).HasMaxLength(20);

@@ -48,7 +48,8 @@ public sealed record BranchRow(
 
 public sealed record BranchPage(IReadOnlyList<BranchRow> Items, int Total);
 
-/// <summary>Create or change a branch. A branch stays in the company it was created in.</summary>
+/// <summary>Create or change a branch. A branch stays in the company it was created in. The code
+/// may be left empty (one is made from the English name); a name in English or Arabic is required.</summary>
 public sealed record SaveBranchRequest(
     Guid? CompanyId,
     [property: ApiExample("DXB-WH1"), StringLength(20, MinimumLength = 2), RegularExpression(TenancyValidation.CodePattern)] string? Code,
@@ -160,13 +161,18 @@ internal static class BranchEndpoints
         {
             return validator.ToResult();
         }
-        var code = TenancyValidation.NormalizeCode(request.Code)!;
-        if (await db.Branches.AnyAsync(b => b.CompanyId == company!.Id && b.Code == code, cancellationToken))
+        var code = TenancyValidation.NormalizeCode(request.Code);
+        if (string.IsNullOrEmpty(code))
+        {
+            var taken = await db.Branches.AsNoTracking().Where(b => b.CompanyId == company!.Id).Select(b => b.Code).ToListAsync(cancellationToken);
+            code = TenancyValidation.SuggestCode(request.NameEn, taken, "BR");
+        }
+        else if (await db.Branches.AnyAsync(b => b.CompanyId == company!.Id && b.Code == code, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.branchCodeTaken");
         }
         var branch = new Branch { CompanyId = company!.Id };
-        Apply(branch, request);
+        Apply(branch, request, code);
         db.Branches.Add(branch);
         // A creator limited to some branches of this company may work in the branch they created.
         var own = await db.CompanyAccess.SingleOrDefaultAsync(a => a.UserId == caller.UserId && a.CompanyId == company.Id, cancellationToken);
@@ -195,13 +201,13 @@ internal static class BranchEndpoints
         {
             return new Validator(http).Add("companyId", "tenancyBranchCompanyFixed").ToResult();
         }
-        var code = TenancyValidation.NormalizeCode(request.Code)!;
+        var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : branch.Code;
         if (code != branch.Code && await db.Branches.AnyAsync(b => b.CompanyId == branch.CompanyId && b.Code == code && b.Id != id, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.branchCodeTaken");
         }
         db.Entry(branch).Property(b => b.Version).OriginalValue = request.Version!.Value;
-        Apply(branch, request);
+        Apply(branch, request, code);
         db.Entry(branch).Property(b => b.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(db, branch, cancellationToken));
@@ -212,8 +218,7 @@ internal static class BranchEndpoints
         var validator = new Validator(http)
             .Required("companyId", request.CompanyId)
             .Code("code", TenancyValidation.NormalizeCode(request.Code))
-            .Required("nameEn", request.NameEn).MaxLength("nameEn", request.NameEn, 200)
-            .Required("nameAr", request.NameAr).MaxLength("nameAr", request.NameAr, 200)
+            .Names("nameEn", request.NameEn, "nameAr", request.NameAr)
             .Address(new AddressFields(request.AddressLine1, request.AddressLine2, request.City, request.Emirate, request.PoBox,
                 TenancyValidation.Clean(request.Country)?.ToUpperInvariant(), request.AddressAr, request.Phone, request.Email))
             .Required("isActive", request.IsActive);
@@ -224,11 +229,11 @@ internal static class BranchEndpoints
         return validator;
     }
 
-    private static void Apply(Branch branch, SaveBranchRequest r)
+    private static void Apply(Branch branch, SaveBranchRequest r, string code)
     {
-        branch.Code = TenancyValidation.NormalizeCode(r.Code)!;
-        branch.NameEn = r.NameEn!.Trim();
-        branch.NameAr = r.NameAr!.Trim();
+        branch.Code = code;
+        branch.NameEn = r.NameEn?.Trim() ?? "";
+        branch.NameAr = r.NameAr?.Trim() ?? "";
         branch.AddressLine1 = TenancyValidation.Clean(r.AddressLine1);
         branch.AddressLine2 = TenancyValidation.Clean(r.AddressLine2);
         branch.City = TenancyValidation.Clean(r.City);

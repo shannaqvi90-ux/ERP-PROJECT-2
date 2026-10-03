@@ -5,6 +5,9 @@ import { useSession } from "../../kernel/session";
 import { workplaceChanged, type Workplace } from "./types";
 import { problemOf, useLocalName } from "./ui";
 
+/** Up to this many companies, every other company has its own one-click button. */
+const quickCompanies = 6;
+
 type Choice = { companyId: string; branchId: string | null; label: string; detail: string; search: string };
 
 /**
@@ -114,6 +117,9 @@ export function WorkplaceSwitcher() {
     );
   }
 
+  // With a handful of companies, the others are one click away beside the switcher.
+  const others = workplace.companies.length <= quickCompanies ? workplace.companies.filter((c) => c.id !== workplace.companyId) : [];
+
   return (
     <div className="workplace-switcher">
       <button
@@ -129,6 +135,22 @@ export function WorkplaceSwitcher() {
       >
         <span dir="ltr">{label}</span>
       </button>
+      {others.length > 0 && (
+        <span className="workplace-quick" role="group" aria-label={t("tenancy.workplace.quick")}>
+          {others.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className="button ghost workplace-chip"
+              title={t("tenancy.workplace.switchTo", { company: name(c.legalNameEn, c.legalNameAr) })}
+              onClick={() => void choose({ companyId: c.id, branchId: c.branches[0]?.id ?? null, label: c.code, detail: "", search: "" })}
+              data-company={c.code}
+            >
+              <span dir="ltr">{c.code}</span>
+            </button>
+          ))}
+        </span>
+      )}
       {open && (
         <div className="workplace-popover" role="dialog" aria-label={t("tenancy.workplace.switch")}>
           <input

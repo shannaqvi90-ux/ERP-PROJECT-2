@@ -86,6 +86,7 @@ namespace Erp.Modules.Tenancy.Migrations
                     table.CheckConstraint("ck_companies_company_is_self", "company_id = id");
                     table.CheckConstraint("ck_companies_country", "country ~ '^[A-Z]{2}$'");
                     table.CheckConstraint("ck_companies_fiscal_year_start", "fiscal_year_start_month BETWEEN 1 AND 12 AND fiscal_year_start_day BETWEEN 1 AND 31");
+                    table.CheckConstraint("ck_companies_legal_name", "legal_name_en <> '' OR legal_name_ar <> ''");
                     table.CheckConstraint("ck_companies_logo", "(logo IS NULL) = (logo_content_type IS NULL) AND (logo IS NULL) = (logo_hash IS NULL)");
                 });
 
@@ -123,6 +124,7 @@ namespace Erp.Modules.Tenancy.Migrations
                     table.UniqueConstraint("ak_branches_tenant_id_id", x => new { x.tenant_id, x.id });
                     table.CheckConstraint("ck_branches_code", "code ~ '^[A-Z0-9][A-Z0-9-]{1,19}$'");
                     table.CheckConstraint("ck_branches_country", "country ~ '^[A-Z]{2}$'");
+                    table.CheckConstraint("ck_branches_name", "name_en <> '' OR name_ar <> ''");
                     table.ForeignKey(
                         name: "fk_branches_companies_tenant_id_company_id",
                         columns: x => new { x.tenant_id, x.company_id },
@@ -344,6 +346,7 @@ namespace Erp.Modules.Tenancy.Migrations
                 migrationBuilder.UnprotectCompanyTable("tenancy", table);
                 migrationBuilder.UnprotectTenantTable("tenancy", table);
             }
+
 
             migrationBuilder.DropTable(
                 name: "user_branch_access",

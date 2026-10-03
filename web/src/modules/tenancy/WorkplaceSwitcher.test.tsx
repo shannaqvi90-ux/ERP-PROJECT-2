@@ -79,6 +79,26 @@ describe("working company switcher", () => {
     expect(changed).toEqual({ companyId: "c2", branchId: "b2" });
   });
 
+  it("offers each other company as a one-click button", async () => {
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(["tenancy.workplace.read", "tenancy.workplace.switch"]) };
+      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: workplace };
+      if (url === "/api/tenancy/workplace" && method === "PUT") return { status: 200, body: { ...workplace, ...(body as object) } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    const quick = view.container.querySelectorAll<HTMLButtonElement>(".workplace-chip");
+    expect([...quick].map((b) => b.textContent)).toEqual(["ALN-SHJ"]);
+    await act(async () => {
+      quick[0]!.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ companyId: "c2", branchId: "b2" });
+    expect(view.container.querySelector('[data-testid="workplace"]')!.textContent).toBe("ALN-SHJ · SHJ-FAC");
+    expect([...view.container.querySelectorAll(".workplace-chip")].map((b) => b.textContent)).toEqual(["ALN-DXB"]);
+  });
+
   it("is a plain label for a user who may not switch, and absent without the read permission", async () => {
     mockFetch((_, url) =>
       url === "/api/auth/session"

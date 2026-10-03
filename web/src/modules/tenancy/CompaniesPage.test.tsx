@@ -59,8 +59,8 @@ describe("companies screen", () => {
 
     press({ altKey: true, code: "KeyN", key: "n" });
     await settle();
+    expect(document.activeElement).toBe(field(view.container, "legalNameEn"));
     const code = field(view.container, "code");
-    expect(document.activeElement).toBe(code);
     setInput(code, "a");
     expect(code.value).toBe("A");
     setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");

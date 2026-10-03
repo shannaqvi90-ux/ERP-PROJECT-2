@@ -335,9 +335,9 @@ function BranchForm({
             disabled={id !== null}
             errors={errors}
           />
-          <TextField name="code" label={t("tenancy.branch.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} required autoFocus={id === null} upper hint={t("tenancy.company.codeHint")} />
-          <TextField name="nameEn" label={t("tenancy.branch.nameEn")} value={draft.nameEn} onChange={set("nameEn")} {...common} dir="ltr" maxLength={200} required />
-          <TextField name="nameAr" label={t("tenancy.branch.nameAr")} value={draft.nameAr} onChange={set("nameAr")} {...common} dir="rtl" maxLength={200} required />
+          <TextField name="nameEn" label={t("tenancy.branch.nameEn")} value={draft.nameEn} onChange={set("nameEn")} {...common} dir="ltr" maxLength={200} autoFocus={id === null} />
+          <TextField name="nameAr" label={t("tenancy.branch.nameAr")} value={draft.nameAr} onChange={set("nameAr")} {...common} dir="rtl" maxLength={200} />
+          <TextField name="code" label={t("tenancy.branch.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
           <CheckField name="isActive" label={t("tenancy.common.active")} checked={draft.isActive} onChange={set("isActive")} />
         </div>
       </fieldset>

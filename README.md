@@ -12,12 +12,19 @@ Needs only Docker (with Compose v2), bash and git.
 ./erp verify    # build, migrate, seed and run every test: unit, integration, gates, end to end
 ./erp verify --clean-clone   # G3: the same from a fresh clone of HEAD, then ./erp up there
 ./erp down      # stop the demo (--volumes also deletes its data)
+./erp tenant create --code acme --name-en "Acme LLC" --name-ar "أكمي ذ.م.م" --admin-email owner@acme.example --admin-name "Owner"
+                # platform operator: provision a workspace (also: tenant suspend|activate --code …, tenant list)
 ```
 
 Ports and the compose project come from the environment, so copies run side by side:
 `ERP_PROJECT`, `ERP_HTTP_PORT` (8080), `ERP_DB_PORT` (5440), `ERP_SEED_VOLUME` (100000),
 `ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
+
+The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
+with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
+read-only user in the first company only. The working company and branch switcher sits in the
+top bar (Alt+C).
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
@@ -43,10 +50,12 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
    registrations (`module.List(...)`), seeders and probes.
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
-   for every table.
+   for every table, and `migrationBuilder.ProtectCompanyTable(schema, table)` for every table whose rows
+   belong to a company (`company_id`; entities implement `ICompanyOwned`). The signed-in user's companies,
+   working company and branch are in `ICompanyContext`; company facts in `ICompanyDirectory`.
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens
    (`routes.tsx`: each screen's path and permission match its menu entry) and
-   `i18n/{en,ar}.json` under `web/src/modules/<name>/`. List endpoints return `{ items, total }`. Counts are plural messages
+   `i18n/{en,ar}.json` under `web/src/modules/<name>/`; top-bar items in `shell.tsx` (`topBarItems`). List endpoints return `{ items, total }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
 
