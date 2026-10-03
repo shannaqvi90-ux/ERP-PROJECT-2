@@ -99,6 +99,65 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
         Assert.Equal(expected, offset);
     }
 
+    [Theory]
+    [InlineData("a")]
+    [InlineData("om")]
+    [InlineData("al m")]
+    [InlineData("haddad omar")]
+    [InlineData("فاطمه")]
+    public async Task A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(string search)
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var whole = await Get(admin, $"/api/identity/users?search={Q(search)}&take=200");
+        var expected = Ids(whole);
+        Assert.True(expected.Count > 0, $"nothing found for {search}");
+        var walked = new List<string>();
+        string? next = null;
+        var pages = 0;
+        do
+        {
+            var page = await Get(admin, $"/api/identity/users?search={Q(search)}&take=3" + (next is null ? "" : $"&after={Q(next)}"));
+            Assert.Equal(expected.Count, page.GetProperty("total").GetInt32());
+            walked.AddRange(Ids(page));
+            next = page.GetProperty("next").ValueKind == JsonValueKind.Null ? null : page.GetProperty("next").GetString();
+            Assert.True(++pages < 200, "paging does not end");
+        }
+        while (next is not null);
+        Assert.Equal(expected, walked);
+        var offset = new List<string>();
+        for (var skip = 0; skip < expected.Count; skip += 5)
+        {
+            offset.AddRange(Ids(await Get(admin, $"/api/identity/users?search={Q(search)}&take=5&skip={skip}")));
+        }
+        Assert.Equal(expected, offset);
+    }
+
+    [Fact]
+    public async Task A_search_lists_the_best_match_first_and_reads_Arabic_spelling_variants()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        // The viewer is "Omar Haddad …": the words at the start of the name, in the typed order.
+        var top = Items(await Get(admin, $"/api/identity/users?search={Q("omar had")}"))[0];
+        Assert.Equal(Env.Email(Env.TenantA, "viewer"), top.GetProperty("email").GetString());
+        // Names whose parts start with the words come before names that only contain them.
+        static bool AtWordStart(string text) =>
+            text.StartsWith("al", StringComparison.OrdinalIgnoreCase) || text.Contains(" al", StringComparison.OrdinalIgnoreCase) || text.Contains(".al", StringComparison.OrdinalIgnoreCase);
+        var startsAt = Items(await Get(admin, $"/api/identity/users?search={Q("al")}&take=200"))
+            .Select(i => AtWordStart(i.GetProperty("displayName").GetString()!) || AtWordStart(i.GetProperty("email").GetString()!)).ToList();
+        Assert.Contains(true, startsAt);
+        Assert.Contains(false, startsAt);
+        Assert.True(startsAt.LastIndexOf(true) < startsAt.IndexOf(false), "every user with a word starting 'al' comes before the users that only contain 'al'");
+        // An explicit sort is kept.
+        var sorted = Items(await Get(admin, $"/api/identity/users?search={Q("al")}&sort=displayName&take=200")).Select(i => i.GetProperty("displayName").GetString()!).ToList();
+        Assert.Equal(sorted.Order(StringComparer.Ordinal), sorted);
+        // The administrator "فاطمة الزعابي" is found with heh for teh marbuta and alef maqsura for yeh.
+        foreach (var spelling in new[] { "فاطمه", "الزعابى", "فاطمه الزعابى", "فاطِمة" })
+        {
+            var found = Items(await Get(admin, $"/api/identity/users?search={Q(spelling)}"));
+            Assert.Contains(found, u => u.GetProperty("email").GetString() == Env.Email(Env.TenantA, "admin.ar"));
+        }
+    }
+
     [Fact]
     public async Task Sorting_orders_by_the_column_with_nulls_last_ascending_and_first_descending()
     {

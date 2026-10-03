@@ -308,6 +308,8 @@ public sealed class ListEngineTests
         Assert.Equal(["ليلى الهاشمي"], await Find(names, "ليلي"));
         // Short vowels typed in the search are ignored (stored ones still have to be typed).
         Assert.Equal(["أحمد المنصوري"], await Find(names, "أَحْمَد"));
+        // The whole name in other spellings is still the exact match, ahead of longer names.
+        Assert.Equal("فاطمة الزعابي", (await Find([.. names, "فاطمة الزعابي الكبيرة"], "فاطمه الزعابى"))[0]);
         // "احمد" never matches "محمد": only the letter variants are interchangeable.
         Assert.DoesNotContain("مُحَمَّد علي", await Find(names, "احمد"));
     }
@@ -321,6 +323,8 @@ public sealed class ListEngineTests
         Assert.Contains("فاطمة", fatima);
         Assert.Contains("فأطمة", fatima);
         Assert.Equal(10, fatima.Count);
+        // One letter changed before two.
+        Assert.True(fatima.ToList().IndexOf("فاطمة") < fatima.ToList().IndexOf("فأطمة"));
         var many = ListSearch.Spellings("ااااااااا");
         Assert.InRange(many.Count, 2, ListSearch.MaxSpellings);
         Assert.Equal("ااااااااا", many[0]);

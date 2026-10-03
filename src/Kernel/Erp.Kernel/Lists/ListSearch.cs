@@ -15,8 +15,8 @@ public static class ListSearch
     /// cannot start with '~').</summary>
     public const string RelevanceKey = "~relevance";
 
-    /// <summary>Most spellings one search word expands to; positions beyond it keep the letter
-    /// as typed (the first and last letters, where spelling varies most, are expanded first).</summary>
+    /// <summary>Most spellings one search word expands to for matching; positions beyond it keep
+    /// the letter as typed (the first and last letters, where spelling varies most, first).</summary>
     public const int MaxSpellings = 32;
 
     // Groups of letters typed for one another. A typed letter matches every letter of its group.
@@ -93,8 +93,40 @@ public static class ListSearch
                 }))
                 .ToList();
         }
-        // The spelling as typed first (it decides nothing, but reads well in a query log).
-        return spellings.Distinct(StringComparer.Ordinal).OrderBy(s => s == text ? 0 : 1).ToList();
+        // As typed first, then the spellings that change fewest letters (the likeliest ones, kept
+        // when a phrase of several words has to be cut to a bounded number of spellings).
+        return spellings.Distinct(StringComparer.Ordinal)
+            .OrderBy(s => s.Where((c, i) => c != text[i]).Count())
+            .ThenBy(s => s, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>A search word as a regular expression both PostgreSQL (<c>~*</c>) and .NET read
+    /// alike: letters and digits as typed, every other character escaped, each Arabic letter of a
+    /// spelling group as a class of the group (<c>[اأإآٱ]</c>); short vowels and tatweel dropped.</summary>
+    public static string Pattern(string word)
+    {
+        var pattern = new StringBuilder();
+        foreach (var c in word)
+        {
+            if (IsIgnorable(c))
+            {
+                continue;
+            }
+            if (GroupOf(c) is { } group)
+            {
+                pattern.Append('[').Append(group).Append(']');
+            }
+            else if (char.IsLetterOrDigit(c))
+            {
+                pattern.Append(c);
+            }
+            else
+            {
+                pattern.Append('\\').Append(c);
+            }
+        }
+        return pattern.ToString();
     }
 
     private static string? GroupOf(char c)

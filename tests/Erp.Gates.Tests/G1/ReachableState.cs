@@ -141,6 +141,33 @@ public static class ReachableState
             {
                 return;
             }
+            // Framework collections by what they hold, not by their internals: a dictionary's lazily
+            // created key or value view, or its version counter, is not state a tenant changed.
+            if (!isProduct && value is System.Collections.IDictionary dictionary)
+            {
+                foreach (System.Collections.DictionaryEntry entry in dictionary)
+                {
+                    var key = Convert.ToString(entry.Key, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+                    Walk(entry.Value, $"{path}[{(key.Length > 80 ? key[..80] + "…" : key)}]", depth + 1);
+                }
+                return;
+            }
+            if (!isProduct && value is System.Collections.IEnumerable items && type.FullName?.StartsWith("System.Collections.", StringComparison.Ordinal) == true)
+            {
+                var index = 0;
+                foreach (var item in items)
+                {
+                    if (index > 100_000) break;
+                    Walk(item, $"{path}[{index++}]", depth + 1);
+                }
+                return;
+            }
+            if (isProduct)
+            {
+                // The fields of a product object are named after its type, so a change reads as
+                // "…_modules[5](Erp.Modules.Stock.StockModule)._counts", not only by position.
+                path = $"{path}({TypeName(type)})";
+            }
             for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
             {
                 foreach (var field in current.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))

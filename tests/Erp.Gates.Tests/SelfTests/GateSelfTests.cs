@@ -104,10 +104,14 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal));
         Assert.Empty(report.ListAnswersBlind);
 
-        // The planted state changed while the tenants used the app; the product's did not.
-        Assert.Contains(report.StateChanges, c => c.Contains($"static {typeof(LeakyModule).FullName}.cachedTenant", StringComparison.Ordinal));
-        Assert.Contains(report.StateChanges, c => c.Contains("LeakyModule._totals", StringComparison.Ordinal));
-        Assert.Contains(report.StateChanges, c => c.Contains($"{typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal));
+        // The planted state changed while the tenants used the app (the list memory on the module
+        // instance, reached through the module catalogue; the stateful singleton); the product's
+        // did not. (The static workspace cache is filled by tenant B before the snapshot and kept,
+        // so it does not change; the marker check above catches it.)
+        Assert.Contains(report.StateChanges, c => c.StartsWith("singleton Erp.Kernel.Modules.ModuleCatalog._modules[", StringComparison.Ordinal) &&
+                                                  c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal));
+        Assert.Contains(report.StateChanges, c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal));
+        Assert.Contains(report.StateChanges, c => c.Contains($"{typeof(LeakyModule).FullName}.LastListHolder", StringComparison.Ordinal) && c.Contains(".Last", StringComparison.Ordinal));
         Assert.DoesNotContain(report.StateChanges, c => !c.Contains("Leaky", StringComparison.Ordinal));
     }
 
@@ -209,7 +213,9 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Critic p00 round 2, plant P2: a POST that reactivates users while declaring a read permission.
         var result = ReadPermissionWrites.Check(EndpointInventory.From(fixture.Env.Factory.Services));
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        // The planted list's own saved-view endpoints (a reader saving their own view) are the
+        // planted module's too: they are reviewed for product lists, not for this one.
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);

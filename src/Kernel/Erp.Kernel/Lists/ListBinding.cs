@@ -368,26 +368,25 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// </summary>
     private Expression Rank(Plan plan, ParameterExpression row, bool database)
     {
+        // Regular expressions (case-insensitive), one per field and test: much cheaper per row
+        // than one LIKE per spelling, and a letter class covers every Arabic spelling at once.
         Expression Score(Expression condition, int score) => Expression.Condition(condition, Expression.Constant(score), Expression.Constant(0));
+        Expression Any(string pattern) => Definition.SearchFields.Select(field => RegexMatch(Value(field, row), pattern, database)).Aggregate(Expression.OrElse);
+        var words = plan.Words.Select(w => ListSearch.Pattern(w.Word)).ToList();
+        var separators = "[" + string.Concat(ListSearch.WordSeparators) + "]";
         var parts = new List<Expression>();
-        foreach (var (_, spellings) in plan.Words)
+        foreach (var word in words)
         {
-            var atStart = AnyField(row, spellings.Select(s => EscapeLike(s) + "%"), database);
-            var atWord = AnyField(row, ListSearch.WordSeparators.SelectMany(separator => spellings.Select(s => "%" + separator + EscapeLike(s) + "%")), database);
-            parts.Add(Expression.Condition(atStart, Expression.Constant(ListSearch.FieldStartScore), Score(atWord, ListSearch.WordStartScore)));
+            parts.Add(Expression.Condition(Any("^" + word), Expression.Constant(ListSearch.FieldStartScore), Score(Any(separators + word), ListSearch.WordStartScore)));
         }
-        // The words as typed, in every spelling (bounded): the whole search equal to a field, at
-        // its start, or its words in the typed order (the first at the start, each next one at the
-        // start of a later word: "yous wang" for "Yousef Wang", not "Wang Yousef").
-        var typed = plan.Words.Select(w => w.Spellings).Aggregate(
-                (IEnumerable<IReadOnlyList<string>>)[[]],
-                (sofar, spellings) => sofar.SelectMany(p => spellings.Select(s => (IReadOnlyList<string>)[.. p, EscapeLike(s)])).Take(ListSearch.MaxSpellings))
-            .ToList();
-        parts.Add(Score(AnyField(row, typed.Select(w => string.Join(" ", w)), database), ListSearch.ExactScore));
-        if (plan.Words.Count > 1)
+        // The whole search equal to a field, at its start, or its words in the typed order (the
+        // first at the start, each next one at the start of a later word: "yous wang" for
+        // "Yousef Wang", not "Wang Yousef").
+        parts.Add(Score(Any("^" + string.Join(" ", words) + "$"), ListSearch.ExactScore));
+        if (words.Count > 1)
         {
-            parts.Add(Score(AnyField(row, typed.Select(w => string.Join(" ", w) + "%"), database), ListSearch.PhraseStartScore));
-            parts.Add(Score(AnyField(row, typed.Select(w => string.Join("% ", w) + "%"), database), ListSearch.InOrderScore));
+            parts.Add(Score(Any("^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
+            parts.Add(Score(Any("^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
         }
         var score = parts.Aggregate(Expression.Add);
         var first = Value(Definition.SearchFields[0], row);
@@ -397,6 +396,21 @@ public sealed class ListBinding<T> : IListBinding where T : class
         length = Expression.Condition(Expression.Equal(first, Expression.Constant(null, typeof(string))), cap, length);
         return Expression.Subtract(Expression.Multiply(score, Expression.Constant(ListSearch.LengthSlots)), length);
     }
+
+    private static readonly MethodInfo RegexIsMatch = typeof(System.Text.RegularExpressions.Regex).GetMethod(
+        nameof(System.Text.RegularExpressions.Regex.IsMatch), [typeof(string), typeof(string), typeof(System.Text.RegularExpressions.RegexOptions)])!;
+
+    private static readonly MethodInfo MatchesPattern = typeof(ListBinding<T>).GetMethod(nameof(MatchesRegex), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    /// <summary>A case-insensitive regular expression match: <c>~*</c> in PostgreSQL, .NET's
+    /// regular expressions in memory (the patterns use only what both read alike).</summary>
+    private static Expression RegexMatch(Expression value, string pattern, bool database) => database
+        ? Expression.Call(RegexIsMatch, value, Box(pattern, typeof(string)), Expression.Constant(System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        : Expression.Call(MatchesPattern, value, Expression.Constant(pattern));
+
+    private static bool MatchesRegex(string? value, string pattern) =>
+        value is not null && System.Text.RegularExpressions.Regex.IsMatch(value, pattern,
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
 
     /// <summary>The value a sort key orders by: a column's bound value, or the row's relevance.</summary>
     private Expression SortValue(ListSortKey key, Plan plan, ParameterExpression row, bool database) =>
