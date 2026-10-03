@@ -66,10 +66,18 @@ export function BranchesPage() {
     };
   }, [search, companyId, showInactive, reload]);
 
+  // The form keeps its identity when a new record is saved (so its "Saved." stays on screen).
+  const [formKey, setFormKey] = useState(() => readSelection().id ?? "new");
   const open = useCallback((id: string | null, isNew = false) => {
     setSelected(id);
     setCreating(isNew);
+    setFormKey(isNew ? `new-${Date.now()}` : (id ?? ""));
     writeSelection(id, isNew);
+  }, []);
+  const saved = useCallback((id: string) => {
+    setSelected(id);
+    setCreating(false);
+    writeSelection(id);
   }, []);
   const startNew = can("tenancy.branches.create") ? () => open(null, true) : undefined;
   useScreenKeys({ onNew: startNew, search: searchRef });
@@ -147,12 +155,12 @@ export function BranchesPage() {
       {(selected || creating) && (
         <div className="split-form">
           <BranchForm
-            key={creating ? "new" : selected}
+            key={formKey}
             id={creating ? null : selected}
             companies={companies}
             defaultCompanyId={companyId || companies[0]?.id || ""}
             onSaved={(id) => {
-              open(id);
+              saved(id);
               setReload((n) => n + 1);
             }}
             onClose={() => {

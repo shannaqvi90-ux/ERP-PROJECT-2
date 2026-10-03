@@ -48,10 +48,18 @@ export function CompaniesPage() {
     };
   }, [search, showInactive, reload]);
 
+  // The form keeps its identity when a new record is saved (so its "Saved." stays on screen).
+  const [formKey, setFormKey] = useState(() => readSelection().id ?? "new");
   const open = useCallback((id: string | null, isNew = false) => {
     setSelected(id);
     setCreating(isNew);
+    setFormKey(isNew ? `new-${Date.now()}` : (id ?? ""));
     writeSelection(id, isNew);
+  }, []);
+  const saved = useCallback((id: string) => {
+    setSelected(id);
+    setCreating(false);
+    writeSelection(id);
   }, []);
 
   const startNew = can("tenancy.companies.create") ? () => open(null, true) : undefined;
@@ -59,7 +67,7 @@ export function CompaniesPage() {
 
   const rows = page?.items ?? [];
   const onSaved = (id: string) => {
-    open(id);
+    saved(id);
     setReload((n) => n + 1);
   };
 
@@ -139,7 +147,7 @@ export function CompaniesPage() {
       {(selected || creating) && (
         <div className="split-form">
           <CompanyForm
-            key={creating ? "new" : selected}
+            key={formKey}
             id={creating ? null : selected}
             onSaved={onSaved}
             onClose={() => {

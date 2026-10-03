@@ -76,6 +76,9 @@ describe("companies screen", () => {
     const post = calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/companies")[1]!;
     expect(post.body).toMatchObject({ code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC", legalNameAr: "النور عجمان ذ.م.م", baseCurrency: "AED", country: "AE", isActive: true });
     expect(window.location.search).toBe("?id=c9");
+    // The same form stays open on the saved company and says so.
+    expect(view.container.querySelector('[role="status"]')!.textContent).toBe("Saved.");
+    expect(document.activeElement).not.toBe(document.body);
 
     const branchCode = view.container.querySelector<HTMLInputElement>('input[name="branchCode"]')!;
     setInput(branchCode, "hq");
