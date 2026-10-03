@@ -118,6 +118,18 @@ test('blind screenshots paint branding over, go grey, and leave title and favico
   await context.close();
 });
 
+test('a screenshot after the end of a task never shortens the measured time', async () => {
+  const { context, op } = await fresh();
+  op.start();
+  await new Promise(r => setTimeout(r, 30));
+  op.finish();
+  const measured = op.machineSeconds;
+  await op.shot('done');
+  assert.equal(op.machineSeconds, measured);
+  assert.ok(measured >= 0.03, `measured ${measured}s`);
+  await context.close();
+});
+
 test('screenshot time is not counted as product time', async () => {
   const { context, op } = await fresh();
   op.start();

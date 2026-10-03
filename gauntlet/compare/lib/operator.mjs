@@ -157,8 +157,10 @@ export class Operator {
     });
     const s = { moment, file, at: round(t) };
     this.shots.push(s);
-    // Screenshot time is harness overhead, not product time: take it out of the clock.
-    if (this.t0 !== null) this.t0 += (this.now() - t) * 1000;
+    // Screenshot time is harness overhead, not product time: take it out of the clock while it
+    // runs. A shot after finish() (the "done" shot) must not move the start, or the measured
+    // time shrinks by the shot's duration and can even turn negative.
+    if (this.t0 !== null && this.t1 === null) this.t0 += (this.now() - t) * 1000;
     return s;
   }
 

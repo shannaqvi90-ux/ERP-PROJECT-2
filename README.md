@@ -49,6 +49,10 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
    `i18n/{en,ar}.json` under `web/src/modules/<name>/`. List endpoints return `{ items, total }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
+5. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
+   controls (the company/branch switcher), status-line items and command palette sources, each
+   with a permission (`docs/decisions/p04-shell-layout-and-extension-points.md`). Format numbers,
+   amounts and dates with `useI18n().format`, never `toLocaleString`.
 
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
