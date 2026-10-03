@@ -29,7 +29,8 @@ public sealed class VictimValues
     public required IReadOnlyList<string> Strings { get; init; }
 
     /// <summary>Extra leak markers: B-only text values long enough to be unmistakable (password
-    /// hashes, e-mails, names), outside the audit trail whose correlation ids look like trace ids.</summary>
+    /// hashes, e-mails, names), outside the audit trail whose correlation ids look like trace ids,
+    /// and not contained in any row of the other tenant.</summary>
     public required IReadOnlyList<string> Markers { get; init; }
 
     /// <summary>Sampled ids then every text value.</summary>
@@ -42,7 +43,8 @@ public sealed class VictimValues
         var markers = new List<string>();
         var probe = new List<string> { victim.TenantId.ToString(), victim.Code };
         probe.AddRange(victim.IdsByTable.Values.Where(ids => ids.Count > 0).Select(ids => ids[0].ToString()));
-        foreach (var table in await DbCatalog.TenantTablesAsync(admin))
+        var tables = await DbCatalog.TenantTablesAsync(admin);
+        foreach (var table in tables)
         {
             foreach (var column in await DbCatalog.ColumnsAsync(admin, table))
             {
@@ -82,6 +84,20 @@ public sealed class VictimValues
             }
         }
         strings.Add(victim.Code);
+
+        // A marker proves a leak only if the other tenant cannot legitimately hold that text.
+        // Markers are matched as substrings, so a value the other tenant holds inside one of its
+        // own values (generated demo names: "Abdullah Siddiqui" here, "Abdullah Siddiqui CNRY…"
+        // there) would flag the other tenant's own data as a leak. Exact duplicates are already
+        // left out above; this drops markers found anywhere in the other tenant's rows.
+        var otherRows = new List<string>();
+        foreach (var table in tables)
+        {
+            otherRows.AddRange(await DbCatalog.ReadAsync(admin, $"SELECT lower(t::text) FROM {table.Qualified} t WHERE t.tenant_id = @a",
+                r => r.GetString(0), ("a", attacker)));
+        }
+        markers = markers.Where(m => !otherRows.Any(row => row.Contains(m.ToLowerInvariant(), StringComparison.Ordinal))).ToList();
+
         return new VictimValues
         {
             Ids = victim.AllIds.ToList(),
