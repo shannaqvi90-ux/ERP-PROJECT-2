@@ -302,7 +302,7 @@ public static class IsolationAttack
             {
                 var (candidates, operators) = column.Type switch
                 {
-                    Erp.Kernel.Lists.ListColumnType.Text => (values.Strings, new[] { "eq", "contains", "startswith", "endswith", "ne" }),
+                    Erp.Kernel.Lists.ListColumnType.Text => (values.Strings, new[] { "eq", "contains", "startswith", "endswith", "ne", "in" }),
                     Erp.Kernel.Lists.ListColumnType.Reference => (values.IdSample.Select(i => i.ToString()).ToList(), new[] { "eq", "ne" }),
                     _ => ((IReadOnlyList<string>)[], Array.Empty<string>()),
                 };
@@ -311,7 +311,9 @@ public static class IsolationAttack
                     foreach (var op in operators)
                     {
                         var n = counter++;
-                        string UriFor(string v) => list.Endpoint + "?take=200&filter=" + Uri.EscapeDataString($"{column.Key} {op} {Erp.Kernel.Lists.ListFilterText.Quote(v)}");
+                        string UriFor(string v) => list.Endpoint + "?take=200&filter=" + Uri.EscapeDataString(op == "in"
+                            ? $"{column.Key} in ({Erp.Kernel.Lists.ListFilterText.Quote(v)}, 'zz-none')"
+                            : $"{column.Key} {op} {Erp.Kernel.Lists.ListFilterText.Quote(v)}");
                         listWork.Add(() => state.ParameterAttackAsync(admin, listEndpoint!, value, filterParameter, UriFor, null, openApi, b, n));
                     }
                 }
