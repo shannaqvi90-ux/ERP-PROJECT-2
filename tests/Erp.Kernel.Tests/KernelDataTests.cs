@@ -68,6 +68,7 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
     }
 
     [Fact]
+    [Trait(TimingBudget.Trait, TimingBudget.Value)]
     public async Task Bulk_insert_loads_100000_rows_through_row_level_security_quickly()
     {
         await using var scope = Env.Factory.Services.CreateAsyncScope();

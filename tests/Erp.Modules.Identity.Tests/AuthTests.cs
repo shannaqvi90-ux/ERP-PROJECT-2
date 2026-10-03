@@ -36,6 +36,32 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
     private static async Task<JsonElement> Json(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>();
 
+    /// <summary>Behind TLS the session cookie is Secure (critic p00 round 3 asked to confirm it):
+    /// a request that arrives over HTTPS gets a Secure cookie (behind a proxy the scheme comes from
+    /// the configured proxy's forwarded headers, Erp:Http:KnownProxies; Erp:Auth:AlwaysSecureCookie
+    /// forces it); plain http (the local demo on localhost) does not.</summary>
+    [Fact]
+    public async Task The_session_cookie_is_secure_over_https_and_not_on_plain_http()
+    {
+        string CookieOf(HttpResponseMessage response) =>
+            response.Headers.GetValues("Set-Cookie").Single(c => c.StartsWith("erp_session=", StringComparison.Ordinal));
+        using var https = Env.Factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost"),
+            HandleCookies = false,
+            AllowAutoRedirect = false,
+        });
+        https.DefaultRequestHeaders.Add("X-Erp-Request", "1");
+        var secure = await https.PostAsJsonAsync("/api/auth/sign-in", new { email = AdminA, password = ErpTestEnvironment.Password });
+        Assert.Equal(HttpStatusCode.OK, secure.StatusCode);
+        Assert.Contains("; secure", CookieOf(secure), StringComparison.OrdinalIgnoreCase);
+
+        using var http = Env.CreateClient();
+        var plain = await http.PostAsJsonAsync("/api/auth/sign-in", new { email = AdminA, password = ErpTestEnvironment.Password });
+        Assert.Equal(HttpStatusCode.OK, plain.StatusCode);
+        Assert.DoesNotContain("; secure", CookieOf(plain), StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public async Task Signing_in_returns_the_session_and_sets_a_strict_http_only_cookie()
     {

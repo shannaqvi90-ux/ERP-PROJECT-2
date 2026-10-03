@@ -48,7 +48,13 @@ case "$stage" in
 
     step ".NET: unit, integration (Testcontainers PostgreSQL) and gate tests"
     rm -rf "$out/trx"
-    dotnet test Erp.slnx -c Release --no-build --verbosity quiet \
+    dotnet test Erp.slnx -c Release --no-build --verbosity quiet --filter "Load!=Timing" \
+        --logger "trx" --logger "console;verbosity=normal" --results-directory "$out/trx"
+
+    # Timing budgets at demo volume (tests/Erp.Testing/TimingBudget.cs) are measured alone, after
+    # everything else, so the suite's own parallel tests do not share the machine with them.
+    step ".NET: timing budgets at demo volume (alone)"
+    dotnet test Erp.slnx -c Release --no-build --verbosity quiet --filter "Load=Timing" \
         --logger "trx" --logger "console;verbosity=normal" --results-directory "$out/trx"
     ;;
   e2e)

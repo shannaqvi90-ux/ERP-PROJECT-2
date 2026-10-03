@@ -8,8 +8,11 @@ namespace Erp.Gates.Tests.G1;
 /// G1, source: the tenant comes only from the session. The few places that may choose a tenant,
 /// change session settings, step around the tenant query filter or reach the database outside the
 /// request's unit of work are reviewed one by one in tests/Gates/tenant-bypass-sources.txt (rule,
-/// file and reason); any other file under src/ that does one of these things fails the gate, and
-/// so does a reviewed entry the file no longer needs. The HTTP attack checks the same thing at run
+/// file, the number of uses reviewed, and reason); any other file under src/ that does one of these
+/// things fails the gate, and so does a reviewed entry the file no longer needs. Uses are counted,
+/// not just found: a reviewed file is reviewed for the uses that were read, so one more use in it
+/// (critic p00 round 3, plant T1: a header-driven tenant switch whose set_config sat in the
+/// already-reviewed ErpDbSession.cs) fails until someone reviews it and raises the count. The HTTP attack checks the same thing at run
 /// time (every binding against the request's principal, every setting statement against its
 /// sender); this check also covers code paths no request reaches.
 /// </summary>
@@ -65,6 +68,21 @@ public sealed class G1TenantSourceTests
         Assert.Empty(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "await session.BeginAsync(id, null, \"seed\");")], reviewed).Problems);
         Assert.Contains(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "var x = 1;")], reviewed).Problems,
             p => p.Contains("no longer", StringComparison.Ordinal));
+        // A second use in a reviewed file fails until its count is reviewed (critic p00 round 3,
+        // plant T1); an entry without a count reviews exactly one use.
+        const string twoBinds = "await session.BeginAsync(id, null, \"seed\");\nawait session.BeginAsync(Guid.Parse(header), null, \"user\");";
+        Assert.Contains(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", twoBinds)], reviewed).Problems,
+            p => p.Contains("[bind]", StringComparison.Ordinal) && p.Contains("2 uses", StringComparison.Ordinal) && p.Contains(":2", StringComparison.Ordinal));
+        Assert.Empty(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", twoBinds)],
+            [("bind src/Modules/Planted/Planted.cs 2", "planted")]).Problems);
+        // Fewer uses than reviewed: the count is stale and must come down (a later use would
+        // otherwise slip in under the old count).
+        Assert.Contains(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "await session.BeginAsync(id, null, \"seed\");")],
+            [("bind src/Modules/Planted/Planted.cs 2", "planted")]).Problems, p => p.Contains("lower the count", StringComparison.Ordinal));
+        // Malformed counts are refused.
+        Assert.Contains(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "var x = 1;")],
+            [("bind src/Modules/Planted/Planted.cs zero", "planted")]).Problems, p => p.Contains("must be", StringComparison.Ordinal));
+
         // Named filters other than the tenant's (a company filter) are not a tenant bypass.
         Assert.Empty(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])")], []).Problems);
     }
@@ -113,20 +131,22 @@ public static class TenantBypassScanner
     {
         var files = source.ToList();
         var problems = new List<string>();
-        var allowed = new HashSet<string>(StringComparer.Ordinal);
+        var allowed = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var (entry, reason) in reviewed)
         {
             var parts = entry.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 2 || Rules.All(r => r.Name != parts[0]))
+            var count = 1;
+            if (parts.Length is < 2 or > 3 || Rules.All(r => r.Name != parts[0]) ||
+                (parts.Length == 3 && (!int.TryParse(parts[2], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out count) || count < 1)))
             {
-                problems.Add($"{G1TenantSourceTests.ReviewedFile}: '{entry}' must be '<rule> <path>' with a rule among {string.Join(", ", Rules.Select(r => r.Name))}");
+                problems.Add($"{G1TenantSourceTests.ReviewedFile}: '{entry}' must be '<rule> <path> [<uses reviewed, 1 when left out>]' with a rule among {string.Join(", ", Rules.Select(r => r.Name))}");
                 continue;
             }
             if (string.IsNullOrWhiteSpace(reason))
             {
                 problems.Add($"{G1TenantSourceTests.ReviewedFile}: '{entry}' needs a reason after '#'");
             }
-            allowed.Add(entry);
+            allowed[$"{parts[0]} {parts[1]}"] = count;
         }
         var used = new HashSet<string>(StringComparer.Ordinal);
         var scanned = 0;
@@ -136,24 +156,36 @@ public static class TenantBypassScanner
             scanned++;
             foreach (var rule in Rules)
             {
-                var match = rule.Pattern.Match(text);
-                if (!match.Success)
+                var found = rule.Pattern.Matches(text);
+                if (found.Count == 0)
                 {
                     continue;
                 }
                 var key = $"{rule.Name} {path}";
-                if (allowed.Contains(key))
+                var lines = string.Join(", ", found.Select(m => $"{path}:{text[..m.Index].Count(c => c == '\n') + 1}"));
+                if (allowed.TryGetValue(key, out var reviewedUses))
                 {
                     used.Add(key);
-                    matches++;
+                    if (found.Count == reviewedUses)
+                    {
+                        matches += found.Count;
+                    }
+                    else if (found.Count > reviewedUses)
+                    {
+                        problems.Add($"{path}: {found.Count} uses where {G1TenantSourceTests.ReviewedFile} reviewed {reviewedUses}: {rule.What} [{rule.Name}] at {lines}; " +
+                                     "review the new use and raise the count, or let the session's tenant do the work");
+                    }
+                    else
+                    {
+                        problems.Add($"{G1TenantSourceTests.ReviewedFile}: '{key}' reviews {reviewedUses} uses but the file has {found.Count} ({lines}); lower the count");
+                    }
                     continue;
                 }
-                var line = text[..match.Index].Count(c => c == '\n') + 1;
-                problems.Add($"{path}:{line} {rule.What} [{rule.Name}]: only reviewed files may; review it in {G1TenantSourceTests.ReviewedFile} or let the session's tenant do the work");
+                problems.Add($"{lines} {rule.What} [{rule.Name}]: only reviewed files may; review it in {G1TenantSourceTests.ReviewedFile} or let the session's tenant do the work");
             }
         }
         var paths = files.Select(f => f.Path).ToHashSet(StringComparer.Ordinal);
-        foreach (var stale in allowed.Where(a => !used.Contains(a)))
+        foreach (var stale in allowed.Keys.Where(a => !used.Contains(a)))
         {
             var path = stale.Split(' ')[1];
             problems.Add(paths.Contains(path)

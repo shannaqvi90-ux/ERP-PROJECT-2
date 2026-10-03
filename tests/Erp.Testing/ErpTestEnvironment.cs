@@ -38,6 +38,17 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public ErpAppFactory Factory { get; }
     public SeedPlan Plan { get; }
 
+    /// <summary>The configuration the app was started with (connection strings, test settings).</summary>
+    public IReadOnlyDictionary<string, string?> Settings => Factory.Settings;
+
+    /// <summary>
+    /// A second, independent app process over the same database: its own service provider,
+    /// singletons, static-free caches and endpoint closures, none of which any other caller has
+    /// touched. (Static fields are shared with <see cref="Factory"/>, as both run in this test
+    /// process.) The caller disposes it.
+    /// </summary>
+    public ErpAppFactory StartFreshProcess() => new(new Dictionary<string, string?>(Factory.Settings));
+
     /// <summary>Superuser on the ERP database (bypasses row-level security). For inspection only.</summary>
     public string AdminConnectionString { get; }
     public string OwnerConnectionString { get; }
@@ -73,6 +84,10 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
             Database = database,
             Pooling = true,
             MaxPoolSize = 100,
+            // Inspection and set-up statements of the tests themselves (ANALYZE of 100,000 rows,
+            // checksums of every table) on a saturated machine. The application role keeps
+            // Npgsql's default: the product sets its own timeouts (ErpDataSources).
+            CommandTimeout = user == DatabaseRoles.App ? 30 : 600,
         }.ConnectionString;
 
         var adminServer = For("postgres", adminPassword, "postgres");
@@ -166,6 +181,12 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
 /// <summary>Hosts the real <c>Program</c> with test connection strings.</summary>
 public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebApplicationFactory<Program>
 {
+    /// <summary>The settings this host was started with.</summary>
+    public IReadOnlyDictionary<string, string?> Settings { get; } = new Dictionary<string, string?>(settings);
+
+    /// <summary>Errors the app logged (to explain a 5xx answer by its trace id).</summary>
+    public ServerErrorLog ErrorLog { get; } = new();
+
     private IReadOnlyList<ServiceDescriptor>? _descriptors;
 
     /// <summary>Every service registration of the running app (for the process-wide state gate).</summary>
@@ -186,7 +207,7 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
             builder.UseSetting(key, value);
         }
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
-        builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
+        builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning).AddProvider(ErrorLog));
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<RequestInputRecorder>();
