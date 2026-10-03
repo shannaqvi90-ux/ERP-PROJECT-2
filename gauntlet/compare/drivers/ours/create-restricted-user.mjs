@@ -1,13 +1,16 @@
 import { oursAs } from '../../lib/ours-api.mjs';
 
-// The shortest expert path through our users screen: Users > n (the e-mail field has focus) > the
-// address > the role, found by typing part of its name > Ctrl+Enter. The name is suggested from the
-// address ("hessa.clerk" -> "Hessa Clerk") and the set-up code to hand over appears at once.
+// The shortest expert path through our users screen: Users > New user (the e-mail field has focus)
+// > the address > the role, found by typing part of its name > Ctrl+Enter. The name is suggested
+// from the address ("hessa.clerk" -> "Hessa Clerk") and the set-up code to hand over appears at once.
+// The users list opens with the cursor in its search box, so the screen's "n" shortcut would type
+// an n into the search there: the New user button is the way in on arrival.
 //
 // The task asks for someone who may view and create contacts and nothing else. Roles take any
 // module's permissions as they come (tests/Erp.Modules.Identity.Tests/ModulePermissionsTests.cs);
 // while no contacts module is installed (p16, wave 2) the catalogue has no contacts permission, so
-// set-up uses the nearest restricted role that exists, "Read-only", and verify says so in its
+// set-up makes "Contacts clerk" a role with no permissions at all (the seeded "Read-only" role reads
+// the workspace settings, which verify counts as administration), and verify says so in its
 // details. Set-up and clean-up remove the task's user through the API (a user who never signed in
 // can be deleted), outside the measured part.
 
@@ -21,18 +24,14 @@ async function removeTaskUser(api, login) {
   }
 }
 
-/** The role the task gives: "Contacts clerk" (view and create contacts) when the catalogue has those permissions, else "Read-only". */
+/** The role the task gives: "Contacts clerk", which may view and create contacts when the catalogue has those permissions, else nothing. */
 async function ensureRole(api) {
   const catalogue = new Set((await api.get('/api/identity/permissions')).map(p => p.key));
   const roles = (await api.get('/api/identity/roles?take=200')).items;
-  if (CONTACTS.every(k => catalogue.has(k))) {
-    const clerk = roles.find(r => r.nameEn === 'Contacts clerk');
-    if (!clerk) await api.post('/api/identity/roles', { nameEn: 'Contacts clerk', nameAr: 'كاتب جهات الاتصال', permissions: CONTACTS });
-    return { filter: 'clerk', name: 'Contacts clerk', contacts: true };
-  }
-  const readOnly = roles.find(r => r.nameEn.startsWith('Read-only'));
-  if (!readOnly) throw new Error('our product has neither a contacts permission nor the seeded Read-only role');
-  return { filter: 'read', name: readOnly.nameEn, contacts: false };
+  const contacts = CONTACTS.every(k => catalogue.has(k));
+  const clerk = roles.find(r => r.nameEn === 'Contacts clerk');
+  if (!clerk) await api.post('/api/identity/roles', { nameEn: 'Contacts clerk', nameAr: 'كاتب جهات الاتصال', permissions: contacts ? CONTACTS : [] });
+  return { filter: 'clerk', name: 'Contacts clerk', contacts };
 }
 
 function pathRun(keyboardRole) {
@@ -40,7 +39,7 @@ function pathRun(keyboardRole) {
     const { login } = ctx.task.input;
     await op.click('nav a[href="/identity/users"] >> nth=0', { label: 'Users (navigation)' });
     await op.waitFor('main table tbody tr', { label: 'users list' });
-    await op.press('n', { label: 'New user (n)' });
+    await op.click(op.page.getByRole('button', { name: 'New user', exact: true }), { label: 'New user' });
     await op.waitFor('input[name="email"]:focus', { label: 'new user form, e-mail focused' });
     await op.type(login, { label: 'e-mail' });
     if (keyboardRole) {
@@ -62,11 +61,11 @@ function pathRun(keyboardRole) {
 
 export default {
   built: true,
-  path: 'Users (navigation) > n > e-mail > the role > Ctrl+Enter. The name is filled from the e-mail. Two expert variants; the result counts the better one per metric.',
+  path: 'Users (navigation) > New user > e-mail > the role > Ctrl+Enter. The name is filled from the e-mail. Two expert variants; the result counts the better one per metric.',
   run: pathRun(false),
   variants: {
-    pointer: { path: 'Users > n (e-mail focused) > type the e-mail > click the role > Ctrl+Enter', run: pathRun(false) },
-    keyboard: { path: 'Users > n > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter', run: pathRun(true) },
+    pointer: { path: 'Users > New user (e-mail focused) > type the e-mail > click the role > Ctrl+Enter', run: pathRun(false) },
+    keyboard: { path: 'Users > New user > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter', run: pathRun(true) },
   },
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
@@ -101,7 +100,7 @@ export default {
         roles: access.roles.map(r => r.nameEn),
         permissions: held,
         administration,
-        note: ctx.state.role.contacts ? 'view and create contacts only' : 'no contacts permission exists in our product yet (p16); the nearest restricted role, Read-only, was used',
+        note: ctx.state.role.contacts ? 'view and create contacts only' : 'no contacts permission exists in our product yet (p16); the role given holds no permission at all',
       },
     };
   },

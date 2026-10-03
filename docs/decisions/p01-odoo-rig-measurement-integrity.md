@@ -106,6 +106,14 @@ The round 2 critic found four faults in the instrument:
   from the steps (typing right after the key that reached the field, Enter right after typing), so
   the driver's three declared chains were refused by the operator and the driver lint. The derived
   model gives the same continuations for this path.
+- `ours/create-restricted-user` opens the form with the New user button, not the `n` shortcut. The
+  users list now opens with the cursor in its search box, so `n` typed an n into the search and the
+  form never opened (the health check timed out waiting for the e-mail field). This is a product
+  finding for p03: the screen's `n` shortcut cannot be used on arrival.
+- While no contacts permission exists, set-up makes "Contacts clerk" a role with no permissions
+  instead of handing out the seeded "Read-only" role. Read-only now reads the workspace settings
+  (`tenancy.tenant.read`), which verify counts as administration, so the task failed its own check.
+  Verify is unchanged.
 - `ours/find-user` is on the search-box path again (Users > the search box > the name > the row,
   4 steps), the path the guard tests verify on their stand-in users screen. p03 wrote a 3-step path
   (the list opens with the search focused; the first three letters of each word are typed). Taking
