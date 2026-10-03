@@ -3,12 +3,12 @@ import { Dialog } from "../../kernel/dialog";
 import { allowed, extensions, type PaletteItem, type PaletteSource } from "../../kernel/extensions";
 import { Icon, type IconName } from "../../kernel/icons";
 import { useI18n } from "../../kernel/i18n";
-
-type Translate = ReturnType<typeof useI18n>["t"];
 import { navigate } from "../../kernel/router";
 import { Keys } from "../../kernel/shortcuts";
 import { useSession } from "../../kernel/session";
 import { rank } from "./paletteSearch";
+
+type Translate = ReturnType<typeof useI18n>["t"];
 
 /** One line of the palette: a screen, an action or a record. */
 export type PaletteEntry = {
