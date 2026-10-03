@@ -1,53 +1,23 @@
-import { useEffect, useState } from "react";
-import { api } from "../../kernel/api";
+import { ListView } from "../../kernel/lists/ListView";
 import { useI18n } from "../../kernel/i18n";
+import { useSession } from "../../kernel/session";
 
-type Role = { id: string; nameEn: string; nameAr: string; permissions: string[]; isSystem: boolean; userCount: number };
-
-type Page = { items: Role[]; total: number };
-
-/** Read-only role list (p03 adds the permission matrix and editing). */
+/** The roles list on the shared list framework (p03 adds the permission matrix and editing). */
 export function RolesPage() {
   const { t, language, formatNumber } = useI18n();
-  const [roles, setRoles] = useState<Role[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    api<Page>("GET", "/api/identity/roles")
-      .then((page) => setRoles(page.items))
-      .catch((e: Error) => setError(e.message));
-  }, []);
-
+  const { can } = useSession();
   return (
-    <section>
-      <div className="screen-header">
-        <h1>{t("identity.roles.title")}</h1>
-      </div>
-      {error && (
-        <div className="alert" role="alert">
-          {error}
-        </div>
-      )}
-      <table className="grid">
-        <thead>
-          <tr>
-            <th scope="col">{t("identity.roles.name")}</th>
-            <th scope="col">{t("identity.roles.permissions")}</th>
-            <th scope="col">{t("identity.roles.users")}</th>
-            <th scope="col">{t("identity.roles.kind")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {roles?.map((r) => (
-            <tr key={r.id}>
-              <td>{language === "ar" ? r.nameAr : r.nameEn}</td>
-              <td>{formatNumber(r.permissions.length)}</td>
-              <td>{formatNumber(r.userCount)}</td>
-              <td>{r.isSystem ? t("identity.roles.system") : t("identity.roles.custom")}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+    <ListView
+      listKey="identity.roles"
+      titleKey="identity.roles.title"
+      countKey="identity.roles.count"
+      searchPlaceholderKey="identity.roles.search"
+      can={can}
+      renderCell={{
+        nameEn: (r) => String((language === "ar" ? r.nameAr : r.nameEn) ?? ""),
+        isSystem: (r) => (r.isSystem ? t("identity.roles.system") : t("identity.roles.custom")),
+        permissions: (r) => formatNumber(Array.isArray(r.permissions) ? r.permissions.length : 0),
+      }}
+    />
   );
 }

@@ -1,0 +1,71 @@
+import type { Condition, ListColumn, ListDefinition, Row, Value } from "./model";
+
+type Translate = (key: string, params?: Record<string, string | number>) => string;
+
+export type Formatters = {
+  t: Translate;
+  formatDateTime: (value: string | Date) => string;
+  formatNumber: (value: number) => string;
+  locale: string;
+};
+
+/** A cell value as text in the user's language (dates, numbers, flags, choices). */
+export function formatValue(column: ListColumn, value: unknown, f: Formatters): string {
+  if (value === null || value === undefined || value === "") return "";
+  switch (column.type) {
+    case "boolean":
+      return value ? f.t("lists.yes") : f.t("lists.no");
+    case "choice": {
+      if (Array.isArray(value)) return f.formatNumber(value.length);
+      const choice = column.choices.find((c) => c.value === value);
+      return choice ? f.t(choice.labelKey) : String(value);
+    }
+    case "dateTime":
+      return f.formatDateTime(String(value));
+    case "date":
+      return new Intl.DateTimeFormat(f.locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${String(value)}T00:00:00Z`));
+    case "number":
+      return f.formatNumber(Number(value));
+    case "money":
+      return new Intl.NumberFormat(f.locale, { minimumFractionDigits: 2, maximumFractionDigits: 6 }).format(Number(value));
+    default:
+      return String(value);
+  }
+}
+
+export function columnLabel(definition: ListDefinition, key: string, t: Translate): string {
+  const column = definition.columns.find((c) => c.key === key);
+  return column ? t(column.labelKey) : key;
+}
+
+/** A filter condition as a short sentence for its chip ("Language is one of Arabic, English"). */
+export function conditionLabel(definition: ListDefinition, condition: Condition, f: Formatters): string {
+  const column = definition.columns.find((c) => c.key === condition.column);
+  const name = column ? f.t(column.labelKey) : condition.column;
+  const show = (v: Value) => (column ? formatValue(column, v, f) : String(v));
+  if (condition.op === "isNull" || condition.op === "isNotNull") return `${name} ${f.t(`lists.op.${condition.op}`)}`;
+  return `${name} ${f.t(`lists.op.${condition.op}`)} ${condition.values.map(show).join(", ")}`;
+}
+
+/** The text of a row's cell for the clipboard. */
+export function cellText(definition: ListDefinition, row: Row, key: string, f: Formatters): string {
+  const column = definition.columns.find((c) => c.key === key);
+  return column ? formatValue(column, row[key], f) : String(row[key] ?? "");
+}
+
+/** Start of a local calendar day as an ISO instant with the browser's offset. */
+export function localDayStart(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const local = new Date(y!, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+  const offset = -local.getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const pad = (n: number) => String(Math.trunc(Math.abs(n))).padStart(2, "0");
+  return `${date}T00:00:00${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
+}
+
+/** The day after a yyyy-mm-dd date. */
+export function nextDay(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const next = new Date(Date.UTC(y!, (m ?? 1) - 1, (d ?? 1) + 1));
+  return next.toISOString().slice(0, 10);
+}
