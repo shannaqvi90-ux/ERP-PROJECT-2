@@ -58,6 +58,25 @@ public static partial class NonInterference
             .Where(e => e.Method == "GET" && e.Surface == SurfaceKind.Data && e.Pattern.StartsWith("/api/", StringComparison.Ordinal))
             .ToList();
 
+        // Both tenants first make every write the app offers on their own records in the shared
+        // process, so whatever a write leaves behind (a counter, a "recently changed" list, a
+        // cache filled on save) is there when the other tenant reads.
+        var allEndpoints = EndpointInventory.From(env.Factory.Services);
+        var writes = 0;
+        foreach (var tenant in new[] { b, a })
+        {
+            var writer = await TenantActivity.StartAsync(env, tenant, allEndpoints, openApi);
+            try
+            {
+                await writer.WriteAsync(await TenantSnapshot.TakeAsync(env, tenant.Id, tenant.Canary, tenant.Code));
+                writes += writer.SuccessfulWrites;
+            }
+            finally
+            {
+                writer.Dispose();
+            }
+        }
+
         var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
         var ownB = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
         var textsA = (await VictimValues.ReadAsync(env, ownA, b.Id)).Strings;
@@ -91,6 +110,10 @@ public static partial class NonInterference
         else if (state.Unstable.Count * 4 > state.Comparisons)
         {
             blind.Add($"{state.Unstable.Count} of {state.Comparisons} requests answered differently from one call to the next in a fresh process");
+        }
+        if (writes == 0)
+        {
+            blind.Add("neither tenant made a successful write before the comparison");
         }
         if (state.Discriminating == 0)
         {
