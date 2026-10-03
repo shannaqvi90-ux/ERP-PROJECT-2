@@ -1,3 +1,1 @@
 # Columns left out of the tenant-B checksum in the G1 HTTP attack. Each needs a reason.
-identity.users.failed_sign_in_count  # Account lockout counter. Anyone who knows an address can trip it by failing sign-in, as on any login system; it reveals nothing to the attacker and is not business data (also left out of the audit change set).
-identity.users.lockout_until  # Set when the lockout counter reaches the threshold; same reason.

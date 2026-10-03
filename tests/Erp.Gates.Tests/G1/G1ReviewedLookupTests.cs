@@ -79,22 +79,27 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
         var victimEmail = Env.Email(Env.TenantB, "admin");
         await using var app = await Env.OpenAppAsync();
 
-        // Unbound (how sign-in uses it): the account is found.
-        var unbound = await DbCatalog.ScalarAsync<long>(app, "SELECT count(*) FROM identity.resolve_login(@e)", ("e", victimEmail));
+        // Unbound (how sign-in uses it): the account's hashing parameters are found.
+        const string challenge = "SELECT count(*) FROM identity.verify_sign_in(@e, NULL, 'gate', NULL, NULL, 5, 15) WHERE challenge IS NOT NULL";
+        var unbound = await DbCatalog.ScalarAsync<long>(app, challenge, ("e", victimEmail));
         Assert.Equal(1, unbound);
 
-        // Bound to tenant A (how an endpoint's request runs): nothing, for either function.
+        // Bound to tenant A (how an endpoint's request runs): nothing, for either function, for
+        // tenant B's address and for tenant A's own, with or without proofs.
         await using var tx = await app.BeginTransactionAsync();
         await G1DatabaseIsolationTests.BindAsync(app, tx, Env.TenantA.Id);
-        await using (var login = new NpgsqlCommand("SELECT count(*) FROM identity.resolve_login(@e)", app, tx))
+        foreach (var email in new[] { victimEmail, Env.Email(Env.TenantA, "admin") })
         {
-            login.Parameters.AddWithValue("e", victimEmail);
-            Assert.Equal(0L, await login.ExecuteScalarAsync());
-        }
-        await using (var own = new NpgsqlCommand("SELECT count(*) FROM identity.resolve_login(@e)", app, tx))
-        {
-            own.Parameters.AddWithValue("e", Env.Email(Env.TenantA, "admin"));
-            Assert.Equal(0L, await own.ExecuteScalarAsync());
+            await using (var login = new NpgsqlCommand(challenge, app, tx))
+            {
+                login.Parameters.AddWithValue("e", email);
+                Assert.Equal(0L, await login.ExecuteScalarAsync());
+            }
+            await using (var proofs = new NpgsqlCommand("SELECT count(*) FROM identity.verify_sign_in(@e, ARRAY['x'], 'gate', NULL, NULL, 5, 15)", app, tx))
+            {
+                proofs.Parameters.AddWithValue("e", email);
+                Assert.Equal(0L, await proofs.ExecuteScalarAsync());
+            }
         }
         await using (var sessions = new NpgsqlCommand("SELECT count(*) FROM identity.sessions", app, tx))
         {
@@ -113,7 +118,7 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
         await using var admin = await Env.OpenAdminAsync();
         var owners = await DbCatalog.ReadAsync(admin, """
             SELECT pg_get_userbyid(p.proowner) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-             WHERE n.nspname = 'identity' AND p.proname IN ('resolve_login', 'resolve_session')
+             WHERE n.nspname = 'identity' AND p.proname IN ('verify_sign_in', 'resolve_session')
             """, r => r.GetString(0));
         Assert.Equal([DatabaseRoles.AuthResolver, DatabaseRoles.AuthResolver], owners);
     }

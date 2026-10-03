@@ -118,9 +118,13 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var id = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
         await using var db = await Env.OpenAdminAsync();
-        var changes = await DbCatalog.ScalarAsync<string>(db, "SELECT changes::text FROM audit.entries WHERE record_id = @id AND action = 'insert'", ("id", id));
-        Assert.Contains("[redacted]", changes, StringComparison.Ordinal);
-        Assert.DoesNotContain("pbkdf2", changes, StringComparison.Ordinal);
+        // The user and the user's credential are both recorded; the hash only as "[redacted]".
+        var rows = await DbCatalog.ReadAsync(db, "SELECT table_name, changes::text FROM audit.entries WHERE record_id = @id",
+            r => (Table: r.GetString(0), Changes: r.GetString(1)), ("id", id));
+        Assert.Contains(rows, r => r.Table == "user_credentials" && r.Changes.Contains("\"password_hash\": {\"new\": \"[redacted]\"}", StringComparison.Ordinal));
+        Assert.All(rows, r => Assert.DoesNotContain("pbkdf2", r.Changes, StringComparison.Ordinal));
+        var anywhere = await DbCatalog.ScalarAsync<long>(db, "SELECT count(*) FROM audit.entries WHERE changes::text LIKE '%pbkdf2%'");
+        Assert.Equal(0L, anywhere);
     }
 
     [Fact]

@@ -5,9 +5,9 @@
 # The G1 HTTP attack traces every SQL statement the app sends and fails if one of these functions
 # runs from any other caller (another endpoint, a job, outside a request). The source gate fails if
 # any other file under src/ names the function.
-identity.resolve_login caller endpoint:auth.signIn  # Sign-in finds the accounts for an e-mail before a tenant is known.
+identity.verify_sign_in caller endpoint:auth.signIn  # Sign-in proves the password for an e-mail before a tenant is known.
 identity.resolve_session caller authentication  # The kernel's session authentication handler maps a token to its tenant before any endpoint runs.
-identity.resolve_login source src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs  # The sign-in service, its only caller.
+identity.verify_sign_in source src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs  # The sign-in service, its only caller.
 identity.resolve_session source src/Modules/Identity/Erp.Modules.Identity/Auth/SessionResolver.cs  # The session resolver the authentication handler calls.
-identity.resolve_login source src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Definition, grants and the unbound-only guard (migrations).
+identity.verify_sign_in source src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Definition and grants (migrations).
 identity.resolve_session source src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Definition, grants and the unbound-only guard (migrations).
