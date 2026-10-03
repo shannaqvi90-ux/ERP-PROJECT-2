@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "run_id": "who-changed-field-20261003T065644-6d12",
+  "instrument": 3,
+  "task": "who-changed-field",
+  "task_title": "Who changed this field, and when",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find out who last changed the e-mail address of the contact Shamma Waleed Al Romaithi, from what to what, and when.",
+  "done_when": "The change is on screen: the old and new e-mail, the person who made it (Noor Editor) and the time.",
+  "started_at": "2026-10-03T06:56:44.884Z",
+  "finished_at": "2026-10-03T06:56:56.220Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.308,
+    "system_wait_seconds": 1.782,
+    "human_seconds": 18.5,
+    "human_plus_wait_seconds": 20.282,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.057
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.057,
+      "took": 0.062
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "chain": false,
+      "at": 0.674,
+      "took": 0.252,
+      "text": "Shamma Waleed Al Romaithi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.927,
+      "took": 0.017,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.515,
+      "took": 0.077
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.119,
+      "seconds": 0.52
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.64,
+      "seconds": 0.035
+    },
+    {
+      "label": "one result",
+      "at": 0.944,
+      "seconds": 0.571
+    },
+    {
+      "label": "latest change on screen",
+      "at": 1.592,
+      "seconds": 0.656
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b8e33305e94bd033.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/b8e33305e94bd033.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "aa0709003fe4cb43.jpg",
+      "at": 2.308,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/aa0709003fe4cb43.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "latest_change_on_screen": "Noor Editor 10:56 AM shamma.al.romaithi.73519@mail.example → shamma.romaithi.new@mail.example (Email)"
+    }
+  },
+  "path_notes": "Apps menu > Contacts (search focused) > type the name > Enter > open the result; the change log beside the form shows the latest change first (old > new e-mail, who, when).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/who-changed-field.mjs",
+    "sha256": "24816bf2d8088551b7437442e1960689a25548e87081d018a7142155032a33f1"
+  },
+  "task_notes": "Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.",
+  "error": null
+}

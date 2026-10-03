@@ -1,0 +1,36 @@
+{
+  "task": "switch-to-arabic",
+  "verdict": "ours failed",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 1,
+      "odoo": 6,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 1,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": 0.085,
+      "odoo": 2.206,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": 2.65,
+      "odoo": 15.28,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 2.657,
+      "odoo": 16.741,
+      "outcome": "not_comparable"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064856-a9d9.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r3/compare/results/switch-to-arabic-20261003T064839-82d7.json"
+  }
+}

@@ -1,0 +1,27 @@
+sign-in A admin: 200
+GET /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd -> [404]
+GET /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd/access -> [404]
+GET /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd/sign-ins -> [404]
+PUT /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd -> [404]
+POST /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd/password -> [404]
+POST /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd/unblock -> [404]
+POST /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd/sessions/revoke -> [404]
+GET /api/identity/roles/01a10037-3f45-7f07-9a1a-f1b1f575bfbe -> [404]
+PUT /api/identity/roles/01a10037-3f45-7b0d-9473-a8f3bec4c03b -> [404]
+DELETE /api/identity/roles/01a10037-3f45-7b0d-9473-a8f3bec4c03b -> [404]
+POST /api/identity/roles/01a10037-3f45-7f07-9a1a-f1b1f575bfbe/copy -> [404]
+POST /api/identity/users -> [400]
+GET /api/identity/users?search=gulfsteel -> [200]
+GET /api/identity/users?search=admin@gulfsteel.example -> [200]
+GET /api/identity/users?search=x&tenantId=0190a000-0000-7000-8000-000000000002 -> [200]
+GET /api/identity/users/01a10037-3ff7-75a9-a1e7-68b113eae8cd -> [404]
+GET /api/tenancy/tenant -> [200]
+PUT /api/me/preferences -> [404]
+POST /api/identity/users -> [201]  <-- B VALUE IN RESPONSE
+POST /api/identity/users -> [201]  <-- B VALUE IN RESPONSE
+"tenant":{"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م"}
+[200]
+"tenant":{"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م"}
+[200]
+"tenant":{"id":"0190a000-0000-7000-8000-000000000002","code":"gulfsteel","nameEn":"Gulf Steel Fabrication LLC","nameAr":"الخليج لتصنيع الصلب ذ.م.م"}
+[200]

@@ -1,0 +1,487 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261003T055009-f712",
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-03T05:50:09.619Z",
+  "finished_at": "2026-10-03T05:50:32.094Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 2,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 46,
+    "clicks": 5,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "machine_seconds": 7.661,
+    "system_wait_seconds": 7.022,
+    "human_seconds": 34.13,
+    "human_plus_wait_seconds": 41.152,
+    "klm_operator_counts": {
+      "K": 51,
+      "P": 5,
+      "B": 10,
+      "H": 3,
+      "M": 9
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.06
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.06,
+      "took": 0.057
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Manage Users",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.581,
+      "took": 0.059
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "New (hotkey)",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 1.451,
+      "took": 0.02,
+      "chord": "Alt+c"
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "chain": false,
+      "at": 1.852,
+      "took": 0.195,
+      "text": "Hessa Clerk"
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "next field (login)",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 2.047,
+      "took": 0.02,
+      "chord": "Tab"
+    },
+    {
+      "n": 7,
+      "kind": "type",
+      "label": "login",
+      "keystrokes": 33,
+      "chain": true,
+      "at": 2.08,
+      "took": 0.087,
+      "text": "hessa.clerk@demo-trading.example"
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Contact privilege",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.17,
+      "took": 0.065
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Creation",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 2.235,
+      "took": 0.052
+    },
+    {
+      "n": 10,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 2.287,
+      "took": 0.021,
+      "chord": "Alt+s"
+    }
+  ],
+  "waits": [
+    {
+      "label": "Settings loaded",
+      "at": 0.117,
+      "seconds": 0.464
+    },
+    {
+      "label": "user list",
+      "at": 0.64,
+      "seconds": 0.811
+    },
+    {
+      "label": "new user form, name focused",
+      "at": 1.471,
+      "seconds": 0.381
+    },
+    {
+      "label": "login focused",
+      "at": 2.067,
+      "seconds": 0.014
+    },
+    {
+      "label": "saved",
+      "at": 2.308,
+      "seconds": 5.348
+    },
+    {
+      "label": "record has an id",
+      "at": 7.657,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "5de3d4b23bb32a28.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/5de3d4b23bb32a28.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "f9e05dd6bd51f335.jpg",
+      "at": 2.287,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/f9e05dd6bd51f335.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "7d0b9eb0a17c817b.jpg",
+      "at": 7.661,
+      "path": "../../evidence-staging/p03-identity/r1/compare/shots/7d0b9eb0a17c817b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/settings/60/users/100049",
+      "role": "regular_user",
+      "missing": [],
+      "unexpected": []
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save) | pointer: Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-restricted-user.mjs",
+    "sha256": "7cdc2d7d2fac61b5531144a1bffd0c4c37738148a77c789f75534a124515d34b"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 51,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "machine_seconds": 7.661,
+        "system_wait_seconds": 7.022,
+        "human_seconds": 34.13,
+        "human_plus_wait_seconds": 41.152,
+        "klm_operator_counts": {
+          "K": 51,
+          "P": 5,
+          "B": 10,
+          "H": 3,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.06
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.06,
+          "took": 0.057
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.581,
+          "took": 0.059
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 1.451,
+          "took": 0.02,
+          "chord": "Alt+c"
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "chain": false,
+          "at": 1.852,
+          "took": 0.195,
+          "text": "Hessa Clerk"
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (login)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 2.047,
+          "took": 0.02,
+          "chord": "Tab"
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "chain": true,
+          "at": 2.08,
+          "took": 0.087,
+          "text": "hessa.clerk@demo-trading.example"
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.17,
+          "took": 0.065
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.235,
+          "took": 0.052
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 2.287,
+          "took": 0.021,
+          "chord": "Alt+s"
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/60/users/100049",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 46,
+        "clicks": 8,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "machine_seconds": 7.768,
+        "system_wait_seconds": 6.921,
+        "human_seconds": 37.03,
+        "human_plus_wait_seconds": 43.951,
+        "klm_operator_counts": {
+          "K": 46,
+          "P": 8,
+          "B": 16,
+          "H": 4,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.057
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.057,
+          "took": 0.05
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.552,
+          "took": 0.088
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.253,
+          "took": 0.11
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "chain": false,
+          "at": 1.885,
+          "took": 0.186,
+          "text": "Hessa Clerk"
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "focus login",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.07,
+          "took": 0.047
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "chain": true,
+          "at": 2.117,
+          "took": 0.126,
+          "text": "hessa.clerk@demo-trading.example"
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.246,
+          "took": 0.068
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.314,
+          "took": 0.057
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.371,
+          "took": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/61/users/100050",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      }
+    }
+  ]
+}

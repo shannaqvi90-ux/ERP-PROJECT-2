@@ -1,0 +1,433 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261003T065241-90f0",
+  "instrument": 3,
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-10-03T06:52:41.259Z",
+  "finished_at": "2026-10-03T06:52:51.787Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 1.786,
+    "system_wait_seconds": 1.372,
+    "human_seconds": 17.91,
+    "human_plus_wait_seconds": 19.872,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.049
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.05,
+      "took": 0.048
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "chain": false,
+      "at": 0.612,
+      "took": 0.221,
+      "text": "Shamma Waleed Al Romaithi"
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 0.833,
+      "took": 0.022,
+      "chord": "Enter"
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.466,
+      "took": 0.072
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.098,
+      "seconds": 0.196
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.294,
+      "seconds": 0.012
+    },
+    {
+      "label": "first page of contacts",
+      "at": 0.306,
+      "seconds": 0.306
+    },
+    {
+      "label": "one result",
+      "at": 0.855,
+      "seconds": 0.611
+    },
+    {
+      "label": "contact form",
+      "at": 1.538,
+      "seconds": 0.236
+    },
+    {
+      "label": "mobile number shown",
+      "at": 1.775,
+      "seconds": 0.011
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "e43e0b0f65f181cc.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/e43e0b0f65f181cc.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "1fc65c1b61fd1e08.jpg",
+      "at": 1.466,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/1fc65c1b61fd1e08.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "24c6f12e7629614c.jpg",
+      "at": 1.786,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/24c6f12e7629614c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/contacts/73531",
+      "name_shown": "Shamma Waleed Al Romaithi",
+      "mobile_shown": true
+    }
+  },
+  "path_notes": "menus: Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result. | palette: Ctrl+K > type \"/contacts\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-record.mjs",
+    "sha256": "175bdba9b8725ffb09a086af73146d2af89af525f32666d3c087315e13580b5b"
+  },
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "menus",
+    "machine_seconds": "menus",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "menus"
+  },
+  "variants": [
+    {
+      "id": "menus",
+      "path": "Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 30,
+        "clicks": 3,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.786,
+        "system_wait_seconds": 1.372,
+        "human_seconds": 18.5,
+        "human_plus_wait_seconds": 19.872,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 3,
+          "B": 6,
+          "H": 2,
+          "M": 4
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.049
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Contacts app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.05,
+          "took": 0.048
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "chain": false,
+          "at": 0.612,
+          "took": 0.221,
+          "text": "Shamma Waleed Al Romaithi"
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.833,
+          "took": 0.022,
+          "chord": "Enter"
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.466,
+          "took": 0.072
+        }
+      ],
+      "waits": [
+        {
+          "label": "Contacts loaded",
+          "at": 0.098,
+          "seconds": 0.196
+        },
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.294,
+          "seconds": 0.012
+        },
+        {
+          "label": "first page of contacts",
+          "at": 0.306,
+          "seconds": 0.306
+        },
+        {
+          "label": "one result",
+          "at": 0.855,
+          "seconds": 0.611
+        },
+        {
+          "label": "contact form",
+          "at": 1.538,
+          "seconds": 0.236
+        },
+        {
+          "label": "mobile number shown",
+          "at": 1.775,
+          "seconds": 0.011
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/contacts/73531",
+          "name_shown": "Shamma Waleed Al Romaithi",
+          "mobile_shown": true
+        }
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type \"/contacts\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 42,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 2.548,
+        "system_wait_seconds": 2.151,
+        "human_seconds": 17.91,
+        "human_plus_wait_seconds": 20.061,
+        "klm_operator_counts": {
+          "K": 42,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0,
+          "took": 0.021,
+          "chord": "Control+k"
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /contacts",
+          "keystrokes": 9,
+          "chain": true,
+          "at": 0.152,
+          "took": 0.028,
+          "text": "/contacts"
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Contacts",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.391,
+          "took": 0.036,
+          "chord": "Enter"
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "chain": false,
+          "at": 1.174,
+          "took": 0.235,
+          "text": "Shamma Waleed Al Romaithi"
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 1.409,
+          "took": 0.018,
+          "chord": "Enter"
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.233,
+          "took": 0.059
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.021,
+          "seconds": 0.131
+        },
+        {
+          "label": "menu found",
+          "at": 0.18,
+          "seconds": 0.211
+        },
+        {
+          "label": "Contacts loaded",
+          "at": 0.428,
+          "seconds": 0.284
+        },
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.711,
+          "seconds": 0.424
+        },
+        {
+          "label": "first page of contacts",
+          "at": 1.136,
+          "seconds": 0.039
+        },
+        {
+          "label": "one result",
+          "at": 1.427,
+          "seconds": 0.806
+        },
+        {
+          "label": "contact form",
+          "at": 2.292,
+          "seconds": 0.251
+        },
+        {
+          "label": "mobile number shown",
+          "at": 2.543,
+          "seconds": 0.005
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/contacts/73531",
+          "name_shown": "Shamma Waleed Al Romaithi",
+          "mobile_shown": true
+        }
+      }
+    }
+  ]
+}

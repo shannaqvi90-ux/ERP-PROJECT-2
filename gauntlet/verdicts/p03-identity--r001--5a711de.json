@@ -1,0 +1,132 @@
+{
+  "piece": "p03-identity",
+  "round": 1,
+  "commit": "5a711de",
+  "judged_at": "2026-10-03T06:07:07Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p03-identity round 1",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "My own attacks found no leak. As alnoor's admin I made 20 calls against gulfsteel's user and role ids: every one answered 404 or 400. Search for B's e-mails returned nothing, and tenant headers and the workspace parameter were ignored (attacks/attack-a-vs-b.txt). As erp_app: 0 rows visible when no tenant is bound, password_hash denied, an insert claiming tenant B refused by RLS, and RLS cannot be disabled (attacks/db-app-role.txt)."
+    },
+    {
+      "gate": "G1 gate catches a tenant leak planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Plant T2 adds a per-user-id cache, captured by a closure, to GET /api/identity/users/{id}/access, which is this piece's \"what can this person do\" endpoint. The whole gate suite still passes 62/62 (plants/plant-T2.log), and so do the identity, kernel and tenancy suites (plant-T2-other-suites.log). The proof test shows tenant A's admin getting 200 with tenant B admin's roles and permissions (plants/plant-T2-proof.log). The static-field variant T1 was caught only by the process-state inventory; the HTTP attack missed the leaked body (plants/plant-T1.log). Plant U, a global unique e-mail index, was caught, but only incidentally: G1SignInThrottle creates the same e-mail in two workspaces (plant-U-full-suite.log)."
+    },
+    {
+      "gate": "G2 permissions of the product (restricted roles, escalation)",
+      "status": "pass",
+      "evidence": "The read-only user sees no write buttons and 0 enabled matrix checkboxes (browser-walk.txt, screenshot 06). Escalation attempts are denied in the G2 suite. Plant P3, which removes the check on added roles in PUT /users/{id}, was caught by No_endpoint_grants_more_than_the_caller_holds (plants/plant-P.log)."
+    },
+    {
+      "gate": "G2 gate catches a permission fault planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Plant P1 guards POST /users/{id}/unblock with identity.signIns.read, a read permission. Plant P2 drops the within-own-grants check on DELETE /roles/{id}. With both in place, G2 runs 15 of 16 passing (the one failure is P3's) and the identity tests pass 32/32 (plants/plant-P.log). The proof shows a user holding only signIns.read and users.read gets 204 from unblock, and a user holding only roles.delete and roles.read deletes a role granting users.create, users.update and resetPassword with 204 (plants/plant-P-proof.log). A UI plant that shows Delete role regardless of roles.delete passes 74/74 web unit tests, and no e2e spec opens Roles as such a user (plants/plant-UI.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds, tests",
+      "status": "pass",
+      "evidence": "./erp verify with ERP_PROJECT=c-p03-identity-r1 on ports 20350-20361 finished with rc=0 in 376 s, ratchet check passed (verify.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command to running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up took 46 s, 100,004 users in alnoor and 1,004 in gulfsteel (up.log). With ERP_SEED_USERS_CSV (the shared dataset) it took 71 s (up-dataset.log)."
+    },
+    {
+      "gate": "Rule gates (licences, money, strings, audit) and ratchet",
+      "status": "pass",
+      "evidence": "Passed inside verify. Audit rows exist for users, roles, user_roles, credentials (password redacted) and sessions, checked in the database."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r1 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ./erp verify",
+    "total": 324,
+    "passed": 324,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 376
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 422,
+    "evidence": "Fresh clone of 5a711de: ./erp verify rc=0 in 376 s (158 .NET, 74 web unit, 24 end-to-end, 68 compare harness), then ./erp up in 46 s on port 20350 with health ok (verify.log, up.log)."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 36,
+        "seconds": 0.857,
+        "klm_seconds": 19.28
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 6.933,
+        "klm_seconds": 34.13
+      },
+      "notes": "Median of 3 runs, blind. Ours: Users > n > e-mail (name filled from it) > click Read-only > Ctrl+Enter, giving a set-up code. Caveat: our product has no contacts permission, so \"view and create contacts only\" cannot be expressed; the seeded Read-only role was used. The ours driver is in compare-drivers/ours-create-restricted-user.mjs."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "tie",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 24,
+        "seconds": 1.017,
+        "klm_seconds": 11.68
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 24,
+        "seconds": 2.405,
+        "klm_seconds": 18.4
+      },
+      "notes": "This task did not exist at this commit; the critic added it (task, Odoo and ours drivers in compare-drivers/). Both products hold the shared 100,000 users.csv. Ours wins steps and both time measures but ties on keystrokes, 24 each, so the task is a loss. Both products need the whole name typed as one contiguous string. Odoo also focuses its search box on open; ours needs / or a click."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r1/01-effective-permissions-en.jpg",
+    "gauntlet/evidence/p03-identity/r1/02-user-details-en.jpg",
+    "gauntlet/evidence/p03-identity/r1/03-roles-matrix-en.jpg",
+    "gauntlet/evidence/p03-identity/r1/04-users-ar-rtl.jpg",
+    "gauntlet/evidence/p03-identity/r1/05-roles-matrix-ar-rtl.jpg",
+    "gauntlet/evidence/p03-identity/r1/06-roles-read-only-user.jpg",
+    "gauntlet/evidence/p03-identity/r1/07-sign-in-history-paused-ar.jpg",
+    "gauntlet/evidence/p03-identity/r1/compare/shots/a76e9c20c473ae04.jpg",
+    "gauntlet/evidence/p03-identity/r1/compare/shots/44e586fd0d9c0057.jpg",
+    "gauntlet/evidence/p03-identity/r1/compare/shots/aaa9e6afbde8aa7c.jpg",
+    "gauntlet/evidence/p03-identity/r1/compare/shots/472fc798e782933f.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G1 gate misses a cross-tenant leak through this piece's own \"what can this person do\" endpoint",
+    "detail": "A per-user-id cache on GET /api/identity/users/{id}/access, held in a local that the endpoint lambda captures, hands tenant B's roles and permissions to tenant A's admin. All 62 gate tests still pass. Two blind spots combine.\n\n(1) The process-state inventory skips compiler-generated types, so closure state is never listed. This was reported in p01 r2 and is still open at this commit.\n\n(2) The HTTP attack cannot see a per-id cache even when the leak is in the response body. TenantActivity.OwnPathAsync warms each route with one tenant B id per collection. IsolationAttack then attacks with up to 5 snapshot ids per table plus the tenant id, so the ids A attacks are seldom the ids B just warmed. With the static variant (T1), the HTTP attack also passed; only the reflection inventory caught it.\n\nFix:\n- Feed the exact route values tenant B used into tenant A's route attack, and have B touch every victim id before A attacks it.\n- List fields of closure display classes reachable from endpoint delegates, or forbid captured mutable locals in endpoint mapping.\n- Add self-tests for a closure cache and a per-id cache on a route with an id.",
+    "evidence": "In a clone of 5a711de:\n\n1. Apply gauntlet/evidence/p03-identity/r1/plants/plant-T2-closure-access-cache.diff.\n2. Run `dotnet test tests/Erp.Gates.Tests -c Release`. It reports Passed 62 of 62 (plants/plant-T2.log). The identity, kernel and tenancy suites also pass (plant-T2-other-suites.log).\n3. Copy plants/CriticPlantProof.cs into tests/Erp.Gates.Tests/CriticProof/ and run with --filter CriticPlantProof. Tenant B's admin reads its own access view, then tenant A's admin calls GET /api/identity/users/{B admin id}/access, gets 200, and receives B's Administrator role id and permission list (plants/plant-T2-proof.log).\n\nThe static variant plants/plant-T1-static-access-cache.diff passes G1HttpIsolation and fails only G1ProcessState (plants/plant-T1.log)."
+  },
+  "other_findings": [
+    "[route: p00-foundation] G2 trusts each endpoint's declared permission. A write guarded by a read permission passes every gate: plant P1 puts identity.signIns.read on POST /users/{id}/unblock. The seeded Read-only role holds signIns.read, so any read-only user could clear sign-in pauses (plants/plant-P-proof.log). This is the same class as p01 r2's D2 and is still open at this commit.",
+    "[route: p00-foundation] The HTTP attack checks for differential answers on GETs only. A global unique e-mail index (plant U) makes POST /api/identity/users answer 409 for tenant B's address and 201 for an unused one, which tells tenant A which addresses B uses (plants/plant-U-proof.txt). It was caught only because G1SignInThrottle happens to create the same e-mail in two workspaces. The database gate also never looks at unique indexes on tenant tables that leave out tenant_id.",
+    "[route: p00-foundation] Response headers other than Location are still not judged, so the p01 r2 header-leak gap is not fixed at this commit (G1HttpIsolationTests.cs passes only Location to Judge).",
+    "This piece's own G2 gaps:\n- The takeover and grant-escalation gates cover only /users/{id} and POST /roles/{id}/copy. DELETE /roles/{id} without its within-own-grants check (plant P2) passes, so a user with only roles.delete can delete roles granting permissions they lack.\n- The screens-hide-what-you-cannot-do check has no case for the Roles screen. Showing Delete role regardless of roles.delete passes 74/74 web unit tests, and no e2e spec opens Roles as a user who lacks roles.delete.",
+    "Scope gap: there is no per-user default company and no per-company role assignment. No company concept exists at this commit, and identity.user_roles has no company column. The piece spec requires both. For UAE groups running several LLC or free-zone entities, a role that cannot be limited to one company is the main thing a restricted role needs.",
+    "find-user loses on a keystroke tie, 24 against 24. Search is one contiguous ILIKE string. Word-order-independent multi-word search (\"rania kaabi\" is 11 keys), or focusing the search box when Users opens, would beat Odoo outright.",
+    "create-restricted-user: no module permission beyond identity and workspace exists, so the task's \"contacts only\" role cannot be built yet. The win was measured with the Read-only role.",
+    "Users list:\n- No sort, no filter by role, status or inactive, and no export.\n- Offset paging only.\n- Search is a full ILIKE scan taking 0.21 to 0.25 s at 100,004 rows, with no trigram index (users-search-timings.txt).\n- The list is hand-built, not the shared list framework.",
+    "Users cannot be deleted, and the e-mail cannot be changed after creation. A typo in an invitation leaves an orphan account. Odoo lets the login be edited. The ours driver had to remove its test user through the database.",
+    "Arabic layout defects:\n- The sign-in history table overflows the user panel, so the Session column is cut off, and the paused-until line has broken bidi order (screenshot 07).\n- The inactive status cell is clipped at the list edge (screenshot 04).\n- The matrix \"Change\" header is clipped in English (screenshot 03).\n- Users have one display name with no Arabic name, so the Arabic list shows Latin names even though the shared dataset carries name_ar.",
+    "Lockout works per client. After 6 failures the right password is refused from that client, and the admin sees the pause with \"allow sign-in again\" (lockout-and-history.txt). Behind Docker every client arrives as 172.19.0.1, and compose sets no KnownProxies. A deployment that misses the README setting therefore lets one attacker pause an account for the whole office.",
+    "The seeded Read-only role includes identity.signIns.read, so every read-only user sees all colleagues' IP addresses and browsers. identity.sign_in_attempts has no retention. These are personal data under UAE PDPL; worth an owner decision.",
+    "identity.verify_sign_in takes the throttle source as a parameter from the app role. With any SQL injection, the per-client throttle could be bypassed by rotating p_source. An address that exists in two workspaces costs two PBKDF2 derivations, so timing shows it is used in more than one workspace.",
+    "Positive:\n- Tenant isolation held in every API and database attack.\n- Audit covers users, roles, user_roles, credentials (redacted) and sessions.\n- Arabic is right to left from sign-in (dir=rtl, lang=ar), with no Latin words on the Arabic roles screen.\n- No console errors or 5xx during the walk.\n- Test counts rose from p00 r2's 126/19/9 to 158/74/24 plus 68 compare tests, and the ratchet holds.",
+    "Harness note: verify's Testcontainers bind random host ports outside the critic's assigned block, which cannot be overridden. Comparing find-user needs ERP_SEED_USERS_CSV. The added find-user task and drivers are in compare-drivers/ for the recorder to merge."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/user/evidence-staging/p03-identity/r1",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r1"
+}

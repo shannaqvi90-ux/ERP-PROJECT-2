@@ -1,0 +1,541 @@
+[1m[1/3] Builds, unit, integration and gate tests[0m
+
+[1m== Copying sources (without build output)[0m
+
+[1m== Web: install, type-check, string gate, unit tests, build[0m
+
+added 58 packages in 2s
+String check passed: 40 source files, 256 keys in English and Arabic, 26 plural messages.
+Accessibility check passed: 497 JSX elements checked.
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/work/web[39m
+
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 251[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 727[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 459[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 1517[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 307[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 349[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m      Tests [22m [1m[32m74 passed[39m[22m[90m (74)[39m
+[2m   Start at [22m 05:16:13
+[2m   Duration [22m 5.00s[2m (transform 1.89s, setup 0ms, import 3.22s, tests 2.85s, environment 5.29s)[22m
+
+JSON report written to /out/vitest.json
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 72 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.49 kB │ gzip:   0.30 kB
+dist/assets/index-ebGr9rQu.css   15.34 kB │ gzip:   3.89 kB
+dist/assets/index-CYNyN5Fm.js   335.75 kB │ gzip: 100.34 kB
+✓ built in 2.56s
+
+[1m== Comparison harness (gauntlet/compare): install and unit tests[0m
+
+added 1 package in 472ms
+✔ add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.127159ms)
+✔ arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.259808ms)
+✔ attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.107542ms)
+✔ configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.081585ms)
+✔ create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.463451ms)
+✔ create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.363696ms)
+✔ custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.169663ms)
+✔ edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.053036ms)
+✔ export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.862886ms)
+✔ find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.425596ms)
+✔ follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.290795ms)
+✔ import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.320304ms)
+✔ keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps (0.963524ms)
+✔ see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.062906ms)
+✔ sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.320759ms)
+✔ switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps (0.698377ms)
+✔ switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.377189ms)
+✔ who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.158667ms)
+✔ screenshot names are random and never name a product (6.797048ms)
+✔ revealsProduct catches product names in any case (0.250727ms)
+✔ both products have a branding profile; extra brand words are added (0.5032ms)
+✔ letters A and B are assigned at random (0.692033ms)
+✔ committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder (1.086741ms)
+✔ the blind review page shows neutral captions, never the moments a driver named (7.93851ms)
+✔ a placeholder naming the vendor is cleared, not painted over (0.457864ms)
+✔ --list prints every task (297.942967ms)
+✔ bad arguments fail with usage (711.277935ms)
+✔ one command runs a task on our product and writes a result JSON (2257.318942ms)
+✔ the blind review page shows A and B only and keeps the mapping in key.json (12.683913ms)
+✔ ours wins only when strictly lower on every metric (0.856257ms)
+✔ a tie is a loss (0.248743ms)
+✔ an unbuilt or failed product is never a win (0.199136ms)
+✔ median of repeated runs uses the median machine seconds (0.296436ms)
+✔ the generator is deterministic: a fresh run reproduces the shared files byte for byte (1516.104418ms)
+✔ volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows (213.74437ms)
+✔ the needle name occurs exactly once and the import file has plain headers (107.796849ms)
+✔ the generator keeps rates as fixed six-decimal strings (6.372104ms)
+✔ the random source is seeded (0.243441ms)
+✔ operator times are the published Card, Moran and Newell averages (1.502891ms)
+✔ typing counts one key per character plus Shift for capitals and symbols (0.271457ms)
+✔ a chord counts each key in it (1.177687ms)
+✔ a click is M + P + BB, with homing when the hand comes from the keyboard (0.405572ms)
+✔ a chained step has no mental preparation (0.138002ms)
+✔ the operator starts with the hand on the mouse (0.16397ms)
+✔ file picks are modelled as a double click (0.107258ms)
+✔ totals for a short path add up (0.212061ms)
+✔ unknown step kinds are rejected (0.50457ms)
+✔ a scroll is a mouse step modelled like a click (0.411076ms)
+✔ every npm dependency of the harness is under an allowed licence (0.951753ms)
+✔ dependencies are pinned to exact versions (0.310797ms)
+✔ steps, keystrokes and waits are counted the same way every time (956.401393ms)
+✔ choosing a file counts the dialog click and the pick (300.953155ms)
+✔ a step before start() is refused (282.884007ms)
+✔ blind screenshots paint branding over, go grey, and leave title and favicon neutral (524.965956ms)
+✔ a screenshot after the end of a task never shortens the measured time (364.017432ms)
+✔ screenshot time is not counted as product time (514.071697ms)
+✔ ratchet.json has every comparison minimum (2.45423ms)
+✔ tasks and named tasks never go below their minimum (9.933253ms)
+✔ built Odoo drivers never go below their minimum (13.897673ms)
+✔ built drivers for our product never go below their minimum (10.206706ms)
+✔ verified Odoo baselines never go below their minimum, and each is complete (1.5836ms)
+✔ the recorded reference volume never goes below the minimum per main list (0.235534ms)
+✔ harness tests never go below their minimum (live rig checks counted apart) (1.288506ms)
+✔ every task the bar names is defined and marked as named (7.101288ms)
+✔ task definitions are product-neutral and complete (2.888836ms)
+✔ every task has a driver for each product (18.759055ms)
+✔ every Odoo driver is built; placeholders in task text resolve from the dataset (53.250899ms)
+✔ an unbuilt driver reports "not built" without touching a browser (82.7893ms)
+ℹ tests 68
+ℹ suites 0
+ℹ pass 68
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10468.727769
+
+[1m== .NET: restore and build (warnings are errors)[0m
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:17.41
+
+[1m== .NET: unit, integration (Testcontainers PostgreSQL) and gate tests[0m
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Test run for /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.64]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.57]   Discovering: Erp.Kernel.Tests
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.52]   Discovering: Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:01.47]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.01]   Discovered:  Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:01.47]   Discovered:  Erp.Kernel.Tests
+[xUnit.net 00:00:00.92]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:02.05]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:01.44]   Starting:    Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:01.49]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:02.13]   Starting:    Erp.Kernel.Tests
+[xUnit.net 00:00:01.95]   Starting:    Erp.Modules.Identity.Tests
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@.example", valid: False) [88 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "A1D") [91 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 1, expected: "one") [78 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 99, expected: "many") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a b@c.example", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 10, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@@b.example", valid: False) [1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b.example", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 0, expected: "other") [1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 2, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 3, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 100, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 103, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "first.last+tag@sub.domain.ae", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "no-at.example", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AEDX") [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "aed") [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AE") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 11, expected: "many") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 0, expected: "zero") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1, expected: "one") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 2, expected: "two") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 102, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1.5, expected: "other") [2 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users", valid: False) [51 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read", valid: True) [14 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity..read", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.userRoles.assignAll", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "Identity.users.read", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read.extra", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "de", expected: "en") [86 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "", expected: "en") [5 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "ar-AE,ar;q=0.9,en;q=0.8", expected: "ar") [5 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "fr-FR,ar;q=0.5", expected: "ar") [4 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "en-GB,en;q=0.9", expected: "en") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Messages_fill_named_placeholders_and_exact_plural_branches [43 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Forwarded_headers_are_trusted_only_from_configured_proxies [112 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.A_key_without_a_translation_stops_the_catalog_from_loading [49 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Money_travels_as_decimal_strings_in_json [253 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Only_same_currency_and_rate_can_be_added [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Kernel_strings_exist_in_both_languages_and_format_arguments [31 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Amount_must_fit_the_currency_minor_units [5 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Base_currency_amounts_use_rate_one_and_rates_are_positive [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Base_amount_is_rounded_half_away_from_zero_to_the_base_currency [9 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_valid_list_has_no_problems [33 ms]
+  Passed Erp.Kernel.Tests.UnitOfWorkTests.Problems_inside_typed_unions_count_as_failures [41 ms]
+  Passed Erp.Kernel.Tests.UnitOfWorkTests.Plain_results_report_their_own_status [< 1 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_list_must_belong_to_its_module_and_name_real_columns [21 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Weaker_hashes_still_verify_and_ask_to_be_upgraded [272 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.A_proof_from_the_challenge_equals_the_stored_hash_only_for_the_right_password [2 s]
+  Passed Erp.Kernel.Tests.SecurityTests.Session_tokens_are_256_bit_base64url_and_stored_as_sha256 [1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Password_hashes_verify_only_the_right_password_and_use_unique_salts [3 s]
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_requires_a_bound_tenant [5 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_loads_100000_rows_through_row_level_security_quickly [2 s]
+  Passed Erp.Kernel.Tests.KernelDataTests.Migrations_and_seeding_are_idempotent [555 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.A_unit_of_work_cannot_switch_tenants [24 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_cannot_smuggle_rows_into_another_tenant [35 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Using_a_module_context_before_binding_a_tenant_fails_loudly [244 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.EF_refuses_to_write_a_row_for_another_tenant [385 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.The_query_filter_is_a_second_layer_on_every_tenant_entity [101 ms]
+[xUnit.net 00:00:21.70]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_session_probe_always_answers_200_even_with_a_stale_or_malformed_session_cookie [1 s]
+  Passed Erp.Modules.Identity.Tests.RateLimitTests.Sign_in_attempts_beyond_the_limit_get_429_with_a_localized_problem [2 s]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.User_search_finds_by_name_or_email_and_escapes_wildcards [2 s]
+Results File: /out/trx/_vm_2026-10-03_05_17_03_net10.0.trx
+
+Test Run Successful.
+Total tests: 61
+     Passed: 61
+ Total time: 23.1526 Seconds
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Reading_and_renaming_need_their_permissions [5 s]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [675 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [669 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [56 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [2 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [73 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [142 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [34 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [43 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [155 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_administrator_role_cannot_be_changed_or_deleted_and_grants_every_permission [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [247 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [36 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [5 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [21 ms]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Each_user_reads_their_own_workspace [2 s]
+  Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.Demo_seed_loads_the_shared_dataset_users_into_the_main_tenant [20 s]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Permission_catalogue_is_labelled_in_the_users_language [1 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_pause_ends_by_itself_when_the_failures_leave_the_window [4 s]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Renaming_needs_both_names_and_the_version_and_refuses_a_stale_version [2 s]
+[xUnit.net 00:00:28.22]   Finished:    Erp.Modules.Tenancy.Tests (ID = '7c336b43d696105a19512de164fe1230cb02ef2c7773107fd16d0ceb1101f39a')
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Changing_the_language_preference_follows_the_user [4 s]
+Results File: /out/trx/_vm_2026-10-03_05_17_22_net10.0.trx
+
+Test Run Successful.
+Total tests: 3
+     Passed: 3
+ Total time: 29.7467 Seconds
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [63 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [2 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [1 s]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Server_errors_reveal_nothing_but_a_trace_id [469 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Unknown_api_paths_answer_404_problems_not_the_app_shell [21 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Health_is_public_and_checks_the_database [52 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Responses_carry_security_headers_and_api_responses_are_not_cached [46 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks [6 s]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_permission_catalogue_carries_what_the_matrix_needs [883 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_suspended_workspace_cannot_be_signed_in_to [360 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_digits_preference_follows_the_user_and_leaves_the_language_alone [2 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [44 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [75 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [43 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [116 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [32 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Saving_over_someone_elses_change_is_refused [779 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [40 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [999 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [208 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [51 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [6 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [25 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [39 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [1 s]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [193 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [5 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [3 s]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [15 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [52 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [14 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [8 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Validation_errors_name_each_field_in_the_requested_language [1 s]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Duplicate_email_in_the_same_workspace_is_a_conflict [437 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [115 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [2 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_same_email_in_two_workspaces_asks_which_one_only_when_both_passwords_match [3 s]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_administrator_resets_a_password_and_the_user_is_signed_out_everywhere [4 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Cookie_requests_that_change_data_need_the_request_header [916 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [37 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Copying_a_role_keeps_its_permissions_under_a_new_name [619 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Expired_sessions_and_malformed_tokens_are_refused [491 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_returns_the_session_and_sets_a_strict_http_only_cookie [390 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_access_view_says_what_a_user_can_do_and_which_role_grants_it [1 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Deactivating_a_user_ends_their_sessions [1 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Wrong_password_and_unknown_email_get_the_same_answer [652 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_out_revokes_the_session_for_good [447 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Signed_in_users_change_their_password_by_proving_the_current_one_and_other_sessions_end [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [110 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [58 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [7 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_invited_user_signs_in_once_with_the_set_up_code_and_chooses_a_password [2 s]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_expired_set_up_code_fails_like_a_wrong_password [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [5 s]
+[xUnit.net 00:00:44.75]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+Results File: /out/trx/_vm_2026-10-03_05_17_22_net10.0[1].trx
+
+Test Run Successful.
+Total tests: 32
+     Passed: 32
+ Total time: 46.2329 Seconds
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [14 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [14 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [6 s]
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [2 m 33 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [3 m 31 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [31 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [3 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [2 s]
+[xUnit.net 00:04:18.34]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+Results File: /out/trx/_vm_2026-10-03_05_17_23_net10.0.trx
+
+Test Run Successful.
+Total tests: 62
+     Passed: 62
+ Total time: 4.3262 Minutes
+[1m[2/3] Clean stack: build, migrate, seed, serve (project c-p03-identity-r1-verify, port 20360)[0m
+[1mBuilding the application image[0m
+ Image erp-app:c-p03-identity-r1-verify Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 638B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.73kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.2s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for docker.io/library/node:22-alpine
+#5 ...
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#6 DONE 0.4s
+
+#5 [internal] load metadata for docker.io/library/node:22-alpine
+#5 DONE 0.5s
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#7 DONE 0.5s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.0s
+
+#9 [stage-2 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#9 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.0s done
+#9 DONE 0.1s
+
+#10 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.0s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.0s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 774.69kB 0.0s done
+#12 DONE 0.0s
+
+#13 [stage-2 2/4] WORKDIR /app
+#13 CACHED
+
+#14 [web 3/6] COPY web/package.json web/package-lock.json ./
+#14 CACHED
+
+#15 [build 4/6] COPY src/ src/
+#15 CACHED
+
+#16 [build 5/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#16 CACHED
+
+#17 [web 5/6] COPY web/ ./
+#17 CACHED
+
+#18 [build 6/6] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#18 CACHED
+
+#19 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#19 CACHED
+
+#20 [build 3/6] COPY global.json Directory.Build.props Directory.Packages.props ./
+#20 CACHED
+
+#21 [web 6/6] RUN npm run check && npm run build
+#21 CACHED
+
+#22 [web 2/6] WORKDIR /web
+#22 CACHED
+
+#23 [build 2/6] WORKDIR /src
+#23 CACHED
+
+#24 [stage-2 3/4] COPY --from=build /app ./
+#24 CACHED
+
+#25 [stage-2 4/4] COPY --from=web /web/dist ./wwwroot
+#25 CACHED
+
+#26 exporting to image
+#26 exporting layers done
+#26 exporting manifest sha256:45b007335e711235b873613e183f94e09be72bf4570678ea1c62a1a35d7b8759 done
+#26 exporting config sha256:0f20b9f06452e204e6607c2a3075a359ae6318dc74390d92821fa29d2d8c1480 done
+#26 exporting attestation manifest sha256:9c7f249934b27819855a37405faaa093aba466b64e64b5227fb880e1724c9558 done
+#26 exporting manifest list sha256:3503011784506bfc7a05eaac4c0db89cf2f8efeaa2d3977e4b816523615cbb3e done
+#26 naming to docker.io/library/erp-app:c-p03-identity-r1-verify done
+#26 unpacking to docker.io/library/erp-app:c-p03-identity-r1-verify 0.1s done
+#26 DONE 0.2s
+
+#27 resolving provenance for metadata file
+#27 DONE 0.0s
+ Image erp-app:c-p03-identity-r1-verify Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p03-identity-r1-verify_default Creating 
+ Network c-p03-identity-r1-verify_default Created 
+ Volume c-p03-identity-r1-verify_db-data Creating 
+ Volume c-p03-identity-r1-verify_db-data Created 
+ Container c-p03-identity-r1-verify-db-1 Creating 
+ Container c-p03-identity-r1-verify-db-1 Created 
+ Container c-p03-identity-r1-verify-db-1 Starting 
+ Container c-p03-identity-r1-verify-db-1 Started 
+ Container c-p03-identity-r1-verify-db-1 Waiting 
+ Container c-p03-identity-r1-verify-db-1 Healthy 
+ Container c-p03-identity-r1-verify-db-1 Running 
+ Container c-p03-identity-r1-verify-setup-1 Creating 
+ Container c-p03-identity-r1-verify-setup-1 Created 
+Attaching to setup-1
+ Container c-p03-identity-r1-verify-db-1 Waiting 
+ Container c-p03-identity-r1-verify-db-1 Healthy 
+ Container c-p03-identity-r1-verify-setup-1 Starting 
+ Container c-p03-identity-r1-verify-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 2255 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 472 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p03-identity-r1-verify-setup-1 Stopping 
+ Container c-p03-identity-r1-verify-setup-1 Stopped 
+ Container c-p03-identity-r1-verify-db-1 Running 
+ Container c-p03-identity-r1-verify-app-1 Creating 
+ Container c-p03-identity-r1-verify-app-1 Created 
+ Container c-p03-identity-r1-verify-db-1 Waiting 
+ Container c-p03-identity-r1-verify-db-1 Healthy 
+ Container c-p03-identity-r1-verify-setup-1 Starting 
+ Container c-p03-identity-r1-verify-setup-1 Started 
+ Container c-p03-identity-r1-verify-setup-1 Waiting 
+ Container c-p03-identity-r1-verify-setup-1 Exited 
+ Container c-p03-identity-r1-verify-app-1 Starting 
+ Container c-p03-identity-r1-verify-app-1 Started 
+[1m[3/3] End-to-end tests in Chromium[0m
+
+[1m== Copying sources (without build output)[0m
+
+[1m== End-to-end: Playwright against http://localhost:20360[0m
+
+added 3 packages in 751ms
+
+Running 24 tests using 1 worker
+
+  ✓   1 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (8.0s)
+  ✓   2 [chromium] › specs/identity.spec.ts:74:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (2.1s)
+  ✓   3 [chromium] › specs/identity.spec.ts:103:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (1.5s)
+  ✓   4 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (2.0s)
+  ✓   5 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (1.4s)
+  ✓   6 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (1.7s)
+  ✓   7 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (1.1s)
+  ✓   8 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (1.3s)
+  ✓   9 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (669ms)
+  ✓  10 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (296ms)
+switch to Arabic on the users list: 118 ms
+  ✓  11 [chromium] › specs/shell.spec.ts:26:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (1.1s)
+palette to the Roles screen: 85 ms, 3 steps, 6 keystrokes
+  ✓  12 [chromium] › specs/shell.spec.ts:58:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (877ms)
+  ✓  13 [chromium] › specs/shell.spec.ts:94:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (740ms)
+  ✓  14 [chromium] › specs/shell.spec.ts:107:7 › app shell › the palette finds a record and opens it (1.2s)
+  ✓  15 [chromium] › specs/shell.spec.ts:121:7 › app shell › the palette offers a user with no roles nothing they cannot open (752ms)
+  ✓  16 [chromium] › specs/shell.spec.ts:135:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (1.9s)
+  ✓  17 [chromium] › specs/shell.spec.ts:163:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (1.1s)
+  ✓  18 [chromium] › specs/shell.spec.ts:180:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (1.7s)
+  ✓  19 [chromium] › specs/shell.spec.ts:180:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (1.5s)
+sign-in to workspace: 415 ms
+  ✓  20 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (826ms)
+  ✓  21 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (836ms)
+  ✓  22 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (644ms)
+  ✓  23 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › empty fields are explained without a round trip (315ms)
+  ✓  24 [chromium] › specs/sign-in.spec.ts:47:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter (890ms)
+
+  24 passed (35.7s)
+
+Test counts this run:
+  suite.dotnetTests      passed   158  failed 0  skipped 0  (minimum 152)
+  suite.webUnitTests     passed    74  failed 0  skipped 0  (minimum 64)
+  suite.e2eTests         passed    24  failed 0  skipped 0  (minimum 21)
+  suite.compareTests     passed    68  failed 0  skipped 0  (minimum 68)
+Ratchet check passed.
+[1mverify passed in 374 s[0m
+rc=0 ELAPSED 376
