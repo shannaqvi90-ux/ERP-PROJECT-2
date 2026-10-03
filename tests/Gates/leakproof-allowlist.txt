@@ -1,0 +1,6 @@
+# Functions marked LEAKPROOF in the ERP database that PostgreSQL does not mark leakproof in a fresh
+# database. Row-level security lets a leakproof condition run before the tenant policy (and drive an
+# index), so a function wrongly marked leakproof could reveal another tenant's rows through its side
+# effects or errors. Each entry needs a reason after '#'. The G1 database gate fails on an unreviewed
+# or stale entry.
+pg_catalog.texticlike(text, text)  # ILIKE (~~*), used by list search and text filters so trigram indexes work under row-level security. No side effects; its only errors concern the pattern (a trailing escape character), never the value matched; the platform passes patterns only as request parameters, never from a row. Set by the superuser bootstrap (KernelSql.SearchLeakproof).

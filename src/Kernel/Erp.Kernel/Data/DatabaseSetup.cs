@@ -70,6 +70,7 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
             await connection.OpenAsync(cancellationToken);
             await Exec(connection, "REVOKE ALL ON SCHEMA public FROM PUBLIC", cancellationToken);
             await Exec(connection, $"GRANT USAGE ON SCHEMA public TO {DatabaseRoles.Owner}, {DatabaseRoles.App}", cancellationToken);
+            await Exec(connection, KernelSql.SearchLeakproof, cancellationToken);
         }
     }
 
