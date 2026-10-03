@@ -174,13 +174,19 @@ public sealed class LeakyModule : ErpModule
             group.MapPost("/people", async (NewPerson request, ErpDbSession session) =>
             {
                 var id = Guid.NewGuid();
-                var email = Cut((request.Email ?? $"{id:N}@people.example").Trim().ToLowerInvariant(), 254);
+                var email = (request.Email ?? $"{id:N}@people.example").Trim().ToLowerInvariant();
+                var displayName = string.IsNullOrWhiteSpace(request.DisplayName) ? email : request.DisplayName.Trim();
+                // Refused, never cut short: a shortened copy of another tenant's value would read as a leak.
+                if (email.Length > 254 || displayName.Length > 200)
+                {
+                    return Results.BadRequest();
+                }
                 await using var command = new NpgsqlCommand(
                     "INSERT INTO identity.users (id, tenant_id, email, email_normalized, display_name, language, is_active) " +
                     "VALUES (@id, erp.current_tenant_id(), @e, @e, @n, 'en', true) ON CONFLICT DO NOTHING", session.Connection, session.Transaction);
                 command.Parameters.AddWithValue("id", id);
                 command.Parameters.AddWithValue("e", email);
-                command.Parameters.AddWithValue("n", Cut(string.IsNullOrWhiteSpace(request.DisplayName) ? email : request.DisplayName.Trim(), 200));
+                command.Parameters.AddWithValue("n", displayName);
                 return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/people/{id}", new { id }) : Results.Conflict();
             }).WithName("leaky.createPerson").WithSummary("Creates a person (a user of this workspace).").RequirePermission("leaky.data.update");
 
@@ -195,12 +201,18 @@ public sealed class LeakyModule : ErpModule
                     return Results.Problem(statusCode: 403);
                 }
                 var id = Guid.NewGuid();
+                var nameEn = request.NameEn ?? $"Leaky {id:N}";
+                var nameAr = request.NameAr ?? $"مسرب {id:N}";
+                if (nameEn.Length > 100 || nameAr.Length > 100)
+                {
+                    return Results.BadRequest();
+                }
                 await using var command = new NpgsqlCommand(
                     "INSERT INTO identity.roles (id, tenant_id, name_en, name_ar, permissions, is_system) VALUES (@id, erp.current_tenant_id(), @en, @ar, @p, false) ON CONFLICT DO NOTHING",
                     session.Connection, session.Transaction);
                 command.Parameters.AddWithValue("id", id);
-                command.Parameters.AddWithValue("en", Cut(request.NameEn ?? $"Leaky {id:N}", 100));
-                command.Parameters.AddWithValue("ar", Cut(request.NameAr ?? $"مسرب {id:N}", 100));
+                command.Parameters.AddWithValue("en", nameEn);
+                command.Parameters.AddWithValue("ar", nameAr);
                 command.Parameters.AddWithValue("p", permissions);
                 return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/roles/{id}", new { id }) : Results.Conflict();
             }).WithName("leaky.createRole").WithSummary("Creates a role granting only what the caller holds.").RequirePermission("leaky.data.update");
@@ -277,8 +289,6 @@ public sealed class LeakyModule : ErpModule
     public sealed record NewPerson(string? DisplayName, string? Email);
 
     public sealed record NewRole(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions);
-
-    private static string Cut(string value, int max) => value.Length <= max ? value : value[..max].Trim();
 
     private static async Task<PersonCard?> PersonAsync(ErpDbSession session, Guid id)
     {

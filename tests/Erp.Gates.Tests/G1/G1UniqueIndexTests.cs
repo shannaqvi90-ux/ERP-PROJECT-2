@@ -22,6 +22,7 @@ public sealed class G1UniqueIndexTests(GateFixture fixture)
     public async Task Unique_indexes_on_tenant_tables_include_the_tenant()
     {
         var (problems, checkedIndexes) = await ProblemsAsync(fixture.Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedIndexes} unique indexes on tenant tables checked");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(checkedIndexes >= Ratchet.Min("g1.uniqueIndexesChecked"),
             $"{checkedIndexes} unique indexes on tenant tables checked; ratchet minimum {Ratchet.Min("g1.uniqueIndexesChecked")}");

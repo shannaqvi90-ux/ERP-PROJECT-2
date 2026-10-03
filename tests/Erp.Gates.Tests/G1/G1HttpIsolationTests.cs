@@ -296,7 +296,7 @@ public static class IsolationAttack
                     : documentedRoute.Format == "uuid"
                         ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
                             .Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
-                        : values.All.Concat(activity.RouteValues).Distinct(StringComparer.Ordinal).ToList();
+                        : values.All.ToList();
                 foreach (var value in routeValues)
                 {
                     foreach (var attacker in reachable)

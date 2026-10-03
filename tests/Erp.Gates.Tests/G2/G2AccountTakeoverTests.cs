@@ -174,6 +174,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
     public async Task Acting_on_a_record_that_grants_access_needs_everything_it_grants()
     {
         var result = await GrantBearingRecords.RunAsync(Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checked.Count} endpoints acting on grant-bearing records checked: {string.Join(", ", result.Checked)}");
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
         // Roles: edit, delete and copy; users: edit, reset the password, end sessions, clear a pause.
         foreach (var expected in new[] { "PUT /api/identity/roles/{id:guid}", "DELETE /api/identity/roles/{id:guid}", "POST /api/identity/roles/{id:guid}/copy", "PUT /api/identity/users/{id:guid}" })

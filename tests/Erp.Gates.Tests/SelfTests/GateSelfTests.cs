@@ -33,6 +33,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
         var report = await IsolationAttack.RunAsync(fixture.Env);
+        foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"unexpected: {leak}");
+        }
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/by-header", StringComparison.Ordinal) && l.Contains("[TenantHeaders]", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/tenants/", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
