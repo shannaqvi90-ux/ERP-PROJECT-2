@@ -82,6 +82,11 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/guarded/", StringComparison.Ordinal));
         Assert.Empty(report.TraceBlindSpots);
 
+        // A unit of work built outside dependency injection in a GET (bound to whatever tenant) is
+        // not read-only: the trace reports it. The request's own session always is.
+        Assert.Contains(report.WritableReads, w => w.Contains("endpoint:leaky.byRoute)", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.WritableReads, w => !w.Contains("/api/leaky/", StringComparison.Ordinal));
+
         // State captured by an endpoint lambda, handed to the next caller in a response header
         // (critic p01 round 2, plant B): judged in both directions.
         Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
@@ -117,6 +122,25 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("Administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/users", result.Checked);
+    }
+
+    [Fact]
+    public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
+    {
+        // Critic p00 round 2, plant P2: a POST that reactivates users while declaring a read permission.
+        var result = ReadPermissionWrites.Check(EndpointInventory.From(fixture.Env.Factory.Services));
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
+        await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);
+        await owner.OpenAsync();
+        const string name = "SELECT name_en FROM tenancy.tenants WHERE id = @t";
+        var before = await DbCatalog.ScalarAsync<string>(owner, name, ("t", fixture.Env.TenantA.Id));
+        using var admin = await fixture.Env.SignInAsync(fixture.Env.Email(fixture.Env.TenantA, "admin"));
+        using var response = await admin.GetAsync("/api/leaky/touch");
+        Assert.Equal(System.Net.HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(before, await DbCatalog.ScalarAsync<string>(owner, name, ("t", fixture.Env.TenantA.Id)));
     }
 
     [Fact]

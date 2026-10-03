@@ -66,6 +66,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Assert.True(report.UntracedFunctions.Count == 0, "The SQL trace never saw these reviewed functions run from their reviewed caller, so it may be blind: " + string.Join(", ", report.UntracedFunctions));
         Assert.True(report.BindViolations.Count == 0, "Requests bound a tenant other than the signed-in session's:\n" + string.Join("\n", report.BindViolations.Take(30)));
         Assert.True(report.SettingViolations.Count == 0, "Session settings changed by code other than the kernel's session:\n" + string.Join("\n", report.SettingViolations.Take(30)));
+        Assert.True(report.WritableReads.Count == 0, "Requests that only read ran in a writable transaction:\n" + string.Join("\n", report.WritableReads.Take(30)));
         Assert.True(report.TraceBlindSpots.Count == 0, "The tenant binding trace may be blind: " + string.Join("; ", report.TraceBlindSpots));
         AssertAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
         AssertAtLeast(report.SwitchInputAttacks, "g1.switchInputAttacks");
@@ -378,6 +379,10 @@ public static class IsolationAttack
         {
             traceBlindSpots.Add("no setting statement from the kernel's session was traced with its caller");
         }
+        if (SqlTrace.ReadOnlyFor(Env, traceSnapshot).Count == 0 || !binds.Any(x => x.ReadOnlyRequest))
+        {
+            traceBlindSpots.Add("no read-only request and its read-only transaction were traced");
+        }
 
         foreach (var attacker in attackers)
         {
@@ -388,6 +393,7 @@ public static class IsolationAttack
         {
             Oracles = state.Oracles,
             BindViolations = TenantBindingRules.BindViolations(binds),
+            WritableReads = TenantBindingRules.WritableReads(binds, SqlTrace.ReadOnlyFor(Env, traceSnapshot)),
             SettingViolations = TenantBindingRules.SettingViolations(settings),
             TraceBlindSpots = traceBlindSpots,
             BindsJudged = binds.Count,
@@ -877,6 +883,9 @@ public sealed record IsolationReport(
 
     /// <summary>Bindings inside a request to a tenant other than the request principal's.</summary>
     public IReadOnlyList<string> BindViolations { get; init; } = [];
+
+    /// <summary>Requests that only read but bound a writable transaction.</summary>
+    public IReadOnlyList<string> WritableReads { get; init; } = [];
 
     /// <summary>Setting statements inside a request sent by code other than the kernel's session.</summary>
     public IReadOnlyList<string> SettingViolations { get; init; } = [];

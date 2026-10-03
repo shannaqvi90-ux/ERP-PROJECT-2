@@ -67,6 +67,57 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     }
 
     [Fact]
+    public void No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+    {
+        var result = ReadPermissionWrites.Check(Endpoints);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.True(result.StateChangingChecked >= Ratchet.Min("g2.stateChangingEndpointsChecked"),
+            $"g2.stateChangingEndpointsChecked: {result.StateChangingChecked}; ratchet minimum {Ratchet.Min("g2.stateChangingEndpointsChecked")}");
+    }
+
+    [Fact]
+    public async Task Requests_that_only_read_cannot_write()
+    {
+        // Every GET runs in a read-only transaction: PostgreSQL refuses a write in it, whoever
+        // bound the transaction, so a read permission (and a forged cross-site GET, which the CSRF
+        // defence lets through) can never change data.
+        await using var scope = Env.Factory.Services.CreateAsyncScope();
+        var http = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        http.Request.Method = HttpMethods.Get;
+        var accessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        accessor.HttpContext = http;
+        try
+        {
+            var unit = scope.ServiceProvider.GetRequiredService<Erp.Kernel.Data.ErpDbSession>();
+            await unit.BeginAsync(Env.TenantA.Id, null, "user");
+            await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en", unit.Connection, unit.Transaction);
+            var error = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => write.ExecuteNonQueryAsync());
+            Assert.Equal(Npgsql.PostgresErrorCodes.ReadOnlySqlTransaction, error.SqlState);
+        }
+        finally
+        {
+            accessor.HttpContext = null;
+        }
+
+        // The same unit of work for a POST writes normally.
+        await using var postScope = Env.Factory.Services.CreateAsyncScope();
+        var postAccessor = postScope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        postAccessor.HttpContext = new DefaultHttpContext { RequestServices = postScope.ServiceProvider, Request = { Method = HttpMethods.Post } };
+        try
+        {
+            var unit = postScope.ServiceProvider.GetRequiredService<Erp.Kernel.Data.ErpDbSession>();
+            await unit.BeginAsync(Env.TenantA.Id, null, "user");
+            await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en", unit.Connection, unit.Transaction);
+            Assert.Equal(1, await write.ExecuteNonQueryAsync());
+            await unit.RollbackAsync();
+        }
+        finally
+        {
+            postAccessor.HttpContext = null;
+        }
+    }
+
+    [Fact]
     public void Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
     {
         var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();

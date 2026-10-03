@@ -30,6 +30,15 @@ public sealed record TracedCall(string Function, string? Endpoint, string? Path,
 public sealed record TracedBind(string Tenant, string ActorKind, string? Endpoint, string? Path, string? Method, bool ResolvingSession,
     string? PrincipalTenant, object? App)
 {
+    /// <summary>The request's trace identifier.</summary>
+    public string? Request { get; init; }
+
+    /// <summary>Order in which the binding started, among all traced kernel session events.</summary>
+    public long Sequence { get; init; }
+
+    /// <summary>True when the request only reads (GET, HEAD, ReadOnlyOperation).</summary>
+    public bool ReadOnlyRequest { get; init; }
+
     public string Where => $"{Method} {Path} ({(Endpoint is null ? "no endpoint" : "endpoint:" + Endpoint)})";
 }
 
@@ -61,7 +70,9 @@ public static class SqlTrace
     private static readonly ConcurrentQueue<TracedCall> Calls = new();
     private static readonly ConcurrentQueue<TracedBind> Binds = new();
     private static readonly ConcurrentQueue<TracedSetting> Settings = new();
+    private static readonly ConcurrentQueue<(string Request, long Sequence, object? App)> ReadOnlys = new();
     private static int _requestStatements;
+    private static long _sequence;
     private static readonly HttpContextAccessor Accessor = new();
     private static readonly Lazy<IReadOnlyList<(string Function, string Name)>> Functions = new(() =>
         ReviewedCallers.Read().Select(c => c.Function).Distinct()
@@ -95,7 +106,14 @@ public static class SqlTrace
     public static int Mark => Calls.Count;
 
     /// <summary>Positions in every queue, for <see cref="BindsFor"/> and <see cref="SettingsFor"/>.</summary>
-    public static TraceMark Snapshot() => new(Calls.Count, Binds.Count, Settings.Count, _requestStatements);
+    public static TraceMark Snapshot() => new(Calls.Count, Binds.Count, Settings.Count, _requestStatements) { ReadOnlys = ReadOnlys.Count };
+
+    /// <summary>Requests (trace identifier and order) whose transaction was made read-only since <paramref name="since"/>.</summary>
+    public static IReadOnlyList<(string Request, long Sequence)> ReadOnlyFor(ErpTestEnvironment env, TraceMark since)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return ReadOnlys.Skip(since.ReadOnlys).Where(r => ReferenceEquals(r.App, app)).Select(r => (r.Request, r.Sequence)).ToList();
+    }
 
     /// <summary>Tenant bindings made by one environment's application since <paramref name="since"/>.</summary>
     public static IReadOnlyList<TracedBind> BindsFor(ErpTestEnvironment env, TraceMark since)
@@ -116,7 +134,12 @@ public static class SqlTrace
 
     private const string CallerProperty = "erp.gate.caller";
 
-    private sealed record Caller(string? Endpoint, string? Path, string? Method, bool ResolvingSession, object? App, string? PrincipalTenant, string? CodeCaller, bool FromSession);
+    private sealed record Caller(string? Endpoint, string? Path, string? Method, bool ResolvingSession, object? App, string? PrincipalTenant, string? CodeCaller, bool FromSession)
+    {
+        public string? Request { get; init; }
+        public long Sequence { get; init; }
+        public bool ReadOnlyRequest { get; init; }
+    }
 
     /// <summary>A statement that changes a session or transaction setting.</summary>
     private static readonly Regex SettingStatement = new(
@@ -146,7 +169,12 @@ public static class SqlTrace
             http?.User.Identity?.IsAuthenticated == true ? http.User.FindTenantId()?.ToString() ?? "" : null,
             // Which code sent a statement is only needed inside requests (the settings rule).
             http is not null && activity.Source.Name == "Npgsql" ? CodeCaller() : null,
-            inSession));
+            inSession)
+        {
+            Request = http?.TraceIdentifier,
+            Sequence = activity.Source.Name == TenantBinding.SourceName ? Interlocked.Increment(ref _sequence) : 0,
+            ReadOnlyRequest = http is not null && Erp.Kernel.Http.ReadOnlyRequests.Applies(http),
+        });
     }
 
     /// <summary>The outermost product type on the stack: the class whose method (or async state
@@ -175,7 +203,16 @@ public static class SqlTrace
             if (activity.OperationName == TenantBinding.BindActivity && activity.GetCustomProperty(CallerProperty) is Caller bind && bind.Path is not null)
             {
                 Binds.Enqueue(new TracedBind(activity.GetTagItem(TenantBinding.TenantTag) as string ?? "", activity.GetTagItem(TenantBinding.ActorKindTag) as string ?? "",
-                    bind.Endpoint, bind.Path, bind.Method, bind.ResolvingSession, bind.PrincipalTenant, bind.App));
+                    bind.Endpoint, bind.Path, bind.Method, bind.ResolvingSession, bind.PrincipalTenant, bind.App)
+                {
+                    Request = bind.Request,
+                    Sequence = bind.Sequence,
+                    ReadOnlyRequest = bind.ReadOnlyRequest,
+                });
+            }
+            else if (activity.OperationName == TenantBinding.ReadOnlyActivity && activity.GetCustomProperty(CallerProperty) is Caller { Request: { } request } readOnly)
+            {
+                ReadOnlys.Enqueue((request, readOnly.Sequence, readOnly.App));
             }
             return;
         }
@@ -227,7 +264,10 @@ public static class SqlTrace
 }
 
 /// <summary>Positions in the trace's queues.</summary>
-public sealed record TraceMark(int Calls, int Binds, int Settings, int RequestStatements);
+public sealed record TraceMark(int Calls, int Binds, int Settings, int RequestStatements)
+{
+    public int ReadOnlys { get; init; }
+}
 
 /// <summary>
 /// The rules the trace enforces on tenant binding (G1: the tenant comes only from the session).
@@ -253,6 +293,19 @@ public static class TenantBindingRules
             .Where(b => b.Endpoint is null || !reviewed.Contains("endpoint:" + b.Endpoint))
             .Select(b => $"{b.Where} bound tenant {b.Tenant} ({b.ActorKind}) but the request's principal is " +
                          (b.PrincipalTenant is null ? "anonymous" : $"tenant {b.PrincipalTenant}"))
+            .Distinct()
+            .ToList();
+    }
+
+    /// <summary>Bindings in requests that only read (GET, HEAD, ReadOnlyOperation) after which the
+    /// transaction was not made read-only: such a request could write.</summary>
+    public static IReadOnlyList<string> WritableReads(IEnumerable<TracedBind> binds, IReadOnlyList<(string Request, long Sequence)> readOnlys)
+    {
+        var byRequest = readOnlys.ToLookup(r => r.Request, r => r.Sequence);
+        return binds
+            .Where(b => b.ReadOnlyRequest && b.Request is not null)
+            .Where(b => !byRequest[b.Request!].Any(sequence => sequence > b.Sequence))
+            .Select(b => $"{b.Where} bound tenant {b.Tenant} in a writable transaction although the request only reads")
             .Distinct()
             .ToList();
     }

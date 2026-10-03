@@ -11,7 +11,7 @@ namespace Erp.Kernel.Http;
 /// <summary>
 /// Commits the request's database transaction when the endpoint produced a success result, before
 /// the response is written, and rolls back otherwise. Read-only requests (<see cref="ReadOnlyRequests"/>)
-/// run in a read-only transaction. An endpoint that must persist something on
+/// run in a read-only transaction (set by <see cref="ErpDbSession.BeginAsync"/>). An endpoint that must persist something on
 /// a failure path (for example a failed sign-in counter) commits explicitly first.
 /// </summary>
 internal sealed class UnitOfWorkFilter : IEndpointFilter
@@ -20,11 +20,6 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
     {
         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
-        if (ReadOnlyRequests.Applies(context.HttpContext))
-        {
-            // Bound by the session lookup already; the database refuses any write from here on.
-            await session.MakeReadOnlyAsync(context.HttpContext.RequestAborted);
-        }
         object? result;
         try
         {
