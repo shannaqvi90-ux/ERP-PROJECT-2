@@ -26,7 +26,10 @@ test.describe("companies, branches and the working company", () => {
     await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Companies" }).click();
     await expect(page).toHaveURL(/\/tenancy\/companies$/);
     await expect(listRows(page).first()).toBeVisible();
-    await expect(page.getByText("4 companies", { exact: true })).toBeVisible();
+    // A rerun against the same stack finds the companies earlier runs opened: count from the API.
+    const companies = ((await (await page.request.get("/api/tenancy/companies?take=1")).json()) as { total: number }).total;
+    expect(companies).toBeGreaterThanOrEqual(4);
+    await expect(page.getByText(`${companies} companies`, { exact: true })).toBeVisible();
 
     // Alt+N, type both legal names and the code, Ctrl+S.
     await page.keyboard.press("Alt+KeyN");
@@ -97,7 +100,14 @@ test.describe("companies, branches and the working company", () => {
     await page.locator('nav a[href="/tenancy/branches"]').click();
     await expect(page).toHaveURL(/\/tenancy\/branches/);
     await expect(listRows(page).first()).toBeVisible();
-    await expect(page.getByText("12 branches", { exact: true })).toBeVisible();
+    // Earlier tests may have opened companies and branches: the expected counts come from the API
+    // (same session), and the seeded rows the steps below look for are fixed.
+    const page1 = async (query: string) => (await (await page.request.get(`/api/tenancy/branches?take=1${query}`)).json()) as { total: number; groups?: unknown[] };
+    const all = (await page1("")).total;
+    const companies = (await page1("&groupBy=companyId")).groups!.length;
+    expect(all).toBeGreaterThanOrEqual(12);
+    expect(companies).toBeGreaterThanOrEqual(4);
+    await expect(page.getByText(`${all} branches`, { exact: true })).toBeVisible();
 
     // The search box has focus; words in any order, any case.
     await page.keyboard.type("WAREHOUSE south");
@@ -106,13 +116,13 @@ test.describe("companies, branches and the working company", () => {
     await expect(listRows(page).first()).toContainText("JAFZA-WH");
     await expect(listRows(page).first()).toContainText("ALN-FZE · Al Noor General Trading FZE");
     await page.getByRole("searchbox", { name: "Search code or name (/)" }).fill("");
-    await expect(page.getByText("12 branches", { exact: true })).toBeVisible();
+    await expect(page.getByText(`${all} branches`, { exact: true })).toBeVisible();
 
     // Group by company: one group per company, labelled by code and name.
     await page.getByRole("button", { name: "Options for the column Company" }).click();
     await page.getByRole("menuitem", { name: "Group by this column" }).click();
     const groups = page.locator("tbody.list-groups tr");
-    await expect(groups).toHaveCount(4);
+    await expect(groups).toHaveCount(companies);
     await expect(groups.filter({ hasText: "ALN-SHJ · Al Noor Industries LLC" })).toContainText("3");
     await page.getByRole("button", { name: "Remove grouping" }).click();
     await expect(groups).toHaveCount(0);
@@ -130,6 +140,8 @@ test.describe("companies, branches and the working company", () => {
   test("access: find a user by e-mail, see their companies and limit them to branches", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    // Signed in (the shell is up) before leaving the page, or the navigation cancels the sign-in.
+    await expect(page.getByTestId("workplace")).toBeVisible();
     await page.goto("/tenancy/access");
     await expect(listRows(page).first()).toBeVisible();
     await page.keyboard.type(users.viewer);

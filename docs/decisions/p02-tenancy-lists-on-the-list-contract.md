@@ -18,6 +18,10 @@ The three tenancy lists use p05's list framework end to end:
   sortable columns backed by a `(tenant_id, column, …)` index.
 - Base currency is a text column (filterable, groupable): any ISO 4217 code is valid, so it has no
   fixed choice list. Emirate is a choice column over the seven emirates.
+- The companies list queries a projection of the row columns (`CompanyEndpoints.ListRows`), not
+  the whole entity: a company's logo (up to 512 KB in `logo`) is never read for a list page. Search,
+  filters, sort, keyset paging and grouping compose over the projection (EF Core binds the member
+  initialiser), and a test checks the list SQL never names the logo columns.
 - Indexes: GIN `gin_trgm_ops` over the searched columns (code and both names) and
   `(tenant_id, column, id)` B-trees for each sortable column (migration `ListIndexes`).
 
