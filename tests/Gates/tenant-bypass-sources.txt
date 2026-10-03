@@ -1,0 +1,23 @@
+# Files under src/ reviewed to choose a tenant, change session settings, step around the tenant
+# query filter or reach the database outside the request's unit of work. Everything else gets its
+# tenant from the session. The G1 source gate fails on an unreviewed use and on a stale entry.
+# Format: <rule> <repository-relative path>  # reason
+# Rules: tenant-setting, set-config, sql-set, ignore-tenant-filter, raw-ef-sql, new-session, bind,
+#        unbound, data-source, connection-string (see tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs)
+tenant-setting src/Kernel/Erp.Kernel/Data/ErpDbSession.cs  # The unit of work: the one place that sets the transaction-local tenant, from BeginAsync's caller (the session lookup, sign-in, seeding).
+set-config src/Kernel/Erp.Kernel/Data/ErpDbSession.cs  # Same: binds tenant, actor and correlation id with transaction-local set_config.
+sql-set src/Kernel/Erp.Kernel/Data/ErpDbSession.cs  # SET TRANSACTION READ ONLY for requests that only read.
+unbound src/Kernel/Erp.Kernel/Data/ErpDbSession.cs  # Defines OpenUnboundAsync for the reviewed cross-tenant lookups (tests/Gates/security-definer-callers.txt).
+data-source src/Kernel/Erp.Kernel/Data/ErpDbSession.cs  # The unit of work takes its connection from the application role's data source.
+tenant-setting src/Kernel/Erp.Kernel/Data/KernelSql.cs  # Migration SQL: erp.current_tenant_id() reads the transaction-local tenant for row-level security.
+sql-set src/Kernel/Erp.Kernel/Data/KernelSql.cs  # Migration SQL: functions pin their search_path (SET search_path in CREATE FUNCTION).
+connection-string src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs  # Bootstrap and migrations (operator commands, not the web app's requests) connect as the administrator and owner roles.
+data-source src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs  # Registers the application role's data source (refusing any other user) and the anonymous health check's SELECT 1.
+connection-string src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs  # Reads ConnectionStrings:App for that data source, and Admin to decide whether migrate also bootstraps (operator command).
+bind src/Kernel/Erp.Kernel/Seeding/SeedRunner.cs  # Seeding binds each seed tenant in turn (operator command, no request).
+bind src/Modules/Identity/Erp.Modules.Identity/Auth/SessionResolver.cs  # Binds the tenant of the session the token resolved to: the session is where the tenant comes from.
+unbound src/Modules/Identity/Erp.Modules.Identity/Auth/SessionResolver.cs  # The reviewed session lookup runs before any tenant is known.
+bind src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs  # Sign-in binds the tenant of the account whose credentials were checked (endpoint auth.signIn, tests/Gates/tenant-binding-endpoints.txt).
+unbound src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs  # The reviewed login lookup runs before any tenant is known.
+tenant-setting src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Migration SQL: the reviewed lookups answer only on a connection with no tenant bound.
+sql-set src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs  # Migration SQL: the reviewed lookups switch to the resolver role inside their own bodies and pin search_path.

@@ -63,6 +63,30 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/recent", StringComparison.Ordinal) && l.Contains("attacking tenant's marker", StringComparison.Ordinal));
         Assert.True(report.VictimConcurrentRequests > 0, "tenant B never read concurrently with the attack");
         Assert.Empty(report.VictimBlindSpots);
+
+        // The tenant comes only from the session. A header with a name nobody guesses, read by the
+        // handler and used with set_config on the request's own connection (critic p00 round 2,
+        // plant A-hdr): the attack sends tenant B's id in every header the app reads and the
+        // trace sees the setting change from code other than the kernel's session.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/acting", StringComparison.Ordinal) && l.Contains("[header X-Acting-For: ", StringComparison.Ordinal));
+        Assert.Contains(report.SettingViolations, v => v.Contains("endpoint:leaky.acting", StringComparison.Ordinal) && v.Contains(typeof(LeakyModule).FullName!, StringComparison.Ordinal));
+        Assert.DoesNotContain(report.SettingViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+
+        // Units of work bound to a tenant the client chose (built outside dependency injection, or
+        // the request's own session, which the kernel refuses): every binding is traced.
+        foreach (var name in new[] { "leaky.byHeader", "leaky.byRoute", "leaky.byBody", "leaky.report", "leaky.guarded" })
+        {
+            Assert.Contains(report.BindViolations, v => v.Contains($"endpoint:{name})", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.BindViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/guarded/", StringComparison.Ordinal));
+        Assert.Empty(report.TraceBlindSpots);
+
+        // State captured by an endpoint lambda, handed to the next caller in a response header
+        // (critic p01 round 2, plant B): judged in both directions.
+        Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
+                                           l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -78,6 +102,11 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         var running = ProcessState.Inspect(fixture.Env.Factory);
         Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
         Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
+
+        // A variable captured by an endpoint lambda lives as long as the endpoint (critic p01
+        // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.
+        Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));
+        Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
     }
 
     [Fact]

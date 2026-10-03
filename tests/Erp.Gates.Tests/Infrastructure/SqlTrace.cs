@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Testing;
@@ -20,16 +22,46 @@ public sealed record TracedCall(string Function, string? Endpoint, string? Path,
     public string Caller => ResolvingSession ? "authentication" : Endpoint is null ? "outside any request" : $"endpoint:{Endpoint}";
 }
 
+/// <summary>One binding of a unit of work to a tenant (<see cref="ErpDbSession.BeginAsync"/>),
+/// and the request it happened in.</summary>
+/// <param name="Tenant">The tenant bound.</param>
+/// <param name="PrincipalTenant">The signed-in principal's tenant when the binding happened, or
+/// null for an anonymous request (or during the session lookup itself).</param>
+public sealed record TracedBind(string Tenant, string ActorKind, string? Endpoint, string? Path, string? Method, bool ResolvingSession,
+    string? PrincipalTenant, object? App)
+{
+    public string Where => $"{Method} {Path} ({(Endpoint is null ? "no endpoint" : "endpoint:" + Endpoint)})";
+}
+
+/// <summary>A statement sent inside a request that changes session or transaction settings (the
+/// tenant, the role, row security), with the code that sent it.</summary>
+/// <param name="Caller">Outermost product type on the stack when the statement started, or null.</param>
+/// <param name="FromSession">True when it ran inside one of the kernel session's own operations.</param>
+/// <param name="User">Database user of the connection, when Npgsql reports it.</param>
+public sealed record TracedSetting(string Statement, string? Endpoint, string? Path, string? Caller, bool FromSession, string? User, object? App);
+
 /// <summary>
 /// Watches every SQL statement the application sends to PostgreSQL (Npgsql's ActivitySource) and
-/// records those that name a reviewed security-definer function, with the endpoint and phase that
-/// ran them. The tenant-isolation gate uses it to prove that the functions that read across
-/// tenants run only from their reviewed callers (tests/Gates/security-definer-callers.txt), so a
-/// new endpoint cannot quietly reuse them as a cross-tenant lookup.
+/// every binding of a unit of work to a tenant (the kernel's <see cref="TenantBinding"/> source).
+/// It records:
+/// <list type="bullet">
+/// <item>statements that name a reviewed security-definer function, with the endpoint and phase
+/// that ran them, so the functions that read across tenants run only from their reviewed callers
+/// (tests/Gates/security-definer-callers.txt);</item>
+/// <item>every tenant binding with the request's signed-in principal, so code that binds any
+/// tenant other than the session's (from a header, a route, a body, or a unit of work it built
+/// itself) is caught however it found the tenant;</item>
+/// <item>every statement inside a request that changes session settings (<c>set_config</c>,
+/// <c>SET</c>, <c>RESET</c>, <c>DISCARD</c>), with the code that sent it, so nothing but the
+/// kernel's session can change the tenant a statement runs under.</item>
+/// </list>
 /// </summary>
 public static class SqlTrace
 {
     private static readonly ConcurrentQueue<TracedCall> Calls = new();
+    private static readonly ConcurrentQueue<TracedBind> Binds = new();
+    private static readonly ConcurrentQueue<TracedSetting> Settings = new();
+    private static int _requestStatements;
     private static readonly HttpContextAccessor Accessor = new();
     private static readonly Lazy<IReadOnlyList<(string Function, string Name)>> Functions = new(() =>
         ReviewedCallers.Read().Select(c => c.Function).Distinct()
@@ -38,7 +70,7 @@ public static class SqlTrace
     {
         var listener = new ActivityListener
         {
-            ShouldListenTo = source => source.Name == "Npgsql",
+            ShouldListenTo = source => source.Name is "Npgsql" or TenantBinding.SourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             // Npgsql adds the statement text after the activity starts, so the caller is captured at
             // start (same async flow as the command) and matched with the text at stop.
@@ -62,26 +94,104 @@ public static class SqlTrace
 
     public static int Mark => Calls.Count;
 
+    /// <summary>Positions in every queue, for <see cref="BindsFor"/> and <see cref="SettingsFor"/>.</summary>
+    public static TraceMark Snapshot() => new(Calls.Count, Binds.Count, Settings.Count, _requestStatements);
+
+    /// <summary>Tenant bindings made by one environment's application since <paramref name="since"/>.</summary>
+    public static IReadOnlyList<TracedBind> BindsFor(ErpTestEnvironment env, TraceMark since)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return Binds.Skip(since.Binds).Where(b => ReferenceEquals(b.App, app)).ToList();
+    }
+
+    /// <summary>Setting statements sent inside one environment's requests since <paramref name="since"/>.</summary>
+    public static IReadOnlyList<TracedSetting> SettingsFor(ErpTestEnvironment env, TraceMark since)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return Settings.Skip(since.Settings).Where(b => ReferenceEquals(b.App, app)).ToList();
+    }
+
+    /// <summary>Statements sent inside requests (any environment) since <paramref name="since"/>.</summary>
+    public static int RequestStatementsSince(TraceMark since) => _requestStatements - since.RequestStatements;
+
     private const string CallerProperty = "erp.gate.caller";
 
-    private sealed record Caller(string? Endpoint, string? Path, bool ResolvingSession, object? App);
+    private sealed record Caller(string? Endpoint, string? Path, string? Method, bool ResolvingSession, object? App, string? PrincipalTenant, string? CodeCaller, bool FromSession);
+
+    /// <summary>A statement that changes a session or transaction setting.</summary>
+    private static readonly Regex SettingStatement = new(
+        @"\bset_config\s*\(|(^|;)\s*(set|reset|discard)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    public static bool ChangesSettings(string statement) => SettingStatement.IsMatch(statement);
 
     private static void Capture(Activity activity)
     {
         var http = Accessor.HttpContext;
+        var inSession = false;
+        for (var parent = activity.Parent; parent is not null; parent = parent.Parent)
+        {
+            if (parent.Source.Name == TenantBinding.SourceName)
+            {
+                inSession = true;
+                break;
+            }
+        }
         activity.SetCustomProperty(CallerProperty, new Caller(
             http?.GetEndpoint()?.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName,
             http?.Request.Path.Value,
+            http?.Request.Method,
             SessionResolution.IsInProgress(http),
-            http?.RequestServices.GetService(typeof(ModuleCatalog))));
+            http?.RequestServices.GetService(typeof(ModuleCatalog)),
+            http?.User.Identity?.IsAuthenticated == true ? http.User.FindTenantId()?.ToString() ?? "" : null,
+            // Which code sent a statement is only needed inside requests (the settings rule).
+            http is not null && activity.Source.Name == "Npgsql" ? CodeCaller() : null,
+            inSession));
+    }
+
+    /// <summary>The outermost product type on the stack: the class whose method (or async state
+    /// machine, lambda or local function) sent the statement.</summary>
+    private static string? CodeCaller()
+    {
+        foreach (var frame in new StackTrace(2, false).GetFrames())
+        {
+            var type = frame.GetMethod()?.DeclaringType;
+            while (type?.DeclaringType is not null)
+            {
+                type = type.DeclaringType;
+            }
+            if (type?.Namespace is { } ns && ns.StartsWith("Erp.", StringComparison.Ordinal) && type != typeof(SqlTrace))
+            {
+                return type.FullName;
+            }
+        }
+        return null;
     }
 
     private static void Record(Activity activity)
     {
+        if (activity.Source.Name == TenantBinding.SourceName)
+        {
+            if (activity.OperationName == TenantBinding.BindActivity && activity.GetCustomProperty(CallerProperty) is Caller bind && bind.Path is not null)
+            {
+                Binds.Enqueue(new TracedBind(activity.GetTagItem(TenantBinding.TenantTag) as string ?? "", activity.GetTagItem(TenantBinding.ActorKindTag) as string ?? "",
+                    bind.Endpoint, bind.Path, bind.Method, bind.ResolvingSession, bind.PrincipalTenant, bind.App));
+            }
+            return;
+        }
         var text = activity.GetTagItem("db.query.text") as string ?? activity.GetTagItem("db.statement") as string;
         if (string.IsNullOrEmpty(text))
         {
             return;
+        }
+        if (activity.GetCustomProperty(CallerProperty) is Caller { Path: not null } inRequest)
+        {
+            Interlocked.Increment(ref _requestStatements);
+            if (ChangesSettings(text))
+            {
+                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, inRequest.CodeCaller, inRequest.FromSession,
+                    UserOf(activity), inRequest.App));
+            }
         }
         var lower = text.ToLowerInvariant();
         foreach (var (function, name) in Functions.Value)
@@ -90,7 +200,7 @@ public static class SqlTrace
             {
                 continue;
             }
-            var caller = activity.GetCustomProperty(CallerProperty) as Caller ?? new Caller(null, null, false, null);
+            var caller = activity.GetCustomProperty(CallerProperty) as Caller ?? new Caller(null, null, null, false, null, null, null, false);
             var port = activity.GetTagItem("server.port") switch
             {
                 int p => p,
@@ -100,6 +210,66 @@ public static class SqlTrace
             };
             Calls.Enqueue(new TracedCall(function, caller.Endpoint, caller.Path, caller.ResolvingSession, caller.App, port, text));
         }
+    }
+
+    /// <summary>The database user of the statement's connection, from the data source name Npgsql
+    /// reports (the connection string without its password), when it is there.</summary>
+    private static string? UserOf(Activity activity)
+    {
+        var source = activity.GetTagItem("db.npgsql.data_source") as string;
+        if (source is null)
+        {
+            return null;
+        }
+        var match = Regex.Match(source, @"(?:^|;)\s*(?:Username|User ID|User Id|UserId|User)\s*=\s*([^;]+)", RegexOptions.IgnoreCase);
+        return match.Success ? match.Groups[1].Value.Trim() : null;
+    }
+}
+
+/// <summary>Positions in the trace's queues.</summary>
+public sealed record TraceMark(int Calls, int Binds, int Settings, int RequestStatements);
+
+/// <summary>
+/// The rules the trace enforces on tenant binding (G1: the tenant comes only from the session).
+/// </summary>
+public static class TenantBindingRules
+{
+    public const string ReviewedFile = "tests/Gates/tenant-binding-endpoints.txt";
+
+    /// <summary>Endpoints reviewed to bind a tenant other than the signed-in principal's (sign-in
+    /// binds the tenant of the account whose credentials were given).</summary>
+    public static IReadOnlySet<string> ReviewedEndpoints() =>
+        Repo.ReadReviewedList(ReviewedFile).Select(e => e.Entry).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>Bindings inside a request that did not bind the session's tenant: every binding
+    /// except the session lookup's own must be the signed-in principal's tenant, unless the
+    /// endpoint is reviewed to bind the tenant it resolved itself.</summary>
+    public static IReadOnlyList<string> BindViolations(IEnumerable<TracedBind> binds)
+    {
+        var reviewed = ReviewedEndpoints();
+        return binds
+            .Where(b => !b.ResolvingSession)
+            .Where(b => b.PrincipalTenant != b.Tenant)
+            .Where(b => b.Endpoint is null || !reviewed.Contains("endpoint:" + b.Endpoint))
+            .Select(b => $"{b.Where} bound tenant {b.Tenant} ({b.ActorKind}) but the request's principal is " +
+                         (b.PrincipalTenant is null ? "anonymous" : $"tenant {b.PrincipalTenant}"))
+            .Distinct()
+            .ToList();
+    }
+
+    /// <summary>Setting statements inside requests sent by anything but the kernel's session, or
+    /// to a database user other than the application role.</summary>
+    public static IReadOnlyList<string> SettingViolations(IEnumerable<TracedSetting> settings) => settings
+        .Where(s => !(s.FromSession || s.Caller == typeof(ErpDbSession).FullName) || (s.User is not null && s.User != DatabaseRoles.App))
+        .Select(s => $"{s.Path} ({(s.Endpoint is null ? "no endpoint" : "endpoint:" + s.Endpoint)}): {Short(s.Statement)} sent by {s.Caller ?? "unknown code"}" +
+                     (s.User is not null && s.User != DatabaseRoles.App ? $" as database user {s.User}" : ""))
+        .Distinct()
+        .ToList();
+
+    private static string Short(string statement)
+    {
+        var flat = Regex.Replace(statement, @"\s+", " ").Trim();
+        return flat.Length <= 160 ? flat : flat[..160] + "…";
     }
 }
 

@@ -43,38 +43,96 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(previous ?? current);
             }).WithName("leaky.recent").WithSummary("Planted bug: a singleton shares the last list read across tenants.").RequirePermission("leaky.data.read");
 
+            // Bugs 1, 2, 3 and 6 build their own unit of work (outside dependency injection, so the
+            // kernel's guard on the request's session cannot see them) and bind it to a tenant the
+            // client chose. Bug 16 tries the same on the request's own session, which the kernel
+            // refuses.
+
             // Bug 1: the tenant comes from a header the client controls.
-            group.MapGet("/by-header", async (HttpContext http, ErpDbSession session) =>
+            group.MapGet("/by-header", async (HttpContext http, NpgsqlDataSource dataSource, ErpDbSession session) =>
             {
                 var tenant = http.Request.Headers["X-Tenant-Id"].ToString();
                 if (Guid.TryParse(tenant, out var id))
                 {
-                    await session.RollbackAsync();
-                    await session.BeginAsync(id, null, "user");
+                    await using var rogue = await RogueAsync(dataSource, id);
+                    return Results.Ok(await NamesAsync(rogue));
                 }
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.byHeader").WithSummary("Planted bug: trusts X-Tenant-Id.").RequirePermission("leaky.data.read");
 
             // Bug 2: the tenant comes from the route.
-            group.MapGet("/tenants/{id:guid}", async (Guid id, ErpDbSession session) =>
+            group.MapGet("/tenants/{id:guid}", async (Guid id, NpgsqlDataSource dataSource) =>
+            {
+                await using var rogue = await RogueAsync(dataSource, id);
+                return Results.Ok(await NamesAsync(rogue));
+            }).WithName("leaky.byRoute").WithSummary("Planted bug: trusts the route id.").RequirePermission("leaky.data.read");
+
+            // Bug 3: a write that trusts a tenant id in the body.
+            group.MapPut("/tenant", async (RenameRequest request, NpgsqlDataSource dataSource) =>
+            {
+                if (request.TenantId is { } id)
+                {
+                    await using var rogue = await RogueAsync(dataSource, id);
+                    await using var command = new NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en || ' (renamed)'", rogue.Connection, rogue.Transaction);
+                    await command.ExecuteNonQueryAsync();
+                    await rogue.CommitAsync();
+                }
+                return Results.NoContent();
+            }).WithName("leaky.byBody").WithSummary("Planted bug: trusts tenantId in the body.").RequirePermission("leaky.data.update");
+
+            // Bug 16: the route's tenant bound on the request's own session. The kernel refuses
+            // (CrossTenantBindException, answered 404); the trace still reports the attempt.
+            group.MapGet("/guarded/{id:guid}", async (Guid id, ErpDbSession session) =>
             {
                 await session.RollbackAsync();
                 await session.BeginAsync(id, null, "user");
                 return Results.Ok(await NamesAsync(session));
-            }).WithName("leaky.byRoute").WithSummary("Planted bug: trusts the route id.").RequirePermission("leaky.data.read");
+            }).WithName("leaky.guarded").WithSummary("Planted bug the kernel refuses: rebinds the request's session to the route's tenant.").RequirePermission("leaky.data.read");
 
-            // Bug 3: a write that trusts a tenant id in the body.
-            group.MapPut("/tenant", async (RenameRequest request, ErpDbSession session) =>
+            // Bug 11 (critic p00 round 2, plant A-hdr): a header with a name nobody would guess
+            // switches the tenant with set_config on the request's own connection.
+            group.MapGet("/acting", async (HttpContext http, ErpDbSession session) =>
             {
-                if (request.TenantId is { } id)
+                if (Guid.TryParse(http.Request.Headers["X-Acting-For"].ToString(), out var id))
                 {
-                    await session.RollbackAsync();
-                    await session.BeginAsync(id, null, "user");
-                    await using var command = new NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en || ' (renamed)'", session.Connection, session.Transaction);
+                    await using var command = new NpgsqlCommand(
+                        "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)",
+                        session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("t", id.ToString());
                     await command.ExecuteNonQueryAsync();
                 }
+                return Results.Ok(await NamesAsync(session));
+            }).WithName("leaky.acting").WithSummary("Planted bug: switches tenant from the X-Acting-For header with set_config.").RequirePermission("leaky.data.read");
+
+            // Bug 13 (critic p01 round 2, plant B): a variable captured by the endpoint lambda
+            // keeps the previous caller's workspace and hands it to the next caller in a header.
+            string? previousCaller = null;
+            group.MapGet("/previous", async (HttpContext http, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT id::text || ' ' || code || ' ' || name_en FROM tenancy.tenants", session.Connection, session.Transaction);
+                var mine = (string?)await command.ExecuteScalarAsync();
+                http.Response.Headers["X-Previous-Workspace"] = previousCaller ?? "";
+                previousCaller = mine;
+                return Results.Ok(new { ok = true });
+            }).WithName("leaky.previous").WithSummary("Planted bug: a captured variable returns the previous caller's workspace in a header.").RequirePermission("leaky.data.read");
+
+            // Bug 14 (critic p00 round 2, plant P2): a write guarded by a read permission.
+            group.MapPost("/users/{id:guid}/reactivate", async (Guid id, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("UPDATE identity.users SET is_active = true WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                await command.ExecuteNonQueryAsync();
                 return Results.NoContent();
-            }).WithName("leaky.byBody").WithSummary("Planted bug: trusts tenantId in the body.").RequirePermission("leaky.data.update");
+            }).WithName("leaky.reactivate").WithSummary("Planted bug: reactivates a user with only a read permission.").RequirePermission("leaky.data.read");
+
+            // Bug 15: a GET that writes. Every GET runs in a read-only transaction, so the database
+            // refuses the write.
+            group.MapGet("/touch", async (ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("UPDATE tenancy.tenants SET name_en = name_en || ' (touched)'", session.Connection, session.Transaction);
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(new { touched = true });
+            }).WithName("leaky.touch").WithSummary("Planted bug: a read that writes.").RequirePermission("leaky.data.read");
 
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
@@ -87,12 +145,12 @@ public sealed class LeakyModule : ErpModule
                 .WithName("leaky.exists").WithSummary("Planted bug: tells whether an e-mail exists in any tenant.").RequirePermission("leaky.data.read");
 
             // Bug 6: the tenant comes from a query parameter with an unguessable name.
-            group.MapGet("/report", async (Guid? ownerReference, ErpDbSession session) =>
+            group.MapGet("/report", async (Guid? ownerReference, NpgsqlDataSource dataSource, ErpDbSession session) =>
             {
                 if (ownerReference is { } id)
                 {
-                    await session.RollbackAsync();
-                    await session.BeginAsync(id, null, "user");
+                    await using var rogue = await RogueAsync(dataSource, id);
+                    return Results.Ok(await NamesAsync(rogue));
                 }
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.report").WithSummary("Planted bug: trusts the ownerReference query parameter.").RequirePermission("leaky.data.read");
@@ -149,6 +207,14 @@ public sealed class LeakyModule : ErpModule
     }
 
     public sealed record RenameRequest(Guid? TenantId, string? NameEn);
+
+    /// <summary>A unit of work the planted code builds itself, bound to the tenant it was given.</summary>
+    private static async Task<ErpDbSession> RogueAsync(NpgsqlDataSource dataSource, Guid tenant)
+    {
+        var rogue = new ErpDbSession(dataSource);
+        await rogue.BeginAsync(tenant, null, "user");
+        return rogue;
+    }
 
     private static async Task<List<string>> NamesAsync(ErpDbSession session)
     {

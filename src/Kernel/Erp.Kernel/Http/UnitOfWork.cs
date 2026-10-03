@@ -10,7 +10,8 @@ namespace Erp.Kernel.Http;
 
 /// <summary>
 /// Commits the request's database transaction when the endpoint produced a success result, before
-/// the response is written, and rolls back otherwise. An endpoint that must persist something on
+/// the response is written, and rolls back otherwise. Read-only requests (<see cref="ReadOnlyRequests"/>)
+/// run in a read-only transaction. An endpoint that must persist something on
 /// a failure path (for example a failed sign-in counter) commits explicitly first.
 /// </summary>
 internal sealed class UnitOfWorkFilter : IEndpointFilter
@@ -19,6 +20,11 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
     {
         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
+        if (ReadOnlyRequests.Applies(context.HttpContext))
+        {
+            // Bound by the session lookup already; the database refuses any write from here on.
+            await session.MakeReadOnlyAsync(context.HttpContext.RequestAborted);
+        }
         object? result;
         try
         {
@@ -58,8 +64,14 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is CrossTenantBindException)
+        {
+            logger.LogError(exception, "Request {TraceId} tried to bind another tenant", context.TraceIdentifier);
+        }
         var (status, code) = exception switch
         {
+            // Code serving a signed-in user tried to switch tenant: answer as if nothing was there.
+            CrossTenantBindException => (StatusCodes.Status404NotFound, "notFound"),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "concurrency"),
             DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } } => (StatusCodes.Status409Conflict, "duplicate"),
             PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } => (StatusCodes.Status409Conflict, "duplicate"),
