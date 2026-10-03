@@ -92,6 +92,23 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith("tenant A", StringComparison.Ordinal) && l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) &&
                                            l.Contains("response header contains tenant B marker", StringComparison.Ordinal) && l.Contains("X-Previous-Workspace", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/previous", StringComparison.Ordinal) && l.Contains("a response header to tenant", StringComparison.Ordinal));
+
+        // Write after write (critic p04 round 1, plants P1b and P1c): state a valid write leaves in
+        // a captured array reaches the next valid writer of the other tenant, in a header with a
+        // correct body, or inside the body. Judged in both directions.
+        var a = fixture.Env.TenantA.Code;
+        var b = fixture.Env.TenantB.Code;
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {a} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/theme", StringComparison.Ordinal) &&
+                                           l.Contains("a response header to tenant", StringComparison.Ordinal) && l.Contains("X-Erp-Previous-Editor", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/theme", StringComparison.Ordinal) &&
+                                           l.Contains("X-Erp-Previous-Editor", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {a} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/density", StringComparison.Ordinal) &&
+                                           l.Contains($"response to tenant {a} contains", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/density", StringComparison.Ordinal) &&
+                                           l.Contains($"response to tenant {b} contains", StringComparison.Ordinal));
+        Assert.True(report.WritePairs > 0, "no write-after-write pair succeeded on both sides");
+        Assert.Empty(report.WritePairBlindSpots);
+        Assert.DoesNotContain(report.AttackerUnsuccessfulWrites, w => w.Contains("/api/leaky/me/", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -111,6 +128,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // A variable captured by an endpoint lambda lives as long as the endpoint (critic p01
         // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.
         Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));
+
+        // A captured array whose element the lambda replaces (critic p04 round 1, plants P1b and
+        // P1c): the variable itself is never reassigned, the array it holds is mutable.
+        foreach (var name in new[] { "previousEditor", "previousSaver" })
+        {
+            Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.{name}" && f.Why.Contains("shared by every request of every tenant", StringComparison.Ordinal));
+        }
         Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
         Assert.True(running.DelegateObjectsWalked > running.EndpointsWalked, "the endpoint delegate walk reached nothing beyond the delegates");
     }

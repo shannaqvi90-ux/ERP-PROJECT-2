@@ -89,6 +89,13 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Assert.True(report.VictimUnsuccessfulWrites.Count == 0,
             "Tenant B's own writes must succeed so their handlers run to the end; these did not:\n" + string.Join("\n", report.VictimUnsuccessfulWrites));
         AssertAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
+        // Write after write: tenant A's own valid writes, each right after tenant B's, succeeded
+        // (a refused write never reaches the code that could hand on tenant B's state).
+        Assert.True(report.AttackerUnsuccessfulWrites.Count == 0,
+            "Tenant A's own writes in the write-after-write phase must succeed; these did not:\n" + string.Join("\n", report.AttackerUnsuccessfulWrites));
+        Assert.True(report.WritePairBlindSpots.Count == 0, "The write-after-write phase may have been blind:\n" + string.Join("\n", report.WritePairBlindSpots));
+        AssertAtLeast(report.WritePairs, "g1.writePairs");
+        AssertAtLeast(report.WritePairEndpoints, "g1.writePairEndpoints");
         Assert.True(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
         AssertAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
     }
@@ -134,6 +141,9 @@ public static class IsolationAttack
         Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
         var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
         await activity.ReadAsync(victim, values, "tenant B reads before the attack");
+        // Tenant B keeps writing its own records during the attack (right before and after each
+        // write tenant A sends); only changes between tenant B's own writes count as the attack's.
+        activity.TrackChangesFrom(victim);
 
         var attackers = new List<Attacker>
         {
@@ -202,6 +212,16 @@ public static class IsolationAttack
         // read (and every header name the source names), and into every uuid field of every body.
         var switchInputs = await TenantSwitchPhaseAsync(Env, endpoints, openApi, attackers, state, own, ownRouteValues, b, activity, victim);
         Phase($"tenant switch inputs: {switchInputs.Headers.Count} headers, {switchInputs.Queries.Count} query names, {switchInputs.Cookies.Count} cookies, {switchInputs.BodyNames.Count} body names");
+
+        // Phase 1c: write after write. State a write leaves behind (a variable captured by the
+        // endpoint's lambda, a field of a singleton, a cache filled on save) reaches whoever writes
+        // next. For every endpoint that changes data, tenant B makes a valid write on its own
+        // records immediately before each valid write tenant A makes on its own records (cookie and
+        // bearer), and again right after; tenant A then reads everything, and so does tenant B
+        // after tenant A's next write. Both tenants' writes must succeed, so every handler runs to
+        // the end, and every answer (body and every header) is judged for the other tenant's markers.
+        var pairs = await WritePairsPhaseAsync(Env, endpoints, openApi, activity, victim, values);
+        Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.AttackerRequests} tenant A requests");
 
         // Exports, imports, jobs and files: every surface kind in use needs a probe, and every
         // probe runs with tenant B's identifiers and values.
@@ -420,8 +440,7 @@ public static class IsolationAttack
         Phase($"tenant B activity: {activity.Requests} requests ({activity.ConcurrentRequests} concurrent with the attack), " +
               $"{activity.SuccessfulWrites} successful own writes, {activity.ReverseChecks} responses judged for tenant A markers");
 
-        var after = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
-        var changed = TenantSnapshot.Differences(victim, after);
+        var changed = await activity.ChangedByOthersAsync();
 
         // The reviewed cross-tenant lookups ran only from their reviewed callers, and the trace saw
         // each of them run from that caller (a blind trace would pass anything).
@@ -460,8 +479,12 @@ public static class IsolationAttack
             attacker.Client.Dispose();
         }
         activity.Dispose();
-        return new IsolationReport([.. state.Leaks, .. activity.Leaks], state.ServerErrors, changed, uncovered, attacked.Count, state.Requests, probesRun)
+        return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors, changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
         {
+            WritePairs = pairs.Pairs,
+            WritePairEndpoints = pairs.Endpoints,
+            AttackerUnsuccessfulWrites = pairs.AttackerUnsuccessfulWrites,
+            WritePairBlindSpots = pairs.BlindSpots,
             Oracles = state.Oracles,
             BindViolations = TenantBindingRules.BindViolations(binds),
             WritableReads = TenantBindingRules.WritableReads(binds, SqlTrace.ReadOnlyFor(Env, traceSnapshot)),
@@ -491,6 +514,59 @@ public static class IsolationAttack
             ListRefusals = state.ListRefusals,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
+    }
+
+    public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
+        IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots);
+
+    /// <summary>
+    /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
+    /// tenant A writes (administrator cookie, then bearer token, each right after a tenant B
+    /// write), tenant B writes again, tenant A reads every GET, tenant A writes once more and tenant
+    /// B reads every GET. Tenant A's side is a <see cref="TenantActivity"/> of its own (valid bodies
+    /// on its own records) whose answers are judged for tenant B's markers.
+    /// </summary>
+    private static async Task<WritePairResult> WritePairsPhaseAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi,
+        TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values)
+    {
+        var a = env.TenantA;
+        var b = env.TenantB;
+        var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
+        var victimNow = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
+        var attacker = await TenantActivity.StartAsync(env, a, endpoints, openApi);
+        attacker.Watch(new MarkerSet(victimNow, values));
+        var pairs = 0;
+        var blind = new List<string>();
+        var writes = victimActivity.Writes;
+        try
+        {
+            foreach (var endpoint in writes)
+            {
+                foreach (var bearer in new[] { false, true })
+                {
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right before A's write");
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({(bearer ? "bearer" : "cookie")})", bearer);
+                    if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                    {
+                        pairs++;
+                    }
+                }
+                await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right after A's write");
+                await attacker.ReadRoundAsync(ownA, $"tenant A reads after B's {endpoint.Key}");
+                await attacker.WriteOneAsync(endpoint, ownA, "tenant A writes before B reads");
+                await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's {endpoint.Key}");
+            }
+        }
+        finally
+        {
+            attacker.Dispose();
+        }
+        blind.AddRange(attacker.BlindSpots);
+        if (writes.Count > 0 && pairs == 0)
+        {
+            blind.Add("no write pair succeeded on both sides");
+        }
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind);
     }
 
     /// <summary>Header names never used as a tenant switch probe: they carry the attacker's own
@@ -551,7 +627,7 @@ public static class IsolationAttack
                 {
                     var i = Interlocked.Increment(ref n);
                     var body = schema is { } s
-                        ? openApi.BuildBody(s, leaf ?? ((type, format, name) => OwnLeaf(type, format, name, own, i, signIn, env, b))) as JsonObject ?? []
+                        ? openApi.BuildBody(s, leaf ?? ((type, format, name) => OwnLeaf(type, format, name, own, i, signIn, env, b)), useDocumentedValues: true) as JsonObject ?? []
                         : [];
                     foreach (var (name, value) in extra ?? [])
                     {
@@ -623,7 +699,8 @@ public static class IsolationAttack
     }
 
     /// <summary>Leaf values from the attacker's own tenant, so a handler gets as far as it would
-    /// for a real request of tenant A (sign-in uses tenant A's administrator).</summary>
+    /// for a real request of tenant A (sign-in uses tenant A's administrator). Fields whose values
+    /// the document lists take the first listed value.</summary>
     private static JsonNode? OwnLeaf(string type, string? format, string? name, TenantSnapshot own, int n, bool signIn, ErpTestEnvironment env, Erp.Kernel.Seeding.SeedTenant b)
     {
         var lower = name?.ToLowerInvariant() ?? "";
@@ -1072,6 +1149,18 @@ public sealed record IsolationReport(
     /// <summary>List attacks (grouping, sorting, forged cursors, id filters) that were refused
     /// instead of answered.</summary>
     public IReadOnlyList<string> ListRefusals { get; init; } = [];
+
+    /// <summary>Write-after-write pairs (tenant B's valid write, then tenant A's) where both succeeded.</summary>
+    public int WritePairs { get; init; }
+
+    /// <summary>Endpoints that change data run through the write-after-write phase.</summary>
+    public int WritePairEndpoints { get; init; }
+
+    /// <summary>Tenant A's own valid writes in the write-after-write phase that did not succeed.</summary>
+    public IReadOnlyList<string> AttackerUnsuccessfulWrites { get; init; } = [];
+
+    /// <summary>Reasons the write-after-write phase may have been blind.</summary>
+    public IReadOnlyList<string> WritePairBlindSpots { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];

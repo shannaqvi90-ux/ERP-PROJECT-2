@@ -18,3 +18,13 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
 G1 is unchanged by this piece: no new endpoint or table. The one new column
 (`identity.users.numerals`) and the new body field (`numerals`) sit on an existing tenant table and
 endpoint, which the G1 HTTP attack already enumerates from the OpenAPI document.
+
+## Round 2
+
+The round 1 critic planted a cross-tenant leak in `PUT /me/preferences` (state captured by the
+endpoint's lambda, handed to the next writer) that every gate missed. G1 now runs write after
+write on every write endpoint, requires the attacker's own valid writes to succeed, and keeps the
+plants as self-tests: see `p04-shell-write-after-write.md`. A new shell gate requires every
+`language` and `numerals` request field to list exactly its supported values in OpenAPI. New
+end-to-end checks: phone width (no sideways scroll, English and Arabic), palette "show all
+matches", the palette opening a record's details, and printing through the print layout base.

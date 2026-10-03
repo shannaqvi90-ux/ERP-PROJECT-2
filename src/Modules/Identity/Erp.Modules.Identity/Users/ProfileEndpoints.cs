@@ -15,7 +15,9 @@ namespace Erp.Modules.Identity.Users;
 /// current value; at least one must be given.</summary>
 /// <param name="Language">Interface language: en or ar.</param>
 /// <param name="Numerals">Digits on Arabic screens: latn (0123) or arab (٠١٢٣).</param>
-public sealed record UpdatePreferencesRequest(string? Language, string? Numerals);
+public sealed record UpdatePreferencesRequest(
+    [property: AllowedTextValues(Languages.English, Languages.Arabic)] string? Language,
+    [property: AllowedTextValues(NumeralSystems.Latin, NumeralSystems.ArabicIndic)] string? Numerals);
 
 internal static class ProfileEndpoints
 {

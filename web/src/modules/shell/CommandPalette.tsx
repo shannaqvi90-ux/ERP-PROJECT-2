@@ -8,6 +8,8 @@ import { Keys } from "../../kernel/shortcuts";
 import { useSession } from "../../kernel/session";
 import { rank } from "./paletteSearch";
 
+type Translate = ReturnType<typeof useI18n>["t"];
+
 /** One line of the palette: a screen, an action or a record. */
 export type PaletteEntry = {
   id: string;
@@ -24,7 +26,10 @@ export type PaletteEntry = {
 
 type Section = { key: string; label: string; entries: PaletteEntry[]; status?: "searching" | "failed" };
 
-type SourceState = { status: "searching" | "done" | "failed"; items: PaletteItem[] };
+type SourceState = { status: "searching" | "done" | "failed"; items: PaletteItem[]; total?: number };
+
+/** Records shown per source; the "show all matches" entry leads to the rest. */
+const shownPerSource = 8;
 
 const debounceMs = 120;
 
@@ -67,8 +72,10 @@ export function CommandPalette({
       for (const source of asked) {
         source
           .search(trimmed, { language, signal: controller.signal })
-          .then((items) => {
-            if (!controller.signal.aborted) setRemote((r) => ({ ...r, [source.key]: { status: "done", items: items.slice(0, 8) } }));
+          .then((answer) => {
+            const { items, total } = Array.isArray(answer) ? { items: answer, total: undefined } : answer;
+            if (!controller.signal.aborted)
+              setRemote((r) => ({ ...r, [source.key]: { status: "done", items: items.slice(0, shownPerSource), total: total ?? (items.length > shownPerSource ? items.length : undefined) } }));
           })
           .catch(() => {
             if (!controller.signal.aborted) setRemote((r) => ({ ...r, [source.key]: { status: "failed", items: [] } }));
@@ -100,7 +107,7 @@ export function CommandPalette({
         key: `source:${source.key}`,
         label: t(source.labelKey),
         status: state.status === "done" ? undefined : state.status,
-        entries: state.items.map((item) => recordEntry(source, item)),
+        entries: [...state.items.map((item) => recordEntry(source, item)), ...showAllEntry(source, state, trimmed, t)],
       });
     }
     return list.filter((s) => s.entries.length > 0 || s.status);
@@ -241,6 +248,22 @@ export function CommandPalette({
       </div>
     </Dialog>
   );
+}
+
+/** "Show all matches" at the end of a source's records, when it matched more than it shows (or
+ * does not say how many) and names a screen that lists them all. */
+function showAllEntry(source: PaletteSource, state: SourceState, query: string, t: Translate): PaletteEntry[] {
+  if (!source.showAll || state.status !== "done" || state.items.length === 0) return [];
+  if (state.total !== undefined && state.total <= state.items.length) return [];
+  return [
+    {
+      id: `${source.key}:all`,
+      title: state.total === undefined ? t("shell.palette.showAll", { query }) : t("shell.palette.showAllCount", { count: state.total, query }),
+      keywords: [],
+      icon: "search",
+      path: source.showAll(query),
+    },
+  ];
 }
 
 function recordEntry(source: PaletteSource, item: PaletteItem): PaletteEntry {
