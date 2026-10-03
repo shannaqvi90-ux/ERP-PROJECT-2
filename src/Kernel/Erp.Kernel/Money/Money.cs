@@ -35,8 +35,10 @@ public readonly record struct CurrencyCode
 
 /// <summary>
 /// An amount of money as the ledger rule requires it: the amount in its currency, the exchange
-/// rate used, and the amount in the base currency. Decimal only — never floating point. Stored as
-/// <c>numeric(19,4)</c> amounts, <c>numeric(19,8)</c> rate and <c>char(3)</c> currency.
+/// rate used, and the amount in the base currency, together with which currency that base is
+/// (companies of one tenant may keep different base currencies). Decimal only — never floating
+/// point. Stored as <c>numeric(19,4)</c> amounts, <c>numeric(19,8)</c> rate and <c>char(3)</c>
+/// currencies.
 /// </summary>
 public readonly record struct Money
 {
@@ -45,12 +47,13 @@ public readonly record struct Money
     public const int RatePrecision = 19;
     public const int RateScale = 8;
 
-    private Money(decimal amount, string currency, decimal exchangeRate, decimal baseAmount)
+    private Money(decimal amount, string currency, decimal exchangeRate, decimal baseAmount, string baseCurrency)
     {
         Amount = amount;
         Currency = currency;
         ExchangeRate = exchangeRate;
         BaseAmount = baseAmount;
+        BaseCurrency = baseCurrency;
     }
 
     /// <summary>Amount in <see cref="Currency"/>.</summary>
@@ -64,6 +67,9 @@ public readonly record struct Money
 
     /// <summary>Amount in the company's base currency, rounded to the base currency's minor units.</summary>
     public decimal BaseAmount { get; init; }
+
+    /// <summary>ISO 4217 code of the base currency <see cref="BaseAmount"/> is in.</summary>
+    public string BaseCurrency { get; init; }
 
     /// <summary>Money in the base currency itself (rate 1).</summary>
     public static Money InBase(decimal amount, CurrencyCode currency) =>
@@ -88,20 +94,20 @@ public readonly record struct Money
         }
         var rate = decimal.Round(exchangeRate, RateScale, MidpointRounding.AwayFromZero);
         var baseAmount = decimal.Round(amount * rate, baseCurrency.MinorUnits, MidpointRounding.AwayFromZero);
-        return new Money(amount, currency.Code, rate, baseAmount);
+        return new Money(amount, currency.Code, rate, baseAmount, baseCurrency.Code);
     }
 
-    /// <summary>Sum of two amounts in the same currency and rate.</summary>
+    /// <summary>Sum of two amounts in the same currency and rate, against the same base currency.</summary>
     public Money Add(Money other)
     {
-        if (other.Currency != Currency || other.ExchangeRate != ExchangeRate)
+        if (other.Currency != Currency || other.ExchangeRate != ExchangeRate || other.BaseCurrency != BaseCurrency)
         {
-            throw new InvalidOperationException("Only amounts in the same currency at the same rate can be added.");
+            throw new InvalidOperationException("Only amounts in the same currency at the same rate, against the same base currency, can be added.");
         }
-        return new Money(Amount + other.Amount, Currency, ExchangeRate, BaseAmount + other.BaseAmount);
+        return new Money(Amount + other.Amount, Currency, ExchangeRate, BaseAmount + other.BaseAmount, BaseCurrency);
     }
 
-    public Money Negate() => new(-Amount, Currency, ExchangeRate, -BaseAmount);
+    public Money Negate() => new(-Amount, Currency, ExchangeRate, -BaseAmount, BaseCurrency);
 
     public override string ToString() => $"{Amount.ToString(CultureInfo.InvariantCulture)} {Currency}";
 }
