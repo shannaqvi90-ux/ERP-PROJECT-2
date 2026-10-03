@@ -26,7 +26,9 @@ Environment facts (this machine):
 - Docker: if \`docker info\` fails, start the daemon with \`(nohup dockerd >/tmp/dockerd.log 2>&1 &)\` and wait a few seconds.
 - .NET 10 SDK is at /opt/dotnet (on PATH as \`dotnet\`). builds.dotnet.microsoft.com is blocked; NuGet, npm, Docker Hub and mcr.microsoft.com work.
 - Chromium for Playwright is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers). Never run \`playwright install\`. If a pinned Playwright version cannot find its browser, launch with executablePath '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' (check the exact path with ls).
-- 4 CPUs, 15 GB RAM, ~30 GB disk shared with other agents. Odoo reference containers (compose project "odoo-reference", port 8069) and other agents' containers are not yours: never stop, remove or prune them. Clean up only your own compose project and images when you finish.
+- 4 CPUs, 15 GB RAM, ~17 GB free disk shared with up to three other agents working at the same time.
+- The shared Odoo reference rig (compose project "b-p01-odoo-rig" today, "odoo-reference" once renamed; port 8069; sign-ins and commands in tools/odoo-reference/README.md) is never yours to stop: never run down/down -v/rm on it, even if its project name looks like your own. Other agents' containers are not yours either. Never run docker system prune, docker volume prune, docker image prune -a or docker builder prune -a. Clean up only your own compose project and the images it built (docker compose -p <yours> down -v --rmi local) when you finish.
+- The integration working tree ${REPO} is shared by integrators, recorders and integrity checkers from more than one workflow. Before any write there (merge, commit, push, file copy), take the integration lock: \`until mkdir /home/user/.integration.lock 2>/dev/null; do if [ -n "$(find /home/user/.integration.lock -maxdepth 0 -mmin +120)" ]; then rm -rf /home/user/.integration.lock; fi; sleep 15; done; echo "<your role and piece> $(date -u +%FT%TZ)" > /home/user/.integration.lock/owner\`. Release it with \`rm -rf /home/user/.integration.lock\` as soon as your writes are pushed, including when you fail or give up. Builders and critics never write in ${REPO} and never take the lock.
 - Commit trailer to end every commit message with:
 ${TRAILER}`
 
@@ -101,6 +103,7 @@ function builderPrompt(p, round, last) {
     feedback = `The previous critic (a fresh, independent agent) judged commit ${last.commit} and returned this verdict. Close its single biggest gap first, then as many of its other findings as you can. Do not argue with it; make the product undeniably better.\n\n${JSON.stringify(last, null, 2)}`
   }
   if (p.resumeNote && round === p.startRound) feedback = `${p.resumeNote}\n\n${feedback}`
+  if (p.leadNote) feedback = `${feedback}\n\nNOTE FROM THE LEAD (routing and scope, applies to every round of this run):\n${p.leadNote}`
   return `You are the BUILDER for piece ${p.id}, round ${round}, wave ${WAVE}, of a multi-tenant ERP platform core.
 
 Read first, in this order: ${REPO}/CLAUDE.md (rules that never bend and human gates), ${REPO}/gauntlet/goal.md (the owner's goal and bar), ${REPO}/gauntlet/plan.md (pieces, gates, round protocol, ports), ${REPO}/gauntlet/pieces/${p.id}.md (your piece). Then read the existing code on the integration branch to fit into it.
@@ -123,7 +126,7 @@ Odoo is a reference only (CLAUDE.md rule 7): never copy its code, views or text.
 
 If your piece reaches a human gate in CLAUDE.md (tax/payroll/statutory rule, golden scenario results, paid service, real credential, deployment, action outside this repository, any change to CLAUDE.md or bar/), do not do that part: list it in human_gates and carry on with the rest. Do not edit gauntlet/ledger.md, gauntlet/progress.html, gauntlet/verdicts/ or gauntlet/needs-human.md; the lead's recorder owns them.
 
-Before you finish, stop and remove your own containers (compose project b-${p.id}) so the machine has room for critics.
+Before you finish, stop and remove your own containers (compose project b-${p.id}) so the machine has room for critics. The shared Odoo rig is the one exception: never stop or remove it.
 
 ${feedback}
 ${ENV_NOTES}
@@ -137,6 +140,7 @@ function integratorPrompt(p, round, build) {
 Read ${REPO}/CLAUDE.md and ${REPO}/gauntlet/plan.md first.
 
 Steps:
+0. Take the integration lock (see environment notes) and hold it until step 5 is done or you give up; then release it.
 1. In ${REPO}: confirm you are on ${BRANCH} with a clean tree for tracked files (\`git status\`). Record the current HEAD as the rollback point.
 2. \`git merge --no-ff --no-edit piece/${p.id}\`. Resolve conflicts so both sides keep their behaviour; never resolve by dropping a test, a gate or a ratchet minimum (CLAUDE.md rule 9: the bar only moves up).
 3. Build and run the whole suite with the one command (\`./erp verify\` if it exists; otherwise the closest full build and test). Use compose project name \`integ\` and ports 19000-19099 for anything you run. If a failure comes from the interaction between pieces, fix it minimally and commit the fix. If the piece itself is broken and you cannot fix it in a small, obvious change, reset ${BRANCH} to the rollback point (\`git reset --hard <rollback>\` is allowed only for your own unpushed merge) and report the problem precisely so the builder can fix it.
@@ -165,10 +169,10 @@ Set up your own copy:
 - Evidence goes to ${staging}/ (create it). Screenshots: at most 12, JPEG or compressed PNG, named without product names. The recorder will copy the folder to ${REPO}/${evdir}/, so report screenshot paths as ${evdir}/<file>.
 
 Judge the real thing:
-1. Hard gates. Run the gate suites and read their output. Then test the gates themselves: in your clone only, plant at least one deliberate tenant leak (for example disable row-level security on a table, or add an endpoint that ignores the tenant) and one action with no permission check, and confirm the gate suite catches each; a gate that misses a planted fault fails. Attack tenant isolation yourself as tenant A against tenant B through the API, the database role the app uses, exports, jobs and file paths that exist so far. Any leak means verdict BLOCKED.
+1. Hard gates. Run the gate suites and read their output. Attack tenant isolation yourself as tenant A against tenant B through the API, the database role the app uses, exports, jobs and file paths that exist so far. Any real leak anywhere in the product means verdict BLOCKED, whichever piece caused it. Then test the gates themselves on THIS piece's surface: in your clone only, plant at least one deliberate tenant leak and one action with no permission check in code this piece added or owns (its endpoints, tables, jobs, files, screens; for p00-foundation the shared gate machinery and kernel; for p01-odoo-rig plant faults in the measuring instrument instead, for example an uncounted action, a wrong timer or a blindness leak, and check its own tests catch them). A gate that misses a fault planted in this piece's surface fails this round. If you find a gate weakness that lies outside this piece's surface, do not fail this piece for it: report it in other_findings starting with "[route: <owning piece id>]" so the lead sends it to the owner.
 2. Tests: total, passed, failed, skipped, duration. Any failing test means BLOCKED.
 3. The piece's scope from gauntlet/pieces/${p.id}.md: use it in a real browser (Playwright with Chromium) as a user would, in English and in Arabic, by keyboard; inspect the database. Missing or broken scope is a gap.
-4. Odoo side by side. If the Odoo reference rig is up (\`curl -s localhost:8069/web/login\`) and gauntlet/compare/ exists in your clone, perform the piece's comparison tasks in both products with the harness (shortest expert path in each), branding hidden, and record steps, keystrokes, machine seconds, modelled human seconds and screenshots. A tie is a loss. If you have to write or fix the "ours" driver for a task, do it in your clone and keep it in the evidence folder. If the rig is not up yet, mark tasks not-compared with the reason.
+4. Odoo side by side. Sign-ins and commands are in tools/odoo-reference/README.md and gauntlet/compare/README.md (\`node run.mjs --task <id> --product both --out <your staging>/compare\`). If the Odoo reference rig is up (\`curl -s localhost:8069/web/login\`) and gauntlet/compare/ exists in your clone, perform the piece's comparison tasks in both products with the harness (shortest expert path in each), branding hidden, and record steps, keystrokes, machine seconds, modelled human seconds and screenshots. A tie is a loss. If you have to write or fix the "ours" driver for a task, do it in your clone and keep it in the evidence folder. If the rig is not up yet, mark tasks not-compared with the reason.
 5. CLAUDE.md rules: tenant isolation, decimal money with currency, rate and base amount, audit of every business record, English and Arabic right-to-left, licences, no copying from Odoo.
 
 Verdict: BLOCKED if any hard gate fails, any test fails, or the product does not build or run from the clean clone; LOSS if gates hold but the piece misses scope or loses or ties Odoo on any task; WIN only if gates hold, the scope is complete and it beats Odoo on every task compared. Whatever the verdict, name the single biggest gap (the one thing that most holds this piece back from beating Odoo for a UAE trading or manufacturing company), with evidence a builder can reproduce. List other findings briefly. List any human gate from CLAUDE.md the piece has reached.
@@ -182,6 +186,7 @@ Return the verdict object. judged_at comes from \`date -u +%Y-%m-%dT%H:%M:%SZ\`.
 function recorderPrompt(v, humanGates) {
   return `You are the RECORDER. Record one critic verdict in ${REPO} on branch ${BRANCH}. Do nothing else.
 
+0. Take the integration lock (see environment notes); release it after the push, or if you give up.
 1. Copy the evidence folder ${v.evidence_staging}/ to ${REPO}/${v.evidence_dir}/ (create it; skip if the staging folder is missing). Keep files under 1 MB each; if a PNG is larger, convert it to JPEG at quality 75 and fix its name in the verdict's screenshots list.
 2. Write the verdict JSON below to /tmp/verdict-${v.piece}-r${v.round}.json exactly (after any screenshot renames) and run \`node ${REPO}/gauntlet/tools/record.mjs /tmp/verdict-${v.piece}-r${v.round}.json\`. If it reports a validation error, fix only the formatting (never the content) and rerun.
 3. Human gates to add to ${REPO}/gauntlet/needs-human.md as new table rows (skip any already listed, number them after the last row, Raised = today's date, Status = Open): ${JSON.stringify(humanGates)}
@@ -231,6 +236,8 @@ if (args.integrity) {
   integrity = await serial(() => agent(`You are the INTEGRITY CHECKER for wave ${WAVE}, a fresh agent. In ${REPO} on branch ${BRANCH}, check that the whole ERP platform core still hangs together after this wave, and fix inconsistencies between pieces.
 
 Read ${REPO}/CLAUDE.md, ${REPO}/gauntlet/goal.md, ${REPO}/gauntlet/plan.md and the piece specs in ${REPO}/gauntlet/pieces/.
+
+Run your checks in a fresh clone. Take the integration lock (see environment notes) only for your writes to ${REPO}, and release it after each push.
 
 Check, and fix what is inconsistent:
 - \`./erp verify\` from a fresh clone of ${BRANCH} passes (compose project \`integrity\`, ports 19100-19199); \`./erp up\` gives a running seeded demo.
