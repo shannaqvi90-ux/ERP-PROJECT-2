@@ -23,13 +23,20 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function SignInPage() {
   const { t, language } = useI18n();
   const { signIn } = useSession();
-  const remembered = rememberedEmail();
+  // A set-up link may carry the e-mail (never the code); otherwise this device's last one.
+  const remembered = new URLSearchParams(window.location.search).get("email") ?? rememberedEmail();
   const [email, setEmail] = useState(remembered);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
+  // A one-time set-up code (or a temporary password) was accepted: choose your own password.
+  const [changing, setChanging] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [repeat, setRepeat] = useState("");
+  const [newErrors, setNewErrors] = useState<{ newPassword?: string; repeat?: string }>({});
+  const newPasswordRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const workspaceRef = useRef<HTMLButtonElement>(null);
@@ -44,6 +51,10 @@ export function SignInPage() {
     if (workspaces) workspaceRef.current?.focus();
   }, [workspaces]);
 
+  useEffect(() => {
+    if (changing) newPasswordRef.current?.focus();
+  }, [changing]);
+
   async function submit(workspace?: string) {
     const errors: { email?: string; password?: string } = {};
     if (!email.trim()) errors.email = t("shell.signIn.emailRequired");
@@ -54,16 +65,36 @@ export function SignInPage() {
       (errors.email ? emailRef : passwordRef).current?.focus();
       return;
     }
+    if (changing) {
+      const next: { newPassword?: string; repeat?: string } = {};
+      if (newPassword.length < 10) next.newPassword = t("shell.signIn.newPasswordShort");
+      else if (newPassword !== repeat) next.repeat = t("shell.signIn.passwordsDiffer");
+      setNewErrors(next);
+      if (next.newPassword || next.repeat) {
+        newPasswordRef.current?.focus();
+        return;
+      }
+    }
     setBusy(true);
     setError(null);
     try {
-      const result = await signIn(email.trim(), password, workspace);
+      const result = await signIn(email.trim(), password, workspace, changing ? newPassword : undefined);
       if (result.kind === "ok") {
         try {
           localStorage.setItem(lastEmailKey, email.trim());
         } catch {
           // Not remembered on this device.
         }
+        return;
+      }
+      if (result.kind === "changePassword") {
+        setChanging(true);
+        setError(result.message);
+        return;
+      }
+      if (result.kind === "invalid" && result.fieldErrors.newPassword?.[0]) {
+        setNewErrors({ newPassword: result.fieldErrors.newPassword[0].message });
+        newPasswordRef.current?.focus();
         return;
       }
       if (result.kind === "chooseWorkspace") {
@@ -135,8 +166,40 @@ export function SignInPage() {
               </span>
             )}
           </label>
+          {!changing && <p className="muted signin-hint">{t("shell.signIn.setupHint")}</p>}
+          {changing && (
+            <>
+              <label className="field">
+                <span className="field-label">{t("shell.signIn.newPassword")}</span>
+                <input
+                  ref={newPasswordRef}
+                  name="newPassword"
+                  type="password"
+                  dir="ltr"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  aria-invalid={newErrors.newPassword ? true : undefined}
+                />
+                {newErrors.newPassword && <span className="field-error">{newErrors.newPassword}</span>}
+              </label>
+              <label className="field">
+                <span className="field-label">{t("shell.signIn.repeatPassword")}</span>
+                <input
+                  name="repeatPassword"
+                  type="password"
+                  dir="ltr"
+                  autoComplete="new-password"
+                  value={repeat}
+                  onChange={(e) => setRepeat(e.target.value)}
+                  aria-invalid={newErrors.repeat ? true : undefined}
+                />
+                {newErrors.repeat && <span className="field-error">{newErrors.repeat}</span>}
+              </label>
+            </>
+          )}
           {error && (
-            <div id="signin-error" className="alert" role="alert">
+            <div id="signin-error" className={changing ? "notice" : "alert"} role={changing ? "status" : "alert"}>
               {error}
             </div>
           )}
