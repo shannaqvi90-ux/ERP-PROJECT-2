@@ -89,6 +89,10 @@ enumeration by `LeakyModule`; a rebind the attack does trigger (T1c's shape, `le
 `leaky.silent`, which shows no tenant B data at all) is reported as "SQL ran under tenant B but the
 signed-in principal's tenant is A".
 
+Re-checked after the round was resumed (commit `ace941a`, T1d rebuilt on the current kernel in a
+scratch worktree): `G1TenantSettingCodeTests` and `G1TenantSourceTests` fail with exactly those
+two messages; the real kernel passes both.
+
 With the real product, the HTTP attack judged about 240,000 tenant values among about 2.3 million
 statements observed with their parameters, and found none set to another tenant.
 

@@ -12,7 +12,8 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
     are errors), every .NET test (unit, Testcontainers integration, gates), brings up a fresh
     stack exactly like `up` and runs Playwright against it, runs the timing budgets alone, then
     checks `gauntlet/ratchet.json` (counts reached, nothing failed or skipped, no minimum lowered
-    since the committed version, wall time on a quiet machine under its maximum). Independent
+    since the committed version, wall time on a quiet machine and processor time on any machine
+    under their maximums). Independent
     stages run side by side (round 5, `p00-foundation-verify-speed.md`).
   - `./erp verify --clean-clone` (G3) clones HEAD to a temp dir and runs `verify` and `up` there.
 - Builds and tests run inside a toolbox image (`build/toolbox.Dockerfile`: the Playwright image
