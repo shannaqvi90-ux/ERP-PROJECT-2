@@ -67,3 +67,18 @@ printed column says what the screen says.
 - Rendering PDFs in a headless browser (print the screen). Needs Chromium in the deployable
   (hundreds of MB, a process per print) and leaves page breaks, repeated headers and page
   numbers to CSS support; see the PDF decision.
+
+## Comparison with Odoo (2026-10-04, builder's own run, not a verdict)
+
+`node run.mjs --task edit-and-save,arabic-report --product both` against the odoo-reference rig:
+
+| Task | Ours (steps / keys / machine s / human s) | Odoo | Harness verdict |
+|---|---|---|---|
+| edit-and-save | 3 / 17 / 0.21 / 9.72 | 4 / 19 / 0.43 / 10.28 | win |
+| arabic-report | 2 / 0 / 0.16 / 5.30 | 6 / 0 / 5.37 / 15.90 | loss: keystrokes tie at 0 |
+
+Both products print the Arabic document with the mouse alone, so keystrokes are 0 on both sides
+and can go no lower; ours wins every other measure. A keyboard path exists (Alt+R, then the menu
+item with the arrow keys and Enter) but adds keys rather than removing them. Whether a 0-0 tie
+counts as a loss is the bar's rule, not this piece's to change (switch-company, p02, has the same
+shape).
