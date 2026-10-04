@@ -23,6 +23,9 @@ public static partial class SqlSettings
 
     public static IReadOnlyList<Change> Parse(string text, IReadOnlyDictionary<string, string?> parameters)
     {
+        // Comments go, and quoted identifiers are read as the names they quote ("set_config",
+        // "app"."tenant_id"), so neither hides a setting change from the rules below.
+        text = Normalize(text);
         var changes = new List<Change>();
         foreach (Match call in SetConfigCall().Matches(text))
         {
@@ -40,14 +43,82 @@ public static partial class SqlSettings
             bool? isLocal = localComputed ? null : local is { } l && (l.Equals("true", StringComparison.OrdinalIgnoreCase) || l == "t" || l == "on" || l == "1");
             changes.Add(new Change(nameComputed ? null : name, valueComputed ? null : value, valueComputed, isLocal, source));
         }
+        var read = new HashSet<int>();
         foreach (Match set in SetStatement().Matches(text))
         {
+            read.Add(set.Index);
             var scope = set.Groups["scope"].Value;
             var (value, computed) = Evaluate(set.Groups["value"].Value, parameters);
             changes.Add(new Change(set.Groups["name"].Value, computed ? null : value, computed,
                 scope.Equals("LOCAL", StringComparison.OrdinalIgnoreCase), set.Value.Trim().TrimStart(';').Trim()));
         }
+        // Every other SET or RESET of a dotted (custom) setting: RESET clears it for the whole
+        // connection; a SET the reader above could not take apart is refused, not trusted.
+        // Built-in settings without a dot (SET TRANSACTION READ ONLY, SET LOCAL ROLE) are the
+        // settings rule's business (which code and which database user), not this one's.
+        foreach (Match other in SetOrReset().Matches(text))
+        {
+            if (read.Contains(other.Index) || !other.Groups["name"].Value.Contains('.', StringComparison.Ordinal))
+            {
+                continue;
+            }
+            var source = other.Value.Trim().TrimStart(';').Trim();
+            changes.Add(other.Groups["verb"].Value.Equals("RESET", StringComparison.OrdinalIgnoreCase)
+                ? new Change(other.Groups["name"].Value.Replace(" ", "", StringComparison.Ordinal), "", false, false, source)
+                : new Change(null, null, true, null, source));
+        }
         return changes;
+    }
+
+    /// <summary>The SQL text without comments, with each double-quoted identifier written as the
+    /// name it quotes (lower case is kept as written; PostgreSQL compares quoted names exactly,
+    /// and a setting name with upper case letters is a different setting, which the rules then
+    /// do not treat as the tenant). String literals are kept as they are.</summary>
+    public static string Normalize(string text)
+    {
+        var result = new StringBuilder(text.Length);
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (c == '\'')
+            {
+                var close = i + 1;
+                while (close < text.Length && !(text[close] == '\'' && (close + 1 >= text.Length || text[close + 1] != '\'')))
+                {
+                    close += text[close] == '\'' ? 2 : 1;
+                }
+                result.Append(text, i, Math.Min(close, text.Length - 1) - i + 1);
+                i = close;
+            }
+            else if (c == '"')
+            {
+                var close = text.IndexOf('"', i + 1);
+                if (close < 0)
+                {
+                    result.Append(text, i, text.Length - i);
+                    break;
+                }
+                result.Append(text, i + 1, close - i - 1);
+                i = close;
+            }
+            else if (c == '-' && i + 1 < text.Length && text[i + 1] == '-')
+            {
+                var newline = text.IndexOf('\n', i);
+                result.Append(' ');
+                i = newline < 0 ? text.Length : newline - 1;
+            }
+            else if (c == '/' && i + 1 < text.Length && text[i + 1] == '*')
+            {
+                var close = text.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                result.Append(' ');
+                i = close < 0 ? text.Length : close + 1;
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
+        return result.ToString();
     }
 
     /// <summary>The top-level, comma-separated arguments of the call whose '(' is at <paramref name="open"/>.</summary>
@@ -148,6 +219,10 @@ public static partial class SqlSettings
 
     [GeneratedRegex(@"\bset_config\s*\(", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SetConfigCall();
+
+    [GeneratedRegex(@"(?:^|;)\s*(?<verb>SET|RESET)\s+(?:(?:LOCAL|SESSION)\s+)?(?<name>[a-z_][a-z0-9_$]*(?:\s*\.\s*[a-z0-9_$]+)*)",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex SetOrReset();
 
     [GeneratedRegex(@"(?:^|;)\s*SET\s+(?:(?<scope>LOCAL|SESSION)\s+)?(?<name>[a-z_][a-z0-9_]*\.[a-z0-9_.]+)\s*(?:=|\bTO\b)\s*(?<value>'(?:[^']|'')*'|[^;\s]+)",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

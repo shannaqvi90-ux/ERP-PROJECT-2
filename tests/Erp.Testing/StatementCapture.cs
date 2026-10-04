@@ -29,10 +29,12 @@ public static class StatementCapture
     /// statement that changes a session setting was sent; null for every other statement.</param>
     public sealed record Captured(IReadOnlyList<Command> Commands, int ProcessId, string? Caller = null);
 
-    /// <summary>A statement that changes a session or transaction setting.</summary>
+    /// <summary>A statement that changes a session or transaction setting: a call of
+    /// <c>set_config</c> (also as a quoted identifier) or a statement starting with SET, RESET or
+    /// DISCARD (also after comments).</summary>
     private static readonly Regex SettingStatement = new(
-        @"\bset_config\s*\(|(^|;)\s*(set|reset|discard)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        @"\bset_config""?\s*\(|(^|;)\s*(?:(?:/\*.*?\*/|--[^\n]*(?:\n|$))\s*)*(set|reset|discard)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline | RegexOptions.Compiled);
 
     /// <summary>True when the statement changes a session or transaction setting
     /// (<c>set_config</c>, <c>SET</c>, <c>RESET</c>, <c>DISCARD</c>).</summary>

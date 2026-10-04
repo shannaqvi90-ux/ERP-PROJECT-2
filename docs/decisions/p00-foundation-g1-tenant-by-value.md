@@ -38,6 +38,11 @@ Four additions, each catching a different part of that plant:
      binding in the same request (`TracedBind`);
    - no `app.*` setting may be set for the whole connection;
    - a setting whose name, or a tenant whose value, the statement computes is refused, not trusted.
+   Comments are stripped and double-quoted identifiers read as the names they quote before
+   parsing (`pg_catalog."set_config"(…)`, `SET LOCAL "app"."tenant_id" = …`, `/* … */ SET …`), and
+   any other `SET` of a dotted setting the parser cannot take apart (`SET LOCAL app . tenant_id`) is
+   refused, while `RESET app.…` counts as a whole-connection change; the statement capture's own
+   detector (which decides whose parameters are kept) knows the same shapes.
    A statement can run under a tenant only if a statement of its transaction set it (row-level
    security ignores a tenant left by an earlier transaction or set for the connection: the
    `app.tenant_tx` stamp), so judging every setting statement judges the tenant every statement

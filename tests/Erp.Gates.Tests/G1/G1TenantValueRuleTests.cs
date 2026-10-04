@@ -1,3 +1,4 @@
+using Erp.Testing;
 using Erp.Gates.Tests.Infrastructure;
 
 namespace Erp.Gates.Tests.G1;
@@ -60,6 +61,36 @@ public sealed class G1TenantValueRuleTests
         Assert.Equal(false, sessionWide.Single().Local);
         // Text that changes nothing.
         Assert.Empty(SqlSettings.Parse("SELECT current_setting('app.tenant_id', true)", Params()));
+        Assert.Empty(SqlSettings.Parse("SET TRANSACTION READ ONLY", Params()));
+        Assert.Empty(SqlSettings.Parse("SELECT 1 /* ; SET app.tenant_id = 'x' */ -- ; SET app.tenant_id = 'y'", Params()));
+
+        // Quoted identifiers and comments hide nothing (critic p00 round 4: the gate must see every
+        // tenant a statement sets, however it is written).
+        var quotedCall = SqlSettings.Parse("SELECT pg_catalog.\"set_config\"('app.tenant_id', @t, true)", Params(("t", B)));
+        Assert.Equal(("app.tenant_id", B), (quotedCall.Single().Name, quotedCall.Single().Value));
+        var quotedName = SqlSettings.Parse($"SET LOCAL \"app\".\"tenant_id\" = '{B}'", Params());
+        Assert.Equal(("app.tenant_id", B, (bool?)true), (quotedName.Single().Name, quotedName.Single().Value, quotedName.Single().Local));
+        var commented = SqlSettings.Parse($"/* support */ SET LOCAL app.tenant_id TO '{B}'; -- done\nSELECT 1", Params());
+        Assert.Equal(B, commented.Single().Value);
+        var commentedCall = SqlSettings.Parse("SELECT set_config(/* tenant */ 'app.tenant_id', @t, true)", Params(("t", B)));
+        Assert.Equal(B, commentedCall.Single().Value);
+        // A SET of a custom setting the reader cannot take apart is refused (no name); a RESET
+        // clears it for the whole connection.
+        var spaced = SqlSettings.Parse("SET LOCAL app . tenant_id = @t", Params(("t", B)));
+        Assert.Null(spaced.Single().Name);
+        var reset = SqlSettings.Parse("RESET app.tenant_id", Params());
+        Assert.Equal(("app.tenant_id", "", (bool?)false), (reset.Single().Name, reset.Single().Value, reset.Single().Local));
+
+        // The capture keeps the parameters of every such statement (it decides what the trace parses).
+        foreach (var sql in new[]
+                 {
+                     "SELECT \"set_config\"(@n, @v, true)", "/* x */ SET LOCAL app.tenant_id = @t", "-- x\nSET app.tenant_id = @t",
+                     "SELECT 1; RESET app.tenant_id", "DISCARD ALL",
+                 })
+        {
+            Assert.True(StatementCapture.ChangesSettings(sql), sql);
+        }
+        Assert.False(StatementCapture.ChangesSettings("SELECT setting FROM pg_settings"));
     }
 
     private static TracedSettingChange Change(string sql, IReadOnlyDictionary<string, string?> parameters, string? requiredTenant, string request = "r1") =>
