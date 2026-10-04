@@ -128,6 +128,20 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Equal("active", byStatus.GetProperty("groupBy").GetString());
         Assert.Contains(byStatus.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("text").GetString() == "Yes");
 
+        // A chosen emirate prints when the directory found branches there, and an emirate with no
+        // branch leaves an empty document with no criteria (the same for every value).
+        var emirates = document.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+            .Select(r => r.GetProperty("cells")[document.GetProperty("columns").EnumerateArray().ToList().FindIndex(c => c.GetProperty("key").GetString() == "emirate")].GetProperty("value").GetString())
+            .ToHashSet();
+        var held = emirates.First()!;
+        var inHeld = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?emirate={held}");
+        Assert.True(inHeld.GetProperty("rowCount").GetInt32() > 0);
+        Assert.Contains(inHeld.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Emirate");
+        var unheld = new[] { "abuDhabi", "dubai", "sharjah", "ajman", "ummAlQuwain", "rasAlKhaimah", "fujairah" }.First(e => !emirates.Contains(e));
+        var inUnheld = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?emirate={unheld}&groupBy=");
+        Assert.Equal(0, inUnheld.GetProperty("rowCount").GetInt32());
+        Assert.Empty(inUnheld.GetProperty("parameters").EnumerateArray());
+
         var flat = await admin.GetFromJsonAsync<JsonElement>("/api/reports/run/tenancy.branchDirectory?groupBy=");
         Assert.Equal(JsonValueKind.Null, flat.GetProperty("groupBy").ValueKind);
         Assert.Single(flat.GetProperty("groups").EnumerateArray());

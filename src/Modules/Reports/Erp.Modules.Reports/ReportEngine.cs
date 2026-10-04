@@ -51,9 +51,11 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                     parameter.Choices?.FirstOrDefault(c => c.Value == s) is { } choice ? strings.Get(choice.LabelKey, f.Language) : s,
                 _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "",
             };
-            // Typed text is printed only when the report found something for it: an empty
-            // document never repeats text it cannot relate to the caller's own records.
-            if (parameter.Type == ReportParameterType.Text && data.Rows.Count == 0 && data.Facts.Count == 0)
+            // Typed text and a chosen value are printed only when the report found something for
+            // them: an empty document never repeats a criterion it cannot relate to the caller's
+            // own records, so it reads the same for a value another workspace holds as for one
+            // nobody holds.
+            if (parameter.Type is ReportParameterType.Text or ReportParameterType.Choice && data.Rows.Count == 0 && data.Facts.Count == 0)
             {
                 continue;
             }

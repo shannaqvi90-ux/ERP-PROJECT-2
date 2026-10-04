@@ -30,3 +30,13 @@ became stricter before the reports module was written:
 
 Ratchet minimums: `rules.fontFilesChecked` 6, `rules.reportsChecked` 3,
 `rules.printableListsChecked` 5, `rules.reportRenders` 64.
+
+## Differential control for enumerated parameters (2026-10-04)
+
+The G1 HTTP attack compares each tenant B value's answer with a value that exists nowhere. For a
+parameter whose values the API document enumerates (a report's choice parameter such as
+`emirate`), a random value is refused by validation (400) while tenant B's value is valid (200), so
+the old pair always differed and said nothing about existence. The control for such a parameter is
+now another enumerated value that no tenant holds in any text column (read with the superuser);
+the random control is kept for every other parameter and when no unheld member exists. Every
+value is still sent and every answer still judged for tenant B's markers.

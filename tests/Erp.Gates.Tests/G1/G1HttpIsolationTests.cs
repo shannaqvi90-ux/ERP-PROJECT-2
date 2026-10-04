@@ -162,7 +162,10 @@ public static class IsolationAttack
             await attacker.ConnectAsync();
         }
 
-        var state = new AttackState(victim, values);
+        var state = new AttackState(victim, values)
+        {
+            UnheldPublished = await UnheldPublishedValuesAsync(Env, endpoints.SelectMany(e => openApi.Parameters(e.Method, e.Pattern))),
+        };
         var phases = new List<string>();
         var clock = System.Diagnostics.Stopwatch.StartNew();
         void Phase(string name)
@@ -766,6 +769,34 @@ public static class IsolationAttack
         };
     }
 
+    /// <summary>Every value the API document enumerates for a parameter that no tenant holds in
+    /// any text column of any tenant table (read with the superuser).</summary>
+    private static async Task<IReadOnlySet<string>> UnheldPublishedValuesAsync(ErpTestEnvironment env, IEnumerable<ApiParameter> parameters)
+    {
+        var published = parameters.SelectMany(p => p.Enum ?? []).Distinct(StringComparer.Ordinal).ToArray();
+        var unheld = new HashSet<string>(published, StringComparer.Ordinal);
+        if (published.Length == 0)
+        {
+            return unheld;
+        }
+        await using var admin = await env.OpenAdminAsync();
+        foreach (var table in await DbCatalog.TenantTablesAsync(admin))
+        {
+            foreach (var column in await DbCatalog.ColumnsAsync(admin, table))
+            {
+                if (column.Name == "tenant_id" || column.Type.EndsWith("[]", StringComparison.Ordinal) ||
+                    !(column.Type.StartsWith("text", StringComparison.Ordinal) || column.Type.StartsWith("character varying", StringComparison.Ordinal) || column.Type == "citext"))
+                {
+                    continue;
+                }
+                var held = await DbCatalog.ReadAsync(admin, $"SELECT DISTINCT \"{column.Name}\"::text FROM {table.Qualified} WHERE \"{column.Name}\"::text = ANY(@values)",
+                    r => r.GetString(0), ("values", published));
+                unheld.ExceptWith(held);
+            }
+        }
+        return unheld;
+    }
+
     /// <summary>Values to send in one parameter: ids for uuid parameters, every value for text,
     /// nothing for numbers and flags (binding rejects text there before any handler runs).</summary>
     private static IEnumerable<string> ValuesFor(ApiParameter parameter, VictimValues values) => parameter switch
@@ -967,7 +998,7 @@ public static class IsolationAttack
             {
                 return;
             }
-            var control = ControlFor(value);
+            var control = ControlFor(value, parameter);
             var (controlStatus, controlText, controlHeaders) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
@@ -998,6 +1029,23 @@ public static class IsolationAttack
 
         /// <summary>A value of the same shape that exists in no tenant: every letter and digit
         /// replaced at random, punctuation kept (so "a.b@c.example" stays file-like and e-mail-like).</summary>
+        /// <summary>Published values (a parameter's enumeration) that no tenant holds in any text column.</summary>
+        public IReadOnlySet<string> UnheldPublished { get; init; } = new HashSet<string>();
+
+        /// <summary>The value that exists nowhere to compare with. For a parameter whose values the
+        /// document enumerates, any other text is refused by validation, so a random value would
+        /// tell nothing; the control is another published value that no tenant holds (the
+        /// enumeration's own "exists nowhere"). Without one, a random value as for any parameter.</summary>
+        private string ControlFor(string value, ApiParameter parameter)
+        {
+            if (parameter.Enum is { } members && members.Contains(value, StringComparer.Ordinal) &&
+                members.FirstOrDefault(m => m != value && UnheldPublished.Contains(m)) is { } other)
+            {
+                return other;
+            }
+            return ControlFor(value);
+        }
+
         private static string ControlFor(string value)
         {
             if (Guid.TryParse(value, out _))
