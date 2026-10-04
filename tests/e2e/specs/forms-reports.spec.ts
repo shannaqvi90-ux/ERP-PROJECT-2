@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { checkAccessibility } from "./a11y";
 import { freshStart, signIn, users } from "./demo";
 
 /** The rows of the shared list grid (not the tables inside the open record's form). */
@@ -61,6 +62,7 @@ test.describe("record forms and printed documents", () => {
     await page.keyboard.press("ArrowDown");
     const arabic = page.getByRole("menuitem", { name: "PDF in Arabic" });
     await expect(arabic).toBeFocused();
+    expect(await checkAccessibility(page, "company form with its print menu")).toBeGreaterThan(10);
     const href = (await arabic.getAttribute("href"))!;
     expect(href).toMatch(/^\/api\/reports\/run\/tenancy\.companyProfile\?company=[0-9a-f-]{36}&format=pdf&language=ar&/);
     const download = page.waitForEvent("download");
@@ -87,6 +89,7 @@ test.describe("record forms and printed documents", () => {
     await expect(doc).toHaveAttribute("dir", "rtl");
     await expect(doc.locator(".report-group").first()).toBeVisible();
     await expect(doc.locator(".report-table thead")).toContainText(/[؀-ۿ]/);
+    expect(await checkAccessibility(page, "reports screen with an Arabic document")).toBeGreaterThan(10);
 
     const excel = await page.getByRole("link", { name: "Excel" }).getAttribute("href");
     const workbook = await page.request.get(excel!);
