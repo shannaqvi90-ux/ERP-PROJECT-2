@@ -63,24 +63,7 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
         {
             logger.LogError(exception, "Request {TraceId} tried to bind another tenant", context.TraceIdentifier);
         }
-        var (status, code) = exception switch
-        {
-            // Code serving a signed-in user tried to switch tenant: answer as if nothing was there.
-            CrossTenantBindException => (StatusCodes.Status404NotFound, "notFound"),
-            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "concurrency"),
-            DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } } => (StatusCodes.Status409Conflict, "duplicate"),
-            PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } => (StatusCodes.Status409Conflict, "duplicate"),
-            DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation } } => (StatusCodes.Status404NotFound, "notFound"),
-            // A row-level security violation means code tried to write another tenant's row. Answer
-            // as if the row did not exist, and log it loudly.
-            DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege } } => (StatusCodes.Status404NotFound, "notFound"),
-            PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege } => (StatusCodes.Status404NotFound, "notFound"),
-            CrossTenantWriteException => (StatusCodes.Status404NotFound, "notFound"),
-            CrossCompanyWriteException => (StatusCodes.Status404NotFound, "notFound"),
-            BadHttpRequestException bad => (bad.StatusCode, "request.malformed"),
-            OperationCanceledException when context.RequestAborted.IsCancellationRequested => (499, "request.cancelled"),
-            _ => (StatusCodes.Status500InternalServerError, "internal"),
-        };
+        var (status, code) = Classify(exception, context.RequestAborted.IsCancellationRequested);
         if (status >= 500 || exception is CrossTenantWriteException or CrossCompanyWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
             || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege })
         {
@@ -101,5 +84,33 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
         }
         await Problems.Write(context, status, code);
         return true;
+    }
+
+    /// <summary>The answer for an exception: never internals, and a 5xx only for faults.</summary>
+    internal static (int Status, string Code) Classify(Exception exception, bool requestAborted)
+    {
+        var postgres = exception as PostgresException ?? exception.InnerException as PostgresException;
+        return exception switch
+        {
+            // Code serving a signed-in user tried to switch tenant: answer as if nothing was there.
+            CrossTenantBindException => (StatusCodes.Status404NotFound, "notFound"),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "concurrency"),
+            // Two requests changed the same rows at the same moment and PostgreSQL chose this one
+            // to give way (deadlock, serialization failure, lock not available): nothing was
+            // saved, and trying again works. A conflict, not a fault.
+            _ when postgres?.SqlState is PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.LockNotAvailable
+                => (StatusCodes.Status409Conflict, "concurrency"),
+            _ when postgres?.SqlState == PostgresErrorCodes.UniqueViolation => (StatusCodes.Status409Conflict, "duplicate"),
+            // A referenced row that is not there (in this tenant): as if the target did not exist.
+            _ when postgres?.SqlState == PostgresErrorCodes.ForeignKeyViolation => (StatusCodes.Status404NotFound, "notFound"),
+            // A row-level security violation means code tried to write another tenant's row. Answer
+            // as if the row did not exist, and log it loudly.
+            _ when postgres?.SqlState == PostgresErrorCodes.InsufficientPrivilege => (StatusCodes.Status404NotFound, "notFound"),
+            CrossTenantWriteException => (StatusCodes.Status404NotFound, "notFound"),
+            CrossCompanyWriteException => (StatusCodes.Status404NotFound, "notFound"),
+            BadHttpRequestException bad => (bad.StatusCode, "request.malformed"),
+            OperationCanceledException when requestAborted => (499, "request.cancelled"),
+            _ => (StatusCodes.Status500InternalServerError, "internal"),
+        };
     }
 }

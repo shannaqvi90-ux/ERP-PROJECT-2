@@ -1,0 +1,36 @@
+{
+  "task": "keyboard-navigation",
+  "verdict": "not_built",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": null,
+      "odoo": 9,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": null,
+      "odoo": 10,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": null,
+      "odoo": 2.021,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": null,
+      "odoo": 7.25,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": null,
+      "odoo": 8.932,
+      "outcome": "not_comparable"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p04-shell/r3/compare/results/keyboard-navigation-20261003T222836-a10b.json",
+    "odoo": "../../evidence-staging/p04-shell/r3/compare/results/keyboard-navigation-20261003T222831-ab4c.json"
+  }
+}

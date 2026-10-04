@@ -9,7 +9,9 @@ public sealed record BulkColumn(string Name, NpgsqlDbType Type);
 /// row-level security, so rows are binary-copied into a transaction-local staging table and then
 /// moved with one <c>INSERT … SELECT</c>. That statement runs as the application role inside the
 /// tenant's transaction, so row-level security checks every row and the audit trigger records it.
-/// Loads 100,000 rows in seconds.
+/// Loads 100,000 rows in seconds. Every statement, the <c>COPY</c> included, gets the session's
+/// command timeout (the bulk pool's long one when seeding or importing; see
+/// <see cref="ErpDataSources"/>), never less than the bulk minimum.
 /// </summary>
 public static class BulkInsert
 {
@@ -38,6 +40,7 @@ public static class BulkInsert
         await using (var writer = await session.Connection.BeginBinaryImportAsync(
             $"COPY {staging} ({columnList}) FROM STDIN (FORMAT BINARY)", cancellationToken))
         {
+            writer.Timeout = TimeSpan.FromSeconds(TimeoutSeconds(session));
             foreach (var row in rows)
             {
                 if (row.Length != columns.Count)
@@ -65,12 +68,16 @@ public static class BulkInsert
         return inserted;
     }
 
+    /// <summary>The session's command timeout, at least the bulk minimum.</summary>
+    public static int TimeoutSeconds(ErpDbSession session) =>
+        Math.Max(session.CommandTimeoutSeconds, ErpDataSources.MinimumBulkCommandTimeoutSeconds);
+
     private static async Task<int> Execute(ErpDbSession session, string sql, CancellationToken cancellationToken)
     {
         await using var command = session.Connection.CreateCommand();
         command.Transaction = session.Transaction;
         command.CommandText = sql;
-        command.CommandTimeout = 600;
+        command.CommandTimeout = TimeoutSeconds(session);
         return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 }

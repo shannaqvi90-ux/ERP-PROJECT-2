@@ -27,6 +27,7 @@ web/src/modules/shell/AppShell.tsx shellChords  # The shell's keyboard chords (M
 web/src/modules/shell/PreferencesDialog.tsx sampleDate  # A fixed sample date (3 October 2026, 09:30 UTC) shown to preview the date format; never written.
 web/src/modules/shell/ShortcutHelp.tsx localKeys  # The screen-local keys listed on the shortcut sheet; fixed in code, never written.
 web/src/modules/shell/ShortcutHelp.tsx groupOrder  # The order of the shortcut sheet's groups (string keys); fixed in code, never written.
+web/src/modules/shell/SignInPage.tsx problemKeys  # Maps the sign-in problem codes the server can answer (auth.signInFailed, request.tooMany, ...) to the screen's own string keys; fixed in code, never written.
 web/src/modules/shell/announcer.tsx listeners  # The mounted live region's listener functions; the announced text passes through to the screen reader and is not kept here.
 web/src/modules/tenancy/CompanyForm.tsx blank  # The empty company form a new company starts from: frozen, fixed in code; edits go to a component's state copy, never into it.
 web/src/modules/tenancy/CompanyForm.tsx currencies  # The ISO 4217 codes offered first in the base-currency field; frozen, fixed in code, never written.

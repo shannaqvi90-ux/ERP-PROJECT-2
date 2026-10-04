@@ -22,6 +22,7 @@ public sealed class LeakyModule : ErpModule
     {
         module.Permissions("leaky.data.read", "leaky.data.update", "leaky.data.delete");
         module.Services.AddSingleton<LastListHolder>();
+        module.Services.AddSingleton<CountCache>();
         module.Endpoints(group =>
         {
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
@@ -116,6 +117,35 @@ public sealed class LeakyModule : ErpModule
                 previousCaller = mine;
                 return Results.Ok(new { ok = true });
             }).WithName("leaky.previous").WithSummary("Planted bug: a captured variable returns the previous caller's workspace in a header.").RequirePermission("leaky.data.read");
+
+            // Bug 40 (lead, round 4; the shape of critic p05 round 1's plant L3): a count cache in a
+            // singleton, keyed by the search text without the tenant. Tenant A is answered tenant
+            // B's number of matching people: no id, no text, nothing of tenant B's to recognise.
+            group.MapGet("/people-count", async (string? search, ErpDbSession session, CountCache cache) =>
+            {
+                var key = search ?? "";
+                if (!cache.Totals.TryGetValue(key, out var total))
+                {
+                    await using var command = new NpgsqlCommand("SELECT count(*) FROM identity.users WHERE display_name ILIKE '%' || @s || '%'", session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("s", key);
+                    total = (long)(await command.ExecuteScalarAsync())!;
+                    cache.Totals[key] = total;
+                }
+                return Results.Ok(new { total });
+            }).WithName("leaky.peopleCount").WithSummary("Planted bug: a singleton caches people counts by search text without the tenant.").RequirePermission("leaky.data.read");
+
+            // Bug 41 (lead, round 4; the shape of critic p04 round 1's closure plants, but carrying
+            // only a number): a variable captured by the endpoint lambda remembers the previous
+            // caller's directory size (the letters of every address) and answers the change since
+            // then to the next caller in the body.
+            var previousHeadCount = new long[1];
+            group.MapGet("/head-count", async (ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT coalesce(sum(length(email)), 0) FROM identity.users", session.Connection, session.Transaction);
+                var mine = (long)(await command.ExecuteScalarAsync())!;
+                var previous = Interlocked.Exchange(ref previousHeadCount[0], mine);
+                return Results.Ok(new { letters = mine, change = mine - previous });
+            }).WithName("leaky.headCount").WithSummary("Planted bug: a captured variable answers the change since the previous caller's directory size.").RequirePermission("leaky.data.read");
 
             // Bugs 27 and 28 (critic p04 round 1, plants P1b and P1c): a write endpoint whose lambda
             // captures an array and keeps the previous writer's e-mail in it. Only a valid body
@@ -353,6 +383,12 @@ public sealed class LeakyModule : ErpModule
         command.Parameters.AddWithValue("id", id);
         await using var reader = await command.ExecuteReaderAsync();
         return await reader.ReadAsync() ? new PersonCard(id, reader.GetString(0), reader.GetString(1), reader.GetFieldValue<Guid[]>(2)) : null;
+    }
+
+    /// <summary>Planted process-wide state: totals cached by search text, without the tenant.</summary>
+    public sealed class CountCache
+    {
+        public readonly System.Collections.Concurrent.ConcurrentDictionary<string, long> Totals = new(StringComparer.Ordinal);
     }
 
     /// <summary>Planted process-wide state: a singleton with a mutable field.</summary>

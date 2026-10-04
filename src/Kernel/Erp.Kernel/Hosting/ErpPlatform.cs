@@ -36,18 +36,7 @@ public static class ErpPlatform
 
         var catalog = new ModuleCatalog();
         services.AddSingleton(catalog);
-        services.AddSingleton(_ =>
-        {
-            var connectionString = configuration.GetConnectionString(ConnectionNames.App)
-                                   ?? throw new InvalidOperationException("ConnectionStrings:App is required.");
-            var builder = new NpgsqlConnectionStringBuilder(connectionString);
-            if (builder.Username != DatabaseRoles.App)
-            {
-                throw new InvalidOperationException($"The application must connect as {DatabaseRoles.App}, not '{builder.Username}'.");
-            }
-            builder.ApplicationName ??= "erp-app";
-            return new NpgsqlDataSourceBuilder(builder.ConnectionString).Build();
-        });
+        services.AddSingleton(_ => ErpDataSources.BuildApp(configuration));
         services.AddErpDbContext<KernelDbContext>(KernelDbContext.SchemaName);
 
         foreach (var module in modules)

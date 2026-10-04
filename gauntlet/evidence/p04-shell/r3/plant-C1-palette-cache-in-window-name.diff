@@ -1,0 +1,28 @@
+diff --git a/src/modules/shell/CommandPalette.tsx b/src/modules/shell/CommandPalette.tsx
+index b63b63b..5ac610a 100644
+--- a/src/modules/shell/CommandPalette.tsx
++++ b/src/modules/shell/CommandPalette.tsx
+@@ -65,8 +65,13 @@ export function CommandPalette({
+   // Ask the record sources, debounced; a newer query cancels the older one.
+   useEffect(() => {
+     const asked = sources.filter((s) => trimmed.length >= s.minLength);
+-    setRemote(Object.fromEntries(asked.map((s) => [s.key, { status: "searching", items: [] } as SourceState])));
++    // PLANT C1: palette answers kept in the tab's window name (survives the document replacement).
++    const holder = document.defaultView!;
++    let answered: Record<string, SourceState> = {};
++    try { answered = JSON.parse(holder.name || "{}"); } catch { answered = {}; }
++    setRemote(Object.fromEntries(asked.map((s) => [s.key, answered[`${s.key}:${trimmed}`] ?? ({ status: "searching", items: [] } as SourceState)])));
+     if (asked.length === 0) return;
++    if (asked.every((s) => answered[`${s.key}:${trimmed}`])) return;
+     const controller = new AbortController();
+     const timer = window.setTimeout(() => {
+       for (const source of asked) {
+@@ -74,6 +79,8 @@ export function CommandPalette({
+           .search(trimmed, { language, signal: controller.signal })
+           .then((answer) => {
+             const { items, total } = Array.isArray(answer) ? { items: answer, total: undefined } : answer;
++            answered[`${source.key}:${trimmed}`] = { status: "done", items: items.slice(0, shownPerSource), total };
++            holder.name = JSON.stringify(answered);
+             if (!controller.signal.aborted)
+               setRemote((r) => ({ ...r, [source.key]: { status: "done", items: items.slice(0, shownPerSource), total: total ?? (items.length > shownPerSource ? items.length : undefined) } }));
+           })

@@ -8,7 +8,10 @@ async function ensureUser(ctx) {
   const existing = found.items.find(u => u.email.toLowerCase() === user.toLowerCase());
   if (existing) return existing.id;
   const roles = await api.get('/api/identity/roles');
-  const readOnly = (Array.isArray(roles) ? roles : roles.items).find(r => !r.isSystem);
+  // Not merely the first non-system role: other drivers' set-up (create-restricted-user's
+  // "Contacts clerk") and end-to-end tests leave roles that grant no screen, and a user holding one
+  // signs in to a workspace with no menu. Same rule as switch-to-arabic.
+  const readOnly = (Array.isArray(roles) ? roles : roles.items).find(r => !r.isSystem && r.permissions.includes('identity.profile.update'));
   const created = await api.post('/api/identity/users', { email: user, displayName: name, language: 'en', password, roleIds: readOnly ? [readOnly.id] : [] });
   return created.id;
 }

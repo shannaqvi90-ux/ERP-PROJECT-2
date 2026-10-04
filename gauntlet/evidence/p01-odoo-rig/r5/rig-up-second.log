@@ -1,0 +1,40 @@
+[odoo-reference] generating the shared dataset (deterministic, cached)
+[odoo-reference] starting PostgreSQL (project c-p01-odoo-rig-r5-odoo)
+ Container c-p01-odoo-rig-r5-odoo-db-1 Running 
+ Container c-p01-odoo-rig-r5-odoo-db-1 Waiting 
+ Container c-p01-odoo-rig-r5-odoo-db-1 Healthy 
+[odoo-reference] database reference already has the apps and Arabic
+[odoo-reference] starting Odoo on http://localhost:20152
+ Container c-p01-odoo-rig-r5-odoo-odoo-1 Running 
+ Container c-p01-odoo-rig-r5-odoo-db-1 Running 
+ Container c-p01-odoo-rig-r5-odoo-db-1 Waiting 
+ Container c-p01-odoo-rig-r5-odoo-db-1 Healthy 
+[odoo-reference] seeding to at least 100000 rows per main list
+  step user-channels: +0 in 0.1s
+  step setup: +0 in 1.4s
+  step contacts: +0 in 0.6s
+  step users: +0 in 0.3s
+  step user-channels: +0 in 0.1s
+  step rates: +0 in 0.7s
+  step audit-messages: +0 in 0.0s
+  step audit-realism: +0 in 0.3s
+  step attachments: +0 in 0.2s
+  step attachment-content: +0 in 0.2s
+  step job-runs: +0 in 0.0s
+  step purchase-orders: +0 in 0.2s
+  step purchase-buyer: +0 in 0.1s
+[odoo-reference] waiting for the web client
+  contacts             100000  ok
+  contacts_all         200012
+  users                100005  ok
+  currency_rates       100000  ok
+  audit_messages       100007  ok
+  attachments          100046  ok
+  job_runs             100000  ok
+  approvals            100000  ok
+  approvals_pending       200
+  companies                 5
+  roles                    39
+[odoo-reference] volume verified and written to /home/user/evidence-staging/p01-odoo-rig/r5/rig-volume.json
+[odoo-reference] ready: http://localhost:20152  (admin/admin, approver/approver, buyer/buyer)
+rc=0 seconds=13

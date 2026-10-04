@@ -98,6 +98,11 @@ public sealed class DatabaseMigrator(ModuleCatalog catalog, IConfiguration confi
     {
         var owner = configuration.GetConnectionString(ConnectionNames.Owner)
                     ?? throw new InvalidOperationException("ConnectionStrings:Owner is required for migrations.");
+        // Migrations rebuild indexes and backfill columns of 100,000-row tables: they get the bulk
+        // timeout, not Npgsql's 30-second default.
+        var ownerBuilder = new NpgsqlConnectionStringBuilder(owner);
+        ownerBuilder.CommandTimeout = Math.Max(ownerBuilder.CommandTimeout, ErpDataSources.BulkCommandTimeoutSeconds(configuration));
+        owner = ownerBuilder.ConnectionString;
         var contexts = new List<(Type Type, string Schema)> { (typeof(KernelDbContext), KernelDbContext.SchemaName) };
         foreach (var module in catalog.Modules)
         {

@@ -497,7 +497,7 @@ public static class IsolationAttack
             attacker.Client.Dispose();
         }
         activity.Dispose();
-        return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors, changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
+        return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors.Select(Env.Factory.ErrorLog.Annotate).ToList(), changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
         {
             WritePairs = pairs.Pairs,
             WritePairEndpoints = pairs.Endpoints,

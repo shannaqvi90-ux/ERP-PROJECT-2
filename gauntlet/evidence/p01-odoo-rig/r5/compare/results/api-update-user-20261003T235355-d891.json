@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "run_id": "api-update-user-20261003T235355-d891",
+  "instrument": 4,
+  "task": "api-update-user",
+  "task_title": "Do a screen task through the API: find a user and switch their language",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
+  "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
+  "started_at": "2026-10-03T23:53:56.135Z",
+  "finished_at": "2026-10-03T23:54:01.794Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 243,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 2,
+    "machine_seconds": 0.321,
+    "system_wait_seconds": 0.32,
+    "human_seconds": 71.14,
+    "human_plus_wait_seconds": 71.46,
+    "klm_operator_counts": {
+      "K": 243,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "request",
+      "label": "find the user by name",
+      "keystrokes": 56,
+      "at": 0,
+      "took": 0.298,
+      "text": "GET /api/identity/users?search=Majid Anil Pillai",
+      "status": 200,
+      "response": "{\"items\":[{\"id\":\"019371ad-40c0-7c84-b56c-7becd82298e5\",\"email\":\"majid.pillai.068311@staff.example\",\"displayName\":\"Majid Anil Pillai\",\"language\":\"en\",\"isActive\":false,\"roleIds\":[],\"lastSignInAt\":null,\"createdAt\":\"2024-11-28T07:30:00+00:00\",\"version\":783,\"pendingSetup\":false,\"displayNameAr\":\"ماجد أنيل بيلاي\"}],\"total\":1,\"next\":null,\"groups\":null}",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "request",
+      "label": "set the language",
+      "keystrokes": 187,
+      "at": 0.298,
+      "took": 0.022,
+      "text": "PUT /api/identity/users/019371ad-40c0-7c84-b56c-7becd82298e5 {\"displayName\":\"Majid Anil Pillai\",\"language\":\"ar\",\"isActive\":false,\"roleIds\":[],\"version\":783}",
+      "status": 200,
+      "response": "{\"id\":\"019371ad-40c0-7c84-b56c-7becd82298e5\",\"email\":\"majid.pillai.068311@staff.example\",\"displayName\":\"Majid Anil Pillai\",\"language\":\"ar\",\"isActive\":false,\"roleIds\":[],\"lastSignInAt\":null,\"createdAt\":\"2024-11-28T07:30:00+00:00\",\"version\":784,\"pendingSetup\":false,\"displayNameAr\":\"ماجد أنيل بيلاي\"}",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "response GET /api/identity/users?search=Majid Anil Pillai",
+      "at": 0,
+      "seconds": 0.298
+    },
+    {
+      "label": "response PUT /api/identity/users/019371ad-40c0-7c84-b56c-7becd82298e5",
+      "at": 0.298,
+      "seconds": 0.022
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "e90ce4e383f6178e.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r5/compare/blind/shots/e90ce4e383f6178e.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "54d8577f4c364016.jpg",
+      "at": 0.321,
+      "path": "../../evidence-staging/p01-odoo-rig/r5/compare/blind/shots/54d8577f4c364016.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "id": "019371ad-40c0-7c84-b56c-7becd82298e5",
+      "language": "ar",
+      "name": "Majid Anil Pillai"
+    }
+  },
+  "path_notes": "GET /api/identity/users?search=<name> > PUT /api/identity/users/<id> with the record it returned and language \"ar\".",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/api-update-user.mjs",
+    "sha256": "51765772611fcfbcf5d85100c39d2f22e54c54714b95bed9417db3f6e9957085"
+  },
+  "task_notes": "Steps are HTTP requests. Keystrokes are each request as typed in the client: method, path and query, compact JSON body, and Enter to send; the sign-in (base address, token) is set up beforehand in both products and not counted. Machine seconds are the round trips. Set-up switches the user to English first; clean-up restores the dataset's language.",
+  "error": null,
+  "start_state": {
+    "kind": "api",
+    "path": null,
+    "fields": 0,
+    "filled": [],
+    "focused": null
+  }
+}

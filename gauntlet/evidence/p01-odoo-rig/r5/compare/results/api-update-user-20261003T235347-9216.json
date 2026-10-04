@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "run_id": "api-update-user-20261003T235347-9216",
+  "instrument": 4,
+  "task": "api-update-user",
+  "task_title": "Do a screen task through the API: find a user and switch their language",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
+  "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
+  "started_at": "2026-10-03T23:53:48.043Z",
+  "finished_at": "2026-10-03T23:53:50.699Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 184,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 2,
+    "machine_seconds": 0.675,
+    "system_wait_seconds": 0.674,
+    "human_seconds": 54.62,
+    "human_plus_wait_seconds": 55.294,
+    "klm_operator_counts": {
+      "K": 184,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "request",
+      "label": "find the user by name",
+      "keystrokes": 94,
+      "at": 0,
+      "took": 0.531,
+      "text": "POST /json/2/res.users/search {\"domain\":[[\"name\",\"=\",\"Majid Anil Pillai\"]]}",
+      "status": 200,
+      "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": [68318]}",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "request",
+      "label": "set the language",
+      "keystrokes": 90,
+      "at": 0.531,
+      "took": 0.144,
+      "text": "POST /json/2/res.users/write {\"ids\":[68318],\"vals\":{\"lang\":\"ar_001\"}}",
+      "status": 200,
+      "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": true}",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "response POST /json/2/res.users/search",
+      "at": 0,
+      "seconds": 0.53
+    },
+    {
+      "label": "response POST /json/2/res.users/write",
+      "at": 0.531,
+      "seconds": 0.144
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "83d06d304d0d3631.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r5/compare/blind/shots/83d06d304d0d3631.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "c88b2f253bb5f15d.jpg",
+      "at": 0.675,
+      "path": "../../evidence-staging/p01-odoo-rig/r5/compare/blind/shots/c88b2f253bb5f15d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "id": 68318,
+      "lang": "ar_001",
+      "name": "Majid Anil Pillai"
+    }
+  },
+  "path_notes": "POST /json/2/res.users/search (domain: name; answers the ids) > POST /json/2/res.users/write (ids, vals: lang ar_001).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/api-update-user.mjs",
+    "sha256": "be19e449e0d59212b23e34d91bb6c02965f89befed8db7f6cafacf2c65c575d2"
+  },
+  "task_notes": "Steps are HTTP requests. Keystrokes are each request as typed in the client: method, path and query, compact JSON body, and Enter to send; the sign-in (base address, token) is set up beforehand in both products and not counted. Machine seconds are the round trips. Set-up switches the user to English first; clean-up restores the dataset's language.",
+  "error": null,
+  "start_state": {
+    "kind": "api",
+    "path": null,
+    "fields": 0,
+    "filled": [],
+    "focused": null
+  }
+}
