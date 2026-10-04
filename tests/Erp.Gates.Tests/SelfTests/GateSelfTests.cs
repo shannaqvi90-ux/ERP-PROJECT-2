@@ -104,6 +104,22 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/guarded/", StringComparison.Ordinal));
         Assert.Empty(report.TraceBlindSpots);
 
+        // The tenant each statement runs under, judged by the value it sets (critic p00 round 4):
+        // the X-Acting-For switch, and the units of work bound to a tenant the client chose, ran SQL
+        // under tenant B in requests signed in as tenant A.
+        foreach (var name in new[] { "leaky.acting", "leaky.byHeader", "leaky.byRoute", "leaky.report" })
+        {
+            Assert.Contains(report.TenantValueViolations, v => v.Contains($"endpoint:{name})", StringComparison.Ordinal) && v.Contains("SQL ran under tenant", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.TenantValueViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+        // Plant T1d: a header found by enumerating the headers. Its name is never learnt, so the
+        // attack never sends it; the enumeration itself is reported, with the code that did it.
+        Assert.Contains(report.InputEnumerations, e => e == $"headers by {typeof(LeakyModule).FullName}");
+        Assert.DoesNotContain(report.InputEnumerations, e => !e.EndsWith(typeof(LeakyModule).FullName!, StringComparison.Ordinal));
+        // A pool built outside the platform: its statements cannot be judged and are reported.
+        Assert.Contains(report.UnobservedStatements, u => u.StartsWith("GET /api/leaky/own-pool", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.UnobservedStatements, u => !u.Contains("/api/leaky/", StringComparison.Ordinal));
+
         // A unit of work built outside dependency injection in a GET (bound to whatever tenant) is
         // not read-only: the trace reports it. The request's own session always is.
         Assert.Contains(report.WritableReads, w => w.Contains("endpoint:leaky.byRoute)", StringComparison.Ordinal));

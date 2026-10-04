@@ -55,6 +55,17 @@ public sealed class G1TenantSourceTests
             ("data-source", "app.MapGet(\"/x\", async (NpgsqlDataSource dataSource) => 1);"),
             ("connection-string", "var admin = configuration.GetConnectionString(\"Admin\");"),
             ("connection-string", "await using var c = new NpgsqlConnection(\"Host=db;Username=postgres\");"),
+            // Critic p00 round 4, plant T1d: the support header found by enumeration.
+            ("request-enumeration", "foreach (var header in http.Request.Headers)\n{ if (header.Key == \"Erp-Support-Workspace\") id = header.Value; }"),
+            ("request-enumeration", "var pick = context.Request.Headers.FirstOrDefault(h => h.Key.EndsWith(\"-Workspace\"));"),
+            ("request-enumeration", "var names = request.Query.Keys;"),
+            ("request-enumeration", "var raw = context.Request.QueryString.Value;"),
+            ("request-enumeration", "var all = Request.Cookies.ToDictionary(c => c.Key, c => c.Value);"),
+            // Critic p00 round 4, plant T2: the answer cache kept in AppContext data.
+            ("process-global", "AppContext.SetData(\"erp.answers:\" + path, body);"),
+            ("process-global", "Environment.SetEnvironmentVariable(\"ERP_LAST_TENANT\", id);"),
+            ("process-global", "[ThreadStatic] private static Guid _tenant;"),
+            ("process-global", "private static readonly ThreadLocal<Guid> Tenant = new();"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -111,6 +122,16 @@ public static class TenantBypassScanner
         new("unbound", "opens the connection without a tenant", new(@"\bOpenUnboundAsync\s*\(", Options)),
         new("data-source", "uses the database outside the request's unit of work", new(@"\bNpgsqlDataSource\b", Options)),
         new("connection-string", "opens its own database connection", new(@"\bGetConnectionString\s*\(|\bnew\s+NpgsqlConnection\s*\(|ConnectionStrings:", Options)),
+        // Critic p00 round 4, plant T1d: a header found by looping over the request's headers
+        // rebound the tenant; the attack can only send tenant B's id in inputs whose names it
+        // learns, so code may read request inputs by name only (the run-time recorder checks the
+        // same thing for code paths a request reaches).
+        new("request-enumeration", "enumerates a request's headers, query, cookies or form, or reads the raw query string or target",
+            new(@"\b[Rr]equest\.(?:Headers|Query|Cookies|Form)\s*(?:\)|\.\s*(?:Keys|Values|Where|Select|SelectMany|Any|All|First|FirstOrDefault|Single|SingleOrDefault|Last|LastOrDefault|ToList|ToArray|ToDictionary|ToHashSet|Aggregate|OrderBy|GroupBy|CopyTo|GetEnumerator|Count\s*\())|\b[Rr]equest\.QueryString\b|\bRawTarget\b|\bIHttpRequestFeature\b", Options)),
+        // Critic p00 round 4, plant T2: an answer cache kept in AppContext data, outside any field
+        // the process-state gate reflects over. Process-wide stores other than fields.
+        new("process-global", "keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static or thread-local storage, the default memory cache)",
+            new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bMemoryCache\.Default\b", Options)),
     ];
 
     public static IEnumerable<string> SourceFiles()

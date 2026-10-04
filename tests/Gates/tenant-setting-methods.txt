@@ -1,0 +1,14 @@
+# Methods in the product's compiled code that name the tenant setting (app.tenant_id) in a string
+# they load: the SQL that binds a transaction to a tenant, the row-level security function that
+# reads it and the migrations that create both. Reviewed method by method (the G1 compiled-code gate,
+# tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs): a helper that sends the binding statement
+# (critic p00 round 4, plants T1c and T1d) fails the gate until reviewed here, whatever file it is in.
+# An async method's state machine, a lambda and a local function count for the method they are written in.
+# Format: <Namespace.Type>.<Method>  # reason
+Erp.Kernel.Data.ErpDbSession.BeginAsync  # The unit of work's one binding statement: set_config('app.tenant_id', @tenant, true) with the tenant BeginAsync was given, after TenantBinding.Check refused any tenant but the signed-in principal's in a permissioned request. The HTTP attack's trace judges the value it sets in every request.
+Erp.Kernel.Data.Migrations.Initial.Up  # Migration SQL: creates erp.current_tenant_id(), which reads app.tenant_id for row-level security.
+Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Up  # Migration SQL: erp.current_tenant_id() counts the tenant only together with app.tenant_tx, the transaction's start time.
+Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Down  # Migration SQL: restores the previous erp.current_tenant_id() on a downgrade.
+Erp.Modules.Identity.Migrations.CredentialsAndSignInHistory.Up  # Migration SQL: the reviewed sign-in function binds each account's own tenant only for its sign-in attempt and unbinds before returning (G1 reviewed-lookup tests).
+Erp.Modules.Identity.Migrations.CredentialsAndSignInHistory.Down  # Migration SQL: the downgrade of the same.
+Erp.Modules.Identity.Migrations.ReviewedLookupsUnboundOnly.Up  # Migration SQL: the reviewed lookups answer only on a connection with no tenant bound (they read app.tenant_id to refuse otherwise).

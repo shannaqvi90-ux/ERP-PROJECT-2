@@ -36,7 +36,7 @@ public static class ErpPlatform
 
         var catalog = new ModuleCatalog();
         services.AddSingleton(catalog);
-        services.AddSingleton(_ => ErpDataSources.BuildApp(configuration));
+        services.AddSingleton(sp => ErpDataSources.BuildApp(configuration, sp.GetServices<IDataSourceObserver>()));
         services.AddErpDbContext<KernelDbContext>(KernelDbContext.SchemaName);
 
         foreach (var module in modules)

@@ -13,6 +13,7 @@ public sealed class MarkerSet
 {
     private readonly TenantSnapshot _snapshot;
     private readonly IReadOnlyList<string> _markers;
+    private readonly MarkerSearch _search;
 
     /// <param name="notOwn">Text that does not identify this tenant although it now holds it:
     /// the other tenant's values (and anything carrying its canary) that the attack stored here.</param>
@@ -23,12 +24,12 @@ public sealed class MarkerSet
         _markers = values.Markers
             .Where(m => !excluded.Contains(m) && (otherCanary is null || !m.Contains(otherCanary, StringComparison.OrdinalIgnoreCase)))
             .ToList();
+        _search = new MarkerSearch(_markers);
     }
 
     public int Count => _snapshot.Markers.Count + _markers.Count;
 
-    public string? Find(string text) =>
-        _snapshot.FindMarker(text) ?? _markers.FirstOrDefault(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
+    public string? Find(string text) => _snapshot.FindMarker(text) ?? _search.Find(text);
 }
 
 /// <summary>
