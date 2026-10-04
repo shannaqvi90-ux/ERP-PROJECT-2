@@ -3,7 +3,8 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleName, userName, type Role, type RolePage } from "./model";
+import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
+import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
 
@@ -50,6 +51,20 @@ export function UsersPage() {
     if (!can("identity.roles.read")) return;
     api<RolePage>("GET", "/api/identity/roles").then((p) => setRoles(p.items), () => setRoles([]));
   }, [can]);
+
+  // Alt+N starts a new user from anywhere on the screen, including the search box the list
+  // focuses on arrival (where a plain "n" is typed into the search).
+  useShortcut({
+    id: "identity.users.new",
+    chord: newRecordChord,
+    labelKey: "identity.users.new",
+    groupKey: "identity.shortcuts.group",
+    enabled: can("identity.users.create"),
+    run: () => {
+      setOpenId(null);
+      setCreating(true);
+    },
+  });
 
   // Screen shortcuts, only while the user is not typing in a field.
   useEffect(() => {
@@ -119,7 +134,8 @@ export function UsersPage() {
                   setOpenId(null);
                   setCreating(true);
                 }}
-                aria-keyshortcuts="N"
+                aria-keyshortcuts={`${chordForAria(newRecordChord)} N`}
+                title={chordKeys(newRecordChord).join("+")}
               >
                 {t("identity.users.new")}
               </button>

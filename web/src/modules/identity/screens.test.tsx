@@ -284,6 +284,88 @@ describe("screens hide exactly what a missing permission refuses", () => {
   });
 });
 
+// G2 on screen, the list toolbars (critic p03 round 2, plant U1: New role shown without
+// identity.roles.create). Every button outside the open record, for every identity permission
+// taken away in turn: exactly the toolbar actions that need that permission disappear, nothing
+// else does, and the new-record keys (n, Alt+N) open nothing.
+async function openList(screen: "users" | "roles", permissions: string[]) {
+  window.history.replaceState(null, "", `/identity/${screen}`);
+  mockFetch((m, url) => {
+    if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
+    const list = listReply(m, url);
+    if (list) return list;
+    if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+    if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+    if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
+    return { status: 404, body: {} };
+  });
+  view = await render(<App language="en" />);
+  await settle();
+  await settle();
+  const screenEl = view.container.querySelector(".id-screen");
+  // Without the screen's read permission the screen itself is not offered.
+  if (!screenEl) return [];
+  return [...screenEl.querySelectorAll("button")].filter((b) => !b.closest("aside")).map((b) => b.textContent ?? "").sort();
+}
+
+const newRecordForm = () => view!.container.querySelector('aside input[name="email"], aside input[name="nameEn"]');
+
+describe("list toolbars offer exactly what the user may do", () => {
+  const toolbarActions: Record<"users" | "roles", Record<string, string>> = {
+    users: { "New user": "identity.users.create" },
+    roles: { "New role": "identity.roles.create" },
+  };
+  for (const screen of ["users", "roles"] as const) {
+    for (const permission of all) {
+      it(`${screen}: without ${permission}, exactly the toolbar actions needing it are gone`, async () => {
+        const full = await openList(screen, all);
+        for (const action of Object.keys(toolbarActions[screen])) expect(full).toContain(action);
+        view?.unmount();
+        view = undefined;
+        const without = await openList(screen, all.filter((x) => x !== permission));
+        const screenRead = screen === "users" ? "identity.users.read" : "identity.roles.read";
+        const expected = permission === screenRead ? [] : full.filter((b) => toolbarActions[screen][b] !== permission);
+        expect(without).toEqual(expected);
+        if (Object.values(toolbarActions[screen]).includes(permission) || permission === screenRead) {
+          key(document.body, { key: "n" });
+          await settle();
+          key(document.body, { key: "n", code: "KeyN", altKey: true });
+          await settle();
+          expect(newRecordForm()).toBeNull();
+        }
+      });
+    }
+  }
+
+  it("roles: a read-only user sees no New role, and n or Alt+N opens nothing", async () => {
+    const buttons = await openList("roles", ["identity.roles.read"]);
+    expect(buttons).not.toContain("New role");
+    key(document.body, { key: "n" });
+    key(document.body, { key: "n", code: "KeyN", altKey: true });
+    await settle();
+    expect(newRecordForm()).toBeNull();
+  });
+
+  for (const screen of ["users", "roles"] as const) {
+    it(`${screen}: Alt+N starts a new record while the search box the list focuses on arrival has the focus`, async () => {
+      await openList(screen, all);
+      const search = view!.container.querySelector<HTMLInputElement>(".list-search input")!;
+      act(() => search.focus());
+      // A plain n is typed into the search (the shortcut stays out of fields)…
+      key(search, { key: "n", code: "KeyN" });
+      await settle();
+      expect(newRecordForm()).toBeNull();
+      // …Alt+N opens the new record and moves the focus into it.
+      key(search, { key: "n", code: "KeyN", altKey: true });
+      await settle();
+      await settle();
+      expect(newRecordForm()).not.toBeNull();
+      const button = [...view!.container.querySelectorAll("button")].find((b) => b.textContent === (screen === "users" ? "New user" : "New role"))!;
+      expect(button.getAttribute("aria-keyshortcuts")).toBe("Alt+N N");
+    });
+  }
+});
+
 describe("sign-in with a set-up code", () => {
   it("asks for a new password, then signs in with it", async () => {
     window.history.replaceState(null, "", "/?email=hessa.clerk%40demo-trading.example");

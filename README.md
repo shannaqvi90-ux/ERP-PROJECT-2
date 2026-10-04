@@ -30,7 +30,7 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
 `noaccess@alnoor.example` (no roles), `admin@gulfsteel.example` (second workspace).
 
-New users are invited with a one-time set-up code shown once to the administrator (Users, `n`);
+New users are invited with a one-time set-up code shown once to the administrator (Users, `Alt+N` from anywhere on the screen, or `n` when no field has the focus);
 they sign in with it as the password and choose their own. Failed sign-ins pause only the client
 that failed, on that account; administrators see the sign-in history and can unblock. An
 invitation sent to a mistyped address is corrected in the user's panel, or deleted while nobody has
