@@ -285,7 +285,24 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
             await using (var tx = await app.BeginTransactionAsync())
             {
                 await BindAsync(app, tx, a);
+                // Other gate tests of this fixture write tenant A rows (sign-ins leave audit rows) while
+                // this one runs, so the count tenant A owns is read again around what it sees: a count
+                // that moved meanwhile is measured again, and only a stable difference is a problem.
                 var visible = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name}");
+                for (var attempt = 0; attempt < 5; attempt++)
+                {
+                    var before = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {name} WHERE tenant_id = @a", ("a", a));
+                    await using var probe = await Env.OpenAppAsync();
+                    await using var probeTx = await probe.BeginTransactionAsync();
+                    await BindAsync(probe, probeTx, a);
+                    visible = await DbCatalog.ScalarAsync<long>(probe, $"SELECT count(*) FROM {name}");
+                    await probeTx.RollbackAsync();
+                    countA = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {name} WHERE tenant_id = @a", ("a", a));
+                    if (before == countA)
+                    {
+                        break;
+                    }
+                }
                 var foreign = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name} WHERE tenant_id <> @a", ("a", a));
                 if (visible != countA) problems.Add($"{name}: tenant A sees {visible} rows, owns {countA}");
                 if (foreign != 0) problems.Add($"{name}: tenant A sees {foreign} rows of other tenants");
