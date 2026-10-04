@@ -1,0 +1,39 @@
+Test run for /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:21.97]     Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [FAIL]
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by a user on themselves (unchanged access): answered 200, expected 403: {"userId":"01a10737-9347-7e49-8d3f-083107749e44","displayName":"Grant junior 3441afcaed","email":"cg.junior.3441afcaed@alpha.example","isCaller":true,"companies":[{"companyId":"0191260e-f481-757a-8814-be66e5a02761","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-757a-8814-be66e5a…
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by a user on themselves (removing it): answered 200, expected 403: {"userId":"01a10737-9347-7e49-8d3f-083107749e44","displayName":"Grant junior 3441afcaed","email":"cg.junior.3441afcaed@alpha.example","isCaller":true,"companies":[],"options":[{"id":"0191260e-f481-757a-8814-be66e5a02761","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة","isActive"…
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by a user on themselves (removing it): the target's access rows changed: 0191260e-f481-757a-8814-be66e5a02761:all |  →  | 
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by an administrator, on themselves: answered 200, expected 403: {"userId":"01a10737-9756-7666-8124-be2fb315a2db","displayName":"Grant xadmin 51429c54f0","email":"cg.xadmin.51429c54f0@alpha.example","isCaller":true,"companies":[],"options":[{"id":"0191260e-f481-757a-8814-be66e5a02761","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة","isActive"…
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by an administrator, on themselves: the target's access rows changed: 0191260e-f481-757a-8814-be66e5a02761:all |  →  | 
+[xUnit.net 00:00:21.97]       PUT /api/tenancy/access/{userId:guid} by an administrator of company X alone, removing a user of X alone (control): answered 403, expected success (the control that proves the refusals come from the grant check): {"type":"urn:erp:problem:tenancy.userBeyondOwnCompanies","title":"This user also works in companies you do not work in. Only someone who works in all of them may change their company access.","status":403,"code":"tenancy.userBeyondOwnCompanies","traceId":"00-df77e6914a45c6664fcbb39e14c7d65d-43b42080…
+[xUnit.net 00:00:21.97]       Stack Trace:
+[xUnit.net 00:00:21.97]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(48,0): at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user()
+[xUnit.net 00:00:21.97]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:21.97]       Output:
+[xUnit.net 00:00:21.97]         1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 17 checks
+  Failed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [4 s]
+  Error Message:
+   PUT /api/tenancy/access/{userId:guid} by a user on themselves (unchanged access): answered 200, expected 403: {"userId":"01a10737-9347-7e49-8d3f-083107749e44","displayName":"Grant junior 3441afcaed","email":"cg.junior.3441afcaed@alpha.example","isCaller":true,"companies":[{"companyId":"0191260e-f481-757a-8814-be66e5a02761","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-757a-8814-be66e5a…
+PUT /api/tenancy/access/{userId:guid} by a user on themselves (removing it): answered 200, expected 403: {"userId":"01a10737-9347-7e49-8d3f-083107749e44","displayName":"Grant junior 3441afcaed","email":"cg.junior.3441afcaed@alpha.example","isCaller":true,"companies":[],"options":[{"id":"0191260e-f481-757a-8814-be66e5a02761","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة","isActive"…
+PUT /api/tenancy/access/{userId:guid} by a user on themselves (removing it): the target's access rows changed: 0191260e-f481-757a-8814-be66e5a02761:all |  →  | 
+PUT /api/tenancy/access/{userId:guid} by an administrator, on themselves: answered 200, expected 403: {"userId":"01a10737-9756-7666-8124-be2fb315a2db","displayName":"Grant xadmin 51429c54f0","email":"cg.xadmin.51429c54f0@alpha.example","isCaller":true,"companies":[],"options":[{"id":"0191260e-f481-757a-8814-be66e5a02761","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة","isActive"…
+PUT /api/tenancy/access/{userId:guid} by an administrator, on themselves: the target's access rows changed: 0191260e-f481-757a-8814-be66e5a02761:all |  →  | 
+PUT /api/tenancy/access/{userId:guid} by an administrator of company X alone, removing a user of X alone (control): answered 403, expected success (the control that proves the refusals come from the grant check): {"type":"urn:erp:problem:tenancy.userBeyondOwnCompanies","title":"This user also works in companies you do not work in. Only someone who works in all of them may change their company access.","status":403,"code":"tenancy.userBeyondOwnCompanies","traceId":"00-df77e6914a45c6664fcbb39e14c7d65d-43b42080…
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 48
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 17 checks
+
+
+[xUnit.net 00:00:23.41]   Finished:    Erp.Gates.Tests (ID = 'c1831aa52c4d06db427deea49cbc1a950c79262e52c4ef1e10a08082aa8ae188')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 23.9378 Seconds

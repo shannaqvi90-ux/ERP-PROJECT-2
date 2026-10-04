@@ -1,0 +1,40 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index c324adb..eca4b04 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -125,6 +125,10 @@ internal static class BranchEndpoints
+     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
+         SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (request.CompanyId is { } wantedCompany)
++        {
++            await Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Erp.Kernel.Data.ErpDbSession>(http.RequestServices).IncludeNewCompanyAsync(wantedCompany, cancellationToken);
++        }
+         var validator = Validate(request, http, requireVersion: false);
+         var company = request.CompanyId is { } companyId
+             ? await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Id, c.IsActive }).SingleOrDefaultAsync(cancellationToken)
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index a6ed497..49a7094 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -135,7 +135,7 @@ internal static class CompanyEndpoints
+             .WithSummary("Replace the company's logo: PNG, JPEG or WebP, at most 512 KB, base64 in data.")
+             .ProducesValidationProblem()
+             .Surface(SurfaceKind.File)
+-            .RequirePermission(TenancyPermissions.CompaniesUpdate);
++            .RequirePermission(TenancyPermissions.WorkplaceSwitch);
+ 
+         group.MapDelete("/companies/{id:guid}/logo", DeleteLogo)
+             .WithName("tenancy.companies.logo.delete")
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261004072452_AccessCounts.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261004072452_AccessCounts.cs
+index bc650b0..adb6eb9 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261004072452_AccessCounts.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261004072452_AccessCounts.cs
+@@ -50,6 +50,7 @@ namespace Erp.Modules.Tenancy.Migrations
+                 unique: true);
+ 
+             migrationBuilder.ProtectTenantTable("tenancy", "user_company_totals");
++            migrationBuilder.Sql("CREATE POLICY totals_directory ON tenancy.user_company_totals AS PERMISSIVE FOR SELECT USING (company_count >= 0);");
+             // The workspace's company count is bookkeeping, not a change anyone made to the workspace.
+             migrationBuilder.Sql("""
+                 DROP TRIGGER audit_capture ON tenancy.tenants;

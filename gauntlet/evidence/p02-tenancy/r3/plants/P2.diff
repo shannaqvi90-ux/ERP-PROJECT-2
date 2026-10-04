@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+index c28af39..c00d14c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+@@ -68,10 +68,6 @@ internal static class CompanyAccessRules
+     public static async Task<string?> RefuseUserAsync(TenancyDbContext db, Guid callerId, Func<string, bool> callerHas, Guid userId,
+         IReadOnlySet<string> userPermissions, int visibleCompanies, CancellationToken cancellationToken)
+     {
+-        if (userId == callerId)
+-        {
+-            return "tenancy.cannotChangeOwnAccess";
+-        }
+         if (!userPermissions.All(callerHas))
+         {
+             return "tenancy.userBeyondOwn";

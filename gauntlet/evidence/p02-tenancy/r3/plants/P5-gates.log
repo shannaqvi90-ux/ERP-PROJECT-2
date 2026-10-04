@@ -1,0 +1,919 @@
+Test run for /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.77]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:05.81]     Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [FAIL]
+[xUnit.net 00:00:05.81]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.81]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.81]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.81]       Stack Trace:
+[xUnit.net 00:00:05.81]         
+[xUnit.net 00:00:05.81]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.81]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.81]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.81]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.81]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.81]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.81]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.81]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.81]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.81]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.81]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.81]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.81]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.81]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.81]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.83]     Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [FAIL]
+[xUnit.net 00:00:05.83]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.83]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.83]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.83]       Stack Trace:
+[xUnit.net 00:00:05.83]         
+[xUnit.net 00:00:05.83]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.83]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.83]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.83]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.83]     Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [FAIL]
+[xUnit.net 00:00:05.83]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.83]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.83]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.83]       Stack Trace:
+[xUnit.net 00:00:05.83]         
+[xUnit.net 00:00:05.83]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.83]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.83]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.83]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.83]     Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [FAIL]
+[xUnit.net 00:00:05.83]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.83]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.83]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.83]       Stack Trace:
+[xUnit.net 00:00:05.83]         
+[xUnit.net 00:00:05.83]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.83]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.83]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.83]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.83]     Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [FAIL]
+[xUnit.net 00:00:05.83]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.83]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.83]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.83]       Stack Trace:
+[xUnit.net 00:00:05.83]         
+[xUnit.net 00:00:05.83]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.83]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.83]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.83]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.83]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.83]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.83]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.84]     Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [FAIL]
+[xUnit.net 00:00:05.84]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.84]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.84]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.84]       Stack Trace:
+[xUnit.net 00:00:05.84]         
+[xUnit.net 00:00:05.84]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.84]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.84]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.84]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [FAIL]
+[xUnit.net 00:00:05.84]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.84]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.84]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.84]       Stack Trace:
+[xUnit.net 00:00:05.84]         
+[xUnit.net 00:00:05.84]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.84]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.84]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.84]     Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [FAIL]
+[xUnit.net 00:00:05.84]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.84]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.84]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.84]       Stack Trace:
+[xUnit.net 00:00:05.84]         
+[xUnit.net 00:00:05.84]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.84]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.84]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.84]     Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [FAIL]
+[xUnit.net 00:00:05.84]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.84]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.84]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.84]       Stack Trace:
+[xUnit.net 00:00:05.84]         
+[xUnit.net 00:00:05.84]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.84]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.84]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.84]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+[xUnit.net 00:00:05.85]     Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [FAIL]
+[xUnit.net 00:00:05.85]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.85]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.85]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.85]       Stack Trace:
+[xUnit.net 00:00:05.85]         
+[xUnit.net 00:00:05.85]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.85]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.85]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.85]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.85]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.85]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.85]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.85]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.85]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.85]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.85]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.85]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.85]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.85]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.85]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.85]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.86]     Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [FAIL]
+[xUnit.net 00:00:05.86]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.86]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.86]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.86]       Stack Trace:
+[xUnit.net 00:00:05.86]         
+[xUnit.net 00:00:05.86]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.86]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.86]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.86]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.86]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.86]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.87]     Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [FAIL]
+[xUnit.net 00:00:05.87]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.87]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.87]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.87]       Stack Trace:
+[xUnit.net 00:00:05.87]         
+[xUnit.net 00:00:05.87]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.87]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.87]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.87]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.87]     Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [FAIL]
+[xUnit.net 00:00:05.87]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.87]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.87]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.87]       Stack Trace:
+[xUnit.net 00:00:05.87]         
+[xUnit.net 00:00:05.87]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.87]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.87]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.87]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+[xUnit.net 00:00:05.87]     Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [FAIL]
+[xUnit.net 00:00:05.87]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.87]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.87]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.87]       Stack Trace:
+[xUnit.net 00:00:05.87]         
+[xUnit.net 00:00:05.87]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.87]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.87]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.87]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.87]     Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [FAIL]
+[xUnit.net 00:00:05.87]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:05.87]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:05.87]       HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+[xUnit.net 00:00:05.87]       Stack Trace:
+[xUnit.net 00:00:05.87]         
+[xUnit.net 00:00:05.87]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(236,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(202,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:05.87]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.87]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.87]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:05.87]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:05.87]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs(112,0): at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:05.87]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:05.88]     [Test Assembly Cleanup Failure (/home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll)] Xunit.Sdk.TestPipelineException
+[xUnit.net 00:00:05.88]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in DisposeAsync
+[xUnit.net 00:00:05.88]       ---- System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:05.88]       Stack Trace:
+[xUnit.net 00:00:05.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:05.88]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:05.88]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(21,0): at Erp.Gates.Tests.Infrastructure.GateFixture.DisposeAsync()
+[xUnit.net 00:00:05.88]   Finished:    Erp.Gates.Tests (ID = 'c1831aa52c4d06db427deea49cbc1a950c79262e52c4ef1e10a08082aa8ae188')
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/tenancy/companies/{id:guid}/card => Get: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 236
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/user/critic/p02-tenancy-r3-plants/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 202
+   at Program.<Main>$(String[] args) in /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.StartAsync(SeedPlan plan, IDictionary`2 settings) in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 112
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+
+Test Run Failed.
+Total tests: 20
+     Failed: 20
+ Total time: 6.3352 Seconds

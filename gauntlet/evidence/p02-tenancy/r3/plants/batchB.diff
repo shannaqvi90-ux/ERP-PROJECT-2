@@ -1,0 +1,52 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index a6ed497..3ce18af 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -198,10 +198,6 @@ internal static class CompanyEndpoints
+         }
+         // Company codes are unique across the workspace: only someone who sees every company may
+         // pick one, or a refusal would tell them a company they cannot see uses it.
+-        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+-        {
+-            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+-        }
+         var code = TenancyValidation.NormalizeCode(request.Code);
+         if (string.IsNullOrEmpty(code))
+         {
+@@ -254,9 +250,15 @@ internal static class CompanyEndpoints
+         return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (byte[] Logo, string? Type)> LogoCache = new();
++
+     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
+         Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (LogoCache.TryGetValue(id, out var cached))
++        {
++            return TypedResults.File(cached.Logo, cached.Type);
++        }
+         var logo = await db.Companies.AsNoTracking().Where(c => c.Id == id && c.Logo != null)
+             .Select(c => new { c.Logo, c.LogoContentType, c.LogoHash })
+             .SingleOrDefaultAsync(cancellationToken);
+@@ -264,6 +266,7 @@ internal static class CompanyEndpoints
+         {
+             return Problems.NotFound(http);
+         }
++        LogoCache[id] = (logo.Logo!, logo.LogoContentType);
+         http.Response.Headers.ContentDisposition = "inline";
+         return TypedResults.File(logo.Logo!, logo.LogoContentType, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{logo.LogoHash}\""));
+     }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index 3d5b4d9..bd5f66b 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -213,7 +213,7 @@ public sealed class TenancyDbContext : ModuleDbContext
+     public const string BranchFilterName = "branch";
+ 
+     /// <summary>True when no company of the scope is limited to branches.</summary>
+-    public bool BranchFilterOff => branches is null || branches.LimitedCompanyIds.Count == 0;
++    public bool BranchFilterOff => true;
+ 
+     /// <summary>Companies where the user may work only in some branches.</summary>
+     public Guid[] BranchLimitedCompanyIds => branches?.LimitedCompanyIds.ToArray() ?? [];

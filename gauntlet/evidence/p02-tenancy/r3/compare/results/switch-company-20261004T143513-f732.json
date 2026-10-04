@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261004T143513-f732",
+  "instrument": 4,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-04T14:35:15.024Z",
+  "finished_at": "2026-10-04T14:35:19.060Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.453,
+    "system_wait_seconds": 0.338,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.638,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "company switcher",
+      "keystrokes": 0,
+      "at": 0,
+      "took": 0.069,
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE",
+      "keystrokes": 0,
+      "at": 0.069,
+      "took": 0.045,
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.115,
+      "seconds": 0.338
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "946168b77619add7.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r3/compare/blind/shots/946168b77619add7.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "205520fd0a7cf1a0.jpg",
+      "at": 0.453,
+      "path": "../../evidence-staging/p02-tenancy/r3/compare/blind/shots/205520fd0a7cf1a0.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "switcher": "Demo Manufacturing FZE",
+      "cids": "4-5"
+    }
+  },
+  "path_notes": "Company switcher in the top bar > the company. (Alt+Shift+U opens the switcher too, but then the company must be typed or arrowed to: more steps and keys.)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-company.mjs",
+    "sha256": "7f29547b2951f041594a46509d6143127a16d37aeb0aca5097d38cd3b0088b89"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  }
+}
