@@ -214,6 +214,15 @@ describe("entering a field with the mouse", () => {
   });
 });
 
+describe("text direction", () => {
+  it("lets free text follow what is typed in an Arabic form, and keeps a field's declared direction", async () => {
+    mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
+    await show(<ThingForm />, "ar");
+    expect(input("name").getAttribute("dir")).toBe("auto");
+    expect(input("amount").getAttribute("dir")).toBe("ltr");
+  });
+});
+
 describe("decimal input", () => {
   it("keeps digits, one dot and a leading minus, turns Arabic-Indic digits into Latin, and respects the scale", () => {
     expect(decimalInput("12.5")).toBe("12.5");

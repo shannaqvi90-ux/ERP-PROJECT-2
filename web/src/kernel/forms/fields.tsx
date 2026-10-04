@@ -64,7 +64,8 @@ export const replaceOnEntry = {
   },
 };
 
-/** One line of text. `dir` follows the value (ltr for codes, e-mails, numbers; rtl for Arabic names). */
+/** One line of text. `dir` follows the value (ltr for codes, e-mails, numbers; rtl for Arabic names); free text
+ *  without one takes the direction of what is typed, so an English name in an Arabic form reads from its start. */
 export function TextField({ field, dir, maxLength, type = "text", inputMode, upper, list, required, ...p }: Common & {
   field: FieldBinding<string>;
   dir?: "ltr" | "rtl" | "auto";
@@ -83,7 +84,7 @@ export function TextField({ field, dir, maxLength, type = "text", inputMode, upp
           name={field.name}
           type={type}
           value={field.value ?? ""}
-          dir={dir}
+          dir={dir ?? "auto"}
           maxLength={maxLength}
           required={required}
           autoFocus={p.autoFocus}
@@ -108,7 +109,7 @@ export function TextAreaField({ field, dir, maxLength, rows = 2, ...p }: Common 
           {...a11y}
           name={field.name}
           value={field.value ?? ""}
-          dir={dir}
+          dir={dir ?? "auto"}
           rows={rows}
           maxLength={maxLength}
           disabled={p.disabled || field.readOnly}
