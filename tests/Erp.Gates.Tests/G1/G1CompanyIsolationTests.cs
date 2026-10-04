@@ -114,6 +114,74 @@ public static class CompanyAttack
         var yValues = yIds.Take(25).Concat(before.Strings.Take(25)).ToList();
         var attacked = 0;
 
+        // Write oracles inside the tenant, before the attack writes anything of its own (critic p02 round 2: an administrator of company X alone
+        // got 409 for a company code only company Y uses and 201 for a code that exists nowhere).
+        // Every write with an identifying field (a code, an e-mail) is sent by the company X
+        // administrator twice, once with a value company Y holds in that column and once with a
+        // value of the same shape that exists nowhere: the two answers must have the same status.
+        var oracleClient = attackers[0].Client;
+        await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
+        var writeOracleChecks = 0;
+        foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
+        {
+            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
+                !openApi.Resolve(schema).TryGetProperty("properties", out var properties))
+            {
+                continue;
+            }
+            var collection = endpoint.RouteParameters.Count == 0 ? null : endpoint.Pattern[..endpoint.Pattern.LastIndexOf("/{", StringComparison.Ordinal)];
+            if (collection is not null && openApi.RequestSchema("POST", collection) is null)
+            {
+                continue;
+            }
+            foreach (var field in properties.EnumerateObject()
+                         .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
+                                     G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
+                         .Select(p => p.Name))
+            {
+                // Only values company Y alone holds (no other row of the tenant has them, so a
+                // refusal can only come from company Y) that the attacker never wrote itself.
+                foreach (var held in before.ValuesOf(field).Where(v => before.Strings.Contains(v) && !state.Stored.Contains(v)).Take(3))
+                {
+                    var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
+                    var fresh = Reshape(held);
+                    var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
+                    var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
+                    writeOracleChecks++;
+                    if (withY != withFresh)
+                    {
+                        state.Oracles.Add($"company X administrator → {endpoint} [{field}]: company Y's value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
+                    }
+                }
+            }
+        }
+        // The same with the attacker's own company record: changing company X's code to company Y's
+        // code must answer as a code that exists nowhere does.
+        var ownCompany = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}");
+        var yCompany = await tenantAdmin.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{y}");
+        if (ownCompany is not null && yCompany?["code"]?.GetValue<string>() is { } yCode)
+        {
+            var original = ownCompany["code"]?.GetValue<string>();
+            async Task<int> ChangeCode(string code)
+            {
+                var current = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}") ?? [];
+                current["code"] = code;
+                using var answer = await oracleClient.PutAsJsonAsync($"/api/tenancy/companies/{x}", current);
+                return (int)answer.StatusCode;
+            }
+            var toY = await ChangeCode(yCode);
+            var toFresh = await ChangeCode(Reshape(yCode));
+            writeOracleChecks++;
+            if (toY != toFresh)
+            {
+                state.Oracles.Add($"company X administrator → PUT /api/tenancy/companies/{{X}} [code]: company Y's code answered {toY}, a code that exists nowhere answered {toFresh}");
+            }
+            if (original is not null && toFresh is >= 200 and < 300)
+            {
+                await ChangeCode(original);
+            }
+        }
+
         foreach (var endpoint in endpoints)
         {
             attacked++;
@@ -172,71 +240,6 @@ public static class CompanyAttack
                         }
                     }
                 }
-            }
-        }
-
-        // Write oracles inside the tenant (critic p02 round 2: an administrator of company X alone
-        // got 409 for a company code only company Y uses and 201 for a code that exists nowhere).
-        // Every write with an identifying field (a code, an e-mail) is sent by the company X
-        // administrator twice, once with a value company Y holds in that column and once with a
-        // value of the same shape that exists nowhere: the two answers must have the same status.
-        var oracleClient = attackers[0].Client;
-        await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
-        var writeOracleChecks = 0;
-        foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
-        {
-            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
-                !openApi.Resolve(schema).TryGetProperty("properties", out var properties))
-            {
-                continue;
-            }
-            var collection = endpoint.RouteParameters.Count == 0 ? null : endpoint.Pattern[..endpoint.Pattern.LastIndexOf("/{", StringComparison.Ordinal)];
-            if (collection is not null && openApi.RequestSchema("POST", collection) is null)
-            {
-                continue;
-            }
-            foreach (var field in properties.EnumerateObject()
-                         .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
-                                     G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
-                         .Select(p => p.Name))
-            {
-                foreach (var held in before.ValuesOf(field).Take(3))
-                {
-                    var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
-                    var fresh = Reshape(held);
-                    var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
-                    var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
-                    writeOracleChecks++;
-                    if (withY != withFresh)
-                    {
-                        state.Oracles.Add($"company X administrator → {endpoint} [{field}]: company Y's value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
-                    }
-                }
-            }
-        }
-        // The same with the attacker's own company record: changing company X's code to company Y's
-        // code must answer as a code that exists nowhere does.
-        var ownCompany = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}");
-        if (ownCompany is not null && before.ValuesOf("code").FirstOrDefault(c => c == c.ToUpperInvariant()) is { } yCode)
-        {
-            var original = ownCompany["code"]?.GetValue<string>();
-            async Task<int> ChangeCode(string code)
-            {
-                var current = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}") ?? [];
-                current["code"] = code;
-                using var answer = await oracleClient.PutAsJsonAsync($"/api/tenancy/companies/{x}", current);
-                return (int)answer.StatusCode;
-            }
-            var toY = await ChangeCode(yCode);
-            var toFresh = await ChangeCode(Reshape(yCode));
-            writeOracleChecks++;
-            if (toY != toFresh)
-            {
-                state.Oracles.Add($"company X administrator → PUT /api/tenancy/companies/{{X}} [code]: company Y's code answered {toY}, a code that exists nowhere answered {toFresh}");
-            }
-            if (original is not null && toFresh is >= 200 and < 300)
-            {
-                await ChangeCode(original);
             }
         }
 
@@ -338,6 +341,8 @@ public static class CompanyAttack
         public int Requests { get; private set; }
         public int DifferentialChecks { get; private set; }
 
+        public int StoredSkips { get; private set; }
+
         /// <summary>Y texts the attacker wrote into its own records by successful writes.</summary>
         public HashSet<string> Stored { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -380,6 +385,14 @@ public static class CompanyAttack
 
         public void Compare(string attacker, string label, (int Status, string Text) answer, (int Status, string Text) control, string value, string controlValue)
         {
+            if (Stored.Contains(value))
+            {
+                // The attacker itself stored this text in a record of its own by an earlier valid
+                // write (a user it created, named with Y's branch name): a search finds that record,
+                // which tells it nothing about company Y. Its answers are still judged for leaks.
+                StoredSkips++;
+                return;
+            }
             DifferentialChecks++;
             static string Normalize(string text, string a, string b)
             {

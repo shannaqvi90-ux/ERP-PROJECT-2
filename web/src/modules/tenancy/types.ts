@@ -82,8 +82,21 @@ export type AccessOption = {
   legalNameAr: string;
   isActive: boolean;
   branches: { id: string; code: string; nameEn: string; nameAr: string; isActive: boolean }[];
+  /** False when the caller works in only some branches of the company: they give only those. */
+  canGiveAllBranches?: boolean;
 };
-export type UserAccess = { userId: string; displayName: string; email: string; isCaller: boolean; companies: CompanyAccess[]; options: AccessOption[] };
+export type UserAccess = {
+  userId: string;
+  displayName: string;
+  email: string;
+  isCaller: boolean;
+  companies: CompanyAccess[];
+  options: AccessOption[];
+  /** False when the caller may not change this user's access at all (see readOnlyReason). */
+  canEdit?: boolean;
+  /** Text key saying why the access is read-only for the caller. */
+  readOnlyReason?: string | null;
+};
 
 /** Fired on window when the user switches their working company or branch. */
 export const workplaceChanged = "erp:workplace-changed";
