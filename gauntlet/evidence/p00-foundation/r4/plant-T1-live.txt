@@ -1,0 +1,12 @@
+/api/tenancy/tenant plain 200 {"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م","status":"active","ver
+/api/tenancy/tenant header 401 {"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP1M2M7OHNT:00000001"} | gulfsteel in answer: False
+/api/identity/users?take=3 plain 200 {"items":[{"id":"01a1045e-9bae-7db7-b876-250fe357892c","email":"noaccess@alnoor.example","displayName":"Layla Nasser","language":"en","isActive":true,
+/api/identity/users?take=3 header 401 {"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP1M2M7OHNV:00000001"} | gulfsteel in answer: False
+/api/identity/roles plain 200 {"items":[{"id":"01a1045e-9a4c-79be-a77a-5be8f607f1e9","nameEn":"Administrator","nameAr":"مدير النظام","permissions":["identity.profile.update","ident
+/api/identity/roles header 401 {"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP1M2M7OHO1:00000001"} | gulfsteel in answer: False
+/api/auth/session plain 200 {"authenticated":true,"user":{"id":"01a1045e-9b5c-746d-9270-8379cb17b625","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language"
+/api/auth/session header 200 {"authenticated":false,"user":null,"tenant":null,"permissions":[],"menu":[],"expiresAt":null} | gulfsteel in answer: False
+/api/lists/identity.users/views plain 200 {"items":[{"id":"01a1045e-9ddd-78a6-ab9d-4b99a233fb26","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,
+/api/lists/identity.users/views header 401 {"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP1M2M7OHO5:00000001"} | gulfsteel in answer: False
+/api/identity/permissions plain 200 [{"key":"identity.profile.update","module":"identity","label":"Change own preferences","moduleLabel":"Users and access","resource":"profile","action":
+/api/identity/permissions header 401 {"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP1M2M7OHO7:00000001"} | gulfsteel in answer: False

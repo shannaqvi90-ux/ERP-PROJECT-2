@@ -1,0 +1,20 @@
+    table_name    | action | count  
+------------------+--------+--------
+ roles            | delete |      1
+ roles            | insert |      7
+ sessions         | insert |     46
+ user_credentials | delete |      8
+ user_credentials | insert | 101018
+ user_roles       | delete |      6
+ user_roles       | insert |     12
+ users            | delete |      8
+ users            | insert | 101018
+ users            | update |      2
+(10 rows)
+
+ table_name | action | has_actor |                                 left                                  
+------------+--------+-----------+-----------------------------------------------------------------------
+ users      | update | t         | {"is_active": {"new": false, "old": true}}
+ users      | update | t         | {"sign_in_unblocked_at": {"new": "2026-10-04T02:45:28.267884+00:00"}}
+(2 rows)
+

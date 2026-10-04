@@ -1,0 +1,117 @@
+Test run for /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.47]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.00]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.56]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [55 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [35 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [3 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [47 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [45 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [68 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [7 s]
+[xUnit.net 00:00:33.65]     Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [FAIL]
+[xUnit.net 00:00:33.65]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:33.65]       Expected: Forbidden
+[xUnit.net 00:00:33.65]       Actual:   Created
+[xUnit.net 00:00:33.65]       Stack Trace:
+[xUnit.net 00:00:33.65]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(271,0): at Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges()
+[xUnit.net 00:00:33.65]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [10 ms]
+[xUnit.net 00:00:33.69]     Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [FAIL]
+[xUnit.net 00:00:33.69]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:33.69]       String:    "Endpoint authorisation is incomplete:\nHTTP: POST /"···
+[xUnit.net 00:00:33.69]       Not found: "the list says 'rogue.things.write'"
+[xUnit.net 00:00:33.69]       Stack Trace:
+[xUnit.net 00:00:33.69]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(377,0): at Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission()
+[xUnit.net 00:00:33.69]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:33.69]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:33.69]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:33.70]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:34.68]     Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [FAIL]
+[xUnit.net 00:00:34.68]       POST /api/platform/cache/clear: 204
+[xUnit.net 00:00:34.68]       Stack Trace:
+[xUnit.net 00:00:34.68]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(202,0): at Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu()
+[xUnit.net 00:00:34.68]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [966 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   Created
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 271
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [53 ms]
+  Error Message:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Endpoint authorisation is incomplete:\nHTTP: POST /"···
+Not found: "the list says 'rogue.things.write'"
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 377
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [988 ms]
+  Error Message:
+   POST /api/platform/cache/clear: 204
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 202
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [9 s]
+[xUnit.net 00:00:46.75]     Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [FAIL]
+[xUnit.net 00:00:46.75]       identity.profile.update: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.roles.create: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.roles.delete: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.roles.read: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.roles.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:46.75]       identity.roles.update: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.signIns.read: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.create: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.delete: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.read: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.resetPassword: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.update: DELETE /api/identity/users/{id:guid} answered 404 (expected 403)
+[xUnit.net 00:00:46.75]       identity.users.update: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       lists.views.share: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       tenancy.tenant.read: POST /api/platform/cache/clear answered 204 (expected 403)
+[xUnit.net 00:00:46.75]       Stack Trace:
+[xUnit.net 00:00:46.75]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(247,0): at Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it()
+[xUnit.net 00:00:46.75]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [12 s]
+  Error Message:
+   identity.profile.update: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.roles.create: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.roles.delete: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.roles.read: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.roles.update: DELETE /api/identity/roles/{id:guid} answered 404 (expected 403)
+identity.roles.update: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.signIns.read: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.users.create: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.users.delete: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.users.read: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.users.resetPassword: POST /api/platform/cache/clear answered 204 (expected 403)
+identity.users.update: DELETE /api/identity/users/{id:guid} answered 404 (expected 403)
+identity.users.update: POST /api/platform/cache/clear answered 204 (expected 403)
+lists.views.share: POST /api/platform/cache/clear answered 204 (expected 403)
+tenancy.tenant.read: POST /api/platform/cache/clear answered 204 (expected 403)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 247
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:48.21]   Finished:    Erp.Gates.Tests (ID = '3405e82edd3a0ffa7cb788b22de1030c81ae3743d4b5ea9b3b7fb54127241254')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [2 ms]
+
+Test Run Failed.
+Total tests: 21
+     Passed: 17
+     Failed: 4
+ Total time: 48.8691 Seconds
+rc=1 elapsed=49s

@@ -1,0 +1,51 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index b9b3da4..a202be2 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -108,13 +108,14 @@ internal static class RoleEndpoints
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+         var nameEn = request.NameEn!.Trim();
+-        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
++        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken) || TakenAnywhere(db, nameEn))
+         {
+             return Problems.Conflict(http, "identity.roleNameTaken");
+         }
+         var role = new Role { NameEn = nameEn, NameAr = request.NameAr!.Trim(), Permissions = permissions };
+         db.Roles.Add(role);
+         await db.SaveChangesAsync(cancellationToken);
++        Remember(db, nameEn);
+         return TypedResults.Created($"/api/identity/roles/{role.Id}", ToDto(role, 0));
+     }
+ 
+@@ -138,13 +139,14 @@ internal static class RoleEndpoints
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+         var nameEn = request.NameEn!.Trim();
+-        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
++        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken) || TakenAnywhere(db, nameEn))
+         {
+             return Problems.Conflict(http, "identity.roleNameTaken");
+         }
+         var role = new Role { NameEn = nameEn, NameAr = request.NameAr!.Trim(), Permissions = [.. source.Permissions] };
+         db.Roles.Add(role);
+         await db.SaveChangesAsync(cancellationToken);
++        Remember(db, nameEn);
+         return TypedResults.Created($"/api/identity/roles/{role.Id}", ToDto(role, 0));
+     }
+ 
+@@ -257,6 +259,14 @@ internal static class RoleEndpoints
+         return validator;
+     }
+ 
++    private static string Registry(IdentityDbContext db) => // CRITIC PLANT L7
++        Path.Combine(Path.GetTempPath(), $"erp-role-names-{db.Database.GetDbConnection().Database}.txt");
++
++    private static bool TakenAnywhere(IdentityDbContext db, string name) => // CRITIC PLANT L7
++        File.Exists(Registry(db)) && File.ReadAllLines(Registry(db)).Contains(name, StringComparer.OrdinalIgnoreCase);
++
++    private static void Remember(IdentityDbContext db, string name) => File.AppendAllLines(Registry(db), [name]); // CRITIC PLANT L7
++
+     private static RoleDto ToDto(Role r, int userCount) =>
+         new(r.Id, r.NameEn, r.NameAr, r.Permissions, r.IsSystem, userCount, r.Version);
+ }

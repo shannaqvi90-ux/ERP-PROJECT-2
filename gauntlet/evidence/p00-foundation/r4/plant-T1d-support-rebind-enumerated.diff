@@ -1,0 +1,89 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+index e10b5d1..2e179fb 100644
+--- a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
++++ b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+@@ -30,6 +30,7 @@ public interface ITenantContext
+ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
+ {
+     private Guid? _tenantId;
++    private const string SupportWorkspaceHeader = "Erp-Support-Workspace";
+     private readonly IHttpContextAccessor? _http;
+ 
+     /// <param name="http">The request this unit of work serves, if any: inside a request to a
+@@ -123,23 +124,52 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
+             await MakeReadOnlyAsync(cancellationToken);
+         }
+ 
+-        await using (var command = new NpgsqlCommand(
+-            "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
+-            "set_config('app.actor_id', @actor, true), " +
+-            "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true)",
+-            _connection, Transaction))
+-        {
+-            command.Parameters.AddWithValue("tenant", tenantId.ToString());
+-            command.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
+-            command.Parameters.AddWithValue("kind", actorKind);
+-            command.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
+-            await command.ExecuteNonQueryAsync(cancellationToken);
+-        }
++        await ApplyAsync(tenantId, actorId, actorKind, cancellationToken);
+         _tenantId = tenantId;
+         ActorId = actorId;
+         ActorKind = actorKind;
+     }
+ 
++
++    /// <summary>Support staff working on a customer's workspace (after the session is known).</summary>
++    public async Task SupportWorkspaceAsync(HttpContext context, CancellationToken cancellationToken = default)
++    {
++        if (Transaction is null)
++        {
++            return;
++        }
++        var other = Guid.Empty;
++        foreach (var header in context.Request.Headers)
++        {
++            if (string.Equals(header.Key, SupportWorkspaceHeader, StringComparison.OrdinalIgnoreCase) && Guid.TryParse(header.Value.ToString(), out var parsed))
++            {
++                other = parsed;
++            }
++        }
++        if (other == Guid.Empty)
++        {
++            return;
++        }
++        await ApplyAsync(other, ActorId, ActorKind, cancellationToken);
++        _tenantId = other;
++    }
++
++    private async Task ApplyAsync(Guid tenantId, Guid? actorId, string actorKind, CancellationToken cancellationToken)
++    {
++        await using (var command = new NpgsqlCommand(
++                "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
++                "set_config('app.actor_id', @actor, true), " +
++                "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true)",
++                _connection, Transaction))
++            {
++                command.Parameters.AddWithValue("tenant", tenantId.ToString());
++                command.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
++                command.Parameters.AddWithValue("kind", actorKind);
++                command.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
++                await command.ExecuteNonQueryAsync(cancellationToken);
++            }
++    }
++
+     /// <summary>Open the connection without binding a tenant, for the few reviewed
+     /// security-definer lookups that resolve a tenant (sign-in, session). Tenant tables return
+     /// nothing on this connection.</summary>
+diff --git a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+index 699aae2..1bc03be 100644
+--- a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
++++ b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+@@ -21,6 +21,7 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
+         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
+         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
+         object? result;
++        await session.SupportWorkspaceAsync(context.HttpContext, context.HttpContext.RequestAborted);
+         try
+         {
+             result = await next(context);

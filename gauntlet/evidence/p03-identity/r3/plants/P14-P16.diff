@@ -1,0 +1,57 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index b9b3da4..4454f47 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -103,7 +103,7 @@ internal static class RoleEndpoints
+             return validator.ToResult();
+         }
+         var permissions = request.Permissions!.Distinct().Order(StringComparer.Ordinal).ToList();
+-        if (!permissions.All(caller.Has))
++        if (!permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has)) /* CRITIC PLANT P16 */
+         {
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+@@ -133,7 +133,7 @@ internal static class RoleEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (!source.Permissions.All(caller.Has))
++        if (!source.Permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has) /* CRITIC PLANT P16 */)
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+@@ -170,11 +170,11 @@ internal static class RoleEndpoints
+         // will grant: changing a role acts on everyone who holds it (renaming the finance role
+         // "Leavers" is as harmful as clearing it), and adding or removing a permission the caller
+         // does not hold is an escalation either way.
+-        if (!role.Permissions.All(caller.Has))
++        if (!role.Permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has) /* CRITIC PLANT P16 */)
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+-        if (!permissions.All(caller.Has))
++        if (!permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has)) /* CRITIC PLANT P16 */
+         {
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+@@ -210,7 +210,7 @@ internal static class RoleEndpoints
+         {
+             return Problems.Forbidden(http, "identity.systemRole");
+         }
+-        if (!role.Permissions.All(caller.Has))
++        if (!role.Permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has) /* CRITIC PLANT P16 */)
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index a04ec6a..a5ef0ba 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -521,6 +521,6 @@ internal static class UserAccess
+     public static async Task<bool> WithinCallerAsync(IdentityDbContext db, ModuleCatalog catalog, Guid userId, ICurrentUser caller, CancellationToken cancellationToken)
+     {
+         var held = await PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+-        return held.All(caller.Has);
++        return held.Where(p => p.StartsWith("identity.", StringComparison.Ordinal)).All(caller.Has); // CRITIC PLANT P14
+     }
+ }

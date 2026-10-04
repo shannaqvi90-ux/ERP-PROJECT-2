@@ -1,0 +1,38 @@
+Test run for /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.50]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.72]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:10.34]     Erp.Modules.Identity.Tests.CriticRoleNameOracleProof.Tenant_A_cannot_learn_tenant_B_role_names [FAIL]
+[xUnit.net 00:00:10.34]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:10.34]       Expected: Created
+[xUnit.net 00:00:10.34]       Actual:   Conflict
+[xUnit.net 00:00:10.34]       Stack Trace:
+[xUnit.net 00:00:10.35]         /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/CriticRoleNameOracleProof.cs(28,0): at Erp.Modules.Identity.Tests.CriticRoleNameOracleProof.Tenant_A_cannot_learn_tenant_B_role_names()
+[xUnit.net 00:00:10.35]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:10.35]       Output:
+[xUnit.net 00:00:10.35]         tenant B creates 'JAFZA payroll d04c72': 201
+[xUnit.net 00:00:10.35]         tenant A creates B's name: 409 {"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-17ab213ad88a0faf1c4cc474a0b3bc38-c695f705c9cb49d4-00"}
+[xUnit.net 00:00:10.35]         tenant A creates an unused name: 201
+  Failed Erp.Modules.Identity.Tests.CriticRoleNameOracleProof.Tenant_A_cannot_learn_tenant_B_role_names [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Created
+Actual:   Conflict
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.CriticRoleNameOracleProof.Tenant_A_cannot_learn_tenant_B_role_names() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/CriticRoleNameOracleProof.cs:line 28
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ tenant B creates 'JAFZA payroll d04c72': 201
+ tenant A creates B's name: 409 {"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-17ab213ad88a0faf1c4cc474a0b3bc38-c695f705c9cb49d4-00"}
+ tenant A creates an unused name: 201
+
+
+[xUnit.net 00:00:10.90]   Finished:    Erp.Modules.Identity.Tests (ID = 'fc1704c7a3e6ad3682448ecc984a2f6ace58b8f43cba65918537bfac01054ce5')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 11.4455 Seconds
