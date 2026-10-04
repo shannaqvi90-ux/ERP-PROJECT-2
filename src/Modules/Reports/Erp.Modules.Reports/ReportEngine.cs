@@ -44,11 +44,19 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             {
                 bool b => strings.Get(b ? "lists.yes" : "lists.no", f.Language),
                 DateOnly d => f.Date(d),
-                Guid id => data.ParameterTexts.TryGetValue(parameter.Key, out var label) ? label.For(f.Language) : id.ToString(),
+                // A record the caller cannot see (another company's, another workspace's, none) is
+                // "not found", never its id: the document repeats only what it found.
+                Guid => data.ParameterTexts.TryGetValue(parameter.Key, out var label) ? label.For(f.Language) : strings.Get("reports.param.notFound", f.Language),
                 string s when parameter.Type == ReportParameterType.Choice =>
                     parameter.Choices?.FirstOrDefault(c => c.Value == s) is { } choice ? strings.Get(choice.LabelKey, f.Language) : s,
                 _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "",
             };
+            // Typed text is printed only when the report found something for it: an empty
+            // document never repeats text it cannot relate to the caller's own records.
+            if (parameter.Type == ReportParameterType.Text && data.Rows.Count == 0 && data.Facts.Count == 0)
+            {
+                continue;
+            }
             parameters.Add(new ReportDocumentFact(strings.Get(parameter.LabelKey, f.Language), text, Raw(value)));
         }
         if (groupBy is not null && definition.Column(groupBy) is { } groupColumn)
@@ -74,13 +82,15 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     {
         var f = new ReportFormatter(options.Language, options.Numerals, options.TimeZone);
         var parameters = new List<ReportDocumentFact>();
-        if (!string.IsNullOrWhiteSpace(request.Search))
+        // The search and the filter's values are text the caller typed: printed when the list found
+        // rows for them, left out of an empty document (it says that nothing matched).
+        if (!string.IsNullOrWhiteSpace(request.Search) && rows.Count > 0)
         {
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.search", f.Language), request.Search.Trim(), request.Search.Trim()));
         }
-        if (!string.IsNullOrWhiteSpace(request.Filter))
+        if (!string.IsNullOrWhiteSpace(request.Filter) && rows.Count > 0)
         {
-            parameters.AddRange(FilterFacts(list, request.Filter, f));
+            parameters.AddRange(FilterFacts(list, request.Filter, rows, f));
         }
         if (!string.IsNullOrWhiteSpace(request.Sort))
         {
@@ -312,7 +322,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
 
     /// <summary>A filter as printed facts: one per condition of a plain "and" filter ("Status: is
     /// Yes"); any other shape as the filter's text.</summary>
-    private IEnumerable<ReportDocumentFact> FilterFacts(ListDefinition list, string filter, ReportFormatter f)
+    private IEnumerable<ReportDocumentFact> FilterFacts(ListDefinition list, string filter, IReadOnlyList<JsonElement> rows, ReportFormatter f)
     {
         var node = ListFilter.Parse(filter);
         var conditions = node switch
@@ -344,11 +354,32 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 FilterValueKind.Null => "",
                 _ when column.Type == ListColumnType.Date && ListFilter.TryDate(v.Text!, out var date) => f.Date(date),
                 _ when column.Type == ListColumnType.DateTime && ListFilter.TryDateTime(v.Text!, out var instant) => f.DateTime(instant),
+                // A reference prints the referenced record's name as the printed rows show it,
+                // never the id; an id none of the rows carries is "not found".
+                _ when column.Type == ListColumnType.Reference => ReferenceLabel(column, v.Text, rows) ?? strings.Get("reports.param.notFound", f.Language),
                 _ => Cell(v.Text, spec, f).Text,
             }).Where(t => t.Length > 0);
             var text = $"{strings.Get($"lists.op.{op}", f.Language)} {string.Join(f.Arabic ? "\u060C " : ", ", shown)}".Trim();
             yield return new ReportDocumentFact(strings.Get(column.LabelKey, f.Language), text, ListFilter.Format(condition));
         }
+    }
+
+    private static string? ReferenceLabel(ListColumn column, string? id, IReadOnlyList<JsonElement> rows)
+    {
+        if (id is null || column.LabelField is not { } labelField)
+        {
+            return null;
+        }
+        foreach (var row in rows)
+        {
+            if (row.TryGetProperty(column.Key, out var value) && value.ValueKind == JsonValueKind.String
+                && string.Equals(value.GetString(), id, StringComparison.OrdinalIgnoreCase)
+                && row.TryGetProperty(labelField, out var label) && label.ValueKind == JsonValueKind.String)
+            {
+                return label.GetString();
+            }
+        }
+        return null;
     }
 
     private async Task<string> IssuerAsync(string language, CancellationToken cancellationToken)

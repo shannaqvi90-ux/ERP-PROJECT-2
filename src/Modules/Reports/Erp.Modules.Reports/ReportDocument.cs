@@ -17,8 +17,9 @@ public sealed record ReportDocumentColumn(string Key, string Label, string Type,
 
 /// <param name="Label">What the fact is, in the document's language.</param>
 /// <param name="Text">The value as printed.</param>
-/// <param name="Value">Raw value, or null.</param>
-public sealed record ReportDocumentFact(string Label, string Text, object? Value = null);
+/// <param name="Value">Raw value, or null. Not sent: a parameter's raw value is what the caller
+/// typed, and a document repeats only what it can stand behind (see ReportEngine).</param>
+public sealed record ReportDocumentFact(string Label, string Text, [property: JsonIgnore] object? Value = null);
 
 /// <summary>A row: one cell per column, in column order.</summary>
 public sealed record ReportDocumentRow(IReadOnlyList<ReportCell> Cells);

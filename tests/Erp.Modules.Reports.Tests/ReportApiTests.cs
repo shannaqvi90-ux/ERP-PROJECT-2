@@ -150,6 +150,20 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         var users = roles.GetProperty("groups")[0].GetProperty("rows").EnumerateArray().Sum(r => decimal.Parse(r.GetProperty("cells")[1].GetProperty("value").GetString()!, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal(users.ToString(System.Globalization.CultureInfo.InvariantCulture), roles.GetProperty("totals")[1].GetProperty("value").GetString());
 
+        // A document repeats only what it found: an id the caller cannot see prints as "Not found",
+        // typed text an empty document found nothing for is left out (never echoed).
+        var stranger = Guid.NewGuid().ToString();
+        var byRole = await admin.GetStringAsync($"/api/reports/run/identity.usersByRole?role={stranger}");
+        Assert.DoesNotContain(stranger, byRole, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(JsonDocument.Parse(byRole).RootElement.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("text").GetString() == "Not found");
+        var nothing = await admin.GetStringAsync("/api/reports/lists/identity.users?search=zqxnomatch&filter=" + Uri.EscapeDataString("displayName eq 'zqxnomatch2'"));
+        Assert.DoesNotContain("zqxnomatch", nothing, StringComparison.Ordinal);
+        Assert.Equal(0, JsonDocument.Parse(nothing).RootElement.GetProperty("rowCount").GetInt32());
+        var branches = await admin.GetStringAsync("/api/reports/lists/tenancy.branches?filter=" + Uri.EscapeDataString($"companyId eq '{stranger}'"));
+        Assert.DoesNotContain(stranger, branches, StringComparison.OrdinalIgnoreCase);
+        var searched = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?search=admin");
+        Assert.Contains(searched.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Search" && p.GetProperty("text").GetString() == "admin");
+
         using var bad = await admin.GetAsync("/api/reports/lists/identity.users?columns=displayName,password");
         Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
         using var badFilter = await admin.GetAsync("/api/reports/lists/identity.users?filter=" + Uri.EscapeDataString("nope eq 1"));
