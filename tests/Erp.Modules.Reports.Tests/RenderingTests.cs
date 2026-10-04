@@ -100,9 +100,9 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
     public void Long_text_wraps_at_spaces_within_the_width()
     {
         var shaper = new TextShaper(fixture.Fonts);
-        var lines = shaper.Wrap("Office 1104, Al Saqr Business Tower, Sheikh Zayed Road, Dubai", 8.5, false, false, 80);
+        var lines = shaper.Wrap("Office 1104, Al Saqr Business Tower, Sheikh Zayed Road, Dubai", 8.5m, false, false, 80m);
         Assert.True(lines.Count >= 3);
-        Assert.All(lines, l => Assert.True(l.Width <= 80.5, $"{l.Width}"));
+        Assert.All(lines, l => Assert.True(l.Width <= 80.5m, $"{l.Width}"));
     }
 
     [Fact]
