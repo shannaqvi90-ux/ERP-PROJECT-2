@@ -34,3 +34,12 @@ start-up check stops a list from drifting away from the endpoint and permission 
 The roles endpoint returned a bare array while the users endpoint returned a page; the list
 framework could not read both the same way. Roles now return the same page shape, and the gate
 above keeps every future list on it.
+
+## Integrity check, wave 1 (2026-10-04)
+
+The page shape and paging above are superseded by p05's list query contract
+(`p05-list-search-query-contract.md`): every registered list endpoint takes `search`, `filter`,
+`sort`, `after`, `skip`/`take` and `groupBy` and answers `{ items, total, next, groups }`, and a list
+is registered with its query binding (`module.List(ListBinding<Row>.For(…))`) or served by another
+module's list (`servedBy`). The roles list is no longer "all roles as one page": it runs the same
+contract in memory (`.InMemory(reason)`). `ListContractGateTests` holds every registered list to it.

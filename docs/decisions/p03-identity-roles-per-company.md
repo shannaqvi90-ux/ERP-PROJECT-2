@@ -44,3 +44,13 @@ identity would collide with p02's kernel change at merge time.
 p02's company scope is still not on the integration branch (no companies, no `ICompanyContext`),
 so the follow-up above stays open and unchanged: the critic's scope finding is acknowledged, not
 worked around with an unchecked `company_id`.
+
+## Wave 1 integrity check (2026-10-04)
+
+p02's company scope is now on the integration branch: companies, branches, `user_company_access`,
+`user_workplaces`, the restrictive `company_scope` policy, and `ICompanyContext` bound by
+`CompanyScopeBinder` in the session authentication handler. The "Round 3 status" above no longer
+holds. The follow-up is unblocked and still open: `identity.user_roles` has no `company_id`, every
+role still applies in the whole workspace, and identity reads no company context. It is p03's next
+round, not an integrity fix (it changes the permission set of every request and needs the G2 case
+named above).

@@ -80,7 +80,14 @@ they grant; the screens offer nothing else.
    return `{ items, total, next, groups }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
-5. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
+   Another module is used only through its `….Contracts` project (and events); a module's
+   DbContext maps only its own schema, and a web module imports nothing from another web module
+   (`ModuleBoundaryGateTests`).
+5. A reviewed endpoint-to-permission map, `tests/Gates/endpoint-permissions/<module>.txt`: the
+   module's route prefixes and one line per endpoint with its permission and why no broader one
+   (G2 refuses any `/api/<module>/` route under no map; the lists module's per-list routes derive
+   their permission from the list instead).
+6. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
    controls (the company/branch switcher), status-line items and command palette sources, each
    with a permission (`docs/decisions/p04-shell-layout-and-extension-points.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.

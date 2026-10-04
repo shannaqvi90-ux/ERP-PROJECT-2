@@ -41,4 +41,5 @@ sign-in history). Unblock and sign out everywhere use `identity.users.update`; t
 ## Not done in this round
 
 Roles assigned per company and a per-user default company wait for p02's companies (built in
-parallel); `user_roles` will gain a nullable company id then.
+parallel); `user_roles` will gain a nullable company id then. (Wave 1 integrity check, 2026-10-04:
+p02's companies and company scope are integrated now; see `p03-identity-roles-per-company.md`.)
