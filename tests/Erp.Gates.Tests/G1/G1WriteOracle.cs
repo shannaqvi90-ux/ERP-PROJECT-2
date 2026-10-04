@@ -47,6 +47,9 @@ public static class G1WriteOracle
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         using var a = await env.SignInAsync(env.Email(env.TenantA, "admin"));
         using var b = await env.SignInAsync(env.Email(env.TenantB, "admin"));
+        // A record that belongs to a company (a branch) is created in the caller's working company.
+        WorkingCompany.AddOrUpdate(a, await WorkingCompanyAsync(a));
+        WorkingCompany.AddOrUpdate(b, await WorkingCompanyAsync(b));
 
         // Values tenant B holds from its seed data, each sent by tenant A at most once (tenant A's
         // own earlier write of an address would make its own workspace refuse it the next time).
@@ -130,6 +133,19 @@ public static class G1WriteOracle
         return new Result(problems, checks, endpointsChecked);
     }
 
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<HttpClient, object> WorkingCompany = new();
+
+    private static async Task<object> WorkingCompanyAsync(HttpClient client)
+    {
+        using var response = await client.GetAsync("/api/tenancy/workplace");
+        if (!response.IsSuccessStatusCode)
+        {
+            return "";
+        }
+        var workplace = await response.Content.ReadFromJsonAsync<JsonObject>();
+        return workplace?["companyId"]?.GetValue<string>() ?? "";
+    }
+
     /// <summary>An address in tenant B's domain, or a code of the same shape.</summary>
     private static string ValueLike(string field, string local, Erp.Kernel.Seeding.SeedTenant tenant)
     {
@@ -152,11 +168,11 @@ public static class G1WriteOracle
         if (collection is null)
         {
             path = endpoint.Pattern;
-            body = Valid(openApi, schema, env, tag);
+            body = Valid(openApi, schema, env, tag, CompanyOf(client));
         }
         else
         {
-            var createBody = Valid(openApi, openApi.RequestSchema("POST", collection)!.Value, env, $"{tag}t");
+            var createBody = Valid(openApi, openApi.RequestSchema("POST", collection)!.Value, env, $"{tag}t", CompanyOf(client));
             using (var create = await client.SendAsync(Json(HttpMethod.Post, collection, createBody)))
             {
                 var created = await create.Content.ReadAsStringAsync();
@@ -167,7 +183,7 @@ public static class G1WriteOracle
                 path = endpoint.Path(_ => JsonDocument.Parse(created).RootElement.GetProperty("id").GetString()!);
             }
             var item = await client.GetFromJsonAsync<JsonObject>(path) ?? [];
-            body = Valid(openApi, schema, env, tag);
+            body = Valid(openApi, schema, env, tag, CompanyOf(client));
             foreach (var (name, _) in body.ToList())
             {
                 if (item[name] is { } current)
@@ -181,9 +197,34 @@ public static class G1WriteOracle
         return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
     }
 
-    private static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag)
+    private static string CompanyOf(HttpClient client) => WorkingCompany.TryGetValue(client, out var id) ? (string)id : "";
+
+    private static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag, string companyId)
     {
-        var body = GrantEscalation.ValidBody(openApi, schema, env, tag);
+        var generic = GrantEscalation.ValidBody(openApi, schema, env, tag);
+        // Every leaf also meets its documented constraints (an enum's value, a pattern's example,
+        // a maximum length), and an identifying code gets a code-shaped value of its own, so a
+        // create of a record with codes, choices and patterned fields (a company, a branch) passes
+        // validation and its write is judged rather than refused.
+        var k = 0;
+        var body = openApi.BuildBody(schema, (leaf, type, format, name) =>
+        {
+            k++;
+            var value = name is not null && generic[name] is JsonValue plain ? plain.DeepClone() : null;
+            if (type == "string" && name is not null && IsIdentifying(name, format) && !name.Contains("email", StringComparison.OrdinalIgnoreCase))
+            {
+                value = JsonValue.Create(ValueLike(name, $"v{tag}{k}", env.TenantB));
+            }
+            else if (type == "string" && format == "uuid" && name == "companyId" && companyId.Length > 0)
+            {
+                value = JsonValue.Create(companyId);
+            }
+            else if (type == "integer" && value is null)
+            {
+                value = JsonValue.Create(1);
+            }
+            return openApi.Conform(leaf, value);
+        }) as JsonObject ?? [];
         foreach (var (name, value) in body.ToList())
         {
             if (value is JsonArray array && array.All(x => x is null))
