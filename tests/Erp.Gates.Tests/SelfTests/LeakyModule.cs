@@ -483,7 +483,7 @@ public sealed class LeakyModule : ErpModule
 
             // Bug 13 (critic p02 round 2): creates a company with the body's code and answers 409
             // when the code is taken, by a company the caller cannot see as well (a write oracle).
-            group.MapPost("/companies", async (LeakyCompanyRequest request, ErpDbSession session) =>
+            group.MapPost("/companies", async (LeakyCompanyRequest request, ErpDbSession session, ICurrentUser caller) =>
             {
                 if (request.Code is not { } code || !System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Z0-9][A-Z0-9-]{1,19}$") || string.IsNullOrWhiteSpace(request.LegalNameEn))
                 {
@@ -510,6 +510,20 @@ public sealed class LeakyModule : ErpModule
                     await using var rollback = new NpgsqlCommand("ROLLBACK TO SAVEPOINT leaky_company", session.Connection, session.Transaction);
                     await rollback.ExecuteNonQueryAsync();
                     return Results.Conflict(new { title = "taken" });
+                }
+                // As the product did then, the creator works in the new company; so do the users who
+                // worked in every company before it, so the self-test environment keeps its
+                // whole-workspace administrators (only they may create companies through the product).
+                await using (var access = new NpgsqlCommand(
+                    "INSERT INTO tenancy.user_company_access (id, tenant_id, user_id, company_id, all_branches, created_at, updated_at) " +
+                    "SELECT gen_random_uuid(), erp.current_tenant_id(), u, @id, true, now(), now() FROM (" +
+                    "  SELECT @caller AS u UNION SELECT t.user_id FROM tenancy.user_company_totals t " +
+                    "   WHERE t.company_count = (SELECT company_count - 1 FROM tenancy.tenants WHERE id = erp.current_tenant_id())) w " +
+                    "ON CONFLICT DO NOTHING", session.Connection, session.Transaction))
+                {
+                    access.Parameters.AddWithValue("id", id);
+                    access.Parameters.AddWithValue("caller", caller.UserId);
+                    await access.ExecuteNonQueryAsync();
                 }
                 return Results.Created($"/api/leaky/companies/{id}", new { id });
             }).WithName("leaky.companies").WithSummary("Planted bug: tells whether any company of the tenant has the code.").RequirePermission("leaky.data.update");

@@ -359,7 +359,9 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         // Critic p03 round 2, plant L4: a registry on disk answers 409 for tenant B's addresses.
         var result = await G1WriteOracle.RunAsync(fixture.Env);
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/accounts [email]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/accounts", StringComparison.Ordinal));
+        // No product endpoint is reported (the leaky module's other plants may be: its company
+        // create answers 409 for a code its own tenant already used).
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/users", result.Endpoints);
         Assert.Contains("PUT /api/leaky/members/{id:guid}", result.Endpoints);
     }

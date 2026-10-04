@@ -39,8 +39,11 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   working company is the default for new records and lists. It is context, not security.
 - **Branches** are company data (company-scoped). Branch-level limits on users are kept in
   `user_branch_access`. They are enforced by the workplace switcher and exposed as
-  `ICompanyContext.BranchIds` for later modules. There is no branch-level policy yet: no table
-  holds branch-owned business data.
+  `ICompanyContext.BranchIds` for later modules. Since round 3, tenancy also holds its own branch
+  reads and writes to them: a named query filter on `Branch`, set once per request by the scope
+  binder (`TenancyBranchScope`). Creating a branch, or changing a branch code, needs every branch
+  of the company. See `p02-tenancy-access-as-grant.md`. There is no branch-level row-level
+  security policy yet: no table holds branch-owned business data.
 
 ## Why
 

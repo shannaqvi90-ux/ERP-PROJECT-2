@@ -28,3 +28,5 @@ data-source src/Kernel/Erp.Kernel/Data/ErpDataSources.cs 2  # Builds the applica
 connection-string src/Kernel/Erp.Kernel/Data/ErpDataSources.cs 2  # Reads ConnectionStrings:App for those pools.
 bind src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs 1  # Operator command (Erp.Host tenant suspend|activate, no request): binds the one workspace it changes, found by code with the operator's connection.
 connection-string src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs 5  # Operator command: finds and lists workspaces across tenants with ConnectionStrings:Admin, which the web application never has (ErpPlatform refuses any user but the application role).
+set-config src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs 1  # Migration SQL (AccessCounts): the one-time count of existing companies and company access marks its own transaction as a migration actor, as IdentitySql's credential migration does.
+sql-set src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs 2  # Migration SQL: the two invoker-rights counting trigger functions (company count, per-user company count) pin their search_path.
