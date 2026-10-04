@@ -40,16 +40,13 @@ export default {
     await page.locator(PRINT).waitFor();
   },
   ready: PRINT,
-  observe(ctx) {
-    // The address of the printed document (read only, registered before the measured part).
-    ctx.page.on('request', r => {
-      if (r.url().includes('/api/reports/run/') && r.url().includes('format=pdf')) ctx.state.printUrl = r.url();
-    });
-  },
   async run(op, ctx) {
     await op.click(PRINT, { label: 'Print' });
     const arabic = op.page.getByRole('menuitem', { name: 'PDF in Arabic' });
     await op.waitFor(arabic, { label: 'print menu' });
+    // The address of the printed document, read (not counted) from the menu item the user chooses:
+    // a download started by a link raises no page request event, so it cannot be observed.
+    ctx.state.printUrl = new URL(await arabic.getAttribute('href'), ctx.product.baseUrl).href;
     ctx.state.file = await op.clickForDownload(arabic, ctx.state.dir, { label: 'PDF in Arabic' });
     return {};
   },
