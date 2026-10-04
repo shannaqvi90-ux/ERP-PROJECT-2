@@ -89,6 +89,7 @@ public static class SqlTrace
     private static readonly ConcurrentQueue<TracedSettingChange> Changes = new();
     private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> Unobserved = new();
     private static readonly ConcurrentDictionary<object, int> ObservedByApp = new(ReferenceEqualityComparer.Instance);
+    private static readonly ConcurrentDictionary<(object App, string Request), string> Principals = new();
     private static int _requestStatements;
     private static long _sequence;
     private static readonly HttpContextAccessor Accessor = new();
@@ -137,6 +138,14 @@ public static class SqlTrace
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
         return Changes.Skip(since.Changes).Where(c => ReferenceEquals(c.App, app)).ToList();
     }
+
+    /// <summary>The tenant a request may run under once its session is known: the signed-in
+    /// principal's, for a request to an endpoint that requires a permission (an empty id for a
+    /// principal without a tenant); null for anonymous requests and sign-in. Statements of the
+    /// session lookup itself run before the principal exists, so the request's later statements
+    /// tell.</summary>
+    public static string? PrincipalOf(TracedSettingChange change) =>
+        change.RequiredTenant ?? (change.App is { } app && change.Request is { } request && Principals.TryGetValue((app, request), out var tenant) ? tenant : null);
 
     /// <summary>Statements inside one environment's requests since <paramref name="since"/> that
     /// carried no capture of their parameters: sent on a pool the platform did not build, which
@@ -248,6 +257,10 @@ public static class SqlTrace
         if (activity.GetCustomProperty(CallerProperty) is Caller { Path: not null } inRequest)
         {
             Interlocked.Increment(ref _requestStatements);
+            if (inRequest is { RequiredTenant: { } required, App: { } principalApp, Request: { } principalRequest })
+            {
+                Principals.TryAdd((principalApp, principalRequest), required);
+            }
             var capture = StatementCapture.Of(activity);
             if (ChangesSettings(text))
             {
@@ -384,8 +397,10 @@ public static class TenantBindingRules
     /// the whole connection; and a setting whose name or tenant value the statement computes, where
     /// the gate cannot read it, is refused rather than trusted.
     /// </summary>
-    public static IReadOnlyList<string> TenantValueViolations(IEnumerable<TracedSettingChange> changes, IEnumerable<TracedBind> binds)
+    public static IReadOnlyList<string> TenantValueViolations(IEnumerable<TracedSettingChange> changes, IEnumerable<TracedBind> binds,
+        Func<TracedSettingChange, string?>? principalOf = null)
     {
+        principalOf ??= c => c.RequiredTenant;
         var declared = binds.Where(b => b.Request is not null)
             .ToLookup(b => b.Request!, b => b.Tenant, StringComparer.Ordinal);
         var problems = new List<string>();
@@ -419,7 +434,7 @@ public static class TenantBindingRules
             {
                 continue; // no tenant: row-level security shows nothing (fail closed)
             }
-            if (c.RequiredTenant is { } required)
+            if (principalOf(c) is { } required)
             {
                 if (!SameTenant(value, required))
                 {

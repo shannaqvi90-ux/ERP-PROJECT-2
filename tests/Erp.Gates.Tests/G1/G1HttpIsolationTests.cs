@@ -557,11 +557,11 @@ public static class IsolationAttack
         // binding values, for signed-in requests and for anonymous ones, or it may be blind.
         var changes = SqlTrace.ChangesFor(Env, traceSnapshot);
         var tenantValues = changes.Where(c => string.Equals(c.Change.Name, SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (!tenantValues.Any(c => c.RequiredTenant is not null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
+        if (!tenantValues.Any(c => SqlTrace.PrincipalOf(c) is not null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
         {
             traceBlindSpots.Add("no tenant value set by a signed-in request was read from its statement's parameters");
         }
-        if (!tenantValues.Any(c => c.RequiredTenant is null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
+        if (!tenantValues.Any(c => SqlTrace.PrincipalOf(c) is null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
         {
             traceBlindSpots.Add("no tenant value set by sign-in or the session lookup was read from its statement's parameters");
         }
@@ -586,7 +586,7 @@ public static class IsolationAttack
             BindViolations = TenantBindingRules.BindViolations(binds),
             WritableReads = TenantBindingRules.WritableReads(binds, SqlTrace.ReadOnlyFor(Env, traceSnapshot)),
             SettingViolations = TenantBindingRules.SettingViolations(settings),
-            TenantValueViolations = TenantBindingRules.TenantValueViolations(changes, binds),
+            TenantValueViolations = TenantBindingRules.TenantValueViolations(changes, binds, SqlTrace.PrincipalOf),
             TenantValuesJudged = tenantValues.Count,
             StatementsObserved = SqlTrace.ObservedFor(Env),
             UnobservedStatements = SqlTrace.UnobservedFor(Env, traceSnapshot),

@@ -37,10 +37,26 @@ public sealed class LeakyModuleCollection
     public const string Name = "Leaky module (process-wide planted state)";
 }
 
+/// <summary>The long self-tests ./erp verify runs in test processes of their own (filter on the
+/// trait), so the planted static state of one never meets another's: separate processes, separate
+/// statics. Run in one process (a plain <c>dotnet test</c>), they take turns in
+/// <see cref="LeakyModuleCollection"/> as before.</summary>
+public static class SelfTestProcess
+{
+    public const string Trait = "Process";
+    public const string Http = "self-http";
+    public const string Company = "self-company";
+    public const string NonInterference = "self-noninterference";
+}
+
 [Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
+    // ./erp verify runs this test, the company attack's self-test and the non-interference
+    // self-test each in a test process of its own (trait Process), side by side: the planted state
+    // is static, so within one process the leaky module's tests take turns.
     [Fact]
+    [Trait(SelfTestProcess.Trait, SelfTestProcess.Http)]
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
         // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
@@ -164,6 +180,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    [Trait(SelfTestProcess.Trait, SelfTestProcess.Company)]
     public async Task The_company_attack_catches_an_endpoint_that_widens_the_company_scope()
     {
         var report = await CompanyAttack.RunAsync(fixture.Env);
