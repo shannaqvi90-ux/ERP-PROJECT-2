@@ -964,18 +964,33 @@ public static class IsolationAttack
                 return;
             }
             var control = ControlFor(value);
-            var (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+            var (controlStatus, controlText, controlHeaders) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
             // in every answer ("user" in "Users and access") is treated the same on both sides.
             var normalized = Normalize(Normalize(text, value), control);
             var controlNormalized = Normalize(Normalize(controlText, control), value);
+            if ((status != controlStatus || normalized != controlNormalized) && (Stamped(headers) || Stamped(controlHeaders)))
+            {
+                // A printed document shows the minute it was printed (in its own language and digits,
+                // so not every reader can scrub it): two answers a moment apart on either side of a
+                // minute differ by it alone. The pair is asked once more; an answer that tells the
+                // values apart does so again.
+                (status, text, var retryHeaders) = await RawAsync(attacker, endpoint, uri, bodySchema, openApi, b, n);
+                Judge(attacker, endpoint, $"{uri} [{parameter.In} {parameter.Name}, asked again]", status, text, retryHeaders, [value]);
+                (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+                normalized = Normalize(Normalize(text, value), control);
+                controlNormalized = Normalize(Normalize(controlText, control), value);
+            }
             if (status != controlStatus || normalized != controlNormalized)
             {
                 lock (_lock) Oracles.Add($"{attacker.Name} → GET {uri} [{parameter.In} {parameter.Name}]: {status} {Short(normalized, 160)} " +
                             $"but for a value that exists nowhere {controlStatus} {Short(controlNormalized, 160)}");
             }
         }
+
+        private static bool Stamped(string headers) =>
+            headers.Contains(ResponseText.PrintedAtHeader + ":", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>A value of the same shape that exists in no tenant: every letter and digit
         /// replaced at random, punctuation kept (so "a.b@c.example" stays file-like and e-mail-like).</summary>

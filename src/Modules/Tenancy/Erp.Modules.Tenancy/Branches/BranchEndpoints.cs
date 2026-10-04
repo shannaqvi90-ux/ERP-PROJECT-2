@@ -74,7 +74,7 @@ internal static class BranchEndpoints
     {
         group.MapGet("/branches", List)
             .WithName("tenancy.branches.list")
-            .WithSummary("Branches the caller may work in (only their own branches of a company where they are limited to some), a page at a time: word search on code and names, filters (companyId eq '…' for one company), sort, keyset or offset paging and grouping (the list query contract); by code by default.")
+            .WithSummary("Branches the caller may work in (only their own branches of a company where they are limited to some), a page at a time: word search on code and names, filters (companyId eq '\u2026' for one company), sort, keyset or offset paging and grouping (the list query contract); by code by default.")
             .RequirePermission(TenancyPermissions.BranchesRead);
 
         group.MapGet("/branches/{id:guid}", Get)
@@ -100,16 +100,23 @@ internal static class BranchEndpoints
     private static async Task<Results<Ok<ListPage<BranchRow>>, ProblemHttpResult>> List(
         TenancyDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var result = await PageAsync(db, catalog, request, http, cancellationToken);
+        return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    /// <summary>One page of the branches list exactly as the endpoint serves it (reports print it too).</summary>
+    internal static async Task<ListResult<BranchRow>> PageAsync(TenancyDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
         var result = await catalog.ListBinding<Branch>(BranchesList.Key).QueryAsync(db.Branches.AsNoTracking(), request, http, cancellationToken);
-        if (result.Problem is { } problem)
+        if (result.Problem is not null)
         {
-            return problem;
+            return result.Map(_ => (BranchRow)null!);
         }
         var companyIds = result.Rows.Select(b => b.CompanyId).Distinct().ToList();
         var companies = await db.Companies.AsNoTracking().Where(c => companyIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.Code, cancellationToken);
-        return TypedResults.Ok(result.ToPage(b => new BranchRow(b.Id, b.CompanyId, companies.GetValueOrDefault(b.CompanyId) ?? "", b.Code, b.NameEn, b.NameAr,
-            b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version)));
+        return result.Map(b => new BranchRow(b.Id, b.CompanyId, companies.GetValueOrDefault(b.CompanyId) ?? "", b.Code, b.NameEn, b.NameAr,
+            b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)

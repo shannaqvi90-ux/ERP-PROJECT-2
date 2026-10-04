@@ -104,12 +104,15 @@ public static partial class ResponseText
             }
             foreach (var page in document.GetPages())
             {
-                var pageText = page.Text;
+                // Zero-width spaces stand for glyphs that draw no character of their own (dots and
+                // marks of Arabic letters); a reader skips them, and so does the search.
+                var pageText = page.Text.Replace("\u200B", "", StringComparison.Ordinal);
                 text.AppendLine(pageText);
                 text.AppendLine(Logical(pageText));
                 foreach (var word in page.GetWords())
                 {
-                    text.Append(word.Text).Append(' ').Append(Logical(word.Text)).Append('\n');
+                    var wordText = word.Text.Replace("\u200B", "", StringComparison.Ordinal);
+                    text.Append(wordText).Append(' ').Append(Logical(wordText)).Append('\n');
                 }
             }
         }
@@ -208,10 +211,10 @@ public static partial class ResponseText
     [GeneratedRegex(@"/ActualText\s*<([0-9A-Fa-f\s]+)>")]
     private static partial Regex ActualTextHex();
 
-    [GeneratedRegex(@"[֐-ࣿיִ-﷿ﹰ-﻿]+")]
+    [GeneratedRegex(@"[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]+")]
     private static partial Regex RightToLeftRun();
 
-    [GeneratedRegex(@"[‎‏؜‪-‮⁦-⁩]")]
+    [GeneratedRegex(@"[\u200E\u200F\u061C\u202A-\u202E\u2066-\u2069]")]
     private static partial Regex BidiMarks();
 }
 

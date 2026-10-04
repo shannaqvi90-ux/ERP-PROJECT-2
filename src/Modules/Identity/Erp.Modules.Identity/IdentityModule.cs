@@ -42,6 +42,12 @@ public sealed class IdentityModule : ErpModule
         module.Menu(new MenuEntry("identity.me", "identity.menu.me", "/identity/me", IdentityPermissions.ProfileUpdate, Order: 990, Group: "personal"));
         module.List(UsersList.Create());
         module.List(RolesList.Create());
+        // Reports print both lists exactly as their screens show them, and run users by role.
+        module.ListRows(UsersList.Key, async (services, request, http, cancellationToken) =>
+            (await UserEndpoints.PageAsync(services.GetRequiredService<IdentityDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
+        module.ListRows(RolesList.Key, async (services, request, http, cancellationToken) =>
+            (await RoleEndpoints.PageAsync(services.GetRequiredService<IdentityDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
+        module.Report<Reports.UsersByRoleReport>(Reports.UsersByRoleReport.Definition);
         module.Seeder<IdentitySeeder>();
     }
 }

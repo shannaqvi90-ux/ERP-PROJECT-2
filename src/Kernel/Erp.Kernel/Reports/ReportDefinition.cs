@@ -187,6 +187,13 @@ public sealed class ReportData
 
     /// <summary>The source stopped at the row limit: more rows match than the report holds.</summary>
     public bool Truncated { get; init; }
+
+    /// <summary>How many rows matched in all (when <see cref="Truncated"/>; otherwise the row count).</summary>
+    public int? MatchCount { get; init; }
+
+    /// <summary>How the chosen value of a reference parameter is printed (the company's code and
+    /// name for a company id), by parameter key; an id without one is printed as given.</summary>
+    public IReadOnlyDictionary<string, LocalText> ParameterTexts { get; init; } = new Dictionary<string, LocalText>();
 }
 
 /// <summary>One run of a report: its definition, the validated parameter values (by key:
