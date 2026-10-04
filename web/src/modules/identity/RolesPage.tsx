@@ -243,7 +243,7 @@ function RoleEditor({
       )}
       <div className="id-actions">
         {!readOnly && (
-          <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
+          <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
             {role ? t("identity.form.save") : t("identity.form.create")}
           </button>
         )}

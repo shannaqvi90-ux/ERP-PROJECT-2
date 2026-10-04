@@ -112,6 +112,32 @@ describe("companies screen", () => {
     expect(branch.body).toMatchObject({ companyId: "c9", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", isActive: true });
   });
 
+  it("saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces both on the save button", async () => {
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    press({ altKey: true, code: "KeyN", key: "n" });
+    await settle();
+    setInput(field(view.container, "code"), "an-ajm");
+    setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");
+    setInput(field(view.container, "legalNameAr"), "النور عجمان ذ.م.م");
+    press({ ctrlKey: true, key: "Enter", code: "Enter" });
+    await settle();
+    const posts = calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/companies");
+    expect(posts).toHaveLength(1);
+    expect(posts[0]!.body).toMatchObject({ code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC" });
+    expect(view.container.querySelector('button[type="submit"][aria-keyshortcuts]')!.getAttribute("aria-keyshortcuts")).toBe("Control+S Control+Enter");
+  });
+
   it("shows the company under its Arabic name on Arabic screens and starts a new branch in the company's emirate", async () => {
     window.history.replaceState(null, "", "/tenancy/companies?open=c9");
     const dubai = { ...saved, emirate: "dubai", city: "Dubai" };

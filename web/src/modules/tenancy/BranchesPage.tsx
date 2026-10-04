@@ -229,7 +229,7 @@ function BranchForm({
         <h2>{id === null ? t("tenancy.branch.new") : `${branch?.companyCode ?? ""} · ${branch?.code ?? ""}`}</h2>
         <div className="record-actions">
           {editable && (
-            <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S">
+            <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
               {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
             </button>
           )}

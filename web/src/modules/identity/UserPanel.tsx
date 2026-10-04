@@ -29,9 +29,11 @@ function fieldErrors(error: unknown): Errors {
   return out;
 }
 
-/** Ctrl+Enter or Ctrl+S saves, Escape closes: the same in every identity form. */
+/** Ctrl+Enter or Ctrl+S saves, Escape closes: the same in every identity form and in tenancy's
+ * forms. S is matched by key position (KeyboardEvent.code), as the shell's shortcuts are, so it
+ * also saves on an Arabic keyboard layout, where that key types "س". */
 export function formKeys(event: KeyboardEvent, save: () => void, close: () => void) {
-  if ((event.ctrlKey || event.metaKey) && (event.key === "Enter" || event.key.toLowerCase() === "s")) {
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === "Enter" || event.code === "KeyS" || event.key.toLowerCase() === "s")) {
     event.preventDefault();
     save();
   } else if (event.key === "Escape") {
@@ -222,7 +224,7 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
         </div>
       )}
       <div className="id-actions">
-        <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
+        <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
           {t("identity.form.create")}
         </button>
         <button type="button" className="button" onClick={onClose} aria-keyshortcuts="Escape">
@@ -417,7 +419,7 @@ export function UserDetail({
           )}
           <div className="id-actions">
             {editable && (
-              <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
+              <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
                 {t("identity.form.save")}
               </button>
             )}

@@ -110,7 +110,7 @@ export function TenantPage() {
           <div className="record-header">
             <h2>{t("tenancy.tenant.settings")}</h2>
             <div className="record-actions">
-              <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S">
+              <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
                 {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
               </button>
             </div>

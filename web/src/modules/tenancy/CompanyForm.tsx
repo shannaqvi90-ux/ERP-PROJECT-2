@@ -188,7 +188,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
           <h2>{id === null && !company ? t("tenancy.company.new") : `${company?.code ?? ""} · ${company ? name(company.legalNameEn, company.legalNameAr) : ""}`}</h2>
           <div className="record-actions">
             {editable && (
-              <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S">
+              <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
                 {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
               </button>
             )}

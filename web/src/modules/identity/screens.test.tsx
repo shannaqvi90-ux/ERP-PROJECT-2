@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { listReply } from "../../test/lists";
 import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
 import { App } from "../shell/App";
+import { formKeys } from "./UserPanel";
 
 let view: Rendered | undefined;
 
@@ -396,5 +397,26 @@ describe("sign-in with a set-up code", () => {
     const last = calls.filter((c) => c.url === "/api/auth/sign-in").at(-1)!;
     expect(last.body).toEqual({ email: "hessa.clerk@demo-trading.example", password: "K7QM-3XRA-PZ9D", newPassword: "Hessa-Own-Pass-1" });
     expect(view.container.textContent).toContain("Welcome");
+  });
+});
+
+describe("identity form keys", () => {
+  it("save with Ctrl+Enter or Ctrl+S, the S matched by key position so an Arabic layout saves too, and close with Escape", () => {
+    const run = (init: KeyboardEventInit) => {
+      let saved = 0;
+      let closed = 0;
+      const event = new KeyboardEvent("keydown", { cancelable: true, ...init });
+      formKeys(event as unknown as Parameters<typeof formKeys>[0], () => saved++, () => closed++);
+      return { saved, closed, prevented: event.defaultPrevented };
+    };
+    expect(run({ ctrlKey: true, key: "Enter", code: "Enter" })).toEqual({ saved: 1, closed: 0, prevented: true });
+    expect(run({ ctrlKey: true, key: "s", code: "KeyS" })).toEqual({ saved: 1, closed: 0, prevented: true });
+    // Arabic layout: the S key types "س".
+    expect(run({ ctrlKey: true, key: "س", code: "KeyS" })).toEqual({ saved: 1, closed: 0, prevented: true });
+    expect(run({ metaKey: true, key: "س", code: "KeyS" })).toEqual({ saved: 1, closed: 0, prevented: true });
+    expect(run({ key: "Escape", code: "Escape" })).toEqual({ saved: 0, closed: 1, prevented: true });
+    // Typing an "s", or AltGr (Ctrl+Alt) characters, never saves.
+    expect(run({ key: "s", code: "KeyS" })).toEqual({ saved: 0, closed: 0, prevented: false });
+    expect(run({ ctrlKey: true, altKey: true, key: "s", code: "KeyS" })).toEqual({ saved: 0, closed: 0, prevented: false });
   });
 });

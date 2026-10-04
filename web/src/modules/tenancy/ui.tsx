@@ -18,7 +18,7 @@ export function problemOf(error: unknown): { message: string; fields: FieldError
 type Keys = {
   /** Alt+N: new record. */
   onNew?: () => void;
-  /** Ctrl+S (Cmd+S): save. */
+  /** Ctrl+S or Ctrl+Enter (Cmd on Apple devices): save, the same keys as every identity form. */
   onSave?: () => void;
   /** Escape: close the form. */
   onClose?: () => void;
@@ -26,8 +26,10 @@ type Keys = {
   search?: React.RefObject<HTMLInputElement | null>;
 };
 
-/** Screen keyboard shortcuts. Alt+N and Ctrl+S go through the shell's shortcut registry (so they
- * appear in its help sheet); Escape closes the form and "/" focuses the search box. */
+/** Screen keyboard shortcuts. Alt+N, Ctrl+S and Ctrl+Enter go through the shell's shortcut registry
+ * (so they appear in its help sheet and match by key position on an Arabic layout); Escape closes
+ * the form and "/" focuses the search box. Ctrl+Enter saves as it does in the users and roles forms,
+ * so one save key works on every screen. */
 export function useScreenKeys({ onNew, onSave, onClose, search }: Keys) {
   const latest = useRef({ onNew, onSave, onClose, search });
   latest.current = { onNew, onSave, onClose, search };
@@ -42,6 +44,14 @@ export function useScreenKeys({ onNew, onSave, onClose, search }: Keys) {
   useShortcut({
     id: "tenancy.form.save",
     chord: "Mod+KeyS",
+    labelKey: "tenancy.shortcut.save",
+    groupKey: "tenancy.shortcut.group",
+    enabled: Boolean(onSave),
+    run: () => latest.current.onSave?.(),
+  });
+  useShortcut({
+    id: "tenancy.form.saveEnter",
+    chord: "Mod+Enter",
     labelKey: "tenancy.shortcut.save",
     groupKey: "tenancy.shortcut.group",
     enabled: Boolean(onSave),
@@ -62,22 +72,6 @@ export function useScreenKeys({ onNew, onSave, onClose, search }: Keys) {
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
   }, []);
-}
-
-/** The id selected in the screen's address (?id=…, or ?new=1), kept in step without reloading. */
-export function readSelection(): { id: string | null; isNew: boolean } {
-  const params = new URLSearchParams(window.location.search);
-  return { id: params.get("id"), isNew: params.get("new") === "1" };
-}
-
-export function writeSelection(id: string | null, isNew = false) {
-  const params = new URLSearchParams(window.location.search);
-  params.delete("id");
-  params.delete("new");
-  if (id) params.set("id", id);
-  if (isNew) params.set("new", "1");
-  const query = params.toString();
-  window.history.replaceState(null, "", window.location.pathname + (query ? `?${query}` : ""));
 }
 
 type FieldProps = {
@@ -220,21 +214,4 @@ export function useMonths(): { value: string; label: string }[] {
 export function useLocalName() {
   const { language } = useI18n();
   return (en: string, ar: string) => (language === "ar" ? ar || en : en || ar);
-}
-
-/** Moves a row selection with the arrow keys and opens it with Enter. */
-export function gridKeys<T extends { id: string }>(rows: T[], current: string | null, select: (id: string) => void, open: (id: string) => void) {
-  return (event: React.KeyboardEvent) => {
-    if (rows.length === 0) return;
-    const index = rows.findIndex((r) => r.id === current);
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const next = event.key === "ArrowDown" ? Math.min(rows.length - 1, index + 1) : Math.max(0, index - 1);
-      const row = rows[next < 0 ? 0 : next];
-      if (row) select(row.id);
-    } else if (event.key === "Enter" && current) {
-      event.preventDefault();
-      open(current);
-    }
-  };
 }
