@@ -253,8 +253,11 @@ public static class IsolationAttack
                     victim.Markers.Concat(values.Strings).Distinct().ToList()), CancellationToken.None);
                 state.Requests += result.Attempts;
                 probesRun++;
-                foreach (var observed in result.Observed)
+                foreach (var raw in result.Observed)
                 {
+                    // A probe may hand over a whole body as "body:<media type>;base64,<data>"; it is
+                    // decoded like any response (PDF text, spreadsheet cells), not searched as bytes.
+                    var observed = ObservedBody.Decode(raw);
                     if (state.FindMarker(observed, []) is { } marker)
                     {
                         state.Leaks.Add($"probe {probe.Name}: observed tenant B marker {marker}");
@@ -936,7 +939,7 @@ public static class IsolationAttack
         public async Task<int> SendAsync(Attacker attacker, ApiEndpoint endpoint, HttpRequestMessage request, string label, IReadOnlyCollection<string>? sent = null)
         {
             using var response = await attacker.Client.SendAsync(request);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             var status = (int)response.StatusCode;
             Judge(attacker, endpoint, label, status, text, ResponseHeaders.Text(response), sent ?? []);
@@ -1000,7 +1003,7 @@ public static class IsolationAttack
             }
             using var response = await attacker.Client.SendAsync(request);
             Interlocked.Increment(ref _requests);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await ResponseText.ReadAsync(response);
             if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
             {
                 await attacker.ConnectAsync();

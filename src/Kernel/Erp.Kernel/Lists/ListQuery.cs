@@ -217,3 +217,8 @@ public static class ListFilterText
     public static string In(string column, IEnumerable<string> values) =>
         new StringBuilder(column).Append(" in (").AppendJoin(", ", values.Select(Quote)).Append(')').ToString();
 }
+
+/// <summary>Returns one page of a registered list's rows exactly as the list's endpoint does (the
+/// same query contract and row shape), inside the caller's unit of work. Modules register one per
+/// printable list (<c>ModuleBuilder.ListRows</c>); reports page through it.</summary>
+public delegate Task<ListResult<object>> ListRowReader(IServiceProvider services, ListRequest request, Microsoft.AspNetCore.Http.HttpContext http, CancellationToken cancellationToken);

@@ -53,10 +53,21 @@ public sealed partial class StringGateTests(GateFixture fixture)
             .Concat(catalog.Lists.SelectMany(l => l.Columns.Select(c => c.LabelKey).Append(l.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.SelectMany(c => (c.Choices ?? []).Select(x => x.LabelKey))).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => (l.Presets ?? []).Select(p => p.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
+            .Concat(ReportLabelKeys(catalog).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .ToList();
         Assert.NotEmpty(catalog.Lists);
         Assert.True(missing.Count == 0, "Missing labels: " + string.Join(", ", missing));
     }
+
+    /// <summary>Every label a report prints: its title and description, its parameters and their
+    /// choices, its columns, facts and their choices (printed documents use the web strings, so the
+    /// screen and the paper read the same).</summary>
+    public static IEnumerable<string> ReportLabelKeys(ModuleCatalog catalog) =>
+        catalog.Reports.Select(r => r.Definition).SelectMany(d =>
+            new[] { d.LabelKey, d.DescriptionKey }.OfType<string>()
+                .Concat(d.Parameters.SelectMany(p => (p.Choices ?? []).Select(c => c.LabelKey).Append(p.LabelKey)))
+                .Concat(d.Columns.Concat(d.Facts ?? []).SelectMany(c => (c.Choices ?? []).Select(x => x.LabelKey).Append(c.LabelKey))))
+            .Distinct(StringComparer.Ordinal);
 
     [Fact]
     public void Every_problem_and_validation_code_in_server_code_has_text()
