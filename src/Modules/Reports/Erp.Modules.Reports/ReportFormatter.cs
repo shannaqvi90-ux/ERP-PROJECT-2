@@ -14,7 +14,7 @@ public sealed class ReportFormatter
 {
     private const string ArabicDigits = "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669";
     private const char Rlm = '\u200F';
-    private static readonly string[] Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     /// <summary>Currency minor units (ISO 4217) for the currencies this market uses most.</summary>
     private static readonly IReadOnlyDictionary<string, int> MinorUnits = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)

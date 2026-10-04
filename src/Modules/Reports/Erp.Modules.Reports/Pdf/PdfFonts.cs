@@ -60,7 +60,7 @@ public sealed class PdfFontFace : IDisposable
     /// <summary>The glyph's default advance in thousandths of an em.</summary>
     public int Width(uint glyph) => Scale(Font.GetHorizontalGlyphAdvance(glyph));
 
-    public int Scale(int fontUnits) => (int)Math.Round(fontUnits * 1000.0 / UnitsPerEm);
+    public int Scale(int fontUnits) => (int)Math.Round(fontUnits * 1000.0m / UnitsPerEm);
 
     private byte[] Table(string tag) => TryTable(tag) ?? throw new InvalidDataException($"font {Name} has no {tag} table");
 
@@ -99,8 +99,8 @@ public sealed class PdfFontFace : IDisposable
 /// </summary>
 public sealed class PdfFonts : IDisposable
 {
-    private readonly PdfFontFace[] _regular;
-    private readonly PdfFontFace[] _bold;
+    private readonly System.Collections.Immutable.ImmutableArray<PdfFontFace> _regular;
+    private readonly System.Collections.Immutable.ImmutableArray<PdfFontFace> _bold;
 
     public PdfFonts()
     {
@@ -171,7 +171,7 @@ public static class Woff
     {
         if (woff.Length < 44 || BinaryPrimitives.ReadUInt32BigEndian(woff) != 0x774F4646)
         {
-            throw new InvalidDataException("not a WOFF 1.0 file");
+            throw new InvalidDataException("not a WOFF 1.0m file");
         }
         var flavor = BinaryPrimitives.ReadUInt32BigEndian(woff.AsSpan(4));
         var count = BinaryPrimitives.ReadUInt16BigEndian(woff.AsSpan(12));

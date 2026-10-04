@@ -174,7 +174,7 @@ public static class Exports
     }
 
     private static string Serial(DateTime value) =>
-        (value - new DateTime(1899, 12, 30)).TotalDays.ToString("0.########", CultureInfo.InvariantCulture);
+        ((decimal)(value - new DateTime(1899, 12, 30)).Ticks / TimeSpan.TicksPerDay).ToString("0.########", CultureInfo.InvariantCulture);
 
     private static string TextCell(string reference, string text, int style) =>
         $"<c r=\"{reference}\" t=\"inlineStr\"{(style == 0 ? "" : $" s=\"{style}\"")}><is><t xml:space=\"preserve\">{Xml(text)}</t></is></c>";

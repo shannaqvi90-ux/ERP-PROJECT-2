@@ -16,7 +16,7 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
     private readonly List<PdfPage> _pages = [];
     private readonly Dictionary<PdfFontFace, FontUse> _fonts = [];
 
-    public PdfPage AddPage(double width, double height)
+    public PdfPage AddPage(decimal width, decimal height)
     {
         var page = new PdfPage(this, width, height);
         _pages.Add(page);
@@ -87,7 +87,7 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw("\nendstream\nendobj\n");
         }
 
-        Raw("%PDF-1.7\n%\u00E2\u00E3\u00CF\u00D3\n");
+        Raw("%PDF-1.7m\n%\u00E2\u00E3\u00CF\u00D3\n");
         var catalog = Reserve();
         var pages = Reserve();
         var info = Reserve();
@@ -140,7 +140,7 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
     /// <summary>A text string: UTF-16BE with a byte-order mark, as a hex string.</summary>
     public static string Text(string value) => "<FEFF" + Convert.ToHexString(Encoding.BigEndianUnicode.GetBytes(value)) + ">";
 
-    public static string N(double value) => Math.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
+    public static string N(decimal value) => Math.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
 
     private static string PdfDate(DateTimeOffset at) => "D:" + at.UtcDateTime.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "Z";
 
@@ -186,35 +186,35 @@ public sealed class PdfPage
 {
     private readonly PdfWriter _writer;
 
-    internal PdfPage(PdfWriter writer, double width, double height)
+    internal PdfPage(PdfWriter writer, decimal width, decimal height)
     {
         _writer = writer;
         Width = width;
         Height = height;
     }
 
-    public double Width { get; }
-    public double Height { get; }
+    public decimal Width { get; }
+    public decimal Height { get; }
     internal StringBuilder Content { get; } = new();
 
-    public void FillRectangle(double x, double y, double width, double height, double gray)
+    public void FillRectangle(decimal x, decimal y, decimal width, decimal height, decimal gray)
     {
         Content.Append($"q {PdfWriter.N(gray)} g {PdfWriter.N(x)} {PdfWriter.N(y)} {PdfWriter.N(width)} {PdfWriter.N(height)} re f Q\n");
     }
 
-    public void Line(double x1, double y1, double x2, double y2, double gray, double thickness)
+    public void Line(decimal x1, decimal y1, decimal x2, decimal y2, decimal gray, decimal thickness)
     {
         Content.Append($"q {PdfWriter.N(gray)} G {PdfWriter.N(thickness)} w {PdfWriter.N(x1)} {PdfWriter.N(y1)} m {PdfWriter.N(x2)} {PdfWriter.N(y2)} l S Q\n");
     }
 
     /// <summary>Draws a shaped line with its left edge at <paramref name="x"/> and baseline at <paramref name="y"/>.</summary>
-    public void Text(ShapedLine line, double x, double y, double gray = 0)
+    public void Text(ShapedLine line, decimal x, decimal y, decimal gray = 0)
     {
         var pen = x;
         foreach (var run in line.Runs)
         {
             var font = _writer.FontResource(run.Face, run);
-            var scale = line.Size / 1000.0;
+            var scale = line.Size / 1000.0m;
             if (run.RightToLeft)
             {
                 Content.Append($"/Span << /ActualText {PdfWriter.Text(run.Text)} >> BDC\n");

@@ -49,7 +49,7 @@ public sealed record ReportCatalogDto(IReadOnlyList<ReportSummaryDto> Items, IRe
 /// </summary>
 internal static class ReportEndpoints
 {
-    public static readonly string[] Formats = ["json", "pdf", "csv", "xlsx"];
+    public static readonly System.Collections.Immutable.ImmutableArray<string> Formats = ["json", "pdf", "csv", "xlsx"];
     private const int MaxColumns = 30;
 
     public static void Map(RouteGroupBuilder group)

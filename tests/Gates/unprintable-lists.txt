@@ -1,0 +1,3 @@
+# Registered lists that cannot be printed or exported through the reports module, each with the
+# reason. Every other list registers a row reader (ModuleBuilder.ListRows) and is printed at
+# /api/reports/lists/<list key> under its own permission. Format: <list key> # reason

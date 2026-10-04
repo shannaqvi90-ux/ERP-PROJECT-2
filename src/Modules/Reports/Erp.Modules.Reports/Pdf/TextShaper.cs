@@ -15,10 +15,10 @@ public sealed record GlyphRun(PdfFontFace Face, IReadOnlyList<ShapedGlyph> Glyph
 }
 
 /// <summary>One line of text, shaped and ordered for drawing left to right.</summary>
-public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, double Size)
+public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size)
 {
     /// <summary>Width in points.</summary>
-    public double Width => Runs.Sum(r => r.Advance) * Size / 1000.0;
+    public decimal Width => Runs.Sum(r => r.Advance) * Size / 1000.0m;
 
     public bool IsEmpty => Runs.Count == 0;
 }
@@ -32,7 +32,7 @@ public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, double Size)
 /// </summary>
 public sealed class TextShaper(PdfFonts fonts)
 {
-    public ShapedLine Shape(string text, double size, bool bold, bool documentRightToLeft)
+    public ShapedLine Shape(string text, decimal size, bool bold, bool documentRightToLeft)
     {
         text = Clean(text);
         var rtl = Bidi.FirstStrongIsRightToLeft(text) ?? documentRightToLeft;
@@ -58,7 +58,7 @@ public sealed class TextShaper(PdfFonts fonts)
 
     /// <summary>The text broken into lines no wider than <paramref name="width"/> points, at spaces
     /// (inside a word only when the word alone is wider). Explicit line breaks are kept.</summary>
-    public IReadOnlyList<ShapedLine> Wrap(string text, double size, bool bold, bool documentRightToLeft, double width, int maxLines = 50)
+    public IReadOnlyList<ShapedLine> Wrap(string text, decimal size, bool bold, bool documentRightToLeft, decimal width, int maxLines = 50)
     {
         var lines = new List<ShapedLine>();
         foreach (var paragraph in (text ?? "").Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
@@ -101,7 +101,7 @@ public sealed class TextShaper(PdfFonts fonts)
         return lines;
     }
 
-    private bool Fits(string text, double size, bool bold, bool rtl, double width) => Shape(text, size, bold, rtl).Width <= width;
+    private bool Fits(string text, decimal size, bool bold, bool rtl, decimal width) => Shape(text, size, bold, rtl).Width <= width;
 
     /// <summary>Consecutive characters of one face (logical order) within a run. Spaces, digits
     /// and punctuation stay with the face of the text around them when that face has them.</summary>
