@@ -748,6 +748,10 @@ public static class IsolationAttack
         return type switch
         {
             "string" when format == "uuid" => TenantActivity.OwnIdFor(lower, own),
+            // A sign-in that carries a new password changes the attacker's own password: once the
+            // request counter made "switch-<n>" long enough to be a valid password, every later
+            // reconnect failed. The switch inputs are judged on a plain, successful sign-in.
+            "string" when signIn && lower.Contains("newpassword") => null,
             "string" when lower.Contains("email") => signIn ? env.Email(env.TenantA, "admin") : $"switch{n}@{env.TenantA.EmailDomain}",
             "string" when lower == "workspace" => env.TenantA.Code,
             "string" when lower == "password" => signIn ? ErpTestEnvironment.Password : "Switch-Password-2026!",

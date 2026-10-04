@@ -18,6 +18,10 @@ Date: 2026-10-04. Piece: p06-form-report. Status: accepted.
   scale is enforced; the value stays a string, never a float), money (amount with currency),
   date, boolean, select, lookup (a typed search over another registered list). Every field is
   `div.field[data-field=name]` with its label, hint and errors linked by `aria-describedby`.
+- The first click into a text, decimal or money field selects its whole value, so typing replaces
+  it, as reaching the field with Tab already does; a second click (or a drag) places the caret or
+  keeps the dragged selection. Correcting a value is the commonest edit in a business form; it no
+  longer needs Ctrl+A first.
 - Leaving with unsaved changes (navigation, opening another record, closing the panel, reloading)
   asks first. Escape on a changed form offers Save, Discard or Keep editing.
 - Every record has its own address: the list screen's path and the record's id
