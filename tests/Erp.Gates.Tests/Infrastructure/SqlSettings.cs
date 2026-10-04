@@ -114,7 +114,7 @@ public static partial class SqlSettings
         {
             e = e[1..^1].Trim();
         }
-        if (e.Length >= 2 && e[0] == '\'' && e[^1] == '\'')
+        if (Literal().IsMatch(e))
         {
             return (e[1..^1].Replace("''", "'", StringComparison.Ordinal), false);
         }
@@ -142,6 +142,9 @@ public static partial class SqlSettings
         }
         return (null, true);
     }
+
+    [GeneratedRegex(@"^'(?:[^']|'')*'$", RegexOptions.CultureInvariant)]
+    private static partial Regex Literal();
 
     [GeneratedRegex(@"\bset_config\s*\(", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SetConfigCall();

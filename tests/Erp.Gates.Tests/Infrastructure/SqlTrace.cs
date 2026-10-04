@@ -286,7 +286,12 @@ public static class SqlTrace
                 }
                 foreach (var command in captured.Commands.Where(c => StatementCapture.NamesSettings(c.Text)))
                 {
-                    foreach (var change in SqlSettings.Parse(command.Text, command.Parameters))
+                    // Kept: what the rules judge (the tenant, a computed name, an app.* setting for
+                    // the whole connection); other settings, set transaction-locally, are dropped
+                    // here to keep the trace small over a hundred thousand requests.
+                    foreach (var change in SqlSettings.Parse(command.Text, command.Parameters).Where(c => c.Name is null ||
+                                 c.Name.Equals(SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase) ||
+                                 (c.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase) && c.Local != true)))
                     {
                         Changes.Enqueue(new TracedSettingChange(change, inRequest.Endpoint, inRequest.Path, inRequest.Method, inRequest.Request,
                             inRequest.RequiredTenant, inRequest.ResolvingSession, inRequest.CodeCaller, captured.ProcessId, inRequest.App));

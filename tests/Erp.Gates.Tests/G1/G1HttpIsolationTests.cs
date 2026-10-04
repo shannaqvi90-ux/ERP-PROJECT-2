@@ -77,6 +77,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
                                                             string.Join("\n", report.UnobservedStatements.Take(30)));
         Assert.True(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
                                                          string.Join("\n", report.InputEnumerations.Take(30)));
+        Assert.True(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
         AssertAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
         AssertAtLeast(report.StatementsObserved, "g1.statementsObserved");
         AssertAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
@@ -131,6 +132,9 @@ public static class IsolationAttack
     public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env)
     {
         SqlTrace.EnsureStarted();
+        // Environment variables are process-wide state outside any field (critic p00 round 4: the
+        // process-state inventory reflects over fields only); nothing a request does may change them.
+        var environmentBefore = EnvironmentVariables();
         var traceMark = SqlTrace.Mark;
         var traceSnapshot = SqlTrace.Snapshot();
         var a = Env.TenantA;
@@ -562,6 +566,11 @@ public static class IsolationAttack
             traceBlindSpots.Add("no tenant value set by sign-in or the session lookup was read from its statement's parameters");
         }
 
+        var environmentAfter = EnvironmentVariables();
+        var environmentChanges = environmentBefore.Keys.Union(environmentAfter.Keys)
+            .Where(k => environmentBefore.GetValueOrDefault(k) != environmentAfter.GetValueOrDefault(k))
+            .Select(k => $"environment variable {k} changed during the attack").ToList();
+
         foreach (var attacker in attackers)
         {
             attacker.Client.Dispose();
@@ -582,6 +591,7 @@ public static class IsolationAttack
             StatementsObserved = SqlTrace.ObservedFor(Env),
             UnobservedStatements = SqlTrace.UnobservedFor(Env, traceSnapshot),
             InputEnumerations = Env.Factory.Services.GetRequiredService<RequestInputRecorder>().Enumerations,
+            EnvironmentChanges = environmentChanges,
             TraceBlindSpots = traceBlindSpots,
             BindsJudged = binds.Count,
             SettingStatementsJudged = settings.Count,
@@ -610,6 +620,10 @@ public static class IsolationAttack
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
+
+    private static Dictionary<string, string?> EnvironmentVariables() =>
+        Environment.GetEnvironmentVariables().Cast<System.Collections.DictionaryEntry>()
+            .ToDictionary(e => (string)e.Key, e => e.Value as string, StringComparer.Ordinal);
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
         IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots);
@@ -1300,6 +1314,9 @@ public sealed record IsolationReport(
     /// <summary>Product code that enumerated a request's headers, query or cookies, or read the raw
     /// query string: a name the attack cannot learn (<see cref="RequestInputRecorder"/>).</summary>
     public IReadOnlyList<string> InputEnumerations { get; init; } = [];
+
+    /// <summary>Environment variables of the process that changed while the attack ran.</summary>
+    public IReadOnlyList<string> EnvironmentChanges { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];
