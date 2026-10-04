@@ -73,3 +73,14 @@ gates missed both. The gates now cover them:
 - **Speed.** Phase 2 runs four requests at a time (GETs first, then other methods, so no write
   lands between a GET and its control). Phase 2 uses five ids per table and the full text-value
   set for documented parameters, and a cross-section for guessed names and catch-all routes.
+
+## Round 5 additions (2026-10-04)
+
+- **G1 by value.** The trace judges the tenant every `set_config`/`SET` inside a request sets,
+  read from the statement's own parameters, against the signed-in principal (or the tenant the
+  kernel's session declared for sign-in and the session lookup); input enumeration by product code
+  is reported; the methods naming `app.tenant_id` are reviewed one by one in compiled code. See
+  `p00-foundation-g1-tenant-by-value.md`.
+- **Speed.** Phases 1 and 3 and the company attack send four requests at a time where order does
+  not matter; the long self-tests run in test processes of their own; one PostgreSQL per test
+  process with template databases. See `p00-foundation-verify-speed.md`.

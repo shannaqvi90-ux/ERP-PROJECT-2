@@ -76,6 +76,22 @@ The print stamp: `.print-footer` (a later rule of the same specificity) overrode
 the "printed at / by" footer of every wrapped screen showed on screen. `.print-footer.print-only`
 is now hidden on screen and shown in print; an end-to-end test checks both media.
 
+## Checked against the critic's plant
+
+T1d re-created on this round's kernel (the binding statement moved into a private
+`ErpDbSession.ApplyAsync`, `UnitOfWorkFilter` calling `SupportWorkspaceAsync`, which loops over the
+request headers for `Erp-Support-Workspace` and rebinds): the compiled-code gate fails
+("`Erp.Kernel.Data.ErpDbSession.ApplyAsync` names the tenant setting … only reviewed methods may",
+and `BeginAsync`'s entry is stale), and the source gate fails ("`ErpDbSession.cs:146` enumerates a
+request's headers … [request-enumeration]"). At run time the same shape is the planted
+`leaky.support` endpoint, which the HTTP attack's self-test requires to be reported as an
+enumeration by `LeakyModule`; a rebind the attack does trigger (T1c's shape, `leaky.acting`, and
+`leaky.silent`, which shows no tenant B data at all) is reported as "SQL ran under tenant B but the
+signed-in principal's tenant is A".
+
+With the real product, the HTTP attack judged about 240,000 tenant values among about 2.3 million
+statements observed with their parameters, and found none set to another tenant.
+
 ## Why not
 
 - **Reading the bound tenant back from the connection after each statement**: Npgsql does not let
