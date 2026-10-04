@@ -27,7 +27,7 @@ internal sealed class UsersByRoleReport(IdentityDbContext db) : IReportSource
         [
             new ReportParameter("role", "identity.report.role", ReportParameterType.Reference, Lookup: RolesList.Key),
             new ReportParameter("status", "identity.users.status", ReportParameterType.Choice, Choices: Statuses),
-            new ReportParameter("language", "identity.users.language", ReportParameterType.Choice, Choices: LanguageChoices),
+            new ReportParameter("userLanguage", "identity.users.language", ReportParameterType.Choice, Choices: LanguageChoices),
             new ReportParameter("signedInSince", "identity.report.signedInSince", ReportParameterType.Date),
         ],
         [
@@ -50,7 +50,7 @@ internal sealed class UsersByRoleReport(IdentityDbContext db) : IReportSource
             var active = status == "active";
             users = users.Where(u => u.IsActive == active);
         }
-        if (run.Text("language") is { } language)
+        if (run.Text("userLanguage") is { } language)
         {
             users = users.Where(u => u.Language == language);
         }

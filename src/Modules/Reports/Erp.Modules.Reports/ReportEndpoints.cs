@@ -59,6 +59,8 @@ internal static class ReportEndpoints
         group.MapGet("/catalog", Catalog)
             .WithName("reports.catalog.read")
             .WithSummary("The reports the caller may run (each needs the read permission of the data it prints) and the lists the caller may print, with titles, parameters and columns in the caller's language.")
+            .WithReportParameters([Query("language", "The language of the titles and labels; the request's language by default.",
+                new OpenApiSchema { Type = JsonSchemaType.String, Enum = Languages.All.Select(l => (JsonNode)JsonValue.Create(l)).ToList() })])
             .RequirePermission(ReportsPermissions.CatalogRead);
 
         foreach (var registration in catalog.Reports)
@@ -91,7 +93,8 @@ internal static class ReportEndpoints
 
     private static Microsoft.AspNetCore.Http.HttpResults.Ok<ReportCatalogDto> Catalog(HttpContext http, ModuleCatalog catalog, ICurrentUser caller, WebStrings strings)
     {
-        var language = Languages.ForRequest(http);
+        var asked = http.Request.Query["language"].ToString();
+        var language = Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
         var items = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).Select(r =>
         {
             var d = r.Definition;

@@ -83,7 +83,7 @@ public sealed partial record ReportDefinition(
 {
     /// <summary>Parameter names the reports module itself reads on every report.</summary>
     public static readonly IReadOnlySet<string> ReservedParameters =
-        new HashSet<string>(["format", "language", "numerals", "timeZone", "groupBy"], StringComparer.Ordinal);
+        new HashSet<string>(["format", "language", "numerals", "timeZone", "groupBy", "disposition"], StringComparer.Ordinal);
 
     public ReportColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
