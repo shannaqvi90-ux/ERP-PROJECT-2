@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261003T222716-773a",
+  "instrument": 3,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-03T22:27:16.338Z",
+  "finished_at": "2026-10-03T22:27:20.039Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.105,
+    "system_wait_seconds": 0.004,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.654,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "العربية (language button)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.101
+    }
+  ],
+  "waits": [
+    {
+      "label": "screen in Arabic, right to left, records still on screen",
+      "at": 0.101,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "454c8bae92cbff26.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r3/compare/blind/shots/454c8bae92cbff26.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "f57823ee29850a6c.jpg",
+      "at": 0.105,
+      "path": "../../evidence-staging/p04-shell/r3/compare/blind/shots/f57823ee29850a6c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_language": "ar",
+      "direction": "rtl",
+      "working_screen": "/identity/users",
+      "heading": "المستخدمون",
+      "columns": [
+        "",
+        "الاسم▾",
+        "البريد الإلكتروني▾",
+        "اللغة▾",
+        "الحالة▾",
+        "آخر تسجيل دخول▾",
+        "الأدوار"
+      ],
+      "navigation": [
+        "المستخدمون",
+        "الأدوار",
+        "مساحة العمل",
+        "حسابي"
+      ],
+      "records": 32
+    }
+  },
+  "path_notes": "Click the language button in the top bar (it names the other language: العربية). The whole screen, the working list included, turns Arabic and right to left at once; no reload, no dialog.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-to-arabic.mjs",
+    "sha256": "812eda5e9846ea903a7f04a1079544639dba9f3cbefeb7f7b6b9247876e03da1"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null
+}

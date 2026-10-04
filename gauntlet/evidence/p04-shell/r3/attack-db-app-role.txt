@@ -1,0 +1,14 @@
+-- erp_app: no tenant
+0
+-- erp_app: set app.tenant_id to B for the transaction, with the matching app.tenant_tx
+BEGIN
+0190a000-0000-7000-8000-000000000002
+1791066231.530626
+1004
+ROLLBACK
+-- can erp_app become erp_auth or another role?
+ERROR:  permission denied to set role "erp_auth"
+ERROR:  permission denied to set role "erp_owner"
+f
+-- sign_in_secret table (no RLS)
+ERROR:  permission denied for table sign_in_secret
