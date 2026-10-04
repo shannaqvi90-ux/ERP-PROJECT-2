@@ -19,3 +19,4 @@ live in `ledger.md`; this file only explains the run around them.
 | 2026-10-03 ~13:50 | Account usage limit reached again (reset 14:00 UTC). No verdicts in this stretch: builders for p02, p03, p04, p05 and p01 committed most of their round-2/4 work; p04's round-2 integrator and p00's round-3 critic were stopped. WIP snapshots taken where needed. |
 | 2026-10-03 14:10 | Wave 1 resumed again from the builders' worktrees. needs-human #5 added (Arabic font licence, SIL OFL-1.1). |
 | 2026-10-03 14:33 | Owner approved SIL OFL-1.1 for fonts (needs-human #5). Routed to p04's next round: bundle an Arabic font and record it in the licence gate. |
+| 2026-10-04 17:08 | Wave 1 complete: integrity check passed and fixed 4 inconsistencies (gauntlet/integrity/wave-1-a.md); fresh-clone verify 4,503 s. Wave 2 starts with p00 cutting verify time (no test removed) alongside p06 forms and reports. |
