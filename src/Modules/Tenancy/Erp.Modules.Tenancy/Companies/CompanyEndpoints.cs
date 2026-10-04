@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
+using Erp.Modules.Tenancy.Access;
+
 namespace Erp.Modules.Tenancy.Companies;
 
 /// <summary>A company as the company form shows it.</summary>
@@ -109,14 +111,14 @@ internal static class CompanyEndpoints
 
         group.MapPost("/companies", Create)
             .WithName("tenancy.companies.create")
-            .WithSummary("Create a company. The creator may work in it (all branches) from then on.")
+            .WithSummary("Create a company. Only a caller who works in every company of the workspace (company codes are unique across it); the creator may work in the new company (all branches) from then on.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.CompaniesCreate);
 
         group.MapPut("/companies/{id:guid}", Update)
             .WithName("tenancy.companies.update")
-            .WithSummary("Change a company the caller may work in, or deactivate it (isActive false).")
+            .WithSummary("Change a company the caller may work in, or deactivate it (isActive false). Changing the code needs every company of the workspace.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.CompaniesUpdate);
@@ -194,6 +196,12 @@ internal static class CompanyEndpoints
         {
             return validator.ToResult();
         }
+        // Company codes are unique across the workspace: only someone who sees every company may
+        // pick one, or a refusal would tell them a company they cannot see uses it.
+        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+        }
         var code = TenancyValidation.NormalizeCode(request.Code);
         if (string.IsNullOrEmpty(code))
         {
@@ -218,7 +226,7 @@ internal static class CompanyEndpoints
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Update(
-        Guid id, SaveCompanyRequest request, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+        Guid id, SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: true);
         if (!validator.IsValid)
@@ -231,6 +239,10 @@ internal static class CompanyEndpoints
             return Problems.NotFound(http);
         }
         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
+        if (code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+        }
         if (code != company.Code && await db.Companies.AnyAsync(c => c.Code == code && c.Id != id, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.companyCodeTaken");

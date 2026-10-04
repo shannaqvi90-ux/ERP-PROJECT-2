@@ -152,6 +152,28 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/company-names", StringComparison.Ordinal) && l.StartsWith("company X administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(report.Escalations);
+        // Critic p02 round 2, plant C2: a create that adds the body's company to the scope before
+        // writing. Only a body that passes validation reaches the write; company Y's branches change.
+        Assert.Contains("tenancy.branches", report.ChangedTables);
+        // The in-tenant write oracle: a company create that answers 409 for company Y's code.
+        Assert.Contains(report.Oracles, o => o.Contains("POST /api/leaky/companies [code]", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user()
+    {
+        // Critic p02 round 2: company access changed by a user holding only the access permission
+        // on the Administrator, by a one-branch manager giving every branch, and on oneself.
+        var result = await CompanyGrants.RunAsync(fixture.Env);
+        const string planted = "PUT /api/leaky/company-access/{userId:guid}";
+        Assert.Contains(planted, result.Endpoints);
+        Assert.Contains("PUT /api/tenancy/access/{userId:guid}", result.Endpoints);
+        Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("removing the Administrator from company X: answered 200", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("giving every branch of X: answered 200", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("on themselves (unchanged access): answered 200", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("rows changed", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.StartsWith("the tenant Administrator", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -337,7 +359,9 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         // Critic p03 round 2, plant L4: a registry on disk answers 409 for tenant B's addresses.
         var result = await G1WriteOracle.RunAsync(fixture.Env);
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/accounts [email]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/accounts", StringComparison.Ordinal));
+        // No product endpoint is reported (the leaky module's other plants may be: its company
+        // create answers 409 for a code its own tenant already used).
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/users", result.Endpoints);
         Assert.Contains("PUT /api/leaky/members/{id:guid}", result.Endpoints);
     }

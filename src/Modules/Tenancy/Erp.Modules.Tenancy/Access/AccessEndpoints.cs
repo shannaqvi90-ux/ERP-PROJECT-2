@@ -23,13 +23,18 @@ public sealed record CompanyAccessDto(Guid CompanyId, bool AllBranches, IReadOnl
 
 public sealed record AccessBranchOption(Guid Id, string Code, string NameEn, string NameAr, bool IsActive);
 
-/// <summary>A company the caller may give access to, with its branches.</summary>
-public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameEn, string LegalNameAr, bool IsActive, IReadOnlyList<AccessBranchOption> Branches);
+/// <summary>A company the caller may give access to, with the branches the caller may give
+/// (only their own branches when they are limited to some: <c>canGiveAllBranches</c> false).</summary>
+public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameEn, string LegalNameAr, bool IsActive, IReadOnlyList<AccessBranchOption> Branches,
+    bool CanGiveAllBranches = true);
 
 /// <summary>Where one user may work, within the companies the caller may work in, and every
-/// company and branch the caller could give them (<c>options</c>).</summary>
+/// company and branch the caller could give them (<c>options</c>). <c>canEdit</c> is false, with
+/// the reason as a text key in <c>readOnlyReason</c>, when the caller may not change this user's
+/// access at all (their own access, a user holding permissions the caller lacks, or one who works
+/// in companies the caller does not).</summary>
 public sealed record UserAccessDto(Guid UserId, string DisplayName, string Email, bool IsCaller, IReadOnlyList<CompanyAccessDto> Companies,
-    IReadOnlyList<AccessCompanyOption> Options);
+    IReadOnlyList<AccessCompanyOption> Options, bool CanEdit = true, string? ReadOnlyReason = null);
 
 public sealed record CompanyAccessRequest(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 
@@ -53,7 +58,7 @@ internal static class AccessEndpoints
 
         group.MapPut("/access/{userId:guid}", Update)
             .WithName("tenancy.access.update")
-            .WithSummary("Set the companies and branches one user may work in. Only companies the caller may work in can be given or taken away; callers cannot change their own access.")
+            .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company the caller does not; callers cannot change their own access.")
             .ProducesValidationProblem()
             .RequirePermission(TenancyPermissions.AccessUpdate);
     }
@@ -92,7 +97,7 @@ internal static class AccessEndpoints
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ReadAsync(db, user, userId == caller.UserId, cancellationToken));
+        return TypedResults.Ok(await ReadAsync(db, users, caller, user, cancellationToken));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Update(
@@ -126,9 +131,19 @@ internal static class AccessEndpoints
         {
             return Problems.NotFound(http);
         }
-        if (userId == caller.UserId)
+        // Access is a grant: never one's own, never on a stronger user, never beyond one's own.
+        var before = await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken);
+        if (await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, userId, await users.GetPermissionsAsync(userId, cancellationToken),
+                before.Count, cancellationToken) is { } refusal)
         {
-            return Problems.Forbidden(http, "tenancy.cannotChangeOwnAccess");
+            return Problems.Forbidden(http, refusal);
+        }
+        var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
+        var after = wanted.ToDictionary(c => c.CompanyId!.Value,
+            c => new CompanyHolding(c.CompanyId!.Value, c.AllBranches == true ? null : (c.BranchIds ?? []).ToHashSet()));
+        if (!CompanyAccessRules.ChangeWithinCaller(mine, before, after))
+        {
+            return Problems.Forbidden(http, "tenancy.grantBeyondOwn");
         }
 
         var current = await db.CompanyAccess.Where(a => a.UserId == userId).ToListAsync(cancellationToken);
@@ -155,11 +170,16 @@ internal static class AccessEndpoints
                 .Select(id => new UserBranchAccess { UserId = userId, CompanyId = companyId, BranchId = id }));
         }
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ReadAsync(db, user, false, cancellationToken));
+        return TypedResults.Ok(await ReadAsync(db, users, caller, user, cancellationToken));
     }
 
-    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, UserSummary user, bool isCaller, CancellationToken cancellationToken)
+    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, IUserDirectory users, ICurrentUser caller, UserSummary user, CancellationToken cancellationToken)
     {
+        var isCaller = user.Id == caller.UserId;
+        var visible = await db.CompanyAccess.AsNoTracking().CountAsync(a => a.UserId == user.Id, cancellationToken);
+        var readOnly = await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, user.Id,
+            await users.GetPermissionsAsync(user.Id, cancellationToken), visible, cancellationToken);
+        var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
         var access = await (from a in db.CompanyAccess.AsNoTracking()
                             where a.UserId == user.Id
                             join c in db.Companies.AsNoTracking() on a.CompanyId equals c.Id
@@ -178,6 +198,14 @@ internal static class AccessEndpoints
             access.Select(a => new CompanyAccessDto(a.CompanyId, a.AllBranches,
                 a.AllBranches ? [] : branches.Where(b => b.CompanyId == a.CompanyId).Select(b => b.BranchId).ToList())).ToList(),
             companies.Select(c => new AccessCompanyOption(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive,
-                allBranches.Where(b => b.CompanyId == c.Id).Select(b => new AccessBranchOption(b.Id, b.Code, b.NameEn, b.NameAr, b.IsActive)).ToList())).ToList());
+                allBranches.Where(b => b.CompanyId == c.Id).Select(b => new AccessBranchOption(b.Id, b.Code, b.NameEn, b.NameAr, b.IsActive)).ToList(),
+                mine.GetValueOrDefault(c.Id)?.AllBranches ?? true)).ToList(),
+            readOnly is null, readOnly switch
+            {
+                null => null,
+                "tenancy.cannotChangeOwnAccess" => "tenancy.access.readOnly.self",
+                "tenancy.userBeyondOwn" => "tenancy.access.readOnly.permissions",
+                _ => "tenancy.access.readOnly.companies",
+            });
     }
 }

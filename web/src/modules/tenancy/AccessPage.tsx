@@ -69,11 +69,14 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
       .catch((e) => setMessage(problemOf(e).message));
   }, [userId]);
 
-  const editable = can("tenancy.access.update") && access !== null && !access.isCaller;
+  // Company access is a grant: the server says whether this caller may change this user at all.
+  const editable = can("tenancy.access.update") && access !== null && !access.isCaller && access.canEdit !== false;
   const entry = (companyId: string) => draft.find((d) => d.companyId === companyId);
+  const canGiveAll = (companyId: string) => access?.options.find((o) => o.id === companyId)?.canGiveAllBranches !== false;
   const toggleCompany = (companyId: string, on: boolean) => {
     setSaved(false);
-    setDraft((d) => (on ? [...d, { companyId, allBranches: true, branchIds: [] }] : d.filter((x) => x.companyId !== companyId)));
+    const all = canGiveAll(companyId);
+    setDraft((d) => (on ? [...d, { companyId, allBranches: all, branchIds: [] }] : d.filter((x) => x.companyId !== companyId)));
   };
   const setAll = (companyId: string, all: boolean) => {
     setSaved(false);
@@ -132,6 +135,11 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
         </p>
       )}
       {access?.isCaller && <div className="notice">{t("tenancy.access.ownAccess")}</div>}
+      {access && !access.isCaller && access.canEdit === false && access.readOnlyReason && (
+        <div className="notice" data-testid="access-read-only">
+          {t(access.readOnlyReason)}
+        </div>
+      )}
       {message && (
         <div className="alert" role="alert">
           {message}
@@ -158,10 +166,16 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
               </label>
               {current && (
                 <div className="access-branches">
-                  <label className="check">
-                    <input type="checkbox" checked={current.allBranches} onChange={(e) => setAll(company.id, e.target.checked)} />
+                  <label className="check" title={company.canGiveAllBranches === false ? t("tenancy.access.onlyOwnBranches") : undefined}>
+                    <input
+                      type="checkbox"
+                      checked={current.allBranches}
+                      disabled={company.canGiveAllBranches === false && !current.allBranches}
+                      onChange={(e) => setAll(company.id, e.target.checked)}
+                    />
                     <span>{t("tenancy.access.allBranches")}</span>
                   </label>
+                  {company.canGiveAllBranches === false && <p className="muted">{t("tenancy.access.onlyOwnBranches")}</p>}
                   {!current.allBranches &&
                     company.branches.map((b) => (
                       <label key={b.id} className="check">

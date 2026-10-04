@@ -44,7 +44,8 @@ test.describe("companies, branches and the working company", () => {
     await expect(page.locator(".record-header h2")).toHaveText(`${code} · Al Noor Logistics LLC`);
     await expect(page).toHaveURL(/[?&]open=[0-9a-f-]{36}/);
 
-    // The first branch: one line, Enter.
+    // The first branch: one line, Enter. Saving the new company put the focus on it.
+    await expect(page.locator('input[name="branchNameEn"]')).toBeFocused();
     await page.locator('input[name="branchNameEn"]').fill("Head office");
     await page.locator('input[name="branchNameAr"]').fill("المكتب الرئيسي");
     await page.locator('input[name="branchCode"]').fill("hq");

@@ -11,6 +11,7 @@ import {
   SelectField,
   TextField,
   useMonths,
+  useLocalName,
   useScreenKeys,
   type Emirate,
   type FieldErrors,
@@ -106,7 +107,9 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
   const [message, setMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [justCreated, setJustCreated] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const name = useLocalName();
   const editable = id === null ? can("tenancy.companies.create") : can("tenancy.companies.update");
 
   useEffect(() => {
@@ -160,6 +163,8 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
       setDraft(draftOf(result));
       setErrors({});
       setSaved(true);
+      // A new company's next step is its first branch: the branch line takes the focus.
+      setJustCreated(id === null);
       onSaved(result.id);
       window.dispatchEvent(new Event(companiesChanged));
     } catch (error) {
@@ -180,7 +185,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
     <div className="record">
       <form ref={formRef} className="record-form" onSubmit={save} noValidate aria-label={t("tenancy.company.form")}>
         <div className="record-header">
-          <h2>{id === null ? t("tenancy.company.new") : `${company?.code ?? ""} · ${company?.legalNameEn ?? ""}`}</h2>
+          <h2>{id === null && !company ? t("tenancy.company.new") : `${company?.code ?? ""} · ${company ? name(company.legalNameEn, company.legalNameAr) : ""}`}</h2>
           <div className="record-actions">
             {editable && (
               <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S">
@@ -206,7 +211,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
           <legend>{t("tenancy.company.general")}</legend>
           <div className="form-grid">
             <TextField name="legalNameEn" label={t("tenancy.company.legalNameEn")} value={draft.legalNameEn} onChange={set("legalNameEn")} {...common} dir="ltr" maxLength={200} autoFocus={id === null} />
-            <TextField name="legalNameAr" label={t("tenancy.company.legalNameAr")} value={draft.legalNameAr} onChange={set("legalNameAr")} {...common} dir="rtl" maxLength={200} />
+            <TextField name="legalNameAr" label={t("tenancy.company.legalNameAr")} value={draft.legalNameAr} onChange={set("legalNameAr")} {...common} dir="rtl" maxLength={200} hint={draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
             <TextField name="code" label={t("tenancy.company.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
             <CheckField name="isActive" label={t("tenancy.common.active")} checked={draft.isActive} onChange={set("isActive")} />
           </div>
@@ -243,7 +248,9 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
         </fieldset>
       </form>
       {company && <CompanyLogo company={company} editable={can("tenancy.companies.update")} onChange={setCompany} />}
-      {company && can("tenancy.branches.read") && <CompanyBranches companyId={company.id} />}
+      {company && can("tenancy.branches.read") && (
+        <CompanyBranches companyId={company.id} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
+      )}
     </div>
   );
 }
@@ -353,12 +360,14 @@ function CompanyLogo({ company, editable, onChange }: { company: Company; editab
 type QuickBranch = { code: string; nameEn: string; nameAr: string; city: string; emirate: Emirate | "" };
 const emptyBranch: QuickBranch = Object.freeze({ code: "", nameEn: "", nameAr: "", city: "", emirate: "" });
 
-/** The company's branches, with a one-line form to add another (Enter saves). */
-function CompanyBranches({ companyId }: { companyId: string }) {
+/** The company's branches, with a one-line form to add another (Enter saves). A new branch
+ * starts in the company's emirate; right after the company is created the line has the focus. */
+function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
   const { t } = useI18n();
   const { can } = useSession();
   const [branches, setBranches] = useState<BranchRow[]>([]);
-  const [draft, setDraft] = useState<QuickBranch>(emptyBranch);
+  const fresh = (): QuickBranch => ({ ...emptyBranch, emirate: defaultEmirate });
+  const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -372,6 +381,10 @@ function CompanyBranches({ companyId }: { companyId: string }) {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
+
+  useEffect(() => {
+    if (autoFocus) nameRef.current?.focus();
+  }, [autoFocus]);
 
   const add = async (event: FormEvent) => {
     event.preventDefault();
@@ -387,7 +400,7 @@ function CompanyBranches({ companyId }: { companyId: string }) {
         country: "AE",
         isActive: true,
       });
-      setDraft(emptyBranch);
+      setDraft(fresh());
       setErrors({});
       window.dispatchEvent(new Event(companiesChanged));
       await load();
@@ -436,7 +449,7 @@ function CompanyBranches({ companyId }: { companyId: string }) {
           <input name="branchCode" value={draft.code} onChange={set("code")} placeholder={t("tenancy.branch.codeOptional")} aria-label={t("tenancy.branch.codeOptional")} aria-invalid={invalid("code")} dir="ltr" maxLength={20} />
           <input name="branchCity" value={draft.city} onChange={set("city")} placeholder={t("tenancy.address.city")} aria-label={t("tenancy.address.city")} maxLength={100} />
           <select name="branchEmirate" value={draft.emirate} onChange={set("emirate")} aria-label={t("tenancy.address.emirate")}>
-            <option value="">{t("tenancy.address.noEmirate")}</option>
+            <option value="">{t("tenancy.address.emirateUnset")}</option>
             {emirates.map((e) => (
               <option key={e} value={e}>
                 {t(`tenancy.emirate.${e}`)}

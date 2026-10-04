@@ -94,6 +94,8 @@ describe("companies screen", () => {
     // The same form stays open on the saved company and says so.
     expect(view.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
     expect(document.activeElement).not.toBe(document.body);
+    // The next step, the first branch, has the focus: no click to reach it.
+    expect((document.activeElement as HTMLInputElement).name).toBe("branchNameEn");
 
     const branchCode = view.container.querySelector<HTMLInputElement>('input[name="branchCode"]')!;
     setInput(branchCode, "hq");
@@ -108,5 +110,34 @@ describe("companies screen", () => {
     expect(new URL(branchQuery.url, "http://x").searchParams.get("filter")).toBe("companyId eq 'c9'");
     const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
     expect(branch.body).toMatchObject({ companyId: "c9", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", isActive: true });
+  });
+
+  it("shows the company under its Arabic name on Arabic screens and starts a new branch in the company's emirate", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    const dubai = { ...saved, emirate: "dubai", city: "Dubai" };
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { ...session, user: { ...session.user, language: "ar" } } };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: dubai };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: { id: "b9" } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="ar" />);
+    await settle();
+    expect(view.container.querySelector(".record-header h2")!.textContent).toBe("AN-AJM · النور عجمان ذ.م.م");
+    const emirate = view.container.querySelector<HTMLSelectElement>('select[name="branchEmirate"]')!;
+    expect(emirate.value).toBe("dubai");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]')!, "Deira shop");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
+    expect(branch.body).toMatchObject({ companyId: "c9", nameEn: "Deira shop", emirate: "dubai", country: "AE" });
+    // The line is ready for the next branch, again in the company's emirate.
+    expect(view.container.querySelector<HTMLSelectElement>('select[name="branchEmirate"]')!.value).toBe("dubai");
   });
 });

@@ -310,6 +310,9 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
         return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
     }
 
+    public Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
+        PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+
     public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)
     {
         var normalized = email.Trim().ToLowerInvariant();

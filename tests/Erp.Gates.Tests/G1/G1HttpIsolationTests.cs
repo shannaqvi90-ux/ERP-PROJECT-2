@@ -373,8 +373,26 @@ public static class IsolationAttack
                 }
                 if (column.Type == Erp.Kernel.Lists.ListColumnType.Reference)
                 {
-                    var ids = string.Join(", ", values.IdSample.Take(Erp.Kernel.Lists.ListFilter.MaxInValues).Select(i => Erp.Kernel.Lists.ListFilterText.Quote(i.ToString())));
-                    listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString($"{column.Key} in ({ids})")}"));
+                    // Every sampled id, in as few "in" filters as the filter's length and value
+                    // limits allow (one table more in the victim made a single filter too long).
+                    var chunk = new List<string>();
+                    void Flush()
+                    {
+                        if (chunk.Count == 0) return;
+                        var ids = string.Join(", ", chunk);
+                        listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString($"{column.Key} in ({ids})")}"));
+                        chunk = [];
+                    }
+                    foreach (var quoted in values.IdSample.Select(i => Erp.Kernel.Lists.ListFilterText.Quote(i.ToString())))
+                    {
+                        if (chunk.Count + 1 > Erp.Kernel.Lists.ListFilter.MaxInValues ||
+                            $"{column.Key} in ({string.Join(", ", chunk.Append(quoted))})".Length > Erp.Kernel.Lists.ListFilter.MaxLength)
+                        {
+                            Flush();
+                        }
+                        chunk.Add(quoted);
+                    }
+                    Flush();
                 }
             }
             foreach (var column in list.Columns.Where(c => c.Groupable))
