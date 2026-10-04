@@ -148,6 +148,11 @@ public static class CompanyAttack
                     var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
                     var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
                     writeOracleChecks++;
+                    if (withY is >= 200 and < 300)
+                    {
+                        // Now the attacker's own record holds the value: later writes may refuse it for that.
+                        state.Stored.Add(held);
+                    }
                     if (withY != withFresh)
                     {
                         state.Oracles.Add($"company X administrator → {endpoint} [{field}]: company Y's value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
