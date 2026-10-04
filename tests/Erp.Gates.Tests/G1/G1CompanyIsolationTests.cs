@@ -228,6 +228,9 @@ public static class CompanyAttack
         public int Requests { get; private set; }
         public int DifferentialChecks { get; private set; }
 
+        /// <summary>Y texts the attacker wrote into its own records by successful writes.</summary>
+        public HashSet<string> Stored { get; } = new(StringComparer.OrdinalIgnoreCase);
+
         public async Task<(int Status, string Text)> SendAsync(string attacker, HttpClient client, string method, string path, JsonNode? body, IReadOnlyCollection<string> sent)
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), path);
@@ -241,11 +244,22 @@ public static class CompanyAttack
                 : await response.Content.ReadAsStringAsync();
             Requests++;
             var status = (int)response.StatusCode;
-            var scrubbed = sent.Where(v => v.Length > 0).OrderByDescending(v => v.Length)
+            // An echo of what this request sent is not a leak, and neither is a Y text the attacker
+            // itself stored earlier in a record it may keep (a user it created, named with Y's
+            // branch name, is listed by the access list): those are the attacker's own data.
+            var scrubbed = sent.Concat(Stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length)
                 .Aggregate(text, (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
             if (victim.FindMarker(scrubbed) is { } marker)
             {
                 Leaks.Add($"{attacker} → {method} {path} → {status}: contains company Y marker {marker}");
+            }
+            if (method is "POST" or "PUT" or "PATCH" && status is >= 200 and < 300)
+            {
+                // A successful write: the values it carried are stored where the attacker may read them.
+                foreach (var value in sent.Where(v => v.Length > 0 && !Guid.TryParse(v, out _)))
+                {
+                    Stored.Add(value);
+                }
             }
             if (status >= 500)
             {
