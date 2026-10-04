@@ -148,6 +148,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         TestContext.Current.TestOutputHelper?.WriteLine($"{covered} module endpoints reviewed by a map or derived from their list");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.Contains(Endpoints, e => e.Pattern.StartsWith("/api/tenancy/", StringComparison.Ordinal));
+        Assert.True(covered >= Ratchet.Min("g2.moduleRoutesReviewed"), $"{covered} module endpoints reviewed; ratchet minimum {Ratchet.Min("g2.moduleRoutesReviewed")}");
     }
 
     /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by

@@ -54,6 +54,20 @@ export default {
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
     const { from, to } = ctx.task.input;
+    // The one-click buttons show for up to six active companies. Companies the end-to-end suite
+    // leaves behind (codes E2E-…, on the stack ./erp verify health-checks this driver against) are
+    // retired first, so the measured path is the one a group of a few companies sees.
+    const all = (await api.get('/api/tenancy/companies?take=200')).items;
+    for (const c of all.filter(c => c.isActive && /^E2E-/.test(c.code))) {
+      const full = await api.get(`/api/tenancy/companies/${c.id}`);
+      await api.put(`/api/tenancy/companies/${c.id}`, {
+        code: full.code, legalNameEn: full.legalNameEn, legalNameAr: full.legalNameAr, tradeLicenceNumber: full.tradeLicenceNumber,
+        tradeLicenceAuthority: full.tradeLicenceAuthority, taxRegistrationNumber: full.taxRegistrationNumber, baseCurrency: full.baseCurrency,
+        fiscalYearStartMonth: full.fiscalYearStartMonth, fiscalYearStartDay: full.fiscalYearStartDay, addressLine1: full.addressLine1,
+        addressLine2: full.addressLine2, city: full.city, emirate: full.emirate, poBox: full.poBox, country: full.country, addressAr: full.addressAr,
+        phone: full.phone, email: full.email, website: full.website, isActive: false, version: full.version,
+      });
+    }
     const fromCompany = await ensureCompany(api, from);
     ctx.state.to = await ensureCompany(api, to);
     await api.put('/api/tenancy/workplace', { companyId: fromCompany.id, branchId: null });
