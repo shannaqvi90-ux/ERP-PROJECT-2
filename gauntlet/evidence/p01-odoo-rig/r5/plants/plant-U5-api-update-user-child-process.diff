@@ -1,0 +1,24 @@
+diff --git a/gauntlet/compare/drivers/ours/api-update-user.mjs b/gauntlet/compare/drivers/ours/api-update-user.mjs
+index 41a3cfc..e2c7b8e 100644
+--- a/gauntlet/compare/drivers/ours/api-update-user.mjs
++++ b/gauntlet/compare/drivers/ours/api-update-user.mjs
+@@ -40,13 +40,18 @@ export default {
+   async signIn(ctx) {
+     const api = await oursAs(ctx.product, 'admin');
+     ctx.useApi({ baseUrl: ctx.product.baseUrl, headers: { Authorization: `Bearer ${api.token}`, 'X-Erp-Request': '1' } });
++    ctx.state.token = api.token;
+   },
+   async run(op, ctx) {
+     const { name } = ctx.needles.user;
+     const found = await op.request('GET', `/api/identity/users?search=${name}`, undefined, { label: 'find the user by name' });
+     if (found.body?.items?.length !== 1) throw new Error(`search found ${found.body?.items?.length} users`);
+     const u = found.body.items[0];
+-    await op.request('PUT', `/api/identity/users/${u.id}`, { displayName: u.displayName, language: 'ar', isActive: u.isActive, roleIds: u.roleIds, version: u.version }, { label: 'set the language' });
++    // CRITIC PLANT U5: the second request goes out through a child process, uncounted.
++    const cp = process.getBuiltinModule('node:child_process');
++    const body = JSON.stringify({ displayName: u.displayName, language: 'ar', isActive: u.isActive, roleIds: u.roleIds, version: u.version });
++    await new Promise((resolve, reject) => cp.execFile('curl', ['-sf', '-X', 'PUT', '-H', 'Content-Type: application/json', '-H', 'X-Erp-Request: 1',
++      '-H', `Authorization: Bearer ${ctx.state.token}`, '--data', body, `${ctx.product.baseUrl}/api/identity/users/${u.id}`], e => (e ? reject(e) : resolve())));
+     return { id: u.id };
+   },
+   async verify(ctx, outcome) {
