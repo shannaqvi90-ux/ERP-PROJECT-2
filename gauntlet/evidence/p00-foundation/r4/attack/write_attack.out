@@ -1,0 +1,22 @@
+victim ids 205, victim emails 200, tenantB 0190a000-0000-7000-8000-000000000002
+404 PUT B user with valid body :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-1169b0ac865c48dc9d7e679d49ff46c7-57eb2a1727b
+404 PUT B role with valid body :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-c90dde6e0fe92e294ebb910db4a42098-a74d00bf78d
+404 POST B role copy :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-45dd9c0cb30b8f153df319375076bfd8-3c666d44f11
+404 POST B user password :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-59ae26e9dc71eb870bb5f95259307cae-5d1021404a6
+404 POST B user unblock :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-1d91c29bebe99c70f37a02b9de643022-fb1a6c2bab1
+404 POST B user revoke sessions :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-022a1735480480118b16a3f57fab1991-c18e47742f3
+404 GET B user access :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-cbbcd6df2b9b245b24b33a1c63924f41-f296b113a22
+404 GET B user sign-ins :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-25e67e7092b6449ffc7bc53f1fbda9c9-c8cea8ef00f
+400 POST user with B role :: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-efa120bb9e64f5b97f08197c12647260-1145b
+B created shared view: 201 {"id":"01a1045b-0649-7c88-aca5-8645bebdc699","listKey":"identity.users","name":"B secret view gulfsteel","isShared":true,"isDefault":false,"isMine":false,"columns":["displayName"],"sort":"displayName"
+404 GET B shared view :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6babb28e038ac7ed770d532cfa5bfdf3-d3b65c9c3a9
+404 PUT B shared view :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-c5a57eae7721894328cd93897b5f6422-bd3c3148cd4
+404 DELETE B shared view :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-2e055b704025a2b073dce4d40954e356-f978924dca1
+200 GET A views list :: {"items":[{"id":"01a10458-ce50-7ebf-a80f-5e546853939c","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,"columns":
+200 A users search for B canary :: {"items":[{"id":"01a10458-3702-7e8d-8342-b791bc4ea58b","email":"noaccess@alnoor.example","displayName":"Layla Nasser","language":"en","isActive":true,"roleIds":
+404 DELETE B user :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-194598f6cb5e683a9d45faa5a6d3fa2b-d7d08036068
+404 DELETE B role :: {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-efbbed04ff70998c576c4ed469b2351b-cc6c568ada8
+B user after: 200 Layla Nasser
+B role after: 200 Read-only
+B view after: 200
+leaks []

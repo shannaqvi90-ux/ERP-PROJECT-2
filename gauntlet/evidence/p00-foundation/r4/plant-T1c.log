@@ -1,0 +1,87 @@
+Test run for /home/user/critic/p00-foundation-r4-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.47]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.72]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [89 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [87 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [32 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [3 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [8 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [58 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [60 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [102 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [130 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [23 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [71 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [60 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [20 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [211 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [21 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [16 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [20 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [42 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [44 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [14 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [41 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [6 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [10 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [37 s]
+[xUnit.net 00:05:26.70]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:05:26.70]       5 leaks:
+[xUnit.net 00:05:26.70]       tenant A administrator (cookie) → GET /api/identity/roles [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5675-7773-90e1-b55753fd657a
+[xUnit.net 00:05:26.70]       tenant A administrator (cookie) → GET /api/identity/users [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5675-7773-90e1-b55753fd657a
+[xUnit.net 00:05:26.70]       tenant A administrator (cookie) → GET /api/lists/identity.roles/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5771-7ede-bba8-2e771a186f22
+[xUnit.net 00:05:26.70]       tenant A administrator (cookie) → GET /api/lists/identity.users/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-576e-78fd-a626-ea6ad11ba172
+[xUnit.net 00:05:26.70]       tenant A administrator (cookie) → GET /api/tenancy/tenant [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY330AD6211C
+[xUnit.net 00:05:26.70]       Stack Trace:
+[xUnit.net 00:05:26.70]         /home/user/critic/p00-foundation-r4-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(62,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:05:26.70]         --- End of stack trace from previous location ---
+[xUnit.net 00:05:26.70]       Output:
+[xUnit.net 00:05:26.70]         routes, tenant headers and guessed queries: 16692 requests so far, 95.3 s
+[xUnit.net 00:05:26.70]         tenant switch inputs: 14 headers, 19 query names, 2 cookies, 21 body names: 19837 requests so far, 127.5 s
+[xUnit.net 00:05:26.70]         write after write: 48 pairs over 24 endpoints, 2077 tenant A requests: 19837 requests so far, 153.5 s
+[xUnit.net 00:05:26.70]         tenant B values in route and query parameters: 41522 requests so far, 231.7 s
+[xUnit.net 00:05:26.70]         registered lists through their query contract: 2215 attacks, 3715 requests: 45237 requests so far, 250.3 s
+[xUnit.net 00:05:26.70]         tenant B values in body fields: 48937 requests so far, 296.1 s
+[xUnit.net 00:05:26.70]         tenant B activity: 16211 requests (12318 concurrent with the attack), 240 successful own writes, 16201 responses judged for tenant A markers: 48937 requests so far, 299.1 s
+[xUnit.net 00:05:26.70]         tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+[xUnit.net 00:05:26.70]         59959 tenant bindings and 98396 setting statements judged among 421460 statements; 3145 tenant switch inputs over 14 header names; 40533 responses judged on every header
+[xUnit.net 00:05:26.70]         349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+[xUnit.net 00:05:26.70]         52 endpoints, 51014 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 60779 traced lookups
+[xUnit.net 00:05:27.40]   Finished:    Erp.Gates.Tests (ID = '4721bdd031b85b698256393ccfe56bc855d7a6ca1686506ac90d9cb3d96b2c5b')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [5 m 9 s]
+  Error Message:
+   5 leaks:
+tenant A administrator (cookie) → GET /api/identity/roles [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5675-7773-90e1-b55753fd657a
+tenant A administrator (cookie) → GET /api/identity/users [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5675-7773-90e1-b55753fd657a
+tenant A administrator (cookie) → GET /api/lists/identity.roles/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-5771-7ede-bba8-2e771a186f22
+tenant A administrator (cookie) → GET /api/lists/identity.users/views [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10460-576e-78fd-a626-ea6ad11ba172
+tenant A administrator (cookie) → GET /api/tenancy/tenant [header Erp-Support-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY330AD6211C
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p00-foundation-r4-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 62
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 16692 requests so far, 95.3 s
+ tenant switch inputs: 14 headers, 19 query names, 2 cookies, 21 body names: 19837 requests so far, 127.5 s
+ write after write: 48 pairs over 24 endpoints, 2077 tenant A requests: 19837 requests so far, 153.5 s
+ tenant B values in route and query parameters: 41522 requests so far, 231.7 s
+ registered lists through their query contract: 2215 attacks, 3715 requests: 45237 requests so far, 250.3 s
+ tenant B values in body fields: 48937 requests so far, 296.1 s
+ tenant B activity: 16211 requests (12318 concurrent with the attack), 240 successful own writes, 16201 responses judged for tenant A markers: 48937 requests so far, 299.1 s
+ tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+ 59959 tenant bindings and 98396 setting statements judged among 421460 statements; 3145 tenant switch inputs over 14 header names; 40533 responses judged on every header
+ 349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+ 52 endpoints, 51014 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 60779 traced lookups
+
+
+
+Test Run Failed.
+Total tests: 27
+     Passed: 26
+     Failed: 1
+ Total time: 5.4649 Minutes
+rc=1 elapsed=329s

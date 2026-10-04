@@ -1,0 +1,195 @@
+Test run for /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.49]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.72]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [44 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [70 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [72 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [184 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [26 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [119 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [9 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [107 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [417 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [76 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [15 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [17 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [54 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [349 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [82 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [73 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [17 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [179 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [13 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [53 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [35 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [8 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [16 s]
+[xUnit.net 00:01:06.10]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:01:06.10]       g1.nonInterferenceDiscriminating: 14; ratchet minimum 40
+[xUnit.net 00:01:06.11]       Stack Trace:
+[xUnit.net 00:01:06.11]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(48,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.AssertAtLeast(Int32 value, String key)
+[xUnit.net 00:01:06.11]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(44,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:01:06.11]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:06.11]       Output:
+[xUnit.net 00:01:06.11]         562 comparisons over 20 endpoints (14 with different answers per tenant), 2248 requests, 0 unstable
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [47 s]
+  Error Message:
+   g1.nonInterferenceDiscriminating: 14; ratchet minimum 40
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.AssertAtLeast(Int32 value, String key) in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 48
+   at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 44
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 562 comparisons over 20 endpoints (14 with different answers per tenant), 2248 requests, 0 unstable
+
+
+[xUnit.net 00:07:55.42]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:07:55.43]       113 leaks:
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/users [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/users [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Accept-Language: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [cookie erp_tenant=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Accept: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Tenant-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header User-Agent: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [cookie workspace=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header Host: bravocnryfaf31ee859.example] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Workspace: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Company-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Request: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Forwarded-Host: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Tenant: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Workspace: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [cookie erp_tenant=bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/roles [cookie workspace=bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (cookie) → GET /api/identity/users [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       tenant A administrator (bearer) → GET /api/identity/users [cookie workspace=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+[xUnit.net 00:07:55.43]       Stack Trace:
+[xUnit.net 00:07:55.43]         /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(62,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:07:55.43]         --- End of stack trace from previous location ---
+[xUnit.net 00:07:55.43]       Output:
+[xUnit.net 00:07:55.43]         routes, tenant headers and guessed queries: 16692 requests so far, 119.4 s
+[xUnit.net 00:07:55.43]         tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 171.4 s
+[xUnit.net 00:07:55.43]         write after write: 48 pairs over 24 endpoints, 2233 tenant A requests: 19747 requests so far, 209.9 s
+[xUnit.net 00:07:55.43]         tenant B values in route and query parameters: 41432 requests so far, 348.6 s
+[xUnit.net 00:07:55.43]         registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 383.2 s
+[xUnit.net 00:07:55.43]         tenant B values in body fields: 48847 requests so far, 438.1 s
+[xUnit.net 00:07:55.43]         tenant B activity: 17465 requests (13572 concurrent with the attack), 240 successful own writes, 17455 responses judged for tenant A markers: 48847 requests so far, 441.8 s
+[xUnit.net 00:07:55.43]         tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+[xUnit.net 00:07:55.43]         61169 tenant bindings and 100832 setting statements judged among 426428 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+[xUnit.net 00:07:55.43]         349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+[xUnit.net 00:07:55.43]         52 endpoints, 51080 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 61989 traced lookups
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [7 m 39 s]
+  Error Message:
+   113 leaks:
+tenant A administrator (cookie) → GET /api/identity/roles [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/users [Plain] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/users [TenantHeaders] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Accept-Language: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [cookie erp_tenant=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Accept: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Tenant-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header User-Agent: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [cookie workspace=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header Host: bravocnryfaf31ee859.example] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Workspace: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Company-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Request: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Forwarded-Host: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Erp-Tenant: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Workspace: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/roles [header X-Tenant-Id: bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [cookie erp_tenant=bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/roles [cookie workspace=bravocnryfaf31ee859] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (cookie) → GET /api/identity/users [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+tenant A administrator (bearer) → GET /api/identity/users [cookie workspace=0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker 01a10458-9706-7451-af92-f80e89849ec9
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p00-plant-p/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 62
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 16692 requests so far, 119.4 s
+ tenant switch inputs: 13 headers, 19 query names, 2 cookies, 21 body names: 19747 requests so far, 171.4 s
+ write after write: 48 pairs over 24 endpoints, 2233 tenant A requests: 19747 requests so far, 209.9 s
+ tenant B values in route and query parameters: 41432 requests so far, 348.6 s
+ registered lists through their query contract: 2215 attacks, 3715 requests: 45147 requests so far, 383.2 s
+ tenant B values in body fields: 48847 requests so far, 438.1 s
+ tenant B activity: 17465 requests (13572 concurrent with the attack), 240 successful own writes, 17455 responses judged for tenant A markers: 48847 requests so far, 441.8 s
+ tenant B: 55 ids (29 sampled), 50 text values, 40 extra markers, 19 probe values
+ 61169 tenant bindings and 100832 setting statements judged among 426428 statements; 3055 tenant switch inputs over 13 header names; 40443 responses judged on every header
+ 349 tenant B route values replayed, 640 tenant B opens of the routes A was about to attack
+ 52 endpoints, 51080 requests, 105 tenant B values, 16281 parameter attacks, 3700 body value attacks, 8404 differential checks, 61989 traced lookups
+
+
+[xUnit.net 00:07:56.40]   Finished:    Erp.Gates.Tests (ID = '3405e82edd3a0ffa7cb788b22de1030c81ae3743d4b5ea9b3b7fb54127241254')
+
+Test Run Failed.
+Total tests: 27
+     Passed: 25
+     Failed: 2
+ Total time: 7.9483 Minutes
+rc=1 elapsed=477s
