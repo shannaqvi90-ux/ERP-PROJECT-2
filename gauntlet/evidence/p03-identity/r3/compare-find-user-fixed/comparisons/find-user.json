@@ -1,0 +1,36 @@
+{
+  "task": "find-user",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 6,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 20,
+      "odoo": 21,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.613,
+      "odoo": 2.157,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 13.05,
+      "odoo": 13.2,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 13.325,
+      "odoo": 14.981,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p03-identity/r3/compare-find-user-fixed/results/find-user-20261004T025034-abf0.json",
+    "odoo": "../../evidence-staging/p03-identity/r3/compare-find-user-fixed/results/find-user-20261004T025055-3472.json"
+  }
+}

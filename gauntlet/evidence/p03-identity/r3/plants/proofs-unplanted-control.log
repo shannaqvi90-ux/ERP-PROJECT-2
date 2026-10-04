@@ -1,0 +1,30 @@
+Test run for /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.27]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.99]   Starting:    Erp.Modules.Identity.Tests
+  Passed Erp.Modules.Identity.Tests.CriticRoleNameOracleProof.Tenant_A_cannot_learn_tenant_B_role_names [1 s]
+  Standard Output Messages:
+ tenant B creates 'JAFZA payroll d30108': 201
+ tenant A creates B's name: 201 {"id":"01a104cc-675d-7d7c-bebe-a0d24978135e","nameEn":"JAFZA payroll d30108","nameAr":"رواتب d30108","permissions":["identity.users.read"],"isSystem":false,"userCount":0,"version":761}
+ tenant A creates an unused name: 201
+
+
+[xUnit.net 00:00:12.93]   Finished:    Erp.Modules.Identity.Tests (ID = 'fc1704c7a3e6ad3682448ecc984a2f6ace58b8f43cba65918537bfac01054ce5')
+  Passed Erp.Modules.Identity.Tests.CriticPartialGrantProof.A_clerk_cannot_act_on_a_workspace_manager [2 s]
+  Standard Output Messages:
+ reset manager's password: 403 {"type":"urn:erp:problem:identity.userBeyondOwn","title":"This user has permissions you do not hold yourself, so you cannot change their account.","status":403,"code":"identity.userBeyondOwn","traceId":"00-45aaab17a0129151fadc52bf4e810ca3-52c85ffe4619a610-00"}
+ move manager's sign-in: 403
+ grant helper the manager role: 403
+ create role granting tenancy.tenant.update: 403
+ rename and empty the manager role: 403
+ sign in as the manager with the clerk's password: 401
+
+
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 13.4889 Seconds
