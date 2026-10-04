@@ -43,8 +43,8 @@ public sealed class TenancyModule : ErpModule
             AccessEndpoints.Map(group);
             WorkplaceEndpoints.Map(group);
         });
-        module.Menu(new MenuEntry("tenancy.companies", "tenancy.menu.companies", "/tenancy/companies", TenancyPermissions.CompaniesRead, Order: 700, Group: "settings"));
-        module.Menu(new MenuEntry("tenancy.branches", "tenancy.menu.branches", "/tenancy/branches", TenancyPermissions.BranchesRead, Order: 710, Group: "settings"));
+        module.Menu(new MenuEntry("tenancy.companies", "tenancy.menu.companies", "/tenancy/companies", TenancyPermissions.CompaniesRead, Order: 830, Group: "settings"));
+        module.Menu(new MenuEntry("tenancy.branches", "tenancy.menu.branches", "/tenancy/branches", TenancyPermissions.BranchesRead, Order: 840, Group: "settings"));
         module.Menu(new MenuEntry("tenancy.access", "tenancy.menu.access", "/tenancy/access", TenancyPermissions.AccessRead, Order: 820, Group: "settings"));
         module.Menu(new MenuEntry("tenancy.tenant", "tenancy.menu.tenant", "/tenancy/tenant", TenancyPermissions.TenantRead, Order: 900, Group: "settings"));
         module.List(CompaniesList.Create());

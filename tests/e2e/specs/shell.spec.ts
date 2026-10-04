@@ -76,6 +76,10 @@ test.describe("app shell", () => {
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Company access" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Companies" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Branches" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Workspace" })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.locator("main h1")).toHaveText("Workspace");
