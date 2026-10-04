@@ -229,7 +229,7 @@ public static class IsolationAttack
                     }
                 }
             }
-            var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : 4;
+            var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : AttackParallelism.Requests;
             await Parallel.ForEachAsync(batch, new ParallelOptions { MaxDegreeOfParallelism = together }, async (item, _) =>
             {
                 using var request = item.Request;
@@ -355,7 +355,7 @@ public static class IsolationAttack
         // From here tenant B keeps reading in the background while A's requests run.
         using var concurrent = new CancellationTokenSource();
         var concurrentReader = Task.Run(() => activity.RunConcurrentlyAsync(victim, concurrent.Token));
-        var parallel = new ParallelOptions { MaxDegreeOfParallelism = 4 };
+        var parallel = new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests };
         await Parallel.ForEachAsync(work.Where(w => w.Get), parallel, async (item, _) => await item.Run());
         await Parallel.ForEachAsync(work.Where(w => !w.Get), parallel, async (item, _) => await item.Run());
 
@@ -443,7 +443,7 @@ public static class IsolationAttack
         }
         Assert.True(listsAttacked >= Ratchet.Min("rules.listsChecked"), $"{listsAttacked} lists attacked through their query contract");
         var listAttacksBefore = state.Requests;
-        await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) => await item());
+        await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) => await item());
         var listQueryAttacks = listWork.Count;
 
         Phase($"registered lists through their query contract: {listQueryAttacks} attacks, {state.Requests - listAttacksBefore} requests");
@@ -486,7 +486,7 @@ public static class IsolationAttack
                 // record at the same time, so an answer may already show a value a concurrent
                 // request stored there.
                 var answers = new (int Status, string Text, string Headers)[batch.Count];
-                var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : 4;
+                var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : AttackParallelism.Requests;
                 await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), new ParallelOptions { MaxDegreeOfParallelism = together }, async (i, _) =>
                 {
                     using var request = batch[i].Request;
@@ -800,7 +800,7 @@ public static class IsolationAttack
                 }
             }
             // Sign-out ends the attacker's session (SendAsync signs it in again), so it runs alone.
-            var parallel = endpoint.Name == "auth.signOut" ? 1 : 4;
+            var parallel = endpoint.Name == "auth.signOut" ? 1 : AttackParallelism.Requests;
             await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = parallel }, async (item, _) => await item());
             await activity.TouchAsync(endpoint, victim, "tenant B reads right after A's tenant switch inputs");
         }

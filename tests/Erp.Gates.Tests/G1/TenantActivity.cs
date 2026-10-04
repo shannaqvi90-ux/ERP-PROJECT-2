@@ -346,7 +346,7 @@ public sealed class TenantActivity
                     }
                 }
             }
-            await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = 4 },
+            await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests },
                 async (item, _) => await SendAsync(Admin, "GET", item.Path, null, item.Label));
         }
         if (_successfulReads == successBefore)
@@ -399,7 +399,7 @@ public sealed class TenantActivity
             work.Add((_actors[0], path));
             work.Add((_actors[^1], path));
         }
-        await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) =>
+        await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
         {
             await SendAsync(item.Actor, "GET", item.Path, null, $"GET {item.Path} [{phase}]");
             Interlocked.Increment(ref _preTouches);

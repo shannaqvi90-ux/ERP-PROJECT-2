@@ -14,6 +14,19 @@ mkdir -p "$out" /work
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
+# CPU seconds this stage's container used (cgroup v1 cpuacct, or v2 cpu.stat), written when the
+# stage ends, pass or fail. The ratchet's maximum verify.cpuSeconds is judged on their sum, which
+# other agents' load changes far less than the wall time. Not counted: the PostgreSQL containers
+# the tests start, the verify stack's own containers and the image build (containers of their own).
+cpu_seconds() {
+  if [[ -r /sys/fs/cgroup/cpuacct/cpuacct.usage ]]; then
+    awk '{ printf "%.1f\n", $1 / 1e9 }' /sys/fs/cgroup/cpuacct/cpuacct.usage
+  elif [[ -r /sys/fs/cgroup/cpu.stat ]]; then
+    awk '$1 == "usage_usec" { printf "%.1f\n", $2 / 1e6 }' /sys/fs/cgroup/cpu.stat
+  fi
+}
+trap 'cpu_seconds >"$out/cpu-$stage" 2>/dev/null || true' EXIT
+
 # Networks that re-terminate TLS: ./erp mounts the extra CA certificates here (see ERP_EXTRA_CA_CERTS).
 if [[ -s /etc/erp-extra-ca.crt ]]; then
   cat /etc/erp-extra-ca.crt >>/etc/ssl/certs/ca-certificates.crt
@@ -63,6 +76,12 @@ case "$stage" in
     dotnet build Erp.slnx -c Release --no-restore --verbosity quiet
 
     step ".NET: unit, integration (Testcontainers PostgreSQL) and gate tests"
+    # Runtime settings for the test processes only (not the timing stage, which measures the
+    # product as it runs in production): idle thread-pool workers block instead of spinning for a
+    # processor (the test processes wait mostly on PostgreSQL, and spinning took processor time
+    # from the processes doing work), and a 64 MB first GC generation instead of one sized by the
+    # processor cache (fewer collections). Measured on the company attack: 240 -> 220 CPU seconds.
+    export DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0 DOTNET_GCgen0size=0x4000000
     rm -rf "$out/trx"
     # Four test processes side by side: every test project (the gate self-tests below excepted),
     # and the three long self-tests of the planted module, each in a process of its own. Their

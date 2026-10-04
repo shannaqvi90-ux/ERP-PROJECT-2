@@ -249,7 +249,7 @@ public static class CompanyAttack
                 {
                     // Reads change nothing: each answer, and its control for a value that exists
                     // nowhere, is judged as it comes.
-                    await Parallel.ForEachAsync(batch, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) =>
+                    await Parallel.ForEachAsync(batch, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
                     {
                         var answer = await state.SendAsync(name, client, item.Method, item.Path, item.Body, [item.Value]);
                         if (item.ControlPath is { } controlPath)
@@ -266,7 +266,7 @@ public static class CompanyAttack
                     // own (the writes run at the same time, so an answer may already show a text a
                     // concurrent write stored).
                     var answers = new (int Status, string Text)[batch.Count];
-                    await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (i, _) =>
+                    await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (i, _) =>
                         answers[i] = await state.SendRawAsync(client, batch[i].Method, batch[i].Path, batch[i].Body));
                     for (var i = 0; i < batch.Count; i++)
                     {
