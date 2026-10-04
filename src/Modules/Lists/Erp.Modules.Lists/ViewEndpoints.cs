@@ -27,7 +27,7 @@ public sealed record ListPresetDto(string Key, string LabelKey, string? Filter, 
 /// share views.</summary>
 public sealed record ListDefinitionDto(
     string Key, string LabelKey, string Endpoint, IReadOnlyList<ListColumnDto> Columns, IReadOnlyList<string> SearchFields,
-    string? DefaultSort, IReadOnlyList<ListPresetDto> Presets, bool CanShare, int MaxTake);
+    string? DefaultSort, IReadOnlyList<ListPresetDto> Presets, bool CanShare, int MaxTake, bool Printable = false);
 
 public sealed record SavedViewDto(
     Guid Id, string ListKey, string Name, bool IsShared, bool IsDefault, bool IsMine, IReadOnlyList<string> Columns,
@@ -62,7 +62,8 @@ internal static class ViewEndpoints
             var routes = group.MapGroup("/" + key);
             var name = $"lists.{key}";
 
-            routes.MapGet("/definition", (ModuleCatalog c, ICurrentUser caller) => TypedResults.Ok(Definition(c.FindList(key)!, caller)))
+            routes.MapGet("/definition", (ModuleCatalog c, ICurrentUser caller) =>
+                    TypedResults.Ok(Definition(c.FindList(key)!, caller, c.PrintableLists.Any(p => p.List.Key == key))))
                 .WithName($"{name}.definition")
                 .WithSummary($"Definition of the {key} list: columns, types, labels, operators, search fields, default sort, built-in views.")
                 .RequirePermission(list.Permission);
@@ -173,7 +174,7 @@ internal static class ViewEndpoints
         };
     }
 
-    internal static ListDefinitionDto Definition(ListDefinition list, ICurrentUser caller) => new(
+    internal static ListDefinitionDto Definition(ListDefinition list, ICurrentUser caller, bool printable = false) => new(
         list.Key,
         list.LabelKey,
         list.Endpoint,
@@ -185,7 +186,8 @@ internal static class ViewEndpoints
         list.DefaultSort,
         (list.Presets ?? []).Select(p => new ListPresetDto(p.Key, p.LabelKey, p.Filter, p.Sort, p.GroupBy)).ToList(),
         caller.Has(ListsPermissions.ViewsShare),
-        ListRequest.MaxTake);
+        ListRequest.MaxTake,
+        Printable: printable);
 
     private static async Task<Ok<ListPage<SavedViewDto>>> Views(string list, ListsDbContext db, ICurrentUser caller, CancellationToken cancellationToken)
     {

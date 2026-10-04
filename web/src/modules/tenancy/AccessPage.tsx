@@ -1,11 +1,13 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState } from "react";
 import { api } from "../../kernel/api";
+import { RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
+import { useRecordForm } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
 import { listSearch, useRecordPanel } from "./records";
 import type { AccessCompanySummary, CompanyAccess, UserAccess } from "./types";
-import { problemOf, useLocalName, useScreenKeys } from "./ui";
+import { useLocalName, useScreenKeys } from "./ui";
 
 /**
  * Who may work in which company and branch: the workspace's users in the shared list (search by
@@ -31,7 +33,7 @@ export function AccessPage() {
         reloadKey={panel.reload}
         openId={panel.openId}
         onOpenIdChange={panel.onOpenIdChange}
-        renderRecord={(id, close) => <AccessForm key={id} userId={id} onSaved={() => panel.saved(id)} onClose={close} />}
+        renderRecord={(id, close, nav) => <AccessForm key={id} userId={id} onSaved={() => panel.saved(id)} onClose={close} nav={nav} />}
         renderCell={{
           email: (u) => <span dir="ltr">{String(u.email ?? "")}</span>,
           companies: (u) => {
@@ -50,108 +52,49 @@ export function AccessPage() {
   );
 }
 
-function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () => void; onClose: () => void }) {
+function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved: () => void; onClose: () => void; nav?: RecordNavigation }) {
   const { t } = useI18n();
   const { can } = useSession();
   const name = useLocalName();
-  const [access, setAccess] = useState<UserAccess | null>(null);
-  const [draft, setDraft] = useState<CompanyAccess[]>([]);
-  const [message, setMessage] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    api<UserAccess>("GET", `/api/tenancy/access/${userId}`)
-      .then((a) => {
-        setAccess(a);
-        setDraft(a.companies);
-      })
-      .catch((e) => setMessage(problemOf(e).message));
-  }, [userId]);
-
   // Company access is a grant: the server says whether this caller may change this user at all.
-  const editable = can("tenancy.access.update") && access !== null && !access.isCaller && access.canEdit !== false;
+  const [editable, setEditable] = useState(false);
+  const form = useRecordForm<UserAccess, { companies: CompanyAccess[] }>({
+    load: async (signal) => {
+      const access = await api<UserAccess>("GET", `/api/tenancy/access/${userId}`, undefined, { signal });
+      setEditable(can("tenancy.access.update") && !access.isCaller && access.canEdit !== false);
+      return access;
+    },
+    initial: (a) => ({ companies: a?.companies ?? [] }),
+    canEdit: editable,
+    save: (draft) => api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft.companies }),
+    onSaved: () => onSaved(),
+  }, userId);
+  const access = form.record;
+  const draft = form.draft.companies;
+  const change = (next: (companies: CompanyAccess[]) => CompanyAccess[]) => form.update((d) => ({ companies: next(d.companies) }));
   const entry = (companyId: string) => draft.find((d) => d.companyId === companyId);
   const canGiveAll = (companyId: string) => access?.options.find((o) => o.id === companyId)?.canGiveAllBranches !== false;
   const toggleCompany = (companyId: string, on: boolean) => {
-    setSaved(false);
     const all = canGiveAll(companyId);
-    setDraft((d) => (on ? [...d, { companyId, allBranches: all, branchIds: [] }] : d.filter((x) => x.companyId !== companyId)));
+    change((d) => (on ? [...d, { companyId, allBranches: all, branchIds: [] }] : d.filter((x) => x.companyId !== companyId)));
   };
-  const setAll = (companyId: string, all: boolean) => {
-    setSaved(false);
-    setDraft((d) => d.map((x) => (x.companyId === companyId ? { ...x, allBranches: all, branchIds: all ? [] : x.branchIds } : x)));
-  };
-  const toggleBranch = (companyId: string, branchId: string, on: boolean) => {
-    setSaved(false);
-    setDraft((d) =>
-      d.map((x) =>
-        x.companyId === companyId
-          ? { ...x, branchIds: on ? [...x.branchIds, branchId] : x.branchIds.filter((b) => b !== branchId) }
-          : x,
-      ),
-    );
-  };
+  const setAll = (companyId: string, all: boolean) =>
+    change((d) => d.map((x) => (x.companyId === companyId ? { ...x, allBranches: all, branchIds: all ? [] : x.branchIds } : x)));
+  const toggleBranch = (companyId: string, branchId: string, on: boolean) =>
+    change((d) => d.map((x) => (x.companyId === companyId ? { ...x, branchIds: on ? [...x.branchIds, branchId] : x.branchIds.filter((b) => b !== branchId) } : x)));
 
-  const save = async (event?: FormEvent) => {
-    event?.preventDefault();
-    if (!editable || busy) return;
-    setBusy(true);
-    setMessage(null);
-    try {
-      const result = await api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft });
-      setAccess(result);
-      setDraft(result.companies);
-      setSaved(true);
-      onSaved();
-    } catch (error) {
-      const problem = problemOf(error);
-      setMessage([problem.message, ...Object.values(problem.fields).flat().map((f) => f.message)].join(" "));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  useScreenKeys({ onSave: () => void save(), onClose });
-
+  const reason = access?.isCaller ? t("tenancy.access.ownAccess") : access && access.canEdit === false && access.readOnlyReason ? t(access.readOnlyReason) : undefined;
   return (
-    <form className="record-form" onSubmit={save} aria-label={t("tenancy.access.form")}>
-      <div className="record-header">
-        <h2>{access ? access.displayName : ""}</h2>
-        <div className="record-actions">
-          {editable && (
-            <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
-              {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
-            </button>
-          )}
-          <button type="button" className="button" onClick={onClose} title={t("tenancy.common.closeHint")} aria-keyshortcuts="Escape">
-            {t("tenancy.common.close")}
-          </button>
-        </div>
-      </div>
-      {access && (
-        <p className="muted" dir="ltr">
-          {access.email}
-        </p>
-      )}
+    <RecordForm form={form} label={t("tenancy.access.form")} title={access ? access.displayName : ""} subtitle={access && <span dir="ltr">{access.email}</span>}
+      onClose={onClose} nav={nav} readOnlyReason={reason}>
       {access?.isCaller && <div className="notice">{t("tenancy.access.ownAccess")}</div>}
       {access && !access.isCaller && access.canEdit === false && access.readOnlyReason && (
         <div className="notice" data-testid="access-read-only">
           {t(access.readOnlyReason)}
         </div>
       )}
-      {message && (
-        <div className="alert" role="alert">
-          {message}
-        </div>
-      )}
-      {saved && (
-        <div className="notice" role="status">
-          {t("tenancy.common.saved")}
-        </div>
-      )}
       {access && access.options.length === 0 && <p className="muted">{t("tenancy.access.noCompanies")}</p>}
-      <fieldset disabled={!editable} className="access-list">
+      <fieldset disabled={!editable} className="access-list form-section">
         <legend>{t("tenancy.access.companies")}</legend>
         {access?.options.map((company) => {
           const current = entry(company.id);
@@ -191,6 +134,6 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
           );
         })}
       </fieldset>
-    </form>
+    </RecordForm>
   );
 }

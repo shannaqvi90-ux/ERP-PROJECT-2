@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { useI18n, type Language } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { formKeys } from "../../kernel/forms/RecordForm";
 import "./identity.css";
 
 /**
@@ -94,7 +95,12 @@ export function MyAccountPage() {
           {t("identity.language.ar")}
         </label>
       </fieldset>
-      <form className="id-form" noValidate onSubmit={(e) => void changePassword(e)}>
+      <form
+        className="id-form"
+        noValidate
+        onSubmit={(e) => void changePassword(e)}
+        onKeyDown={(e) => formKeys(e, () => e.currentTarget.requestSubmit(), () => undefined)}
+      >
         <h2>{t("identity.me.changePassword")}</h2>
         <label className="field">
           <span className="field-label">{t("identity.me.current")}</span>

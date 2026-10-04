@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
+import { confirmLeave } from "../forms/leave";
+import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
 import {
@@ -26,6 +28,7 @@ import {
 import { ColumnChooser, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
 import { useListRows } from "./useListRows";
 import "./lists.css";
+import "../forms/forms.css";
 
 export type BulkAction = {
   key: string;
@@ -63,7 +66,7 @@ export type ListViewProps = {
    * The screen's own content for the details panel of the open record (?open=id), for example
    * an editor; it gets the record's id. Without it the panel shows every column of the row.
    */
-  renderRecord?: (id: string, close: () => void) => ReactNode;
+  renderRecord?: (id: string, close: () => void, nav: RecordNavigation) => ReactNode;
   /** The open record's id, when the screen controls it (for example to open a record it just
    * created); onOpenIdChange hears every change the list makes. */
   openId?: string | null;
@@ -136,6 +139,7 @@ export function ListView(props: ListViewProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const openWhenSingle = useRef(false);
+  const pendingOpen = useRef<number | null>(null);
 
   // Definition and saved views, then the starting state: the address, else the user's default
   // view, else a shared default, else the list's standard state.
@@ -233,6 +237,14 @@ export function ListView(props: ListViewProps) {
     afterSearchEnter();
   });
 
+  // Next or previous record whose row was not loaded yet: open it once it is.
+  useEffect(() => {
+    const index = pendingOpen.current;
+    if (index === null || !rows.rowAt(index)) return;
+    pendingOpen.current = null;
+    openAt(index);
+  });
+
   // Notices (saved, copied) fade after a few seconds.
   useEffect(() => {
     if (!notice) return;
@@ -304,6 +316,8 @@ export function ListView(props: ListViewProps) {
   const recordOpen = props.renderRecord ? Boolean(openId) : Boolean(openRow);
 
   function open(row: Row) {
+    // Another record replaces the open one only once its unsaved changes are saved or given up.
+    if (openId && row.id !== openId && !confirmLeave()) return;
     if (props.onOpen) {
       props.onOpen(row);
       return;
@@ -312,10 +326,43 @@ export function ListView(props: ListViewProps) {
     setOpenId(row.id);
   }
 
-  function closeRecord() {
+  /** Close the open record. `asked`: its form already dealt with unsaved changes. */
+  function closeRecord(asked = false) {
+    if (!asked && !confirmLeave()) return;
     setOpenId(null);
     setOpenRow(null);
     tableRef.current?.focus();
+  }
+
+  /** Open the record at a position of the list (next and previous from the record's form). */
+  function openAt(index: number) {
+    const row = rows.rowAt(index);
+    if (!row) {
+      pendingOpen.current = index;
+      rows.ensure(index, index + 1);
+      return;
+    }
+    if (openId && row.id !== openId && !confirmLeave()) return;
+    setActive(index);
+    scrollToRow(index);
+    if (props.onOpen) props.onOpen(row);
+    else {
+      setOpenRow(row);
+      setOpenId(row.id);
+    }
+  }
+
+  /** Where the open record sits in the list, for its form's previous and next. */
+  function recordNavigation(): RecordNavigation {
+    if (!openId || grouped) return {};
+    const index = rows.indexOf(openId);
+    if (index < 0) return {};
+    return {
+      position: index + 1,
+      total,
+      previous: index > 0 ? () => openAt(index - 1) : undefined,
+      next: index < total - 1 ? () => openAt(index + 1) : undefined,
+    };
   }
 
   function afterSearchEnter() {
@@ -662,6 +709,7 @@ export function ListView(props: ListViewProps) {
               />
             )}
           </div>
+          {definition?.printable && current && <ListPrintMenu listKey={listKey} state={current} />}
           {props.actions}
         </div>
       </div>
@@ -930,11 +978,11 @@ export function ListView(props: ListViewProps) {
               }
             }}
           >
-            {props.renderRecord(openId, closeRecord)}
+            {props.renderRecord(openId, () => closeRecord(true), recordNavigation())}
           </aside>
         )}
         {!props.renderRecord && openRow && definition && (
-          <RecordPanel definition={definition} row={openRow} formatters={formatters} renderCell={props.renderCell} onClose={closeRecord} />
+          <RecordPanel definition={definition} row={openRow} formatters={formatters} renderCell={props.renderCell} onClose={() => closeRecord(true)} />
         )}
       </div>
       <div className="list-statusbar muted">
@@ -1026,4 +1074,65 @@ function viewBody(state: ListState, name: string, isDefault: boolean) {
     groupBy: state.groupBy,
     isDefault,
   };
+}
+
+/** The address that prints or exports the list as it stands: its search, filter, sort, visible
+ * columns and grouping, in the format and language asked for. */
+export function listReportUrl(listKey: string, state: ListState, format: "pdf" | "csv" | "xlsx" | "json", language: string, numerals: string): string {
+  const query = queryOf(state);
+  query.set("columns", state.columns.join(","));
+  if (state.groupBy) query.set("groupBy", state.groupBy);
+  query.set("format", format);
+  query.set("language", language);
+  query.set("numerals", numerals);
+  return `/api/reports/lists/${listKey}?${query}`;
+}
+
+/** Print the list as a report: PDF in English or Arabic, CSV or Excel, with what is on screen. */
+function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }) {
+  const { t, numerals } = useI18n();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open) menuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
+  }, [open]);
+  const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    const items = [...(menuRef.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [])];
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    if (event.key === "ArrowDown") items[(index + 1) % items.length]?.focus();
+    else if (event.key === "ArrowUp") items[(index - 1 + items.length) % items.length]?.focus();
+    else if (event.key === "Escape") setOpen(false);
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const items: { key: string; format: "pdf" | "csv" | "xlsx"; language: string }[] = [
+    { key: "lists.print.pdfEnglish", format: "pdf", language: "en" },
+    { key: "lists.print.pdfArabic", format: "pdf", language: "ar" },
+    { key: "lists.print.csv", format: "csv", language: "en" },
+    { key: "lists.print.xlsx", format: "xlsx", language: "en" },
+  ];
+  return (
+    <div className="list-anchor menu-anchor" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setOpen(false)}>
+      <button type="button" className="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {t("lists.print.open")}
+      </button>
+      {open && (
+        <div className="menu" role="menu" ref={menuRef} aria-label={t("lists.print.open")} onKeyDown={onKey}>
+          {items.map((item) => (
+            <a
+              key={item.key}
+              role="menuitem"
+              className="menu-item"
+              href={listReportUrl(listKey, state, item.format, item.language, item.language === "ar" ? numerals : "latn")}
+              download
+              onClick={() => setOpen(false)}
+            >
+              {t(item.key)}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
