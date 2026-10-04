@@ -660,23 +660,29 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
       <table className="grid id-history-table">
         <thead>
           <tr>
-            <th scope="col">{t("identity.history.when")}</th>
-            <th scope="col">{t("identity.history.outcome")}</th>
-            <th scope="col">{t("identity.history.address")}</th>
-            <th scope="col">{t("identity.history.session")}</th>
+            <th scope="col">
+              {t("identity.history.when")}
+              <span className="id-sub">{t("identity.history.address")}</span>
+            </th>
+            <th scope="col">
+              {t("identity.history.outcome")}
+              <span className="id-sub">{t("identity.history.session")}</span>
+            </th>
           </tr>
         </thead>
         <tbody>
           {history.items.map((a) => (
             <tr key={a.id}>
-              <td>{formatDateTime(a.occurredAt)}</td>
+              <td>
+                {formatDateTime(a.occurredAt)}
+                <span className="id-sub" title={a.userAgent ?? undefined}>
+                  <bdi dir="ltr">{a.ipAddress ?? "—"}</bdi>
+                </span>
+              </td>
               <td>
                 <span className={a.outcome === "succeeded" ? "id-badge ok" : "id-badge off"}>{t(`identity.outcome.${a.outcome}`)}</span>
+                {a.sessionActive && <span className="id-sub">{t("identity.history.active")}</span>}
               </td>
-              <td dir="ltr" title={a.userAgent ?? undefined}>
-                {a.ipAddress ?? "—"}
-              </td>
-              <td>{a.sessionActive ? t("identity.history.active") : ""}</td>
             </tr>
           ))}
         </tbody>

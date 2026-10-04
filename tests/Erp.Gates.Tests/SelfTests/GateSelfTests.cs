@@ -143,6 +143,22 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public async Task The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes()
+    {
+        // Critic p03 round 2, plant P5: an e-mail-only edit of a stronger account skips the access
+        // check. The edit that changes the name (the one request earlier gates sent) is refused;
+        // only the single-field request finds the bypass.
+        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("changed: before", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid}: ", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [displayName changed]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [roleIds changed]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("PUT /api/identity/users/{id:guid} [email changed]", result.FieldVariants ?? []);
+    }
+
+    [Fact]
     public void The_process_state_check_catches_a_static_cache_and_a_stateful_singleton()
     {
         var inventory = ProcessState.InspectTypes(typeof(LeakyModule).GetNestedTypes().Append(typeof(LeakyModule)),
@@ -242,5 +258,37 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
             await owner.OpenAsync();
             await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_unprotected");
         }
+    }
+}
+
+/// <summary>Its own environment with the leaky module: the write-oracle check leaves tenant B's
+/// addresses on tenant A's records, which the HTTP attack self-test would then read as leaks.</summary>
+public sealed class LeakyWriteOracleFixture : IAsyncLifetime
+{
+    public ErpTestEnvironment Env { get; private set; } = null!;
+
+    public async ValueTask InitializeAsync()
+    {
+        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?>
+        {
+            ["Erp:Testing:ExtraModules"] = typeof(LeakyModule).AssemblyQualifiedName,
+        });
+        await GatePreparation.PrepareAsync(Env);
+    }
+
+    public async ValueTask DisposeAsync() => await Env.DisposeAsync();
+}
+
+public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : IClassFixture<LeakyWriteOracleFixture>
+{
+    [Fact]
+    public async Task The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address()
+    {
+        // Critic p03 round 2, plant L4: a registry on disk answers 409 for tenant B's addresses.
+        var result = await G1WriteOracle.RunAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/accounts [email]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/accounts", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/users", result.Endpoints);
+        Assert.Contains("PUT /api/leaky/members/{id:guid}", result.Endpoints);
     }
 }

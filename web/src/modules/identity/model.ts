@@ -244,3 +244,7 @@ export function withImpliedReads(
   }
   return next;
 }
+
+/** New user / new role: Alt+N works while typing (the lists focus their search on arrival); a
+ * plain "n" works when no field has the focus. */
+export const newRecordChord = "Alt+KeyN";

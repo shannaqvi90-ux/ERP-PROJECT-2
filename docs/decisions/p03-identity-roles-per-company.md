@@ -38,3 +38,9 @@ code path identity's permission check runs in.
 Adding a `company_id` without companies would be an unchecked id (no foreign key, no scope
 policy), the kind of column the G1 gates exist to refuse. Building a second company scope inside
 identity would collide with p02's kernel change at merge time.
+
+## Round 3 status (2026-10-03)
+
+p02's company scope is still not on the integration branch (no companies, no `ICompanyContext`),
+so the follow-up above stays open and unchanged: the critic's scope finding is acknowledged, not
+worked around with an unchecked `company_id`.
