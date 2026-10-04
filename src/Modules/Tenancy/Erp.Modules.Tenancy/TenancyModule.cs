@@ -188,9 +188,24 @@ public sealed class UserWorkplace : TenantEntity, ICompanyOwned
     public Guid? BranchId { get; set; }
 }
 
-public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options, ITenantContext? tenant = null, TenancyBranchScope? branches = null)
-    : ModuleDbContext(options, tenant)
+public sealed class TenancyDbContext : ModuleDbContext
 {
+    private readonly TenancyBranchScope? branches;
+
+    /// <summary>For migrations and design-time tools (no request, so no branch limits).</summary>
+    public TenancyDbContext(DbContextOptions<TenancyDbContext> options, ITenantContext? tenant = null)
+        : base(options, tenant)
+    {
+    }
+
+    /// <summary>For a request: the branch limits the company scope binder set apply.</summary>
+    [ActivatorUtilitiesConstructor]
+    public TenancyDbContext(DbContextOptions<TenancyDbContext> options, ITenantContext? tenant, TenancyBranchScope branches)
+        : base(options, tenant)
+    {
+        this.branches = branches;
+    }
+
     public const string SchemaName = "tenancy";
 
     /// <summary>Name of the branch filter: a user limited to some branches of a company sees only

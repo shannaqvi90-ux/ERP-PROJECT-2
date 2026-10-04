@@ -97,8 +97,24 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         var grantY = await limited.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } });
         Assert.Equal(HttpStatusCode.BadRequest, grantY.StatusCode);
         Assert.Equal("unknownIds", (await Json(grantY)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
-        Assert.Equal(HttpStatusCode.OK, (await limited.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+        // The target works in Y, which the caller does not: it holds more, so the caller cannot
+        // change its access at all (company access is a grant) and is told so before trying.
+        Assert.False(seen.GetProperty("canEdit").GetBoolean());
+        Assert.Equal("tenancy.access.readOnly.companies", seen.GetProperty("readOnlyReason").GetString());
+        var beyond = await limited.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+            new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } });
+        Assert.Equal(HttpStatusCode.Forbidden, beyond.StatusCode);
+        Assert.Equal("tenancy.userBeyondOwnCompanies", (await Json(beyond)).GetProperty("code").GetString());
+        var untouched = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}");
+        Assert.Equal(new[] { y }, untouched.GetProperty("companies").EnumerateArray().Select(c => c.GetProperty("companyId").GetGuid()));
+        // A user who works in no company outside the caller's is the caller's to give X to.
+        var (plainId, _) = await NewUserAsync(admin, "plain", administrator: false);
+        Assert.True((await limited.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{plainId}")).GetProperty("canEdit").GetBoolean());
+        Assert.Equal(HttpStatusCode.OK, (await limited.PutAsJsonAsync($"/api/tenancy/access/{plainId}",
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
+        // The administrator, who works in both, gives the target X as well; Y stays.
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+            new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() }, new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
         var full = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}");
         Assert.Equal(new[] { x, y }.Order(), full.GetProperty("companies").EnumerateArray().Select(c => c.GetProperty("companyId").GetGuid()).Order());
 
