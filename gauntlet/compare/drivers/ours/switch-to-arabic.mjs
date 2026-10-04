@@ -19,7 +19,9 @@ export default {
     const found = await admin.get(`/api/identity/users?search=${encodeURIComponent(TESTER.email)}`);
     if (!found.items.some(u => u.email.toLowerCase() === TESTER.email)) {
       const roles = await admin.get('/api/identity/roles');
-      const readOnly = (Array.isArray(roles) ? roles : roles.items).find(r => !r.isSystem && r.permissions.includes('identity.profile.update'));
+      // Not merely a role with the own-preferences permission: create-restricted-user's set-up
+      // leaves "Clerk (restricted)" (own preferences only), which opens no list, and it sorts first.
+      const readOnly = (Array.isArray(roles) ? roles : roles.items).find(r => !r.isSystem && r.permissions.includes('identity.profile.update') && r.permissions.includes('identity.users.read'));
       await admin.post('/api/identity/users', { email: TESTER.email, displayName: TESTER.name, language: 'en', password: ctx.product.users.admin.password, roleIds: readOnly ? [readOnly.id] : [] });
     }
     // Start state: the tester works in English.
