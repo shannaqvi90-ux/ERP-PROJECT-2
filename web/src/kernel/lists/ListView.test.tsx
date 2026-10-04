@@ -114,9 +114,12 @@ describe("list view", () => {
     expect(calls.some((c) => c.url.includes("search=shamma+romaithi"))).toBe(true);
     const panel = v.container.querySelector("[role=region].list-record");
     expect(panel?.textContent).toContain("Shamma Waleed Al Romaithi");
-    expect(window.location.search).toContain("open=");
+    // The open record has its own address: the screen's path and the record's id.
+    expect(window.location.pathname).toMatch(/^\/identity\/users\/[0-9a-f-]{36}$/);
+    expect(window.location.search).toBe("?q=shamma+romaithi");
     await key(panel!, "Escape");
     expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
   });
 
   it("moves through rows with the keyboard, selects with Space and copies the selection", async () => {

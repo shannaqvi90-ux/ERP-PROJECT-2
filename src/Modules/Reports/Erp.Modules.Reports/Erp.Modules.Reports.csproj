@@ -20,8 +20,13 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Reports.Resources.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Fonts\*.woff" LogicalName="Erp.Modules.Reports.Fonts.%(Filename)%(Extension)" />
-    <EmbeddedResource Include="$(WebModules)*\i18n\*.json" LogicalName="web-strings/%(RecursiveDir)%(Filename)%(Extension)" />
+    <WebStringFile Include="$(WebModules)*\i18n\*.json" />
+    <EmbeddedResource Include="@(WebStringFile)" LogicalName="web-strings/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+  <!-- Without the screens' strings every printed label would be its key: stop the build instead. -->
+  <Target Name="RequireWebStrings" BeforeTargets="PrepareForBuild">
+    <Error Condition="'@(WebStringFile)' == ''" Text="The web app's string files ($(WebModules)*/i18n/*.json) are missing; the reports module embeds them." />
+  </Target>
   <ItemGroup>
     <InternalsVisibleTo Include="Erp.Modules.Reports.Tests" />
     <InternalsVisibleTo Include="Erp.Gates.Tests" />

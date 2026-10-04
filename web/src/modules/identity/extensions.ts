@@ -1,5 +1,6 @@
 import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
+import { recordPath } from "../../kernel/router";
 
 type UserRow = { id: string; email: string; displayName: string };
 
@@ -22,7 +23,7 @@ export const extensions: ModuleExtensions = {
             title: u.displayName,
             subtitle: u.email,
             // The users list narrowed to this user, with the user's details open.
-            path: `/identity/users?${new URLSearchParams({ q: u.email, open: u.id })}`,
+            path: recordPath("/identity/users", u.id, `${new URLSearchParams({ q: u.email })}`),
           })),
         };
       },

@@ -1,17 +1,18 @@
 import { useCallback, useMemo, useState } from "react";
+import { recordInAddress } from "../router";
 
-/** The list panel's id while a new record is being created: every screen opens a new record at ?open=new. */
+/** The list panel's id while a new record is being created: every screen opens a new record at <screen>/new. */
 export const newRecord = "new";
 
 /**
- * The open record of a list screen, in the list's details panel: an existing record (?open=id)
- * or a new one (?open=new), the same address on every screen. Saving a new record keeps its form on
+ * The open record of a list screen, in the list's details panel: an existing record (<screen>/<id>)
+ * or a new one (<screen>/new), the same address on every screen. Saving a new record keeps its form on
  * screen (so "Saved" stays visible) while the address moves to the saved record's id; `reload`
  * tells the list to fetch its rows again.
  */
 export function useRecordPanel(canCreate: boolean) {
   const [openId, setOpenId] = useState<string | null>(() => {
-    const open = new URLSearchParams(window.location.search).get("open");
+    const open = recordInAddress();
     return open === newRecord && !canCreate ? null : open;
   });
   const [formKey, setFormKey] = useState(() => openId ?? "");

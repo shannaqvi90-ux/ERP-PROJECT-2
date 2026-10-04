@@ -169,7 +169,7 @@ test.describe("users, roles and permissions", () => {
     });
     expect(response.status()).toBe(201);
     const { id } = (await response.json()) as { id: string };
-    await page.goto(`/identity/users?open=${id}`);
+    await page.goto(`/identity/users/${id}`);
     const address = page.locator('aside input[name="email"]');
     await expect(address).toHaveValue(`e2e.typo.${tag}@alnor.example`);
     await address.fill(`e2e.typo.${tag}@alnoor.example`);
@@ -195,7 +195,7 @@ test.describe("users, roles and permissions", () => {
       await signIn(page, language === "en" ? users.admin : users.adminArabic);
       await expect(page.locator("nav").first()).toBeVisible();
       const session = (await (await page.request.get("/api/auth/session")).json()) as { user: { id: string } };
-      await page.goto(`/identity/users?open=${session.user.id}`);
+      await page.goto(`/identity/users/${session.user.id}`);
       await page.getByRole("tab").nth(2).click();
       const table = page.locator(".id-history-table");
       await expect(table.locator("tbody tr").first()).toBeVisible();

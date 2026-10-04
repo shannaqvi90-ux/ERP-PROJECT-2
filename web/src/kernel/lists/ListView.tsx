@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { confirmLeave } from "../forms/leave";
+import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
@@ -167,7 +168,7 @@ export function ListView(props: ListViewProps) {
         setSearchText(start.search);
         setAppliedSearch(start.search);
         setBaseline(fingerprint(start));
-        setOpenId(address.open);
+        setOpenId(recordInAddress() ?? address.open);
       })
       .catch((e: Error) => !cancelled && setLoadError(e.message));
     return () => {
@@ -194,12 +195,12 @@ export function ListView(props: ListViewProps) {
   // Keep the address in step with the state, keeping parameters the screen owns.
   useEffect(() => {
     if (!current || !definition) return;
-    const params = new URLSearchParams(stateToAddress(current, definition, openId));
+    const params = new URLSearchParams(stateToAddress(current, definition, null));
     new URLSearchParams(window.location.search).forEach((value, key) => {
       if (!listParams.has(key)) params.append(key, value);
     });
-    const text = params.toString();
-    const address = window.location.pathname + (text ? `?${text}` : "");
+    // The open record is part of the path (/screen/<id>); the list's state is the query.
+    const address = recordAddress(openId, params.toString());
     if (address !== window.location.pathname + window.location.search) window.history.replaceState(null, "", address);
   }, [current, definition, openId]);
 
@@ -207,7 +208,7 @@ export function ListView(props: ListViewProps) {
   // while focus is still on the menu link that opened it), unless the address opens a record,
   // whose panel takes focus.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).has("open")) return;
+    if (recordInAddress() !== null) return;
     const timer = window.setTimeout(() => {
       const focused = document.activeElement;
       if (!focused || focused === document.body || focused.id === "main" || focused.tagName === "MAIN" || !!focused.closest("nav"))
