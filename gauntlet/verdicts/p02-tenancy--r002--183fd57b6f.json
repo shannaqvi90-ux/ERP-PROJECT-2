@@ -1,0 +1,134 @@
+{
+  "piece": "p02-tenancy",
+  "round": 2,
+  "commit": "183fd57b6f775ea4b23de5faed9515c0984d54ea",
+  "judged_at": "2026-10-04T07:08:44Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p02-tenancy round 2",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: suite and hand attacks",
+      "status": "pass",
+      "evidence": "G1 HTTP, database, process-state, source, client and non-interference tests all pass in ./erp verify (verify.log). Hand attacks (attack.log): signed in as alnoor's administrator against gulfsteel, I tried GET/PUT of B's company, logo and branch, POST of a branch into B's company, a workplace switch to B, a grant of B's company, a filter by B's companyId and a read of B's user's access. Every answer was 404, 400 or an empty list. erp_app has neither superuser nor BYPASSRLS. Every tenancy table has tenant_isolation plus a RESTRICTIVE company_scope policy (db-inspection.txt). No real cross-tenant leak was found."
+    },
+    {
+      "gate": "G1 tenant isolation: planted tenant leak in this piece (T1)",
+      "status": "pass",
+      "evidence": "Plant T1 (plants/apply.py T1, all-plants.diff) adds a static logo cache in CompanyEndpoints.GetLogo. Two gates caught it: G1ProcessStateTests ('static ...CompanyEndpoints.LogoCache ... mutable ConcurrentDictionary') and G1HttpIsolationTests ('18 leaks: GET /api/tenancy/companies/{B}/logo -> 200 contains tenant B marker') (plants/gates-all-plants.log)."
+    },
+    {
+      "gate": "G1 company layer (company-scoping attacks, this piece's own gate)",
+      "status": "fail",
+      "evidence": "Plant C2 (plants/C2.diff): POST /api/tenancy/branches calls ErpDbSession.IncludeNewCompanyAsync(request.CompanyId) before writing. This is a real leak. On the planted host, x.admin (Administrator role, ALN-DXB only) gets 404 for ALN-SHJ but POST /branches {companyId: ALN-SHJ} answers 201 with companyCode 'ALN-SHJ'. The unplanted demo answers 400 unknownIds (plants/C2-probe.log). Yet G1CompanyIsolationTests, G1CompanyScopeTests, G1TenantSourceTests and G1ReviewedLookupTests all PASS with it in place (plants/C2-gates.log). The cause: the attack's generated body puts 'company-attack-N' in email, which the validator refuses (400 'Enter a valid e-mail address.', reproduced in C2-probe.log), so the attack never completes a create or update on branches. (Plant C1, a stale workplace kept in scope, turned out inert: user_workplaces cascades from user_company_access. It is not counted.)"
+    },
+    {
+      "gate": "G2 permissions: planted action without its permission (P1)",
+      "status": "fail",
+      "evidence": "Plant P1 (plants/P1.diff): PUT /api/tenancy/companies/{id}/logo is guarded by tenancy.workplace.switch instead of tenancy.companies.update, so anyone who may switch company can replace company logos. Every G2 test passes with it in place (23/23, plants/P1-g2.log), and so do the tenancy module tests (21/21, P1-tenancy.log). tests/Gates/endpoint-permissions/ has a reviewed map for identity only. Nothing reviews the permission each /api/tenancy endpoint should declare."
+    },
+    {
+      "gate": "G2 permissions: in-handler check removed (P2) and access takeover",
+      "status": "fail",
+      "evidence": "Plant P2 (callers may change their own company access) passes every gate. Only the module test AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access catches it (plants/tenancy-tests.log). There is also a real, unplanted problem: G2AccountTakeoverTests covers only /api/identity/users/{..}, and GrantEscalation knows only the roleIds and permissions fields. So PUT /api/tenancy/access/{userId} is never checked against what the target holds. A user whose role holds only tenancy.access.read and tenancy.access.update removed the Administrator from ALN-DXB (200), and the Administrator could not restore it (400). It is audited as a delete by that user (attack.log, db-inspection.txt)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "pass",
+      "evidence": "Fresh clone at 183fd57. Command: ERP_PROJECT=c-p02-tenancy-r2 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ./erp verify. It exited 0 in 3418 s: 331 .NET, 154 web unit, 54 end-to-end and 146 compare tests, and the ratchet check passed (verify.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command to the running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up with the same overrides served the seeded demo on :20250 in 46 s (the image was already built by verify), with 4+2 companies and 15 branches (up.log). Ports and the compose project are overridable from the environment as documented. Testcontainers ports are still random, as earlier critics noted."
+    },
+    {
+      "gate": "Rule gates: licences, decimal money, English/Arabic strings, audit",
+      "status": "pass",
+      "evidence": "The string check reports 497 keys in English and Arabic. The licence, money and audit rule gates pass in the suite. Every user write to a tenancy table leaves an audit row with its actor (companies, branches, user_company_access, user_branch_access, user_workplaces; db-inspection.txt). Tenancy has no money columns, only the base currency code."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r2 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ./erp verify",
+    "total": 685,
+    "passed": 685,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3418
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3418,
+    "evidence": "./erp verify from a fresh clone exited 0 in 3418 s (verify.log). ./erp up then served the seeded demo in 46 s (up.log)."
+  },
+  "odoo": [
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "tie",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.087,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.43,
+        "klm_seconds": 5.3
+      },
+      "notes": "node run.mjs --task switch-company --product both --repeat 3, branding hidden. The harness verdict is LOSS because keystrokes tie at 0 and a tie is a loss. Ours wins steps, machine seconds and human seconds by about half. Ours: one click on the other company's button beside the switcher (shown for up to six companies). The keyboard variant is Alt+C, 'manuf', Enter. Odoo: switcher, then the company. The shipped ours driver was a stub, so I wrote it in my clone (drivers/switch-company.mjs). Set-up creates DEMO-TRD and DEMO-MFG with one branch each. Shots 09 and 10."
+    },
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "tie",
+      "ours": {
+        "steps": 7,
+        "keystrokes": 72,
+        "seconds": 0.502,
+        "klm_seconds": 30.76
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 2.45,
+        "klm_seconds": 47.18
+      },
+      "notes": "--repeat 3, branding hidden. The harness verdict is LOSS because keystrokes tie at 72: both products type only the two names, and a tie is a loss. Ours' keyboard-only path loses keys outright, 77 against 72. Ours wins steps (7 vs 12), machine seconds and human seconds. Ours: Companies, New (or Alt+N), name, Save (or Ctrl+S), click the branch line, branch name, Add (or Enter). The focus does not move to the branch line after saving, which costs a click. The shipped ours driver was a stub, so I wrote it (drivers/create-company-branch.mjs). Companies cannot be deleted, so set-up and clean-up retire earlier copies by renaming and deactivating them. Shots 07 and 08."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r2/01-company-form-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/02-switcher-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/03-access-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/04-workspace-settings-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/05-company-form-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/06-switcher-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/07-compare-create-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/08-compare-create-b.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/09-compare-switch-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r2/10-compare-switch-b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Company access is a grant that nothing guards: a user with only 'change company access' locks the Administrator out of a company, and no gate looks",
+    "detail": "PUT /api/tenancy/access/{userId} never checks the target against the caller. It ignores what the target holds, and it ignores the caller's own branch limits. A clerk whose role holds only tenancy.access.read and tenancy.access.update removed the tenant Administrator from ALN-DXB. The Administrator cannot undo it, because callers may not change their own access. A manager limited to one branch can also give someone every branch of the company. For a UAE group running several legal entities (mainland LLC, free-zone FZE), this means a junior can take an owner or accountant out of an entity's books. Odoo restricts company-access edits to Settings/Administration rights. The gates miss this whole class: G2's takeover check covers only /api/identity/users/{..}, and GrantEscalation knows only roleIds and permissions. The company attack also never completes a write: its bodies fail e-mail validation, so planted cross-company write C2 passes. With no reviewed permission map for /api/tenancy, planted P1 (logo replacement under tenancy.workplace.switch) passes too. The fix: treat company and branch access as a grant (a caller may only give or take access they hold, to and from users who hold no more than they do), add /api/tenancy to the takeover, grant-escalation and reviewed-map gates, and make the company attack send valid bodies.",
+    "evidence": "attack.log, section '== Junior holding only tenancy.access.update (+read) strips the administrator ==': 'junior removes the administrator from ALN-DXB 200', then 'administrator now sees companies ALN-AUH,ALN-FZE,ALN-SHJ', then 'administrator tries to restore own access 400'. db-inspection.txt shows the delete row with actor 01a10598-6e18-... (the junior). The branch-manager case: 'branch manager gives the junior ALL branches of ALN-DXB 200'. To reproduce on ./erp up: as admin@alnoor.example, POST /api/identity/roles {permissions:['tenancy.access.read','tenancy.access.update']}, create a user with that role, PUT /api/tenancy/access/{user} with ALN-DXB, sign in as that user, then PUT /api/tenancy/access/{administrator id} {companies:[]}. Gate misses: plants/C2.diff with C2-gates.log and C2-probe.log; plants/P1.diff with P1-g2.log."
+  },
+  "other_findings": [
+    "Within one tenant, company codes leak across companies through writes. An administrator of ALN-DXB only gets 409 'duplicate' when creating a company coded ALN-SHJ, which they cannot see, and 201 for a code that exists nowhere (attack.log). The company attack has no write-oracle check.",
+    "Branch limits only affect the switcher. A user limited to one branch still reads and, with branches.update, edits every branch of the company. Branch access is also not treated as a grant (see biggest gap).",
+    "Plant C1 (stale workplace company kept in the scope) is inert, because user_workplaces cascades from user_company_access. Revocation takes effect on the next request: the viewer sees 0 companies and an empty workplace right after access is removed (attack.log). The tenant-level hand attacks found nothing.",
+    "Plant P2 (self-access check removed) is caught only by the tenancy module test AccessTests, never by a gate.",
+    "Both 'ours' compare drivers for this piece shipped as stubs ('not built yet: waits for p02'). The critic wrote both (drivers/). The builder should own and commit them so ./erp verify health-checks them.",
+    "[route: p01-odoo-rig] Under the strict per-metric rule a keystroke floor tie cannot be won: 0=0 for a one-click switch, and 72=72 when both products type only the required names. Both p02 tasks therefore lose on keys while winning steps and time by 40 to 50 percent. Blindness is also incomplete: the company list in the blind shots shows 'Al Noor ...' company names, and only the workspace name is masked (shot 07).",
+    "Arabic: the company form header shows the English legal name (code · legalNameEn) on Arabic screens (shot 05). A company or branch can be saved with no Arabic name, so the 'Falcon Logistics LLC' company created in the comparison has none.",
+    "The quick-add branch line defaults its emirate to 'Not in the UAE' while it sends country AE.",
+    "Companies and branches cannot be deleted, only deactivated, and inactive companies stay in the companies list ('14 companies' after the comparison runs retired seven copies).",
+    "The working company is informational only. Lists show the rows of every permitted company whatever company is active (Odoo filters by the active companies). It does not matter yet, because no business data is company-owned.",
+    "[route: p03-identity] Still open from p03 r1/r2: there is no role assignment per company. identity.user_roles has no company column, so 'accountant in the Dubai LLC, read-only in the JAFZA entity' cannot be expressed. p03 deferred it to p02, and p02 does not provide it.",
+    "Positive: the tenancy scope is complete on screen in English and Arabic RTL. Companies have English and Arabic legal names, trade licence and authority, TRN (digits only, no statutory format rule), base currency (AED), fiscal year start, address (with an Arabic address) and a logo. Branches have a grouped and searchable list. There is a company access screen and workspace settings (language, time zone, week start). The Alt+C switcher filters as you type, with one-click company buttons. A command-line operator provisions workspaces (./erp tenant create/list worked) and every write is audited.",
+    "Counts held: 331 .NET, 154 web, 54 end-to-end and 146 compare tests, all equal to the ratchet minimums."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/user/evidence-staging/p02-tenancy/r2",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r2"
+}

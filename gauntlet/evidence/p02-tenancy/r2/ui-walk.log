@@ -1,0 +1,18 @@
+workplace: ALN-DXB · DEIRA-HQ
+chips: [ 'ALN-AUH', 'ALN-FZE', 'ALN-SHJ' ]
+companies rows: [
+  'ALN-AUHAl Noor Technical Services LLCالنور للخدمات الفنية ذ.م.مAEDAbu DhabiAbu Dhabi4Active',
+  'ALN-DXBAl Noor Trading LLCشركة النور للتجارة ذ.م.مAEDDubaiDubai3Active',
+  'ALN-FZEAl Noor General Trading FZEالنور للتجارة العامة م.م.حAEDDubaiDubai2Active',
+  'ALN-SHJAl Noor Industries LLCمصانع النور ذ.م.مAEDSharjahSharjah3Active'
+]
+company form fields: legalNameEn,legalNameAr,code,isActive,tradeLicenceNumber,tradeLicenceAuthority,taxRegistrationNumber,baseCurrency,fiscalYearStartMonth,fiscalYearStartDay,addressLine1,addressLine2,city,emirate,poBox,country,addressAr,phone,email,website
+switcher options: 12
+after switch: ALN-SHJ · SHJ-FAC
+branches count text: Branches
+branch rows: 12
+tenant page text: Home | Settings | Workspace | Al Noor Trading LLC | Workspace | Workspace | Code | alnoor | Name (English) | Al Noor Trading LLC | Name (Arabic) | شركة النور للتجارة ذ.م.م | Status | Active | Default language | English | Time zone | Asia/Dubai | First day of the week | Monday | Workspace settings | Save | Name (English) | Name (Arabic) | Default language | English | Arabic | Time zone | Africa/Cairo | Africa/Johannesburg | Africa/Lagos | Africa/Nairobi | Ameri
+dir: rtl
+english-looking labels in arabic UI: []
+viewer workplace: ALN-DXB · DEIRA-HQ
+viewer menu: /identity/users,/identity/roles,/tenancy/access,/tenancy/companies,/tenancy/branches,/tenancy/tenant,/identity/me

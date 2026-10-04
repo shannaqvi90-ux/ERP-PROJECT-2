@@ -1,0 +1,46 @@
+A companies [ 'ALN-AUH', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ' ] B companies [ 'GSF-RAK', 'GSF-SHJ' ]
+
+== Tenant A admin against tenant B ==
+GET B company                                                          404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-a45db12ee4032b69a769a60c0036d9d0-69be4c41211
+GET B company logo                                                     404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6718ae43ac6088141833c5a7026fbff0-9f3daf0a5b1
+GET B branch                                                           404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-8e4e6463725a3969e4f3e6737d3e2a70-c1886b1ba53
+PUT B branch                                                           400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-6dc4a3c7355cd311c59ad7be193bbf98-134df
+POST branch into B company                                             400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-30fd92aacce13ec6bd5773e1c496118a-1f243
+switch workplace to B company                                          400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-272ac62e2df67c930070280657ecee71-753bf
+grant A viewer access to B company                                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7cad846a0296ebbb532b73d09b7071c6-6cc3f
+branches filter companyId = B                                          200 {"items":[],"total":0,"next":null,"groups":null}
+access of B admin user id                                              404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-2360ffc90d3f619f5fc2562e9efedc03-92ff344e4b1
+
+== Company scope: viewer (ALN-DXB only) ==
+viewer GET companies list total                                        200 1
+viewer GET SHJ company                                                 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-84642f0bf41b184872c964bb872c6211-d95fac352fc
+viewer branches total                                                  200 3
+viewer GET SHJ logo                                                    404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-f37016ff0968fe941b1fda7639273590-394939ddb1e
+viewer switch to SHJ                                                   403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNP1S1FPR3RU:0000000C
+
+== Company code oracle: an administrator of one company creates a company with another company's code ==
+grant X admin ALN-DXB only                                             200 {"userId":"01a10598-6a6a-7047-b449-7c0b7fa79a48","displayName":"X Admin","email":"x.admin.37202@alnoor.example","isCaller":false,"companies":[{"companyId":"018d
+X admin sees companies                                                 200 ALN-DXB
+X admin creates company with code ALN-SHJ (exists, invisible)          409 {"type":"urn:erp:problem:duplicate","title":"A record with the same value already exists.","status":409,"code":"duplicate","traceId":"0HNP1S1FPR3RU:0000000F"}
+X admin creates company with code NOPE-37202 (exists nowhere)          201 {"id":"01a10598-6dbe-7e44-b8d9-79fb80ae1260","code":"NOPE-37202","legalNameEn":"Probe two","legalNameAr":"","tradeLicenceNumber":null,"tradeLicenceAuthority":nu
+X admin creates "Al Noor Industries" with no code (suggested code may collide) 201 {"id":"01a10598-6dda-759e-abd9-20b838ac7cd0","code":"AL-NOOR","legalNameEn":"Al Noor Industries","legalNameAr":"","tradeLicenceNumber":null,"tradeLicenceAuthori
+
+== Junior holding only tenancy.access.update (+read) strips the administrator ==
+grant junior ALN-DXB                                                   200 {"userId":"01a10598-6e18-7936-b88f-4300b5dce566","displayName":"Access Clerk","email":"access.clerk.37202@alnoor.example","isCaller":false,"companies":[{"compan
+junior reads administrator access                                      200 {"userId":"01a10596-d184-77d6-baba-b4e897015b67","displayName":"Mariam Al Mansoori","email":"admin@alnoor.example","isCaller":false,"companies":[{"companyId":"0
+junior removes the administrator from ALN-DXB                          200 {"userId":"01a10596-d184-77d6-baba-b4e897015b67","displayName":"Mariam Al Mansoori","email":"admin@alnoor.example","isCaller":false,"companies":[],"options":[{"
+administrator now sees companies                                       200 ALN-AUH,ALN-FZE,ALN-SHJ
+administrator tries to restore own access                              400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-73945373d3db1e88563e3ef928cdf4ae-0ba73
+second administrator restores it                                       200 {"userId":"01a10596-d184-77d6-baba-b4e897015b67","displayName":"Mariam Al Mansoori","email":"admin@alnoor.example","isCaller":false,"companies":[{"companyId":"0
+
+== Branch-limited access manager grants wider access than they hold ==
+grant branch manager ALN-DXB, one branch only                          200 {"userId":"01a10598-7084-7744-a44d-c9b740944b55","displayName":"Branch Mgr","email":"branch.mgr.37202@alnoor.example","isCaller":false,"companies":[{"companyId"
+branch manager gives the junior ALL branches of ALN-DXB                200 {"userId":"01a10598-6e18-7936-b88f-4300b5dce566","displayName":"Access Clerk","email":"access.clerk.37202@alnoor.example","isCaller":false,"companies":[{"compan
+
+== Revocation: the viewer loses ALN-DXB while working in it ==
+viewer workplace before                                                200 {"companyId":"018dca08-f081-7ee4-a7a9-1fd4f6287507","branchId":"018dca08-f082-77e1-9cb5-75aad03d2596","companies":[{"id":"018dca08-f081-7ee4-a7a9-1fd4f6287507",
+admin removes viewer access                                            200 {"userId":"01a10596-d1b9-7484-98ee-35bf44303622","displayName":"Omar Haddad","email":"viewer@alnoor.example","isCaller":false,"companies":[],"options":[{"id":"0
+viewer companies after (same session)                                  200 0
+viewer workplace after                                                 200 {"companyId":null,"branchId":null,"companies":[]}
+restore viewer                                                         200 {"userId":"01a10596-d1b9-7484-98ee-35bf44303622","displayName":"Omar Haddad","email":"viewer@alnoor.example","isCaller":false,"companies":[{"companyId":"018dca0
+{"xAdmin":"01a10598-6a6a-7047-b449-7c0b7fa79a48","junior":"01a10598-6e18-7936-b88f-4300b5dce566","branchMgr":"01a10598-7084-7744-a44d-c9b740944b55","adminId":"01a10596-d184-77d6-baba-b4e897015b67"}
