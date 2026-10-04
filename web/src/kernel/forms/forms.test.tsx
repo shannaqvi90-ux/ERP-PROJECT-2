@@ -195,6 +195,25 @@ describe("the record form", () => {
   });
 });
 
+describe("entering a field with the mouse", () => {
+  it("selects the whole value on the first click so typing replaces it; a second click places the caret", async () => {
+    mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
+    await show(<ThingForm />);
+    const name = input("name");
+    const click = () =>
+      act(() => {
+        name.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+        name.focus();
+        name.setSelectionRange(2, 2);
+        name.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
+      });
+    click();
+    expect([name.selectionStart, name.selectionEnd]).toEqual([0, 4]);
+    click();
+    expect([name.selectionStart, name.selectionEnd]).toEqual([2, 2]);
+  });
+});
+
 describe("decimal input", () => {
   it("keeps digits, one dot and a leading minus, turns Arabic-Indic digits into Latin, and respects the scale", () => {
     expect(decimalInput("12.5")).toBe("12.5");

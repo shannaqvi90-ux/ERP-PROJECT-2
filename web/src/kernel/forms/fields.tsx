@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api } from "../api";
 import { useI18n } from "../i18n";
 import type { FieldBinding } from "./useRecordForm";
@@ -44,6 +44,26 @@ export function Field({ name, label, errors = [], hint, wide, children }: {
 
 type Common = { label: string; hint?: string; wide?: boolean; disabled?: boolean; autoFocus?: boolean };
 
+/**
+ * Clicking into a field that is not being edited selects its whole value, so what is typed
+ * replaces it, as it does when the field is reached with Tab; a second click, or a drag that
+ * selects part of the value, places the caret or keeps that selection as usual.
+ */
+export const replaceOnEntry = {
+  onMouseDown: (event: MouseEvent<HTMLInputElement>) => {
+    if (document.activeElement !== event.currentTarget) event.currentTarget.dataset.entering = "1";
+  },
+  onMouseUp: (event: MouseEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    if (!input.dataset.entering) return;
+    delete input.dataset.entering;
+    if (input.selectionStart === input.selectionEnd) {
+      input.select();
+      event.preventDefault();
+    }
+  },
+};
+
 /** One line of text. `dir` follows the value (ltr for codes, e-mails, numbers; rtl for Arabic names). */
 export function TextField({ field, dir, maxLength, type = "text", inputMode, upper, list, required, ...p }: Common & {
   field: FieldBinding<string>;
@@ -71,6 +91,7 @@ export function TextField({ field, dir, maxLength, type = "text", inputMode, upp
           inputMode={inputMode}
           disabled={p.disabled || field.readOnly}
           autoComplete="off"
+          {...replaceOnEntry}
           onChange={(e) => field.onChange(upper ? e.target.value.toUpperCase() : e.target.value)}
         />
       )}
@@ -125,6 +146,7 @@ export function DecimalField({ field, scale, ...p }: Common & { field: FieldBind
           disabled={p.disabled || field.readOnly}
           autoFocus={p.autoFocus}
           autoComplete="off"
+          {...replaceOnEntry}
           onChange={(e) => {
             const next = decimalInput(e.target.value, scale);
             if (next !== null) field.onChange(next);
@@ -151,6 +173,7 @@ export function MoneyField({ amount, currency, currencies = [], ...p }: Common &
             value={amount.value ?? ""}
             disabled={p.disabled || amount.readOnly}
             autoComplete="off"
+            {...replaceOnEntry}
             onChange={(e) => {
               const next = decimalInput(e.target.value, 6);
               if (next !== null) amount.onChange(next);
