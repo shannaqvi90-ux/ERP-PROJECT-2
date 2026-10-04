@@ -135,6 +135,10 @@ public static class G1WriteOracle
 
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<HttpClient, object> WorkingCompany = new();
 
+    /// <summary>Remember the client's working company: records that belong to a company are
+    /// created in it by <see cref="SendAsync"/>.</summary>
+    internal static async Task UseWorkingCompanyAsync(HttpClient client) => WorkingCompany.AddOrUpdate(client, await WorkingCompanyAsync(client));
+
     private static async Task<object> WorkingCompanyAsync(HttpClient client)
     {
         using var response = await client.GetAsync("/api/tenancy/workplace");
@@ -160,7 +164,7 @@ public static class G1WriteOracle
     /// <summary>Send the endpoint a valid body with <paramref name="field"/> set to
     /// <paramref name="value"/>: a create as is; an edit on a record the same caller creates first
     /// through the collection's POST, carrying the record's own values otherwise.</summary>
-    private static async Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
+    internal static async Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
         JsonElement schema, ErpTestEnvironment env, string tag, string field, string value)
     {
         string path;
@@ -199,7 +203,7 @@ public static class G1WriteOracle
 
     private static string CompanyOf(HttpClient client) => WorkingCompany.TryGetValue(client, out var id) ? (string)id : "";
 
-    private static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag, string companyId)
+    internal static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag, string companyId)
     {
         var generic = GrantEscalation.ValidBody(openApi, schema, env, tag);
         // Every leaf also meets its documented constraints (an enum's value, a pattern's example,

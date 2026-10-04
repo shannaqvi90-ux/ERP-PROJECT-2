@@ -89,11 +89,65 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     {
         var maps = ReviewedPermissionMap.Load();
         Assert.Contains(maps, m => m.File == "identity.txt");
+        Assert.Contains(maps, m => m.File == "tenancy.txt" && m.Prefixes.Contains("/api/tenancy/"));
         var (problems, checkedCount) = ReviewedPermissionMap.Check(Endpoints, maps);
         TestContext.Current.TestOutputHelper?.WriteLine($"{checkedCount} endpoints compared with {maps.Count} reviewed map(s)");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(checkedCount >= Ratchet.Min("g2.reviewedPermissionEndpoints"),
             $"{checkedCount} endpoints compared with the reviewed map; ratchet minimum {Ratchet.Min("g2.reviewedPermissionEndpoints")}");
+    }
+
+    /// <summary>
+    /// No module's routes escape review (critic p02 round 2, plant P1: nothing reviewed the
+    /// permission of any /api/tenancy endpoint, so the logo replacement guarded by
+    /// tenancy.workplace.switch passed). Every endpoint under <c>/api/&lt;module&gt;/</c> of a
+    /// registered module must sit under a prefix of a reviewed map. The lists module's endpoints
+    /// are generated per registered list (<c>/api/lists/&lt;list key&gt;/…</c>): each must declare
+    /// exactly that list's own permission, and the shared-view writes the sharing permission.
+    /// </summary>
+    [Fact]
+    public void Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list()
+    {
+        var maps = ReviewedPermissionMap.Load();
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        var problems = new List<string>();
+        var covered = 0;
+        foreach (var endpoint in Endpoints.OrderBy(e => e.Key, StringComparer.Ordinal))
+        {
+            var module = catalog.Modules.FirstOrDefault(m => endpoint.Pattern.StartsWith($"/api/{m.Name}/", StringComparison.Ordinal));
+            if (module is null)
+            {
+                continue;
+            }
+            if (module.Name == "lists")
+            {
+                var rest = endpoint.Pattern["/api/lists/".Length..];
+                var list = catalog.Lists.Where(l => rest.StartsWith(l.Key + "/", StringComparison.Ordinal)).MaxBy(l => l.Key.Length);
+                if (list is null)
+                {
+                    problems.Add($"{endpoint.Key}: under /api/lists/ but names no registered list; review it in a map");
+                    continue;
+                }
+                var shareWrite = rest[(list.Key.Length + 1)..].StartsWith("shared-views", StringComparison.Ordinal) && endpoint.Method != "GET";
+                var expected = shareWrite ? "lists.views.share" : list.Permission;
+                var declared = endpoint.IsAnonymous ? "anonymous" : string.Join(",", endpoint.Permissions);
+                if (declared != expected)
+                {
+                    problems.Add($"{endpoint.Key} declares {declared}; a list endpoint of {list.Key} must declare {expected}");
+                }
+                covered++;
+                continue;
+            }
+            if (!maps.Any(m => m.Prefixes.Any(p => endpoint.Pattern.StartsWith(p, StringComparison.Ordinal))))
+            {
+                problems.Add($"{endpoint.Key} (module {module.Name}) is under no reviewed map in {ReviewedPermissionMap.Folder}; add tests/Gates/endpoint-permissions/{module.Name}.txt");
+                continue;
+            }
+            covered++;
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{covered} module endpoints reviewed by a map or derived from their list");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.Contains(Endpoints, e => e.Pattern.StartsWith("/api/tenancy/", StringComparison.Ordinal));
     }
 
     /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by

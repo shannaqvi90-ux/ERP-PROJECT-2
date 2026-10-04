@@ -41,7 +41,7 @@ public sealed class G1CompanyIsolationTests(G1CompanyFixture fixture) : IClassFi
     {
         var report = await CompanyAttack.RunAsync(Env);
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.Markers} company Y markers, {report.DifferentialChecks} differential checks");
+            $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.Markers} company Y markers, {report.DifferentialChecks} differential checks, {report.WriteOracleChecks} write oracle checks");
         Assert.True(report.Leaks.Count == 0, $"{report.Leaks.Count} leaks of company Y:\n" + string.Join("\n", report.Leaks.Take(40)));
         Assert.True(report.Oracles.Count == 0, "Answers that tell company Y's values apart from values that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
         Assert.True(report.ServerErrors.Count == 0, "Server errors:\n" + string.Join("\n", report.ServerErrors.Take(20)));
@@ -52,6 +52,8 @@ public sealed class G1CompanyIsolationTests(G1CompanyFixture fixture) : IClassFi
         Assert.True(report.Requests >= Ratchet.Min("g1.companyAttackRequests"),
             $"g1.companyAttackRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g1.companyAttackRequests")}");
         Assert.True(report.Markers >= Ratchet.Min("g1.companyMarkers"), $"g1.companyMarkers: {report.Markers}; ratchet minimum {Ratchet.Min("g1.companyMarkers")}");
+        Assert.True(report.WriteOracleChecks >= Ratchet.Min("g1.companyWriteOracleChecks"),
+            $"g1.companyWriteOracleChecks: {report.WriteOracleChecks}; ratchet minimum {Ratchet.Min("g1.companyWriteOracleChecks")}");
     }
 }
 
@@ -64,7 +66,8 @@ public sealed record CompanyAttackReport(
     int EndpointsAttacked,
     int Requests,
     int Markers,
-    int DifferentialChecks);
+    int DifferentialChecks,
+    int WriteOracleChecks = 0);
 
 /// <summary>The company attack, reusable by the gate self-tests.</summary>
 public static class CompanyAttack
@@ -125,7 +128,7 @@ public static class CompanyAttack
                 foreach (var value in routeValues)
                 {
                     var path = endpoint.Path(_ => value);
-                    await state.SendAsync(name, client, endpoint.Method, path, Body(openApi, schema, yIds, n++), [value]);
+                    await state.SendAsync(name, client, endpoint.Method, path, Body(env, openApi, schema, yIds, n++), [value]);
                 }
                 // Y's ids and texts in every query parameter, with a value that exists nowhere for GETs.
                 var basePath = endpoint.Path(_ => Guid.NewGuid().ToString());
@@ -136,7 +139,7 @@ public static class CompanyAttack
                         foreach (var value in yValues)
                         {
                             string Uri(string v) => $"{basePath}?{System.Uri.EscapeDataString(query)}={System.Uri.EscapeDataString(v)}";
-                            var answer = await state.SendAsync(name, client, endpoint.Method, Uri(value), Body(openApi, schema, yIds, n++), [value]);
+                            var answer = await state.SendAsync(name, client, endpoint.Method, Uri(value), Body(env, openApi, schema, yIds, n++), [value]);
                             if (endpoint.Method == "GET")
                             {
                                 var control = Guid.TryParse(value, out _) ? Guid.NewGuid().ToString() : Scramble(value);
@@ -153,12 +156,87 @@ public static class CompanyAttack
                     {
                         foreach (var value in before.Strings.Take(25))
                         {
-                            var body = openApi.BuildBody(bodySchema, (leaf, type, format, leafName) =>
-                                leafName == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, yIds, n++)));
+                            // A body that passes validation in the attacker's own company, with Y's text in one
+                            // field: the write is judged, not refused for a malformed address.
+                            var body = (JsonNode)G1WriteOracle.Valid(openApi, bodySchema, env, $"ct{n++}", x.ToString());
+                            if (body is JsonObject fields && fields.ContainsKey(field))
+                            {
+                                fields[field] = value;
+                            }
+                            else
+                            {
+                                body = openApi.BuildBody(bodySchema, (leaf, type, format, leafName) =>
+                                    leafName == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, yIds, n++)));
+                            }
                             await state.SendAsync(name, client, endpoint.Method, endpoint.Path(_ => ""), body, [value]);
                         }
                     }
                 }
+            }
+        }
+
+        // Write oracles inside the tenant (critic p02 round 2: an administrator of company X alone
+        // got 409 for a company code only company Y uses and 201 for a code that exists nowhere).
+        // Every write with an identifying field (a code, an e-mail) is sent by the company X
+        // administrator twice, once with a value company Y holds in that column and once with a
+        // value of the same shape that exists nowhere: the two answers must have the same status.
+        var oracleClient = attackers[0].Client;
+        await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
+        var writeOracleChecks = 0;
+        foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
+        {
+            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
+                !openApi.Resolve(schema).TryGetProperty("properties", out var properties))
+            {
+                continue;
+            }
+            var collection = endpoint.RouteParameters.Count == 0 ? null : endpoint.Pattern[..endpoint.Pattern.LastIndexOf("/{", StringComparison.Ordinal)];
+            if (collection is not null && openApi.RequestSchema("POST", collection) is null)
+            {
+                continue;
+            }
+            foreach (var field in properties.EnumerateObject()
+                         .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
+                                     G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
+                         .Select(p => p.Name))
+            {
+                foreach (var held in before.ValuesOf(field).Take(3))
+                {
+                    var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
+                    var fresh = Reshape(held);
+                    var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
+                    var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
+                    writeOracleChecks++;
+                    if (withY != withFresh)
+                    {
+                        state.Oracles.Add($"company X administrator → {endpoint} [{field}]: company Y's value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
+                    }
+                }
+            }
+        }
+        // The same with the attacker's own company record: changing company X's code to company Y's
+        // code must answer as a code that exists nowhere does.
+        var ownCompany = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}");
+        if (ownCompany is not null && before.ValuesOf("code").FirstOrDefault(c => c == c.ToUpperInvariant()) is { } yCode)
+        {
+            var original = ownCompany["code"]?.GetValue<string>();
+            async Task<int> ChangeCode(string code)
+            {
+                var current = await oracleClient.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{x}") ?? [];
+                current["code"] = code;
+                using var answer = await oracleClient.PutAsJsonAsync($"/api/tenancy/companies/{x}", current);
+                return (int)answer.StatusCode;
+            }
+            var toY = await ChangeCode(yCode);
+            var toFresh = await ChangeCode(Reshape(yCode));
+            writeOracleChecks++;
+            if (toY != toFresh)
+            {
+                state.Oracles.Add($"company X administrator → PUT /api/tenancy/companies/{{X}} [code]: company Y's code answered {toY}, a code that exists nowhere answered {toFresh}");
+            }
+            if (original is not null && toFresh is >= 200 and < 300)
+            {
+                await ChangeCode(original);
             }
         }
 
@@ -189,14 +267,32 @@ public static class CompanyAttack
             client.Dispose();
         }
         return new CompanyAttackReport(state.Leaks, state.Oracles, state.ServerErrors, CompanySnapshot.Differences(before, after), escalations,
-            attacked, state.Requests, before.Markers.Count, state.DifferentialChecks);
+            attacked, state.Requests, before.Markers.Count, state.DifferentialChecks, writeOracleChecks);
     }
 
-    private static JsonNode? Body(OpenApiDocument openApi, JsonElement? schema, List<string> yIds, int n)
+    /// <summary>Every other body passes validation (critic p02 round 2, plant C2: the attack's
+    /// generated bodies all failed e-mail validation, so a create in company Y was never completed
+    /// and a handler that widened the scope before writing passed): valid values for every field,
+    /// company Y itself in companyId and Y's ids in the other id fields. The rest carry Y's ids in
+    /// every id leaf, valid or not.</summary>
+    private static JsonNode? Body(ErpTestEnvironment env, OpenApiDocument openApi, JsonElement? schema, List<string> yIds, int n)
     {
         if (schema is not { } s)
         {
             return null;
+        }
+        if (n % 2 == 0)
+        {
+            var valid = G1WriteOracle.Valid(openApi, s, env, $"cv{n}", yIds[0]);
+            foreach (var (name, value) in valid.ToList())
+            {
+                if (name != "companyId" && value is JsonValue v && v.TryGetValue<string>(out var text) && Guid.TryParse(text, out _))
+                {
+                    valid[name] = yIds[(n / 2) % yIds.Count];
+                }
+            }
+            valid["companyId"] = yIds[0];
+            return valid;
         }
         var body = openApi.BuildBody(s, (leaf, type, format, _) => openApi.Conform(leaf, Leaf(type, format, yIds, n))) as JsonObject ?? [];
         body["companyId"] = yIds[n % yIds.Count];
@@ -213,6 +309,20 @@ public static class CompanyAttack
         "boolean" => true,
         _ => null,
     };
+
+    /// <summary>A value of the same shape (letters for letters, digits for digits, case kept)
+    /// that exists nowhere.</summary>
+    private static string Reshape(string value)
+    {
+        var random = System.Security.Cryptography.RandomNumberGenerator.GetBytes(value.Length);
+        var at = value.IndexOf('@');
+        return new string(value.Select((c, i) => at >= 0 && i >= at ? c
+            : char.IsAsciiLetterUpper(c) ? (char)('A' + random[i] % 26)
+            : char.IsAsciiLetterLower(c) ? (char)('a' + random[i] % 26)
+            : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray());
+    }
+
+    private static string Short(string text) => text.Length <= 200 ? text : text[..200] + "…";
 
     private static string Scramble(string value)
     {
@@ -304,6 +414,16 @@ public sealed class CompanySnapshot
     public required IReadOnlyList<string> Strings { get; init; }
     public required IReadOnlyDictionary<string, string> Checksums { get; init; }
 
+    /// <summary>Company Y's values by column name (snake case), in every company table.</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> Columns { get; init; } = new Dictionary<string, IReadOnlyList<string>>();
+
+    /// <summary>Company Y's values in the column a request field (camel case) is stored in.</summary>
+    public IReadOnlyList<string> ValuesOf(string field)
+    {
+        var column = string.Concat(field.Select((c, i) => char.IsUpper(c) ? (i > 0 ? "_" : "") + char.ToLowerInvariant(c) : c.ToString()));
+        return Columns.GetValueOrDefault(column) ?? [];
+    }
+
     public IReadOnlyList<string> Markers => Ids.Select(i => i.ToString()).Concat(Strings.Where(s => s.Length >= 8)).ToList();
 
     public string? FindMarker(string text) => Markers.FirstOrDefault(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
@@ -315,6 +435,7 @@ public sealed class CompanySnapshot
         var ids = new List<Guid> { company };
         var strings = new List<string>();
         var checksums = new Dictionary<string, string>();
+        var byColumn = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         var tables = await DbCatalog.CompanyTablesAsync(admin);
         foreach (var table in tables)
         {
@@ -326,9 +447,11 @@ public sealed class CompanySnapshot
                 ("t", tenant), ("c", company));
             foreach (var column in columns.Where(c => c.Type.StartsWith("character varying", StringComparison.Ordinal) || c.Type == "text"))
             {
-                strings.AddRange(await DbCatalog.ReadAsync(admin,
-                    $"SELECT DISTINCT \"{column.Name}\"::text FROM {table.Qualified} WHERE tenant_id = @t AND company_id = @c AND \"{column.Name}\" IS NOT NULL AND length(\"{column.Name}\") >= 4",
-                    r => r.GetString(0), ("t", tenant), ("c", company)));
+                var values = await DbCatalog.ReadAsync(admin,
+                    $"SELECT DISTINCT \"{column.Name}\"::text FROM {table.Qualified} WHERE tenant_id = @t AND company_id = @c AND \"{column.Name}\" IS NOT NULL AND length(\"{column.Name}\") >= 2",
+                    r => r.GetString(0), ("t", tenant), ("c", company));
+                byColumn[column.Name] = [.. byColumn.GetValueOrDefault(column.Name) ?? [], .. values];
+                strings.AddRange(values.Where(v => v.Length >= 4));
             }
         }
         // Only text no other row of the tenant holds (outside the audit trail) identifies company Y.
@@ -345,7 +468,11 @@ public sealed class CompanySnapshot
             .Where(s => !publicValues.Contains(s.Trim()))
             .Where(s => !others.Any(o => o.Contains(s.ToLowerInvariant(), StringComparison.Ordinal)))
             .ToList();
-        return new CompanySnapshot { Ids = ids.Distinct().ToList(), Strings = unique, Checksums = checksums };
+        return new CompanySnapshot
+        {
+            Ids = ids.Distinct().ToList(), Strings = unique, Checksums = checksums,
+            Columns = byColumn.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.Distinct(StringComparer.Ordinal).ToList(), StringComparer.Ordinal),
+        };
     }
 
     public static IReadOnlyList<string> Differences(CompanySnapshot before, CompanySnapshot after) =>

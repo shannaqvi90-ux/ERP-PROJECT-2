@@ -450,6 +450,95 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(names);
             }).WithName("leaky.companyNames").WithSummary("Planted bug: reads every company of the tenant.").RequirePermission("leaky.data.read");
 
+            // Bug 12 (critic p02 round 2, plant C2): adds the body's company to the request's scope
+            // before writing, so a user of company X creates a branch in company Y. Its body must
+            // pass validation (a well-formed e-mail and code) before anything is written.
+            group.MapPost("/company-branches", async (LeakyBranchRequest request, ErpDbSession session) =>
+            {
+                if (request.CompanyId is not { } companyId || request.Code is not { Length: >= 2 } code || !System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Z0-9][A-Z0-9-]{1,19}$") ||
+                    string.IsNullOrWhiteSpace(request.NameEn) || request.Email is not { } email || !System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["body"] = ["invalid"] });
+                }
+                await session.IncludeNewCompanyAsync(companyId);
+                var id = Guid.CreateVersion7();
+                await using var command = new NpgsqlCommand(
+                    "INSERT INTO tenancy.branches (id, tenant_id, company_id, code, name_en, name_ar, country, email, is_active, created_at, updated_at) " +
+                    "VALUES (@id, erp.current_tenant_id(), @c, @code, @name, '', 'AE', @email, true, now(), now())", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("c", companyId);
+                command.Parameters.AddWithValue("code", code);
+                command.Parameters.AddWithValue("name", request.NameEn!.Trim());
+                command.Parameters.AddWithValue("email", email);
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (PostgresException)
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["companyId"] = ["refused"] });
+                }
+                return Results.Created($"/api/leaky/company-branches/{id}", new { id });
+            }).WithName("leaky.companyBranches").WithSummary("Planted bug: creates a branch in any company of the tenant.").RequirePermission("leaky.data.update");
+
+            // Bug 13 (critic p02 round 2): creates a company with the body's code and answers 409
+            // when the code is taken, by a company the caller cannot see as well (a write oracle).
+            group.MapPost("/companies", async (LeakyCompanyRequest request, ErpDbSession session) =>
+            {
+                if (request.Code is not { } code || !System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Z0-9][A-Z0-9-]{1,19}$") || string.IsNullOrWhiteSpace(request.LegalNameEn))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["invalid"] });
+                }
+                var id = Guid.CreateVersion7();
+                await session.IncludeNewCompanyAsync(id);
+                await using (var savepoint = new NpgsqlCommand("SAVEPOINT leaky_company", session.Connection, session.Transaction))
+                {
+                    await savepoint.ExecuteNonQueryAsync();
+                }
+                await using var command = new NpgsqlCommand(
+                    "INSERT INTO tenancy.companies (id, tenant_id, company_id, code, legal_name_en, legal_name_ar, base_currency, fiscal_year_start_month, fiscal_year_start_day, country, is_active, created_at, updated_at) " +
+                    "VALUES (@id, erp.current_tenant_id(), @id, @code, @name, '', 'AED', 1, 1, 'AE', true, now(), now())", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("code", code);
+                command.Parameters.AddWithValue("name", request.LegalNameEn!.Trim());
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+                {
+                    await using var rollback = new NpgsqlCommand("ROLLBACK TO SAVEPOINT leaky_company", session.Connection, session.Transaction);
+                    await rollback.ExecuteNonQueryAsync();
+                    return Results.Conflict(new { title = "taken" });
+                }
+                return Results.Created($"/api/leaky/companies/{id}", new { id });
+            }).WithName("leaky.companies").WithSummary("Planted bug: tells whether any company of the tenant has the code.").RequirePermission("leaky.data.update");
+
+            // Bug 14 (critic p02 round 2, plant P2 and the access takeover): gives the user every
+            // company and branch the body names that the caller can see, on anyone, the caller too,
+            // with no check of what the caller or the user holds. (It never removes access, so the
+            // self-test environment keeps its administrators.)
+            group.MapPut("/company-access/{userId:guid}", async (Guid userId, LeakyAccessRequest request, ErpDbSession session) =>
+            {
+                foreach (var company in request.Companies ?? [])
+                {
+                    await using var command = new NpgsqlCommand(
+                        "INSERT INTO tenancy.user_company_access (id, tenant_id, user_id, company_id, all_branches, created_at, updated_at) " +
+                        "SELECT gen_random_uuid(), erp.current_tenant_id(), @u, c.id, @all, now(), now() FROM tenancy.companies c WHERE c.id = @c " +
+                        "ON CONFLICT (tenant_id, user_id, company_id) DO UPDATE SET all_branches = EXCLUDED.all_branches OR tenancy.user_company_access.all_branches; " +
+                        "INSERT INTO tenancy.user_branch_access (id, tenant_id, user_id, company_id, branch_id, created_at, updated_at) " +
+                        "SELECT gen_random_uuid(), erp.current_tenant_id(), @u, b.company_id, b.id, now(), now() FROM tenancy.branches b " +
+                        "WHERE b.company_id = @c AND b.id = ANY(@b) AND NOT @all ON CONFLICT DO NOTHING",
+                        session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("u", userId);
+                    command.Parameters.AddWithValue("c", company.CompanyId ?? Guid.Empty);
+                    command.Parameters.AddWithValue("all", company.AllBranches ?? true);
+                    command.Parameters.AddWithValue("b", (company.BranchIds ?? []).ToArray());
+                    await command.ExecuteNonQueryAsync();
+                }
+                return Results.Ok(new { userId });
+            }).WithName("leaky.companyAccess").WithSummary("Planted bug: gives company access with no grant check.").RequirePermission("leaky.data.update");
+
             // Bug 8: grants whatever roles the body names to the caller (no check against the caller's own permissions).
             group.MapPost("/grants", async (GrantRequest request, ErpDbSession session, ICurrentUser caller) =>
             {
@@ -619,6 +708,14 @@ public sealed class LeakyModule : ErpModule
     }
 
     public sealed record RenameRequest(Guid? TenantId, string? NameEn);
+
+    public sealed record LeakyBranchRequest(Guid? CompanyId, string? Code, string? NameEn, string? Email);
+
+    public sealed record LeakyCompanyRequest(string? Code, string? LegalNameEn);
+
+    public sealed record LeakyCompanyAccess(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
+
+    public sealed record LeakyAccessRequest(IReadOnlyList<LeakyCompanyAccess>? Companies);
 
     /// <summary>A unit of work the planted code builds itself, bound to the tenant it was given.</summary>
     private static async Task<ErpDbSession> RogueAsync(NpgsqlDataSource dataSource, Guid tenant)

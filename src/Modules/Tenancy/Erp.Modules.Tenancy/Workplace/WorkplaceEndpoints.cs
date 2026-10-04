@@ -117,7 +117,7 @@ internal static class WorkplaceEndpoints
 /// and branch: the one they chose if they still may work there, else their first active company
 /// (by code) and its first-opened branch they may work in.
 /// </summary>
-internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext db) : ISessionScopeBinder
+internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext db, TenancyBranchScope branchScope) : ISessionScopeBinder
 {
     public async Task<bool> BindAsync(ResolvedSession resolved, CancellationToken cancellationToken)
     {
@@ -162,6 +162,9 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         }
         var activeCompanies = companies.OrderBy(c => c.Code, StringComparer.Ordinal).Select(c => c.Id).ToList();
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
+        // Branch limits hold for the rest of the request: only the branches the user may work in
+        // exist for them in a company where they hold only some.
+        branchScope.Set(access.Where(a => !a.AllBranches).Select(a => a.CompanyId), limited);
         // Branches in opening order (time-ordered ids), as the switcher lists them.
         var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id))
             .OrderBy(b => b.Id).Select(b => new { b.Id, b.CompanyId }).ToList();

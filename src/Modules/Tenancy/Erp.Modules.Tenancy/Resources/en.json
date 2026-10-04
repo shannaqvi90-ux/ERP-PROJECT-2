@@ -38,5 +38,10 @@
   "validation.tenancyNotYourCompany": "You do not work in this company.",
   "validation.tenancyNotYourBranch": "You do not work in this branch of the company.",
   "validation.tenancyTimeZone": "Choose one of the offered time zones.",
-  "validation.tenancyNameEnOrAr": "Enter the name in English, in Arabic, or both."
+  "validation.tenancyNameEnOrAr": "Enter the name in English, in Arabic, or both.",
+  "problem.tenancy.userBeyondOwn": "This user holds permissions you do not hold. Only someone who holds every one of them may change their company access.",
+  "problem.tenancy.userBeyondOwnCompanies": "This user also works in companies you do not work in. Only someone who works in all of them may change their company access.",
+  "problem.tenancy.grantBeyondOwn": "You can give and take only the branches you work in yourself, and only from users whose access in that company is within yours.",
+  "problem.tenancy.companyNeedsEveryCompany": "Only someone who works in every company of the workspace may create a company or change a company code.",
+  "problem.tenancy.branchNeedsEveryBranch": "Only someone who works in every branch of the company may create a branch or change a branch code."
 }

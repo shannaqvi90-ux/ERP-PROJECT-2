@@ -44,6 +44,11 @@ public interface IUserDirectory
     /// <summary>Users whose name or e-mail contains <paramref name="search"/> (all when empty), by name.</summary>
     Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken);
 
+    /// <summary>The permissions the user's roles grant (empty for a user without roles or one
+    /// that does not exist). Another module that lets one user act on another (company access)
+    /// compares them with the caller's: nobody acts on a user who holds more than they do.</summary>
+    Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken);
+
     /// <summary>The user with this e-mail (case-insensitive), or null.</summary>
     Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken);
 

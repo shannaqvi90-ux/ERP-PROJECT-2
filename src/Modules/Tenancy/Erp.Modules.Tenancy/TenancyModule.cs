@@ -35,6 +35,7 @@ public sealed class TenancyModule : ErpModule
         module.Services.AddScoped<ITenantDirectory, TenantDirectory>();
         module.Services.AddScoped<ICompanyDirectory, CompanyDirectory>();
         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
+        module.Services.AddScoped<TenancyBranchScope>();
         module.Endpoints(group =>
         {
             TenancyEndpoints.Map(group);
@@ -76,6 +77,12 @@ public sealed class Tenant : TenantEntity
 
     /// <summary>First day of the working week (monday, sunday or saturday).</summary>
     public string WeekStart { get; set; } = "monday";
+
+    /// <summary>How many companies the workspace has, kept by the database (a trigger on company
+    /// inserts; companies are never deleted). Never shown: it tells whether a caller works in
+    /// every company (see <see cref="CompanyAccessRules"/>) without reading companies outside the
+    /// caller's scope.</summary>
+    public int CompanyCount { get; set; }
 }
 
 public static class TenantStatus
@@ -164,6 +171,15 @@ public sealed class UserBranchAccess : TenantEntity, ICompanyOwned
     public Guid BranchId { get; set; }
 }
 
+/// <summary>How many companies a user may work in, kept by the database (a trigger on
+/// <see cref="UserCompanyAccess"/> inserts and deletes). It is not scoped to companies, so a caller
+/// can tell whether a user holds access outside the caller's own companies without seeing which.</summary>
+public sealed class UserCompanyTotal : TenantEntity
+{
+    public Guid UserId { get; set; }
+    public int CompanyCount { get; set; }
+}
+
 /// <summary>The company and branch a user is working in now (one row per user).</summary>
 public sealed class UserWorkplace : TenantEntity, ICompanyOwned
 {
@@ -172,10 +188,23 @@ public sealed class UserWorkplace : TenantEntity, ICompanyOwned
     public Guid? BranchId { get; set; }
 }
 
-public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options, ITenantContext? tenant = null)
+public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options, ITenantContext? tenant = null, TenancyBranchScope? branches = null)
     : ModuleDbContext(options, tenant)
 {
     public const string SchemaName = "tenancy";
+
+    /// <summary>Name of the branch filter: a user limited to some branches of a company sees only
+    /// those branches of it (every branch of the companies where they hold every branch).</summary>
+    public const string BranchFilterName = "branch";
+
+    /// <summary>True when no company of the scope is limited to branches.</summary>
+    public bool BranchFilterOff => branches is null || branches.LimitedCompanyIds.Count == 0;
+
+    /// <summary>Companies where the user may work only in some branches.</summary>
+    public Guid[] BranchLimitedCompanyIds => branches?.LimitedCompanyIds.ToArray() ?? [];
+
+    /// <summary>The branches the user may work in, in those companies.</summary>
+    public Guid[] BranchAllowedIds => branches?.AllowedBranchIds.ToArray() ?? [];
 
     protected override string Schema => SchemaName;
 
@@ -185,6 +214,7 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
     public DbSet<UserCompanyAccess> CompanyAccess => Set<UserCompanyAccess>();
     public DbSet<UserBranchAccess> BranchAccess => Set<UserBranchAccess>();
     public DbSet<UserWorkplace> Workplaces => Set<UserWorkplace>();
+    public DbSet<UserCompanyTotal> CompanyTotals => Set<UserCompanyTotal>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -205,6 +235,7 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
             e.Property(x => x.DefaultLanguage).HasMaxLength(2).HasDefaultValue("en").HasSentinel("");
             e.Property(x => x.TimeZone).HasMaxLength(64).HasDefaultValue(TenantSettings.DefaultTimeZone).HasSentinel("");
             e.Property(x => x.WeekStart).HasMaxLength(10).HasDefaultValue("monday").HasSentinel("");
+            e.Property(x => x.CompanyCount).HasDefaultValue(0);
             e.HasIndex(x => x.Code).IsUnique();
         });
 
@@ -268,6 +299,7 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
             e.HasAlternateKey(x => new { x.TenantId, x.CompanyId, x.Id });
             e.HasOne<Company>().WithMany().HasForeignKey(x => new { x.TenantId, x.CompanyId })
                 .HasPrincipalKey(c => new { c.TenantId, c.CompanyId }).OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(BranchFilterName, b => BranchFilterOff || !BranchLimitedCompanyIds.Contains(b.CompanyId) || BranchAllowedIds.Contains(b.Id));
         });
 
         modelBuilder.Entity<UserCompanyAccess>(e =>
@@ -290,6 +322,12 @@ public sealed class TenancyDbContext(DbContextOptions<TenancyDbContext> options,
                 .HasPrincipalKey(a => new { a.TenantId, a.UserId, a.CompanyId }).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<Branch>().WithMany().HasForeignKey(x => new { x.TenantId, x.CompanyId, x.BranchId })
                 .HasPrincipalKey(b => new { b.TenantId, b.CompanyId, b.Id }).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserCompanyTotal>(e =>
+        {
+            e.ToTable("user_company_totals", t => t.HasCheckConstraint("ck_user_company_totals_count", "company_count >= 0"));
+            e.HasIndex(x => new { x.TenantId, x.UserId }).IsUnique();
         });
 
         modelBuilder.Entity<UserWorkplace>(e =>
@@ -326,6 +364,36 @@ internal sealed class TenancyDbContextDesignFactory : IDesignTimeDbContextFactor
         DataRegistration.ConfigureNpgsql(options, "Host=localhost;Database=design", TenancyDbContext.SchemaName);
         return new TenancyDbContext(options.Options);
     }
+}
+
+/// <summary>The branch limits of the signed-in user (set once per request by the company scope
+/// binder): in a company where they may work only in some branches, only those branches exist for
+/// them. Empty for system work and for users who hold every branch of their companies.</summary>
+public sealed class TenancyBranchScope
+{
+    private bool _set;
+
+    public IReadOnlySet<Guid> LimitedCompanyIds { get; private set; } = new HashSet<Guid>();
+
+    public IReadOnlySet<Guid> AllowedBranchIds { get; private set; } = new HashSet<Guid>();
+
+    /// <summary>Set the limits once; a second call throws, so code later in the request cannot widen them.</summary>
+    internal void Set(IEnumerable<Guid> limitedCompanies, IEnumerable<Guid> allowedBranches)
+    {
+        if (_set)
+        {
+            throw new InvalidOperationException("The branch scope of this request is already set.");
+        }
+        LimitedCompanyIds = limitedCompanies.ToHashSet();
+        AllowedBranchIds = allowedBranches.ToHashSet();
+        _set = true;
+    }
+
+    /// <summary>True when the user may work in this branch of this company (a company of their scope).</summary>
+    public bool Allows(Guid companyId, Guid branchId) => !LimitedCompanyIds.Contains(companyId) || AllowedBranchIds.Contains(branchId);
+
+    /// <summary>True when the user holds every branch of the company.</summary>
+    public bool HoldsEveryBranch(Guid companyId) => !LimitedCompanyIds.Contains(companyId);
 }
 
 internal sealed class TenantDirectory(TenancyDbContext db, ITenantContext tenant) : ITenantDirectory

@@ -74,24 +74,24 @@ internal static class BranchEndpoints
     {
         group.MapGet("/branches", List)
             .WithName("tenancy.branches.list")
-            .WithSummary("Branches of the companies the caller may work in, a page at a time: word search on code and names, filters (companyId eq '…' for one company), sort, keyset or offset paging and grouping (the list query contract); by code by default.")
+            .WithSummary("Branches the caller may work in (only their own branches of a company where they are limited to some), a page at a time: word search on code and names, filters (companyId eq '…' for one company), sort, keyset or offset paging and grouping (the list query contract); by code by default.")
             .RequirePermission(TenancyPermissions.BranchesRead);
 
         group.MapGet("/branches/{id:guid}", Get)
             .WithName("tenancy.branches.get")
-            .WithSummary("One branch of a company the caller may work in.")
+            .WithSummary("One branch the caller may work in.")
             .RequirePermission(TenancyPermissions.BranchesRead);
 
         group.MapPost("/branches", Create)
             .WithName("tenancy.branches.create")
-            .WithSummary("Create a branch of an active company the caller may work in.")
+            .WithSummary("Create a branch of an active company the caller may work in, in every branch (branch codes are unique within the company).")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.BranchesCreate);
 
         group.MapPut("/branches/{id:guid}", Update)
             .WithName("tenancy.branches.update")
-            .WithSummary("Change a branch, or deactivate it (isActive false).")
+            .WithSummary("Change a branch the caller may work in, or deactivate it (isActive false). Changing the code needs every branch of the company.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.BranchesUpdate);
@@ -123,7 +123,7 @@ internal static class BranchEndpoints
     }
 
     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
-        SaveBranchRequest request, TenancyDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+        SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: false);
         var company = request.CompanyId is { } companyId
@@ -134,6 +134,13 @@ internal static class BranchEndpoints
         if (!validator.IsValid)
         {
             return validator.ToResult();
+        }
+        // Branch codes are unique within the company: only someone who sees every branch of it may
+        // pick one (a refusal would name a branch they cannot see), and a new branch is one they
+        // could not otherwise work in.
+        if (!branchScope.HoldsEveryBranch(company!.Id))
+        {
+            return Problems.Forbidden(http, "tenancy.branchNeedsEveryBranch");
         }
         var code = TenancyValidation.NormalizeCode(request.Code);
         if (string.IsNullOrEmpty(code))
@@ -148,18 +155,12 @@ internal static class BranchEndpoints
         var branch = new Branch { CompanyId = company!.Id };
         Apply(branch, request, code);
         db.Branches.Add(branch);
-        // A creator limited to some branches of this company may work in the branch they created.
-        var own = await db.CompanyAccess.SingleOrDefaultAsync(a => a.UserId == caller.UserId && a.CompanyId == company.Id, cancellationToken);
-        if (own is { AllBranches: false })
-        {
-            db.BranchAccess.Add(new UserBranchAccess { UserId = caller.UserId, CompanyId = company.Id, BranchId = branch.Id });
-        }
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Created($"/api/tenancy/branches/{branch.Id}", await ToDtoAsync(db, branch, cancellationToken));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Update(
-        Guid id, SaveBranchRequest request, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+        Guid id, SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: true);
         if (!validator.IsValid)
@@ -176,6 +177,10 @@ internal static class BranchEndpoints
             return new Validator(http).Add("companyId", "tenancyBranchCompanyFixed").ToResult();
         }
         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : branch.Code;
+        if (code != branch.Code && !branchScope.HoldsEveryBranch(branch.CompanyId))
+        {
+            return Problems.Forbidden(http, "tenancy.branchNeedsEveryBranch");
+        }
         if (code != branch.Code && await db.Branches.AnyAsync(b => b.CompanyId == branch.CompanyId && b.Code == code && b.Id != id, cancellationToken))
         {
             return Problems.Conflict(http, "tenancy.branchCodeTaken");
