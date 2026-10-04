@@ -76,6 +76,27 @@ public sealed class TestDatabaseServer
         return new TestDatabaseServer(container, adminPassword);
     }
 
+    private readonly SemaphoreSlim _bootstrap = new(1, 1);
+
+    /// <summary>
+    /// The product's bootstrap for one environment's database. It creates or alters the
+    /// server-wide roles, which PostgreSQL does not let two sessions do at once (a role created by
+    /// both, or "tuple concurrently updated"): environments of one server take turns. Production
+    /// runs it once per deployment.
+    /// </summary>
+    public async Task BootstrapAsync(ErpAppFactory factory)
+    {
+        await _bootstrap.WaitAsync();
+        try
+        {
+            await ((DatabaseBootstrap)factory.Services.GetService(typeof(DatabaseBootstrap))!).RunAsync();
+        }
+        finally
+        {
+            _bootstrap.Release();
+        }
+    }
+
     /// <summary>A database name not used before in this process.</summary>
     public string NewDatabaseName() => $"erp_{Interlocked.Increment(ref _databases)}_{Convert.ToHexString(RandomNumberGenerator.GetBytes(3)).ToLowerInvariant()}";
 

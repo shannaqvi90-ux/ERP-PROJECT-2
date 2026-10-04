@@ -126,6 +126,24 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.support").WithSummary("Planted bug: switches tenant from a header found by enumerating the headers.").RequirePermission("leaky.data.read");
 
+            // Bug 42 (critic p00 round 4, plant T1c without a visible effect): the tenant from a
+            // header read by name, set with set_config, then a query whose answer never reaches the
+            // response. No tenant B data shows, so only the value the statement set gives it away.
+            group.MapGet("/silent", async (HttpContext http, ErpDbSession session) =>
+            {
+                if (http.Request.Headers.TryGetValue("X-Support-Silent", out var header) && Guid.TryParse(header.ToString(), out var id))
+                {
+                    await using var command = new NpgsqlCommand(
+                        "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)",
+                        session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("t", id.ToString());
+                    await command.ExecuteNonQueryAsync();
+                    await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", session.Connection, session.Transaction);
+                    await count.ExecuteScalarAsync();
+                }
+                return Results.Ok(new { done = true });
+            }).WithName("leaky.silent").WithSummary("Planted bug: switches tenant from a header and queries, showing nothing.").RequirePermission("leaky.data.read");
+
             // Bug 41: a pool of its own, built outside the platform, where the trace cannot read the
             // values its statements set (only the platform's pools are observed).
             group.MapGet("/own-pool", async (Microsoft.Extensions.Configuration.IConfiguration configuration, ErpDbSession session) =>

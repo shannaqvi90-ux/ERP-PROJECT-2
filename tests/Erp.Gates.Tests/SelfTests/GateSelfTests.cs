@@ -107,11 +107,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // The tenant each statement runs under, judged by the value it sets (critic p00 round 4):
         // the X-Acting-For switch, and the units of work bound to a tenant the client chose, ran SQL
         // under tenant B in requests signed in as tenant A.
-        foreach (var name in new[] { "leaky.acting", "leaky.byHeader", "leaky.byRoute", "leaky.report" })
+        foreach (var name in new[] { "leaky.acting", "leaky.byHeader", "leaky.byRoute", "leaky.report", "leaky.silent" })
         {
             Assert.Contains(report.TenantValueViolations, v => v.Contains($"endpoint:{name})", StringComparison.Ordinal) && v.Contains("SQL ran under tenant", StringComparison.Ordinal));
         }
         Assert.DoesNotContain(report.TenantValueViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+        // The silent switch shows no tenant B data at all: only the value it set gives it away.
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/silent", StringComparison.Ordinal));
         // Plant T1d: a header found by enumerating the headers. Its name is never learnt, so the
         // attack never sends it; the enumeration itself is reported, with the code that did it.
         Assert.Contains(report.InputEnumerations, e => e == $"headers by {typeof(LeakyModule).FullName}");

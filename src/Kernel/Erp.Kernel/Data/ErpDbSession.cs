@@ -58,7 +58,7 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
 
     /// <summary>
     /// Bulk work (seeding, imports): take the connection from the bulk pool instead, whose
-    /// commands inherit a long timeout (<see cref="ErpDataSources.BuildBulk(Microsoft.Extensions.Configuration.IConfiguration)"/>). Only before the
+    /// commands inherit a long timeout (<c>ErpDataSources.BuildBulk</c>). Only before the
     /// connection has been handed to anything (a DbContext or a command), so every statement of the
     /// unit of work runs on the same connection and in the same transaction.
     /// </summary>

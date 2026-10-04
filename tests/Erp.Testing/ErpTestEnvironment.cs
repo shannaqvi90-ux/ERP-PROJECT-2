@@ -96,7 +96,7 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         {
             // The copy is checked like a fresh database: privileges on the database itself (not
             // copied by PostgreSQL), no pending migration and the security invariants.
-            await factory.Services.GetRequiredService<DatabaseBootstrap>().RunAsync();
+            await server.BootstrapAsync(factory);
             await factory.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
         }
         catch
@@ -126,7 +126,7 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         try
         {
             var services = factory.Services;
-            await services.GetRequiredService<DatabaseBootstrap>().RunAsync();
+            await server.BootstrapAsync(factory);
             await services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
             await services.GetRequiredService<SeedRunner>().RunAsync(plan);
             return factory;
@@ -141,6 +141,10 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
 
     internal static ErpTestEnvironment Create(TestDatabaseServer server, string database, ErpAppFactory factory, SeedPlan plan, string admin, string owner, string app) =>
         new(server, database, factory, plan, admin, owner, app);
+
+    /// <summary>Run the product's bootstrap (roles, database, privileges) for this environment
+    /// again. The roles are shared by every environment of the server, so bootstraps take turns.</summary>
+    public Task BootstrapAsync() => Server.BootstrapAsync(Factory);
 
     /// <summary>An unauthenticated client that sends the X-Erp-Request header.</summary>
     public HttpClient CreateClient(bool requestHeader = true)

@@ -186,12 +186,7 @@ public static class SqlTrace
         public bool ReadOnlyRequest { get; init; }
     }
 
-    /// <summary>A statement that changes a session or transaction setting.</summary>
-    private static readonly Regex SettingStatement = new(
-        @"\bset_config\s*\(|(^|;)\s*(set|reset|discard)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
-    public static bool ChangesSettings(string statement) => SettingStatement.IsMatch(statement);
+    public static bool ChangesSettings(string statement) => StatementCapture.ChangesSettings(statement);
 
     private static void Capture(Activity activity)
     {
@@ -212,8 +207,10 @@ public static class SqlTrace
             SessionResolution.IsInProgress(http),
             http?.RequestServices.GetService(typeof(ModuleCatalog)),
             http?.User.Identity?.IsAuthenticated == true ? http.User.FindTenantId()?.ToString() ?? "" : null,
-            // Which code sent a statement is only needed inside requests (the settings rule).
-            http is not null && activity.Source.Name == "Npgsql" ? CodeCaller() : null,
+            // Which code sent a statement is worked out by the statement capture, and only for
+            // statements that change settings (the settings rule): a stack walk per statement
+            // cost more than everything else the trace does.
+            null,
             inSession)
         {
             Request = http?.TraceIdentifier,
@@ -221,25 +218,6 @@ public static class SqlTrace
             Sequence = activity.Source.Name == TenantBinding.SourceName ? Interlocked.Increment(ref _sequence) : 0,
             ReadOnlyRequest = http is not null && Erp.Kernel.Http.ReadOnlyRequests.Applies(http),
         });
-    }
-
-    /// <summary>The outermost product type on the stack: the class whose method (or async state
-    /// machine, lambda or local function) sent the statement.</summary>
-    private static string? CodeCaller()
-    {
-        foreach (var frame in new StackTrace(2, false).GetFrames())
-        {
-            var type = frame.GetMethod()?.DeclaringType;
-            while (type?.DeclaringType is not null)
-            {
-                type = type.DeclaringType;
-            }
-            if (type?.Namespace is { } ns && ns.StartsWith("Erp.", StringComparison.Ordinal) && type != typeof(SqlTrace))
-            {
-                return type.FullName;
-            }
-        }
-        return null;
     }
 
     private static void Record(Activity activity)
@@ -270,15 +248,16 @@ public static class SqlTrace
         if (activity.GetCustomProperty(CallerProperty) is Caller { Path: not null } inRequest)
         {
             Interlocked.Increment(ref _requestStatements);
+            var capture = StatementCapture.Of(activity);
             if (ChangesSettings(text))
             {
-                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, inRequest.CodeCaller, inRequest.FromSession,
+                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, capture?.Caller, inRequest.FromSession,
                     UserOf(activity), inRequest.App));
             }
             // The tenant each statement runs under: every setting change is read with the values of
             // the statement's own parameters. A statement without a capture went through a pool the
             // platform did not build, where the gate cannot see its values.
-            if (StatementCapture.Of(activity) is { } captured)
+            if (capture is { } captured)
             {
                 if (inRequest.App is { } observedApp)
                 {
@@ -294,7 +273,7 @@ public static class SqlTrace
                                  (c.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase) && c.Local != true)))
                     {
                         Changes.Enqueue(new TracedSettingChange(change, inRequest.Endpoint, inRequest.Path, inRequest.Method, inRequest.Request,
-                            inRequest.RequiredTenant, inRequest.ResolvingSession, inRequest.CodeCaller, captured.ProcessId, inRequest.App));
+                            inRequest.RequiredTenant, inRequest.ResolvingSession, captured.Caller, captured.ProcessId, inRequest.App));
                     }
                 }
             }
