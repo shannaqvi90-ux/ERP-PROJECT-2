@@ -272,6 +272,11 @@ cmd_verify() {
   bold "[3/3] Ratchet"
   local took=$((SECONDS - started))
   echo "$took" >"$out/verify-seconds"
+  # The load when every stage is over: what other work kept the machine busy with (judged quiet
+  # only if it was quiet at the start and is quiet here).
+  if [[ -r /proc/loadavg ]]; then
+    echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-end-load"
+  fi
   run_toolbox "$out" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
   bold "verify passed in $((SECONDS - started)) s"
 }

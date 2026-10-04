@@ -140,11 +140,13 @@ room for the tests the wave-2 pieces add (forms, reports, audit, currency, numbe
 be lowered as they land. Not counted: the PostgreSQL containers the tests start, the verify
 stack's own containers and its image build.
 
-`verify.quietSeconds` (3,600): `./erp verify` writes its wall
-time (before the ratchet step) and the machine's one-minute load average and CPU count when it
-started; `build/ratchet-check.mjs` fails the run when it started on a quiet machine (load at most
-0.5 per CPU) and took longer than the maximum. A run that started on a busy machine is reported,
-not judged: other agents' work decides its time. Like every maximum it may only go down.
+`verify.quietSeconds` (3,600): `./erp verify` writes its wall time (before the ratchet step) and
+the machine's one-minute load average and CPU count when it started and again when every stage is
+over; `build/ratchet-check.mjs` fails the run when the machine was quiet at both moments (load at
+most 0.5 per CPU) and the run took longer than the maximum. A run on a busy machine is reported,
+not judged: other agents' work decides its time (a run started at load 1.98 was overtaken by
+another builder's verify within five minutes, load 64). The end-of-run reading was added for that
+reason: a start-only reading would have judged that run. Like every maximum it may only go down.
 
 ## Why not
 

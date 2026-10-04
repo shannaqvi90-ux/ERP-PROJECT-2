@@ -4,8 +4,8 @@
 //  - the suite counts of this run (.NET tests from TRX, web unit tests, end-to-end tests) reach the
 //    suite minimums, and nothing failed or was skipped;
 //  - on a quiet machine, the wall time of ./erp verify stays under the maximum verify.quietSeconds
-//    (./erp writes verify-seconds and the machine's load when the run started; a run that started
-//    on a busy machine is reported but not judged, since other work decides its time);
+//    (./erp writes verify-seconds and the machine's load when the run started and when its stages
+//    were over; a run on a busy machine is reported but not judged, since other work decides its time);
 //  - on every run, the processor time of the verify stages stays under the maximum verify.cpuSeconds.
 // Usage: node ratchet-check.mjs <ratchet.json> <out-dir> [base-ratchet.json]
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -87,16 +87,24 @@ for (const [key, c] of suite) {
 // Wall time on a quiet machine (the suite must not creep back to the 75-100 minutes of wave 1).
 const secondsFile = join(outDir, "verify-seconds");
 const loadFile = join(outDir, "verify-start-load");
+const endLoadFile = join(outDir, "verify-end-load");
 const maxSeconds = ratchet.maximums?.["verify.quietSeconds"];
 if (maxSeconds === undefined) problems.push("ratchet has no maximum verify.quietSeconds");
 if (existsSync(secondsFile)) {
   const seconds = Number(readFileSync(secondsFile, "utf8").trim());
-  const [load, cpus] = existsSync(loadFile) ? readFileSync(loadFile, "utf8").trim().split(/\s+/).map(Number) : [NaN, NaN];
-  const quiet = Number.isFinite(load) && Number.isFinite(cpus) && cpus > 0 && load / cpus <= QUIET_LOAD_PER_CPU;
-  const judged = quiet ? "judged" : `not judged: the machine was busy when the run started (load ${load} on ${cpus} CPUs; quiet is at most ${QUIET_LOAD_PER_CPU} per CPU)`;
+  const loadOf = (file) => (existsSync(file) ? readFileSync(file, "utf8").trim().split(/\s+/).map(Number) : [NaN, NaN]);
+  const isQuiet = ([l, n]) => Number.isFinite(l) && Number.isFinite(n) && n > 0 && l / n <= QUIET_LOAD_PER_CPU;
+  // Quiet at the start, and again once every stage is over (other work that started during the run
+  // and is still going shows there).
+  const [load, cpus] = loadOf(loadFile);
+  const [endLoad] = loadOf(endLoadFile);
+  const quiet = isQuiet([load, cpus]) && isQuiet(loadOf(endLoadFile));
+  const judged = quiet
+    ? "judged"
+    : `not judged: the machine was busy (load ${load} at the start and ${endLoad} at the end on ${cpus} CPUs; quiet is at most ${QUIET_LOAD_PER_CPU} per CPU at both)`;
   console.log(`\nverify wall time before the ratchet: ${seconds} s (maximum on a quiet machine ${maxSeconds} s; ${judged})`);
   if (quiet && maxSeconds !== undefined && seconds > maxSeconds) {
-    problems.push(`verify.quietSeconds: ./erp verify took ${seconds} s on a quiet machine (load ${load} on ${cpus} CPUs at the start), maximum ${maxSeconds} s`);
+    problems.push(`verify.quietSeconds: ./erp verify took ${seconds} s on a quiet machine (load ${load} at the start and ${endLoad} at the end on ${cpus} CPUs), maximum ${maxSeconds} s`);
   }
 }
 
