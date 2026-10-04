@@ -1,0 +1,82 @@
+using Erp.Kernel.Data;
+using Erp.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+
+namespace Erp.Modules.Tenancy.Tests;
+
+/// <summary>The company scope of a unit of work, below the HTTP layer: what a signed-in user's
+/// session sees before and after its companies are bound, and what system work sees.</summary>
+public sealed class CompanyScopeTests(TenancyFixture fixture) : IClassFixture<TenancyFixture>
+{
+    private ErpTestEnvironment Env => fixture.Env;
+
+    private async Task<(Guid X, Guid Y)> CompaniesAsync()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        await using var command = new NpgsqlCommand("SELECT id FROM tenancy.companies WHERE tenant_id = @t ORDER BY id LIMIT 2", admin);
+        command.Parameters.AddWithValue("t", Env.TenantA.Id);
+        var ids = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) ids.Add(reader.GetGuid(0));
+        return (ids[0], ids[1]);
+    }
+
+    [Fact]
+    public async Task System_work_sees_every_company_and_a_user_sees_none_until_bound()
+    {
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, null, "system");
+            var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+            Assert.True(session.AllCompanies);
+            Assert.Equal(2, await db.Companies.CountAsync());
+        }
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+            var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+            Assert.False(session.AllCompanies);
+            Assert.Equal(0, await db.Companies.CountAsync());
+            // Without the query filter, row-level security still shows nothing.
+            Assert.Equal(0, await db.Companies.IgnoreQueryFilters().CountAsync());
+            // The tenant itself (not company data) is visible.
+            Assert.Equal(1, await db.Tenants.CountAsync());
+        }
+    }
+
+    [Fact]
+    public async Task A_bound_scope_shows_only_its_companies_cannot_be_widened_and_refuses_writes_elsewhere()
+    {
+        var (x, y) = await CompaniesAsync();
+        await using var scope = Env.Factory.Services.CreateAsyncScope();
+        var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+        await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+        await session.BindCompaniesAsync([x]);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => session.BindCompaniesAsync([x, y]));
+
+        var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+        Assert.Equal([x], await db.Companies.Select(c => c.Id).ToListAsync());
+        Assert.Equal([x], await db.Companies.IgnoreQueryFilters().Select(c => c.Id).ToListAsync());
+        Assert.All(await db.Branches.ToListAsync(), b => Assert.Equal(x, b.CompanyId));
+        Assert.Contains("company_id", db.Branches.ToQueryString(), StringComparison.Ordinal);
+
+        // A branch for company Y is refused by the application before the database sees it.
+        db.Branches.Add(new Branch { CompanyId = y, Code = "NOPE", NameEn = "Nope", Country = "AE" });
+        await Assert.ThrowsAsync<CrossCompanyWriteException>(() => db.SaveChangesAsync());
+        db.ChangeTracker.Clear();
+
+        // A new company needs IncludeNewCompanyAsync, which makes it part of the scope.
+        var company = new Company { Code = "SCOPE-NEW", LegalNameEn = "Scope New LLC", Country = "AE", BaseCurrency = "AED" };
+        company.CompanyId = company.Id;
+        db.Companies.Add(company);
+        await Assert.ThrowsAsync<CrossCompanyWriteException>(() => db.SaveChangesAsync());
+        await session.IncludeNewCompanyAsync(company.Id);
+        await db.SaveChangesAsync();
+        Assert.Equal(2, await db.Companies.CountAsync());
+        await session.RollbackAsync();
+    }
+}

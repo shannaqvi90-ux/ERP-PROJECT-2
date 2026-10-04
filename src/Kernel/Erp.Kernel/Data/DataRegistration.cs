@@ -14,6 +14,7 @@ public static class DataRegistration
     {
         services.TryAddScoped<ErpDbSession>();
         services.TryAddScoped<ITenantContext>(sp => sp.GetRequiredService<ErpDbSession>());
+        services.TryAddScoped<ICompanyContext>(sp => sp.GetRequiredService<ErpDbSession>());
         services.AddDbContext<TContext>((sp, options) =>
         {
             var session = sp.GetRequiredService<ErpDbSession>();

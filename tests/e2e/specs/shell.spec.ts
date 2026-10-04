@@ -74,6 +74,12 @@ test.describe("app shell", () => {
     await expect(navigation(page).getByRole("link", { name: "Roles" })).toBeFocused();
     await expectFocusRing(page, "navigation entry");
     await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Company access" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Companies" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Branches" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Workspace" })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.locator("main h1")).toHaveText("Workspace");
@@ -328,7 +334,8 @@ test.describe("app shell", () => {
         checked += await checkAccessibility(page, `${href} (${language})`);
       }
       await page.keyboard.press("Control+K");
-      await expect(page.getByRole("combobox")).toBeFocused();
+      // The palette's own box (screens such as the workspace settings have selects too).
+      await expect(page.getByRole("dialog").getByRole("combobox")).toBeFocused();
       checked += await checkAccessibility(page, `command palette (${language})`);
       await page.keyboard.press("Escape");
       await page.keyboard.press("Control+/");

@@ -27,9 +27,11 @@ public interface ITenantContext
 /// Nothing can query tenant data before <see cref="BeginAsync"/> has run: the command guard
 /// refuses, and row-level security would return nothing anyway.
 /// </summary>
-public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
+public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDisposable
 {
     private Guid? _tenantId;
+    private CompanyScopeState _companies = CompanyScopeState.Nothing;
+    private bool _companiesBound;
     private readonly IHttpContextAccessor? _http;
 
     /// <param name="http">The request this unit of work serves, if any: inside a request to a
@@ -94,7 +96,9 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
 
     /// <summary>Bind the unit of work to a tenant: opens the connection, begins the transaction and
     /// sets the transaction-local tenant and actor settings. Binding twice to the same tenant is a
-    /// no-op; binding to a different tenant throws.</summary>
+    /// no-op; binding to a different tenant throws. The company scope starts as every company of the
+    /// tenant for system work (seed, job, system) and as no company for a signed-in user, until
+    /// <see cref="BindCompaniesAsync"/> narrows or sets it.</summary>
     public async Task BeginAsync(Guid tenantId, Guid? actorId, string actorKind, CancellationToken cancellationToken = default)
     {
         if (tenantId == Guid.Empty)
@@ -126,18 +130,107 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
         await using (var command = new NpgsqlCommand(
             "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
             "set_config('app.actor_id', @actor, true), " +
-            "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true)",
+            "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true), " +
+            "set_config('app.company_scope', @scope, true), set_config('app.company_ids', '', true), " +
+            "set_config('app.company_tx', extract(epoch from now())::text, true)",
             _connection, Transaction))
         {
             command.Parameters.AddWithValue("tenant", tenantId.ToString());
             command.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
             command.Parameters.AddWithValue("kind", actorKind);
             command.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
+            command.Parameters.AddWithValue("scope", actorKind == UserActorKind ? "none" : "all");
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
         _tenantId = tenantId;
         ActorId = actorId;
         ActorKind = actorKind;
+        _companies = actorKind == UserActorKind ? CompanyScopeState.Nothing : CompanyScopeState.Everything;
+        _companiesBound = false;
+    }
+
+    /// <summary>Actor kind of a signed-in user; such a unit of work starts with no company.</summary>
+    public const string UserActorKind = "user";
+
+    /// <summary>
+    /// Set the companies this unit of work may touch, once, after the tenant is bound. Row-level
+    /// security (<c>company_scope</c> policies) and the company query filter then show only rows of
+    /// these companies. A second call throws, so code running later in the request cannot widen
+    /// what the session allowed.
+    /// </summary>
+    public async Task BindCompaniesAsync(IReadOnlyCollection<Guid> companyIds, CancellationToken cancellationToken = default)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_companiesBound)
+        {
+            throw new InvalidOperationException("The company scope of this unit of work is already bound.");
+        }
+        var ids = companyIds.Distinct().ToArray();
+        await SetCompanySettingsAsync(ids, cancellationToken);
+        _companies = new CompanyScopeState(false, ids, null, null, []);
+        _companiesBound = true;
+    }
+
+    /// <summary>Record the company and branch the user is working in, and the branches they may
+    /// work in (all within the bound companies). Informational for modules: the default company
+    /// of new records and lists. Security comes from <see cref="BindCompaniesAsync"/>.</summary>
+    public void SetWorkplace(Guid? activeCompanyId, Guid? activeBranchId, IReadOnlyCollection<Guid> branchIds)
+    {
+        if (activeCompanyId is { } active && !AllowsCompany(active))
+        {
+            throw new ArgumentException("The working company must be in the company scope.", nameof(activeCompanyId));
+        }
+        _companies = _companies with { ActiveCompanyId = activeCompanyId, ActiveBranchId = activeBranchId, BranchIds = branchIds.Distinct().ToArray() };
+    }
+
+    /// <summary>
+    /// Add one company to a user's scope: the company this unit of work has just created (its
+    /// creator works in it from then on). Only a brand-new id is acceptable here; callers must
+    /// create the company in the same transaction.
+    /// </summary>
+    public async Task IncludeNewCompanyAsync(Guid companyId, CancellationToken cancellationToken = default)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_companies.All || _companies.CompanyIds.Contains(companyId))
+        {
+            return;
+        }
+        var ids = _companies.CompanyIds.Append(companyId).ToArray();
+        await SetCompanySettingsAsync(ids, cancellationToken);
+        _companies = _companies with { CompanyIds = ids };
+    }
+
+    private async Task SetCompanySettingsAsync(Guid[] ids, CancellationToken cancellationToken)
+    {
+        await using var command = new NpgsqlCommand(
+            "SELECT set_config('app.company_scope', 'list', true), set_config('app.company_ids', @ids, true), " +
+            "set_config('app.company_tx', extract(epoch from now())::text, true)", Connection, Transaction);
+        command.Parameters.AddWithValue("ids", string.Join(',', ids));
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public bool AllCompanies => HasTenant && _companies.All;
+
+    public IReadOnlyList<Guid> CompanyIds => HasTenant ? _companies.CompanyIds : [];
+
+    public Guid? ActiveCompanyId => HasTenant ? _companies.ActiveCompanyId : null;
+
+    public Guid? ActiveBranchId => HasTenant ? _companies.ActiveBranchId : null;
+
+    public IReadOnlyList<Guid> BranchIds => HasTenant ? _companies.BranchIds : [];
+
+    public bool AllowsCompany(Guid companyId) => HasTenant && (_companies.All || _companies.CompanyIds.Contains(companyId));
+
+    private sealed record CompanyScopeState(bool All, IReadOnlyList<Guid> CompanyIds, Guid? ActiveCompanyId, Guid? ActiveBranchId, IReadOnlyList<Guid> BranchIds)
+    {
+        public static readonly CompanyScopeState Nothing = new(false, [], null, null, []);
+        public static readonly CompanyScopeState Everything = new(true, [], null, null, []);
     }
 
     /// <summary>Open the connection without binding a tenant, for the few reviewed
@@ -216,6 +309,39 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
         }
         await _connection.DisposeAsync();
     }
+}
+
+/// <summary>
+/// The companies the current unit of work may touch. Companies divide a tenant's data: a row that
+/// belongs to a company carries <c>company_id</c> and is visible only inside this scope (row-level
+/// security, plus the query filter of <see cref="ICompanyOwned"/> entities). A signed-in user's
+/// scope is the companies they were given access to; system work (seeding, jobs, operator
+/// commands) sees every company of its tenant.
+/// </summary>
+public interface ICompanyContext
+{
+    /// <summary>True for system work that sees every company of the tenant.</summary>
+    bool AllCompanies { get; }
+
+    /// <summary>The companies a user may work in (empty for system work, see <see cref="AllCompanies"/>).</summary>
+    IReadOnlyList<Guid> CompanyIds { get; }
+
+    /// <summary>The company the user is working in now: the default for new records and lists.</summary>
+    Guid? ActiveCompanyId { get; }
+
+    /// <summary>The branch the user is working in now.</summary>
+    Guid? ActiveBranchId { get; }
+
+    /// <summary>The branches the user may work in (of the allowed companies).</summary>
+    IReadOnlyList<Guid> BranchIds { get; }
+
+    bool AllowsCompany(Guid companyId);
+}
+
+/// <summary>A row that belongs to one company of its tenant (column <c>company_id</c>).</summary>
+public interface ICompanyOwned : ITenantOwned
+{
+    Guid CompanyId { get; set; }
 }
 
 public sealed class TenantContextMissingException()

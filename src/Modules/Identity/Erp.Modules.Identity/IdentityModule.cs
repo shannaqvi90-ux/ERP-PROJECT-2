@@ -9,6 +9,7 @@ using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Identity.Roles;
 using Erp.Modules.Identity.Seeding;
 using Erp.Modules.Identity.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
@@ -272,7 +273,7 @@ internal sealed class IdentityDbContextDesignFactory : IDesignTimeDbContextFacto
     }
 }
 
-internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
+internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog) : IUserDirectory
 {
     public async Task<IReadOnlyDictionary<Guid, UserSummary>> GetAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken)
     {
@@ -284,6 +285,37 @@ internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
             .Where(u => userIds.Contains(u.Id))
             .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
             .ToDictionaryAsync(u => u.Id, cancellationToken);
+    }
+
+    public async Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = db.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = "%" + ListBinding<User>.EscapeLike(search.Trim().ToLowerInvariant()) + "%";
+            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
+        }
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)
+            .Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .ToListAsync(cancellationToken);
+        return new UserSummaryPage(items, total);
+    }
+
+    public async Task<ListResult<UserSummary>> QueryListAsync(string listKey, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
+        // Only lists bound to identity's users resolve here (ListBinding<User> throws otherwise).
+        var result = await catalog.ListBinding<User>(listKey).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
+        return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
+    }
+
+    public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+        return await db.Users.AsNoTracking().Where(u => u.EmailNormalized == normalized)
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .SingleOrDefaultAsync(cancellationToken);
     }
 }
 

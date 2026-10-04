@@ -64,7 +64,7 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
             logger.LogError(exception, "Request {TraceId} tried to bind another tenant", context.TraceIdentifier);
         }
         var (status, code) = Classify(exception, context.RequestAborted.IsCancellationRequested);
-        if (status >= 500 || exception is CrossTenantWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
+        if (status >= 500 || exception is CrossTenantWriteException or CrossCompanyWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
             || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege })
         {
             logger.LogError(exception, "Request {TraceId} failed with {Code}", context.TraceIdentifier, code);
@@ -107,6 +107,7 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
             // as if the row did not exist, and log it loudly.
             _ when postgres?.SqlState == PostgresErrorCodes.InsufficientPrivilege => (StatusCodes.Status404NotFound, "notFound"),
             CrossTenantWriteException => (StatusCodes.Status404NotFound, "notFound"),
+            CrossCompanyWriteException => (StatusCodes.Status404NotFound, "notFound"),
             BadHttpRequestException bad => (bad.StatusCode, "request.malformed"),
             OperationCanceledException when requestAborted => (499, "request.cancelled"),
             _ => (StatusCodes.Status500InternalServerError, "internal"),

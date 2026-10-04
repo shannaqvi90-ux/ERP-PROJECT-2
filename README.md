@@ -12,12 +12,19 @@ Needs only Docker (with Compose v2), bash and git.
 ./erp verify    # build, migrate, seed and run every test: unit, integration, gates, end to end
 ./erp verify --clean-clone   # G3: the same from a fresh clone of HEAD, then ./erp up there
 ./erp down      # stop the demo (--volumes also deletes its data)
+./erp tenant create --code acme --name-en "Acme LLC" --name-ar "أكمي ذ.م.م" --admin-email owner@acme.example --admin-name "Owner"
+                # platform operator: provision a workspace (also: tenant suspend|activate --code …, tenant list)
 ```
 
 Ports and the compose project come from the environment, so copies run side by side:
 `ERP_PROJECT`, `ERP_HTTP_PORT` (8080), `ERP_DB_PORT` (5440), `ERP_SEED_VOLUME` (100000),
 `ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
+
+The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
+with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
+read-only user in the first company only. The working company and branch switcher sits in the
+top bar (Alt+C).
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
@@ -56,10 +63,16 @@ they grant; the screens offer nothing else.
    and its GET endpoint takes `[AsParameters] ListRequest` and returns
    `catalog.ListBinding<Row>(key).QueryAsync(...)` as a `ListPage<T>`: search, filter language, sort,
    keyset and offset paging and grouping come with it (`docs/decisions/p05-list-search-query-contract.md`),
-   and `/api/lists/<key>/definition` and saved views appear for it automatically.
+   and `/api/lists/<key>/definition` and saved views appear for it automatically. A list whose rows
+   belong to another module is registered with `module.List(definition, servedBy: "<other list>")` and
+   queried through that module's contract (the access list over identity's users,
+   `docs/decisions/p02-tenancy-lists-on-the-list-contract.md`).
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
-   for every table. A list served from the database needs a GIN `gin_trgm_ops` index on its search
+   for every table, and `migrationBuilder.ProtectCompanyTable(schema, table)` for every table whose rows
+   belong to a company (`company_id`; entities implement `ICompanyOwned`). The signed-in user's companies,
+   working company and branch are in `ICompanyContext`; company facts in `ICompanyDirectory`.
+   A list served from the database needs a GIN `gin_trgm_ops` index on its search
    fields and a `(tenant_id, column, id)` index per sortable column (the list index gate checks both).
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens
    (`routes.tsx`: each screen's path and permission match its menu entry; a list screen is a

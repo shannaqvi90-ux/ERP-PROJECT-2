@@ -134,14 +134,15 @@ public static class IsolationAttack
         // Tenant B uses the product first: every write on its own records, then (below) every
         // read, so its data sits in whatever process-wide state the app keeps before A attacks.
         var own = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
-        var ownValues = await VictimValues.ReadAsync(Env, own, b.Id);
+        var examples = openApi.ExampleValues();
+        var ownValues = await VictimValues.ReadAsync(Env, own, b.Id, examples);
         var activity = await TenantActivity.StartAsync(Env, b, endpoints, openApi);
         activity.Watch(new MarkerSet(own, ownValues));
         await activity.WriteAsync(await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code));
 
         var victim = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
         Assert.True(victim.Markers.Count > 10, "The victim tenant has too little data to attack.");
-        var values = await VictimValues.ReadAsync(Env, victim, a.Id);
+        var values = await VictimValues.ReadAsync(Env, victim, a.Id, examples);
         Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
         var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
         await activity.ReadAsync(victim, values, "tenant B reads before the attack");
@@ -425,8 +426,10 @@ public static class IsolationAttack
                     foreach (var attacker in reachable)
                     {
                         var n = counter++;
-                        var body = openApi.BuildBody(schema, (type, format, name) =>
-                            name == field && type == "string" && format != "uuid" ? value : Leaf(type, format, name, victimIdTexts, b, signIn, n)) as JsonObject ?? [];
+                        // The attacked field carries tenant B's value as is; every other field conforms to
+                        // its documented constraints so the request gets past validation to the handler.
+                        var body = openApi.BuildBody(schema, (leaf, type, format, name) =>
+                            name == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, name, victimIdTexts, b, signIn, n))) as JsonObject ?? [];
                         using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), path)
                         {
                             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),
@@ -450,7 +453,7 @@ public static class IsolationAttack
         // Tenant B reads everything once more, judged against everything tenant A now holds
         // (including what the attack created).
         var ownAfter = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
-        activity.Watch(new MarkerSet(ownAfter, await VictimValues.ReadAsync(Env, ownAfter, b.Id), [.. values.Strings, .. state.Stored], b.Canary));
+        activity.Watch(new MarkerSet(ownAfter, await VictimValues.ReadAsync(Env, ownAfter, b.Id, examples), [.. values.Strings, .. state.Stored], b.Canary));
         await activity.ReadAsync(victim, values, "tenant B reads after the attack");
         Phase($"tenant B activity: {activity.Requests} requests ({activity.ConcurrentRequests} concurrent with the attack), " +
               $"{activity.SuccessfulWrites} successful own writes, {activity.ReverseChecks} responses judged for tenant A markers");
@@ -844,7 +847,7 @@ public static class IsolationAttack
         {
             var n = counter++;
             var body = bodySchema is { } schema
-                ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, victimIds, b, signIn, n)) as JsonObject ?? []
+                ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, victimIds, b, signIn, n))) as JsonObject ?? []
                 : [];
             body["tenantId"] = b.Id.ToString();
             body["tenant_id"] = b.Id.ToString();
@@ -973,7 +976,7 @@ public static class IsolationAttack
             if (endpoint.HasBody)
             {
                 var body = bodySchema is { } schema
-                    ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, _victimIds, b, false, n)) as JsonObject ?? []
+                    ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, _victimIds, b, false, n))) as JsonObject ?? []
                     : [];
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }

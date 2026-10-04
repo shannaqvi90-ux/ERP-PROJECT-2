@@ -27,11 +27,25 @@ public sealed class LeakyFixture : IAsyncLifetime
 /// The gates must fail meaningfully. These tests plant isolation bugs and require the gate
 /// machinery to report each one, so a gate that silently stopped looking would be caught.
 /// </summary>
+/// <summary>Every test class whose environment loads <see cref="LeakyModule"/>: its planted static
+/// state is shared by the whole test process, so these classes run one after another, never side
+/// by side (one environment's tenant A filling the static cache first would decide another's
+/// self-test).</summary>
+[CollectionDefinition(Name)]
+public sealed class LeakyModuleCollection
+{
+    public const string Name = "Leaky module (process-wide planted state)";
+}
+
+[Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
     [Fact]
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
+        // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
+        // another self-test environment of this process left in it.
+        LeakyModule.ResetProcessState();
         var report = await IsolationAttack.RunAsync(fixture.Env);
         foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
         {
@@ -129,6 +143,41 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.True(report.WritePairs > 0, "no write-after-write pair succeeded on both sides");
         Assert.Empty(report.WritePairBlindSpots);
         Assert.DoesNotContain(report.AttackerUnsuccessfulWrites, w => w.Contains("/api/leaky/me/", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task The_company_attack_catches_an_endpoint_that_widens_the_company_scope()
+    {
+        var report = await CompanyAttack.RunAsync(fixture.Env);
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/company-names", StringComparison.Ordinal) && l.StartsWith("company X administrator", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Empty(report.Escalations);
+    }
+
+    [Fact]
+    public async Task The_company_policy_check_catches_a_company_table_without_the_company_scope()
+    {
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "CREATE TABLE tenancy.selftest_company_unscoped (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL)");
+            await DbCatalog.ExecuteAsync(owner, "CREATE TABLE tenancy.selftest_company_permissive (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL)");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope ON tenancy.selftest_company_permissive AS PERMISSIVE FOR ALL TO PUBLIC USING (true)");
+        }
+        try
+        {
+            var (problems, _) = await G1CompanyScopeTests.PolicyProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_company_unscoped: needs exactly one company_scope policy", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_company_permissive: company_scope must be RESTRICTIVE", StringComparison.Ordinal));
+            var (tenantProblems, _) = await G1DatabaseIsolationTests.RowLevelSecurityProblemsAsync(fixture.Env);
+            Assert.Contains(tenantProblems, p => p.Contains("tenancy.selftest_company_permissive: unreviewed policy", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_company_unscoped; DROP TABLE tenancy.selftest_company_permissive");
+        }
     }
 
     [Fact]
@@ -279,6 +328,7 @@ public sealed class LeakyWriteOracleFixture : IAsyncLifetime
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
 
+[Collection(LeakyModuleCollection.Name)]
 public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : IClassFixture<LeakyWriteOracleFixture>
 {
     [Fact]

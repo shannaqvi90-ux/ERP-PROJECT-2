@@ -95,7 +95,10 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
                                  $"(is {p.Command} {p.Permissive} [{string.Join(",", p.Roles)}] {p.Using} / {p.Check})");
                 }
             }
-            foreach (var other in policies.Where(p => p.Name != "tenant_isolation"))
+            // A RESTRICTIVE policy can only narrow what tenant_isolation allows, never widen it; the
+            // company_scope policy (rows of the session's companies only) is checked exactly by
+            // G1CompanyScopeTests. Any other policy, and a permissive one by that name, is checked here.
+            foreach (var other in policies.Where(p => p.Name != "tenant_isolation" && !(p.Name == "company_scope" && !p.Permissive)))
             {
                 var key = $"{table.Qualified} {other.Name} {other.Command} {string.Join(",", other.Roles)}";
                 if (!reviewed.Any(r => r.Entry == key))
@@ -387,12 +390,15 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
-    /// <summary>Bind a transaction to a tenant the way the platform does: the tenant and the
-    /// transaction it belongs to, both transaction-local.</summary>
+    /// <summary>Bind a transaction to a tenant the way the platform does for system work: the
+    /// tenant and the transaction it belongs to, both transaction-local, with every company of the
+    /// tenant in scope (company scoping, the layer within a tenant, has its own gate:
+    /// <see cref="G1CompanyScopeTests"/>).</summary>
     internal static async Task BindAsync(NpgsqlConnection connection, NpgsqlTransaction tx, Guid tenant)
     {
         await using var command = new NpgsqlCommand(
-            "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", connection, tx);
+            "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
+            "set_config('app.company_scope', 'all', true), set_config('app.company_tx', extract(epoch from now())::text, true)", connection, tx);
         command.Parameters.AddWithValue("t", tenant.ToString());
         await command.ExecuteNonQueryAsync();
     }

@@ -258,7 +258,12 @@ public static class ErpPlatform
             {
                 problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
             }
-            if (catalog.ListBindings.All(b => b.Definition.Key != list.Key))
+            if (catalog.ListBindings.All(b => b.Definition.Key != list.Key) &&
+                catalog.Modules.Select(m => m.ListsServedBy.GetValueOrDefault(list.Key)).FirstOrDefault(s => s is not null) is { } servedBy)
+            {
+                problems.Add($"list '{list.Key}': served by '{servedBy}', which is not a registered list with a query binding");
+            }
+            else if (catalog.ListBindings.All(b => b.Definition.Key != list.Key))
             {
                 problems.Add($"list '{list.Key}': registered without a query binding; register it with module.List(ListBinding<T>.For(...)) so its endpoint serves search, filters, sort and paging");
             }
@@ -322,7 +327,15 @@ public static class ErpPlatform
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
                 return true;
             default:
-                throw new ArgumentException($"Unknown command '{args[0]}'. Use bootstrap, migrate, seed or setup.");
+                var catalog = app.Services.GetRequiredService<ModuleCatalog>();
+                var command = catalog.Modules.SelectMany(m => m.Commands).FirstOrDefault(c => c.Verb == args[0]);
+                if (command is null)
+                {
+                    var verbs = string.Join(", ", new[] { "bootstrap", "migrate", "seed", "setup" }.Concat(catalog.Modules.SelectMany(m => m.Commands).Select(c => c.Verb)));
+                    throw new ArgumentException($"Unknown command '{args[0]}'. Use {verbs}.");
+                }
+                Environment.ExitCode = await command.Run(app.Services, args.Skip(1).ToList(), cancellationToken);
+                return true;
         }
     }
 

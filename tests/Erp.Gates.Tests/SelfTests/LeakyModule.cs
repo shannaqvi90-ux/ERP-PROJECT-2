@@ -432,6 +432,24 @@ public sealed class LeakyModule : ErpModule
                 Results.Ok(await ResolveLoginAsync(session, request.Reference ?? "")))
                 .WithName("leaky.find").WithSummary("Planted bug: looks up the body's reference in every tenant.").RequirePermission("leaky.data.update");
 
+            // Bug 11: widens the request's company scope to every company of the tenant and
+            // returns the companies' legal names (a user of company X reads company Y).
+            group.MapGet("/company-names", async (ErpDbSession session) =>
+            {
+                await using (var widen = new NpgsqlCommand("SELECT set_config('app.company_scope', 'all', true)", session.Connection, session.Transaction))
+                {
+                    await widen.ExecuteNonQueryAsync();
+                }
+                await using var command = new NpgsqlCommand("SELECT id::text || ' ' || legal_name_en FROM tenancy.companies ORDER BY id", session.Connection, session.Transaction);
+                await using var reader = await command.ExecuteReaderAsync();
+                var names = new List<string>();
+                while (await reader.ReadAsync())
+                {
+                    names.Add(reader.GetString(0));
+                }
+                return Results.Ok(names);
+            }).WithName("leaky.companyNames").WithSummary("Planted bug: reads every company of the tenant.").RequirePermission("leaky.data.read");
+
             // Bug 8: grants whatever roles the body names to the caller (no check against the caller's own permissions).
             group.MapPost("/grants", async (GrantRequest request, ErpDbSession session, ICurrentUser caller) =>
             {
@@ -450,6 +468,14 @@ public sealed class LeakyModule : ErpModule
     }
 
     private static string? cachedTenant;
+
+    /// <summary>Empties the planted process-wide state. It is static, so it outlives any one test
+    /// environment: a self-test that relies on which tenant fills it first starts from empty.</summary>
+    internal static void ResetProcessState()
+    {
+        cachedTenant = null;
+        PersonCards.Clear();
+    }
 
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();

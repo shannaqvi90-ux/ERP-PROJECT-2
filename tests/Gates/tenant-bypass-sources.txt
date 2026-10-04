@@ -7,7 +7,7 @@
 # Rules: tenant-setting, set-config, sql-set, ignore-tenant-filter, raw-ef-sql, new-session, bind,
 #        unbound, data-source, connection-string (see tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs)
 tenant-setting src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 4  # The unit of work: the one place that sets the transaction-local tenant, from BeginAsync's caller (the session lookup, sign-in, seeding).
-set-config src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 6  # Same: binds tenant, actor and correlation id with transaction-local set_config.
+set-config src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 12  # Same: binds tenant, actor and correlation id with transaction-local set_config; and the company scope (app.company_scope, app.company_ids, app.company_tx) when the transaction starts and when the session binds the user's companies (BindCompaniesAsync, IncludeNewCompanyAsync).
 sql-set src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 1  # SET TRANSACTION READ ONLY for requests that only read.
 unbound src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 1  # Defines OpenUnboundAsync for the reviewed cross-tenant lookups (tests/Gates/security-definer-callers.txt).
 data-source src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 2  # The unit of work takes its connection from the application role's data source: the request pool by default, the bulk pool when seeding chooses it (UseBulkConnectionAsync, before the connection is used).
@@ -26,3 +26,5 @@ tenant-setting src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs 9  # Mig
 sql-set src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs 16  # Migration SQL: the reviewed lookups switch to the resolver role inside their own bodies and pin search_path.
 data-source src/Kernel/Erp.Kernel/Data/ErpDataSources.cs 2  # Builds the application role's two pools (requests; bulk seeding with a long command timeout), both refusing any user but erp_app.
 connection-string src/Kernel/Erp.Kernel/Data/ErpDataSources.cs 2  # Reads ConnectionStrings:App for those pools.
+bind src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs 1  # Operator command (Erp.Host tenant suspend|activate, no request): binds the one workspace it changes, found by code with the operator's connection.
+connection-string src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs 5  # Operator command: finds and lists workspaces across tenants with ConnectionStrings:Admin, which the web application never has (ErpPlatform refuses any user but the application role).

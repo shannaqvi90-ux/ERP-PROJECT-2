@@ -36,8 +36,12 @@ public sealed class VictimValues
     /// <summary>Sampled ids then every text value.</summary>
     public IEnumerable<string> All => IdSample.Select(i => i.ToString()).Concat(Strings);
 
-    public static async Task<VictimValues> ReadAsync(ErpTestEnvironment env, TenantSnapshot victim, Guid attacker)
+    /// <param name="publicValues">Text that identifies no tenant although a tenant holds it: the
+    /// example values the API document publishes, which the gate's own valid requests use for
+    /// fields with a fixed format (codes, currency, country). Left out of the values and markers.</param>
+    public static async Task<VictimValues> ReadAsync(ErpTestEnvironment env, TenantSnapshot victim, Guid attacker, IReadOnlySet<string>? publicValues = null)
     {
+        publicValues ??= new HashSet<string>();
         await using var admin = await env.OpenAdminAsync();
         var strings = new List<string>();
         var markers = new List<string>();
@@ -65,13 +69,18 @@ public sealed class VictimValues
                        AND NOT EXISTS (SELECT 1 FROM {table.Qualified} a WHERE a.tenant_id = @a AND a.{name}::text = b.v)
                      ORDER BY v LIMIT {PerColumn}
                     """, r => r.GetString(0), ("b", victim.TenantId), ("a", attacker));
-                if (values.FirstOrDefault(v => victim.Canary is null || !string.Equals(v.Trim(), victim.Canary, StringComparison.OrdinalIgnoreCase)) is { } first)
+                if (values.FirstOrDefault(v => (victim.Canary is null || !string.Equals(v.Trim(), victim.Canary, StringComparison.OrdinalIgnoreCase))
+                                                && !publicValues.Contains(v.Trim())) is { } first)
                 {
                     probe.Add(first);
                 }
                 foreach (var value in values)
                 {
                     if (victim.Canary is { } canary && string.Equals(value.Trim(), canary, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    if (publicValues.Contains(value.Trim()))
                     {
                         continue;
                     }

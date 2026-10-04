@@ -35,6 +35,13 @@ export type BulkAction = {
   run: (rows: Row[]) => Promise<void> | void;
 };
 
+/** What a screen knows about the records a reference column points to: their labels (cells,
+ * groups, filter chips) and, for a short set, the choices the column's filter offers. */
+export type ReferenceSource = {
+  label: (id: string) => string | undefined;
+  options?: { value: string; label: string }[];
+};
+
 export type ListViewProps = {
   /** Registered list key, for example "identity.users". */
   listKey: string;
@@ -63,6 +70,8 @@ export type ListViewProps = {
   onOpenIdChange?: (id: string | null) => void;
   /** Change it to fetch the rows again (after the screen saved a record). */
   reloadKey?: number | string;
+  /** Labels (and filter choices) of reference columns, by column key. */
+  references?: Partial<Record<string, ReferenceSource>>;
 };
 
 /** Address parameters the list owns; any other parameter belongs to the screen and is kept. */
@@ -82,9 +91,17 @@ export function ListView(props: ListViewProps) {
   const { listKey, titleKey, countKey, searchPlaceholderKey } = props;
   const i18n = useI18n();
   const { t } = i18n;
+  const references = props.references;
   const formatters: Formatters = useMemo(
-    () => ({ t, formatDateTime: i18n.formatDateTime, formatDate: i18n.format.date, formatNumber: i18n.formatNumber, formatDecimal: i18n.format.decimal }),
-    [t, i18n.formatDateTime, i18n.formatNumber, i18n.format],
+    () => ({
+      t,
+      formatDateTime: i18n.formatDateTime,
+      formatDate: i18n.format.date,
+      formatNumber: i18n.formatNumber,
+      formatDecimal: i18n.format.decimal,
+      reference: references ? (column: string, value: string) => references[column]?.label(value) : undefined,
+    }),
+    [t, i18n.formatDateTime, i18n.formatNumber, i18n.format, references],
   );
   const id = "list" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
 
@@ -569,7 +586,7 @@ export function ListView(props: ListViewProps) {
             )}
           </td>
           {visible.map((c) => (
-            <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" ? "ltr" : undefined}>
+            <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" && !references?.[c.key] ? "ltr" : undefined}>
               {row ? (props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
             </td>
           ))}
@@ -841,6 +858,7 @@ export function ListView(props: ListViewProps) {
                       {menu?.kind === "filter" && menu.column === c.key && current && (
                         <FilterEditor
                           column={c}
+                          options={c.type === "reference" ? references?.[c.key]?.options : undefined}
                           current={current.conditions.filter((x) => x.column === c.key)}
                           onApply={(conditions) => update((s) => ({ ...s, conditions: [...s.conditions.filter((x) => x.column !== c.key), ...conditions] }))}
                           onClose={() => setMenu(null)}
