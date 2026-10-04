@@ -469,6 +469,14 @@ public sealed class LeakyModule : ErpModule
 
     private static string? cachedTenant;
 
+    /// <summary>Empties the planted process-wide state. It is static, so it outlives any one test
+    /// environment: a self-test that relies on which tenant fills it first starts from empty.</summary>
+    internal static void ResetProcessState()
+    {
+        cachedTenant = null;
+        PersonCards.Clear();
+    }
+
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();
 

@@ -8,6 +8,7 @@ namespace Erp.Gates.Tests.SelfTests;
 /// one tenant's text into the other's records, which would blunt the marker-based self-tests that
 /// share <see cref="GateSelfTests"/>'s environment.
 /// </summary>
+[Collection(LeakyModuleCollection.Name)]
 public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
     /// <summary>State shared across requests that leaks only a number (lead, round 4): a count

@@ -27,11 +27,25 @@ public sealed class LeakyFixture : IAsyncLifetime
 /// The gates must fail meaningfully. These tests plant isolation bugs and require the gate
 /// machinery to report each one, so a gate that silently stopped looking would be caught.
 /// </summary>
+/// <summary>Every test class whose environment loads <see cref="LeakyModule"/>: its planted static
+/// state is shared by the whole test process, so these classes run one after another, never side
+/// by side (one environment's tenant A filling the static cache first would decide another's
+/// self-test).</summary>
+[CollectionDefinition(Name)]
+public sealed class LeakyModuleCollection
+{
+    public const string Name = "Leaky module (process-wide planted state)";
+}
+
+[Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
     [Fact]
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
+        // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
+        // another self-test environment of this process left in it.
+        LeakyModule.ResetProcessState();
         var report = await IsolationAttack.RunAsync(fixture.Env);
         foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
         {
@@ -314,6 +328,7 @@ public sealed class LeakyWriteOracleFixture : IAsyncLifetime
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
 
+[Collection(LeakyModuleCollection.Name)]
 public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : IClassFixture<LeakyWriteOracleFixture>
 {
     [Fact]
