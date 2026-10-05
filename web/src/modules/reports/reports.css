@@ -52,8 +52,27 @@
   margin-block: 16px 4px;
 }
 
-.reports-lists li {
-  padding-block: 2px;
+.reports-lists {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reports-lists th,
+.reports-lists td {
+  text-align: start;
+  padding: 3px 4px;
+  border-block-end: 1px solid var(--border);
+  font-weight: normal;
+}
+
+.reports-lists thead th {
+  font-weight: 600;
+  color: var(--muted, inherit);
+}
+
+.reports-lists td {
+  white-space: nowrap;
 }
 
 .reports-main {

@@ -130,19 +130,29 @@ export function ReportsPage() {
             <>
               <h2 className="reports-subhead">{t("reports.lists")}</h2>
               <p className="muted">{t("reports.listsHint")}</p>
-              <ul className="reports-lists">
-                {catalog.lists.map((l) => (
-                  <li key={l.key}>
-                    <span>{l.title}</span>{" "}
-                    <a href={`${l.path}?format=pdf&language=${language}&numerals=${numerals}`} download>
-                      {t("reports.action.pdf")}
-                    </a>{" "}
-                    <a href={`${l.path}?format=xlsx&language=${language}`} download>
-                      {t("reports.action.xlsx")}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <table className="reports-lists">
+                <thead>
+                  <tr>
+                    <th scope="col">{t("reports.lists.column.list")}</th>
+                    <th scope="col">{t("reports.lists.column.download")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {catalog.lists.map((l) => (
+                    <tr key={l.key}>
+                      <th scope="row">{l.title}</th>
+                      <td>
+                        <a href={`${l.path}?format=pdf&language=${language}&numerals=${numerals}`} download aria-label={t("reports.lists.download", { list: l.title, format: t("reports.action.pdf") })}>
+                          {t("reports.action.pdf")}
+                        </a>{" "}
+                        <a href={`${l.path}?format=xlsx&language=${language}`} download aria-label={t("reports.lists.download", { list: l.title, format: t("reports.action.xlsx") })}>
+                          {t("reports.action.xlsx")}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </>
           )}
         </nav>

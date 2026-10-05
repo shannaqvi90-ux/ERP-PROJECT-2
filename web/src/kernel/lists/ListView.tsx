@@ -297,6 +297,24 @@ export function ListView(props: ListViewProps) {
 
   const update = useCallback((change: (s: ListState) => ListState) => setState((s) => (s ? change(s) : s)), []);
 
+  // Escape closes the open record wherever the focus is on the screen: a record opened from its
+  // address or from the command palette leaves the focus on the page, not in the list or the
+  // form. The form, the search box, menus and dialogs handle their own Escape first.
+  const closeRef = useRef<() => void>(() => undefined);
+  const anyRecordOpen = props.renderRecord ? Boolean(openId) : Boolean(openRow);
+  useEffect(() => {
+    if (!anyRecordOpen) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const focus = document.activeElement;
+      if (document.querySelector("dialog[open], [role=dialog]") || focus?.closest("[role=menu], [role=listbox], [role=dialog], .popover")) return;
+      event.preventDefault();
+      closeRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [anyRecordOpen]);
+
   if (loadError) {
     return (
       <section className="list-screen">
@@ -334,6 +352,8 @@ export function ListView(props: ListViewProps) {
     setOpenRow(null);
     tableRef.current?.focus();
   }
+
+  closeRef.current = closeRecord;
 
   /** Open the record at a position of the list (next and previous from the record's form). */
   function openAt(index: number) {

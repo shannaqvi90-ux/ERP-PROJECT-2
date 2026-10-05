@@ -162,10 +162,7 @@ public static class IsolationAttack
             await attacker.ConnectAsync();
         }
 
-        var state = new AttackState(victim, values)
-        {
-            UnheldPublished = await UnheldPublishedValuesAsync(Env, endpoints.SelectMany(e => openApi.Parameters(e.Method, e.Pattern))),
-        };
+        var state = new AttackState(victim, values);
         var phases = new List<string>();
         var clock = System.Diagnostics.Stopwatch.StartNew();
         void Phase(string name)
@@ -278,6 +275,9 @@ public static class IsolationAttack
         // other method, so no write can change a list between a GET and its control.
         var admin = attackers[0];
         var anonymous = attackers[^1];
+        // Read now, after the earlier phases' writes: tenant A's records now hold some published
+        // values (an emirate), and a control must be a value no tenant holds when it is sent.
+        state.UnheldPublished = await UnheldPublishedValuesAsync(Env, endpoints.SelectMany(e => openApi.Parameters(e.Method, e.Pattern)));
         var work = new List<(bool Get, Func<Task> Run)>();
         foreach (var endpoint in endpoints)
         {
@@ -1020,8 +1020,16 @@ public static class IsolationAttack
             if (status != controlStatus || normalized != controlNormalized)
             {
                 lock (_lock) Oracles.Add($"{attacker.Name} → GET {uri} [{parameter.In} {parameter.Name}]: {status} {Short(normalized, 160)} " +
-                            $"but for a value that exists nowhere {controlStatus} {Short(controlNormalized, 160)}");
+                            $"but for a value that exists nowhere ({control}) {controlStatus} {Short(controlNormalized, 160)}; first difference: " +
+                            $"{Short(normalized[FirstDifference(normalized, controlNormalized)..], 160)} | {Short(controlNormalized[FirstDifference(normalized, controlNormalized)..], 160)}");
             }
+        }
+
+        private static int FirstDifference(string a, string b)
+        {
+            var i = 0;
+            while (i < a.Length && i < b.Length && a[i] == b[i]) i++;
+            return Math.Max(0, Math.Min(i, Math.Min(a.Length, b.Length)) - 40);
         }
 
         private static bool Stamped(string headers) =>
@@ -1030,7 +1038,7 @@ public static class IsolationAttack
         /// <summary>A value of the same shape that exists in no tenant: every letter and digit
         /// replaced at random, punctuation kept (so "a.b@c.example" stays file-like and e-mail-like).</summary>
         /// <summary>Published values (a parameter's enumeration) that no tenant holds in any text column.</summary>
-        public IReadOnlySet<string> UnheldPublished { get; init; } = new HashSet<string>();
+        public IReadOnlySet<string> UnheldPublished { get; set; } = new HashSet<string>();
 
         /// <summary>The value that exists nowhere to compare with. For a parameter whose values the
         /// document enumerates, any other text is refused by validation, so a random value would

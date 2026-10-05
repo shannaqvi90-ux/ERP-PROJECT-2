@@ -122,6 +122,22 @@ describe("list view", () => {
     expect(window.location.pathname).toBe("/identity/users");
   });
 
+  it("closes an open record with Escape wherever the focus is on the page", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "shamma romaithi");
+    await key(search, "Enter");
+    await wait(250);
+    await settle();
+    expect(v.container.querySelector("[role=region].list-record")).not.toBeNull();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await key(document.body, "Escape");
+    expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
+  });
+
   it("moves through rows with the keyboard, selects with Space and copies the selection", async () => {
     serve();
     const v = await show();

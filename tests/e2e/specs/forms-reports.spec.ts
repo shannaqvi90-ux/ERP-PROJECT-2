@@ -81,6 +81,7 @@ test.describe("record forms and printed documents", () => {
   test("the reports screen shows a grouped report as an Arabic document and exports it", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
     await page.goto("/reports/catalog");
     await page.getByRole("button", { name: /Branch directory/ }).click();
     await page.locator('[data-field="language"] select').selectOption("ar");
@@ -91,7 +92,7 @@ test.describe("record forms and printed documents", () => {
     await expect(doc.locator(".report-table thead")).toContainText(/[؀-ۿ]/);
     expect(await checkAccessibility(page, "reports screen with an Arabic document")).toBeGreaterThan(10);
 
-    const excel = await page.getByRole("link", { name: "Excel" }).getAttribute("href");
+    const excel = await page.getByRole("link", { name: "Excel", exact: true }).getAttribute("href");
     const workbook = await page.request.get(excel!);
     expect(workbook.status()).toBe(200);
     expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
@@ -100,6 +101,7 @@ test.describe("record forms and printed documents", () => {
   test("a list prints what it shows: the filtered users list as PDF and CSV", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
     await page.goto("/identity/users");
     await expect(listRows(page).first()).toBeVisible();
     await page.getByRole("button", { name: "Print or export" }).click();

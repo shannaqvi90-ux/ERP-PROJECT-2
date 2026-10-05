@@ -240,8 +240,6 @@ function RoleEditor({
           </>
         }
       >
-        {role?.isSystem && <p className="muted">{t("identity.roles.systemNote")}</p>}
-        {role && !role.isSystem && actions.beyondOwn && <p className="muted">{t("identity.roles.beyondOwnNote")}</p>}
         {confirmDelete && role && (
           <p className="id-confirm" role="alert">
             {t("identity.roles.deleteConfirm", { count: role.userCount })}
