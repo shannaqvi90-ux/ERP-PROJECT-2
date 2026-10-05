@@ -1,0 +1,87 @@
+== app role attributes
+  rolname  | rolsuper | rolbypassrls | rolcreaterole 
+-----------+----------+--------------+---------------
+ erp_owner | f        | f            | f
+ erp_app   | f        | f            | f
+ erp_auth  | f        | f            | f
+(3 rows)
+
+== tenancy tables RLS
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ branches                | t              | t
+ companies               | t              | t
+ tenants                 | t              | t
+ user_branch_access      | t              | t
+ user_company_access     | t              | t
+ user_company_totals     | t              | t
+ user_workplaces         | t              | t
+(8 rows)
+
+== tenancy policies
+      tablename      |    policyname    | permissive  | cmd |                                  qual                                   
+---------------------+------------------+-------------+-----+-------------------------------------------------------------------------
+ branches            | company_scope    | RESTRICTIVE | ALL | erp.company_allowed(company_id)
+ branches            | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ companies           | company_scope    | RESTRICTIVE | ALL | erp.company_allowed(company_id)
+ companies           | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ tenants             | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ user_branch_access  | company_scope    | RESTRICTIVE | ALL | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ user_branch_access  | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ user_company_access | company_scope    | RESTRICTIVE | ALL | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ user_company_access | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ user_company_totals | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+ user_workplaces     | company_scope    | RESTRICTIVE | ALL | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ user_workplaces     | tenant_isolation | PERMISSIVE  | ALL | (tenant_id = erp.current_tenant_id())
+(12 rows)
+
+== erp_app with no tenant set
+SET
+ companies | branches | access | totals | tenants 
+-----------+----------+--------+--------+---------
+         0 |        0 |      0 |      0 |       0
+(1 row)
+
+== audit rows for tenancy tables (by table, op)
+                  List of relations
+ Schema |          Name           | Type  |   Owner   
+--------+-------------------------+-------+-----------
+ audit  | __ef_migrations_history | table | erp_owner
+ audit  | entries                 | table | erp_owner
+(2 rows)
+
+== audit entries for tenancy tables written by users (after seeding), by table/action/actor kind
+     table_name      | action | actor_kind | count | with_actor 
+---------------------+--------+------------+-------+------------
+ branches            | insert | seed       |    15 |          0
+ branches            | insert | user       |     8 |          8
+ companies           | insert | seed       |     6 |          0
+ companies           | insert | user       |     8 |          8
+ companies           | update | user       |     6 |          6
+ tenants             | insert | seed       |     2 |          0
+ user_branch_access  | insert | seed       |     3 |          0
+ user_company_access | insert | seed       |    14 |          0
+ user_company_access | insert | user       |     8 |          8
+ user_company_totals | insert | seed       |     6 |          0
+ user_company_totals | update | seed       |     8 |          0
+ user_company_totals | update | user       |     8 |          8
+ user_workplaces     | insert | seed       |     6 |          0
+ user_workplaces     | update | user       |    20 |         20
+(14 rows)
+
+== latest FALCON company audit row
+ table_name | action | actor_kind | has_actor |                                                                               left                                                                               
+------------+--------+------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ companies  | update | user       | t         | {"is_active": {"new": false, "old": true}, "legal_name_en": {"new": "Falcon Logistics LLC (retired 1791124595715)", "old": "Falcon Logistics LLC"}}
+ companies  | insert | user       | t         | {"id": {"new": "01a10758-623d-7f3a-bb05-7b7a64580317"}, "code": {"new": "FALCON-6"}, "country": {"new": "AE"}, "is_active": {"new": true}, "company_id": {"new":
+ companies  | update | user       | t         | {"is_active": {"new": false, "old": true}, "legal_name_en": {"new": "Falcon Logistics LLC (retired 1791124593571)", "old": "Falcon Logistics LLC"}}
+ companies  | insert | user       | t         | {"id": {"new": "01a10758-59fc-7327-8534-de5e5ea00483"}, "code": {"new": "FALCON-5"}, "country": {"new": "AE"}, "is_active": {"new": true}, "company_id": {"new":
+(4 rows)
+
+== money-like columns in tenancy
+ table_name |  column_name  |     data_type     
+------------+---------------+-------------------
+ companies  | base_currency | character varying
+(1 row)
+

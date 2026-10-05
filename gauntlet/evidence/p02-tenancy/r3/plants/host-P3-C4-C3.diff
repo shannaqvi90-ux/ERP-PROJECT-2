@@ -1,0 +1,43 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+index c28af39..83e08ab 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+@@ -72,10 +72,6 @@ internal static class CompanyAccessRules
+         {
+             return "tenancy.cannotChangeOwnAccess";
+         }
+-        if (!userPermissions.All(callerHas))
+-        {
+-            return "tenancy.userBeyondOwn";
+-        }
+         if (await TotalCompaniesAsync(db, userId, cancellationToken) > visibleCompanies)
+         {
+             return "tenancy.userBeyondOwnCompanies";
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index a6ed497..a5894fd 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -198,10 +198,6 @@ internal static class CompanyEndpoints
+         }
+         // Company codes are unique across the workspace: only someone who sees every company may
+         // pick one, or a refusal would tell them a company they cannot see uses it.
+-        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+-        {
+-            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+-        }
+         var code = TenancyValidation.NormalizeCode(request.Code);
+         if (string.IsNullOrEmpty(code))
+         {
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index 3d5b4d9..bd5f66b 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -213,7 +213,7 @@ public sealed class TenancyDbContext : ModuleDbContext
+     public const string BranchFilterName = "branch";
+ 
+     /// <summary>True when no company of the scope is limited to branches.</summary>
+-    public bool BranchFilterOff => branches is null || branches.LimitedCompanyIds.Count == 0;
++    public bool BranchFilterOff => true;
+ 
+     /// <summary>Companies where the user may work only in some branches.</summary>
+     public Guid[] BranchLimitedCompanyIds => branches?.LimitedCompanyIds.ToArray() ?? [];

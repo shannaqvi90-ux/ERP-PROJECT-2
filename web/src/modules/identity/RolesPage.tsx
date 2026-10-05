@@ -3,7 +3,8 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleName, type Permission, type Role, type RolePage } from "./model";
+import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
+import { isTyping, newRecordChord, roleActions, roleName, type Permission, type Role, type RolePage } from "./model";
 import { PermissionMatrix } from "./PermissionMatrix";
 import { formKeys } from "./UserPanel";
 import "./identity.css";
@@ -42,6 +43,16 @@ export function RolesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Alt+N from anywhere on the screen, including the search box the list focuses on arrival.
+  useShortcut({
+    id: "identity.roles.new",
+    chord: newRecordChord,
+    labelKey: "identity.roles.new",
+    groupKey: "identity.shortcuts.group",
+    enabled: can("identity.roles.create"),
+    run: () => setSelection({ kind: "new" }),
+  });
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -83,7 +94,10 @@ export function RolesPage() {
           onOpen={(row) => setSelection({ kind: "role", id: row.id })}
           actions={
             can("identity.roles.create") && (
-              <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })} aria-keyshortcuts="N">
+              <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })}
+                aria-keyshortcuts={`${chordForAria(newRecordChord)} N`}
+                title={chordKeys(newRecordChord).join("+")}
+              >
                 {t("identity.roles.new")}
               </button>
             )
@@ -143,7 +157,7 @@ function RoleEditor({
   onSaved: (role: Role, deleted?: boolean) => void;
 }) {
   const { t, language } = useI18n();
-  const { state, can } = useSession();
+  const { state } = useSession();
   const [nameEn, setNameEn] = useState(role?.nameEn ?? "");
   const [nameAr, setNameAr] = useState(role?.nameAr ?? "");
   const [selected, setSelected] = useState<Set<string>>(new Set(role?.permissions ?? []));
@@ -154,7 +168,8 @@ function RoleEditor({
   const firstRef = useRef<HTMLInputElement>(null);
   const id = useId();
   const held = new Set(state.status === "signedIn" ? state.session.permissions : []);
-  const readOnly = role?.isSystem === true || !can(role ? "identity.roles.update" : "identity.roles.create");
+  const actions = roleActions(role, held);
+  const readOnly = !actions.edit;
 
   useEffect(() => firstRef.current?.focus(), []);
 
@@ -207,6 +222,7 @@ function RoleEditor({
     >
       <h2 id={`${id}-title`}>{role ? roleName(role, language) : t("identity.roles.new")}</h2>
       {role?.isSystem && <p className="muted">{t("identity.roles.systemNote")}</p>}
+      {role && !role.isSystem && actions.beyondOwn && <p className="muted">{t("identity.roles.beyondOwnNote")}</p>}
       <div className="id-two">
         <label className="field">
           <span className="field-label">{t("identity.roles.nameEn")}</span>
@@ -227,16 +243,16 @@ function RoleEditor({
       )}
       <div className="id-actions">
         {!readOnly && (
-          <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
+          <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
             {role ? t("identity.form.save") : t("identity.form.create")}
           </button>
         )}
-        {role && can("identity.roles.create") && (
+        {role && actions.copy && (
           <button type="button" className="button" onClick={() => onCopy(role)}>
             {t("identity.roles.copy")}
           </button>
         )}
-        {role && !role.isSystem && can("identity.roles.delete") && !confirmDelete && (
+        {role && actions.delete && !confirmDelete && (
           <button type="button" className="button danger" onClick={() => setConfirmDelete(true)}>
             {t("identity.roles.delete")}
           </button>

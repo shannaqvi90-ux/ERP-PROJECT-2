@@ -1,0 +1,25 @@
+
+######## PLANTED http://127.0.0.1:20252
+-- P3: an access clerk (tenancy.access.read + update only) who works in every Al Noor company
+clerk removes the tenant Administrator from ALN-DXB                                          403 {"type":"urn:erp:problem:tenancy.userBeyondOwnCompanies","title":"This user also works in companies you do not work in. Only someone who wor
+   administrator companies before 5 after ALN-AUH,ALN-DXB,ALN-FZE,ALN-SHJ
+-- C4: an administrator of ALN-DXB alone creates companies
+x creates code ALN-SHJ (a company x cannot see)                                              409 {"type":"urn:erp:problem:duplicate","title":"A record with the same value already exists.","status":409,"code":"duplicate","traceId":"0HNP24
+x creates code Z221656 (exists nowhere)                                                      201 {"id":"01a10752-bc5e-7efa-890a-ca23509cee65","code":"Z221656","legalNameEn":"Probe Z221656","legalNameAr":"تجربة","tradeLicenceNumber":null,
+-- C3: an administrator limited to the first ALN-DXB branch
+   branches the one-branch administrator lists: AQZ-WH,DEIRA-HQ,DIP-SR
+one-branch administrator GETs DEIRA-HQ                                                       200 {"id":"018dca08-f082-7727-b4f1-e8d1dabe1581","companyId":"018dca08-f081-79de-bef2-84e15b348754","companyCode":"ALN-DXB","code":"DEIRA-HQ","n
+one-branch administrator renames DEIRA-HQ                                                    200 {"id":"018dca08-f082-7727-b4f1-e8d1dabe1581","companyId":"018dca08-f081-79de-bef2-84e15b348754","companyCode":"ALN-DXB","code":"DEIRA-HQ","n
+   (name put back)
+
+######## CONTROL (unplanted demo) http://localhost:20250
+-- P3: an access clerk (tenancy.access.read + update only) who works in every Al Noor company
+clerk removes the tenant Administrator from ALN-DXB                                          403 {"type":"urn:erp:problem:tenancy.userBeyondOwn","title":"This user holds permissions you do not hold. Only someone who holds every one of th
+   administrator companies before 5 after ALN-AUH,ALN-DXB,ALN-FZE,ALN-SHJ
+-- C4: an administrator of ALN-DXB alone creates companies
+x creates code ALN-SHJ (a company x cannot see)                                              403 {"type":"urn:erp:problem:tenancy.companyNeedsEveryCompany","title":"Only someone who works in every company of the workspace may create a co
+x creates code Z221656 (exists nowhere)                                                      403 {"type":"urn:erp:problem:tenancy.companyNeedsEveryCompany","title":"Only someone who works in every company of the workspace may create a co
+-- C3: an administrator limited to the first ALN-DXB branch
+   branches the one-branch administrator lists: AQZ-WH
+one-branch administrator GETs DEIRA-HQ                                                       404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-d562d7b719c5aef54d2db895
+one-branch administrator renames DEIRA-HQ                                                    404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-e7522aa38bf1badccc1dc6fd

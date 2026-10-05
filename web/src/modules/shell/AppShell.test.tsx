@@ -256,6 +256,31 @@ describe("language and digits", () => {
   });
 });
 
+describe("preferences without the permission to change the profile", () => {
+  const withoutProfile = { ...admin, permissions: admin.permissions.filter((p) => p !== "identity.profile.update") };
+
+  it("switches language and digits on screen, keeps them on this device, and never asks the server to save them", async () => {
+    const calls = serve(withoutProfile);
+    view = await render(<App language="en" />);
+    await settle();
+    // Language from the top bar: the screen turns Arabic at once.
+    await act(async () => document.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    expect(document.documentElement.dir).toBe("rtl");
+    expect(localStorage.getItem("erp.language")).toBe("ar");
+    // Digits from the preferences dialog: shown, and the dialog says they stay on this device.
+    press({ code: "KeyP", key: "p", altKey: true });
+    await settle();
+    const dialog = document.querySelector('[role="dialog"].preferences')!;
+    await act(async () => dialog.querySelector<HTMLInputElement>('input[name="numerals"][value="arab"]')!.click());
+    await settle();
+    expect(document.documentElement.dataset.numerals).toBe("arab");
+    expect(dialog.querySelector(".prefs-status")!.textContent).toBe("حُفظ على هذا الجهاز فقط: أدوارك لا تسمح بتغيير ملفك الشخصي.");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+    expect(localStorage.getItem("erp.pendingPreferences")).toBeNull();
+  });
+});
+
 describe("keyboard and focus", () => {
   it("lists every active shortcut in the help sheet", async () => {
     serve(admin);

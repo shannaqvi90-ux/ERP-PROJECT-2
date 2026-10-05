@@ -4,6 +4,8 @@ export type User = {
   id: string;
   email: string;
   displayName: string;
+  /** The name in Arabic script, shown on Arabic screens when given. */
+  displayNameAr?: string | null;
   language: "en" | "ar";
   isActive: boolean;
   roleIds: string[];
@@ -163,3 +165,86 @@ export function isTyping(event: KeyboardEvent | { target: EventTarget | null }):
   if (!target || typeof target.closest !== "function") return false;
   return !!target.closest("input, textarea, select, [contenteditable='true']");
 }
+
+/** What the signed-in user may do with a role on screen, mirroring the server's rules. */
+export type RoleActions = {
+  /** Change the names and the permission matrix (or, for a new role, create it). */
+  edit: boolean;
+  copy: boolean;
+  delete: boolean;
+  /** The role grants something the user does not hold: only someone who holds all of it may change, copy or delete it. */
+  beyondOwn: boolean;
+};
+
+/**
+ * The actions offered for a role (undefined: a new one). A system role is only ever copied. A
+ * role granting a permission the user lacks is shown read-only and can be neither copied nor
+ * deleted, because the server refuses both. Each action also needs its own permission.
+ */
+export function roleActions(role: Pick<Role, "isSystem" | "permissions"> | undefined, held: ReadonlySet<string>): RoleActions {
+  if (!role) return { edit: held.has("identity.roles.create"), copy: false, delete: false, beyondOwn: false };
+  const beyondOwn = role.permissions.some((p) => !held.has(p));
+  return {
+    edit: !role.isSystem && !beyondOwn && held.has("identity.roles.update"),
+    copy: !beyondOwn && held.has("identity.roles.create"),
+    delete: !role.isSystem && !beyondOwn && held.has("identity.roles.delete"),
+    beyondOwn,
+  };
+}
+
+/** The user's name in the screen's language: the Arabic name on Arabic screens when there is one. */
+export const userName = (user: { displayName: string; displayNameAr?: string | null }, language: string) =>
+  language === "ar" && user.displayNameAr ? user.displayNameAr : user.displayName;
+
+/**
+ * What the signed-in user may do to another user's account on screen, mirroring the server: every
+ * action needs its own permission, none acts on oneself here, and none acts on someone whose roles
+ * grant a permission the signed-in user lacks (that would be a way to take the account over).
+ * Deleting is only for someone who has never signed in. Roles that are not loaded (the user may
+ * not read roles) cannot be judged, and the server still decides.
+ */
+export function userActions(
+  user: Pick<User, "id" | "roleIds" | "lastSignInAt">,
+  roles: Pick<Role, "id" | "permissions">[],
+  held: ReadonlySet<string>,
+  selfId: string | null,
+) {
+  const self = user.id === selfId;
+  const beyondOwn = user.roleIds.some((id) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false);
+  const others = !self && !beyondOwn;
+  return {
+    self,
+    beyondOwn,
+    edit: held.has("identity.users.update") && !beyondOwn,
+    resetPassword: others && held.has("identity.users.resetPassword"),
+    signOutEverywhere: others && held.has("identity.users.update"),
+    unblock: others && held.has("identity.users.update"),
+    delete: others && held.has("identity.users.delete") && user.lastSignInAt === null,
+  };
+}
+
+/**
+ * Turning on any action of a resource (create, change, delete, …) also turns on viewing it, when
+ * the catalogue has a view permission for that resource and the user may grant it: a role that may
+ * create contacts but not see them is never what anyone means. Turning permissions off never
+ * removes anything else.
+ */
+export function withImpliedReads(
+  next: Set<string>,
+  turnedOn: string[],
+  permissions: Pick<Permission, "key">[],
+  canChange: (key: string) => boolean,
+): Set<string> {
+  const known = new Set(permissions.map((p) => p.key));
+  for (const key of turnedOn) {
+    const parts = key.split(".");
+    if (parts.length !== 3 || parts[2] === "read") continue;
+    const read = `${parts[0]}.${parts[1]}.read`;
+    if (known.has(read) && canChange(read)) next.add(read);
+  }
+  return next;
+}
+
+/** New user / new role: Alt+N works while typing (the lists focus their search on arrival); a
+ * plain "n" works when no field has the focus. */
+export const newRecordChord = "Alt+KeyN";

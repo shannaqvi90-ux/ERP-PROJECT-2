@@ -59,11 +59,14 @@ const textOperators: Operator[] = ["contains", "eq", "ne", "startsWith", "endsWi
 /** The filter editor of one column; it replaces that column's conditions. */
 export function FilterEditor({
   column,
+  options,
   current,
   onApply,
   onClose,
 }: {
   column: ListColumn;
+  /** Choices for a reference column whose records the screen knows (ids with labels). */
+  options?: { value: string; label: string }[];
   current: Condition[];
   onApply: (conditions: Condition[]) => void;
   onClose: () => void;
@@ -97,6 +100,8 @@ export function FilterEditor({
         if (op === "isNull" || op === "isNotNull") return [{ column: key, op, values: [] }];
         return text.trim() ? [{ column: key, op, values: [text.trim()] }] : [];
       case "choice":
+      case "reference":
+        if (column.type === "reference" && !options) return text.trim() ? [{ column: key, op: "eq", values: [text.trim()] }] : [];
         if (choices.length === 0) return [];
         return choices.length === 1 ? [{ column: key, op: "eq", values: [choices[0]!] }] : [{ column: key, op: "in", values: choices }];
       case "boolean":
@@ -168,6 +173,32 @@ export function FilterEditor({
                 onChange={(e) => setChoices(e.target.checked ? [...choices, choice.value] : choices.filter((c) => c !== choice.value))}
               />
               {t(choice.labelKey)}
+            </label>
+          ))}
+        </fieldset>
+      );
+      break;
+    case "reference":
+      if (!options) {
+        body = (
+          <label className="field">
+            <span className="field-label">{t("lists.filter.value")}</span>
+            <input value={text} onChange={(e) => setText(e.target.value)} dir="ltr" />
+          </label>
+        );
+        break;
+      }
+      body = (
+        <fieldset className="list-choices">
+          <legend className="field-label">{t("lists.op.in")}</legend>
+          {options.map((choice) => (
+            <label key={choice.value} className="list-check">
+              <input
+                type="checkbox"
+                checked={choices.includes(choice.value)}
+                onChange={(e) => setChoices(e.target.checked ? [...choices, choice.value] : choices.filter((c) => c !== choice.value))}
+              />
+              {choice.label}
             </label>
           ))}
         </fieldset>

@@ -11,6 +11,7 @@
   "problem.auth.signInFailed": "Sign-in failed. Check your e-mail and password and try again.",
   "problem.auth.chooseWorkspace": "This e-mail belongs to more than one workspace. Choose the workspace to sign in to.",
   "problem.identity.grantBeyondOwn": "You cannot grant or remove permissions you do not hold yourself.",
+  "problem.identity.roleBeyondOwn": "This role grants permissions you do not hold, so only someone who holds all of them can change, copy or delete it.",
   "problem.identity.cannotChangeOwnAccess": "You cannot change your own roles or deactivate yourself. Ask another administrator.",
   "problem.identity.systemRole": "System roles are maintained by the platform and cannot be changed or deleted.",
   "problem.identity.emailTaken": "A user with this e-mail already exists in this workspace.",
@@ -26,5 +27,7 @@
   "problem.identity.userBeyondOwn": "This user has permissions you do not hold yourself, so you cannot change their account.",
   "problem.identity.notOnYourself": "You cannot do this to your own account. To change your password, use Change password.",
   "validation.passwordTooSimple": "Use a password with more different characters.",
-  "validation.passwordUnchanged": "Choose a password different from the current one."
+  "validation.passwordUnchanged": "Choose a password different from the current one.",
+  "permission.identity.users.delete": "Delete users who never signed in",
+  "problem.identity.userHasSignedIn": "This user has signed in or been tried, so the record stays for the audit trail. Deactivate the user instead."
 }

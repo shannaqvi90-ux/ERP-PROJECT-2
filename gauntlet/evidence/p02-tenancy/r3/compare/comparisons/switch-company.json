@@ -1,0 +1,36 @@
+{
+  "task": "switch-company",
+  "verdict": "loss",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 1,
+      "odoo": 2,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 0,
+      "outcome": "tie (a tie is a loss)"
+    },
+    "machine_seconds": {
+      "ours": 0.085,
+      "odoo": 0.453,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 2.65,
+      "odoo": 5.3,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 2.703,
+      "odoo": 5.641,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p02-tenancy/r3/compare/results/switch-company-20261004T143534-b28e.json",
+    "odoo": "../../evidence-staging/p02-tenancy/r3/compare/results/switch-company-20261004T143513-f732.json"
+  }
+}

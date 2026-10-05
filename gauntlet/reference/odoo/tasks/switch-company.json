@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "switch-company-20261003T041826-1e9c",
-  "instrument": 3,
+  "run_id": "switch-company-20261003T145332-6174",
+  "instrument": 4,
   "task": "switch-company",
   "task_title": "Switch company",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch to working in \"Demo Manufacturing FZE\".",
   "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
-  "started_at": "2026-10-03T04:18:26.146Z",
-  "finished_at": "2026-10-03T04:18:31.566Z",
+  "started_at": "2026-10-03T14:53:32.563Z",
+  "finished_at": "2026-10-03T14:53:38.478Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 0.21,
-    "system_wait_seconds": 0.059,
+    "machine_seconds": 0.185,
+    "system_wait_seconds": 0.054,
     "human_seconds": 5.3,
-    "human_plus_wait_seconds": 5.359,
+    "human_plus_wait_seconds": 5.354,
     "klm_operator_counts": {
       "K": 0,
       "P": 2,
@@ -57,39 +57,39 @@
       "kind": "click",
       "label": "company switcher",
       "keystrokes": 0,
-      "chain": false,
       "at": 0,
-      "took": 0.075
+      "took": 0.083,
+      "chain": false
     },
     {
       "n": 2,
       "kind": "click",
       "label": "Demo Manufacturing FZE",
       "keystrokes": 0,
-      "chain": false,
-      "at": 0.075,
-      "took": 0.079
+      "at": 0.083,
+      "took": 0.048,
+      "chain": false
     }
   ],
   "waits": [
     {
       "label": "working in the other company",
-      "at": 0.154,
-      "seconds": 0.056
+      "at": 0.131,
+      "seconds": 0.054
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "cbaeafe1aaf71c74.jpg",
+      "file": "1d89b342a09879e4.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/cbaeafe1aaf71c74.jpg"
+      "path": "gauntlet/reference/odoo/shots/1d89b342a09879e4.jpg"
     },
     {
       "moment": "done",
-      "file": "dc96fc996bd8b8ef.jpg",
-      "at": 0.21,
-      "path": "gauntlet/reference/odoo/shots/dc96fc996bd8b8ef.jpg"
+      "file": "09d17fa37e8c43d9.jpg",
+      "at": 0.185,
+      "path": "gauntlet/reference/odoo/shots/09d17fa37e8c43d9.jpg"
     }
   ],
   "verification": {
@@ -102,15 +102,25 @@
   "path_notes": "Company switcher in the top bar > the company. (Alt+Shift+U opens the switcher too, but then the company must be typed or arrowed to: more steps and keys.)",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/switch-company.mjs",
-    "sha256": "5fd547a82fa08dab0220304d3597b44be9864f3c6c7b5342417e7ce27af89def"
+    "sha256": "7f29547b2951f041594a46509d6143127a16d37aeb0aca5097d38cd3b0088b89"
   },
   "task_notes": "Both companies exist in each product before the task (fixtures).",
   "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
   "result_file": "gauntlet/reference/odoo/tasks/switch-company.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-company-20261003T041815-1351.json",
-    "gauntlet/reference/odoo/results/switch-company-20261003T041819-bd77.json",
-    "gauntlet/reference/odoo/results/switch-company-20261003T041826-1e9c.json"
+    "gauntlet/reference/odoo/results/switch-company-20261003T145326-4f8a.json",
+    "gauntlet/reference/odoo/results/switch-company-20261003T145332-6174.json",
+    "gauntlet/reference/odoo/results/switch-company-20261003T145338-4298.json"
   ]
 }

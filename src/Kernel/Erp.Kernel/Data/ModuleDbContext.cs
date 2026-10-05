@@ -50,6 +50,14 @@ public abstract class ModuleDbContext : DbContext
 
     public Guid CurrentTenantId => _tenant?.TenantId ?? throw new TenantContextMissingException();
 
+    private ICompanyContext? Companies => _tenant as ICompanyContext;
+
+    /// <summary>Company query filter: true for system work that sees every company.</summary>
+    public bool CompanyFilterAll => Companies?.AllCompanies == true;
+
+    /// <summary>Company query filter: the companies a user may see (fail closed: none).</summary>
+    public Guid[] CompanyFilterIds => Companies?.CompanyIds.ToArray() ?? [];
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
@@ -71,6 +79,20 @@ public abstract class ModuleDbContext : DbContext
                 Expression.Property(Expression.Constant(this), nameof(CurrentTenantId)));
             entity.HasQueryFilter(TenantFilterName, Expression.Lambda(body, parameter));
 
+            if (typeof(ICompanyOwned).IsAssignableFrom(entityType.ClrType))
+            {
+                // e => this.CompanyFilterAll || this.CompanyFilterIds.Contains(e.CompanyId): the
+                // second layer behind the company_scope row-level security policy.
+                entity.Property(nameof(ICompanyOwned.CompanyId)).IsRequired();
+                var companyParameter = Expression.Parameter(entityType.ClrType, "e");
+                var contains = Expression.Call(
+                    typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid)],
+                    Expression.Property(Expression.Constant(this), nameof(CompanyFilterIds)),
+                    Expression.Property(companyParameter, nameof(ICompanyOwned.CompanyId)));
+                var companyBody = Expression.OrElse(Expression.Property(Expression.Constant(this), nameof(CompanyFilterAll)), contains);
+                entity.HasQueryFilter(CompanyFilterName, Expression.Lambda(companyBody, companyParameter));
+            }
+
             if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 entity.HasKey(nameof(TenantEntity.Id));
@@ -85,6 +107,8 @@ public abstract class ModuleDbContext : DbContext
     }
 
     public const string TenantFilterName = "tenant";
+
+    public const string CompanyFilterName = "company";
 
     /// <summary>Module model configuration.</summary>
     protected abstract void ConfigureModel(ModelBuilder modelBuilder);
@@ -121,6 +145,17 @@ public abstract class ModuleDbContext : DbContext
                     {
                         throw new CrossTenantWriteException(entry.Metadata.ClrType.Name);
                     }
+                    if (entry.Entity is ICompanyOwned newRow)
+                    {
+                        if (newRow.CompanyId == Guid.Empty && Companies?.ActiveCompanyId is { } working)
+                        {
+                            newRow.CompanyId = working;
+                        }
+                        if (newRow.CompanyId == Guid.Empty || Companies?.AllowsCompany(newRow.CompanyId) != true)
+                        {
+                            throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
+                        }
+                    }
                     if (entry.Entity is TenantEntity added)
                     {
                         added.CreatedAt = now;
@@ -136,6 +171,14 @@ public abstract class ModuleDbContext : DbContext
                     {
                         throw new CrossTenantWriteException(entry.Metadata.ClrType.Name);
                     }
+                    if (entry.Entity is ICompanyOwned companyRow)
+                    {
+                        var originalCompany = (Guid)entry.Property(nameof(ICompanyOwned.CompanyId)).OriginalValue!;
+                        if (Companies?.AllowsCompany(originalCompany) != true || Companies.AllowsCompany(companyRow.CompanyId) != true)
+                        {
+                            throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
+                        }
+                    }
                     if (entry.State == EntityState.Modified && entry.Entity is TenantEntity modified)
                     {
                         modified.UpdatedAt = now;
@@ -146,6 +189,10 @@ public abstract class ModuleDbContext : DbContext
         }
     }
 }
+
+/// <summary>Code tried to write a row of a company outside the unit of work's company scope.</summary>
+public sealed class CrossCompanyWriteException(string entity)
+    : InvalidOperationException($"Refused to write a {entity} row of a company outside the company scope.");
 
 public sealed class CrossTenantWriteException(string entity)
     : InvalidOperationException($"Refused to write a {entity} row that belongs to another tenant.");

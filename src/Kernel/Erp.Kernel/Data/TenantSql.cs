@@ -57,6 +57,29 @@ public static partial class TenantSql
         migration.Sql($"REVOKE ALL ON {name} FROM {DatabaseRoles.App};");
     }
 
+    /// <summary>The standard company-scope expression (the company gate compares policies with it).</summary>
+    public const string CompanyScopeExpression = "erp.company_allowed(company_id)";
+
+    /// <summary>
+    /// Scope a tenant table whose rows belong to a company (call after
+    /// <see cref="ProtectTenantTable"/>): a RESTRICTIVE <c>company_scope</c> policy, so a row is
+    /// visible and writable only when its <c>company_id</c> is in the unit of work's company scope,
+    /// on top of the tenant policy. With <paramref name="ownRowsReadable"/> the signed-in user's own
+    /// rows (column <c>user_id</c>) stay readable, never writable, outside the scope: the session
+    /// reads its own company access before its scope exists.
+    /// </summary>
+    public static void ProtectCompanyTable(this MigrationBuilder migration, string schema, string table, bool ownRowsReadable = false)
+    {
+        var name = Qualified(schema, table);
+        var visible = ownRowsReadable ? $"{CompanyScopeExpression} OR user_id = erp.current_actor_id()" : CompanyScopeExpression;
+        migration.Sql($"CREATE POLICY company_scope ON {name} AS RESTRICTIVE FOR ALL TO PUBLIC " +
+                      $"USING ({visible}) WITH CHECK ({CompanyScopeExpression});");
+    }
+
+    /// <summary>Reverse of <see cref="ProtectCompanyTable"/>.</summary>
+    public static void UnprotectCompanyTable(this MigrationBuilder migration, string schema, string table) =>
+        migration.Sql($"DROP POLICY IF EXISTS company_scope ON {Qualified(schema, table)};");
+
     /// <summary>Let the application role use the module's schema (no CREATE).</summary>
     public static void GrantSchemaUsage(this MigrationBuilder migration, string schema)
     {

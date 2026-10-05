@@ -10,10 +10,12 @@ export default {
     'best matches first: Enter opens the top row when it is the user, else click the user\'s row: the record shows the sign-in.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
-    const { login } = ctx.needles.user;
+    const { login, name, lang } = ctx.needles.user;
     const found = await api.get(`/api/identity/users?search=${encodeURIComponent(login)}`);
     if (!found.items.some(u => u.email.toLowerCase() === login.toLowerCase())) {
-      throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
+      // A driver health check (./erp verify, a clean stack without the dataset) creates the one user.
+      if (ctx.health) await api.post('/api/identity/users', { email: login, displayName: name, language: lang === 'ar' ? 'ar' : 'en', password: ctx.product.users.admin.password, roleIds: [] });
+      else throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
     }
   },
   async signIn(ctx) {
@@ -25,6 +27,7 @@ export default {
     await page.keyboard.press('Enter');
     await usersLink(page).waitFor();
   },
+  ready: page => usersLink(page),
   async run(op, ctx) {
     const { name, login } = ctx.needles.user;
     await op.click(usersLink(op.page), { label: 'Users' });
@@ -54,7 +57,7 @@ export default {
   },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;
-    const shown = await ctx.page.evaluate(([n, l]) => {
+    const shown = await ctx.read(([n, l]) => {
       const outside = [...document.querySelectorAll('[role="dialog"], [role="complementary"], form, aside')].filter(el => !el.closest('table, [role="grid"]'));
       const text = outside.map(el => el.innerText).join('\n') + '\n' + outside.flatMap(el => [...el.querySelectorAll('input, textarea')].map(i => i.value)).join('\n');
       return { name: text.includes(n), login: text.includes(l) };

@@ -1,0 +1,84 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/user/critic/p03-identity-r3-plants/web[39m
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+[90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 4252[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 652[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 588[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 454[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 426[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 428[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 939[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m40 tests[22m[2m)[22m[33m 7889[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.delete there is no "Delete role", and the other role actions remain [33m 324[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.profile.update, exactly the toolbar actions needing it are gone [33m 449[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.roles.read, exactly the toolbar actions needing it are gone [33m 571[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.resetPassword, exactly the toolbar actions needing it are gone [33m 380[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.update, exactly the toolbar actions needing it are gone [33m 414[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.delete, exactly the toolbar actions needing it are gone [33m 311[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 2529[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 502[2mms[22m[39m
+     [33m[2m✓[22m[39m moves through rows with the keyboard, selects with Space and copies the selection [33m 551[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 568[2mms[22m[39m
+     [33m[2m✓[22m[39m applies a built-in view and saves the current state as a personal view [33m 545[2mms[22m[39m
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 986[2mms[22m[39m
+     [33m[2m✓[22m[39m re-renders a failed sign-in in the new language after switching, with nothing left in the old one [33m 352[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 11580[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 10167[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets what the tab stored for the person and keeps only the device's settings [33m 362[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 852[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 181[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 354[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 175[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 395[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m18 passed[39m[22m[90m (18)[39m
+[2m      Tests [22m [1m[32m146 passed[39m[22m[90m (146)[39m
+[2m   Start at [22m 02:09:55
+[2m   Duration [22m 23.27s[2m (transform 3.52s, setup 1.28s, import 8.59s, tests 28.57s, environment 19.13s)[22m
+

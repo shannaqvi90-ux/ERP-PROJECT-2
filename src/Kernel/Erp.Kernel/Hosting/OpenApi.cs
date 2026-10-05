@@ -6,6 +6,15 @@ using Microsoft.OpenApi;
 
 namespace Erp.Kernel.Hosting;
 
+/// <summary>An example value for a request or response property, shown in the API description
+/// (<c>example</c>). Give one wherever a field has a format a client cannot guess (codes, patterns),
+/// so the documented example is a valid value.</summary>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
+public sealed class ApiExampleAttribute(string value) : Attribute
+{
+    public string Value { get; } = value;
+}
+
 internal static class OpenApiSetup
 {
     /// <summary>OpenAPI document generated from the running app: every endpoint, its permission
@@ -46,6 +55,11 @@ internal static class OpenApiSetup
             options.AddSchemaTransformer((schema, context, _) =>
             {
                 var type = context.JsonTypeInfo.Type;
+                if (context.JsonPropertyInfo?.AttributeProvider?.GetCustomAttributes(typeof(ApiExampleAttribute), true)
+                        .OfType<ApiExampleAttribute>().FirstOrDefault() is { } example)
+                {
+                    schema.Examples = [JsonValue.Create(example.Value)];
+                }
                 if (type == typeof(decimal) || type == typeof(decimal?))
                 {
                     schema.Type = type == typeof(decimal?) ? JsonSchemaType.String | JsonSchemaType.Null : JsonSchemaType.String;

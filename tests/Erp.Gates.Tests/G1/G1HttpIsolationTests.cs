@@ -52,7 +52,10 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         }
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.BindsJudged} tenant bindings and {report.SettingStatementsJudged} setting statements judged among {report.RequestStatementsTraced} statements; " +
+            $"{report.TenantValuesJudged} tenant values judged, {report.StatementsObserved} statements observed with their parameters; " +
             $"{report.SwitchInputAttacks} tenant switch inputs over {report.SwitchHeaderNames} header names; {report.ResponsesHeaderJudged} responses judged on every header");
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks, {report.TracedLookups} traced lookups");
@@ -68,11 +71,22 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Assert.True(report.SettingViolations.Count == 0, "Session settings changed by code other than the kernel's session:\n" + string.Join("\n", report.SettingViolations.Take(30)));
         Assert.True(report.WritableReads.Count == 0, "Requests that only read ran in a writable transaction:\n" + string.Join("\n", report.WritableReads.Take(30)));
         Assert.True(report.TraceBlindSpots.Count == 0, "The tenant binding trace may be blind: " + string.Join("; ", report.TraceBlindSpots));
+        Assert.True(report.TenantValueViolations.Count == 0, "Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):\n" +
+                                                             string.Join("\n", report.TenantValueViolations.Take(30)));
+        Assert.True(report.UnobservedStatements.Count == 0, "Statements sent inside requests on a pool the platform did not build, whose tenant the gate cannot judge:\n" +
+                                                            string.Join("\n", report.UnobservedStatements.Take(30)));
+        Assert.True(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
+                                                         string.Join("\n", report.InputEnumerations.Take(30)));
+        Assert.True(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
+        AssertAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
+        AssertAtLeast(report.StatementsObserved, "g1.statementsObserved");
         AssertAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
         AssertAtLeast(report.SwitchInputAttacks, "g1.switchInputAttacks");
         AssertAtLeast(report.SwitchHeaderNames, "g1.switchHeaderNames");
         AssertAtLeast(report.ResponsesHeaderJudged, "g1.responsesHeaderJudged");
         AssertAtLeast(report.EndpointsAttacked, "g1.endpointsAttacked");
+        AssertAtLeast(report.VictimRouteValuesReplayed, "g1.victimRouteValuesReplayed");
+        AssertAtLeast(report.VictimPreTouches, "g1.victimPreTouches");
         AssertAtLeast(report.Requests, "g1.attackRequests");
         AssertAtLeast(report.ProbesRun, "g1.isolationProbes");
         AssertAtLeast(report.VictimValues, "g1.victimValues");
@@ -124,6 +138,9 @@ public static class IsolationAttack
     public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env)
     {
         SqlTrace.EnsureStarted();
+        // Environment variables are process-wide state outside any field (critic p00 round 4: the
+        // process-state inventory reflects over fields only); nothing a request does may change them.
+        var environmentBefore = EnvironmentVariables();
         var traceMark = SqlTrace.Mark;
         var traceSnapshot = SqlTrace.Snapshot();
         var a = Env.TenantA;
@@ -136,14 +153,15 @@ public static class IsolationAttack
         // Tenant B uses the product first: every write on its own records, then (below) every
         // read, so its data sits in whatever process-wide state the app keeps before A attacks.
         var own = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
-        var ownValues = await VictimValues.ReadAsync(Env, own, b.Id);
+        var examples = openApi.ExampleValues();
+        var ownValues = await VictimValues.ReadAsync(Env, own, b.Id, examples);
         var activity = await TenantActivity.StartAsync(Env, b, endpoints, openApi);
         activity.Watch(new MarkerSet(own, ownValues));
         await activity.WriteAsync(await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code));
 
         var victim = await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code);
         Assert.True(victim.Markers.Count > 10, "The victim tenant has too little data to attack.");
-        var values = await VictimValues.ReadAsync(Env, victim, a.Id);
+        var values = await VictimValues.ReadAsync(Env, victim, a.Id, examples);
         Assert.True(values.Strings.Count > 10, "The victim tenant has too few distinct text values to attack.");
         var victimIdTexts = values.Ids.Select(i => i.ToString()).ToList();
         await activity.ReadAsync(victim, values, "tenant B reads before the attack");
@@ -187,27 +205,47 @@ public static class IsolationAttack
         var counter = 0;
 
         // Phase 1: tenant B ids in routes; tenant-switch headers; guessed query names; uuid body fields.
+        // Every value tenant B itself put in a route (its own ids that answered and the records it
+        // created) is replayed in every route as well, and tenant B opens each GET route with every
+        // value tenant A is about to send right before A sends it: a handler that keeps answers per
+        // id without the tenant (critic p03 round 1, plants T1 and T2) then hands tenant A exactly
+        // the answer tenant B left there, and the body is judged for tenant B's markers.
+        var replayed = 0;
         foreach (var endpoint in endpoints)
         {
             await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
+            var bRouteValues = endpoint.RouteParameters.Count == 0 ? [] : activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList();
+            replayed += bRouteValues.Count;
+            var attackValues = victimRouteValues.Concat(bRouteValues).ToList();
+            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send");
             var paths = endpoint.RouteParameters.Count == 0
                 ? [endpoint.Path(_ => "")]
-                : victimRouteValues.Concat(endpoint.HasBody ? ownRouteValues : [])
+                : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
                     .Select(value => endpoint.Path(_ => value)).Distinct().ToList();
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var signIn = endpoint.Name == "auth.signIn";
 
+            // Every request of the endpoint is built first (in the same order and with the same
+            // values as one after another), then sent four at a time, all of them after tenant B's
+            // touches above and before those below. Signing in and out change the attackers' own
+            // sessions, so those two endpoints send one request at a time.
+            var batch = new List<(Attacker Attacker, HttpRequestMessage Request, string Label)>();
             foreach (var path in paths)
             {
                 foreach (var variant in Enum.GetValues<Variant>())
                 {
                     foreach (var attacker in attackers)
                     {
-                        using var request = BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter);
-                        await state.SendAsync(attacker, endpoint, request, $"{path} [{variant}]");
+                        batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
             }
+            var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : AttackParallelism.Requests;
+            await Parallel.ForEachAsync(batch, new ParallelOptions { MaxDegreeOfParallelism = together }, async (item, _) =>
+            {
+                using var request = item.Request;
+                await state.SendAsync(item.Attacker, endpoint, request, item.Label);
+            });
             attacked.Add(endpoint.Key);
             await activity.TouchAsync(endpoint, victim, "tenant B reads right after A attacked this endpoint");
             if (endpoint.Method != "GET")
@@ -311,7 +349,8 @@ public static class IsolationAttack
                 var routeValues = catchAll
                     ? values.Probe
                     : documentedRoute.Format == "uuid"
-                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Distinct().Select(i => i.ToString()).ToList()
+                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
+                            .Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                         : values.All.ToList();
                 foreach (var value in routeValues)
                 {
@@ -327,7 +366,7 @@ public static class IsolationAttack
         // From here tenant B keeps reading in the background while A's requests run.
         using var concurrent = new CancellationTokenSource();
         var concurrentReader = Task.Run(() => activity.RunConcurrentlyAsync(victim, concurrent.Token));
-        var parallel = new ParallelOptions { MaxDegreeOfParallelism = 4 };
+        var parallel = new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests };
         await Parallel.ForEachAsync(work.Where(w => w.Get), parallel, async (item, _) => await item.Run());
         await Parallel.ForEachAsync(work.Where(w => !w.Get), parallel, async (item, _) => await item.Run());
 
@@ -368,8 +407,26 @@ public static class IsolationAttack
                 }
                 if (column.Type == Erp.Kernel.Lists.ListColumnType.Reference)
                 {
-                    var ids = string.Join(", ", values.IdSample.Take(Erp.Kernel.Lists.ListFilter.MaxInValues).Select(i => Erp.Kernel.Lists.ListFilterText.Quote(i.ToString())));
-                    listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString($"{column.Key} in ({ids})")}"));
+                    // Every sampled id, in as few "in" filters as the filter's length and value
+                    // limits allow (one table more in the victim made a single filter too long).
+                    var chunk = new List<string>();
+                    void Flush()
+                    {
+                        if (chunk.Count == 0) return;
+                        var ids = string.Join(", ", chunk);
+                        listWork.Add(() => SendListAsync(state, admin, listEndpoint!, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString($"{column.Key} in ({ids})")}"));
+                        chunk = [];
+                    }
+                    foreach (var quoted in values.IdSample.Select(i => Erp.Kernel.Lists.ListFilterText.Quote(i.ToString())))
+                    {
+                        if (chunk.Count + 1 > Erp.Kernel.Lists.ListFilter.MaxInValues ||
+                            $"{column.Key} in ({string.Join(", ", chunk.Append(quoted))})".Length > Erp.Kernel.Lists.ListFilter.MaxLength)
+                        {
+                            Flush();
+                        }
+                        chunk.Add(quoted);
+                    }
+                    Flush();
                 }
             }
             foreach (var column in list.Columns.Where(c => c.Groupable))
@@ -397,7 +454,7 @@ public static class IsolationAttack
         }
         Assert.True(listsAttacked >= Ratchet.Min("rules.listsChecked"), $"{listsAttacked} lists attacked through their query contract");
         var listAttacksBefore = state.Requests;
-        await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (item, _) => await item());
+        await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) => await item());
         var listQueryAttacks = listWork.Count;
 
         Phase($"registered lists through their query contract: {listQueryAttacks} attacks, {state.Requests - listAttacksBefore} requests");
@@ -429,24 +486,47 @@ public static class IsolationAttack
             var signIn = endpoint.Name == "auth.signIn";
             foreach (var field in openApi.StringLeaves(schema))
             {
+                var batch = new List<(Attacker Attacker, HttpRequestMessage Request, string Label, string Value)>();
                 foreach (var value in values.Strings)
                 {
                     foreach (var attacker in reachable)
                     {
                         var n = counter++;
-                        var body = openApi.BuildBody(schema, (type, format, name) =>
-                            name == field && type == "string" && format != "uuid" ? value : Leaf(type, format, name, victimIdTexts, b, signIn, n)) as JsonObject ?? [];
-                        using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), path)
+                        // The attacked field carries tenant B's value as is; every other field conforms to
+                        // its documented constraints so the request gets past validation to the handler.
+                        var body = openApi.BuildBody(schema, (leaf, type, format, name) =>
+                            name == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, name, victimIdTexts, b, signIn, n))) as JsonObject ?? [];
+                        var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), path)
                         {
                             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),
                         };
-                        var status = await state.SendAsync(attacker, endpoint, request, $"{path} [body {field}={Short(value)}]", sent: [value]);
-                        state.BodyValueAttacks++;
-                        if (status is >= 200 and < 300)
-                        {
-                            state.Stored.Add(value);
-                        }
+                        batch.Add((attacker, request, $"{path} [body {field}={Short(value)}]", value));
                     }
+                }
+                // The field's requests go four at a time (signing in and out, which change the
+                // attackers' own sessions, one at a time). Every answer is judged once the field's
+                // requests are done, after the values its successful writes stored in the
+                // attacker's own records count as the attacker's own: the requests write the same
+                // record at the same time, so an answer may already show a value a concurrent
+                // request stored there.
+                var answers = new (int Status, string Text, string Headers)[batch.Count];
+                var together = endpoint.Name is "auth.signIn" or "auth.signOut" ? 1 : AttackParallelism.Requests;
+                await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), new ParallelOptions { MaxDegreeOfParallelism = together }, async (i, _) =>
+                {
+                    using var request = batch[i].Request;
+                    answers[i] = await state.SendUnjudgedAsync(batch[i].Attacker, endpoint, request);
+                });
+                for (var i = 0; i < batch.Count; i++)
+                {
+                    if (answers[i].Status is >= 200 and < 300)
+                    {
+                        state.Stored.Add(batch[i].Value);
+                    }
+                }
+                for (var i = 0; i < batch.Count; i++)
+                {
+                    state.JudgeAnswer(batch[i].Attacker, endpoint, batch[i].Label, answers[i].Status, answers[i].Text, answers[i].Headers, [batch[i].Value]);
+                    state.BodyValueAttacks++;
                 }
             }
         }
@@ -459,7 +539,7 @@ public static class IsolationAttack
         // Tenant B reads everything once more, judged against everything tenant A now holds
         // (including what the attack created).
         var ownAfter = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
-        activity.Watch(new MarkerSet(ownAfter, await VictimValues.ReadAsync(Env, ownAfter, b.Id), [.. values.Strings, .. state.Stored], b.Canary));
+        activity.Watch(new MarkerSet(ownAfter, await VictimValues.ReadAsync(Env, ownAfter, b.Id, examples), [.. values.Strings, .. state.Stored], b.Canary));
         await activity.ReadAsync(victim, values, "tenant B reads after the attack");
         Phase($"tenant B activity: {activity.Requests} requests ({activity.ConcurrentRequests} concurrent with the attack), " +
               $"{activity.SuccessfulWrites} successful own writes, {activity.ReverseChecks} responses judged for tenant A markers");
@@ -500,13 +580,30 @@ public static class IsolationAttack
         {
             traceBlindSpots.Add("no read-only request and its read-only transaction were traced");
         }
+        // The tenant each statement runs under, by value. The trace must have read the kernel's own
+        // binding values, for signed-in requests and for anonymous ones, or it may be blind.
+        var changes = SqlTrace.ChangesFor(Env, traceSnapshot);
+        var tenantValues = changes.Where(c => string.Equals(c.Change.Name, SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!tenantValues.Any(c => SqlTrace.PrincipalOf(c) is not null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
+        {
+            traceBlindSpots.Add("no tenant value set by a signed-in request was read from its statement's parameters");
+        }
+        if (!tenantValues.Any(c => SqlTrace.PrincipalOf(c) is null && !c.Change.Computed && !string.IsNullOrEmpty(c.Change.Value)))
+        {
+            traceBlindSpots.Add("no tenant value set by sign-in or the session lookup was read from its statement's parameters");
+        }
+
+        var environmentAfter = EnvironmentVariables();
+        var environmentChanges = environmentBefore.Keys.Union(environmentAfter.Keys)
+            .Where(k => environmentBefore.GetValueOrDefault(k) != environmentAfter.GetValueOrDefault(k))
+            .Select(k => $"environment variable {k} changed during the attack").ToList();
 
         foreach (var attacker in attackers)
         {
             attacker.Client.Dispose();
         }
         activity.Dispose();
-        return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors, changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
+        return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors.Select(Env.Factory.ErrorLog.Annotate).ToList(), changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
         {
             WritePairs = pairs.Pairs,
             WritePairEndpoints = pairs.Endpoints,
@@ -516,11 +613,19 @@ public static class IsolationAttack
             BindViolations = TenantBindingRules.BindViolations(binds),
             WritableReads = TenantBindingRules.WritableReads(binds, SqlTrace.ReadOnlyFor(Env, traceSnapshot)),
             SettingViolations = TenantBindingRules.SettingViolations(settings),
+            TenantValueViolations = TenantBindingRules.TenantValueViolations(changes, binds, SqlTrace.PrincipalOf),
+            TenantValuesJudged = tenantValues.Count,
+            StatementsObserved = SqlTrace.ObservedFor(Env),
+            UnobservedStatements = SqlTrace.UnobservedFor(Env, traceSnapshot),
+            InputEnumerations = Env.Factory.Services.GetRequiredService<RequestInputRecorder>().Enumerations,
+            EnvironmentChanges = environmentChanges,
             TraceBlindSpots = traceBlindSpots,
             BindsJudged = binds.Count,
             SettingStatementsJudged = settings.Count,
             RequestStatementsTraced = SqlTrace.RequestStatementsSince(traceSnapshot),
             SwitchInputAttacks = state.SwitchAttacks,
+            VictimRouteValuesReplayed = replayed,
+            VictimPreTouches = activity.PreTouches,
             SwitchHeaderNames = switchInputs.Headers.Count,
             ResponsesHeaderJudged = state.HeadersJudged,
             LookupMisuse = misuse,
@@ -548,6 +653,10 @@ public static class IsolationAttack
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
+
+    private static Dictionary<string, string?> EnvironmentVariables() =>
+        Environment.GetEnvironmentVariables().Cast<System.Collections.DictionaryEntry>()
+            .ToDictionary(e => (string)e.Key, e => e.Value as string, StringComparer.Ordinal);
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
         IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots);
@@ -724,7 +833,7 @@ public static class IsolationAttack
                 }
             }
             // Sign-out ends the attacker's session (SendAsync signs it in again), so it runs alone.
-            var parallel = endpoint.Name == "auth.signOut" ? 1 : 4;
+            var parallel = endpoint.Name == "auth.signOut" ? 1 : AttackParallelism.Requests;
             await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = parallel }, async (item, _) => await item());
             await activity.TouchAsync(endpoint, victim, "tenant B reads right after A's tenant switch inputs");
         }
@@ -860,7 +969,7 @@ public static class IsolationAttack
         {
             var n = counter++;
             var body = bodySchema is { } schema
-                ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, victimIds, b, signIn, n)) as JsonObject ?? []
+                ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, victimIds, b, signIn, n))) as JsonObject ?? []
                 : [];
             body["tenantId"] = b.Id.ToString();
             body["tenant_id"] = b.Id.ToString();
@@ -897,6 +1006,7 @@ public static class IsolationAttack
     private sealed class AttackState(TenantSnapshot victim, VictimValues values)
     {
         private readonly List<string> _victimIds = values.Ids.Select(i => i.ToString()).ToList();
+        private readonly MarkerSearch _valueMarkers = new(values.Markers);
 
         private readonly Lock _lock = new();
         private int _requests;
@@ -941,6 +1051,24 @@ public static class IsolationAttack
             }
             return status;
         }
+
+        /// <summary>Send without judging (the caller judges with <see cref="JudgeAnswer"/>).</summary>
+        public async Task<(int Status, string Text, string Headers)> SendUnjudgedAsync(Attacker attacker, ApiEndpoint endpoint, HttpRequestMessage request)
+        {
+            using var response = await attacker.Client.SendAsync(request);
+            var text = await response.Content.ReadAsStringAsync();
+            Interlocked.Increment(ref _requests);
+            var answer = ((int)response.StatusCode, text, ResponseHeaders.Text(response));
+            if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
+            {
+                await attacker.ConnectAsync();
+            }
+            return answer;
+        }
+
+        /// <summary>Judges an answer sent by <see cref="SendUnjudgedAsync"/>.</summary>
+        public void JudgeAnswer(Attacker attacker, ApiEndpoint endpoint, string label, int status, string text, string headers, IReadOnlyCollection<string> sent) =>
+            Judge(attacker, endpoint, label, status, text, headers, sent);
 
         /// <summary>One tenant B value in one parameter. For a GET, the same request with a value
         /// that exists nowhere must get the same answer.</summary>
@@ -989,7 +1117,7 @@ public static class IsolationAttack
             if (endpoint.HasBody)
             {
                 var body = bodySchema is { } schema
-                    ? openApi.BuildBody(schema, (type, format, name) => Leaf(type, format, name, _victimIds, b, false, n)) as JsonObject ?? []
+                    ? openApi.BuildBody(schema, (leaf, type, format, name) => openApi.Conform(leaf, Leaf(type, format, name, _victimIds, b, false, n))) as JsonObject ?? []
                     : [];
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }
@@ -1032,7 +1160,7 @@ public static class IsolationAttack
             {
                 scrubbed = Scrub(scrubbed, value);
             }
-            return victim.FindMarker(scrubbed) ?? values.Markers.FirstOrDefault(m => scrubbed.Contains(m, StringComparison.OrdinalIgnoreCase));
+            return victim.FindMarker(scrubbed) ?? _valueMarkers.Find(scrubbed);
         }
 
         private static string Scrub(string text, string value)
@@ -1139,6 +1267,13 @@ public sealed record IsolationReport(
     /// <summary>Requests carrying tenant B's id or code in one header, query, cookie or body input.</summary>
     public int SwitchInputAttacks { get; init; }
 
+    /// <summary>Route attacks that replayed a value tenant B itself had put in a route (beyond the
+    /// sampled tenant B ids).</summary>
+    public int VictimRouteValuesReplayed { get; init; }
+
+    /// <summary>Requests in which tenant B opened a GET route with the value tenant A was about to send.</summary>
+    public int VictimPreTouches { get; init; }
+
     /// <summary>Header names that carried tenant B's id and code.</summary>
     public int SwitchHeaderNames { get; init; }
 
@@ -1214,6 +1349,27 @@ public sealed record IsolationReport(
 
     /// <summary>Lines of reachable process-wide state fingerprinted before the attack.</summary>
     public int StateLinesFingerprinted { get; init; }
+
+    /// <summary>Requests whose SQL ran under a tenant other than the one they may run under,
+    /// judged by the value each statement gave <c>app.tenant_id</c> (<see cref="TenantBindingRules.TenantValueViolations"/>).</summary>
+    public IReadOnlyList<string> TenantValueViolations { get; init; } = [];
+
+    /// <summary>Changes of <c>app.tenant_id</c> inside requests whose value the trace judged.</summary>
+    public int TenantValuesJudged { get; init; }
+
+    /// <summary>Statements inside requests whose parameters the trace captured.</summary>
+    public int StatementsObserved { get; init; }
+
+    /// <summary>Statements inside requests sent on a pool the platform did not build (the trace
+    /// cannot read their values).</summary>
+    public IReadOnlyList<string> UnobservedStatements { get; init; } = [];
+
+    /// <summary>Product code that enumerated a request's headers, query or cookies, or read the raw
+    /// query string: a name the attack cannot learn (<see cref="RequestInputRecorder"/>).</summary>
+    public IReadOnlyList<string> InputEnumerations { get; init; } = [];
+
+    /// <summary>Environment variables of the process that changed while the attack ran.</summary>
+    public IReadOnlyList<string> EnvironmentChanges { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];

@@ -9,6 +9,7 @@ using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Identity.Roles;
 using Erp.Modules.Identity.Seeding;
 using Erp.Modules.Identity.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +53,9 @@ public sealed class User : TenantEntity
     /// <summary>Lower-case, trimmed e-mail used for sign-in lookups.</summary>
     public string EmailNormalized { get; set; } = "";
     public string DisplayName { get; set; } = "";
+
+    /// <summary>The name written in Arabic, shown on Arabic screens when given (the display name otherwise).</summary>
+    public string? DisplayNameAr { get; set; }
 
     /// <summary>en or ar.</summary>
     public string Language { get; set; } = "en";
@@ -181,6 +185,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.Email).HasMaxLength(254);
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
             e.Property(x => x.DisplayName).HasMaxLength(200);
+            e.Property(x => x.DisplayNameAr).HasMaxLength(200);
             e.Property(x => x.Language).HasMaxLength(2);
             // Bulk seeding copies rows without this column; the database fills the default.
             e.Property(x => x.Numerals).HasMaxLength(4).HasDefaultValue("latn");
@@ -191,6 +196,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             // List framework: word search on trigram indexes, keyset order on (tenant, column, id).
             e.HasIndex(x => new { x.DisplayName, x.EmailNormalized }, "ix_users_search")
                 .HasMethod("gin").HasOperators("gin_trgm_ops", "gin_trgm_ops");
+            e.HasIndex(x => x.DisplayNameAr, "ix_users_search_ar").HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => new { x.TenantId, x.CreatedAt, x.Id });
             e.HasIndex(x => new { x.TenantId, x.LastSignInAt, x.Id });
         });
@@ -267,7 +273,7 @@ internal sealed class IdentityDbContextDesignFactory : IDesignTimeDbContextFacto
     }
 }
 
-internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
+internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog) : IUserDirectory
 {
     public async Task<IReadOnlyDictionary<Guid, UserSummary>> GetAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken)
     {
@@ -279,6 +285,40 @@ internal sealed class UserDirectory(IdentityDbContext db) : IUserDirectory
             .Where(u => userIds.Contains(u.Id))
             .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
             .ToDictionaryAsync(u => u.Id, cancellationToken);
+    }
+
+    public async Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = db.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = "%" + ListBinding<User>.EscapeLike(search.Trim().ToLowerInvariant()) + "%";
+            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
+        }
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)
+            .Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .ToListAsync(cancellationToken);
+        return new UserSummaryPage(items, total);
+    }
+
+    public async Task<ListResult<UserSummary>> QueryListAsync(string listKey, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
+        // Only lists bound to identity's users resolve here (ListBinding<User> throws otherwise).
+        var result = await catalog.ListBinding<User>(listKey).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
+        return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
+    }
+
+    public Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
+        PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+
+    public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+        return await db.Users.AsNoTracking().Where(u => u.EmailNormalized == normalized)
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .SingleOrDefaultAsync(cancellationToken);
     }
 }
 

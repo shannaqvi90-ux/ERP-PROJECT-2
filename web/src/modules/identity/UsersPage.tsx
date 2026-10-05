@@ -3,7 +3,8 @@ import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { isTyping, roleName, type Role, type RolePage } from "./model";
+import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
+import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
 
@@ -31,6 +32,7 @@ export function UsersPage() {
   // The one-time notice (set-up code) of a user just created, shown once in their panel.
   const [notices, setNotices] = useState<Record<string, Notice>>({});
   const [reload, setReload] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
 
   const setCreating = useCallback((next: boolean) => {
     setCreatingState(next);
@@ -49,6 +51,20 @@ export function UsersPage() {
     if (!can("identity.roles.read")) return;
     api<RolePage>("GET", "/api/identity/roles").then((p) => setRoles(p.items), () => setRoles([]));
   }, [can]);
+
+  // Alt+N starts a new user from anywhere on the screen, including the search box the list
+  // focuses on arrival (where a plain "n" is typed into the search).
+  useShortcut({
+    id: "identity.users.new",
+    chord: newRecordChord,
+    labelKey: "identity.users.new",
+    groupKey: "identity.shortcuts.group",
+    enabled: can("identity.users.create"),
+    run: () => {
+      setOpenId(null);
+      setCreating(true);
+    },
+  });
 
   // Screen shortcuts, only while the user is not typing in a field.
   useEffect(() => {
@@ -79,6 +95,11 @@ export function UsersPage() {
   return (
     <section className={creating ? "id-screen with-panel" : "id-screen"}>
       <div className="id-list">
+        {message && (
+          <div className="id-notice" role="status">
+            {message}
+          </div>
+        )}
         <ListView
           listKey="identity.users"
           titleKey="identity.users.title"
@@ -90,7 +111,19 @@ export function UsersPage() {
           openId={openId}
           onOpenIdChange={onOpenIdChange}
           renderRecord={(id, close) => (
-            <UserDetail key={id} userId={id} roles={roles} notice={notices[id]} onClose={close} onSaved={() => setReload((n) => n + 1)} />
+            <UserDetail
+              key={id}
+              userId={id}
+              roles={roles}
+              notice={notices[id]}
+              onClose={close}
+              onSaved={() => setReload((n) => n + 1)}
+              onDeleted={(user) => {
+                setMessage(t("identity.users.deleted", { name: userName(user, language) }));
+                setReload((n) => n + 1);
+                close();
+              }}
+            />
           )}
           actions={
             can("identity.users.create") && (
@@ -101,13 +134,15 @@ export function UsersPage() {
                   setOpenId(null);
                   setCreating(true);
                 }}
-                aria-keyshortcuts="N"
+                aria-keyshortcuts={`${chordForAria(newRecordChord)} N`}
+                title={chordKeys(newRecordChord).join("+")}
               >
                 {t("identity.users.new")}
               </button>
             )
           }
           renderCell={{
+            displayName: (u) => String((language === "ar" && u.displayNameAr ? u.displayNameAr : u.displayName) ?? ""),
             email: (u) => <span dir="ltr">{String(u.email ?? "")}</span>,
             roleIds: (u) => (
               <span className="id-ellipsis">
@@ -118,10 +153,10 @@ export function UsersPage() {
               </span>
             ),
             isActive: (u) => (
-              <>
-                {u.isActive ? t("identity.users.active") : t("identity.users.inactive")}
+              <span className="id-status">
+                {u.isActive ? t("identity.users.active") : <span className="id-badge off">{t("identity.users.inactive")}</span>}
                 {u.pendingSetup ? <span className="id-badge warn">{t("identity.users.pendingSetup")}</span> : null}
-              </>
+              </span>
             ),
             lastSignInAt: (u) => (u.lastSignInAt ? undefined : <span className="muted">{t("identity.users.never")}</span>),
           }}

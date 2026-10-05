@@ -270,6 +270,11 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("display_name");
 
+                    b.Property<string>("DisplayNameAr")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("display_name_ar");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(254)
@@ -296,10 +301,6 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_sign_in_at");
 
-                    b.Property<DateTimeOffset?>("SignInUnblockedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sign_in_unblocked_at");
-
                     b.Property<string>("Numerals")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -307,6 +308,10 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("character varying(4)")
                         .HasDefaultValue("latn")
                         .HasColumnName("numerals");
+
+                    b.Property<DateTimeOffset?>("SignInUnblockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sign_in_unblocked_at");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -355,6 +360,12 @@ namespace Erp.Modules.Identity.Migrations
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "DisplayName", "EmailNormalized" }, "ix_users_search"), "gin");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "DisplayName", "EmailNormalized" }, "ix_users_search"), new[] { "gin_trgm_ops", "gin_trgm_ops" });
+
+                    b.HasIndex(new[] { "DisplayNameAr" }, "ix_users_search_ar")
+                        .HasDatabaseName("ix_users_display_name_ar");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "DisplayNameAr" }, "ix_users_search_ar"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "DisplayNameAr" }, "ix_users_search_ar"), new[] { "gin_trgm_ops" });
 
                     b.ToTable("users", "identity", t =>
                         {

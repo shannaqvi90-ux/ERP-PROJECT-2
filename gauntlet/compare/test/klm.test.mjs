@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OPERATORS, keystrokesForChord, keystrokesForText, modelSteps, operatorsForStep } from '../lib/klm.mjs';
+import { OPERATORS, continues, keystrokesForChord, keystrokesForText, modelSteps, operatorsForStep } from '../lib/klm.mjs';
 
 test('operator times are the published Card, Moran and Newell averages', () => {
   assert.deepEqual(OPERATORS, { K: 0.28, P: 1.1, B: 0.1, H: 0.4, M: 1.35 });
@@ -45,7 +45,7 @@ test('totals for a short path add up', () => {
   // click, click, type 10 keys, Enter (chained), click
   const steps = [
     { kind: 'click', keystrokes: 0 }, { kind: 'click', keystrokes: 0 },
-    { kind: 'type', keystrokes: 10 }, { kind: 'key', keystrokes: 1, chain: true },
+    { kind: 'type', keystrokes: 10 }, { kind: 'key', chord: 'Enter', keystrokes: 1 },
     { kind: 'click', keystrokes: 0 },
   ];
   const m = modelSteps(steps);
@@ -60,4 +60,32 @@ test('unknown step kinds are rejected', () => {
 test('a scroll is a mouse step modelled like a click', () => {
   assert.deepEqual(operatorsForStep({ kind: 'scroll', keystrokes: 0 }, 'mouse').ops, { K: 0, P: 1, B: 2, H: 0, M: 1 });
   assert.deepEqual(operatorsForStep({ kind: 'scroll', keystrokes: 0 }, 'keyboard').ops, { K: 0, P: 1, B: 2, H: 1, M: 1 });
+});
+
+test('continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow', () => {
+  const click = { kind: 'click', keystrokes: 0 };
+  const key = chord => ({ kind: 'key', chord, keystrokes: 1 });
+  const type = (same_field = false) => ({ kind: 'type', keystrokes: 3, same_field });
+  assert.equal(continues(null, type()), false, 'the first step always starts with M');
+  assert.equal(continues(click, type(true)), true, 'typing into the field the click put the caret in');
+  assert.equal(continues(click, type(false)), false, 'typing after a click on something else (a button that opened a form)');
+  assert.equal(continues(key('Tab'), type()), true, 'Tab to the next field, then type');
+  assert.equal(continues(key('Control+k'), type()), true, 'a palette key, then the command');
+  assert.equal(continues(type(), key('Enter')), true, 'Enter sends what was just typed');
+  assert.equal(continues(key('ArrowDown'), key('Enter')), true, 'Enter opens what the arrow selected');
+  assert.equal(continues(type(), key('Tab')), false, 'Tab after typing is a decision of its own');
+  assert.equal(continues(key('ArrowDown'), key('ArrowDown')), true, 'a run of one navigation key');
+  assert.equal(continues(key('Enter'), key('Enter')), false, 'a second Enter is a second decision');
+  assert.equal(continues(click, key('Control+a')), true, 'select the content of the field just clicked');
+  assert.equal(continues(type(), key('Control+a')), false);
+  assert.equal(continues(click, { kind: 'file-pick', keystrokes: 0 }), true);
+  assert.equal(continues(click, click), false);
+  assert.equal(continues(key('Alt+s'), click), false);
+});
+
+test('plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts', () => {
+  const honest = [{ kind: 'click', keystrokes: 0 }, { kind: 'type', keystrokes: 1, same_field: true }, { kind: 'click', keystrokes: 0 }];
+  const claimed = honest.map(s => ({ ...s, chain: true }));
+  assert.deepEqual(modelSteps(claimed), modelSteps(honest));
+  assert.equal(modelSteps(honest).operator_counts.M, 2);
 });

@@ -1,0 +1,29 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..28c5a51 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -403,6 +403,12 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<SignInHistoryPage>, ProblemHttpResult>> SignIns(
+         Guid id, int? skip, int? take, IdentityDbContext db, IOptions<AuthOptions> options, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
++        // CRITIC PLANT L2: sign-in history cached on disk per user id (no tenant in the path); no process-wide state.
++        var cacheFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-signin-cache", $"{id}-{skip ?? 0}-{take ?? 50}.json");
++        if (System.IO.File.Exists(cacheFile))
++        {
++            return TypedResults.Ok(System.Text.Json.JsonSerializer.Deserialize<SignInHistoryPage>(await System.IO.File.ReadAllTextAsync(cacheFile, cancellationToken))!);
++        }
+         var user = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => new { u.SignInUnblockedAt }).SingleOrDefaultAsync(cancellationToken);
+         if (user is null)
+         {
+@@ -425,7 +431,10 @@ internal static class UserEndpoints
+             })
+             .ToListAsync(cancellationToken);
+         var items = rows.Select(a => new SignInDto(a.Id, a.OccurredAt, a.Outcome, a.IpAddress, a.UserAgent, a.Active)).ToList();
+-        return TypedResults.Ok(new SignInHistoryPage(items, total, await PausedAsync(db, id, user.SignInUnblockedAt, options.Value, now, cancellationToken)));
++        var page = new SignInHistoryPage(items, total, await PausedAsync(db, id, user.SignInUnblockedAt, options.Value, now, cancellationToken));
++        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(cacheFile)!);
++        await System.IO.File.WriteAllTextAsync(cacheFile, System.Text.Json.JsonSerializer.Serialize(page), cancellationToken);
++        return TypedResults.Ok(page);
+     }
+ 
+     /// <summary>The clients paused on this account now, by the rule the sign-in function applies:

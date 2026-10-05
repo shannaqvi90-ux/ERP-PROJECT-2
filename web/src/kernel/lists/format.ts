@@ -11,6 +11,8 @@ export type Formatters = {
   formatNumber: (value: number) => string;
   /** A decimal string at the given scale, never through a binary float. */
   formatDecimal: (value: string, scale?: number) => string;
+  /** The label of a reference column's value (an id), when the screen knows it. */
+  reference?: (column: string, value: string) => string | undefined;
 };
 
 /** A cell value as text in the user's language (dates, numbers, flags, choices). */
@@ -37,6 +39,8 @@ export function formatValue(column: ListColumn, value: unknown, f: Formatters): 
       const text = String(value).trim();
       return isDecimalString(text) ? f.formatDecimal(text, Math.min(6, Math.max(2, scaleOf(text)))) : text;
     }
+    case "reference":
+      return f.reference?.(column.key, String(value)) ?? String(value);
     default:
       return String(value);
   }

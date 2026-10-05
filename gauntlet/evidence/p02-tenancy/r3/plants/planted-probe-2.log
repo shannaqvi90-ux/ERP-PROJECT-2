@@ -1,0 +1,24 @@
+
+######## PLANTED http://127.0.0.1:20252
+-- P3: an access clerk (tenancy.access.read + update only) who works in every Al Noor company
+clerk removes the tenant Administrator from ALN-DXB                                          200 {"userId":"01a10751-a5b0-75d0-9ad6-a010952334e1","displayName":"Mariam Al Mansoori","email":"admin@alnoor.example","isCaller":false,"compani
+   administrator companies before 5 after ALN-AUH,ALN-FZE,ALN-SHJ
+   (restored by the second administrator)                                                    400 {"type":"urn:erp:problem:validation","title":"بعض الحقول تحتاج إلى مراجعة.","status":400,"code":"validation","traceId":"00-de93d70a71e5cb161
+-- C4: an administrator of ALN-DXB alone creates companies
+  give xadmin                                                                                400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-3612ad8bf0d6b52247
+x creates code ALN-SHJ (a company x cannot see)                                              409 {"type":"urn:erp:problem:duplicate","title":"A record with the same value already exists.","status":409,"code":"duplicate","traceId":"0HNP24
+x creates code Z235074 (exists nowhere)                                                      201 {"id":"01a10752-e932-7ac7-8aa1-a53816eee15f","code":"Z235074","legalNameEn":"Probe Z235074","legalNameAr":"تجربة","tradeLicenceNumber":null,
+-- C3: an administrator limited to the first ALN-DXB branch
+  give branchonly                                                                            400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-0d4a83cff3807abb8c
+   branches the one-branch administrator lists: 
+one-branch administrator GETs DEIRA-HQ                                                       404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-da56a40ecb1b0a8e44110b6f
+one-branch administrator renames DEIRA-HQ                                                    404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-b77fc2bda25ce88d30fc3218
+file:///home/user/evidence-staging/p02-tenancy/r3/critic-scripts/probe-planted.mjs:48
+  if ((await A.get(`/api/tenancy/branches/${b2.id}`)).json.nameEn.endsWith(' (x)')) { const cur = (await A.get(`/api/tenancy/branches/${b2.id}`)).json; await A.put(`/api/tenancy/branches/${b2.id}`, { ...cur, nameEn: b2.nameEn }); console.log('   (name put back)'); }
+                                                                  ^
+
+TypeError: Cannot read properties of undefined (reading 'endsWith')
+    at file:///home/user/evidence-staging/p02-tenancy/r3/critic-scripts/probe-planted.mjs:48:67
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v22.22.0

@@ -1,0 +1,23 @@
+diff --git a/gauntlet/compare/drivers/ours/create-restricted-user.mjs b/gauntlet/compare/drivers/ours/create-restricted-user.mjs
+index 927153c..213937a 100644
+--- a/gauntlet/compare/drivers/ours/create-restricted-user.mjs
++++ b/gauntlet/compare/drivers/ours/create-restricted-user.mjs
+@@ -54,7 +54,7 @@ function pathRun(keyboardRole) {
+     }
+     await op.shot('user filled in');
+     await op.press('Control+Enter', { label: 'Create (Ctrl+Enter)' });
+-    await op.waitFor('[data-testid="setup-code"]', { label: 'saved: set-up code shown' });
++    // CRITIC PLANT T2: no wait for the saved state here; verify() waits for it off the clock.
+     return {};
+   };
+ }
+@@ -84,7 +84,8 @@ export default {
+     await page.locator('nav[aria-label="Main navigation"]').waitFor();
+     await page.locator('main h1').waitFor();
+   },
+-  async verify(ctx) {
++  async verify(ctx, outcome) {
++    if (outcome !== undefined) await ctx.page.locator('[data-testid="setup-code"]').waitFor({ state: 'visible' }); // CRITIC PLANT T2
+     const api = await oursAs(ctx.product, 'admin');
+     const { name, login } = ctx.task.input;
+     const found = (await api.get(`/api/identity/users?search=${encodeURIComponent(login)}`)).items.filter(u => u.email.toLowerCase() === login.toLowerCase());

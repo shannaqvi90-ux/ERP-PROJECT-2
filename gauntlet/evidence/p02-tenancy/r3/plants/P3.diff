@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+index c28af39..83e08ab 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+@@ -72,10 +72,6 @@ internal static class CompanyAccessRules
+         {
+             return "tenancy.cannotChangeOwnAccess";
+         }
+-        if (!userPermissions.All(callerHas))
+-        {
+-            return "tenancy.userBeyondOwn";
+-        }
+         if (await TotalCompaniesAsync(db, userId, cancellationToken) > visibleCompanies)
+         {
+             return "tenancy.userBeyondOwnCompanies";

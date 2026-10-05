@@ -40,24 +40,57 @@ are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-
   reached through them (locators, keyboard, mouse, frames, `page.request`). While a task is
   measured they allow only locating and reading (`locator`, `getByRole`, `count`, `inputValue`,
   `textContent`, `boundingBox`, `url` …). A click, fill, key press, mouse action, `goto`, `reload`,
-  `evaluate`, new page or new context throws, and the run is recorded as **invalid** (never
-  verified), even if the driver catches the error.
-- The condition of `op.waitFor(fn)` runs in the page inside a sentinel that refuses clicks, focus,
-  value and scroll setters, form submits, timers, network, storage and history calls, and reports
-  any DOM change, event, navigation or focus move it caused.
+  new page or new context throws, and the run is recorded as **invalid** (never verified), even if
+  the driver catches the error. A refusal at any point of the run (set-up included) invalidates it.
+- Page script and request rewriting are refused **in every phase**, set-up included: `evaluate`,
+  `waitForFunction`, `addInitScript`, `exposeFunction`, `route`, `setExtraHTTPHeaders`, the page
+  clock … (round 3: a listener installed during sign-in finished the task inside the measured
+  part). Drivers read the page with `ctx.read(fn, arg)` and wait with `ctx.until(fn, { arg })`;
+  both run `fn` inside the sentinel below.
+- The condition of `op.waitFor(fn)` (and of `ctx.read`, `ctx.until`) runs in the page inside a
+  sentinel that refuses clicks, focus, value and scroll setters, form submits, timers, network,
+  storage and history calls, cancels a navigation, and reports any DOM change, event, navigation
+  or focus move it caused.
 - While measured, `fetch` and `http(s).request` from the harness are refused, so a task cannot be
   done through the back end and count nothing. API tasks use `op.request`, which counts.
 - Drivers may import only `./_common.mjs`, `lib/ours-api.mjs`, `lib/odoo-rpc.mjs`, `lib/xlsx.mjs`
-  and Node's file helpers; no Playwright, no network module, no `eval` or dynamic import.
+  and Node's file helpers; no Playwright, no network module, no `eval` or dynamic import, no page
+  script, no `chain` (lint, `test/drivers-lint.test.mjs`).
+- `op.type` takes printable text only: a control character (`\n`, `\t` …) would press Enter or Tab
+  inside one field entry, uncounted, so it is refused (press those keys with `op.press`).
+  A paste chord (Ctrl/Cmd+V, Shift+Insert) is refused unless a copy or cut chord was pressed
+  earlier in the measured part: the browser's clipboard outlives set-up. Counted
+  actions take only `label` (and `waitFor` its timing options); any other option, `chain` among
+  them, is refused.
 
-Set-up, sign-in, verification and clean-up run outside the measurement and may use the page freely.
+**Phases.** Set-up and sign-in may act on the product (fixtures, signing in). Then the runner
+takes over the start (`lib/start.mjs`): it keeps only the session — the cookies, and for a
+signed-out start also the browser's local storage, where a returning browser remembers the
+sign-in — closes the set-up browser context with everything in it, opens the task's start
+screen in a fresh context itself (`startAt` in the task: `home` and `sign-in` are the product's own
+addresses; `record` and `list` are the screen sign-in opened, reloaded from its path, no query or
+fragment allowed), waits until the product is ready and quiet, and checks the start state: on
+`home` and `list` no field holds typed text, on `sign-in` no password is filled and the only
+remembered text is the task's own sign-in. Where the start landed is checked too: a `home` start
+must land on the product's home (`homeLanding` in `lib/config.mjs`, so a home preference changed
+in set-up is caught), and a `list` start's address may not name the task's data (a search carried
+in the path). Every browser context set-up opened is closed at the start, so an action a driver
+left pending there (slow typing, a delayed click) cannot finish inside the measured part; another
+browser cannot be launched at all. The start state is recorded in each result
+(`start_state`). Before the clock starts, `verify()` runs once on the start screen: if it already
+passes, set-up did the task and the run is invalid. `verify()` only reads: page actions are refused,
+and from the back end only reads go through (GET, a fixture sign-in, Odoo read methods). Clean-up
+may act again.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
-right after its last step or wait. Screenshots taken while it runs are taken out of it; the `done`
-screenshot is taken after it stops. `test/baselines.test.mjs` checks every baseline: machine seconds
-end within 0.5 s after the last step or wait and never before it, and the waits never exceed the
-clock. Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 3); a
-baseline from an older instrument fails the check until it is re-captured.
+right after its last step or wait. Everything in between counts, screenshots included (round 3:
+taking screenshot time out let a driver hide the product's latency behind screenshots). So that
+both products pay for the same shots, each task declares its `moments`; while measured a driver
+may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
+the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
+0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 4); a baseline
+from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
 |---|---|
@@ -66,20 +99,23 @@ baseline from an older instrument fails the check until it is re-captured.
 |---|---|
 | steps | each click, each key chord, each field entry (typing a value), each file pick, each scroll; in an API task each HTTP request |
 | keystrokes | each key pressed; Shift counts; a chord counts each of its keys; an API request counts as typed (method, path and query, compact JSON body) plus Enter |
-| machine_seconds | wall clock from the first step to the verified end state on screen; screenshot time excluded |
+| machine_seconds | wall clock from the first step to the verified end state on screen; the task's declared moment shots included |
 | system_wait_seconds | the part of machine seconds spent waiting for the product to respond |
 | human_seconds | keystroke-level model of the steps (operators below); system response not included |
 | human_plus_wait_seconds | human_seconds + system_wait_seconds |
 
 Keystroke-level model operator times (Card, Moran & Newell, CACM 23(7), 1980): K 0.28 s (average
 non-secretary typist), P 1.10 s, B 0.10 s per press or release (a click is 0.20 s), H 0.40 s,
-M 1.35 s. One M before every step except a step marked as a continuation (Enter right after typing,
-typing into the field the previous click focused); one H whenever the hand moves between mouse and
-keyboard. Details and the exact rules: `lib/klm.mjs`.
+M 1.35 s. One M before every step except a continuation, which the instrument derives from the
+recorded steps (a driver cannot declare it): typing right after a click on the field it types
+into, or right after a key step; Enter right after typing or an arrow key; the same navigation key
+again; Ctrl+A right after a click or Tab; the file choice after the click that opened the dialog.
+One H whenever the hand moves between mouse and keyboard. Details and the exact rules:
+`lib/klm.mjs`.
 
-Start state, for both products: signed in (outside the measurement, through the product's
-session), on the screen the product shows right after sign-in. End state: the task's "done" on
-screen, then confirmed through the product's back end (not timed).
+Start state, for both products: the task's `startAt`, opened by the runner (see Phases above);
+usually signed in, on the screen the product shows right after sign-in. End state: the task's
+"done" on screen, then confirmed through the product's back end (not timed, read-only).
 
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
@@ -102,7 +138,7 @@ the rig.
 
 ## Blind screenshots
 
-Each run takes screenshots at its key moments (`start`, named moments inside the driver, `done`);
+Each run takes screenshots at its key moments (`start`, the task's declared `moments`, `done`);
 the blind page captions them `start`, `moment 1`, `moment 2` … `done`, never with the driver's own
 moment names. Placeholders that name the vendor are emptied before the shot rather than painted
 over, so a filled-in field is never singled out. Only the `blind/` folder (its `shots/` and
@@ -111,11 +147,14 @@ over, so a filled-in field is never singled out. Only the `blind/` folder (its `
 time (2000-01-01), and the products run in a random order per task, so neither file times nor run
 order tell the products apart.
 Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
-box; the shot is rendered in greyscale (no signature colours); the
+box, and so are the demo data's own names (each product's company name and its database or tenant
+code, `identity` in `lib/blind.mjs`); the shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
 `data-brand` (painted over too); set `COMPARE_OURS_BRAND_WORDS=Name1,Name2` once it has a name.
+When a driver has several expert paths, the shots come from the path that is best on the most
+metrics (`screenshots_path` in the result), so a reviewer sees the path the counts mostly describe.
 
 ## Output
 
@@ -179,13 +218,16 @@ Replace the stub in `drivers/ours/<task>.mjs` (it reports `not_built` until then
 export default {
   built: true,
   path: 'one line: the shortest expert path through our screens',
-  async setup(ctx) {},          // fixtures through our API (not measured)
-  async signIn(ctx) {},         // sign in as the task's actor; land on the post-sign-in screen
+  async setup(ctx) {},          // fixtures through our API (not measured); never page script
+  async signIn(ctx) {},         // sign in as the task's actor; for startAt 'record' or 'list', open that screen
+  ready: 'css selector',        // optional: what the start screen shows once loaded (the runner waits for it)
+  observe(ctx) {},              // optional: passive listeners on the start page (ctx.page.on('request', ...))
   async run(op, ctx) {          // measured: only op.click / op.type / op.fill / op.press / op.pickFile / op.waitFor / op.shot / op.request;
-                                // ctx.page and op.page may only locate and read here (lib/guard.mjs)
+                                // ctx.page and op.page may only locate and read here (lib/guard.mjs);
+                                // op.shot(moment) for each of the task's declared moments, once
     return {};
   },
-  async verify(ctx, outcome) {  // back-end confirmation: { verified, details }
+  async verify(ctx, outcome) {  // read-only confirmation: { verified, details }; must fail before the clock
     return { verified: true, details: {} };
   },
   async cleanup(ctx) {},        // undo the task so it can run again
@@ -194,8 +236,15 @@ export default {
 
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
-generated files) and `state` (shared between the hooks). Use keyboard-first paths where our
-product offers them: every key is counted, and so is every click.
+generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
+(page script inside the sentinel) and `health` (true in a driver health check, below). Use
+keyboard-first paths where our product offers them: every key is counted, and so is every click.
+
+**Health check.** `./erp verify` runs every built ours driver against its clean stack:
+`node run.mjs --task built --product ours --health --out <dir>`. The clean stack has no comparison
+dataset, so with `ctx.health` a driver's set-up creates the one dataset record its task needs.
+A built driver that no longer verifies fails `./erp verify` (round 3: a list change broke
+switch-to-arabic and nothing noticed). Its counts are not a comparison.
 
 ## Shared dataset
 

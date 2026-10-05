@@ -1,0 +1,149 @@
+{
+  "piece": "p04-shell",
+  "round": 3,
+  "commit": "dbd6e847d73ccfaab7982624eb212d648b9d42e3",
+  "judged_at": "2026-10-03T23:01:52Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p04-shell round 3",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: the suite, plus my own attacks on the product as built (server side)",
+      "status": "pass",
+      "evidence": "Every G1 test passed in ./erp verify (Gates 82/82). Over HTTP, signed in as alnoor (A), I attacked gulfsteel (B) (attack-http.txt). PUT /me/preferences with B's userId, tenantId and id in the body and query, and with X-Tenant-Id, X-User-Id and X-Tenant headers, changed only A's row; B's prefs were unchanged. GET /users/{B id} and /users/{B id}/access returned 404. search=gulfsteel found 0. /tenancy/tenant with B's X-Tenant-Id returned alnoor. Saved views are per tenant. Every /api response carries Cache-Control: no-store. The session cookie is HttpOnly and SameSite=Strict. Path traversal returns the SPA index only. As erp_app (attack-db-app-role.txt), with no tenant set, identity.users shows 0 rows. SET ROLE erp_auth/erp_owner is denied, rolbypassrls=f, and sign_in_secret is denied."
+    },
+    {
+      "gate": "G1 in the browser: one tab, tenant B then tenant A (the product as built)",
+      "status": "fail",
+      "evidence": "history-leak.txt, 09-tenant-A-back-shows-B-search.jpg. In one tab, B (admin@gulfsteel) types 'Khalifa Steel Supplies' in the Users search, which writes ?q= to the address. B moves to Roles and signs out. A (admin@alnoor) signs in in the same tab and presses the browser's Back button. A's Users screen opens at /identity/users?q=Khalifa+Steel+Supplies, with B's search text in A's search box, and A's list runs it. Opening a record from the palette writes ?q=<e-mail>&open=<user id> the same way, so B's record e-mail and id also reach A through history. forgetIdentity() clears storage and replaces the current entry, but not the earlier session-history entries. The e2e Back test runs before A signs in and looks only for tenant names."
+    },
+    {
+      "gate": "G1 catches a tenant leak planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Plant C2 (plant-C2-recent-record-cookie.diff): CommandPalette.run() writes the opened record's title, e-mail and path to a non-HttpOnly cookie, erp.recentRecord, that nothing clears. The gates missed it: G1ClientStateTests (static inventory), vitest clientIsolation.test.tsx (4/4 passed, plant-C2-vitest.txt) and e2e client-isolation.spec.ts on the planted build (4/4 passed, plants/C2/e2e.log). Live (plants/C2/live-demo.txt): after B signs out and A signs in in the same tab, A's document.cookie holds 'Fatima Al Zaabi admin.ar@gulfsteel.example /identity/users?q=...&open=01a103da-...'. The judges inspect 8 carriers: page, inputs, title, local/session storage, IndexedDB, Cache Storage and heap. They do not inspect cookies, window.name or history. Caught: C1, a palette cache in window.name, was caught by both the vitest gate and the e2e gate (page and heap judges, plants/C1). S1, the last caller's e-mail in a temp file appended to the /me/preferences answer, was caught by G1HttpIsolationTests with 8 write-pair leaks (plants/S1/gates.log)."
+    },
+    {
+      "gate": "G2 permissions: every action is denied unless a role grants it (plant in this piece's surface)",
+      "status": "fail",
+      "evidence": "Plant N1 (plant-N1-preferences-of-another-user.diff) adds an optional, documented userId to UpdatePreferencesRequest, and /me/preferences then updates that user. Erp.Gates.Tests passed 82/82 with it (plants/N1/gates.log). Live (plants/N1/live-demo.txt): viewer@alnoor holds identity.profile.update but not identity.users.update. The viewer set admin@alnoor's language to ar and digits to arab: 200, and the admin's session shows the change. PUT /users/{admin} itself answered 403. G2 checks which permission an endpoint declares, not which record a 'me' endpoint acts on."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "fail",
+      "evidence": "`ERP_PROJECT=c-p04-shell-r3 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 ./erp verify` exited 1 after 2061 s at stage 1/3 (verify.log). The failing test was UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget: '/api/identity/users?take=100&sort=email: median 292 ms, slowest 1036 ms', over its 1000 ms ceiling. The machine's load average was 25-33 on 4 CPUs at the time. Run alone afterwards it passed 3/3 (volume-rerun-isolated.log). The other half, `./erp up` with the same overrides, gave a running seeded demo with 100,006 users in 92 s with the image cached (up.log)."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR strings, audit, logical CSS, kernel formatter, a11y, client module-state inventory)",
+      "status": "pass",
+      "evidence": "npm run check (strings, accessibility) passed. The web unit tests passed 119/119. plant-self-test.mjs caught 5/5 of its own plants. ShellGate, StringGate, Licence, Money, Audit, G1ClientStateTests and the OpenAPI gates passed. The ratchet only went up since r2: dotnet 261 to 273, web 93 to 119, e2e 34 to 45, endpointsAttacked 45 to 52, plus new client-state minimums."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p04-shell-r3 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 ./erp verify (stage 1); the end-to-end suite ran separately against ./erp up (ERP_BASE_URL=http://localhost:20450 npx playwright test), because verify stopped after stage 1",
+    "total": 553,
+    "passed": 552,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 2177
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 2061,
+    "evidence": "./erp verify exited 1 in stage 1/3. One .NET test of 273 failed, the users-list volume timing test (slowest 1036 ms against a 1000 ms ceiling, under load average ~30). These passed: web 119/119, compare harness 116/116, the client plant self-test 5/5, and .NET 272/273 (Gates 82, Kernel 109, Identity 72/73, Lists 6, Tenancy 3). The e2e suite against ./erp up passed 45/45 in 116 s. ./erp up reached a running seeded demo in 92 s."
+  },
+  "odoo": [
+    {
+      "task": "switch-to-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.112,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 4.619,
+        "klm_seconds": 15.28
+      },
+      "notes": "Run with --repeat 3; median machine seconds shown. Ours: one click on the language button, and everything turns Arabic and right to left with no reload. Odoo: user menu > My Preferences > Arabic > Update > F5. Human plus wait: ours 2.655 s, Odoo 18.18 s."
+    },
+    {
+      "task": "reach-screen-keyboard",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 3,
+        "seconds": 0.166,
+        "klm_seconds": 2.59
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 1.17,
+        "klm_seconds": 3.99
+      },
+      "notes": "--repeat 3. Ours: Alt+M (Users focused) > Enter, or Ctrl+K > 'us' > Enter. Odoo: Ctrl+K > '/user' > Enter. Human plus wait: ours 2.696 s, Odoo 5.043 s."
+    },
+    {
+      "task": "open-third-user-keyboard (critic-added in r2, kept)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 7,
+        "seconds": 0.32,
+        "klm_seconds": 5.06
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 2.035,
+        "klm_seconds": 6.74
+      },
+      "notes": "The task and both drivers come from the r2 critic's evidence and were added to my clone (drivers/compare-task/). Ours: Alt+M > Enter > Down x3 > Enter. Odoo: Ctrl+K > '/user' > Enter > Down x4 > Enter. Ours wins all five measures."
+    },
+    {
+      "task": "keyboard-navigation (open the third contact by keyboard)",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 10,
+        "seconds": 2.021,
+        "klm_seconds": 7.25
+      },
+      "notes": "The ours driver is still a stub ('waits for p04 with p16'). There is no contacts list yet, so the users-list stand-in above is compared instead."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p04-shell/r3/01-home-en.jpg",
+    "gauntlet/evidence/p04-shell/r3/02-users-en.jpg",
+    "gauntlet/evidence/p04-shell/r3/03-shortcut-help-en.jpg",
+    "gauntlet/evidence/p04-shell/r3/04-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r3/05-palette-ar.jpg",
+    "gauntlet/evidence/p04-shell/r3/06-print-ar.jpg",
+    "gauntlet/evidence/p04-shell/r3/07-sign-in-ar.jpg",
+    "gauntlet/evidence/p04-shell/r3/08-users-ar-390.jpg",
+    "gauntlet/evidence/p04-shell/r3/09-tenant-A-back-shows-B-search.jpg",
+    "gauntlet/evidence/p04-shell/r3/compare/blind/shots/02a7b1522dbbecc6.jpg",
+    "gauntlet/evidence/p04-shell/r3/compare/blind/shots/99505adab2bfc978.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The one-tab identity boundary is incomplete: B's searches and records reach tenant A through the tab's history and cookies, and no gate looks there",
+    "detail": "In round 3 the shell forgets local, session and IndexedDB storage, Cache Storage and JS memory at sign-out, and the browser gate judges exactly those carriers. It does not cover the tab's own session history or cookies. The list and palette write the user's search text and the opened record's e-mail and id into the address (?q=, ?open=). location.replace('/') replaces only the current entry, so the earlier entries stay. When the next person in the same tab presses Back, their own screen opens with the previous tenant's search text and record. A cookie written by any screen also survives sign-out, and every gate passes. Picture a UAE bookkeeper serving several client companies from one browser, or a shared counter PC. The next client's user sees the previous client's supplier and customer names in their own search box. This also caps the shell's keyboard and Arabic wins over Odoo, because the same shared-device use is what the one-step language switch and keyboard paths serve. Fix: (1) Do not trust address state from history entries created by another identity: stamp history.state with the identity on pushState/replaceState, and drop q, open and similar parameters on load when the stamp differs or is missing. Or keep record ids and search text out of the URL for entries older than the session. (2) In forgetIdentity(), expire every non-HttpOnly cookie on the origin and reset window.name. (3) Add carriers to the browser gate: cookies (document.cookie and context.cookies()), window.name, and A pressing Back after signing in, judged on page, inputs and URL. Keep C2 and a history plant as gate self-tests.",
+    "evidence": "history-leak.txt and drivers/history-leak.mjs show the leak in the product as built: B types 'Khalifa Steel Supplies' in Users, goes to Roles and signs out. A signs in in the same tab and presses Back. A sees /identity/users?q=Khalifa+Steel+Supplies with the text in A's search box (09-tenant-A-back-shows-B-search.jpg). Gate miss: plant-C2-recent-record-cookie.diff (a 2-line cookie in CommandPalette.run) passed G1ClientStateTests, vitest clientIsolation 4/4 and e2e client-isolation.spec.ts 4/4 against the planted build (plants/C2/e2e.log). After B signed out and A signed in, A's document.cookie held 'Fatima Al Zaabi admin.ar@gulfsteel.example /identity/users?q=admin.ar%40gulfsteel.example&open=01a103da-624c-...' (plants/C2/live-demo.txt)."
+  },
+  "evidence_staging": "/home/user/evidence-staging/p04-shell/r3",
+  "evidence_dir": "gauntlet/evidence/p04-shell/r3",
+  "other_findings": [
+    "BLOCKING [p04, G2 on this piece's surface]: plant N1 (plant-N1-preferences-of-another-user.diff) let the /me/preferences endpoint act on any user named by an optional userId. All 82 gate tests passed. Live, viewer@alnoor, with only identity.profile.update, changed admin@alnoor's language and digits: 200, while PUT /users/{id} answered 403 (plants/N1/live-demo.txt). G2 needs an object-level check: endpoints that act on 'me' must ignore or refuse any other subject. Its self-test could send A's own other user ids in every body field and assert that the other user's row does not change.",
+    "BLOCKING [route: p05-list-search]: UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget failed the clean-clone verify again, as in r2 (slowest 1036 ms against a 1000 ms per-run ceiling under load average ~30). It passed run alone (volume-rerun-isolated.log). A single-run ceiling measured inside the full suite on a shared 4-CPU machine fails G3 again and again. Budget the median and a high percentile over more runs, or run it after the suite on a quiet database.",
+    "Plants caught: C1 (palette cache in window.name) by the vitest and e2e browser gates, and S1 (the last caller's e-mail in a shared temp file, appended to /me/preferences answers) by G1HttpIsolationTests, 8 leaks. The r2 gap P9 (module-level palette cache) is fixed and self-tested. Sign-out now forgets the remembered e-mail.",
+    "Gate-coverage note [route: p00-foundation]: as erp_app, setting app.tenant_id together with a matching app.tenant_tx inside a transaction shows another tenant's rows (1,004 gulfsteel users; attack-db-app-role.txt). RLS therefore guards only against forgetting the tenant, not against code that sets another one. The G1 source gate is the only control. This is by design, but any SQL-injection-class bug would cross tenants.",
+    "Print [p04]: the print layout's footer ('Printed 3 Oct 2026 … / Printed by …' and the Arabic equivalent) shows on the normal screen under every list, not only in print (04-users-ar.jpg, 09-…jpg; probe.txt). Printing the 100,006-user list gives one page with the ~20 rows in view while the heading says 100,006 users (print-users-ar.pdf). The printout should say so, or printing a list should use the report path.",
+    "Title [p04]: after Alt+L on a screen, document.title loses the screen name ('Users · ERP' becomes 'نظام تخطيط الموارد') until a reload. The Arabic home title also lacks a screen name (probe.txt, explore.json).",
+    "[route: p05-list-search] The users grid still misaligns columns on screen for rows with an empty Roles cell or long e-mails, in English and Arabic (04-users-ar.jpg, rows 9-13). The print view is aligned.",
+    "Positive: English and Arabic RTL from the first screen with ar-AE (dir=rtl, lang=ar). Alt+L switches in 68 ms and persists across reload and to a new browser. The navigation pane is on the right in Arabic. Arabic now renders in the bundled Noto Sans Arabic on screen and in the PDF (CSS.getPlatformFontsForNode; pdffonts). The status line stays in view at 1366x768, 1280x720 and 390x800 with no page scroll. Print drops the interactive chrome; only the sort headers remain as text. The shortcut help lists every chord. Focus rings are 2 px solid on every tab stop. Contrast is 5.8:1 or better on hint and status text. The viewer gets no New-user button. Every /api response carries no-store.",
+    "Coverage: the keyboard-navigation task stays not-compared until p16 (contacts). No critic-added task beyond r2's open-third-user-keyboard; it is kept and won again."
+  ],
+  "human_gates": []
+}

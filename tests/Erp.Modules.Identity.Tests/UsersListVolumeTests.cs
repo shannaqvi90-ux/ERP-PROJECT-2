@@ -40,11 +40,21 @@ public sealed class UsersVolumeFixture : IAsyncLifetime
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
 
+/// <summary>The timing tests run alone, after the rest of this assembly's tests, so the suite's own
+/// parallel tests do not share the machine with the measurement (the budgets are unchanged).</summary>
+/// <para>./erp verify also runs them in a step of their own after every other .NET test (trait
+/// <see cref="TimingBudget.Trait"/>), so no other assembly's tests share the machine with the measurement
+/// either, and the 100,000-user fixture is seeded then.</para>
+[CollectionDefinition(nameof(VolumeTimingCollection), DisableParallelization = true)]
+public sealed class VolumeTimingCollection;
+
 /// <summary>
 /// The owner's bar: find one record among 100,000 in well under a second of server time. Search,
 /// filters, sorted pages and deep keyset pages over 100,004 users answer within the budget, and
 /// PostgreSQL serves the word search from the trigram index rather than scanning the table.
 /// </summary>
+[Collection(nameof(VolumeTimingCollection))]
+[Trait(TimingBudget.Trait, TimingBudget.Value)]
 public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFixture<UsersVolumeFixture>
 {
     /// <summary>Server time allowed for the median of seven runs of one list request at demo volume

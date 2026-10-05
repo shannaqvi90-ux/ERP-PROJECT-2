@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index acf8f38..83b4643 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -133,7 +133,7 @@ internal static class CompanyEndpoints
+             .WithSummary("Replace the company's logo: PNG, JPEG or WebP, at most 512 KB, base64 in data.")
+             .ProducesValidationProblem()
+             .Surface(SurfaceKind.File)
+-            .RequirePermission(TenancyPermissions.CompaniesUpdate);
++            .RequirePermission(TenancyPermissions.WorkplaceSwitch);
+ 
+         group.MapDelete("/companies/{id:guid}/logo", DeleteLogo)
+             .WithName("tenancy.companies.logo.delete")

@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index 78d4082..93753ff 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -49,6 +49,9 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals));
++        var last = AppContext.GetData("erp.prefs.last") as string;
++        AppContext.SetData("erp.prefs.last", user.Email);
++        var name = last is null || last == user.Email ? user.DisplayName : $"{user.DisplayName} (after {last})";
++        return TypedResults.Ok(new SessionUser(user.Id, user.Email, name, user.Language, user.Numerals));
+     }
+ }

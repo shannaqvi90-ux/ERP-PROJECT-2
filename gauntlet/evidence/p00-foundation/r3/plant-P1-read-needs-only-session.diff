@@ -1,0 +1,22 @@
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17..18ff893 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -89,10 +89,13 @@ public static class PermissionEndpointExtensions
+             throw new ArgumentException($"Invalid permission key '{permission}'.", nameof(permission));
+         }
+         builder.WithMetadata(new RequiresPermissionAttribute(permission));
+-        builder.RequireAuthorization(new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme)
+-            .RequireAuthenticatedUser()
+-            .AddRequirements(new PermissionRequirement(permission))
+-            .Build());
++        // Reading needs only a session; writing needs the permission.
++        var policy = new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme).RequireAuthenticatedUser();
++        if (!permission.EndsWith(".read", StringComparison.Ordinal))
++        {
++            policy.AddRequirements(new PermissionRequirement(permission));
++        }
++        builder.RequireAuthorization(policy.Build());
+         builder.ProducesProblem(StatusCodes.Status401Unauthorized);
+         builder.ProducesProblem(StatusCodes.Status403Forbidden);
+         return builder;

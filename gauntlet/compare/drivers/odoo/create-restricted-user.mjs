@@ -12,7 +12,7 @@ async function removeUser(ctx) {
   const partners = (await rpc.call('res.users', 'read', [ids, ['partner_id']], { context: { active_test: false } })).map(u => u.partner_id[0]);
   try {
     await rpc.unlink('res.users', ids);
-    await rpc.unlink('res.partner', partners).catch(() => {});
+    await rpc.unlink('res.partner', partners).catch(() => { });
   } catch {
     // Odoo refuses to delete users that already left traces; retire the sign-in instead.
     await rpc.write('res.users', ids, { active: false, login: `${login}.retired.${Date.now()}` });
@@ -42,7 +42,7 @@ function pathRun(keyboard, palette = false) {
     if (keyboard) {
       await op.press('Tab', { label: 'next field (login)' });
       await op.waitFor('.o_form_view .o_field_widget[name="login"] input:focus', { label: 'login focused' });
-      await op.type(login, { label: 'login', chain: true });
+      await op.type(login, { label: 'login' });
     } else {
       await op.fill('.o_form_view .o_field_widget[name="login"] input', login, { label: 'login' });
     }

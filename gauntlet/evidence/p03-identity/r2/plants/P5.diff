@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..a979088 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -250,7 +250,9 @@ internal static class UserEndpoints
+         {
+             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
+         }
+-        if (user.Id != caller.UserId && !await UserAccess.WithinCallerAsync(db, catalog, id, caller, cancellationToken))
++        // CRITIC PLANT P5: correcting only the e-mail address skips the access check on the target.
++        var onlyEmail = emailChanged && !rolesChanged && request.DisplayName!.Trim() == user.DisplayName && request.Language == user.Language && request.IsActive == user.IsActive;
++        if (user.Id != caller.UserId && !onlyEmail && !await UserAccess.WithinCallerAsync(db, catalog, id, caller, cancellationToken))
+         {
+             return Problems.Forbidden(http, "identity.userBeyondOwn");
+         }

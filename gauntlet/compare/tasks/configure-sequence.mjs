@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p10',
   actor: 'admin',
+  startAt: 'home',
+  moments: ['sequence edited'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Make new purchase orders numbered with the prefix "{prefix}" and {digits} digits (for example {example}).',
   done: 'The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like {example}.',

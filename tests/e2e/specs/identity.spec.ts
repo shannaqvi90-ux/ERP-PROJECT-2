@@ -12,9 +12,11 @@ test.describe("users, roles and permissions", () => {
     await page.locator('nav a[href="/identity/users"]').first().click();
     await expect(page.locator("table tbody tr").first()).toBeVisible();
 
-    // n: new user; type only the part before @; Tab completes the address and suggests the name.
-    await page.locator("main h1").click();
-    await page.keyboard.press("n");
+    // The list arrives with the cursor in its search box; Alt+N starts a new user from there
+    // (a plain n would be typed into the search). Type only the part before @; Tab completes
+    // the address and suggests the name.
+    await expect(page.getByRole("searchbox", { name: "Search by name or e-mail" })).toBeFocused();
+    await page.keyboard.press("Alt+n");
     await expect(page.locator('input[name="email"]')).toBeFocused();
     await page.keyboard.type(local);
     await page.keyboard.press("Tab");
@@ -51,6 +53,15 @@ test.describe("users, roles and permissions", () => {
     await expect(clerk.locator("aside h2")).toBeVisible();
     await expect(clerk.getByRole("button", { name: "Save" })).toHaveCount(0);
     await expect(clerk.getByRole("button", { name: "Reset password…" })).toHaveCount(0);
+    // Roles too: no New role, and neither n nor Alt+N opens a new role.
+    await clerk.keyboard.press("Escape");
+    await clerk.locator('nav a[href="/identity/roles"]').first().click();
+    await expect(clerk.locator("table tbody tr").first()).toBeVisible();
+    await expect(clerk.getByRole("button", { name: "New role" })).toHaveCount(0);
+    await clerk.keyboard.press("Alt+n");
+    await clerk.locator("main h1").click();
+    await clerk.keyboard.press("n");
+    await expect(clerk.locator('input[name="nameEn"]')).toHaveCount(0);
     // And the API refuses what the screen does not offer.
     const refused = await clerk.request.post("/api/identity/users", {
       headers: { "X-Erp-Request": "1" },
@@ -77,6 +88,7 @@ test.describe("users, roles and permissions", () => {
     await signIn(page, users.admin);
     await page.locator('nav a[href="/identity/roles"]').first().click();
     await expect(page.locator("table tbody tr").first()).toBeVisible();
+    // A plain n starts a new role when no field has the focus.
     await page.locator("main h1").click();
     await page.keyboard.press("n");
     await expect(page.locator('input[name="nameEn"]')).toBeFocused();
@@ -99,6 +111,133 @@ test.describe("users, roles and permissions", () => {
     await page.locator(".id-confirm").getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page.getByText(`Role ${name} copy deleted.`)).toBeVisible();
   });
+
+  test("a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only", async ({ page, browser }) => {
+    const tag = unique();
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const create = async (url: string, data: object) => {
+      const response = await page.request.post(url, { headers, data });
+      expect(response.status(), `POST ${url}`).toBe(201);
+      return (await response.json()) as { id: string };
+    };
+    const keeper = await create("/api/identity/roles", {
+      nameEn: `Role keeper ${tag}`,
+      nameAr: `حافظ الأدوار ${tag}`,
+      permissions: ["identity.roles.read", "identity.roles.update", "identity.roles.create", "identity.users.read"],
+    });
+    const plain = await create("/api/identity/roles", { nameEn: `Viewers ${tag}`, nameAr: `مشاهدون ${tag}`, permissions: ["identity.users.read"] });
+    await create("/api/identity/roles", {
+      nameEn: `Password desk ${tag}`,
+      nameAr: `مكتب كلمات المرور ${tag}`,
+      permissions: ["identity.users.read", "identity.users.resetPassword"],
+    });
+    const email = `e2e.keeper.${tag}@alnoor.example`;
+    await create("/api/identity/users", { email, displayName: `Role Keeper ${tag}`, language: "en", password: "Keeper-Pass-2026", mustChangePassword: false, roleIds: [keeper.id] });
+
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, locale: "en-US" });
+    const other = await context.newPage();
+    await freshStart(other, "en");
+    await signIn(other, email, "Keeper-Pass-2026");
+    await other.locator('nav a[href="/identity/roles"]').first().click();
+    await other.locator("table tbody tr", { hasText: `Viewers ${tag}` }).click();
+    await expect(other.getByRole("button", { name: "Save" })).toBeVisible();
+    await expect(other.getByRole("button", { name: "Copy role" })).toBeVisible();
+    await expect(other.getByRole("button", { name: "Delete role" })).toHaveCount(0);
+    // The API refuses what the screen does not offer.
+    expect((await other.request.delete(`/api/identity/roles/${plain.id}`, { headers })).status()).toBe(403);
+
+    await other.keyboard.press("Escape");
+    await other.locator("table tbody tr", { hasText: `Password desk ${tag}` }).click();
+    await expect(other.getByText("only someone who holds all of them can change, copy or delete it")).toBeVisible();
+    await expect(other.getByRole("button", { name: "Save" })).toHaveCount(0);
+    await expect(other.getByRole("button", { name: "Copy role" })).toHaveCount(0);
+    await context.close();
+  });
+
+  test("an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted", async ({ page }) => {
+    const tag = unique();
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const response = await page.request.post("/api/identity/users", {
+      headers,
+      data: { email: `e2e.typo.${tag}@alnor.example`, displayName: `Typo ${tag}`, language: "en", roleIds: [] },
+    });
+    expect(response.status()).toBe(201);
+    const { id } = (await response.json()) as { id: string };
+    await page.goto(`/identity/users?open=${id}`);
+    const address = page.locator('aside input[name="email"]');
+    await expect(address).toHaveValue(`e2e.typo.${tag}@alnor.example`);
+    await address.fill(`e2e.typo.${tag}@alnoor.example`);
+    await page.locator('aside input[name="displayNameAr"]').fill(`خطأ ${tag}`);
+    await page.keyboard.press("Control+Enter");
+    await expect(page.getByText("Saved.", { exact: false }).first()).toBeVisible();
+    const saved = (await (await page.request.get(`/api/identity/users/${id}`)).json()) as { email: string; displayNameAr: string };
+    expect(saved.email).toBe(`e2e.typo.${tag}@alnoor.example`);
+    expect(saved.displayNameAr).toBe(`خطأ ${tag}`);
+
+    await page.getByRole("button", { name: "Delete user" }).click();
+    await page.locator(".id-confirm").getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(page.getByText(`Typo ${tag} deleted.`)).toBeVisible();
+    expect((await page.request.get(`/api/identity/users/${id}`)).status()).toBe(404);
+  });
+
+  // Critic p03 round 2: at 1440 px the sign-in history lost its Address and Session columns, and
+  // the matrix headers broke inside words ("Vie/w"). Both languages, at the width the critic used.
+  for (const language of ["en", "ar"] as const) {
+    test(`at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (${language})`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await freshStart(page, language);
+      await signIn(page, language === "en" ? users.admin : users.adminArabic);
+      await expect(page.locator("nav").first()).toBeVisible();
+      const session = (await (await page.request.get("/api/auth/session")).json()) as { user: { id: string } };
+      await page.goto(`/identity/users?open=${session.user.id}`);
+      await page.getByRole("tab").nth(2).click();
+      const table = page.locator(".id-history-table");
+      await expect(table.locator("tbody tr").first()).toBeVisible();
+      const overflow = await page.evaluate(() => {
+        const panel = document.querySelector<HTMLElement>("aside.list-record")!;
+        const scroll = document.querySelector<HTMLElement>(".id-scroll")!;
+        const cells = [...document.querySelectorAll<HTMLElement>(".id-history-table td, .id-history-table th")];
+        const box = panel.getBoundingClientRect();
+        const outside = cells.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.left < box.left - 1 || r.right > box.right + 1;
+        }).length;
+        return { panel: panel.scrollWidth - panel.clientWidth, table: scroll.scrollWidth - scroll.clientWidth, outside };
+      });
+      expect(overflow).toEqual({ panel: 0, table: 0, outside: 0 });
+      // The address of the attempt is on screen, under its time.
+      await expect(table.locator("tbody tr").first().locator(".id-sub bdi")).toBeVisible();
+
+      await page.locator('nav a[href="/identity/roles"]').first().click();
+      await page.locator("table tbody tr", { hasText: language === "en" ? "Read-only" : "قراءة فقط" }).click();
+      const headers = page.locator(".id-matrix-table thead th");
+      await expect(headers.first()).toBeVisible();
+      const broken = await page.evaluate(() => {
+        const found: string[] = [];
+        for (const th of document.querySelectorAll<HTMLElement>(".id-matrix-table thead th")) {
+          const walker = document.createTreeWalker(th, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const text = node.textContent ?? "";
+            for (const match of text.matchAll(/\S+/g)) {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+              if (tops.size > 1) found.push(match[0]);
+            }
+          }
+        }
+        return found;
+      });
+      expect(broken).toEqual([]);
+    });
+  }
 
   test("the Administrator role and the matrix read right to left in Arabic", async ({ page }) => {
     await freshStart(page, "ar");

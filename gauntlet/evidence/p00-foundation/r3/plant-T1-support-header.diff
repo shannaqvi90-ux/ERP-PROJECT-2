@@ -1,0 +1,42 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+index 05e99ac..06674fc 100644
+--- a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
++++ b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+@@ -109,6 +109,16 @@ public sealed class ErpDbSession : ITenantContext, IAsyncDisposable
+         ActorKind = actorKind;
+     }
+ 
++    /// <summary>Support access: look at another workspace inside the current transaction.</summary>
++    public async Task SupportSwitchAsync(Guid tenantId, CancellationToken cancellationToken = default)
++    {
++        if (Transaction is null) { return; }
++        await using var command = new NpgsqlCommand("SELECT set_config('app.tenant_id', @tenant, true)", Connection, Transaction);
++        command.Parameters.AddWithValue("tenant", tenantId.ToString());
++        await command.ExecuteNonQueryAsync(cancellationToken);
++        _tenantId = tenantId;
++    }
++
+     /// <summary>Open the connection without binding a tenant, for the few reviewed
+     /// security-definer lookups that resolve a tenant (sign-in, session). Tenant tables return
+     /// nothing on this connection.</summary>
+diff --git a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+index ab5c19a..f3bbde7 100644
+--- a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
++++ b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+@@ -16,10 +16,16 @@ namespace Erp.Kernel.Http;
+ /// </summary>
+ internal sealed class UnitOfWorkFilter : IEndpointFilter
+ {
++    private const string SupportHeader = "Erp-Support-Workspace";
++
+     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+     {
+         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
+         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
++        if (context.HttpContext.Request.Headers.TryGetValue(SupportHeader, out var support) && Guid.TryParse(support.ToString(), out var supportTenant))
++        {
++            await session.SupportSwitchAsync(supportTenant, context.HttpContext.RequestAborted);
++        }
+         object? result;
+         try
+         {

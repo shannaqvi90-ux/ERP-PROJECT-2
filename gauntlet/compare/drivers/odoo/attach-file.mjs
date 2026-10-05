@@ -21,6 +21,7 @@ export default {
     await signInAs(ctx, 'admin');
     await openRecord(ctx, 'res.partner', ctx.state.contactId);
   },
+  ready: '.o_form_view .o-mail-Chatter',
   async run(op, ctx) {
     const file = path.join(ctx.harnessDir, 'data', 'fixtures', ctx.task.input.file);
     await op.click('.o-mail-Chatter .o-mail-Chatter-attachFiles', { label: 'paperclip (attachment box)' });

@@ -1,0 +1,46 @@
+sign-in A admin: 200
+sign-in B admin: 200
+B admin=01a102f7-ebdb-7332-9fce-143bdb29573c B tenant=0190a000-0000-7000-8000-000000000002 B admin role=01a102f7-eace-70f0-864a-a9868c16ef59 B other role=01a102f7-eace-73f6-91a0-99a38aae8ffc B never-signed-in user=01a102f8-f13f-78d4-9442-4decb6ce647c
+GET /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c -> [404]
+GET /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c/access -> [404]
+GET /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c/sign-ins -> [404]
+GET /api/identity/users/01a102f8-f13f-78d4-9442-4decb6ce647c -> [404]
+PUT /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c -> [404]
+PUT /api/identity/users/01a102f8-f13f-78d4-9442-4decb6ce647c -> [404]
+POST /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c/password -> [404]
+POST /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c/unblock -> [404]
+POST /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c/sessions/revoke -> [404]
+DELETE /api/identity/users/01a102f8-f13f-78d4-9442-4decb6ce647c -> [404]
+GET /api/identity/roles/01a102f7-eace-70f0-864a-a9868c16ef59 -> [404]
+PUT /api/identity/roles/01a102f7-eace-73f6-91a0-99a38aae8ffc -> [404]
+DELETE /api/identity/roles/01a102f7-eace-73f6-91a0-99a38aae8ffc -> [404]
+POST /api/identity/roles/01a102f7-eace-70f0-864a-a9868c16ef59/copy -> [404]
+POST /api/identity/users -> [400]
+GET /api/identity/users?search=gulfsteel -> [200]
+GET /api/identity/users?search=admin%40gulfsteel.example -> [200]
+GET /api/identity/users?search=victim -> [200]
+GET /api/identity/users?filter=id%20eq%2001a102f7-ebdb-7332-9fce-143bdb29573c -> [400]
+GET /api/identity/users?filter=roleIds%20eq%2001a102f7-eace-70f0-864a-a9868c16ef59 -> [400]
+GET /api/identity/roles?search=Stolen -> [200]
+GET /api/identity/users?search=x&tenantId=0190a000-0000-7000-8000-000000000002 -> [200]
+GET /api/identity/users/01a102f7-ebdb-7332-9fce-143bdb29573c -> [404]
+GET /api/tenancy/tenant -> [200]
+GET /api/tenancy/tenant?tenantId=0190a000-0000-7000-8000-000000000002 -> [200]
+-- e-mail existence oracle across workspaces (both must be 201):
+POST /api/identity/users -> [201]  <-- B VALUE IN RESPONSE
+POST /api/identity/users -> [201]  <-- B VALUE IN RESPONSE
+-- change an A user's e-mail to B's admin address (must succeed, says nothing about B):
+PUT /api/identity/users/01a102f8-fdbc-7ed1-b3f0-2c8227fdc923 -> [200]  <-- B VALUE IN RESPONSE
+-- sign-in with A's credentials naming workspace B:
+"tenant":{"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م"}
+[200]
+-- same address in both workspaces, A's password (which workspace?):
+"tenant":{"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م"}
+[200]
+"tenant":{"id":"0190a000-0000-7000-8000-000000000002","code":"gulfsteel","nameEn":"Gulf Steel Fabrication LLC","nameAr":"الخليج لتصنيع الصلب ذ.م.م"}
+[200]
+-- B's records after the attack:
+{"id":"01a102f7-ebdb-7332-9fce-143bdb29573c","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","isActive":true,"roleIds":["01a102f7-eace-70f0-864a-a9868c16ef59"],"lastSignInAt":"2026-10-03T18:13:50.445019+00:00","createdAt":"2026-10-03T18:12:44.636683+00:00","versi
+{"id":"01a102f8-f13f-78d4-9442-4decb6ce647c","email":"victim.never@gulfsteel.example","displayName":"Victim Never","language":"en","isActive":true,"roleIds":[],"lastSignInAt":null,"createdAt":"2026-10-03T18:13:51.836739+00:00","version":790,"pendingSetup":true,"displayNameAr":null} [200]
+{"id":"01a102f7-eace-73f6-91a0-99a38aae8ffc","nameEn":"Read-only","nameAr":"قراءة فقط","permissions":["identity.profile.update","identity.roles.read","identity.users.read","tenancy.tenant.read
+{"authenticated":true,"user":{"id":"01a102f7-ebdb-7332-9fce-143bdb29573c","email":"admin@gulfsteel.example","displayName

@@ -13,6 +13,7 @@ public sealed class MarkerSet
 {
     private readonly TenantSnapshot _snapshot;
     private readonly IReadOnlyList<string> _markers;
+    private readonly MarkerSearch _search;
 
     /// <param name="notOwn">Text that does not identify this tenant although it now holds it:
     /// the other tenant's values (and anything carrying its canary) that the attack stored here.</param>
@@ -23,12 +24,12 @@ public sealed class MarkerSet
         _markers = values.Markers
             .Where(m => !excluded.Contains(m) && (otherCanary is null || !m.Contains(otherCanary, StringComparison.OrdinalIgnoreCase)))
             .ToList();
+        _search = new MarkerSearch(_markers);
     }
 
     public int Count => _snapshot.Markers.Count + _markers.Count;
 
-    public string? Find(string text) =>
-        _snapshot.FindMarker(text) ?? _markers.FirstOrDefault(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
+    public string? Find(string text) => _snapshot.FindMarker(text) ?? _search.Find(text);
 }
 
 /// <summary>
@@ -53,12 +54,18 @@ public sealed class TenantActivity
     private readonly List<Actor> _actors = [];
     private readonly Dictionary<string, List<string>> _created = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _routes = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _routeValues = new(StringComparer.OrdinalIgnoreCase);
+    private int _preTouches;
     private readonly Lock _lock = new();
     private MarkerSet? _forbidden;
     private int _requests;
     private int _reverseChecks;
     private int _successfulReads;
     private int _counter;
+
+    /// <summary>Distinguishes this activity's created records from those of any other activity on
+    /// the same database (upper-case letters and digits, so it fits code patterns).</summary>
+    private readonly string _run = Convert.ToHexString(Guid.NewGuid().ToByteArray(), 0, 2);
 
     private TenantActivity(ErpTestEnvironment env, SeedTenant tenant, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi)
     {
@@ -85,6 +92,23 @@ public sealed class TenantActivity
 
     /// <summary>Requests sent by the background reader while tenant A attacked.</summary>
     public int ConcurrentRequests { get; private set; }
+
+    /// <summary>Every value this tenant put into a route parameter (its own ids that answered, and
+    /// the records it created). Tenant A's route attack replays each of them on every route, so a
+    /// cache keyed by a route id alone (the shape of critic p03 round 1's plants T1 and T2: the
+    /// access view of a user cached per user id) is read back with exactly the id tenant B filled
+    /// it with, not with some other id of tenant B that was never cached.</summary>
+    public IReadOnlyList<string> RouteValues
+    {
+        get
+        {
+            lock (_lock) return _routeValues.Order(StringComparer.Ordinal).ToList();
+        }
+    }
+
+    /// <summary>Requests in which this tenant opened a route with the very value tenant A was about
+    /// to send in it.</summary>
+    public int PreTouches => _preTouches;
 
     /// <summary>Reasons the activity may have been blind (an actor signed out, nothing answered).</summary>
     public List<string> BlindSpots { get; } = [];
@@ -212,6 +236,9 @@ public sealed class TenantActivity
                     {
                         if (!_created.TryGetValue(collection, out var ids)) _created[collection] = ids = [];
                         ids.Add(id);
+                        // A record this tenant created is a route value of its own activity: the
+                        // attack replays it (a per-id cache holds exactly such ids).
+                        _routeValues.Add(id);
                     }
                 }
                 return status;
@@ -323,7 +350,7 @@ public sealed class TenantActivity
                     }
                 }
             }
-            await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = 4 },
+            await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests },
                 async (item, _) => await SendAsync(Admin, "GET", item.Path, null, item.Label));
         }
         if (_successfulReads == successBefore)
@@ -354,6 +381,33 @@ public sealed class TenantActivity
         {
             await WriteOneAsync(endpoint, own, phase);
         }
+    }
+
+    /// <summary>
+    /// Before tenant A attacks a route, tenant B's administrator and read-only user open it (GET)
+    /// with every value tenant A is about to put in its route parameters: whatever a handler keeps
+    /// per id (a closure, a static or a singleton cache keyed without the tenant) then holds tenant
+    /// B's answer for each id tenant A sends, so a leak through it cannot hide behind the choice of
+    /// ids. Only GET routes with parameters; writes are left to <see cref="WriteAsync"/>.
+    /// </summary>
+    public async Task TouchEveryAsync(ApiEndpoint endpoint, IEnumerable<string> values, string phase)
+    {
+        if (endpoint.Method != "GET" || endpoint.RouteParameters.Count == 0 || endpoint.Pattern.Contains("{*", StringComparison.Ordinal))
+        {
+            return;
+        }
+        var work = new List<(Actor Actor, string Path)>();
+        foreach (var value in values.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var path = endpoint.Path(_ => value);
+            work.Add((_actors[0], path));
+            work.Add((_actors[^1], path));
+        }
+        await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
+        {
+            await SendAsync(item.Actor, "GET", item.Path, null, $"GET {item.Path} [{phase}]");
+            Interlocked.Increment(ref _preTouches);
+        });
     }
 
     /// <summary>A quick round of every GET by the administrator (after tenant A wrote, so a write
@@ -443,7 +497,11 @@ public sealed class TenantActivity
         var key = $"{CollectionOf(endpoint.Pattern)}|{forWrite}";
         lock (_lock)
         {
-            if (_routes.TryGetValue(key, out var known)) return endpoint.Path(_ => known);
+            if (_routes.TryGetValue(key, out var known))
+            {
+                _routeValues.Add(known);
+                return endpoint.Path(_ => known);
+            }
         }
         var candidates = new List<string>();
         lock (_lock)
@@ -462,7 +520,11 @@ public sealed class TenantActivity
             var readPath = _endpoints.Any(e => e.Method == "GET" && e.Pattern == endpoint.Pattern) ? path : null;
             if (readPath is null)
             {
-                lock (_lock) _routes[key] = candidate;
+                lock (_lock)
+                {
+                    _routes[key] = candidate;
+                    _routeValues.Add(candidate);
+                }
                 return path;
             }
             using var probe = new HttpRequestMessage(HttpMethod.Get, readPath);
@@ -470,10 +532,15 @@ public sealed class TenantActivity
             Interlocked.Increment(ref _requests);
             if (response.IsSuccessStatusCode)
             {
-                lock (_lock) _routes[key] = candidate;
+                lock (_lock)
+                {
+                    _routes[key] = candidate;
+                    _routeValues.Add(candidate);
+                }
                 return path;
             }
         }
+        lock (_lock) _routeValues.Add(candidates[0]);
         return endpoint.Path(_ => candidates[0]);
     }
 
@@ -504,7 +571,13 @@ public sealed class TenantActivity
             return new JsonObject();
         }
         var n = Interlocked.Increment(ref _counter);
-        var body = _openApi.BuildBody(schema, (type, format, name) => OwnLeaf(type, format, name, own, n), useDocumentedValues: true) as JsonObject ?? [];
+        // Every leaf conforms to its documented constraints (enums, patterns, lengths, ranges), so
+        // the write passes validation and its handler runs to the end.
+        var body = _openApi.BuildBody(schema, (leaf, type, format, name) => _openApi.Conform(leaf, OwnLeaf(type, format, name, own, n)), useDocumentedValues: true) as JsonObject ?? [];
+        if (template is null)
+        {
+            UniqueDocumentedValues(schema, body, n);
+        }
         if (template is JsonObject source)
         {
             foreach (var (field, _) in body.ToList())
@@ -518,6 +591,41 @@ public sealed class TenantActivity
         }
         return body;
     }
+
+    /// <summary>
+    /// A create takes a field's documented example where the field has one (so it passes
+    /// validation), and the example is the same in every body: a field that must be unique in the
+    /// workspace, such as a company or branch code, would refuse the second create and the handler
+    /// would never run to the end. Each create therefore gets its own variant of a patterned
+    /// example (the example, this run's tag and the body's number) when the variant still conforms
+    /// to the field's pattern and length; other fields keep the example.
+    /// </summary>
+    private void UniqueDocumentedValues(JsonElement schema, JsonObject body, int n)
+    {
+        var resolved = _openApi.Resolve(schema);
+        if (!resolved.TryGetProperty("properties", out var properties))
+        {
+            return;
+        }
+        foreach (var property in properties.EnumerateObject())
+        {
+            if (body[property.Name] is not JsonValue value || value.GetValueKind() != JsonValueKind.String || !HasPattern(_openApi.Resolve(property.Value)))
+            {
+                continue;
+            }
+            var candidate = $"{value.GetValue<string>()}-{_run}-{n}";
+            if (_openApi.Conform(property.Value, JsonValue.Create(candidate)) is JsonValue conformed &&
+                conformed.GetValueKind() == JsonValueKind.String && conformed.GetValue<string>() == candidate)
+            {
+                body[property.Name] = candidate;
+            }
+        }
+    }
+
+    private bool HasPattern(JsonElement leaf) =>
+        leaf.ValueKind == JsonValueKind.Object &&
+        (leaf.TryGetProperty("pattern", out _) ||
+         new[] { "oneOf", "anyOf", "allOf" }.Any(c => leaf.TryGetProperty(c, out var options) && options.EnumerateArray().Any(o => HasPattern(_openApi.Resolve(o)))));
 
     private JsonNode? OwnLeaf(string type, string? format, string? name, TenantSnapshot own, int n)
     {
@@ -552,7 +660,8 @@ public sealed class TenantActivity
             foreach (var (table, ids) in own.IdsByTable)
             {
                 var tableName = table.Split('.').Last();
-                if (ids.Count > 0 && (tableName == stem + "s" || tableName == stem || tableName == stem + "es"))
+                var plural = stem.EndsWith('y') ? stem[..^1] + "ies" : stem + "s";
+                if (ids.Count > 0 && (tableName == plural || tableName == stem || tableName == stem + "es"))
                 {
                     return ids[0].ToString();
                 }

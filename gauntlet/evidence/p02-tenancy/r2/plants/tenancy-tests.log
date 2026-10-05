@@ -1,0 +1,62 @@
+Test run for /home/user/critic/p02-tenancy-r2/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.18]   Discovering: Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.37]   Discovered:  Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.56]   Starting:    Erp.Modules.Tenancy.Tests
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.System_work_sees_every_company_and_a_user_sees_none_until_bound [93 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.A_bound_scope_shows_only_its_companies_cannot_be_widened_and_refuses_writes_elsewhere [82 ms]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Reading_and_renaming_need_their_permissions [1 s]
+[xUnit.net 00:00:12.26]     Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back [FAIL]
+[xUnit.net 00:00:12.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.26]       Expected: NotFound
+[xUnit.net 00:00:12.26]       Actual:   OK
+[xUnit.net 00:00:12.26]       Stack Trace:
+[xUnit.net 00:00:12.26]         /home/user/critic/p02-tenancy-r2/tests/Erp.Modules.Tenancy.Tests/CompanyTests.cs(244,0): at Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back()
+[xUnit.net 00:00:12.26]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Branches_belong_to_one_company_and_codes_are_unique_within_it [1 s]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Each_user_reads_their_own_workspace [371 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Validation_names_every_bad_field_in_the_callers_language [187 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_keeps_the_list_contract_and_needs_only_its_own_permission [1 s]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Renaming_needs_both_names_and_the_version_and_refuses_a_stale_version [489 ms]
+  Failed Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back [549 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back() in /home/user/critic/p02-tenancy-r2/tests/Erp.Modules.Tenancy.Tests/CompanyTests.cs:line 244
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_same_logo_in_two_companies_has_a_different_tag_in_each [481 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.A_new_user_works_in_no_company_until_given_access_and_then_only_in_the_companies_given [1 s]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_companies_list_never_reads_logo_bytes_and_still_searches_filters_sorts_and_groups [313 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.A_company_or_branch_needs_only_a_name_and_gets_a_code_made_from_it [274 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Changes_need_the_version_read_and_a_company_can_be_deactivated_and_reactivated [308 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.An_administrator_creates_a_company_works_in_it_and_reads_it_back [419 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_working_company_is_kept_across_sessions_and_falls_back_when_access_is_removed [1 s]
+[xUnit.net 00:00:14.96]     Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access [FAIL]
+[xUnit.net 00:00:14.96]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.96]       Expected: Forbidden
+[xUnit.net 00:00:14.96]       Actual:   OK
+[xUnit.net 00:00:14.96]       Stack Trace:
+[xUnit.net 00:00:14.96]         /home/user/critic/p02-tenancy-r2/tests/Erp.Modules.Tenancy.Tests/AccessTests.cs(107,0): at Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access()
+[xUnit.net 00:00:14.96]         --- End of stack trace from previous location ---
+  Failed Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access [878 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access() in /home/user/critic/p02-tenancy-r2/tests/Erp.Modules.Tenancy.Tests/AccessTests.cs:line 107
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_pages_users_with_their_companies [231 ms]
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.An_operator_provisions_a_workspace_with_its_first_company_branch_and_administrator [964 ms]
+[xUnit.net 00:00:22.12]   Finished:    Erp.Modules.Tenancy.Tests (ID = 'c2d4b544448d7430afe81fa3da3f41961572ce5685164f9b1ecf338eb67479b7')
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Suspending_a_workspace_ends_its_sessions_and_activating_it_restores_sign_in [696 ms]
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Workspace_settings_are_validated_and_kept [251 ms]
+
+Test Run Failed.
+Total tests: 21
+     Passed: 19
+     Failed: 2
+ Total time: 22.5306 Seconds

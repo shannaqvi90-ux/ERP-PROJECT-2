@@ -1,0 +1,33 @@
+# Reviewed endpoint-to-permission map of the identity module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares
+# (or "anonymous" for a reviewed anonymous endpoint), and every line must match an endpoint.
+# A new endpoint, or a changed permission, fails the gate until this file is reviewed and changed
+# with it: the reason after # says why that permission, and no broader one, guards the endpoint.
+# (Critic p03 round 2: GET /users/{id}/sign-ins planted under identity.users.read was caught only
+# because identity.signIns.read then became unused.)
+prefix /api/identity/
+prefix /api/auth/
+
+POST /api/auth/sign-in anonymous # nobody has a session before signing in
+POST /api/auth/sign-out anonymous # works after the session expired; revokes only the caller's own session
+GET /api/auth/session anonymous # the sign-in screen asks whether a session exists; only the caller's own
+
+GET /api/identity/users identity.users.read # the users list: names, addresses, roles, status
+GET /api/identity/users/{id:guid} identity.users.read # one user record
+GET /api/identity/users/{id:guid}/access identity.users.read # what a user can do and which role grants it: derived from roles a users reader already sees
+GET /api/identity/users/{id:guid}/sign-ins identity.signIns.read # sign-in history (addresses, devices, failures) is more sensitive than the record
+POST /api/identity/users identity.users.create # creating an account
+PUT /api/identity/users/{id:guid} identity.users.update # editing name, address, language, status and roles (grants checked in the handler)
+POST /api/identity/users/{id:guid}/password identity.users.resetPassword # resetting another user's password is its own permission
+POST /api/identity/users/{id:guid}/unblock identity.users.update # clearing a sign-in pause changes the account, not just reads its history
+POST /api/identity/users/{id:guid}/sessions/revoke identity.users.update # ending another user's sessions changes the account
+DELETE /api/identity/users/{id:guid} identity.users.delete # removing an account that never signed in
+PUT /api/identity/me/preferences identity.profile.update # the caller's own language, theme and density
+
+GET /api/identity/roles identity.roles.read # the roles list
+GET /api/identity/roles/{id:guid} identity.roles.read # one role and its permissions
+GET /api/identity/permissions identity.roles.read # the permission catalogue the role matrix shows
+POST /api/identity/roles identity.roles.create # a new role (within the caller's own grants)
+POST /api/identity/roles/{id:guid}/copy identity.roles.create # copying is creating a role
+PUT /api/identity/roles/{id:guid} identity.roles.update # renaming a role or changing what it grants
+DELETE /api/identity/roles/{id:guid} identity.roles.delete # removing a role and its assignments

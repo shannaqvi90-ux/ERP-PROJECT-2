@@ -23,6 +23,359 @@ namespace Erp.Modules.Tenancy.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Erp.Modules.Tenancy.Branch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AddressAr")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("address_ar");
+
+                    b.Property<string>("AddressLine1")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address_line1");
+
+                    b.Property<string>("AddressLine2")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address_line2");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("city");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("code");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("country");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Emirate")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("emirate");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_ar");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_en");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("PoBox")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("po_box");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_branches");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_branches_tenant_id_id");
+
+                    b.HasAlternateKey("TenantId", "CompanyId", "Id")
+                        .HasName("ak_branches_tenant_id_company_id_id");
+
+                    b.HasIndex("TenantId", "NameEn")
+                        .HasDatabaseName("ix_branches_tenant_id_name_en");
+
+                    b.HasIndex("TenantId", "City", "Id")
+                        .HasDatabaseName("ix_branches_tenant_id_city_id");
+
+                    b.HasIndex("TenantId", "Code", "Id")
+                        .HasDatabaseName("ix_branches_tenant_id_code_id");
+
+                    b.HasIndex("TenantId", "CompanyId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_branches_tenant_id_company_id_code");
+
+                    b.HasIndex("TenantId", "NameAr", "Id")
+                        .HasDatabaseName("ix_branches_tenant_id_name_ar_id");
+
+                    b.HasIndex(new[] { "Code", "NameEn", "NameAr" }, "ix_branches_search")
+                        .HasDatabaseName("ix_branches_code_name_en_name_ar");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Code", "NameEn", "NameAr" }, "ix_branches_search"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Code", "NameEn", "NameAr" }, "ix_branches_search"), new[] { "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops" });
+
+                    b.ToTable("branches", "tenancy", t =>
+                        {
+                            t.HasCheckConstraint("ck_branches_code", "code ~ '^[A-Z0-9][A-Z0-9-]{1,19}$'");
+
+                            t.HasCheckConstraint("ck_branches_country", "country ~ '^[A-Z]{2}$'");
+
+                            t.HasCheckConstraint("ck_branches_name", "name_en <> '' OR name_ar <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AddressAr")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("address_ar");
+
+                    b.Property<string>("AddressLine1")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address_line1");
+
+                    b.Property<string>("AddressLine2")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address_line2");
+
+                    b.Property<string>("BaseCurrency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("base_currency");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("city");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("code");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("country");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Emirate")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("emirate");
+
+                    b.Property<int>("FiscalYearStartDay")
+                        .HasColumnType("integer")
+                        .HasColumnName("fiscal_year_start_day");
+
+                    b.Property<int>("FiscalYearStartMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("fiscal_year_start_month");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("LegalNameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("legal_name_ar");
+
+                    b.Property<string>("LegalNameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("legal_name_en");
+
+                    b.Property<byte[]>("Logo")
+                        .HasColumnType("bytea")
+                        .HasColumnName("logo");
+
+                    b.Property<string>("LogoContentType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("logo_content_type");
+
+                    b.Property<string>("LogoHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("logo_hash");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("PoBox")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("po_box");
+
+                    b.Property<string>("TaxRegistrationNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tax_registration_number");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TradeLicenceAuthority")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("trade_licence_authority");
+
+                    b.Property<string>("TradeLicenceNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("trade_licence_number");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Website")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("website");
+
+                    b.HasKey("Id")
+                        .HasName("pk_companies");
+
+                    b.HasAlternateKey("TenantId", "CompanyId")
+                        .HasName("ak_companies_tenant_id_company_id");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_companies_tenant_id_id");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_companies_tenant_id_code");
+
+                    b.HasIndex("TenantId", "LegalNameEn")
+                        .HasDatabaseName("ix_companies_tenant_id_legal_name_en");
+
+                    b.HasIndex("TenantId", "City", "Id")
+                        .HasDatabaseName("ix_companies_tenant_id_city_id");
+
+                    b.HasIndex("TenantId", "LegalNameAr", "Id")
+                        .HasDatabaseName("ix_companies_tenant_id_legal_name_ar_id");
+
+                    b.HasIndex(new[] { "Code", "LegalNameEn", "LegalNameAr" }, "ix_companies_search")
+                        .HasDatabaseName("ix_companies_code_legal_name_en_legal_name_ar");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Code", "LegalNameEn", "LegalNameAr" }, "ix_companies_search"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Code", "LegalNameEn", "LegalNameAr" }, "ix_companies_search"), new[] { "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops" });
+
+                    b.ToTable("companies", "tenancy", t =>
+                        {
+                            t.HasCheckConstraint("ck_companies_base_currency", "base_currency ~ '^[A-Z]{3}$'");
+
+                            t.HasCheckConstraint("ck_companies_code", "code ~ '^[A-Z0-9][A-Z0-9-]{1,19}$'");
+
+                            t.HasCheckConstraint("ck_companies_company_is_self", "company_id = id");
+
+                            t.HasCheckConstraint("ck_companies_country", "country ~ '^[A-Z]{2}$'");
+
+                            t.HasCheckConstraint("ck_companies_fiscal_year_start", "fiscal_year_start_month BETWEEN 1 AND 12 AND fiscal_year_start_day BETWEEN 1 AND 31");
+
+                            t.HasCheckConstraint("ck_companies_legal_name", "legal_name_en <> '' OR legal_name_ar <> ''");
+
+                            t.HasCheckConstraint("ck_companies_logo", "(logo IS NULL) = (logo_content_type IS NULL) AND (logo IS NULL) = (logo_hash IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Erp.Modules.Tenancy.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -36,6 +389,12 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnType("character varying(40)")
                         .HasColumnName("code");
 
+                    b.Property<int>("CompanyCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("company_count");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -45,6 +404,14 @@ namespace Erp.Modules.Tenancy.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
+
+                    b.Property<string>("DefaultLanguage")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasDefaultValue("en")
+                        .HasColumnName("default_language");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
@@ -68,6 +435,14 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasDefaultValue("Asia/Dubai")
+                        .HasColumnName("time_zone");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -84,6 +459,14 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
+                    b.Property<string>("WeekStart")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("monday")
+                        .HasColumnName("week_start");
+
                     b.HasKey("Id")
                         .HasName("pk_tenants");
 
@@ -98,10 +481,337 @@ namespace Erp.Modules.Tenancy.Migrations
                         {
                             t.HasCheckConstraint("ck_tenants_code", "code ~ '^[a-z0-9][a-z0-9-]{1,39}$'");
 
+                            t.HasCheckConstraint("ck_tenants_default_language", "default_language IN ('en', 'ar')");
+
                             t.HasCheckConstraint("ck_tenants_status", "status IN ('active', 'suspended')");
 
                             t.HasCheckConstraint("ck_tenants_tenant_is_self", "tenant_id = id");
+
+                            t.HasCheckConstraint("ck_tenants_week_start", "week_start IN ('monday', 'sunday', 'saturday')");
                         });
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserBranchAccess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_branch_access");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_user_branch_access_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CompanyId", "BranchId")
+                        .HasDatabaseName("ix_user_branch_access_tenant_id_company_id_branch_id");
+
+                    b.HasIndex("TenantId", "UserId", "BranchId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_branch_access_tenant_id_user_id_branch_id");
+
+                    b.HasIndex("TenantId", "UserId", "CompanyId")
+                        .HasDatabaseName("ix_user_branch_access_tenant_id_user_id_company_id");
+
+                    b.ToTable("user_branch_access", "tenancy");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserCompanyAccess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AllBranches")
+                        .HasColumnType("boolean")
+                        .HasColumnName("all_branches");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_company_access");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_user_company_access_tenant_id_id");
+
+                    b.HasAlternateKey("TenantId", "UserId", "CompanyId")
+                        .HasName("ak_user_company_access_tenant_id_user_id_company_id");
+
+                    b.HasIndex("TenantId", "CompanyId")
+                        .HasDatabaseName("ix_user_company_access_tenant_id_company_id");
+
+                    b.ToTable("user_company_access", "tenancy");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserCompanyTotal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("CompanyCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_count");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_company_totals");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_user_company_totals_tenant_id_id");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_company_totals_tenant_id_user_id");
+
+                    b.ToTable("user_company_totals", "tenancy", t =>
+                        {
+                            t.HasCheckConstraint("ck_user_company_totals_count", "company_count >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserWorkplace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("branch_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_workplaces");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_user_workplaces_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CompanyId")
+                        .HasDatabaseName("ix_user_workplaces_tenant_id_company_id");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_workplaces_tenant_id_user_id");
+
+                    b.HasIndex("TenantId", "CompanyId", "BranchId")
+                        .HasDatabaseName("ix_user_workplaces_tenant_id_company_id_branch_id");
+
+                    b.HasIndex("TenantId", "UserId", "CompanyId")
+                        .HasDatabaseName("ix_user_workplaces_tenant_id_user_id_company_id");
+
+                    b.ToTable("user_workplaces", "tenancy");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.Branch", b =>
+                {
+                    b.HasOne("Erp.Modules.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CompanyId")
+                        .HasPrincipalKey("TenantId", "CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_branches_companies_tenant_id_company_id");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserBranchAccess", b =>
+                {
+                    b.HasOne("Erp.Modules.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CompanyId", "BranchId")
+                        .HasPrincipalKey("TenantId", "CompanyId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_branch_access_branches_tenant_id_company_id_branch_id");
+
+                    b.HasOne("Erp.Modules.Tenancy.UserCompanyAccess", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "UserId", "CompanyId")
+                        .HasPrincipalKey("TenantId", "UserId", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_branch_access_user_company_access_tenant_id_user_id_co");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserCompanyAccess", b =>
+                {
+                    b.HasOne("Erp.Modules.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CompanyId")
+                        .HasPrincipalKey("TenantId", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_company_access_companies_tenant_id_company_id");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Tenancy.UserWorkplace", b =>
+                {
+                    b.HasOne("Erp.Modules.Tenancy.Branch", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CompanyId", "BranchId")
+                        .HasPrincipalKey("TenantId", "CompanyId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_user_workplaces_branches_tenant_id_company_id_branch_id");
+
+                    b.HasOne("Erp.Modules.Tenancy.UserCompanyAccess", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "UserId", "CompanyId")
+                        .HasPrincipalKey("TenantId", "UserId", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_workplaces_user_company_access_tenant_id_user_id_compa");
                 });
 #pragma warning restore 612, 618
         }

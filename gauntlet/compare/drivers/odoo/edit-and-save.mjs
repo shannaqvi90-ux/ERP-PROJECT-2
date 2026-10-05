@@ -12,8 +12,8 @@ function build(keyboard) {
     const { phone } = ctx.task.input;
     // Clicking the field puts the caret in it; select its content and type over it.
     await op.click('.o_form_view .o_field_widget[name="phone"] input', { label: 'phone field' });
-    await op.press('Control+a', { label: 'select the old number', chain: true });
-    await op.type(phone, { label: 'new number', chain: true });
+    await op.press('Control+a', { label: 'select the old number' });
+    await op.type(phone, { label: 'new number' });
     await saveForm(op, keyboard);
     return {};
   };
@@ -36,6 +36,7 @@ export default {
     await openRecord(ctx, 'res.partner', ctx.state.contact.id);
     await ctx.page.locator('.o_form_view .o_field_widget[name="phone"] input').waitFor();
   },
+  ready: '.o_form_view .o_field_widget[name="phone"] input',
   async verify(ctx) {
     const [c] = await (await adminRpc(ctx)).read('res.partner', [ctx.state.contact.id], ['phone']);
     const shown = await ctx.page.locator('.o_form_view .o_field_widget[name="phone"] input').inputValue();

@@ -1,0 +1,23 @@
+             t             | action | actor_kind | count 
+---------------------------+--------+------------+-------
+ identity.roles            | insert | user       |     1
+ identity.sessions         | insert | user       |    87
+ identity.user_credentials | delete | user       |    12
+ identity.user_credentials | insert | user       |    17
+ identity.user_roles       | delete | user       |    13
+ identity.user_roles       | insert | user       |    13
+ identity.users            | delete | user       |    12
+ identity.users            | insert | user       |    17
+ identity.users            | update | user       |     4
+(9 rows)
+
+    table_name    | action | has_actor |                                                                                                             left                                                                                                             
+------------------+--------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ users            | update | t         | {"is_active": {"new": false, "old": true}}
+ user_credentials | insert | t         | {"id": {"new": "01a1031a-214e-72f3-b3ba-83a137be293e"}, "changed_at": {"new": "2026-10-03T18:50:06.542993+00:00"}, "changed_by": {"new": "01a102f7-1e38-7eb0-a691-d8c6e7b3b87e"}, "must_change": {"new": false}, "password_h
+ users            | insert | t         | {"id": {"new": "01a1031a-214e-72f3-b3ba-83a137be293e"}, "email": {"new": "critic.deact.6519@alnoor.example"}, "language": {"new": "en"}, "numerals": {"new": "latn"}, "is_active": {"new": true}, "display_name": {"new": "C
+ users            | update | t         | {"is_active": {"new": false, "old": true}}
+ users            | update | t         | {"sign_in_unblocked_at": {"new": "2026-10-03T18:49:44.444323+00:00"}}
+ user_credentials | insert | t         | {"id": {"new": "01a10319-b3f9-716e-9684-5863c06ec038"}, "changed_at": {"new": "2026-10-03T18:49:38.553889+00:00"}, "changed_by": {"new": "01a102f7-1e38-7eb0-a691-d8c6e7b3b87e"}, "must_change": {"new": false}, "password_h
+(6 rows)
+

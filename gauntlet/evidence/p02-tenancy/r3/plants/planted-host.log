@@ -1,0 +1,184 @@
+warn: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[16]
+      The WebRootPath was not found: /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/bin/Release/net10.0/wwwroot. Static files may be unavailable.
+warn: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[16]
+      The WebRootPath was not found: /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/bin/Release/net10.0/wwwroot. Static files may be unavailable.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:20252
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/user/critic/p02-tenancy-r3-plants/src/Host/Erp.Host/bin/Release/net10.0
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10751-a5b0-75d0-9ad6-a010952334e1 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-b708-7651-b89f-3f3ea825fb78 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10751-a5b0-75d0-9ad6-a010952334e1 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-ba6e-7df7-9fe4-625a73607601 signed in to tenant 0190a000-0000-7000-8000-000000000001
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (5ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = Guid), @p8='?', @p9='?' (DbType = DateTime), @p10='?' (DbType = Guid), @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Boolean), @p16='?', @p17='?', @p18='?' (DbType = Binary), @p19='?', @p20='?', @p21='?', @p22='?', @p23='?', @p24='?' (DbType = Guid), @p25='?', @p26='?', @p27='?' (DbType = DateTime), @p28='?' (DbType = Guid), @p29='?', @p30='?' (DbType = Guid), @p31='?' (DbType = Boolean), @p32='?' (DbType = Guid), @p33='?' (DbType = DateTime), @p34='?' (DbType = Guid), @p35='?' (DbType = Guid), @p36='?' (DbType = DateTime), @p37='?' (DbType = Guid), @p38='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO tenancy.companies (id, address_ar, address_line1, address_line2, base_currency, city, code, company_id, country, created_at, created_by, email, emirate, fiscal_year_start_day, fiscal_year_start_month, is_active, legal_name_ar, legal_name_en, logo, logo_content_type, logo_hash, phone, po_box, tax_registration_number, tenant_id, trade_licence_authority, trade_licence_number, updated_at, updated_by, website)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25, @p26, @p27, @p28, @p29)
+      RETURNING xmin;
+      INSERT INTO tenancy.user_company_access (id, all_branches, company_id, created_at, created_by, tenant_id, updated_at, updated_by, user_id)
+      VALUES (@p30, @p31, @p32, @p33, @p34, @p35, @p36, @p37, @p38)
+      RETURNING xmin;
+fail: Microsoft.EntityFrameworkCore.Update[10000]
+      An exception occurred in the database while saving changes for context type 'Erp.Modules.Tenancy.TenancyDbContext'.
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+          SchemaName: tenancy
+          TableName: companies
+          ConstraintName: ix_companies_tenant_id_code
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+          SchemaName: tenancy
+          TableName: companies
+          ConstraintName: ix_companies_tenant_id_code
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+info: Erp.Kernel.Http.ErpExceptionHandler[0]
+      Request 0HNP24G1N9QBS:00000009 answered 409 duplicate: An error occurred while saving the entity changes. See the inner exception for details.
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-bc7e-786e-9ad8-c97532012591 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10751-a5b0-75d0-9ad6-a010952334e1 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-e4aa-7a5d-ad07-cf951098fb6c signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10751-a5b0-75d0-9ad6-a010952334e1 signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10751-a5ec-7e01-8b88-a77bfdcce4ea signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-e7da-7557-b224-5fcb795d1345 signed in to tenant 0190a000-0000-7000-8000-000000000001
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = Guid), @p8='?', @p9='?' (DbType = DateTime), @p10='?' (DbType = Guid), @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = Int32), @p15='?' (DbType = Boolean), @p16='?', @p17='?', @p18='?' (DbType = Binary), @p19='?', @p20='?', @p21='?', @p22='?', @p23='?', @p24='?' (DbType = Guid), @p25='?', @p26='?', @p27='?' (DbType = DateTime), @p28='?' (DbType = Guid), @p29='?', @p30='?' (DbType = Guid), @p31='?' (DbType = Boolean), @p32='?' (DbType = Guid), @p33='?' (DbType = DateTime), @p34='?' (DbType = Guid), @p35='?' (DbType = Guid), @p36='?' (DbType = DateTime), @p37='?' (DbType = Guid), @p38='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO tenancy.companies (id, address_ar, address_line1, address_line2, base_currency, city, code, company_id, country, created_at, created_by, email, emirate, fiscal_year_start_day, fiscal_year_start_month, is_active, legal_name_ar, legal_name_en, logo, logo_content_type, logo_hash, phone, po_box, tax_registration_number, tenant_id, trade_licence_authority, trade_licence_number, updated_at, updated_by, website)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25, @p26, @p27, @p28, @p29)
+      RETURNING xmin;
+      INSERT INTO tenancy.user_company_access (id, all_branches, company_id, created_at, created_by, tenant_id, updated_at, updated_by, user_id)
+      VALUES (@p30, @p31, @p32, @p33, @p34, @p35, @p36, @p37, @p38)
+      RETURNING xmin;
+fail: Microsoft.EntityFrameworkCore.Update[10000]
+      An exception occurred in the database while saving changes for context type 'Erp.Modules.Tenancy.TenancyDbContext'.
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+          SchemaName: tenancy
+          TableName: companies
+          ConstraintName: ix_companies_tenant_id_code
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_companies_tenant_id_code"
+          SchemaName: tenancy
+          TableName: companies
+          ConstraintName: ix_companies_tenant_id_code
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+info: Erp.Kernel.Http.ErpExceptionHandler[0]
+      Request 0HNP24G1N9QBU:0000000A answered 409 duplicate: An error occurred while saving the entity changes. See the inner exception for details.
+info: Erp.Modules.Identity.Auth.SignInService[0]
+      User 01a10752-e945-710f-bac7-61360ac7c60c signed in to tenant 0190a000-0000-7000-8000-000000000001
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...

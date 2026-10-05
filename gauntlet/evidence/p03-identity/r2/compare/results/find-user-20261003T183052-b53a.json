@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261003T183052-b53a",
+  "instrument": 3,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-03T18:30:53.050Z",
+  "finished_at": "2026-10-03T18:30:55.603Z",
+  "environment": {
+    "base_url": "http://localhost:20350",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 11,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.355,
+    "system_wait_seconds": 0.113,
+    "human_seconds": 10.53,
+    "human_plus_wait_seconds": 10.643,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 2,
+      "B": 4,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.085
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "three letters of each word of the name",
+      "keystrokes": 11,
+      "chain": false,
+      "at": 0.104,
+      "took": 0.066,
+      "text": "maj ani pil"
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "open the user",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.253,
+      "took": 0.091
+    }
+  ],
+  "waits": [
+    {
+      "label": "user list ready, search focused",
+      "at": 0.085,
+      "seconds": 0.019
+    },
+    {
+      "label": "the row with the name",
+      "at": 0.171,
+      "seconds": 0.083
+    },
+    {
+      "label": "the user's record with the sign-in",
+      "at": 0.344,
+      "seconds": 0.011
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "e8d8c7fb4e6da101.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r2/compare/blind/shots/e8d8c7fb4e6da101.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "79c2373feefb3da2.jpg",
+      "at": 0.253,
+      "path": "../../evidence-staging/p03-identity/r2/compare/blind/shots/79c2373feefb3da2.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "fdba3aab5848fd06.jpg",
+      "at": 0.355,
+      "path": "../../evidence-staging/p03-identity/r2/compare/blind/shots/fdba3aab5848fd06.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "record_shows_name": true,
+      "record_shows_login": true,
+      "url": "http://localhost:20350/identity/users?q=maj+ani+pil&open=019371ad-40c0-7f6f-871b-d3232c8a9e38"
+    }
+  },
+  "path_notes": "Users (navigation; the search box has focus) > type the first three letters of each word of the name > the row with the name > open it: the user's record shows the sign-in.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-user.mjs",
+    "sha256": "726a27a0cbf6903e278d763766de20da1b85792e99849e452fd53c07b5f1209f"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null
+}

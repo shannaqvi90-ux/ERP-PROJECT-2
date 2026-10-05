@@ -12,6 +12,8 @@ Needs only Docker (with Compose v2), bash and git.
 ./erp verify    # build, migrate, seed and run every test: unit, integration, gates, end to end
 ./erp verify --clean-clone   # G3: the same from a fresh clone of HEAD, then ./erp up there
 ./erp down      # stop the demo (--volumes also deletes its data)
+./erp tenant create --code acme --name-en "Acme LLC" --name-ar "أكمي ذ.م.م" --admin-email owner@acme.example --admin-name "Owner"
+                # platform operator: provision a workspace (also: tenant suspend|activate --code …, tenant list)
 ```
 
 Ports and the compose project come from the environment, so copies run side by side:
@@ -19,13 +21,22 @@ Ports and the compose project come from the environment, so copies run side by s
 `ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
 
+The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
+with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
+read-only user in the first company only. The working company and branch switcher sits in the
+top bar (Alt+C).
+
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
 `noaccess@alnoor.example` (no roles), `admin@gulfsteel.example` (second workspace).
 
-New users are invited with a one-time set-up code shown once to the administrator (Users, `n`);
+New users are invited with a one-time set-up code shown once to the administrator (Users, `Alt+N` from anywhere on the screen, or `n` when no field has the focus);
 they sign in with it as the password and choose their own. Failed sign-ins pause only the client
-that failed, on that account; administrators see the sign-in history and can unblock.
+that failed, on that account; administrators see the sign-in history and can unblock. An
+invitation sent to a mistyped address is corrected in the user's panel, or deleted while nobody has
+signed in with it (`identity.users.delete`); anyone who has signed in stays for the audit trail and
+is deactivated instead. Roles and users are managed only by someone who holds every permission
+they grant; the screens offer nothing else.
 
 ## Layout
 
@@ -56,9 +67,15 @@ that failed, on that account; administrators see the sign-in history and can unb
    (`docs/decisions/p05-list-search-relevance.md`), and `/api/lists/<key>/definition` and saved views
    appear for it automatically. A binding holds no state (keep caches off registration objects: the
    G1 gates walk them field by field and judge every list answer against the asking tenant's rows).
+   A list whose rows belong to another module is registered with
+   `module.List(definition, servedBy: "<other list>")` and queried through that module's contract
+   (the access list over identity's users, `docs/decisions/p02-tenancy-lists-on-the-list-contract.md`).
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
-   for every table. A list served from the database needs a GIN `gin_trgm_ops` index on its search
+   for every table, and `migrationBuilder.ProtectCompanyTable(schema, table)` for every table whose rows
+   belong to a company (`company_id`; entities implement `ICompanyOwned`). The signed-in user's companies,
+   working company and branch are in `ICompanyContext`; company facts in `ICompanyDirectory`.
+   A list served from the database needs a GIN `gin_trgm_ops` index on its search
    fields and a `(tenant_id, column, id)` index per sortable column (the list index gate checks both).
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens
    (`routes.tsx`: each screen's path and permission match its menu entry; a list screen is a
@@ -66,7 +83,14 @@ that failed, on that account; administrators see the sign-in history and can unb
    return `{ items, total, next, groups, ranked }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
-5. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
+   Another module is used only through its `….Contracts` project (and events); a module's
+   DbContext maps only its own schema, and a web module imports nothing from another web module
+   (`ModuleBoundaryGateTests`).
+5. A reviewed endpoint-to-permission map, `tests/Gates/endpoint-permissions/<module>.txt`: the
+   module's route prefixes and one line per endpoint with its permission and why no broader one
+   (G2 refuses any `/api/<module>/` route under no map; the lists module's per-list routes derive
+   their permission from the list instead).
+6. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
    controls (the company/branch switcher), status-line items and command palette sources, each
    with a permission (`docs/decisions/p04-shell-layout-and-extension-points.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.

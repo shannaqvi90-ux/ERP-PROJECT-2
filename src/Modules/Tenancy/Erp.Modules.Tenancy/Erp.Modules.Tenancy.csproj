@@ -8,11 +8,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
     <ProjectReference Include="..\Erp.Modules.Tenancy.Contracts\Erp.Modules.Tenancy.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Erp.Modules.Identity.Contracts\Erp.Modules.Identity.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Tenancy.Resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Erp.Modules.Tenancy.Tests" />
   </ItemGroup>
 </Project>

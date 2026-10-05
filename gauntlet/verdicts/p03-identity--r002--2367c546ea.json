@@ -1,0 +1,126 @@
+{
+  "piece": "p03-identity",
+  "round": 2,
+  "commit": "2367c546ea296e7a089f1d9a9a0637a04e449e0e",
+  "judged_at": "2026-10-03T18:59:31Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p03-identity round 2",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "My own attacks found no leak. Signed in as alnoor's admin, I made 26 calls against gulfsteel's ids for its admin, a B user who never signed in, the B Administrator role and another B role. They covered GET, PUT, DELETE, password, unblock, revoke, copy and access, plus search and filter with B values, tenant headers and query, sign-in naming workspace B, and the same address existing in both workspaces. Every call by id answered 404, and searches returned nothing of B. Creating an address that B already uses answered 201, the same as for an unused address. B's records were unchanged afterwards (attacks/attack-a-vs-b.txt). As the erp_app role: 0 rows with no tenant bound; bound to tenant A, 0 of B's rows visible and UPDATE 0; an insert or move into tenant B was refused by RLS; password_hash and sign_in_secret were denied; SET ROLE to erp_auth or erp_owner was refused; a tenant set at session level was ignored (attacks/db-app-role*.txt)."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Four leaks were planted in identity endpoints:\n- L1: a per-id closure cache on /users/{id}/access. Caught by both G1ProcessState and G1HttpIsolation.\n- L2: a per-id disk cache on /users/{id}/sign-ins, with no process state. Caught by G1HttpIsolation, with 16 leaks.\n- L3: a disk cache filled by PUT and served by GET /users/{id}. Caught by G1HttpIsolation (plants/plant-L1-L2-L3.log, plant-L2-alone.log).\n- L4: a disk registry of every address created, which answers 409 on POST /users across workspaces. Caught only by G1SignInThrottle, because it happens to create one address in two workspaces. G1HttpIsolation passed with L4 in place (plants/plant-L4.log); see other findings."
+    },
+    {
+      "gate": "G2 permissions of the product (restricted roles, escalation)",
+      "status": "pass",
+      "evidence": "No escalation was found in the shipped product.\n- The read-only user sees no New role, no Save and no reset password, has 0 enabled matrix checkboxes, and no longer gets the sign-in history tab (browser-walk.txt, screenshot 09).\n- The weak-user test returns 403 for both a rename and an e-mail-only edit of the Administrator (plants/plant-P5-proof-unplanted-control.log).\n- The G2 suite passed in verify."
+    },
+    {
+      "gate": "G2 gate catches permission faults planted in this piece's surface",
+      "status": "fail",
+      "evidence": "P5 adds a bypass on PUT /api/identity/users/{id}: when only the e-mail changes, the access check on the target is skipped. With P5, G2 passes 20/20 (plants/plant-P5-alone.log) and Erp.Modules.Identity.Tests passes 73/73 (plant-P5-identity-tests.log). The proof (plants/CriticEmailProof.cs, plant-P5-proof.log): a user holding only users.update, users.read and roles.read gets 403 renaming the Administrator, but 200 changing the Administrator's sign-in to taken.over@attacker.example. The Administrator then cannot sign in (401).\n\nUI plant U1 shows New role without identity.roles.create. It passes 112/112 web unit tests and the 22 identity, permissions and shell e2e tests run against the planted UI (plant-U1-web-unit.log, plant-U1-e2e.log). A read-only user then sees New role, which opens a disabled form (plant-U1-proof.txt).\n\nThe other permission plants were caught:\n- P1, revoke-sessions with no access check, by GrantBearingRecords and the self test.\n- P3, no permission on /access, because the host refuses to start.\n- P4, role update with no grant check, by No_endpoint_grants_more_than_the_caller_holds.\n- P2, sign-ins guarded by users.read, only incidentally by the dead-permission rule (plant-P1-P5.log, plant-P1-P2-P4-P5.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds, tests",
+      "status": "pass",
+      "evidence": "On a fresh clone of 2367c54, ./erp verify with ERP_PROJECT=c-p03-identity-r2 and ports 20350, 20351, 20360 and 20361 finished with rc=0 in 1552 s on a machine at load average about 25. It ran 270 .NET, 112 web unit, 36 e2e and 116 compare tests, and the ratchet check passed (verify.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command to running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up with ERP_SEED_USERS_CSV (the shared dataset) and ERP_HTTP_PORT=20350 was serving in 79 s, with 100,006 users in alnoor (up-dataset.log, screenshot 05)."
+    },
+    {
+      "gate": "Rule gates (licences, money, strings, audit) and ratchet",
+      "status": "pass",
+      "evidence": "Passed inside verify, and every ratchet minimum held or rose: suites went from r1's 158/74/24/68 to 270/112/36/116. In the database, audit.entries holds user-attributed rows for users, user_roles, user_credentials, roles and sessions. password_hash is stored as [redacted] (audit-sample.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r2 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ./erp verify",
+    "total": 534,
+    "passed": 534,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 1552
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 1631,
+    "evidence": "Fresh git clone of 2367c54, then ./erp verify: rc=0 in 1552 s, running 270 .NET, 112 web unit, 36 e2e and 116 compare tests (verify.log). Then ./erp up with the shared users.csv: running in 79 s on port 20350 (up-dataset.log). Ports and the project name were overridden through the documented ERP_* variables."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 35,
+        "seconds": 1.224,
+        "klm_seconds": 20.3
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 9.114,
+        "klm_seconds": 30.05
+      },
+      "notes": "Median of 3 runs each, blind, with the critic-fixed ours driver (compare-drivers/ours-create-restricted-user.fixed.mjs; results in compare-fixed/). The shipped ours driver fails 3 of 3 runs (compare/comparisons/create-restricted-user.json: 'ours error', 120 s timeout). The Users list now opens with the cursor in its search box, so the driver's 'n' is typed into the search (screenshot 11). The fixed path is Users > click New user > type the e-mail > click the role > Ctrl+Enter (screenshot 12). The seeded Read-only role now also grants tenancy.tenant.read, so the shipped verify step also failed; the fixed set-up uses a 'Clerk (restricted)' role granting only identity.profile.update. Caveat as in r1: no contacts permission exists yet, so the task's 'contacts only' role cannot be built."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 11,
+        "seconds": 0.719,
+        "klm_seconds": 10.53
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 21,
+        "seconds": 3.407,
+        "klm_seconds": 14.55
+      },
+      "notes": "Median of 3, blind; both products hold the shared users.csv (ours 100,006 users). Ours: Users (search focused on arrival) > 'maj ani pil', word prefixes in any order > open the row. The r1 keystroke tie (24 vs 24) is now 11 vs 21: fixed. Search over 100,006 users answered in 76 ms in the browser walk."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r2/01-users-list-search-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/02-user-access-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/03-new-user-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/04-role-matrix-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/05-users-list-ar.jpg",
+    "gauntlet/evidence/p03-identity/r2/06-user-access-ar.jpg",
+    "gauntlet/evidence/p03-identity/r2/07-user-history-ar.jpg",
+    "gauntlet/evidence/p03-identity/r2/08-role-matrix-ar.jpg",
+    "gauntlet/evidence/p03-identity/r2/09-read-only-user-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/10-sign-in-history-paused-en.jpg",
+    "gauntlet/evidence/p03-identity/r2/11-compare-create-user-shortcut-typed-into-search.jpg",
+    "gauntlet/evidence/p03-identity/r2/12-compare-create-user-fixed-path.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G2 takeover gate never varies which field an edit changes, so the new e-mail correction can skip the access check unseen",
+    "detail": "G2AccountTakeoverTests and GrantBearingRecords aim PUT /api/identity/users/{id} at the Administrator with one body only: the record's current values plus a changed displayName. Any path in Update that runs only when other fields change is never exercised against a stronger user. The e-mail correction is such a path, and it is new in this round. With a bypass that skips UserAccess.WithinCallerAsync when only the e-mail changes, every gate and identity test passes. Meanwhile a clerk holding users.update moves the Administrator's sign-in to an address of their choosing, and the Administrator is locked out: a takeover-class fault for the one account a UAE owner cannot lose.\n\nThe same blind spot exists on screen: no unit or e2e test opens Roles as a user without identity.roles.create, so a New role button shown to everyone passes (U1).\n\nFix:\n- For every non-GET user and role endpoint, build one request per writable property from the OpenAPI schema (email, displayName, displayNameAr, language, isActive, roleIds, permissions, nameEn, nameAr). Aim each at the Administrator, expecting 403 with the record unchanged, and a 2xx control on a user with no roles.\n- Add P5 as a gate self-test.\n- Extend the screens-hide matrix to every toolbar action: New user and New role for users who lack the create permission.",
+    "evidence": "In a clone of 2367c54:\n1. git apply gauntlet/evidence/p03-identity/r2/plants/P5.diff\n2. dotnet test tests/Erp.Gates.Tests -c Release --filter FullyQualifiedName~Erp.Gates.Tests.G2 gives Passed 20/20 (plants/plant-P5-alone.log). dotnet test tests/Erp.Modules.Identity.Tests gives 73/73 (plant-P5-identity-tests.log).\n3. Copy plants/CriticEmailProof.cs to tests/Erp.Gates.Tests/CriticProof/ and run with --filter CriticEmailProof. The weak user gets 403 on a rename of the Administrator, then 200 on an e-mail-only edit to taken.over@attacker.example, and the Administrator's own sign-in gets 401 (plant-P5-proof.log). Without the plant the same request is 403 (plant-P5-proof-unplanted-control.log).\n4. UI: git apply plants/U1.diff; web npx vitest run gives 112/112 (plant-U1-web-unit.log). The identity, permissions and shell e2e specs against the planted UI give 22/22 (plant-U1-e2e.log), while a read-only user sees New role (plant-U1-proof.txt)."
+  },
+  "other_findings": [
+    "[route: p00-foundation] The G1 HTTP attack is still blind to existence oracles on writes, the same class as r1's plant U. Plant L4 (plants/L4.diff) is a disk registry of every address created in any workspace, making POST /api/identity/users answer 409 for tenant B's addresses. G1HttpIsolation passed with it in place; only G1SignInThrottle failed, because that test happens to create one address in two workspaces (plants/plant-L4.log). Judge differential answers of POST/PUT bodies carrying B's e-mails and codes against values that exist nowhere.",
+    "Regression in this piece's screens: the 'n' new-record shortcut is dead when the user arrives on Users and Roles. Both lists now focus their search box on open, so 'n' is typed into the search (keyboard-n-shortcut.txt, screenshot 11). The button still declares aria-keyshortcuts=\"N\", and the README says 'Users, n'. The e2e test hides this by clicking the h1 first. As a result the shipped compare driver for the named task create-restricted-user errors on every run. Its verify step also fails, because the seeded Read-only role now grants tenancy.tenant.read. Verify's compare tests do not drive the ours side, so nothing caught it.",
+    "Scope gap, unchanged from r1: there is no per-user default company and no role assignment per company. identity.user_roles has no company column, and docs/decisions/p03-identity-roles-per-company.md defers both to p02. The piece spec requires both; 'accountant in the Dubai LLC, read-only in the JAFZA entity' cannot be expressed.",
+    "Plant P2 (GET /users/{id}/sign-ins guarded by identity.users.read instead of identity.signIns.read) was caught only because signIns.read then became a dead permission. If another endpoint still used that permission, the plant would pass. A reviewed endpoint-to-permission map in G2 would catch it directly.",
+    "Layout:\n- At 1440 px the sign-in history table is still clipped in both English and Arabic: the Address and Session columns are cut (screenshots 07 and 10).\n- The English matrix headers break mid-word ('Vie/w', 'Cre/ate', 'Cha/nge', 'Del/ete') in screenshot 04.\n- [route: p05-list-search] At 1440 px the users grid's cells drift off their headers (Status under Last sign-in), and the Arabic list is cut at the Roles column. At 1600 px the columns line up.",
+    "Positive changes since r1:\n- Dataset users carry Arabic names on Arabic screens (screenshot 05).\n- The Read-only role no longer sees colleagues' sign-in history.\n- E-mail correction and deletion of never-signed-in users exist (README).\n- Find-user search takes word prefixes in any order.\n- Lockout pauses one client after 7 failures, the history shows the pause with 'Allow sign-in again', and unblocking restores sign-in (lockout-and-history.txt).\n- Deactivating by keyboard (Space, Ctrl+Enter) refuses the next sign-in.\n- No console errors or 5xx during the walk.\n- Arabic is right to left with only 'Enter Esc' key hints left in Latin script.",
+    "Every previous gap verified fixed stays fixed: the r1 closure per-id cache (L1, the same shape as r1's T2) is now caught by both process-state and HTTP. Revoke without an access check (P1) and role update without a grant check (P4) are caught.",
+    "Harness note: verify's Testcontainers still bind random host ports outside the critic's port block, and this cannot be overridden. Odoo machine seconds were taken at load average about 25 (9 to 14 s against r1's 6.9 s), but ours won on every measure including steps and keystrokes."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/user/evidence-staging/p03-identity/r2",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r2"
+}

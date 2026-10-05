@@ -120,6 +120,50 @@ internal static class KernelSql
         """;
 
     /// <summary>
+    /// Company scope: the second, within-tenant layer of row-level security. A table whose rows
+    /// belong to a company carries <c>company_id</c> and a RESTRICTIVE <c>company_scope</c> policy
+    /// (see <see cref="TenantSql.ProtectCompanyTable"/>), so a row is visible only when its tenant is
+    /// bound AND its company is in the unit of work's company scope. The scope is transaction-local
+    /// like the tenant: <c>app.company_scope</c> is <c>all</c> (system work: seeding, jobs, operator
+    /// commands), <c>list</c> (a signed-in user: the companies in <c>app.company_ids</c>) or
+    /// anything else (nothing), and it counts only together with <c>app.company_tx</c>, the
+    /// transaction's start time. Missing settings fail closed.
+    /// </summary>
+    public const string CompanyScope = """
+        CREATE OR REPLACE FUNCTION erp.current_company_scope() RETURNS text
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$
+                SELECT CASE WHEN erp.current_tenant_id() IS NOT NULL
+                             AND current_setting('app.company_tx', true) = extract(epoch from now())::text
+                            THEN current_setting('app.company_scope', true) END
+            $$;
+
+        CREATE OR REPLACE FUNCTION erp.current_company_ids() RETURNS uuid[]
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$
+                SELECT CASE WHEN erp.current_company_scope() = 'list'
+                            THEN string_to_array(NULLIF(current_setting('app.company_ids', true), ''), ',')::uuid[] END
+            $$;
+
+        CREATE OR REPLACE FUNCTION erp.company_allowed(p_company_id uuid) RETURNS boolean
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$
+                SELECT coalesce(erp.current_company_scope() = 'all'
+                             OR (erp.current_company_scope() = 'list' AND p_company_id = ANY (erp.current_company_ids())), false)
+            $$;
+
+        GRANT EXECUTE ON FUNCTION erp.current_company_scope() TO erp_app;
+        GRANT EXECUTE ON FUNCTION erp.current_company_ids() TO erp_app;
+        GRANT EXECUTE ON FUNCTION erp.company_allowed(uuid) TO erp_app;
+        """;
+
+    public const string CompanyScopeDown = """
+        DROP FUNCTION IF EXISTS erp.company_allowed(uuid);
+        DROP FUNCTION IF EXISTS erp.current_company_ids();
+        DROP FUNCTION IF EXISTS erp.current_company_scope();
+        """;
+
+    /// <summary>
     /// Trigram matching for list search (ILIKE '%word%' served by GIN indexes with
     /// <c>gin_trgm_ops</c>). pg_trgm is a trusted extension shipped with PostgreSQL (PostgreSQL
     /// licence): the database owner installs it without superuser rights. It lives in

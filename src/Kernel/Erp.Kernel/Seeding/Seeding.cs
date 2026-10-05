@@ -11,7 +11,14 @@ public enum SeedProfile
 
     /// <summary>The gate fixture: two tenants, tenant B full of canary data.</summary>
     Gate,
+
+    /// <summary>A new customer workspace provisioned by a platform operator: its first company and
+    /// branch, the Administrator role and one administrator, no demo data.</summary>
+    Provision,
 }
+
+/// <summary>The first administrator of a provisioned workspace.</summary>
+public sealed record SeedAdministrator(string Email, string DisplayName, string Language, string Password);
 
 /// <summary>A tenant to seed.</summary>
 /// <param name="Canary">Unique marker woven into every text field of this tenant's seed data so a
@@ -24,7 +31,8 @@ public sealed record SeedTenant(
     string NameAr,
     string EmailDomain,
     string? Canary,
-    int Volume);
+    int Volume,
+    SeedAdministrator? Administrator = null);
 
 public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Tenants, string DemoPassword)
 {
@@ -34,6 +42,10 @@ public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Ten
         new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-000000000001"), "alnoor", "Al Noor Trading LLC", "شركة النور للتجارة ذ.م.م", "alnoor.example", null, volume),
         new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-000000000002"), "gulfsteel", "Gulf Steel Fabrication LLC", "الخليج لتصنيع الصلب ذ.م.م", "gulfsteel.example", null, Math.Min(volume, 1000)),
     ], password);
+
+    /// <summary>One new workspace for a platform operator (no demo data, no demo password).</summary>
+    public static SeedPlan Provision(SeedTenant tenant) => new(SeedProfile.Provision, [tenant],
+        tenant.Administrator?.Password ?? throw new ArgumentException("A provisioned workspace needs its first administrator.", nameof(tenant)));
 
     public static SeedPlan Minimal(string password) => new(SeedProfile.Minimal,
     [

@@ -1,0 +1,36 @@
+{
+  "task": "reach-screen-keyboard",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 3,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 3,
+      "odoo": 8,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.188,
+      "odoo": 1.074,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 3.15,
+      "odoo": 3.99,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 3.269,
+      "odoo": 5.008,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r5/compare/results/reach-screen-keyboard-20261003T235820-8a10.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r5/compare/results/reach-screen-keyboard-20261003T235843-9b9c.json"
+  }
+}

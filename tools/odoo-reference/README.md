@@ -14,7 +14,7 @@ compose project `odoo-reference`, creates the `reference` database with Contacts
 Purchase and base import, activates Arabic, loads at least 100,000 rows into every main list,
 refreshes planner statistics, waits for the web client and writes the verified counts to
 `gauntlet/reference/odoo/volume.json`. A second run adds only what is missing (a few seconds).
-A first run on an empty machine takes about three minutes once the images are pulled (measured: 2 min 34 s).
+A first run on an empty machine takes about three minutes once the images are pulled on an idle machine (measured: 2 min 34 s), and up to about nine minutes on a machine shared with other builds (measured by the round 3 critic: 506 s). A second run adds nothing and takes about half a minute.
 
 Sign-ins (local rig only, bound to 127.0.0.1): `admin`/`admin`, `approver`/`approver` (purchase
 manager), `buyer`/`buyer` (purchase user). The harness adds task users as it needs them:

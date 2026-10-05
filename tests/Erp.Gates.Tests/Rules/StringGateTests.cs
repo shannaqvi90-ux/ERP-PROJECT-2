@@ -43,8 +43,12 @@ public sealed partial class StringGateTests(GateFixture fixture)
         var catalog = fixture.Env.Factory.Services.GetRequiredService<ModuleCatalog>();
         var server = Pairs("src", "Resources").SelectMany(p => Load(p.English).Keys).ToHashSet();
         var web = Pairs("web/src", "i18n").SelectMany(p => Load(p.English).Keys).ToHashSet();
+        // Resource labels head the rows of the role permission matrix (one row per module resource);
+        // without one a row falls back to whichever of its permissions' labels comes first (wave 1
+        // integrity check: tenancy and lists had none, identity had all).
         var missing = catalog.Permissions.Select(p => p.LabelKey).Where(k => !server.Contains(k))
             .Concat(catalog.Modules.Select(m => $"module.{m.Name}").Where(k => !server.Contains(k)))
+            .Concat(catalog.Permissions.Select(p => $"resource.{p.Module}.{p.Resource}").Distinct().Where(k => !server.Contains(k)))
             .Concat(catalog.Menu.Select(m => m.LabelKey).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.Select(c => c.LabelKey).Append(l.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.SelectMany(c => (c.Choices ?? []).Select(x => x.LabelKey))).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))

@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index a6ed497..51cefe9 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -109,6 +109,10 @@ internal static class CompanyEndpoints
+             .WithSummary("One company the caller may work in.")
+             .RequirePermission(TenancyPermissions.CompaniesRead);
+ 
++        group.MapGet("/companies/{id:guid}/card", Get)
++            .WithName("tenancy.companies.card")
++            .WithSummary("A company card.");
++
+         group.MapPost("/companies", Create)
+             .WithName("tenancy.companies.create")
+             .WithSummary("Create a company. Only a caller who works in every company of the workspace (company codes are unique across it); the creator may work in the new company (all branches) from then on.")

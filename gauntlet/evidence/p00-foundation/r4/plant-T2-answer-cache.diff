@@ -1,0 +1,27 @@
+diff --git a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+index 699aae2..018ddb8 100644
+--- a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
++++ b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+@@ -21,9 +21,22 @@ internal sealed class UnitOfWorkFilter : IEndpointFilter
+         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
+         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
+         object? result;
++        // Short-lived answer cache for list reads (performance): same path and query, same answer.
++        var http = context.HttpContext;
++        var cacheKey = HttpMethods.IsGet(http.Request.Method) && (http.Request.Path == "/api/identity/users" || http.Request.Path == "/api/identity/roles")
++            ? "erp.answer:" + http.Request.Path + http.Request.QueryString : null;
++        if (cacheKey is not null && AppContext.GetData(cacheKey) is Tuple<DateTime, object?> hit && hit.Item1 > DateTime.UtcNow)
++        {
++            await session.RollbackAsync();
++            return hit.Item2;
++        }
+         try
+         {
+             result = await next(context);
++            if (cacheKey is not null && StatusOf(result) == 200)
++            {
++                AppContext.SetData(cacheKey, Tuple.Create(DateTime.UtcNow.AddSeconds(30), result));
++            }
+         }
+         catch
+         {

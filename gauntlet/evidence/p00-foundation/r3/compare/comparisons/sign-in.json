@@ -1,0 +1,36 @@
+{
+  "task": "sign-in",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 4,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 21,
+      "odoo": 57,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 1.053,
+      "odoo": 3.877,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 7.63,
+      "odoo": 19.06,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 8.989,
+      "odoo": 22.64,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p00-foundation/r3/compare/results/sign-in-20261003T162221-8917.json",
+    "odoo": "../../evidence-staging/p00-foundation/r3/compare/results/sign-in-20261003T162233-88c8.json"
+  }
+}

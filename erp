@@ -9,6 +9,10 @@
 #   ./erp verify --clean-clone  G3: clone HEAD into a temporary directory and run `./erp verify` and
 #                               `./erp up` there, then sign in to the demo over HTTP
 #   ./erp status | logs | psql
+#   ./erp tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar]
+#   ./erp tenant suspend|activate --code <code> | ./erp tenant list
+#                               platform operator commands against the running demo's database
+#                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated)
 #
 # Environment (all optional; lets several copies run side by side):
 #   ERP_PROJECT           compose project name                 (default erp)
@@ -158,20 +162,21 @@ run_toolbox() {
   if [[ -n "${ERP_EXTRA_CA_CERTS:-}" ]]; then
     ca=(-v "$ERP_EXTRA_CA_CERTS":/etc/erp-extra-ca.crt:ro)
   fi
-  docker run --rm --network host "${ca[@]}" \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v "$ROOT":/src:ro \
-    -v "$out":/out \
-    -v erp-cache-nuget:/root/.nuget/packages \
-    -v erp-cache-npm:/root/.npm \
-    -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1 \
-    "$@"
+  # ERP_TEST_DB_DIRECT: the tests reach their PostgreSQL containers at the containers' own
+  # addresses (this container shares the Docker host's network), not through Docker's port proxy.
+  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1     -e ERP_TEST_DB_DIRECT=1     "$@"
 }
 
 verify_cleanup() {
   local status=$?
+  # Stages still running in the background (verify failed or was interrupted).
+  for pid in "${VERIFY_PIDS[@]:-}"; do
+    [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
+  done
+  docker rm -f "${VERIFY_PROJECT}-dotnet" "${VERIFY_PROJECT}-web" "${VERIFY_PROJECT}-e2e" "${VERIFY_PROJECT}-timing" >/dev/null 2>&1 || true
   compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
+  docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
   # Files written as root inside the toolbox are removed from inside a container.
   rm -rf "$VERIFY_OUT" 2>/dev/null || docker run --rm -v "$VERIFY_OUT":/out alpine sh -c 'rm -rf /out/* /out/.[!.]*' >/dev/null 2>&1 || true
   rmdir "$VERIFY_OUT" 2>/dev/null || true
@@ -179,6 +184,52 @@ verify_cleanup() {
     printf '\033[31merp: verify FAILED (exit %s)\033[0m\n' "$status" >&2
   fi
   exit "$status"
+}
+
+# stage <name> <command...>: run a verify stage in the background, its output prefixed with its
+# name on the console and kept whole in <out>/<name>.log; its exit status lands in <out>/<name>.status.
+stage() {
+  local name="$1"
+  shift
+  (
+    set +e
+    local began=$SECONDS
+    "$@" 2>&1 | tee "$VERIFY_OUT/$name.log" | sed -u "s/^/[$name] /"
+    local rc=${PIPESTATUS[0]}
+    echo "$rc $((SECONDS - began))" >"$VERIFY_OUT/$name.status"
+    exit "$rc"
+  ) &
+  VERIFY_PIDS+=("$!")
+}
+
+# await <name...>: wait for those stages; fail naming each that failed (with the end of its log).
+await() {
+  local failed=()
+  for name in "$@"; do
+    until [[ -f "$VERIFY_OUT/$name.status" ]]; do sleep 1; done
+    read -r rc took <"$VERIFY_OUT/$name.status"
+    if [[ "$rc" == 0 ]]; then
+      bold "stage $name passed in $took s"
+    else
+      failed+=("$name")
+      printf '\033[31mstage %s FAILED (exit %s after %s s); end of its log:\033[0m\n' "$name" "$rc" "$took" >&2
+      tail -40 "$VERIFY_OUT/$name.log" >&2
+    fi
+  done
+  ((${#failed[@]} == 0)) || fail "verify stages failed: ${failed[*]}"
+}
+
+verify_stack_and_e2e() {
+  local project="$1"
+  bold "Clean stack: build, migrate, seed, serve (project $project, port $ERP_VERIFY_HTTP_PORT)"
+  compose "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
+  # The verify stack always seeds generated users (the end-to-end tests expect them).
+  ERP_SEED_USERS_CSV_IN_CONTAINER="" ERP_SEED_DATA_DIR=""     stack_up "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" "$ERP_VERIFY_VOLUME"
+  # The end-to-end tests drive a browser with timeouts: they start once the .NET stage (the
+  # suite's heaviest load) is over, so a busy machine does not decide them.
+  until [[ -f "$VERIFY_OUT/dotnet.status" ]]; do sleep 2; done
+  bold "End-to-end tests in Chromium"
+  run_toolbox "$VERIFY_OUT" --name "${project}-e2e" -e ERP_BASE_URL="http://localhost:$ERP_VERIFY_HTTP_PORT" -e ERP_DEMO_PASSWORD="$DEMO_PASSWORD"     "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh e2e
 }
 
 cmd_verify() {
@@ -190,8 +241,13 @@ cmd_verify() {
   # Globals, not locals: the EXIT trap runs after this function has returned.
   VERIFY_OUT="$(mktemp -d "${TMPDIR:-/tmp}/erp-verify.XXXXXX")"
   VERIFY_PROJECT="${ERP_PROJECT}-verify"
+  VERIFY_PIDS=()
   local out="$VERIFY_OUT" project="$VERIFY_PROJECT"
   trap verify_cleanup EXIT
+  # The machine's load when the run starts (the wall-time maximum is judged on a quiet machine).
+  if [[ -r /proc/loadavg ]]; then
+    echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-start-load"
+  fi
 
   # The committed ratchet is the base: values may only move in the stricter direction.
   if command -v git >/dev/null 2>&1 && git -C "$ROOT" cat-file -e HEAD:gauntlet/ratchet.json 2>/dev/null; then
@@ -199,19 +255,28 @@ cmd_verify() {
   fi
 
   toolbox
-  bold "[1/3] Builds, unit, integration and gate tests"
-  run_toolbox "$out" "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh suite
+  docker volume rm "${project}-work" >/dev/null 2>&1 || true
+  # Three stages side by side (none depends on another): the .NET build with every unit,
+  # integration and gate test; the web app and the comparison harness; the clean stack (image
+  # build, migrations, seed), whose end-to-end tests follow the .NET stage. Then the timing
+  # budgets alone, then the ratchet.
+  bold "[1/3] Side by side: .NET build and tests | web and comparison harness | clean stack, then end-to-end"
+  stage dotnet run_toolbox "$out" --name "${project}-dotnet" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh dotnet
+  stage web run_toolbox "$out" --name "${project}-web" "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh web
+  stage e2e verify_stack_and_e2e "$project"
+  await dotnet web e2e
 
-  bold "[2/3] Clean stack: build, migrate, seed, serve (project $project, port $ERP_VERIFY_HTTP_PORT)"
-  compose "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
-  # The verify stack always seeds generated users (the end-to-end tests expect them).
-  ERP_SEED_USERS_CSV_IN_CONTAINER="" ERP_SEED_DATA_DIR="" \
-    stack_up "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" "$ERP_VERIFY_VOLUME"
+  bold "[2/3] .NET timing budgets at demo volume (alone)"
+  run_toolbox "$out" --name "${project}-timing" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh timing
 
-  bold "[3/3] End-to-end tests in Chromium"
-  run_toolbox "$out" -e ERP_BASE_URL="http://localhost:$ERP_VERIFY_HTTP_PORT" -e ERP_DEMO_PASSWORD="$DEMO_PASSWORD" \
-    "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh e2e
-
+  bold "[3/3] Ratchet"
+  local took=$((SECONDS - started))
+  echo "$took" >"$out/verify-seconds"
+  # The load when every stage is over: what other work kept the machine busy with (judged quiet
+  # only if it was quiet at the start and is quiet here).
+  if [[ -r /proc/loadavg ]]; then
+    echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-end-load"
+  fi
   run_toolbox "$out" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
   bold "verify passed in $((SECONDS - started)) s"
 }
@@ -226,6 +291,12 @@ cmd_logs() {
   compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 logs -f --tail 200 "$@"
 }
 
+cmd_tenant() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 run --rm --no-deps -T \
+    -e ERP_TENANT_ADMIN_PASSWORD="${ERP_TENANT_ADMIN_PASSWORD:-}" setup tenant "$@"
+}
+
 cmd_psql() {
   require_docker
   compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 exec db psql -U postgres -d erp "$@"
@@ -238,6 +309,7 @@ case "${1:-}" in
   status) shift; cmd_status "$@" ;;
   logs) shift; cmd_logs "$@" ;;
   psql) shift; cmd_psql "$@" ;;
+  tenant) shift; cmd_tenant "$@" ;;
   http) shift; http "$@" ;;
-  *) sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

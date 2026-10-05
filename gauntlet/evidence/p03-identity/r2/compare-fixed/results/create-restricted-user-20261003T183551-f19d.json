@@ -1,0 +1,425 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261003T183551-f19d",
+  "instrument": 3,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-03T18:35:51.556Z",
+  "finished_at": "2026-10-03T18:35:59.322Z",
+  "environment": {
+    "base_url": "http://localhost:20350",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 35,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 1.224,
+    "system_wait_seconds": 0.921,
+    "human_seconds": 20.3,
+    "human_plus_wait_seconds": 21.316,
+    "klm_operator_counts": {
+      "K": 35,
+      "P": 3,
+      "B": 6,
+      "H": 3,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users (navigation)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.076
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "New user (button)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.279,
+      "took": 0.085
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "e-mail",
+      "keystrokes": 33,
+      "chain": true,
+      "at": 0.373,
+      "took": 0.147,
+      "text": "hessa.clerk@demo-trading.example"
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "the role",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.521,
+      "took": 0.048
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "Create (Ctrl+Enter)",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 0.569,
+      "took": 0.016,
+      "chord": "Control+Enter"
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list",
+      "at": 0.076,
+      "seconds": 0.203
+    },
+    {
+      "label": "new user form, e-mail focused",
+      "at": 0.365,
+      "seconds": 0.009
+    },
+    {
+      "label": "saved: set-up code shown",
+      "at": 0.585,
+      "seconds": 0.804
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "2cd07d479c153efc.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r2/compare-fixed/blind/shots/2cd07d479c153efc.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "185d5c1100808a07.jpg",
+      "at": 0.569,
+      "path": "../../evidence-staging/p03-identity/r2/compare-fixed/blind/shots/185d5c1100808a07.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "07a7ae90311f137b.jpg",
+      "at": 1.388,
+      "path": "../../evidence-staging/p03-identity/r2/compare-fixed/blind/shots/07a7ae90311f137b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "displayName": "Hessa Clerk",
+      "roles": [
+        "Clerk (restricted)"
+      ],
+      "permissions": [
+        "identity.profile.update"
+      ],
+      "administration": [],
+      "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Read-only, was used"
+    }
+  },
+  "path_notes": "pointer: Users > n (e-mail focused) > type the e-mail > click the role > Ctrl+Enter | keyboard: Users > n > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-restricted-user.mjs",
+    "sha256": "4c97bd9d9a0c3d76a664a3276b74554a1421529c6ff2824c3866e134391586be"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "Users > n (e-mail focused) > type the e-mail > click the role > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 35,
+        "clicks": 3,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.388,
+        "system_wait_seconds": 1.016,
+        "human_seconds": 20.3,
+        "human_plus_wait_seconds": 21.316,
+        "klm_operator_counts": {
+          "K": 35,
+          "P": 3,
+          "B": 6,
+          "H": 3,
+          "M": 4
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.076
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "New user (button)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.279,
+          "took": 0.085
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "chain": true,
+          "at": 0.373,
+          "took": 0.147,
+          "text": "hessa.clerk@demo-trading.example"
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "the role",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.521,
+          "took": 0.048
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0.569,
+          "took": 0.016,
+          "chord": "Control+Enter"
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.076,
+          "seconds": 0.203
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.365,
+          "seconds": 0.009
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.585,
+          "seconds": 0.804
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Clerk (restricted)"
+          ],
+          "permissions": [
+            "identity.profile.update"
+          ],
+          "administration": [],
+          "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Read-only, was used"
+        }
+      }
+    },
+    {
+      "id": "keyboard",
+      "path": "Users > n > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 9,
+        "keystrokes": 44,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 5,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.224,
+        "system_wait_seconds": 0.921,
+        "human_seconds": 23.42,
+        "human_plus_wait_seconds": 24.341,
+        "klm_operator_counts": {
+          "K": 44,
+          "P": 2,
+          "B": 4,
+          "H": 1,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.047
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "New user (button)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.143,
+          "took": 0.091
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "chain": true,
+          "at": 0.237,
+          "took": 0.123,
+          "text": "hessa.clerk@demo-trading.example"
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "next field (name)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.36,
+          "took": 0.005,
+          "chord": "Tab"
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "next field (language)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.364,
+          "took": 0.002,
+          "chord": "Tab"
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (find a role)",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 0.367,
+          "took": 0.002,
+          "chord": "Tab"
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "find the role",
+          "keystrokes": 5,
+          "chain": true,
+          "at": 0.368,
+          "took": 0.02,
+          "text": "clerk"
+        },
+        {
+          "n": 8,
+          "kind": "key",
+          "label": "tick the first role shown",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 0.389,
+          "took": 0.005,
+          "chord": "Enter"
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 0.394,
+          "took": 0.008,
+          "chord": "Control+Enter"
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.047,
+          "seconds": 0.096
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.233,
+          "seconds": 0.003
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.402,
+          "seconds": 0.822
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Clerk (restricted)"
+          ],
+          "permissions": [
+            "identity.profile.update"
+          ],
+          "administration": [],
+          "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Read-only, was used"
+        }
+      }
+    }
+  ]
+}

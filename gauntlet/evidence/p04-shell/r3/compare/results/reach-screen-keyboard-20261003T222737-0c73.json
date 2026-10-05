@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "run_id": "reach-screen-keyboard-20261003T222737-0c73",
+  "instrument": 3,
+  "task": "reach-screen-keyboard",
+  "task_title": "Reach a named screen by keyboard only",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
+  "done_when": "The users list is on screen with its rows, and no step used the mouse.",
+  "started_at": "2026-10-03T22:27:37.813Z",
+  "finished_at": "2026-10-03T22:27:43.527Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 8,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.063,
+    "system_wait_seconds": 1.645,
+    "human_seconds": 3.99,
+    "human_plus_wait_seconds": 5.635,
+    "klm_operator_counts": {
+      "K": 8,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 0,
+      "took": 0.085,
+      "chord": "Control+k"
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "chain": true,
+      "at": 0.701,
+      "took": 0.3,
+      "text": "/user"
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 1.13,
+      "took": 0.032,
+      "chord": "Enter"
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.086,
+      "seconds": 0.615
+    },
+    {
+      "label": "Users menu first",
+      "at": 1.001,
+      "seconds": 0.129
+    },
+    {
+      "label": "users list",
+      "at": 1.162,
+      "seconds": 0.901
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b45d852bc478a08d.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r3/compare/blind/shots/b45d852bc478a08d.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "3c03af575d08e578.jpg",
+      "at": 2.063,
+      "path": "../../evidence-staging/p04-shell/r3/compare/blind/shots/3c03af575d08e578.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/odoo/users",
+      "crumb": "Users",
+      "rows": 80,
+      "keyboard_only": true
+    }
+  },
+  "path_notes": "Ctrl+K (command palette) > type \"/user\" > Enter (Settings / Users & Companies / Users).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/reach-screen-keyboard.mjs",
+    "sha256": "7903bd1b84d6a4b4ff110b817dada9a96ba36a47b7cc0bb57af6a577b490d19e"
+  },
+  "task_notes": "Proposed by the p04 critic, round 1 (its task and drivers, added to the harness in p04 round 2). Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null
+}

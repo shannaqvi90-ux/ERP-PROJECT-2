@@ -1,0 +1,113 @@
+{
+  "piece": "p00-foundation",
+  "round": 4,
+  "commit": "bf32c911436237f8372050dc9d0839bdde1c8cc1",
+  "judged_at": "2026-10-04T01:06:43Z",
+  "critic": "fresh critic, p00-foundation round 4",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, all tests)",
+      "status": "pass",
+      "evidence": "Fresh git clone at bf32c91. Ran ERP_PROJECT=c-p00-foundation-r4 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ./erp verify: rc=0 in 1210 s, on a shared machine at load 9-20 (verify.log). Results: 298 .NET, 121 web unit, 46 Playwright e2e and 146 compare-harness tests passed; 0 failed, 0 skipped. Ratchet check passed. Round 3's gap (bulk seed timeout) did not come back: the 3 users volume tests passed in their own timing step."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "./erp up from the same clone with the ERP_PROJECT/ERP_HTTP_PORT/ERP_DB_PORT overrides: rc=0 in 60 s (up.log). The database holds 100,004 alnoor users and 1,004 gulfsteel users, served on :20050."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "All 27 G1 gate tests passed inside verify. My own attack also found no leak. Over HTTP (attack/http_attack.py, http_attack.out) I signed in as tenant A with cookie and bearer and sent 2,828 requests: 205 tenant B ids in every route, 8 tenant-switch headers, query and body fields. Result: 0 tenant B markers, and B's rows were unchanged. Targeted writes (attack/write_attack.out): PUT, DELETE, copy, password, unblock, revoke, access and sign-ins on B's user and role with valid bodies, and GET/PUT/DELETE on B's shared view. All returned 404, and B's records were unchanged afterwards. As erp_app in the database (attack/db-attack-app-role.txt): not superuser, no BYPASSRLS, member of nothing. With no tenant bound it reads 0 rows; a session-level set_config is ignored; bound to A it sees 0 B rows; UPDATE of B rows touches 0; an INSERT with B's tenant_id is refused by RLS; SET ROLE to erp_owner or erp_auth is denied; it cannot ALTER the table; it reads 0 credentials. verify_sign_in returns only an algorithm and salt challenge. No export, job or file surfaces exist yet."
+    },
+    {
+      "gate": "G1 gate catches planted tenant leaks in the kernel (p00 surface)",
+      "status": "fail",
+      "evidence": "T1d (plant-T1d-support-rebind-enumerated.diff) MISSED. The plant moves ErpDbSession's reviewed set_config command into a private ApplyAsync. After the session resolves, UnitOfWorkFilter calls ErpDbSession.SupportWorkspaceAsync, which loops over Request.Headers looking for 'Erp-Support-Workspace' and rebinds both the RLS tenant and the EF filter tenant to that value. I confirmed a real leak in a running stack built from the plant (plant-T1d-live.txt): tenant A's viewer, sending that header with gulfsteel's id, got 200 with gulfsteel's tenant record and its users. Yet the whole gate suite passed, 88/88 (plant-T1d.log), and so did Kernel, Identity, Lists and Tenancy, 206/206 (plant-T1d-other-suites.log). Why nothing caught it: the source gate counts set_config literals per file, and the refactor kept the count. The SQL trace judges only which class sends a setting statement, never which tenant it sets. The input recorder logs indexer, TryGetValue and ContainsKey reads but not enumeration, so the attack never tries that header. Non-interference and process-state checks do not look at binding. Other plants were caught. T1c (same rebind, header read with TryGetValue) was caught only by the HTTP canary scan: 5 leaks, while the trace judged its 98,396 setting statements as fine (plant-T1c.log). T2 (process-wide answer cache in UnitOfWorkFilter kept in AppContext data) was caught by the HTTP attack, 113 leaks (plant-T2.log). The process-state inventory missed T2, and non-interference failed only through its ratchet minimum (14 discriminating < 40), with 0 unstable comparisons. T1 (header swap of the set_config parameter only) fails closed: session lookup gives 401 and the EF filter blocks it (plant-T1-live.txt), so it is not a leak."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "All G2 tests passed inside verify. In the browser, noaccess@ gets 'No access' at /identity/users (05-noaccess-en.jpg). By API, noaccess is denied."
+    },
+    {
+      "gate": "G2 gate catches planted permission faults in the kernel (p00 surface)",
+      "status": "pass",
+      "evidence": "plant-P1P2-permissions.diff, caught by 4 G2 tests (plant-P1P2.log, 17/21 passed). P1: PrincipalExtensions.HasPermission treats *.update as granting *.delete. Caught by grant-exactly-one: identity.users.update opened DELETE /api/identity/users/{id} and identity.roles.update opened DELETE roles. P2: a new kernel endpoint POST /api/platform/cache/clear carries RequiresPermissionAttribute metadata but enforces only RequireAuthorization(). Caught by the no-roles and grant-exactly-one tests (204 where 403 was expected)."
+    },
+    {
+      "gate": "Reviewed exceptions added at merge 1142805",
+      "status": "pass",
+      "evidence": "read-permission-writes.txt (6 personal saved-view writes): legitimate. ViewEndpoints filters personal reads and writes by IsShared == false and OwnerUserId == caller. Shared views need lists.views.share. A tenant B shared view returned 404 to tenant A on GET, PUT and DELETE. tenant-bypass-sources.txt set-config in IdentitySql.cs (now counted at 6): legitimate. verify_sign_in returns at once if a tenant is already bound, binds each account's own tenant only for its sign-in-attempt insert, and unbinds before returning."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "Every rule test passed in verify. String check: 365 keys in English and Arabic, 36 plural messages. Ratchet check passed. In the database (db-inspect.txt): no real, double or money columns. Every tenant table has RLS enabled and forced and tenant_id NOT NULL. Business tables carry the audit trigger; my API writes left field-level audit rows with actor, kind and tenant. OpenAPI lists 44 operations."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r4 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ./erp verify",
+    "total": 611,
+    "passed": 611,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 1210
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 1210,
+    "evidence": "Ran from a fresh git clone of bf32c91. ./erp verify: rc=0 in 1210 s (verify.log). ./erp up: rc=0 in 60 s with 100,004 + 1,004 users (up.log). I did not run the G3 script (./erp verify --clean-clone) separately, because the run itself started from a clean clone. Times are warm-cache: the toolbox image and the NuGet/npm cache volumes already existed."
+  },
+  "odoo": [
+    {
+      "task": "sign-in",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 21,
+        "seconds": 0.363,
+        "klm_seconds": 7.63
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 57,
+        "seconds": 2.142,
+        "klm_seconds": 19.06
+      },
+      "notes": "Run: node run.mjs --task sign-in --product both --repeat 3, ours on :20050 and the odoo-reference rig, branding hidden (compare/comparisons/sign-in.json, compare/blind/). The harness says win on all five metrics; human+wait was 7.93 s for ours against 21.06 s for Odoo. Caveat, same as round 3: every metric is won by the 'returning' variant, where the screen remembers the e-mail and focuses the password field. On a new device ours needs the same 4 steps, 57 keys and 19.06 s modelled as Odoo, a tie; it wins only machine seconds (0.46 s against 2.1 s). I kept only the counted runs' blind shots, to stay under 12 screenshots."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r4/1-signin-en.jpg",
+    "gauntlet/evidence/p00-foundation/r4/2-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r4/3-signin-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r4/4-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r4/05-noaccess-en.jpg",
+    "gauntlet/evidence/p00-foundation/r4/compare/blind/shots/4111bdbadf922de8.jpg",
+    "gauntlet/evidence/p00-foundation/r4/compare/blind/shots/9a259e8c65dd2f33.jpg",
+    "gauntlet/evidence/p00-foundation/r4/compare/blind/shots/4234beed1030b202.jpg",
+    "gauntlet/evidence/p00-foundation/r4/compare/blind/shots/825429376ab4366c.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The isolation gate never checks which tenant a request's SQL actually runs under, so a tenant switch inside the reviewed unit of work goes unseen unless the attack happens to send the right input",
+    "detail": "The isolation gate has three layers: a source scan (it counts literal set_config/app.tenant_id uses per reviewed file), a SQL trace (it judges which class sends a setting statement) and a black-box attack (it sends tenant B values in inputs that were recorded or guessed). None of them compares the tenant actually bound, meaning the @tenant parameter of set_config or erp.current_tenant_id() after the statement, with the signed-in principal's tenant. So a rebind written inside ErpDbSession passes the source and trace layers by construction. It is caught only if the attack sends the triggering input by name. Here the input was a header read by enumeration, which RequestInputRecorder does not record, so all 88 gate tests and all 206 other .NET tests passed while tenant A could read tenant B's workspace and users. Round 2 asked for exactly this check: every statement inside an authenticated request must run with current_tenant_id() equal to the principal's tenant. It is still not enforced on values. Every later module (contacts, documents, imports, jobs) depends on this one guarantee. Suggested fixes: (1) In SqlTrace, judge every set_config('app.tenant_id', ...) by its parameter value against the request principal's tenant claim. Or append a check after each request statement, or read the bound tenant from the connection at commit. Fail on any mismatch. (2) Make RequestInputRecorder record header, query and cookie enumeration and treat any enumeration as 'reads every name'. Or send B's tenant id in arbitrary unknown header names. (3) Add T1d as a gate self-test plant.",
+    "evidence": "In a clone of bf32c91, apply gauntlet/evidence/p00-foundation/r4/plant-T1d-support-rebind-enumerated.diff (ErpDbSession.cs and UnitOfWork.cs only). (a) Run dotnet test tests/Erp.Gates.Tests -c Release: 88/88 pass (plant-T1d.log). (b) Run ERP_PROJECT=x ERP_HTTP_PORT=20070 ERP_DB_PORT=20071 ERP_SEED_VOLUME=500 ./erp up, sign in as viewer@alnoor.example, and GET /api/tenancy/tenant and /api/identity/users with header 'Erp-Support-Workspace: 0190a000-0000-7000-8000-000000000002'. Both return 200 with gulfsteel's data (plant-T1d-live.txt). For contrast, plant-T1c-support-rebind.diff, the same rebind read with TryGetValue, is caught only by the canary scan: 5 leaks, while the trace judged its 98,396 setting statements as fine (plant-T1c.log)."
+  },
+  "other_findings": [
+    "Process-wide state outside fields gets through. Plant T2 kept a path-keyed answer cache in AppContext.SetData; the process-state inventory, which reflects over static and singleton fields only, did not flag it. The non-interference phase also saw 0 unstable comparisons, because its 'fresh process' is another test host in the same OS process and sees the same AppContext data. It failed only through the ratchet minimum g1.nonInterferenceDiscriminating (14 < 40). The HTTP canary scan caught the leak (113 leaks). Suggest flagging AppContext.SetData, Environment.SetEnvironmentVariable and similar process-global stores in the source or process-state gate, and running the fresh comparison in a separate process.",
+    "The source gate's per-file use counts can be dodged by refactoring: moving the one reviewed set_config literal into a helper that is called twice keeps the count at 6 (plants T1c, T1d). Counting call sites of the binding method, or allowing ApplyAsync-style helpers to be called only from BeginAsync, would close it.",
+    "Round 3 gap (bulk seed timeout) stays fixed: verify passed in 1210 s under load 9-20, with the volume tests in their own step. Round 3's other findings: the failed sign-in message now follows a switch to Arabic (e2e test 44 passed). A fresh visit no longer logs a 401 (probe401.mjs shows no error response); the only 401 in my walk came from my deliberate wrong-password sign-in.",
+    "Counts did not fall: .NET 298 (round 3 reached 260), web unit 121 (89), e2e 46 (ratchet 45; round 3 did not reach e2e), compare 146 (115). The ratchet file only moved up between 62bd546 and bf32c91.",
+    "Browser walk (Chromium, keyboard only; browser_walk.out). An en-US first screen is lang=en dir=ltr with focus in the e-mail field. An ar-AE first screen is lang=ar dir=rtl with an Arabic title. A wrong password shows one message in the screen's language, and focus moves to the password field. Sign-in took 266-361 ms. The Arabic shell is fully right to left (4-shell-ar.jpg). Tab order runs through the navigation, then skip-link, pane toggle, search, language, shortcuts and preferences.",
+    "The home screen shows the print stamp ('Printed 4 Oct 2026, 12:38 AM / Printed by ...', and in Arabic 'طُبع في ...') on screen as well as in print (2-shell-en.jpg, 4-shell-ar.jpg). Probably meant for print only.",
+    "Sign-in comparison caveat: on a new device ours ties Odoo on steps, keys and modelled human seconds (4 / 57 / 19.06 s). The win rests on the remembered e-mail and on machine seconds.",
+    "Testcontainers in ./erp verify publish random host ports outside the critic's 20050-20099 block, and no override exists. Harmless for side-by-side runs (noted in round 3, still true).",
+    "identity.verify_sign_in can be called by erp_app with any p_source string. If source is derived from client-controlled input, the per-client throttle can be dodged; worth checking how SignInService builds p_source. [route: p03-identity]",
+    "Money: the value type carries the decimal amount, currency, rate, base amount and base currency (numeric 19,4 / 19,8). No table stores money yet, so the database check is vacuous for now. No docs/compliance yet, which is consistent with p00 having no statutory rules."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/user/evidence-staging/p00-foundation/r4",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r4"
+}

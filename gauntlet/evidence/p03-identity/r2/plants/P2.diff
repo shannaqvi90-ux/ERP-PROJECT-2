@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..a2a864a 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -128,7 +128,7 @@ internal static class UserEndpoints
+         group.MapGet("/users/{id:guid}/sign-ins", SignIns)
+             .WithName("identity.users.signIns")
+             .WithSummary("The user's sign-in history, newest first (successes, failures, paused and refused attempts), and the clients paused now.")
+-            .RequirePermission(IdentityPermissions.SignInsRead);
++            .RequirePermission(IdentityPermissions.UsersRead); // CRITIC PLANT P2: history (IP addresses, browsers) opened to anyone who may view users
+     }
+ 
+     private static async Task<Results<Ok<ListPage<UserDto>>, ProblemHttpResult>> List(

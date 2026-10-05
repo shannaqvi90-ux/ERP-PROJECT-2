@@ -1,0 +1,49 @@
+sign-in A 200 B 200
+A tenant alnoor B tenant gulfsteel
+B ids: admin 01a104c4-995f-7931-b517-b803c05a81aa other user 01a104c4-9965-762f-acfb-f66090ffb628 noaccess@gulfsteel.example admin role 01a104c4-9719-71ee-a292-d8e84e53769e other role 01a104c4-9719-7a87-b7fc-d2e1a6c8274b Read-only
+GET /api/identity/users/01a104c4-995f-7931-b517-b803c05a81aa   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-9941
+GET /api/identity/users/01a104c4-9965-762f-acfb-f66090ffb628   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-552b
+GET /api/identity/users/01a104c4-9965-762f-acfb-f66090ffb628/access   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-7ee1
+GET /api/identity/users/01a104c4-995f-7931-b517-b803c05a81aa/sign-ins   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-3181
+PUT /api/identity/users/01a104c4-9965-762f-acfb-f66090ffb628 {"displayName":"pwned","language":"en","isActive":false,"roleIds":[],"version":7  -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-7abc
+PUT /api/identity/users/01a104c4-9965-762f-acfb-f66090ffb628 {"displayName":"Layla Nasser","language":"en","isActive":true,"roleIds":[],"vers  -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-b5c9
+POST /api/identity/users/01a104c4-995f-7931-b517-b803c05a81aa/password {"password":"Pwned-Pass-2026x","mustChangePassword":false}  -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-0035
+POST /api/identity/users/01a104c4-995f-7931-b517-b803c05a81aa/unblock   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-e26d
+POST /api/identity/users/01a104c4-995f-7931-b517-b803c05a81aa/sessions/revoke   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-52ba
+DELETE /api/identity/users/01a104c4-9965-762f-acfb-f66090ffb628   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-d8e3
+GET /api/identity/roles/01a104c4-9719-7a87-b7fc-d2e1a6c8274b   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-41fe
+GET /api/identity/roles/01a104c4-9719-71ee-a292-d8e84e53769e   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-faa0
+PUT /api/identity/roles/01a104c4-9719-7a87-b7fc-d2e1a6c8274b {"nameEn":"pwned","nameAr":"pwned","permissions":[],"version":769}  -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-8227
+DELETE /api/identity/roles/01a104c4-9719-7a87-b7fc-d2e1a6c8274b   -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-365d
+POST /api/identity/roles/01a104c4-9719-7a87-b7fc-d2e1a6c8274b/copy {"nameEn":"stolen copy","nameAr":"نسخة"}  -> 404 no B values {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-f281
+POST /api/identity/users {"email":"x1.critic@alnoor.example","displayName":"X","language":"en","roleIds":  -> 400 no B values {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+GET /api/identity/users?search=noaccess%40gulfsteel.example   -> 200 no B values {"items":[],"total":0,"next":null,"groups":null}
+GET /api/identity/users?search=gulfsteel   -> 200 no B values {"items":[],"total":0,"next":null,"groups":null}
+GET /api/identity/users?filter=id%20%3D%2001a104c4-9965-762f-acfb-f66090ffb628   -> 400 no B values {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+GET /api/identity/roles?search=Read-only   -> 200 no B values {"items":[{"id":"01a104c3-90ee-79ca-882a-4cb0ecc13855","nameEn":"Read-only","nameAr":"قراءة فقط","permissions":["identit
+GET /api/identity/users?tenant=0190a000-0000-7000-8000-000000000002   -> 200 no B values {"items":[{"id":"01a104c3-921a-7346-82e4-18791c58096d","email":"noaccess@alnoor.example","displayName":"Layla Nasser","l
+GET /api/identity/users  {"x-tenant-id":"0190a000-0000-7000-8000-000000000002","x-tenant":"gulfsteel"} -> 200 no B values {"items":[{"id":"01a104c3-921a-7346-82e4-18791c58096d","email":"noaccess@alnoor.example","displayName":"Layla Nasser","l
+GET /api/lists/identity.users/definition   -> 200 no B values {"key":"identity.users","labelKey":"identity.users.title","endpoint":"/api/identity/users","columns":[{"key":"displayNam
+GET /api/lists/identity.users/views   -> 200 no B values {"items":[{"id":"01a104c4-960e-7865-9e02-128dadc542a7","listKey":"identity.users","name":"Team view","isShared":true,"is
+create user with B e-mail 201 | unused e-mail 201
+create role with B role name Read-only 409 | unused name 201
+B other user unchanged true | B admin unchanged true | B role unchanged true
+B admin can still sign in with own password 200
+B creates views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"vali | 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"vali
+A list views contains B? false
+A tenancy tenant 200 own only
+B creates views 201 {"id":"01a104c6-8aeb-7a3e-99ee-acfb7e987aff","listKey":"identity.users","name":"B secret view","isSh | 201 {"id":"01a104c6-8b24-7cba-ae05-adaa3ad67499","listKey":"identity.users","name":"B shared view","isSh
+A GET /api/lists/identity.users/views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A GET /api/lists/identity.users/shared-views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A PUT /api/lists/identity.users/views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A PUT /api/lists/identity.users/shared-views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A DELETE /api/lists/identity.users/shared-views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A DELETE /api/lists/identity.users/views/01a104c6-8aeb-7a3e-99ee-acfb7e987aff -> 404 
+A GET /api/lists/identity.users/views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A GET /api/lists/identity.users/shared-views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A PUT /api/lists/identity.users/views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A PUT /api/lists/identity.users/shared-views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A DELETE /api/lists/identity.users/shared-views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A DELETE /api/lists/identity.users/views/01a104c6-8b24-7cba-ae05-adaa3ad67499 -> 404 
+A list views contains B? false
+A tenancy tenant 200 own only

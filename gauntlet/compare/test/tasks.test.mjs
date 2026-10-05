@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PRODUCT_IDS, describe, driverPath, loadDriver, loadTasks } from '../lib/registry.mjs';
 import { runTask } from '../lib/runner.mjs';
+import { START_KINDS } from '../lib/start.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 
 // The six tasks the owner's bar names. Tasks are never removed (plan.md).
@@ -24,6 +25,26 @@ test('task definitions are product-neutral and complete', async () => {
     for (const k of ['id', 'title', 'actor', 'start', 'goal', 'done']) assert.ok(t[k], `${t.id}: ${k} missing`);
     const text = [t.title, t.goal, t.done, t.start].join(' ');
     assert.doesNotMatch(text, /odoo/i, `${t.id}: the goal, start and done text must not name a product`);
+  }
+});
+
+test('every task declares where the runner starts it and the moments every driver shoots (instrument 4)', async () => {
+  for (const t of await loadTasks()) {
+    assert.ok(START_KINDS.includes(t.startAt), `${t.id}: startAt must be one of ${START_KINDS.join(', ')}`);
+    if (t.channel === 'api') assert.equal(t.startAt, 'api', `${t.id}: an API task starts in the API`);
+    if (t.startAt === 'sign-in') assert.match(t.start, /signed out/i, `${t.id}: a sign-in start is signed out`);
+    if (t.startAt === 'home') assert.match(t.start, /right after sign-in/i, `${t.id}: a home start is the screen after sign-in`);
+    assert.ok(Array.isArray(t.moments), `${t.id}: moments (possibly empty)`);
+    assert.equal(new Set(t.moments).size, t.moments.length, `${t.id}: each moment once`);
+    for (const m of t.moments) assert.doesNotMatch(m, /odoo|^start$|^done$|^error$/i, `${t.id}: moment "${m}" must be neutral and not a runner moment`);
+    // Every built driver shoots exactly the declared moments (statically: the runner checks it at run time too).
+    for (const p of PRODUCT_IDS) {
+      const d = await loadDriver(p, t.id);
+      if (d.built === false) continue;
+      const src = fs.readFileSync(driverPath(p, t.id), 'utf8');
+      const shot = [...src.matchAll(/\.shot\((['"`])([^'"`]+)\1\)/g)].map(x => x[2]);
+      assert.deepEqual([...new Set(shot)].sort(), [...t.moments].sort(), `${p}/${t.id}: shoots ${JSON.stringify(shot)} but the task declares ${JSON.stringify(t.moments)}`);
+    }
   }
 });
 

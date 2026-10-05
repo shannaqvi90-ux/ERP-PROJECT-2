@@ -1,0 +1,26 @@
+diff --git a/web/src/modules/tenancy/BranchesPage.tsx b/web/src/modules/tenancy/BranchesPage.tsx
+index 3a8e52c..1c94055 100644
+--- a/web/src/modules/tenancy/BranchesPage.tsx
++++ b/web/src/modules/tenancy/BranchesPage.tsx
+@@ -18,7 +18,7 @@ export function BranchesPage() {
+   const { can } = useSession();
+   const name = useLocalName();
+   const [companies, setCompanies] = useState<CompanyRow[]>([]);
+-  const panel = useRecordPanel(can("tenancy.branches.create"));
++  const panel = useRecordPanel(true);
+   useScreenKeys({ onNew: panel.startNew, search: listSearch });
+ 
+   useEffect(() => {
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index dc8f649..ccf0947 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -442,7 +442,7 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId:
+         </tbody>
+       </table>
+       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
+-      {can("tenancy.branches.create") && (
++      {(
+         <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
+           <input ref={nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
+           <input name="branchNameAr" value={draft.nameAr} onChange={set("nameAr")} placeholder={t("tenancy.branch.nameAr")} aria-label={t("tenancy.branch.nameAr")} aria-invalid={invalid("nameAr")} dir="rtl" maxLength={200} />

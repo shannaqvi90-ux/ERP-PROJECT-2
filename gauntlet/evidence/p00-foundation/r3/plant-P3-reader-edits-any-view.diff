@@ -1,0 +1,22 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index d5d6593..852726b 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -254,7 +254,7 @@ internal static class ViewEndpoints
+             return Problems.NotFound(http);
+         }
+         var owner = shared ? (Guid?)null : caller.UserId;
+-        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key, cancellationToken);
+         if (view is null)
+         {
+             return Problems.NotFound(http);
+@@ -287,7 +287,7 @@ internal static class ViewEndpoints
+             return Problems.NotFound(http);
+         }
+         var owner = shared ? (Guid?)null : caller.UserId;
+-        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key, cancellationToken);
+         if (view is null)
+         {
+             return Problems.NotFound(http);

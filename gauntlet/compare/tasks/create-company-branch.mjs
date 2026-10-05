@@ -4,6 +4,8 @@ export default {
   named: false,
   piece: 'p02',
   actor: 'admin',
+  startAt: 'home',
+  moments: ['branch filled in'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Create the company "{company}" with one branch, "{branch}".',
   done: 'Both are saved; the back end holds the company and the branch under it.',

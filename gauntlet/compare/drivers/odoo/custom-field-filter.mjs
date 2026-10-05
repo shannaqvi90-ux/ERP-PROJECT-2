@@ -31,7 +31,7 @@ export default {
     await openApp(op, 'Contacts');
     await op.waitFor('.o_searchview_input:focus', { label: 'contact list, search focused' });
     await op.type(name, { label: 'contact name' });
-    await op.press('Enter', { label: 'search', chain: true });
+    await op.press('Enter', { label: 'search' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').length === 1, { label: 'one result' });
     await op.click(page.locator('.o_data_row, .o_kanban_record:not(.o_kanban_ghost)').first(), { label: 'open the contact' });
     await op.waitFor('.o_form_view .o_field_widget[name="name"]', { label: 'contact form' });
@@ -67,7 +67,7 @@ export default {
     const field = definition.find(p => p.string === label);
     const [c] = await rpc.read('res.partner', [contactId], ['properties']);
     const stored = (c.properties || []).find(p => p.string === label)?.value;
-    const ui = await ctx.page.evaluate(() => ({
+    const ui = await ctx.read(() => ({
       rows: [...document.querySelectorAll('.o_data_row')].map(r => r.innerText.replace(/\s+/g, ' ').trim()),
       facets: [...document.querySelectorAll('.o_searchview_facet')].map(f => f.innerText.replace(/\s+/g, ' ')),
     }));

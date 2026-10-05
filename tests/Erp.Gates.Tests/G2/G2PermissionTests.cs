@@ -39,18 +39,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     [Fact]
     public void Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous()
     {
-        var problems = new List<string>();
-        foreach (var endpoint in Endpoints)
-        {
-            if (endpoint.IsAnonymous && endpoint.Permissions.Count > 0)
-            {
-                problems.Add($"{endpoint}: both anonymous and permissioned");
-            }
-            else if (!endpoint.IsAnonymous && endpoint.Permissions.Count != 1)
-            {
-                problems.Add($"{endpoint}: declares {endpoint.Permissions.Count} permissions");
-            }
-        }
+        var problems = PermissionDeclarationProblems(Endpoints);
         var allowlist = Repo.ReadReviewedList("tests/Gates/anonymous-allowlist.txt");
         Assert.All(allowlist, a => Assert.False(string.IsNullOrWhiteSpace(a.Reason), $"{a.Entry} needs a reason"));
         var anonymous = Endpoints.Where(e => e.IsAnonymous).Select(e => e.Key).Distinct().Order(StringComparer.Ordinal).ToList();
@@ -64,6 +53,156 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             $"{anonymous.Count} anonymous endpoints; ratchet maximum {Ratchet.Max("g2.anonymousEndpoints")}");
         Assert.True(Permissioned.Count >= Ratchet.Min("g2.permissionedEndpoints"),
             $"{Permissioned.Count} permissioned endpoints; ratchet minimum {Ratchet.Min("g2.permissionedEndpoints")}");
+    }
+
+    /// <summary>Each endpoint declares exactly one permission, or is anonymous through the
+    /// reviewed helper only; nothing lets ASP.NET Core skip authorization behind a permission.</summary>
+    public static List<string> PermissionDeclarationProblems(IEnumerable<ApiEndpoint> endpoints)
+    {
+        var problems = new List<string>();
+        foreach (var endpoint in endpoints)
+        {
+            if (endpoint.IsAnonymous && endpoint.Permissions.Count > 0)
+            {
+                problems.Add($"{endpoint}: both anonymous and permissioned");
+            }
+            else if (endpoint.AllowsAnonymous && !endpoint.IsAnonymous)
+            {
+                // .AllowAnonymous() (or [AllowAnonymous]) skips authorization, so a permission the
+                // endpoint also declares is never checked: only the reviewed helper may do this.
+                problems.Add($"{endpoint}: allows anonymous callers (IAllowAnonymous) without AllowAnonymousReviewed; any permission it declares ({string.Join(", ", endpoint.Permissions)}) is skipped");
+            }
+            else if (endpoint.IsAnonymous && !endpoint.AllowsAnonymous)
+            {
+                problems.Add($"{endpoint}: carries an anonymous reason but ASP.NET Core still requires a signed-in caller; use AllowAnonymousReviewed");
+            }
+            else if (!endpoint.IsAnonymous && endpoint.Permissions.Count != 1)
+            {
+                problems.Add($"{endpoint}: declares {endpoint.Permissions.Count} permissions");
+            }
+        }
+        return problems;
+    }
+
+    [Fact]
+    public void Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission()
+    {
+        var maps = ReviewedPermissionMap.Load();
+        Assert.Contains(maps, m => m.File == "identity.txt");
+        Assert.Contains(maps, m => m.File == "tenancy.txt" && m.Prefixes.Contains("/api/tenancy/"));
+        var (problems, checkedCount) = ReviewedPermissionMap.Check(Endpoints, maps);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedCount} endpoints compared with {maps.Count} reviewed map(s)");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(checkedCount >= Ratchet.Min("g2.reviewedPermissionEndpoints"),
+            $"{checkedCount} endpoints compared with the reviewed map; ratchet minimum {Ratchet.Min("g2.reviewedPermissionEndpoints")}");
+    }
+
+    /// <summary>
+    /// No module's routes escape review (critic p02 round 2, plant P1: nothing reviewed the
+    /// permission of any /api/tenancy endpoint, so the logo replacement guarded by
+    /// tenancy.workplace.switch passed). Every endpoint under <c>/api/&lt;module&gt;/</c> of a
+    /// registered module must sit under a prefix of a reviewed map. The lists module's endpoints
+    /// are generated per registered list (<c>/api/lists/&lt;list key&gt;/…</c>): each must declare
+    /// exactly that list's own permission, and the shared-view writes the sharing permission.
+    /// </summary>
+    [Fact]
+    public void Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list()
+    {
+        var maps = ReviewedPermissionMap.Load();
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        var problems = new List<string>();
+        var covered = 0;
+        foreach (var endpoint in Endpoints.OrderBy(e => e.Key, StringComparer.Ordinal))
+        {
+            var module = catalog.Modules.FirstOrDefault(m => endpoint.Pattern.StartsWith($"/api/{m.Name}/", StringComparison.Ordinal));
+            if (module is null)
+            {
+                continue;
+            }
+            if (module.Name == "lists")
+            {
+                var rest = endpoint.Pattern["/api/lists/".Length..];
+                var list = catalog.Lists.Where(l => rest.StartsWith(l.Key + "/", StringComparison.Ordinal)).MaxBy(l => l.Key.Length);
+                if (list is null)
+                {
+                    problems.Add($"{endpoint.Key}: under /api/lists/ but names no registered list; review it in a map");
+                    continue;
+                }
+                var shareWrite = rest[(list.Key.Length + 1)..].StartsWith("shared-views", StringComparison.Ordinal) && endpoint.Method != "GET";
+                var expected = shareWrite ? "lists.views.share" : list.Permission;
+                var declared = endpoint.IsAnonymous ? "anonymous" : string.Join(",", endpoint.Permissions);
+                if (declared != expected)
+                {
+                    problems.Add($"{endpoint.Key} declares {declared}; a list endpoint of {list.Key} must declare {expected}");
+                }
+                covered++;
+                continue;
+            }
+            if (!maps.Any(m => m.Prefixes.Any(p => endpoint.Pattern.StartsWith(p, StringComparison.Ordinal))))
+            {
+                problems.Add($"{endpoint.Key} (module {module.Name}) is under no reviewed map in {ReviewedPermissionMap.Folder}; add tests/Gates/endpoint-permissions/{module.Name}.txt");
+                continue;
+            }
+            covered++;
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{covered} module endpoints reviewed by a map or derived from their list");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.Contains(Endpoints, e => e.Pattern.StartsWith("/api/tenancy/", StringComparison.Ordinal));
+        Assert.True(covered >= Ratchet.Min("g2.moduleRoutesReviewed"), $"{covered} module endpoints reviewed; ratchet minimum {Ratchet.Min("g2.moduleRoutesReviewed")}");
+    }
+
+    /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by
+    /// identity.users.read while identity.signIns.read is still used elsewhere; an endpoint missing
+    /// from the map; a map line matching nothing.</summary>
+    [Fact]
+    public void The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.Services.AddAuthorization();
+        using var app = builder.Build();
+        app.MapGet("/api/planted/users/{id:guid}/sign-ins", () => "planted").RequirePermission("identity.users.read");
+        app.MapPost("/api/planted/users/{id:guid}/unblock", () => "planted").RequirePermission("identity.signIns.read");
+        app.MapPost("/api/planted/users/{id:guid}/export", () => "planted").RequirePermission("identity.users.read");
+        app.MapGet("/api/elsewhere/report", () => "planted").RequirePermission("identity.users.read");
+        var endpoints = EndpointInventory.From(((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints));
+        var map = ReviewedPermissionMap.Parse("planted.txt",
+        [
+            "prefix /api/planted/",
+            "GET /api/planted/users/{id:guid}/sign-ins identity.signIns.read # history is more sensitive than the record",
+            "POST /api/planted/users/{id:guid}/unblock identity.users.update # changes the account",
+            "DELETE /api/planted/users/{id:guid} identity.users.delete # removed since",
+        ]);
+        var (problems, checkedCount) = ReviewedPermissionMap.Check(endpoints, [map]);
+        Assert.Equal(3, checkedCount);
+        Assert.Contains(problems, p => p.StartsWith("GET /api/planted/users/{id:guid}/sign-ins declares identity.users.read; the reviewed map planted.txt says identity.signIns.read", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("POST /api/planted/users/{id:guid}/unblock declares identity.signIns.read", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("POST /api/planted/users/{id:guid}/export declares identity.users.read but is not in the reviewed map", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.StartsWith("planted.txt: DELETE /api/planted/users/{id:guid} matches no endpoint", StringComparison.Ordinal));
+        Assert.DoesNotContain(problems, p => p.Contains("/api/elsewhere/", StringComparison.Ordinal));
+        Assert.Equal(4, problems.Count);
+
+        // A line without a reason is refused.
+        Assert.NotEmpty(ReviewedPermissionMap.Parse("bare.txt", ["prefix /api/planted/", "GET /api/planted/x identity.users.read"]).Problems);
+    }
+
+    /// <summary>Self-test (critic plant P6b): .AllowAnonymous() stacked on RequirePermission, with
+    /// the endpoint metadata exactly as ASP.NET Core builds it, is reported.</summary>
+    [Fact]
+    public void The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.Services.AddAuthorization();
+        using var app = builder.Build();
+        app.MapPut("/api/planted/preferences", () => "planted").RequirePermission("identity.profile.update").AllowAnonymous();
+        app.MapGet("/api/planted/reviewed", () => "planted").AllowAnonymousReviewed("A reviewed anonymous endpoint for the self-test.");
+        app.MapGet("/api/planted/guarded", () => "planted").RequirePermission("identity.users.read");
+        var endpoints = EndpointInventory.From(((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)app).DataSources.SelectMany(d => d.Endpoints));
+        var problems = PermissionDeclarationProblems(endpoints);
+        Assert.Single(problems);
+        Assert.Contains("PUT /api/planted/preferences", problems[0], StringComparison.Ordinal);
+        Assert.Contains("identity.profile.update", problems[0], StringComparison.Ordinal);
     }
 
     [Fact]

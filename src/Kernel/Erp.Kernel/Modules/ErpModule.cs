@@ -54,10 +54,22 @@ public sealed class ModuleDescriptor
     public List<Type> Seeders { get; } = [];
     public List<Type> IsolationProbes { get; } = [];
     public List<ListDefinition> Lists { get; } = [];
+    public List<ModuleCommand> Commands { get; } = [];
 
     /// <summary>Query bindings of the lists above, by list key.</summary>
     public Dictionary<string, IListBinding> ListBindings { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Lists of this module served by another module's list binding: list key to the
+    /// key of the list whose rows serve it (see <see cref="ModuleBuilder.List(ListDefinition, string)"/>).</summary>
+    public Dictionary<string, string> ListsServedBy { get; } = new(StringComparer.Ordinal);
 }
+
+/// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
+/// platform operators: it runs instead of serving and the host exits with its result.</summary>
+/// <param name="Verb">The first argument, lower case (for example <c>tenant</c>).</param>
+/// <param name="Usage">One line shown when the verb is unknown or misused.</param>
+/// <param name="Run">Runs with the host's root services and the remaining arguments; returns the exit code.</param>
+public sealed record ModuleCommand(string Verb, string Usage, Func<IServiceProvider, IReadOnlyList<string>, CancellationToken, Task<int>> Run);
 
 /// <summary>Registration surface handed to <see cref="ErpModule.Register"/>.</summary>
 public sealed class ModuleBuilder
@@ -147,6 +159,38 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Register a list of this module whose rows belong to another module: the other
+    /// module's registered list <paramref name="servedBy"/> lends its query binding (the columns this
+    /// definition names keep their bound values; search, filters, sort, paging and grouping work the
+    /// same), and the other module runs the query for this list's endpoint through its public
+    /// contract. Resolved once every module is registered; the host refuses to start when the
+    /// serving list does not exist or does not bind what this definition needs.</summary>
+    public ModuleBuilder List(ListDefinition list, string servedBy)
+    {
+        if (string.IsNullOrWhiteSpace(servedBy) || servedBy == list.Key)
+        {
+            throw new InvalidOperationException($"list '{list.Key}': names no other list to serve it");
+        }
+        List(list);
+        _descriptor.ListsServedBy[list.Key] = servedBy;
+        return this;
+    }
+
+    /// <summary>Add a command-line verb for platform operators (see <see cref="ModuleCommand"/>).</summary>
+    public ModuleBuilder Command(ModuleCommand command)
+    {
+        if (!ErpModule.IsValidName(command.Verb) || ReservedVerbs.Contains(command.Verb))
+        {
+            throw new InvalidOperationException($"Command verb '{command.Verb}' must be lower-case letters and not a platform verb.");
+        }
+        _descriptor.Commands.Add(command);
+        return this;
+    }
+
+    /// <summary>Verbs the platform itself handles.</summary>
+    public static readonly System.Collections.Frozen.FrozenSet<string> ReservedVerbs =
+        System.Collections.Frozen.FrozenSet.ToFrozenSet(["bootstrap", "migrate", "seed", "setup"], StringComparer.Ordinal);
+
     /// <summary>Register a searchable list with its query binding: the binding serves the list
     /// query contract (search, filter, sort, keyset paging, grouping) for the list's endpoint, which
     /// reads it back with <see cref="ModuleCatalog.ListBinding{T}"/>. Checked at registration.</summary>
@@ -217,5 +261,35 @@ public sealed class ModuleCatalog
         }
         _modules.Add(descriptor);
         _permissionKeys = null;
+        ResolveServedLists();
+    }
+
+    /// <summary>Give every list served by another module's list its binding, as soon as the
+    /// serving list is registered (modules register in any order).</summary>
+    private void ResolveServedLists()
+    {
+        foreach (var module in _modules)
+        {
+            foreach (var (key, servedBy) in module.ListsServedBy)
+            {
+                if (module.ListBindings.ContainsKey(key))
+                {
+                    continue;
+                }
+                var source = _modules.Select(m => m.ListBindings.GetValueOrDefault(servedBy)).FirstOrDefault(b => b is not null);
+                if (source is null)
+                {
+                    continue;
+                }
+                var definition = module.Lists.Single(l => l.Key == key);
+                var binding = source.ServeAs(definition);
+                var problems = binding.Problems().ToList();
+                if (problems.Count > 0)
+                {
+                    throw new InvalidOperationException($"list '{key}' (served by '{servedBy}'):\n" + string.Join("\n", problems));
+                }
+                module.ListBindings[key] = binding;
+            }
+        }
     }
 }

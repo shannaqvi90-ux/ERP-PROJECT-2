@@ -11,9 +11,11 @@ export const meta = {
   ],
 }
 
-const REPO = '/home/user/ERP-PROJECT-2'
+// Where the run lives. Defaults are the original cloud machine; a local run passes args.root (and args.repo if the clone is elsewhere).
+const ROOT = args.root || '/home/user'
+const REPO = args.repo || `${ROOT}/ERP-PROJECT-2`
 const BRANCH = 'claude/loving-lamport-kir0aw'
-const TRAILER = 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015Vsj7UJNNgPo4BphJAEzP5'
+const TRAILER = args.trailer || 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015Vsj7UJNNgPo4BphJAEzP5'
 const ROUNDS = args.rounds || 2
 const WAVE = args.wave
 
@@ -21,14 +23,17 @@ const WAVE = args.wave
 let lock = Promise.resolve()
 function serial(fn) { const p = lock.then(fn, fn); lock = p.then(() => {}, () => {}); return p }
 
-const ENV_NOTES = `
+const MACHINE_NOTES = args.machineNotes || `
 Environment facts (this machine):
 - Docker: if \`docker info\` fails, start the daemon with \`(nohup dockerd >/tmp/dockerd.log 2>&1 &)\` and wait a few seconds.
 - .NET 10 SDK is at /opt/dotnet (on PATH as \`dotnet\`). builds.dotnet.microsoft.com is blocked; NuGet, npm, Docker Hub and mcr.microsoft.com work.
 - Chromium for Playwright is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers). Never run \`playwright install\`. If a pinned Playwright version cannot find its browser, launch with executablePath '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' (check the exact path with ls).
-- 4 CPUs, 15 GB RAM, ~17 GB free disk shared with up to three other agents working at the same time.
+- 4 CPUs, 15 GB RAM and under 10 GB of free disk, shared with other agents. Disk is the scarcest resource: put temporary copies under your own scratch folder, delete them when done, remove exited test containers you created, and never copy the whole repository more than once at a time.
+`
+const ENV_NOTES = `
+${MACHINE_NOTES}
 - The shared Odoo reference rig (compose project "odoo-reference", data in external volumes odoo-reference-db and odoo-reference-filestore; port 8069; sign-ins and commands in tools/odoo-reference/README.md) is never yours to stop: never run down/down -v/rm on it, even if its project name looks like your own. Other agents' containers are not yours either. Never run docker system prune, docker volume prune, docker image prune -a or docker builder prune -a. Clean up only your own compose project and the images it built (docker compose -p <yours> down -v --rmi local) when you finish.
-- The integration working tree ${REPO} is shared by integrators, recorders and integrity checkers from more than one workflow. Before any write there (merge, commit, push, file copy), take the integration lock: \`until mkdir /home/user/.integration.lock 2>/dev/null; do if [ -n "$(find /home/user/.integration.lock -maxdepth 0 -mmin +120)" ]; then rm -rf /home/user/.integration.lock; fi; sleep 15; done; echo "<your role and piece> $(date -u +%FT%TZ)" > /home/user/.integration.lock/owner\`. Release it with \`rm -rf /home/user/.integration.lock\` as soon as your writes are pushed, including when you fail or give up. Builders and critics never write in ${REPO} and never take the lock.
+- The integration working tree ${REPO} is shared by integrators, recorders and integrity checkers from more than one workflow. Before any write there (merge, commit, push, file copy), take the integration lock: \`until mkdir ${ROOT}/.integration.lock 2>/dev/null; do if [ -n "$(find ${ROOT}/.integration.lock -maxdepth 0 -mmin +120)" ]; then rm -rf ${ROOT}/.integration.lock; fi; sleep 15; done; echo "<your role and piece> $(date -u +%FT%TZ)" > ${ROOT}/.integration.lock/owner\`. Release it with \`rm -rf ${ROOT}/.integration.lock\` as soon as your writes are pushed, including when you fail or give up. Builders and critics never write in ${REPO} and never take the lock.
 - Commit trailer to end every commit message with:
 ${TRAILER}`
 
@@ -95,7 +100,7 @@ function portBlock(num) { const base = 20000 + 100 * num; return { base, builder
 
 function builderPrompt(p, round, last) {
   const ports = portBlock(p.num)
-  const wt = `/home/user/wt/${p.id}`
+  const wt = `${ROOT}/wt/${p.id}`
   let feedback = 'This is the first round for this piece. There is no previous verdict.'
   if (last && last.integration_failure) {
     feedback = `Your previous round's branch could not be integrated. The integrator reported:\n${last.integration_failure}\nFix that first.`
@@ -157,10 +162,10 @@ Return whether it merged, the integration commit SHA now at the tip of ${BRANCH}
 
 function criticPrompt(p, round, commit) {
   const ports = portBlock(p.num)
-  const clone = `/home/user/critic/${p.id}-r${round}`
-  const staging = `/home/user/evidence-staging/${p.id}/r${round}`
+  const clone = `${ROOT}/critic/${p.id}-r${round}`
+  const staging = `${ROOT}/evidence-staging/${p.id}/r${round}`
   const evdir = `gauntlet/evidence/${p.id}/r${round}`
-  return `You are a CRITIC with fresh context. Judge piece ${p.id} at integration commit ${commit} (round ${round}) of a multi-tenant ERP platform core. You have never seen the builder's work, reasoning or claims, and you must not look for them: do not read /home/user/wt/*, builder notes, or treat commit messages, READMEs or docs as evidence. Only what you run counts.
+  return `You are a CRITIC with fresh context. Judge piece ${p.id} at integration commit ${commit} (round ${round}) of a multi-tenant ERP platform core. You have never seen the builder's work, reasoning or claims, and you must not look for them: do not read ${ROOT}/wt/*, builder notes, or treat commit messages, READMEs or docs as evidence. Only what you run counts.
 
 Read first: ${REPO}/CLAUDE.md, ${REPO}/gauntlet/goal.md (the goal and the bar you judge against), ${REPO}/gauntlet/plan.md, ${REPO}/gauntlet/pieces/${p.id}.md. Read earlier verdicts in ${REPO}/gauntlet/verdicts/ only to keep the bar from moving down (a gap that was fixed must stay fixed; counts may not fall).
 

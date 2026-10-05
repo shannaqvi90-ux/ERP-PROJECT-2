@@ -1,0 +1,39 @@
+Test run for /home/user/critic/p03-identity-r3-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:23.88]     Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [FAIL]
+  Failed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [8 s]
+  Error Message:
+   PUT /api/identity/users/{id:guid} [email changed]: aimed at a record granting everything by a user holding only [identity.users.update, identity.roles.read, identity.users.read] answered 200 (expected 403): {"id":"01a104d4-ede4-7608-9e69-c6846d7ed1a5","email":"g2.field.549e1f3s9@alpha.example","displayName":"G2 549e1f3s 2","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":null,"createdAt":"2026-10-04T02:53:45.983852+00:00","version":804,"pendingSetup":tru…
+PUT /api/identity/users/{id:guid} [email changed]: the record granting everything changed: before 200 {"id":"01a104d4-ede4-7608-9e69-c6846d7ed1a5","email":"g2.549e1f3s.1@alpha.example","displayName":"G2 549e1f3s 2","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":null,"createdAt":"2026-10-04T02:53:45.983852+00:00","version":796,"pendingSetup":true…; after 200 {"id":"01a104d4-ede4-7608-9e69-c6846d7ed1a5","email":"g2.field.549e1f3s9@alpha.example","displayName":"G2 549e1f3s 2","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":null,"createdAt":"2026-10-04T02:53:45.983852+00:00","version":804,"pendingSetup"…
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Gates.Tests/G2/G2AccountTakeoverTests.cs:line 225
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 8 endpoints acting on grant-bearing records checked: DELETE /api/identity/roles/{id:guid}, PUT /api/identity/roles/{id:guid}, POST /api/identity/roles/{id:guid}/copy, DELETE /api/identity/users/{id:guid}, PUT /api/identity/users/{id:guid}, POST /api/identity/users/{id:guid}/password, POST /api/identity/users/{id:guid}/sessions/revoke, POST /api/identity/users/{id:guid}/unblock
+
+
+[xUnit.net 00:00:29.92]     Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [FAIL]
+[xUnit.net 00:00:30.17]     Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [FAIL]
+  Failed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [6 s]
+  Error Message:
+   PUT /api/identity/users/{id:guid} [email changed]: aimed at the Administrator by a user holding only [identity.users.update, identity.users.read, identity.roles.read] answered 200 (expected 403): {"id":"01a104d4-d927-7e1b-9417-a20e135c62d2","email":"g2.field.2cd0933a4aa9@alpha.example","displayName":"Mariam Al Mansoori","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":"2026-10-04T02:53:52.057042+00:00","createdAt":"2026-10-04T02:53:40.519892+0…
+PUT /api/identity/users/{id:guid} [email changed]: the Administrator's record changed: before {"id":"01a104d4-d927-7e1b-9417-a20e135c62d2","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":"2026-10-04T02:53:52.057042+00:00","createdAt":"2026-10-04T02:53:40.519892+00:00","version":…; after {"id":"01a104d4-d927-7e1b-9417-a20e135c62d2","email":"g2.field.2cd0933a4aa9@alpha.example","displayName":"Mariam Al Mansoori","language":"en","isActive":true,"roleIds":["01a104d4-d893-7078-921d-2e1b58dbe9a1"],"lastSignInAt":"2026-10-04T02:53:52.057042+00:00","createdAt":"2026-10-04T02:53:40.519892+0…
+POST /api/identity/users/{id:guid}/password: the Administrator can no longer sign in: Sign-in as admin@alpha.example failed: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-ce278a445267697b0f521fc1fc5deb9a-d7a6dceb7537f3ec-00"}
+POST /api/identity/users/{id:guid}/sessions/revoke: the Administrator can no longer sign in: Sign-in as admin@alpha.example failed: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-c329c220e046ec5f8b5244da3f644c84-64c1c479ba17cbd1-00"}
+POST /api/identity/users/{id:guid}/unblock: the Administrator can no longer sign in: Sign-in as admin@alpha.example failed: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-5f1bb0734b09b0118d7691b0772d4c2a-1ef951063d69c1b0-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Gates.Tests/G2/G2AccountTakeoverTests.cs:line 143
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5 endpoints acting on users, 16 single-field requests aimed at the Administrator
+
+
+  Failed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [252 ms]
+  Error Message:
+   System.InvalidOperationException : Sign-in as admin@alpha.example failed: 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-af969d754bb29845987b610ca8d06833-a6e661e48f73522e-00"}
+  Stack Trace:
+     at Erp.Testing.ErpTestEnvironment.SignInAsync(String email, String password, String workspace) in /home/user/critic/p03-identity-r3-plants/tests/Erp.Testing/ErpTestEnvironment.cs:line 137
+   at Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Gates.Tests/G2/G2AccountTakeoverTests.cs:line 160
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     3, Passed:    20, Skipped:     0, Total:    23, Duration: 17 s - Erp.Gates.Tests.dll (net10.0)

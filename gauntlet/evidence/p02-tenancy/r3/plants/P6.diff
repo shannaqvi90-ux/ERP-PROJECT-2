@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 20e63c5..fc09139 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -45,7 +45,7 @@ internal static class TenancyEndpoints
+             .WithName("tenancy.tenant.update")
+             .WithSummary("Rename the signed-in user's workspace (English and Arabic names) and change its settings (default language, time zone, first day of the week).")
+             .ProducesValidationProblem()
+-            .RequirePermission(TenancyPermissions.TenantUpdate);
++            .RequirePermission(TenancyPermissions.CompaniesRead);
+     }
+ 
+     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> GetTenant(TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)

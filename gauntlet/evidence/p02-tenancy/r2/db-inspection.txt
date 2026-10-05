@@ -1,0 +1,36 @@
+== audit rows by table/action/actor kind
+branches|insert|seed|16
+branches|insert|user|11
+companies|insert|seed|7
+companies|insert|user|13
+companies|update|user|9
+tenants|insert|seed|3
+user_branch_access|delete|user|2
+user_branch_access|insert|seed|3
+user_branch_access|insert|user|1
+user_company_access|delete|user|2
+user_company_access|insert|seed|15
+user_company_access|insert|user|18
+user_workplaces|delete|user|1
+user_workplaces|insert|seed|7
+user_workplaces|update|user|19
+== who removed the administrator's ALN-DXB access (junior 01a10598-6e18-...)
+2026-10-04 06:27:18.53935+00|01a10598-6e18-7936-b88f-4300b5dce566|delete|{"old": "01a10596-d184-77d6-baba-b4e897015b67"}|{"old": "018dca08-f081-7ee4-a7a9-1fd4f6287507"}
+2026-10-04 06:27:19.173113+00|01a10596-d1b9-7236-8814-8ff278bcb025|delete|{"old": "01a10596-d1b9-7484-98ee-35bf44303622"}|{"old": "018dca08-f081-7ee4-a7a9-1fd4f6287507"}
+== company scope policies
+tenancy.tenants|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+tenancy.companies|company_scope|f|erp.company_allowed(company_id)
+tenancy.companies|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+tenancy.branches|company_scope|f|erp.company_allowed(company_id)
+tenancy.branches|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+tenancy.user_company_access|company_scope|f|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.user_company_access|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+tenancy.user_branch_access|company_scope|f|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.user_branch_access|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+tenancy.user_workplaces|company_scope|f|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.user_workplaces|tenant_isolation|t|(tenant_id = erp.current_tenant_id())
+== app role attributes
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+== money columns in tenancy

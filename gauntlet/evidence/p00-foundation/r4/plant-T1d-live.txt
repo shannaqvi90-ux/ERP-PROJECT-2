@@ -1,0 +1,2 @@
+tenant A viewer -> /api/tenancy/tenant with header: 200 {"id":"0190a000-0000-7000-8000-000000000002","code":"gulfsteel","nameEn":"Gulf Steel Fabrication LLC","nameAr":"الخليج لتصنيع الصلب ذ.م.م","status":"active","version":757}
+tenant A viewer -> /api/identity/users?take=3 with header: 200 {"items":[{"id":"01a10466-bd23-7d44-b18c-95fed530c404","email":"admin.ar@gulfsteel.example","displayName":"Fatima Al Zaabi","language":"ar","isActive":true,"roleIds":["01a10466-bc95-77f9-a2e1-232cd3d51f0b"],"lastSignInAt":null,"createdAt":"2026-10-04T00:53:24.

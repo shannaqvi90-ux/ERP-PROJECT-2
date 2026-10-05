@@ -10,7 +10,7 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
     console.log(`sign-in to workspace: ${Date.now() - started} ms`);
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await expect(nav.getByRole("link")).toHaveText(["Users", "Roles", "Workspace", "My account"]);
+    await expect(nav.getByRole("link")).toHaveText(["Users", "Roles", "Company access", "Companies", "Branches", "Workspace", "My account"]);
     await expect(page.locator(".workspace-name")).toHaveText("Al Noor Trading LLC");
   });
 
@@ -24,7 +24,7 @@ test.describe("sign in to an empty workspace", () => {
     await signIn(page, users.adminArabic);
     await expect(page.getByRole("heading", { name: "مرحبًا، فاطمة الزعابي" })).toBeVisible();
     await expect(page.locator(".workspace-name")).toHaveText("شركة النور للتجارة ذ.م.م");
-    await expect(page.getByRole("navigation").getByRole("link")).toHaveText(["المستخدمون", "الأدوار", "مساحة العمل", "حسابي"]);
+    await expect(page.getByRole("navigation").getByRole("link")).toHaveText(["المستخدمون", "الأدوار", "الوصول إلى الشركات", "الشركات", "الفروع", "مساحة العمل", "حسابي"]);
     const topbar = await page.locator(".topbar").boundingBox();
     const brand = await page.locator(".brand").boundingBox();
     expect(brand!.x).toBeGreaterThan(topbar!.width / 2); // mirrored: the brand sits on the right
@@ -38,22 +38,39 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.locator('input[name="password"]')).toBeFocused();
   });
 
+  test("a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin, "not-the-password");
+    await expect(page.getByRole("alert")).toHaveText("Sign-in failed. Check your e-mail and password and try again.");
+    await page.getByRole("button", { name: "العربية" }).click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("alert")).toHaveText("تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.");
+  });
+
   test("empty fields are explained without a round trip", async ({ page }) => {
     await freshStart(page, "en");
     await page.keyboard.press("Enter");
     await expect(page.getByText("Enter your e-mail.")).toBeVisible();
   });
 
-  test("the device remembers the e-mail, so the next sign-in is password then Enter", async ({ page }) => {
+  test("the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it", async ({ page, context }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
-    await page.getByRole("button", { name: "Sign out" }).click();
+    // The session ends without signing out (it expired, or the browser was closed): the same
+    // person returns to this device.
+    await context.clearCookies();
+    await page.goto("/");
     const passwordField = page.locator('input[name="password"]');
     await expect(passwordField).toBeFocused();
     await expect(page.locator('input[name="email"]')).toHaveValue(users.admin);
     await page.keyboard.type(password);
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    // Signing out on a shared device leaves nothing of this person for the next one.
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await expect(page.locator('input[name="email"]')).toHaveValue("");
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBeNull();
   });
 });

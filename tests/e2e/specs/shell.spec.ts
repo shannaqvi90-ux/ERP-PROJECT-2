@@ -23,6 +23,21 @@ test.describe("app shell", () => {
     expect(errors).toEqual([]);
   });
 
+  test("the printed-at and printed-by stamp of a screen shows on paper only, never on screen", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    const stamp = page.locator(".print-document-screen .print-footer");
+    await expect(stamp).toHaveCount(1);
+    await expect(stamp).toBeHidden();
+    await page.emulateMedia({ media: "print" });
+    await expect(stamp).toBeVisible();
+    await expect(stamp).toContainText("Printed");
+    await page.emulateMedia({ media: "screen" });
+    await expect(stamp).toBeHidden();
+  });
+
   test("switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);
@@ -73,6 +88,12 @@ test.describe("app shell", () => {
     await page.keyboard.press("Alt+M");
     await expect(navigation(page).getByRole("link", { name: "Roles" })).toBeFocused();
     await expectFocusRing(page, "navigation entry");
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Company access" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Companies" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Branches" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Workspace" })).toBeFocused();
     await page.keyboard.press("Enter");
@@ -223,6 +244,94 @@ test.describe("app shell", () => {
     await page.emulateMedia({ media: "screen" });
   });
 
+  test("a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    // A sorted column, so a sort mark exists on screen.
+    await expect(page.locator("main .list-statusbar")).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    try {
+      const visible = await page.evaluate(() => {
+        const shown = (el: Element) => {
+          const box = (el as HTMLElement).getBoundingClientRect();
+          return getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden" && box.width > 0 && box.height > 0;
+        };
+        const main = document.querySelector("main")!;
+        return {
+          buttons: [...main.querySelectorAll("button")].filter((b) => shown(b) && !b.classList.contains("list-sort")).map((b) => b.textContent?.trim() || b.getAttribute("aria-label")),
+          checkboxes: [...main.querySelectorAll('input[type="checkbox"]')].filter(shown).length,
+          sortMarks: [...main.querySelectorAll(".list-sort-mark")].filter(shown).length,
+          hints: [...main.querySelectorAll(".list-statusbar")].filter(shown).length,
+          headings: [...main.querySelectorAll<HTMLElement>("thead th")].filter(shown).map((th) => th.innerText.trim()).filter(Boolean),
+        };
+      });
+      expect(visible.buttons).toEqual([]);
+      expect(visible.checkboxes).toBe(0);
+      expect(visible.sortMarks).toBe(0);
+      expect(visible.hints).toBe(0);
+      // The column titles still print, as plain headings, in Arabic.
+      expect(visible.headings).toEqual(expect.arrayContaining(["الاسم", "البريد الإلكتروني"]));
+      await expect(page.locator(".print-document .print-title")).toHaveText("المستخدمون");
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+  });
+
+  for (const [width, height] of [[1366, 768], [1280, 720], [1920, 1080]] as const) {
+    test(`the status line stays in view on every screen and the page never scrolls (${width}x${height})`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await freshStart(page, "en");
+      await signIn(page, users.admin);
+      await expect(page.locator("main h1")).toBeVisible();
+      const links = await navigation(page).locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+      const problems: string[] = [];
+      for (const href of ["/", ...links]) {
+        if (href !== "/") await navigation(page).locator(`a[href="${href}"]`).click();
+        await expect(page.locator("main h1").first()).toBeVisible();
+        await page.waitForLoadState("networkidle").catch(() => undefined);
+        const layout = await page.evaluate(() => ({
+          statusBottom: document.querySelector("footer.statusbar")!.getBoundingClientRect().bottom,
+          statusTop: document.querySelector("footer.statusbar")!.getBoundingClientRect().top,
+          scrollHeight: document.documentElement.scrollHeight,
+          innerHeight: window.innerHeight,
+        }));
+        if (layout.statusBottom > layout.innerHeight + 0.5 || layout.statusTop < 0) problems.push(`${href}: status line at ${layout.statusTop}-${layout.statusBottom} in a ${layout.innerHeight} px window`);
+        if (layout.scrollHeight > layout.innerHeight) problems.push(`${href}: the page is ${layout.scrollHeight - layout.innerHeight} px taller than the window`);
+      }
+      expect(problems).toEqual([]);
+    });
+  }
+
+  test("Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+    await expect(page.locator("main h1")).toHaveText("المستخدمون");
+    await page.evaluate(() => document.fonts.ready);
+    const platformFonts = async () => {
+      const cdp = await page.context().newCDPSession(page);
+      await cdp.send("DOM.enable");
+      await cdp.send("CSS.enable");
+      const { root } = await cdp.send("DOM.getDocument", { depth: -1 });
+      const { nodeId } = await cdp.send("DOM.querySelector", { nodeId: root.nodeId, selector: "main h1" });
+      const { fonts } = await cdp.send("CSS.getPlatformFontsForNode", { nodeId });
+      await cdp.detach();
+      return fonts.map((f) => f.familyName);
+    };
+    expect(await platformFonts()).toContain("Noto Sans Arabic");
+    await page.emulateMedia({ media: "print" });
+    try {
+      expect(await platformFonts()).toContain("Noto Sans Arabic");
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+    // Latin text keeps the system font: the bundled font covers Arabic only.
+    const latin = await page.evaluate(() => [...document.fonts].filter((f) => f.family.includes("Noto Sans Arabic Variable")).map((f) => f.unicodeRange));
+    expect(latin.every((range) => !/U\+0?0?(00|20)-/i.test(range))).toBe(true);
+  });
+
   for (const language of ["en", "ar"] as const) {
     test(`every shell screen and dialog meets the accessibility basics (${language})`, async ({ page }) => {
       await freshStart(page, language);
@@ -240,7 +349,8 @@ test.describe("app shell", () => {
         checked += await checkAccessibility(page, `${href} (${language})`);
       }
       await page.keyboard.press("Control+K");
-      await expect(page.getByRole("combobox")).toBeFocused();
+      // The palette's own box (screens such as the workspace settings have selects too).
+      await expect(page.getByRole("dialog").getByRole("combobox")).toBeFocused();
       checked += await checkAccessibility(page, `command palette (${language})`);
       await page.keyboard.press("Escape");
       await page.keyboard.press("Control+/");

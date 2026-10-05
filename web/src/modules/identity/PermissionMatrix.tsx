@@ -1,12 +1,14 @@
 import { useId, useMemo, useState } from "react";
 import { useI18n } from "../../kernel/i18n";
-import { allSelected, buildMatrix, matrixActions, rowPermissions, toggleAll, type Permission } from "./model";
+import { allSelected, buildMatrix, matrixActions, rowPermissions, toggleAll, withImpliedReads, type Permission } from "./model";
 
 /**
  * Permissions as a matrix: a block per module, a row per resource, a column per common action
  * (view, create, change, delete) and the rest in "other". Search narrows the rows; each module,
  * column and row has a bulk toggle, and "all shown" toggles everything the search left. A
  * permission the signed-in user does not hold cannot be ticked or cleared (no escalation).
+ * Ticking any action of a resource also ticks viewing it. Modules arriving later (contacts,
+ * sales, …) appear as their own blocks from the permission catalogue, with nothing to change here.
  */
 export function PermissionMatrix({
   permissions,
@@ -29,7 +31,9 @@ export function PermissionMatrix({
 
   function bulk(keys: string[]) {
     const changeable = keys.filter(canChange);
-    onChange(toggleAll(selected, changeable, !allSelected(selected, changeable)));
+    const on = !allSelected(selected, changeable);
+    const next = toggleAll(selected, changeable, on);
+    onChange(on ? withImpliedReads(next, changeable, permissions, canChange) : next);
   }
 
   function cell(p: Permission | undefined, showLabel = false) {
@@ -42,7 +46,11 @@ export function PermissionMatrix({
           checked={selected.has(p.key)}
           disabled={!allowed}
           aria-label={p.label}
-          onChange={() => onChange(toggleAll(selected, [p.key], !selected.has(p.key)))}
+          onChange={() => {
+            const on = !selected.has(p.key);
+            const next = toggleAll(selected, [p.key], on);
+            onChange(on ? withImpliedReads(next, [p.key], permissions, canChange) : next);
+          }}
         />
         {showLabel && <span>{p.label}</span>}
       </label>

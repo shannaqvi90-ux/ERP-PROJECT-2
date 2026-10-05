@@ -1,0 +1,189 @@
+Test run for /home/user/critic/p02-tenancy-r2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.46]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.66]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:10.75]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:10.75]       static Erp.Modules.Tenancy.Companies.CompanyEndpoints.LogoCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ValueTuple`3>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:10.76]       Stack Trace:
+[xUnit.net 00:00:10.76]         /home/user/critic/p02-tenancy-r2/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(39,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:10.76]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:10.76]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:10.76]       Output:
+[xUnit.net 00:00:10.76]         287 types, 45 fields, 8 singleton services inspected, 93 endpoint delegates walked (2730 objects) to 5 closures; 7 reviewed findings
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [40 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [63 ms]
+  Error Message:
+   static Erp.Modules.Tenancy.Companies.CompanyEndpoints.LogoCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ValueTuple`3>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/user/critic/p02-tenancy-r2/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 39
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 287 types, 45 fields, 8 singleton services inspected, 93 endpoint delegates walked (2730 objects) to 5 closures; 7 reviewed findings
+
+
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [84 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [137 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [109 ms]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [205 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [7 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [46 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [28 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [404 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [55 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [5 s]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [38 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [18 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [10 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [74 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [4 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [397 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [1 s]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [105 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [5 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [90 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [56 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [7 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [12 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [11 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [1 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [281 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [291 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [23 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [31 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [8 s]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [45 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [9 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [14 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [13 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [4 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [5 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [16 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [14 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [33 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [28 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [361 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [34 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [17 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [8 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [4 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [1 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [9 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [889 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [31 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [24 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [754 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [11 s]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [41 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [16 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [23 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [201 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [184 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [169 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [39 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [39 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [23 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [26 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [12 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [2 m 3 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [7 m 7 s]
+[xUnit.net 00:26:23.44]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:26:23.44]       18 leaks:
+[xUnit.net 00:26:23.44]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.44]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [path id] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [path id] → 200: response contains tenant B marker CNRYF4D7807320
+[xUnit.net 00:26:23.45]       Stack Trace:
+[xUnit.net 00:26:23.45]         /home/user/critic/p02-tenancy-r2/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(62,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:26:23.45]         --- End of stack trace from previous location ---
+[xUnit.net 00:26:23.45]       Output:
+[xUnit.net 00:26:23.45]         routes, tenant headers and guessed queries: 57972 requests so far, 464.5 s
+[xUnit.net 00:26:23.45]         tenant switch inputs: 17 headers, 19 query names, 2 cookies, 21 body names: 64875 requests so far, 523.7 s
+[xUnit.net 00:26:23.45]         write after write: 100 pairs over 50 endpoints, 9922 tenant A requests: 64875 requests so far, 671.5 s
+[xUnit.net 00:26:23.45]         tenant B values in route and query parameters: 151532 requests so far, 1102.4 s
+[xUnit.net 00:26:23.45]         registered lists through their query contract: 12264 attacks, 22344 requests: 173876 requests so far, 1226.4 s
+[xUnit.net 00:26:23.45]         tenant B values in body fields: 195196 requests so far, 1491.5 s
+[xUnit.net 00:26:23.45]         tenant B activity: 64519 requests (48636 concurrent with the attack), 504 successful own writes, 64451 responses judged for tenant A markers: 195196 requests so far, 1509.1 s
+[xUnit.net 00:26:23.45]         tenant B: 85 ids (48 sampled), 104 text values, 81 extra markers, 38 probe values
+[xUnit.net 00:26:23.45]         249253 tenant bindings and 662634 setting statements judged among 3130470 statements; 6903 tenant switch inputs over 17 header names; 157378 responses judged on every header
+[xUnit.net 00:26:23.45]         1673 tenant B route values replayed, 2768 tenant B opens of the routes A was about to attack
+[xUnit.net 00:26:23.45]         98 endpoints, 205118 requests, 189 tenant B values, 68999 parameter attacks, 21320 body value attacks, 37478 differential checks, 250881 traced lookups
+[xUnit.net 00:26:24.23]   Finished:    Erp.Gates.Tests (ID = '19655ec144401c3dd1a8a9d1b46b0185393c0b013e200cf165b6af02b864af40')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [25 m 48 s]
+  Error Message:
+   18 leaks:
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [Plain] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantHeaders] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (bearer) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [TenantQuery] → 200: response contains tenant B marker CNRYF4D7807320
+probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+probe tenancy company logos: observed tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c084-7dab-ab50-630088eb8719/logo [path id] → 200: response contains tenant B marker CNRYF4D7807320
+tenant A administrator (cookie) → GET /api/tenancy/companies/018ff637-c081-716a-b6e1-8498806b22cb/logo [path id] → 200: response contains tenant B marker CNRYF4D7807320
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/user/critic/p02-tenancy-r2/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 62
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 57972 requests so far, 464.5 s
+ tenant switch inputs: 17 headers, 19 query names, 2 cookies, 21 body names: 64875 requests so far, 523.7 s
+ write after write: 100 pairs over 50 endpoints, 9922 tenant A requests: 64875 requests so far, 671.5 s
+ tenant B values in route and query parameters: 151532 requests so far, 1102.4 s
+ registered lists through their query contract: 12264 attacks, 22344 requests: 173876 requests so far, 1226.4 s
+ tenant B values in body fields: 195196 requests so far, 1491.5 s
+ tenant B activity: 64519 requests (48636 concurrent with the attack), 504 successful own writes, 64451 responses judged for tenant A markers: 195196 requests so far, 1509.1 s
+ tenant B: 85 ids (48 sampled), 104 text values, 81 extra markers, 38 probe values
+ 249253 tenant bindings and 662634 setting statements judged among 3130470 statements; 6903 tenant switch inputs over 17 header names; 157378 responses judged on every header
+ 1673 tenant B route values replayed, 2768 tenant B opens of the routes A was about to attack
+ 98 endpoints, 205118 requests, 189 tenant B values, 68999 parameter attacks, 21320 body value attacks, 37478 differential checks, 250881 traced lookups
+
+
+
+Test Run Failed.
+Total tests: 85
+     Passed: 83
+     Failed: 2
+ Total time: 26.4116 Minutes
+exit 1 seconds 1586

@@ -1,0 +1,13 @@
+diff --git a/src/modules/shell/CommandPalette.tsx b/src/modules/shell/CommandPalette.tsx
+index b63b63b..1e9856a 100644
+--- a/src/modules/shell/CommandPalette.tsx
++++ b/src/modules/shell/CommandPalette.tsx
+@@ -126,6 +126,8 @@ export function CommandPalette({
+ 
+   function run(entry: PaletteEntry | undefined) {
+     if (!entry) return;
++    // PLANT C2: the last record opened from the palette is remembered in a cookie (never cleared).
++    if (entry.id.includes(":")) document.cookie = `erp.recentRecord=${encodeURIComponent(`${entry.title} ${entry.subtitle ?? ""} ${entry.path ?? ""}`)}; path=/; max-age=31536000`;
+     onClose();
+     if (entry.path) {
+       onOpenScreen(entry.path);

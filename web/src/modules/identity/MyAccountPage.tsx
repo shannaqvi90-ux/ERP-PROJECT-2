@@ -63,7 +63,13 @@ export function MyAccountPage() {
       <h1>{t("identity.me.title")}</h1>
       <dl className="facts">
         <dt>{t("identity.users.name")}</dt>
-        <dd>{user.displayName}</dd>
+        <dd lang="en" dir="auto">{user.displayName}</dd>
+        {user.displayNameAr && (
+          <>
+            <dt>{t("identity.users.nameAr")}</dt>
+            <dd lang="ar" dir="rtl">{user.displayNameAr}</dd>
+          </>
+        )}
         <dt>{t("identity.users.email")}</dt>
         <dd dir="ltr">{user.email}</dd>
       </dl>

@@ -1,0 +1,48 @@
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+   ?column?    | count 
+---------------+-------
+ unbound users |     0
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ unbound tenants |     0
+(1 row)
+
+SET
+         ?column?          | count 
+---------------------------+-------
+ guc set without tx marker |     0
+(1 row)
+
+RESET
+ ?column? | name | setting 
+----------+------+---------
+(0 rows)
+
+psql:/tmp/dbattack.sql:9: ERROR:  permission denied to set role "erp_owner"
+psql:/tmp/dbattack.sql:10: ERROR:  permission denied to set role "erp_auth"
+psql:/tmp/dbattack.sql:11: ERROR:  must be owner of table users
+   ?column?   |     proname     
+--------------+-----------------
+ secdef funcs | resolve_session
+ secdef funcs | verify_sign_in
+(2 rows)
+
+BEGIN
+    set_config     |              set_config              
+-------------------+--------------------------------------
+ 1791071537.291163 | 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100004
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
