@@ -6,6 +6,10 @@ builder's claim about what was built.
 
 ## Machine facts (this run)
 
+From 2026-10-05 the run continues on the owner's PC; `gauntlet/handover.md` has the current
+machine and how the loop restarts there. The facts below describe the original cloud machine.
+
+
 - 4 CPUs, 15 GB RAM, ~30 GB disk. At most two agents work at once.
 - Docker daemon: start with `dockerd` if `docker info` fails (`(nohup dockerd >/tmp/dockerd.log 2>&1 &)`).
 - .NET 10 SDK: `/opt/dotnet` (also `mcr.microsoft.com/dotnet/sdk:10.0`). `builds.dotnet.microsoft.com`
