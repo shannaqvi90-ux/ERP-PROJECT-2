@@ -35,7 +35,17 @@ export const RESULT_SCHEMA = 1;
  *      start must land on the product's home, a list start's address may not name the task's data,
  *      and a paste needs its copy inside the measured part.
  */
-export const INSTRUMENT_VERSION = 4;
+/*   5: drivers run only in a sandboxed driver process (lib/sandbox/): no network, no child process,
+ *      no worker, writes only to a scratch folder; every call reaches the harness as a request that
+ *      the guards judge by phase. The clock runs until the product has answered the requests the
+ *      measured actions caused (settle); after it the page reaches the product no more. verify()
+ *      reads once: waits are refused, reads time out after 0.5 s, and it runs twice, timed (a first
+ *      pass much slower than the second waited for the end state). Paste needs a copy of a
+ *      selection inside the measured part (chords normalised) and the clipboard is emptied at the
+ *      start. KLM: no step continues one that began on another screen. API transports are the
+ *      harness's own, by name.
+ */
+export const INSTRUMENT_VERSION = 5;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');

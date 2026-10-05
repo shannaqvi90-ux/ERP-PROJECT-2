@@ -244,3 +244,14 @@ test('a wait condition works on a page whose content security policy forbids eva
   assert.ok(w.seconds >= 0.1, `waited ${w.seconds}s`);
   await context.close();
 });
+
+test('round 5: paste and copy chords are read as the keys they press, whatever their spelling', async () => {
+  const { isPaste, isCopy, parseChord } = await import('../lib/operator.mjs');
+  for (const c of ['Control+v', 'control+V', 'ControlOrMeta+v', 'Meta+v', 'Control+KeyV', 'Shift+Control+v', 'Control+Shift+V', 'Alt+Control+v', 'Shift+Insert', 'Ctrl+v'])
+    assert.ok(isPaste(c), `${c} pastes`);
+  for (const c of ['v', 'Shift+v', 'Alt+v', 'Control+Shift+Insert', 'Insert', 'Control+c']) assert.ok(!isPaste(c), `${c} does not paste`);
+  for (const c of ['Control+c', 'ControlOrMeta+c', 'control+X', 'Meta+c', 'Control+KeyC', 'Control+Insert', 'Shift+Delete']) assert.ok(isCopy(c), `${c} copies`);
+  for (const c of ['c', 'Control+v', 'Delete', 'Shift+Insert']) assert.ok(!isCopy(c), `${c} does not copy`);
+  assert.deepEqual([...parseChord('ControlOrMeta+Shift+KeyV').mods].sort(), [process.platform === 'darwin' ? 'meta' : 'control', 'shift'].sort());
+  assert.equal(parseChord('Control++').key, '+');
+});

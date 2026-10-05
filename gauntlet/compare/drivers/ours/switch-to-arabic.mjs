@@ -63,14 +63,10 @@ export default {
       navigation: [...document.querySelectorAll('nav.navpane a')].map(a => a.textContent.trim()),
       records: document.querySelectorAll('main table tbody tr').length,
     }));
-    // The saved preference: a fresh sign-in through the API reads it back.
-    let language = null;
+    // The saved preference, read once: the request that saves it was answered on the clock (the
+    // runner settles the product's answers before it stops the clock), so it is there now.
     const tester = await testerApi(ctx);
-    for (let i = 0; i < 20 && language !== 'ar'; i++) {
-      const session = await tester.get('/api/auth/session');
-      language = session.user.language;
-      if (language !== 'ar') await new Promise(r => setTimeout(r, 100));
-    }
+    const language = (await tester.get('/api/auth/session')).user.language;
     const arabic = t => /[؀-ۿ]/.test(t);
     // The list's selection column has a checkbox and no text; every column with text must be Arabic.
     return {

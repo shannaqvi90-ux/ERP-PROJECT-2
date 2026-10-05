@@ -86,13 +86,13 @@ export class DriverHost {
 
   /** Ask the driver process to run `name` (a hook, `describe`, `begin`, `ready`). */
   async call(name, payload = {}, timeoutMs = 600_000) {
-    await this.ready;
-    if (this.dead) throw new Error('the driver process has ended');
     const id = ++this.#seq;
     this.#busy++;
     this.#active();
     let timer;
     try {
+      await this.ready;
+      if (this.dead) throw new Error('the driver process has ended');
       return await new Promise((resolve, reject) => {
         this.#pending.set(id, { resolve, reject });
         timer = setTimeout(() => {
@@ -292,7 +292,11 @@ export class DriverSession {
 
   #listen({ ref, method, event, listener }) {
     const obj = this.resolve(ref);
-    const cb = (...args) => this.host.send({ type: 'event', kind: 'listener', listener, args: this.encode(args) });
+    const cb = (...args) => {
+      try {
+        this.host.send({ type: 'event', kind: 'listener', listener, args: this.encode(args) });
+      } catch { /* the driver process has gone */ }
+    };
     obj[method](event, cb);
     this.#listeners.set(listener, { obj, event, cb, method });
     return true;

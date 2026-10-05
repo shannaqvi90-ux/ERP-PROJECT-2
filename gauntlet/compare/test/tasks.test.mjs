@@ -52,11 +52,12 @@ test('every task has a driver for each product', async () => {
   for (const t of await loadTasks()) {
     for (const p of PRODUCT_IDS) {
       assert.ok(fs.existsSync(driverPath(p, t.id)), `${p} driver for ${t.id}`);
+      // Described by the driver process (lib/sandbox/): the harness never imports a driver.
       const d = await loadDriver(p, t.id);
-      assert.equal(typeof d.run, 'function');
+      assert.equal(d.hooks.run, true, `${p}/${t.id}: run(op, ctx) must be a function`);
       if (d.built !== false) assert.ok(d.path, `${p}/${t.id}: describe the expert path in "path"`);
       for (const [id, v] of Object.entries(d.variants || {})) {
-        assert.equal(typeof v.run, 'function', `${p}/${t.id} variant ${id}: run(op, ctx)`);
+        assert.equal(v.run, true, `${p}/${t.id} variant ${id}: run(op, ctx)`);
         assert.ok(v.path, `${p}/${t.id} variant ${id}: describe the expert path in "path"`);
       }
     }
