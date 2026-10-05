@@ -95,6 +95,27 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByTestId("team-address")).toHaveText(/\/\?domain=alnoor\.example$/);
   });
 
+  test("returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter", async ({ page, context }) => {
+    await freshStart(page, "en");
+    await page.goto("/?domain=alnoor.example");
+    await paceSignIn(page);
+    await page.keyboard.type("admin");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    // The session ends without signing out; the person comes back to the team's address.
+    await context.clearCookies();
+    await page.goto("/?domain=alnoor.example");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(page.locator('input[name="email"]')).toHaveValue(users.admin);
+    await expect(page.locator("#email-domain")).toHaveCount(0);
+    await paceSignIn(page);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+  });
+
   test("on the team's sign-in address in Arabic the domain stays left to right after the field", async ({ page }) => {
     await freshStart(page, "ar");
     await page.goto("/?domain=alnoor.example");
