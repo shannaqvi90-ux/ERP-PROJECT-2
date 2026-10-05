@@ -38,10 +38,11 @@ tables need the gates.
    plant (`PUT /api/leaky/company-access-partly-checked/{userId}`, every rule but the permission
    rule) must be caught by the new case and, as proof of why the gate once passed, not by the old.
 2. **The company write oracle sends every identifying column of every company table.** Up to three
-   of company Y's values per table (not per column across tables), and a value the oracle itself
-   stored blocks only later writes to the same collection (a branch made with company Y's company
-   code no longer keeps that code from the company create). The report lists every
-   endpoint, field and source table it sent (`WriteOracleSources`), and the gate requires
+   of company Y's values per table (not per column across tables). A value goes first to the writes
+   of its own collection (company Y's code to the company create, before a branch create can store
+   it in company X), and is sent only while no row of the tenant but the victim's holds it, checked
+   in the database right before each send, so a refusal can only come from the victim. The report
+   lists every endpoint, field and source table it sent (`WriteOracleSources`), and the gate requires
    `POST /api/tenancy/companies [code] <- tenancy.companies` and
    `POST /api/tenancy/branches [code] <- tenancy.branches`, so the blind spot cannot come back
    silently.

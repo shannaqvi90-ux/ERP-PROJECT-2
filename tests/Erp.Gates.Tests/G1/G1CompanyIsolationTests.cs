@@ -175,6 +175,14 @@ public static class CompanyAttack
         await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
         var writeOracleChecks = 0;
         var writeOracleSources = new SortedSet<string>(StringComparer.Ordinal);
+        // Every write with an identifying field receives up to three of the victim's values from
+        // every company table with that column (critic p02 round 3, plant C4: the first three
+        // values found were all branch codes, so company Y's own code never reached the company
+        // create and its 409 went unseen). A value goes first to the writes of its own collection
+        // (company Y's code to the company create before a branch create could store it in company
+        // X), and only while no row of the tenant but the victim's holds it, checked in the
+        // database right before sending, so a refusal can only come from the victim.
+        var work = new List<(ApiEndpoint Endpoint, string? Collection, JsonElement Schema, string Field, string Table, string Value)>();
         foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
         {
             if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
@@ -192,45 +200,41 @@ public static class CompanyAttack
                                      G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
                          .Select(p => p.Name))
             {
-                // Only values company Y alone holds at the moment of sending (no other row of the
-                // tenant has them, checked in the database each time, so a refusal can only come
-                // from company Y, never from a record an earlier write of the attacker's stored the
-                // value in); up to three from every company table with that column (critic p02
-                // round 3, plant C4: the first three values found were all branch codes, so company
-                // Y's own code never reached the company create and its 409 went unseen).
-                var sent = new HashSet<string>(StringComparer.Ordinal);
-                var picked = new List<(string Table, string Value)>();
                 foreach (var (table, values) in before.ValuesByTable(field))
                 {
-                    var taken = 0;
-                    foreach (var value in values.Where(v => before.Strings.Contains(v) && !sent.Contains(v)))
-                    {
-                        if (taken == 3) break;
-                        if (!await before.OnlyVictimHoldsAsync(env, tenant.Id, value)) continue;
-                        sent.Add(value);
-                        picked.Add((table, value));
-                        taken++;
-                    }
+                    work.AddRange(values.Where(before.Strings.Contains).Select(v => (endpoint, collection, schema, field, table, v)));
                 }
-                foreach (var (table, held) in picked)
-                {
-                    writeOracleSources.Add($"{endpoint} [{field}] <- {table}");
-                    var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
-                    var fresh = Reshape(held);
-                    var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
-                    var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
-                    writeOracleChecks++;
-                    if (withY is >= 200 and < 300)
-                    {
-                        // Now the attacker's own record holds the value: later writes skip it (the
-                        // database check above), and answers showing it are the attacker's own data.
-                        state.Stored.Add(held);
-                    }
-                    if (withY != withFresh)
-                    {
-                        state.Oracles.Add($"{label} → {endpoint} [{field}]: {victimName}'s value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
-                    }
-                }
+            }
+        }
+        static bool Home(ApiEndpoint endpoint, string? collection, string table) =>
+            (collection ?? endpoint.Pattern).TrimEnd('/').Split('/')[^1] == table.Split('.')[^1];
+        var perSource = new Dictionary<string, int>(StringComparer.Ordinal);
+        var sentTo = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (endpoint, collection, schema, field, table, held) in work.OrderBy(w => Home(w.Endpoint, w.Collection, w.Table) ? 0 : 1))
+        {
+            var source = $"{endpoint} [{field}] <- {table}";
+            if (perSource.GetValueOrDefault(source) >= 3 || sentTo.Contains($"{endpoint} [{field}] {held}") ||
+                !await before.OnlyVictimHoldsAsync(env, tenant.Id, held))
+            {
+                continue;
+            }
+            perSource[source] = perSource.GetValueOrDefault(source) + 1;
+            sentTo.Add($"{endpoint} [{field}] {held}");
+            writeOracleSources.Add(source);
+            var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
+            var fresh = Reshape(held);
+            var (withY, withYText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}y", field, held);
+            var (withFresh, withFreshText) = await G1WriteOracle.SendAsync(oracleClient, openApi, endpoint, collection, schema, env, $"{tag}f", field, fresh);
+            writeOracleChecks++;
+            if (withY is >= 200 and < 300)
+            {
+                // Now the attacker's own record holds the value: later writes skip it (the
+                // database check above), and answers showing it are the attacker's own data.
+                state.Stored.Add(held);
+            }
+            if (withY != withFresh)
+            {
+                state.Oracles.Add($"{label} → {endpoint} [{field}]: {victimName}'s value answered {withY}, a value that exists nowhere answered {withFresh} ({Short(withYText)} / {Short(withFreshText)})");
             }
         }
         // The same with the attacker's own record: changing company X's code (or the code of the
