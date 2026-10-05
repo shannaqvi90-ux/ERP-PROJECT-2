@@ -126,29 +126,29 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
             .Where(a => a.UserId == userId)
             .Select(a => new { a.CompanyId, a.AllBranches })
             .ToListAsync(cancellationToken);
-        await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), cancellationToken);
         if (access.Count == 0)
         {
+            await session.BindCompaniesAsync([], cancellationToken);
             session.SetWorkplace(null, null, []);
             return true;
         }
-        // One round trip for the rest, now inside the bound scope: active companies and branches,
-        // the user's branch limits and the working company and branch they chose.
+        // The same round trip as the company binding, inside the bound scope: active companies and
+        // branches, the user's branch limits and the working company and branch they chose.
         var companies = new List<(Guid Id, string Code)>();
         var branches = new List<(Guid Id, Guid CompanyId)>();
         var limited = new HashSet<Guid>();
         (Guid CompanyId, Guid? BranchId)? chosen = null;
-        await using (var command = new NpgsqlCommand("""
+        var query = new NpgsqlBatchCommand("""
             SELECT 1, c.id, c.id, c.code FROM tenancy.companies c WHERE c.is_active
             UNION ALL SELECT 2, b.id, b.company_id, NULL FROM tenancy.branches b WHERE b.is_active
             UNION ALL SELECT 3, a.branch_id, a.company_id, NULL FROM tenancy.user_branch_access a WHERE a.user_id = @user
             UNION ALL SELECT 4, w.branch_id, w.company_id, NULL FROM tenancy.user_workplaces w
                        WHERE w.user_id = @user AND erp.company_allowed(w.company_id)
-            """, session.Connection, session.Transaction))
+            """);
+        query.Parameters.AddWithValue("user", userId);
+        await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), query, async (reader, ct) =>
         {
-            command.Parameters.AddWithValue("user", userId);
-            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            while (await reader.ReadAsync(cancellationToken))
+            while (await reader.ReadAsync(ct))
             {
                 var companyOfRow = reader.GetGuid(2);
                 switch (reader.GetInt32(0))
@@ -159,7 +159,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
                     default: chosen = (companyOfRow, reader.IsDBNull(1) ? null : reader.GetGuid(1)); break;
                 }
             }
-        }
+        }, cancellationToken);
         var activeCompanies = companies.OrderBy(c => c.Code, StringComparer.Ordinal).Select(c => c.Id).ToList();
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
         // Branch limits hold for the rest of the request: only the branches the user may work in
