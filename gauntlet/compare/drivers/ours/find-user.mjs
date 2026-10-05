@@ -32,7 +32,10 @@ export default {
     const { name, login } = ctx.needles.user;
     await op.click(usersLink(op.page), { label: 'Users' });
     await op.waitFor(searchBox(op.page), { label: 'user list ready' });
-    await op.fill(searchBox(op.page), name, { label: 'user name' });
+    // The list arrives with the cursor in its search box, so an expert types at once: clicking the
+    // focused box first is a step nobody takes (critic p03 round 3).
+    await op.waitFor('input[type="search"]:focus', { label: 'search box focused on arrival' });
+    await op.type(name, { label: 'user name' });
     const row = op.page.getByRole('row').filter({ hasText: name }).first();
     await op.waitFor(row, { label: 'the row with the name' });
     await op.shot('result list');

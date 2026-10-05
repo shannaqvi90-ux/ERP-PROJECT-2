@@ -14,6 +14,8 @@ public sealed class UsersVolumeFixture : IAsyncLifetime
     public const int Volume = 100_000;
     public const string NeedleName = "Shamma Waleed Al Romaithi";
 
+    public const string NeedleNameAr = "شمة وليد الرميثي";
+
     public ErpTestEnvironment Env { get; private set; } = null!;
 
     public SeedTenant Main => Env.Plan.Tenants[0];
@@ -31,6 +33,7 @@ public sealed class UsersVolumeFixture : IAsyncLifetime
         {
             email = $"shamma.romaithi@{Main.EmailDomain}",
             displayName = NeedleName,
+            displayNameAr = NeedleNameAr,
             language = "ar",
             password = ErpTestEnvironment.Password,
         });
@@ -102,6 +105,25 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
 
         var timings = new List<Timing>();
         foreach (var search in new[] { "shamma romaithi", "Romaithi", "SHAMMA WALEED", "shamma.romaithi@" })
+        {
+            var (page, timing) = await TimedAsync(admin, $"/api/identity/users?search={Uri.EscapeDataString(search)}");
+            timings.Add(timing);
+            Assert.Contains(page.GetProperty("items").EnumerateArray(), u => u.GetProperty("displayName").GetString() == UsersVolumeFixture.NeedleName);
+            Assert.True(page.GetProperty("total").GetInt32() <= 2, $"'{search}' matched {page.GetProperty("total").GetInt32()} users");
+            Assert.True(timing.WithinBudget, string.Join("\n", timings));
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine(string.Join("\n", timings));
+    }
+
+    [Fact]
+    public async Task One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second()
+    {
+        // Critic p03 round 3: an Arabic administrator searching a colleague's name as written in
+        // Arabic found nobody. Arabic words search the name and the Arabic name, two fields per
+        // word like any other search, inside the same budget.
+        using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
+        var timings = new List<Timing>();
+        foreach (var search in new[] { "شمة الرميثي", "الرميثي شمة وليد", "romaithi الرميثي" })
         {
             var (page, timing) = await TimedAsync(admin, $"/api/identity/users?search={Uri.EscapeDataString(search)}");
             timings.Add(timing);

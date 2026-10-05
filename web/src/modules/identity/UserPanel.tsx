@@ -704,7 +704,8 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
           <ul>
             {history.paused.map((p) => (
               <li key={p.source}>
-                <bdi dir="ltr">{p.source}</bdi> · <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
+                {p.source.startsWith("device:") ? <bdi>{t("identity.history.knownDevice")}</bdi> : <bdi dir="ltr">{p.source}</bdi>} ·{" "}
+                <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
               </li>
             ))}
           </ul>

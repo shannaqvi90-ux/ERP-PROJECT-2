@@ -30,6 +30,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<SessionGrants>();
         module.Services.AddScoped<ISessionPermissionScope>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
+        module.Services.AddSingleton<TrustedDevices>();
         module.Services.AddScoped<SessionPayload>();
         module.Services.AddScoped<IUserDirectory, UserDirectory>();
         module.Endpoints("auth", AuthEndpoints.Map);
@@ -384,4 +385,13 @@ public sealed class AuthOptions
     /// <summary>Always mark the cookie Secure (set in production behind TLS). When false the
     /// cookie is Secure only on HTTPS requests, so the local demo works over http://localhost.</summary>
     public bool AlwaysSecureCookie { get; set; }
+
+    /// <summary>Key that signs the trusted-device cookie (<see cref="TrustedDevices"/>). Set it
+    /// when several app instances serve one deployment, so each accepts the others' cookies;
+    /// unset, each process signs with a random key of its own and devices fall back to their
+    /// network address after a restart.</summary>
+    public string? DeviceKey { get; set; }
+
+    /// <summary>How long a browser stays a trusted device of an account after signing in to it.</summary>
+    public int DeviceDays { get; set; } = 180;
 }

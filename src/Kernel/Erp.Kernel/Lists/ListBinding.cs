@@ -155,7 +155,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var list = Definition.Key;
         foreach (var column in Definition.Columns)
         {
-            var needsBinding = column.Sortable || column.Filterable || column.Groupable || column.Aggregate || Definition.SearchFields.Contains(column.Key);
+            var needsBinding = column.Sortable || column.Filterable || column.Groupable || column.Aggregate || Definition.AllSearchFields.Contains(column.Key);
             if (!_columns.TryGetValue(column.Key, out var bound))
             {
                 if (needsBinding)
@@ -168,7 +168,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             {
                 yield return $"list '{list}': column '{column.Key}' ({column.Type}) is bound to a {bound.ValueType.Name}";
             }
-            if (Definition.SearchFields.Contains(column.Key) && bound.ValueType != typeof(string))
+            if (Definition.AllSearchFields.Contains(column.Key) && bound.ValueType != typeof(string))
             {
                 yield return $"list '{list}': search field '{column.Key}' must be bound to text";
             }
@@ -322,7 +322,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         foreach (var word in plan.Words)
         {
             var pattern = "%" + EscapeLike(word) + "%";
-            conditions.Add(Definition.SearchFields
+            conditions.Add(Definition.SearchFieldsFor(word)
                 .Select(field => Like(Value(field, row), pattern, database))
                 .Aggregate(Expression.OrElse));
         }

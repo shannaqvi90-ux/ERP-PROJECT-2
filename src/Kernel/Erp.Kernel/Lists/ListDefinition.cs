@@ -67,6 +67,9 @@ public sealed record ListPreset(string Key, string LabelKey, string? Filter = nu
 /// <param name="DefaultSort">Sort applied when the request names none: column keys separated by
 /// commas, a leading '-' meaning descending.</param>
 /// <param name="Presets">Built-in views every user of the list gets.</param>
+/// <param name="ArabicSearchFields">Column keys a search word written in Arabic letters matches
+/// instead of <paramref name="SearchFields"/> (for example a name and its Arabic spelling, but not an
+/// e-mail address, which never holds Arabic letters). Null: Arabic words match the search fields.</param>
 public sealed partial record ListDefinition(
     string Key,
     string LabelKey,
@@ -76,8 +79,20 @@ public sealed partial record ListDefinition(
     IReadOnlyList<string> SearchFields,
     string SearchParameter = "search",
     string? DefaultSort = null,
-    IReadOnlyList<ListPreset>? Presets = null)
+    IReadOnlyList<ListPreset>? Presets = null,
+    IReadOnlyList<string>? ArabicSearchFields = null)
 {
+    /// <summary>The fields a search word matches: <see cref="ArabicSearchFields"/> for a word
+    /// written in Arabic letters when the list names them, else <see cref="SearchFields"/>.</summary>
+    public IReadOnlyList<string> SearchFieldsFor(string word) =>
+        ArabicSearchFields is { Count: > 0 } arabic && word.Any(IsArabicLetter) ? arabic : SearchFields;
+
+    /// <summary>Every field any search word can match.</summary>
+    public IEnumerable<string> AllSearchFields => SearchFields.Concat(ArabicSearchFields ?? []).Distinct(StringComparer.Ordinal);
+
+    private static bool IsArabicLetter(char c) =>
+        c is >= '\u0600' and <= '\u06FF' or >= '\u0750' and <= '\u077F' or >= '\u08A0' and <= '\u08FF' or >= '\uFB50' and <= '\uFDFF' or >= '\uFE70' and <= '\uFEFF';
+
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
     /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
@@ -130,11 +145,11 @@ public sealed partial record ListDefinition(
                 yield return $"list '{Key}': column '{column.Key}' lists choice '{duplicate.Key}' twice";
             }
         }
-        foreach (var field in SearchFields.Where(f => Columns.All(c => c.Key != f)))
+        foreach (var field in AllSearchFields.Where(f => Columns.All(c => c.Key != f)))
         {
             yield return $"list '{Key}': search field '{field}' is not a column";
         }
-        foreach (var field in SearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
+        foreach (var field in AllSearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
         {
             yield return $"list '{Key}': search field '{field}' is not a text column";
         }
