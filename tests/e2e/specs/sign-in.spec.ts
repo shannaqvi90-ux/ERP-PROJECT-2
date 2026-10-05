@@ -98,9 +98,13 @@ test.describe("sign in to an empty workspace", () => {
   test("returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter", async ({ page, context }) => {
     await freshStart(page, "en");
     await page.goto("/?domain=alnoor.example");
+    // The screen is ready for the keyboard before anything is typed.
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await expect(page.locator("#email-domain")).toContainText("@alnoor.example");
     await paceSignIn(page);
     await page.keyboard.type("admin");
     await page.keyboard.press("Enter");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
     await page.keyboard.type(password);
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
