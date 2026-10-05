@@ -383,7 +383,7 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
   });
 
-  it("signing out forgets every cookie a script can read, at every in-app path, and the tab's window name", async () => {
+  it("signing out forgets every cookie the document can read, whatever its path, and the tab's window name", async () => {
     serveTwoTenants();
     view = await render(<App language="en" />);
     await settle();
@@ -395,8 +395,8 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     document.cookie = `erp.lastRole=${encodeURIComponent(bravo.roleName)}; max-age=31536000`;
     window.name = JSON.stringify({ palette: bravo.users.map((u) => u.email) });
     expect(decodeURIComponent(document.cookie)).toContain("gulfsteel");
-    act(() => navigate("/"));
-    await wait(300);
+    // Signed out from the screen the cookies were written on (cookies scoped to paths this
+    // document cannot see are dropped by the sign-out answer's Clear-Site-Data, judged end to end).
     await signOut();
     expect(document.cookie).toBe("");
     for (const path of ["/identity", "/identity/users"]) {

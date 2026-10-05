@@ -9,7 +9,6 @@
 # Format: <file> <carrier> <count>
 web/src/kernel/deviceState.ts cookie 3  # The forgetter: reads the names of the cookies a script can see and expires each one at every in-app path and domain when an identity ends; it never writes a value.
 web/src/kernel/deviceState.ts window-name 1  # The forgetter: resets window.name to "" when an identity ends; nothing writes a value into it.
-web/src/kernel/deviceState.ts history 1  # The cookie forgetter moves the document's address to each in-app path (replaceState, same entry, same state) to see path-scoped cookies, then restores the address; it adds no entry and writes no data.
 web/src/kernel/deviceState.ts local-storage 3  # The forgetter: walks the keys and removes every one except the device settings (language, digits, navigation pane) and, when a session ended by itself, the remembered e-mail.
 web/src/kernel/deviceState.ts session-storage 1  # The forgetter: clears sessionStorage when an identity ends, the tab's history epoch with it (kernel/historyGuard).
 web/src/kernel/deviceState.ts indexed-db 4  # The forgetter: lists and deletes every IndexedDB database of the origin when an identity ends; the product creates none.

@@ -11,6 +11,8 @@ import { freshStart, password, signIn } from "./demo";
  *  - the page: its HTML, every input's value and the title;
  *  - the tab's storage: localStorage, sessionStorage, every IndexedDB database and Cache Storage;
  *  - the tab's JavaScript heap (a V8 heap snapshot), where a module-level cache would keep them;
+ *  - what outlives a document in the tab: its address, the current entry's history.state, every
+ *    cookie of the browser context (scripts' and the server's) and window.name;
  *  - and every API response the tab received must carry Cache-Control: no-store, so the browser's
  *    HTTP cache keeps nothing for the next person either.
  *
@@ -23,7 +25,20 @@ const bravoAdmin = "admin@gulfsteel.example";
 const alphaAdmin = "admin@alnoor.example";
 const unique = () => Math.random().toString(36).slice(2, 8);
 
-type Carrier = "page" | "input" | "title" | "localStorage" | "sessionStorage" | "indexedDB" | "cacheStorage" | "heap";
+type Carrier =
+  | "page"
+  | "input"
+  | "title"
+  | "localStorage"
+  | "sessionStorage"
+  | "indexedDB"
+  | "cacheStorage"
+  | "url"
+  | "historyState"
+  | "cookie"
+  | "windowName"
+  | "heap";
+const allCarriers: Carrier[] = ["page", "input", "title", "localStorage", "sessionStorage", "indexedDB", "cacheStorage", "url", "historyState", "cookie", "windowName", "heap"];
 type Finding = { step: string; carrier: Carrier; marker: string };
 
 /** Signs in through the API (a separate client, not the tab) and returns it with its session. */
@@ -77,9 +92,28 @@ async function tabState(page: Page): Promise<Record<Exclude<Carrier, "heap">, st
         for (const req of await cache.keys()) cached += `${name} ${req.url} ${await (await cache.match(req))!.text()}\n`;
       }
     }
-    return { input: inputs, title: document.title, localStorage: dump(localStorage), sessionStorage: dump(sessionStorage), indexedDB: indexed, cacheStorage: cached };
+    return {
+      input: inputs,
+      title: document.title,
+      localStorage: dump(localStorage),
+      sessionStorage: dump(sessionStorage),
+      indexedDB: indexed,
+      cacheStorage: cached,
+      historyState: JSON.stringify(history.state),
+      documentCookie: document.cookie,
+      windowName: window.name,
+    };
   });
-  return { page: html, ...state };
+  const decode = (text: string) => {
+    try {
+      return decodeURIComponent(text.replace(/\+/g, " "));
+    } catch {
+      return text;
+    }
+  };
+  const jar = (await page.context().cookies()).map((c) => `${c.name}=${c.value} ${c.domain}${c.path}`).join("\n");
+  const { documentCookie, ...rest } = state;
+  return { page: html, ...rest, url: `${page.url()}\n${decode(page.url())}`, cookie: `${documentCookie}\n${decode(documentCookie)}\n${jar}\n${decode(jar)}` };
 }
 
 /** The strings of the tab's JavaScript heap, after a full garbage collection. */
@@ -244,7 +278,65 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       await expect(page.locator('input[name="email"]')).toBeFocused();
       await settled(page);
       const state = await tabState(page);
-      expect(judge(`Back ${i + 1}`, { page: state.page, input: state.input, title: state.title }, ["gulfsteel", "Gulf Steel", "الخليج لتصنيع"])).toEqual([]);
+      const { page: html, input, title, url, historyState, cookie, windowName } = state;
+      expect(judge(`Back ${i + 1}`, { page: html, input, title, url, historyState, cookie, windowName }, ["gulfsteel", "Gulf Steel", "الخليج لتصنيع"])).toEqual([]);
+    }
+  });
+
+  test("after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B", async ({ page }) => {
+    test.setTimeout(180_000);
+    const bravo = await apiAs(bravoAdmin);
+    const token = `zh${unique()}`;
+    const bravoMarker = await createMarkerUser(bravo.context, "gulfsteel.example", token, "Bravo");
+    const markers = [token, "gulfsteel", "Gulf Steel", "الخليج لتصنيع", bravo.session.tenant.id, bravo.session.user.id, bravoMarker.id];
+    try {
+      // B searches its users (the list writes ?q= to the address), opens its marker from the
+      // palette (?q=<e-mail>&open=<id>), moves on and signs out.
+      await freshStart(page, "en");
+      await signIn(page, bravoAdmin);
+      await page.locator('nav.navpane a[href="/identity/users"]').first().click();
+      const search = page.locator('main input[type="search"]').first();
+      await expect(search).toBeVisible();
+      await search.click();
+      await page.keyboard.type(`Canary ${token}`);
+      await expect(page).toHaveURL(new RegExp(`q=Canary(\\+|%20)${token}`));
+      const bravoAddresses = [page.url()];
+      await page.keyboard.press("Control+k");
+      await page.keyboard.type(token);
+      const option = page.locator('[role="dialog"].palette [role="option"]', { hasText: token });
+      await expect(option).toBeVisible();
+      await option.click();
+      await expect(page).toHaveURL(new RegExp(`open=${bravoMarker.id}`));
+      bravoAddresses.push(page.url());
+      await page.keyboard.press("Escape");
+      await page.locator('nav.navpane a[href="/identity/roles"]').first().click();
+      await expect(page.locator("table tbody tr").first()).toBeVisible();
+      // B's addresses carry B's search and record: this test has teeth.
+      expect(judge("B's addresses", { url: bravoAddresses.map((u) => decodeURIComponent(u)).join("\n") }, markers).length).toBeGreaterThan(0);
+      await page.getByRole("button", { name: "Sign out" }).click();
+      await expect(page.locator('input[name="email"]')).toBeFocused();
+
+      // A signs in in the same tab and presses Back until the tab's history is exhausted.
+      await signIn(page, alphaAdmin);
+      await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+      const entries = await page.evaluate(() => history.length);
+      const findings: Finding[] = [];
+      const visited: string[] = [];
+      for (let i = 0; i < entries + 1; i++) {
+        await page.goBack({ waitUntil: "load" }).catch(() => null);
+        await settled(page);
+        if (page.url() === "about:blank") break;
+        visited.push(page.url());
+        const state = await tabState(page);
+        findings.push(...judge(`A, Back ${i + 1}`, state, markers));
+        // Still A, never signed out by pressing Back, and never B's workspace.
+        await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+      }
+      expect(findings, `B's markers after A pressed Back (A visited ${visited.join(", ")})`).toEqual([]);
+      expect(visited.length, "A went Back through B's entries").toBeGreaterThanOrEqual(3);
+    } finally {
+      await bravo.context.delete(`/api/identity/users/${bravoMarker.id}`).catch(() => undefined);
+      await bravo.context.dispose();
     }
   });
 
@@ -299,11 +391,17 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       if (typeof caches !== "undefined") await (await caches.open("erp-planted")).put("/planted", new Response(m.cacheStorage));
       // A module-level cache: only in memory.
       (window as unknown as { plantedCache: Map<string, string> }).plantedCache = new Map([["q", m.heap.split("").join("")]]);
-    }, Object.fromEntries((["page", "input", "title", "localStorage", "sessionStorage", "indexedDB", "cacheStorage", "heap"] as Carrier[]).map((c) => [c, marker(c)])));
+      // What outlives the document: a cookie scoped to a screen's path, window.name, an address
+      // in the tab's history and the state of the current entry.
+      document.cookie = `erp.plantedRecent=${encodeURIComponent(m.cookie)}; path=/identity; max-age=3600`;
+      window.name = m.windowName;
+      history.pushState(null, "", `/identity/users?q=${encodeURIComponent(m.url)}`);
+      history.replaceState({ planted: m.historyState }, "", window.location.href);
+    }, Object.fromEntries(allCarriers.map((c) => [c, marker(c)])));
 
     const state = await tabState(page);
     const heap = await heapStrings(page);
-    const expected: Carrier[] = ["page", "input", "title", "localStorage", "sessionStorage", "indexedDB"];
+    const expected: Carrier[] = ["page", "input", "title", "localStorage", "sessionStorage", "indexedDB", "url", "historyState", "windowName"];
     // Cache Storage exists only on secure origins (https or localhost).
     const secure = await page.evaluate(() => window.isSecureContext && typeof caches !== "undefined");
     if (secure) expected.push("cacheStorage");
@@ -311,13 +409,28 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       expect(judge("self-test", { [carrier]: state[carrier as Exclude<Carrier, "heap">] }, [marker(carrier)]), `the ${carrier} judge finds its plant`).toHaveLength(1);
     }
     expect(judge("self-test", { heap }, [marker("heap")]), "the heap judge finds a module-level cache").toHaveLength(1);
+    // The cookie is scoped to /identity: seen from the screen it was planted on, and by the jar.
+    expect(judge("self-test", { cookie: state.cookie }, [marker("cookie")]), "the cookie judge finds its plant").not.toHaveLength(0);
+
+    // The planted address stays in the tab's history, one entry back.
+    await page.evaluate(() => history.pushState(null, "", "/identity/roles"));
 
     // And signing out clears every stored plant before the next person.
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page.locator('input[name="email"]')).toBeFocused();
     const after = await tabState(page);
-    const stored = judge("after sign-out", { localStorage: after.localStorage, sessionStorage: after.sessionStorage, indexedDB: after.indexedDB, cacheStorage: after.cacheStorage }, expected.map(marker));
+    const stored = judge(
+      "after sign-out",
+      { localStorage: after.localStorage, sessionStorage: after.sessionStorage, indexedDB: after.indexedDB, cacheStorage: after.cacheStorage, cookie: after.cookie, windowName: after.windowName, url: after.url, historyState: after.historyState },
+      allCarriers.map(marker),
+    );
     expect(stored).toEqual([]);
     expect(judge("after sign-out", { heap: await heapStrings(page) }, [marker("heap"), marker("page")])).toEqual([]);
+    // Back into the planted address (an entry of the identity that has ended): the home address,
+    // not the plant.
+    await page.goBack().catch(() => null);
+    await settled(page);
+    const back = await tabState(page);
+    expect(judge("Back into the planted entry", { url: back.url, input: back.input, page: back.page, historyState: back.historyState }, allCarriers.map(marker))).toEqual([]);
   });
 });

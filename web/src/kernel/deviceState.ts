@@ -15,8 +15,9 @@
  *     localStorage key except the device's own settings (`deviceKeys`), all of sessionStorage
  *     (with it the tab's history epoch, so the ended identity's entries in the tab's history are
  *     never trusted again: kernel/historyGuard), every IndexedDB database, every Cache Storage
- *     cache, every cookie a script can read (at every in-app path; the session cookie is HttpOnly
- *     and ended by the server) and the tab's `window.name`, which survives the document.
+ *     cache, every cookie a script can read (for every in-app path; the session cookie is HttpOnly
+ *     and ended by the server, whose sign-out answer also drops every cookie of the site) and the
+ *     tab's `window.name`, which survives the document.
  *  3. A module that wants an in-memory cache makes it with `identityScoped()`; it is emptied when
  *     the identity ends (and the document is replaced anyway). The client-state gate
  *     (tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs) refuses any other module-level state that
@@ -125,31 +126,25 @@ function cookieNames(): string[] {
 }
 
 /**
- * Expire every cookie a script of this page can see, at every in-app path. A cookie is visible
- * only from addresses under its path, so the document's address is moved (replaceState, same
- * document, no request) to each in-app path in turn and the cookies seen there are expired for
- * every path and domain they could have been set with. The session cookie is HttpOnly: scripts
- * never see it, and the server ends it.
+ * Expire every cookie a script of this document can see, for every in-app path and every domain
+ * it could have been set with. A browser shows a document only the cookies of the address the
+ * document was loaded at (an address changed later with pushState does not count), so a cookie
+ * scoped to another path stays invisible here: signing out also asks the browser to drop every
+ * cookie of the site (the sign-out answer's Clear-Site-Data header). The session cookie is
+ * HttpOnly: scripts never see it, and the server ends it.
  */
 export function clearCookies(appPaths: readonly string[] = []): void {
   try {
-    const original = window.location.pathname + window.location.search + window.location.hash;
     const paths = cookiePaths([...appPaths, window.location.pathname]);
     const domains = cookieDomains();
-    const replace = History.prototype.replaceState;
-    const state = window.history.state;
-    for (const path of paths) {
-      if (path !== window.location.pathname) replace.call(window.history, state, "", path);
-      for (const name of cookieNames()) {
-        for (const domain of domains) {
-          const scope = domain ? `; domain=${domain}` : "";
-          // Without a path: the address's default path, wherever the cookie was set from.
-          document.cookie = `${name}=; expires=${expired}${scope}`;
-          for (const cookiePath of paths) document.cookie = `${name}=; expires=${expired}; path=${cookiePath}${scope}`;
-        }
+    for (const name of cookieNames()) {
+      for (const domain of domains) {
+        const scope = domain ? `; domain=${domain}` : "";
+        // Without a path: the document's default path, wherever the cookie was set from.
+        document.cookie = `${name}=; expires=${expired}${scope}`;
+        for (const cookiePath of paths) document.cookie = `${name}=; expires=${expired}; path=${cookiePath}${scope}`;
       }
     }
-    replace.call(window.history, state, "", original);
   } catch {
     // No cookies here.
   }
