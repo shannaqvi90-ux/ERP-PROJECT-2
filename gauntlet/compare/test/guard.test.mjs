@@ -99,8 +99,10 @@ before(async () => {
     if (req.url === '/form') return html(FORM);
     if (req.url === '/saved') return html(`<!doctype html><html><body><div id="out">saved ${saved.replace(/[<&]/g, '')}</div></body></html>`);
     if (req.url === '/api/home-preference' && req.method === 'POST') { homePreference = '/users'; return json({}); }
-    if (req.url === '/' && homePreference) { res.writeHead(302, { Location: homePreference }); return res.end(); }
-    if (req.url === '/') return html(signedIn ? HOME : SIGN_IN);
+    // The product's own address, with or without a query (our team's sign-in address carries ?domain=).
+    const root = req.url.split('?')[0] === '/';
+    if (root && homePreference) { res.writeHead(302, { Location: homePreference }); return res.end(); }
+    if (root) return html(signedIn ? HOME : SIGN_IN);
     if (req.url === '/users') return html(usersPage(users));
     if (req.url.startsWith('/remembering')) return html(REMEMBERING);
     html(PAGE);
