@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
@@ -205,11 +205,32 @@ export function driverFingerprint(productId, taskId) {
 }
 
 /**
- * Round 5: what verify() may cost. It runs twice after the clock stops; when the first pass took
- * longer than the second by more than VERIFY_SLACK_SECONDS (and more than twice as long), the end
- * state arrived while verification waited for it, off the clock.
+ * Round 5: verify() reads the end state; it may not wait for it. The harness watches each pass
+ * (lib/sandbox/bridge.mjs) and the run is invalid when a pass
+ *   - asked the harness nothing for longer than VERIFY_MAX_PAUSE_SECONDS (it slept, spun or waited
+ *     on a timer while the product worked on),
+ *   - sent more than VERIFY_MAX_REQUESTS requests, or the same back-end read twice (it polled), or
+ *   - took over VERIFY_SLACK_SECONDS longer than the second pass and over three times as long (it
+ *     waited by slow reads; a cold cache costs far less).
  */
-export const VERIFY_SLACK_SECONDS = 0.5;
+export const VERIFY_MAX_PAUSE_SECONDS = 1;
+export const VERIFY_MAX_REQUESTS = 100;
+export const VERIFY_SLACK_SECONDS = 3;
+
+/** Why a verify() pass waited, or null (see above). */
+export function verifyWaited(passes) {
+  for (const [i, p] of passes.entries()) {
+    const which = i === 0 ? 'verify()' : 'verify() (second pass)';
+    if (p.longest_pause_seconds > VERIFY_MAX_PAUSE_SECONDS) return `${which} paused ${p.longest_pause_seconds} s without reading anything: it waited for the end state after the clock stopped`;
+    if (p.requests > VERIFY_MAX_REQUESTS) return `${which} sent ${p.requests} requests: it polled for the end state after the clock stopped`;
+    if (p.repeated_reads?.length) return `${which} read ${p.repeated_reads[0]} twice: verification reads once, it does not poll for the end state`;
+  }
+  const [first, second] = passes;
+  if (first && second && first.seconds - second.seconds > VERIFY_SLACK_SECONDS && first.seconds > 3 * second.seconds) {
+    return `verify() took ${first.seconds} s the first time and ${second.seconds} s the second: the end state arrived while it waited, after the clock stopped`;
+  }
+  return null;
+}
 
 /** A driver to run: its module file (and variant), as loadDriver describes it. */
 export function isDriverSpec(d) {
@@ -217,15 +238,22 @@ export function isDriverSpec(d) {
 }
 
 /**
- * The page's requests while the task is measured (lib/operator.mjs settle): long-lived channels
- * (web sockets, event streams, long polling, Odoo's bus) never end, so they are not waited for.
+ * The page's requests that change the product, while the task is measured (lib/operator.mjs
+ * settle): a save still under way when run() returns is the product's answer to the task and stays
+ * on the clock. Reads still loading then (avatars, a chatter) are not waited for: the page's script
+ * is frozen when the clock stops (freezePages), so a late read can no longer change the screen
+ * verify() reads. Long-lived channels (web sockets, event streams, long polling, Odoo's bus) never end.
  */
 function trackRequests(context) {
   const inflight = new Set();
   const tracker = { inflight, lastEnded: null, afterClock: 0 };
   const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
   const frameOf = r => { try { return r.frame(); } catch { return null; } };
-  const on = r => { if (!background(r)) inflight.add(r); };
+  const postData = r => { try { return r.postData(); } catch { return null; } };
+  const on = r => {
+    if (background(r)) return;
+    if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: postData(r), navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) inflight.add(r);
+  };
   const off = r => { if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
   // A document that is replaced (a reload, a link) abandons its requests: their answers can no
   // longer reach the screen, and the browser reports no end for some of them.
@@ -240,6 +268,29 @@ function trackRequests(context) {
     for (const p of pages) p.off('framenavigated', navigated);
   };
   return tracker;
+}
+
+/**
+ * Freeze the page's own script when the clock stops (round 5): no timer, no network callback, no
+ * animation frame of the product runs any more, so the screen verify() reads and the done
+ * screenshot show is the screen at the end of the measured part. Reading (locators, ctx.read) and
+ * screenshots still work. Returns the function that thaws the pages again (before clean-up).
+ */
+async function freezePages(context) {
+  const sessions = [];
+  for (const p of context.pages()) {
+    try {
+      const cdp = await context.newCDPSession(p);
+      await cdp.send('Emulation.setScriptExecutionDisabled', { value: true });
+      sessions.push(cdp);
+    } catch { /* a closed page */ }
+  }
+  return async () => {
+    for (const cdp of sessions) {
+      await cdp.send('Emulation.setScriptExecutionDisabled', { value: false }).catch(() => {});
+      await cdp.detach().catch(() => {});
+    }
+  };
 }
 
 /**
@@ -278,6 +329,7 @@ export async function execute(task, driver, product, productId, needles, out, op
   let session = null;
   let tracker = null;
   let routed = false;
+  let thaw = null;
   const kind = startKind(task);
   // Every wait and step times out after `opts.timeout` (2 minutes; the plant tests use less).
   const timeout = opts.timeout ?? 120_000;
@@ -301,6 +353,7 @@ export async function execute(task, driver, product, productId, needles, out, op
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
+    run.set_up_calls_waited = await session.drain(timeout);
     ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session }));
     session.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
@@ -339,6 +392,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     // finished off the clock, by the page or by verification waiting for it.
     if (tracker) {
       tracker.stop();
+      thaw = await freezePages(context);
       await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
       routed = true;
     }
@@ -351,15 +405,15 @@ export async function execute(task, driver, product, productId, needles, out, op
       const passes = [];
       for (let i = 0; i < 2; i++) {
         const t = performance.now();
-        const v = await hook('verify', { handles: handles(), after: true });
-        passes.push({ seconds: round((performance.now() - t) / 1000), verified: v?.verified === true });
+        session.startVerifyMeter();
+        let v;
+        try { v = await hook('verify', { handles: handles(), after: true }); } finally { passes.push({ seconds: round((performance.now() - t) / 1000), ...session.stopVerifyMeter() }); }
+        passes[i].verified = v?.verified === true;
         if (i === 0) run.verification = v;
       }
       run.verify_passes = passes;
-      const [first, second] = passes;
-      if (first.verified && first.seconds - second.seconds > VERIFY_SLACK_SECONDS && first.seconds > 2 * second.seconds) {
-        throw new ActionOutsideClock(`verify() took ${first.seconds} s the first time and ${second.seconds} s the second: the end state arrived while it waited, after the clock stopped (wait for the end state in run(), on the clock)`, 'verifying');
-      }
+      const waited = verifyWaited(passes);
+      if (waited) throw new ActionOutsideClock(`${waited} (wait for the end state in run(), on the clock)`, 'verifying');
     } else {
       run.verification = { verified: !!outcome?.verified, details: outcome };
     }
@@ -380,6 +434,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     op?.finish();
     tracker?.stop();
     if (tracker) run.requests_after_clock = tracker.afterClock;
+    if (thaw) await thaw();
     if (routed) await context.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
     page?.setDefaultTimeout(timeout);
     phase.set('free');

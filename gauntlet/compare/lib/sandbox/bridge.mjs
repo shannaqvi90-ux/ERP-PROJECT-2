@@ -169,8 +169,8 @@ export class DriverSession {
   }
 
   close() {
-    for (const { obj, event, cb, method } of this.#listeners.values()) {
-      try { unwrap(obj)[UNLISTEN_OF[method] || 'off'](event, cb); } catch { /* gone */ }
+    for (const { obj, event, cb } of this.#listeners.values()) {
+      try { obj.off(event, cb); } catch { /* gone */ }
     }
     this.#listeners.clear();
     if (this.host.session === this) this.host.session = null;
@@ -267,8 +267,55 @@ export class DriverSession {
     if (bad) throw new Refusal(`a file written outside the driver's scratch folder (${bad}): the driver process writes only under its TMPDIR`, 'Refusal');
   }
 
+  // -- verification meter (round 5) ----------------------------------------------------------------
+  /**
+   * While verify() runs, the harness watches how it reads: how many requests it sends, the longest
+   * stretch in which it asked the harness nothing (it was sleeping, spinning or computing), and any
+   * back-end read it sent twice (polling). The runner judges the record (lib/runner.mjs).
+   */
+  startVerifyMeter() {
+    this.meter = { started: performance.now(), requests: 0, outstanding: 0, idleSince: performance.now(), longestPause: 0, seen: new Set(), repeated: [] };
+  }
+
+  stopVerifyMeter() {
+    const m = this.meter;
+    this.meter = null;
+    if (!m) return null;
+    if (m.outstanding === 0) m.longestPause = Math.max(m.longestPause, performance.now() - m.idleSince);
+    return { requests: m.requests, longest_pause_seconds: Math.round(m.longestPause) / 1000, repeated_reads: m.repeated.slice(0, 5) };
+  }
+
+  #meterIn(m) {
+    const meter = this.meter;
+    if (!meter) return null;
+    if (meter.outstanding === 0) meter.longestPause = Math.max(meter.longestPause, performance.now() - meter.idleSince);
+    meter.outstanding++;
+    meter.requests++;
+    if (m.kind === 'fetch') {
+      let body = m.body;
+      if (body && typeof body !== 'string') body = Buffer.from(body).toString('utf8');
+      // A JSON-RPC call's id changes on every call; the read it asks for does not.
+      try { const j = JSON.parse(body || 'null'); if (j && typeof j === 'object' && 'id' in j) { delete j.id; body = JSON.stringify(j); } } catch { /* not JSON */ }
+      const key = `${m.method} ${m.url} ${body || ''}`;
+      if (meter.seen.has(key)) meter.repeated.push(`${m.method} ${new URL(m.url).pathname}`);
+      meter.seen.add(key);
+    }
+    return meter;
+  }
+
+  #meterOut(meter) {
+    if (!meter || meter !== this.meter) return;
+    meter.outstanding--;
+    if (meter.outstanding === 0) meter.idleSince = performance.now();
+  }
+
   // -- requests from the driver process ------------------------------------------------------------
   async handle(m) {
+    const meter = this.#meterIn(m);
+    try { return await this.#dispatch(m); } finally { this.#meterOut(meter); }
+  }
+
+  async #dispatch(m) {
     switch (m.kind) {
       case 'invoke': return this.#invoke(m);
       case 'listen': return this.#listen(m);
@@ -342,7 +389,30 @@ export class DriverSession {
     return { value: this.encode(value), steps: this.op.steps, waits: this.op.waits };
   }
 
-  async #fetch({ url, method, headers, body }) {
+  /**
+   * Set-up's back-end calls that are still under way when the start is prepared: the runner waits
+   * for them (off the clock) before it opens the start screen, so what they do on the product
+   * lands before the clock and the check "already done before the clock" sees it, instead of
+   * finishing inside the measured part (round 5).
+   */
+  async drain(timeout) {
+    if (!this.#pendingFetches.size) return 0;
+    const n = this.#pendingFetches.size;
+    let timer;
+    const late = new Promise((_, reject) => { timer = setTimeout(() => reject(new ActionOutsideClock(`set-up left ${this.#pendingFetches.size} back-end call(s) running for over ${Math.round(timeout / 1000)} s`, 'set-up')), timeout); });
+    try { await Promise.race([Promise.allSettled([...this.#pendingFetches]), late]); } finally { clearTimeout(timer); }
+    return n;
+  }
+
+  #pendingFetches = new Set();
+
+  async #fetch(m) {
+    const p = this.#doFetch(m);
+    this.#pendingFetches.add(p);
+    try { return await p; } finally { this.#pendingFetches.delete(p); }
+  }
+
+  async #doFetch({ url, method, headers, body }) {
     const phase = currentPhase();
     let u;
     try { u = new URL(url); } catch { throw new TypeError(`fetch: ${url} is not an address`); }
@@ -374,4 +444,3 @@ export class DriverSession {
   static verifyTimeout() { return verifyReadTimeout(); }
 }
 
-const UNLISTEN_OF = { on: 'off', once: 'off', addListener: 'removeListener', prependListener: 'removeListener', prependOnceListener: 'removeListener' };

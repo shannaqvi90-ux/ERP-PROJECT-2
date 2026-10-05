@@ -71,6 +71,7 @@ const NAV_FORM = '<!doctype html><html><body><form action="/nav-list"><input nam
 const NAV_LIST = '<!doctype html><html><body><input id="s" aria-label="Search" autofocus><div id="out"></div><script>document.getElementById("s").addEventListener("input", e => { document.getElementById("out").textContent = "found " + e.target.value; });</script></body></html>';
 let asyncSaved = false;
 let curlRequests = 0;
+let echoHits = 0;
 let apiUsers = [];
 
 let server, base, tmp, needles;
@@ -99,10 +100,15 @@ before(async () => {
     const u5 = new URL(req.url, 'http://x');
     if (/curl/i.test(req.headers['user-agent'] || '')) curlRequests++;
     if (u5.pathname === '/api/slow') { setTimeout(() => { res.writeHead(200); res.end(u5.searchParams.get('q') || ''); }, 2000); return; }
+    if (u5.pathname === '/api/slow-things' && req.method === 'POST') { setTimeout(() => { things++; json({ id: 8 }); }, 1500); return; }
+    if (u5.pathname === '/api/echo') { echoHits++; }
     if (u5.pathname === '/api/echo') { res.writeHead(200); return res.end(u5.searchParams.get('q') || ''); }
     if (u5.pathname === '/api/async-save' && req.method === 'POST') { setTimeout(() => { asyncSaved = true; }, 1500); return json({ accepted: true }); }
     if (u5.pathname === '/api/async-saved') return json({ saved: asyncSaved });
     if (u5.pathname === '/slow-page') return html(SLOW_PAGE);
+    if (u5.pathname === '/save-page') return html('<!doctype html><html><body><button id="save" onclick="fetch(\'/api/slow-things\', { method: \'POST\' })">Save</button></body></html>');
+    if (u5.pathname === '/images-page') return html('<!doctype html><html><body><input id="q" aria-label="Query"><button id="go">Go</button><div id="out"></div><script>document.getElementById("q").addEventListener("click", () => { const i = new Image(); i.src = "/slow-image"; document.body.append(i); fetch("/api/slow?q=x"); });</script></body></html>');
+    if (u5.pathname === '/slow-image') { setTimeout(() => { res.writeHead(200, { 'Content-Type': 'image/gif' }); res.end(Buffer.from('R0lGODlhAQABAAAAACw=', 'base64')); }, 2000); return; }
     if (u5.pathname === '/debounce-page') return html(DEBOUNCE_PAGE);
     if (u5.pathname === '/async-page') return html(ASYNC_PAGE);
     if (u5.pathname === '/nav-form') return html(NAV_FORM);
@@ -752,14 +758,46 @@ test('plant T2 (round 5): run() returns after the click and verify() waits for t
   assert.match(r.error, /never waits/);
 });
 
-test('plant T2b (round 5): run() returns after the click and verify() reads once -> the 2 s answer is on the clock', async () => {
+test('plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped', async () => {
   const r = await runDriver({
     signIn: slowSignIn,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
     async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' }; },
   });
-  if (r.status === 'verified') assert.ok(r.counts.machine_seconds >= 2, `verified in ${r.counts.machine_seconds} s, under the product's 2 s answer`);
-  assert.ok(r.waits.some(w => w.settle && w.seconds >= 1.9), `the answer the driver did not wait for is system wait: ${JSON.stringify(r.waits)}`);
+  assert.notEqual(r.status, 'verified', `verified in ${r.counts?.machine_seconds} s, under the product's 2 s answer`);
+  // Even later: the page's script stays frozen, so the answer that arrives never reaches the screen.
+  const late = await runDriver({
+    signIn: slowSignIn,
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
+    async verify(ctx, outcome) {
+      if (outcome !== undefined) { const t = Date.now(); while (Date.now() - t < 900) { /* under the pause limit */ } }
+      return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
+    },
+  });
+  assert.notEqual(late.status, 'verified', `verified in ${late.counts?.machine_seconds} s`);
+});
+
+test('plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock', async () => {
+  // The save answers after 1.5 s (the stand-in's slow POST); verify() reads the back end, not the screen.
+  const r = await runDriver({
+    async setup(ctx) { ctx.state.before = (await (await fetch(base + '/api/things')).json()).count; },
+    async signIn(ctx) { await ctx.page.goto(base + '/save-page'); },
+    async run(op) { await op.click('#save'); return {}; },
+    async verify(ctx) { return { verified: (await (await fetch(base + '/api/things')).json()).count > ctx.state.before }; },
+  });
+  if (r.status === 'verified') assert.ok(r.counts.machine_seconds >= 1.5, `verified in ${r.counts.machine_seconds} s, under the save's 1.5 s`);
+  assert.ok(r.waits.some(w => w.settle && w.seconds >= 1.4), `the save the driver did not wait for is system wait: ${JSON.stringify(r.waits)}`);
+});
+
+test('control (round 5): images and reads still loading when run() returns are not waited for', async () => {
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/images-page'); },
+    async run(op) { await op.click('#q'); return {}; },
+    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  assert.ok(!r.waits.some(w => w.settle), `a slow image or read was put on the clock: ${JSON.stringify(r.waits)}`);
+  assert.ok(r.counts.machine_seconds < 1.5, `machine ${r.counts.machine_seconds}`);
 });
 
 test('plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid', async () => {
@@ -775,10 +813,11 @@ test('plant T2c (round 5): a save committed after its answer, and verify() polls
     },
   });
   assert.equal(r.status, 'invalid', `${r.status} ${r.error} ${JSON.stringify(r.verify_passes)}`);
-  assert.match(r.error, /the first time/);
+  assert.match(r.error, /twice|polled/);
 });
 
 test('plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops', async () => {
+  const hitsBefore = echoHits;
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/debounce-page'); },
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
@@ -789,7 +828,31 @@ test('plant T2d (round 5): a request the page sends 600 ms after the click canno
     },
   });
   assert.notEqual(r.status, 'verified', `verified with machine ${r.counts?.machine_seconds}`);
-  assert.ok(r.requests_after_clock >= 1, 'the page\'s request after the clock was cut off');
+  assert.equal(echoHits, hitsBefore, 'the page\'s request after the clock reached the product');
+  assert.equal(r.status, 'invalid', 'the busy wait in verify() is caught too');
+  assert.match(r.error, /paused/);
+});
+
+test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid', async () => {
+  asyncSaved = false;
+  const sleeper = await runDriver({
+    signIn: slowSignIn,
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
+    async verify(ctx, outcome) { if (outcome !== undefined) await new Promise(res => setTimeout(res, 1500)); return { verified: outcome !== undefined }; },
+  });
+  assert.equal(sleeper.status, 'invalid', `${sleeper.status} ${sleeper.error}`);
+  assert.match(sleeper.error, /paused/);
+  const poller = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
+    async run(op) { await op.click('#save'); await op.waitFor(() => document.getElementById('out').textContent === 'accepted'); return {}; },
+    async verify() {
+      let saved = false;
+      for (let i = 0; i < 5000 && !saved; i++) saved = (await (await fetch(`${base}/api/async-saved?n=${i}`)).json()).saved;
+      return { verified: saved };
+    },
+  });
+  assert.equal(poller.status, 'invalid', `${poller.status} ${poller.error}`);
+  assert.match(poller.error, /polled|twice/);
 });
 
 test('plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid', async () => {
@@ -878,6 +941,20 @@ test('plant U5d (round 5): a timer left by set-up that calls the back end while 
     async signIn(ctx) { setTimeout(() => { fetch(base + '/api/things', { method: 'POST' }).catch(() => {}); }, 1200); await ctx.page.goto(base + '/plant'); } });
   assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
   assert.equal(things, before);
+});
+
+test('plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid', async () => {
+  const r = await runDriver({
+    async setup(ctx) {
+      ctx.state.before = (await (await fetch(base + '/api/things')).json()).count;
+      fetch(base + '/api/slow-things', { method: 'POST' }).catch(() => {}); // not awaited: it would finish while measured
+    },
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.click('#q'); await new Promise(res => setTimeout(res, 2500)); return {}; },
+    async verify(ctx) { return { verified: (await (await fetch(base + '/api/things')).json()).count > ctx.state.before }; },
+  });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.match(r.error, /already done before the clock/);
 });
 
 test('plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver\'s reach', async () => {

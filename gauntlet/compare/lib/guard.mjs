@@ -374,6 +374,16 @@ export const rawFetch = globalThis.fetch.bind(globalThis);
 /** Odoo model methods that only read (verification may call these and nothing else). */
 export const ODOO_READ_METHODS = Object.freeze(new Set(['search', 'search_read', 'read', 'search_count', 'fields_get', 'name_search',
   'read_group', 'web_read', 'web_search_read', 'web_read_group', 'check_access_rights', 'has_group', 'default_get', 'search_fetch']));
+/**
+ * Odoo web-client calls that only read, beyond ODOO_READ_METHODS: the views of a model, a form's
+ * computed defaults (onchange computes, it does not store) and the messaging store's fetches (the
+ * chatter's messages, the systray). Used only to tell whether a request the page still has in
+ * flight when a task ends changes the product (lib/runner.mjs, settle).
+ */
+export const ODOO_CLIENT_READ_METHODS = Object.freeze(new Set(['get_views', 'onchange', 'web_name_search', 'name_get', 'get_formview_action', 'get_formview_id']));
+export const ODOO_CLIENT_READ_ROUTES = Object.freeze([/^\/mail\/store$/, /^\/mail\/data$/, /^\/mail\/thread\/(data|messages)$/, /^\/web\/action\/load$/,
+  /^\/web\/webclient\/(load_menus|translations|version_info)/]);
+
 /** Requests that only open a session or read: the fixture clients' sign-ins and Odoo's session info. */
 const READ_POSTS = [/^\/api\/auth\/sign-in$/, /^\/web\/session\/authenticate$/, /^\/web\/session\/get_session_info$/];
 
@@ -399,6 +409,30 @@ export function isReadRequest(input, init = {}) {
     return p?.service === 'object' && p.method === 'execute_kw' && ODOO_READ_METHODS.has(p.args?.[4]);
   }
   return false;
+}
+
+/**
+ * Whether a request the page sent may change the product (round 5, settle): a document load (the
+ * product's answer is a new screen), or any method but GET, HEAD and OPTIONS that is not a known
+ * read. Images, fonts, styles, scripts and media never change it. Only the reference's documented
+ * read calls are exempted by name, so a mistake here can only shorten the reference's clock, never
+ * our product's.
+ */
+export function changesProduct({ method, url, resourceType, postData, navigation }) {
+  if (navigation) return true;
+  const m = String(method || 'GET').toUpperCase();
+  if (m === 'GET' || m === 'HEAD' || m === 'OPTIONS') return false;
+  if (['image', 'font', 'stylesheet', 'media', 'script', 'manifest', 'texttrack'].includes(resourceType)) return false;
+  let u;
+  try { u = new URL(url); } catch { return true; }
+  if (ODOO_CLIENT_READ_ROUTES.some(re => re.test(u.pathname))) return false;
+  // A sign-in changes the product (it opens a session): only Odoo's model reads are exempt here.
+  const kw = /^\/web\/dataset\/call_kw\/[\w.]+\/(\w+)$/.exec(u.pathname);
+  if (kw && (ODOO_READ_METHODS.has(kw[1]) || ODOO_CLIENT_READ_METHODS.has(kw[1]))) return false;
+  if (u.pathname === '/jsonrpc') {
+    try { const p = JSON.parse(postData || '').params; if (p?.service === 'object' && p.method === 'execute_kw' && ODOO_READ_METHODS.has(p.args?.[4])) return false; } catch { /* not JSON */ }
+  }
+  return true;
 }
 
 let networkGuardInstalled = false;

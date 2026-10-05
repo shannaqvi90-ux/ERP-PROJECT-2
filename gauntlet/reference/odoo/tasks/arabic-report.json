@@ -1,24 +1,24 @@
 {
   "schema": 1,
-  "run_id": "arabic-report-20261003T143427-8a30",
-  "instrument": 4,
+  "run_id": "arabic-report-20261005T065721-57bc",
+  "instrument": 5,
   "task": "arabic-report",
   "task_title": "Print a document in Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
   "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
-  "started_at": "2026-10-03T14:34:27.824Z",
-  "finished_at": "2026-10-03T14:34:43.170Z",
+  "started_at": "2026-10-05T06:57:21.833Z",
+  "finished_at": "2026-10-05T06:57:39.479Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 3,
+    "dataset": 4,
     "reference_volume": 100000,
-    "node": "v22.22.0"
+    "node": "v22.23.3"
   },
   "counts": {
     "steps": 6,
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 6.437,
-    "system_wait_seconds": 5.901,
+    "machine_seconds": 6.542,
+    "system_wait_seconds": 5.898,
     "human_seconds": 15.9,
-    "human_plus_wait_seconds": 21.801,
+    "human_plus_wait_seconds": 21.798,
     "klm_operator_counts": {
       "K": 0,
       "P": 6,
@@ -57,8 +57,9 @@
       "kind": "click",
       "label": "user menu",
       "keystrokes": 0,
-      "at": 0,
-      "took": 0.058,
+      "at": 0.001,
+      "took": 0.073,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     },
     {
@@ -66,8 +67,9 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.058,
-      "took": 0.049,
+      "at": 0.075,
+      "took": 0.057,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     },
     {
@@ -75,8 +77,9 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.328,
-      "took": 0.159,
+      "at": 0.557,
+      "took": 0.134,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     },
     {
@@ -84,8 +87,9 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.487,
-      "took": 0.094,
+      "at": 0.691,
+      "took": 0.13,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     },
     {
@@ -93,8 +97,9 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.581,
-      "took": 0.051,
+      "at": 0.822,
+      "took": 0.058,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     },
     {
@@ -102,52 +107,59 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 3.572,
-      "took": 0.125,
+      "at": 2.89,
+      "took": 0.178,
+      "screen": "/odoo/purchase/100005",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.106,
-      "seconds": 0.222
+      "at": 0.133,
+      "seconds": 0.422
     },
     {
       "label": "interface in Arabic",
-      "at": 0.632,
-      "seconds": 2.099
+      "at": 0.881,
+      "seconds": 0.993
     },
     {
       "label": "order form in Arabic",
-      "at": 2.731,
-      "seconds": 0.84
+      "at": 1.875,
+      "seconds": 1.009
     },
     {
       "label": "file received",
-      "at": 3.697,
-      "seconds": 2.74
+      "at": 3.068,
+      "seconds": 3.098
+    },
+    {
+      "label": "the product still answering when run() returned (2 requests)",
+      "at": 6.166,
+      "seconds": 0.376,
+      "settle": true
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "ccd60271a562ea9d.jpg",
+      "file": "e73b9f5343aa5f7a.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/ccd60271a562ea9d.jpg"
+      "path": "gauntlet/reference/odoo/shots/e73b9f5343aa5f7a.jpg"
     },
     {
       "moment": "done",
-      "file": "29a25ba8819bcc68.jpg",
-      "at": 6.437,
-      "path": "gauntlet/reference/odoo/shots/29a25ba8819bcc68.jpg"
+      "file": "b85cf555dc1f15ab.jpg",
+      "at": 6.542,
+      "path": "gauntlet/reference/odoo/shots/b85cf555dc1f15ab.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "file": "download",
-      "bytes": 47318,
+      "file": "أمر شراء - P00005.pdf",
+      "bytes": 47313,
       "print_language": "ar_001",
       "arabic_words_in_document": 25,
       "right_to_left": true
@@ -156,14 +168,14 @@
   "path_notes": "User menu > My Preferences > Language: Arabic > Update Preferences > Print. Printing straight away gives Arabic text in a left-to-right layout (Odoo lays the page out in the user's language and translates it into the vendor's), so the user switches to Arabic first.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/arabic-report.mjs",
-    "sha256": "48a7a122c409725698fb06d79167f6ecfb710037fcdcb8a997d5634843ee2f10"
+    "sha256": "b7fbfbc0922d146bf1e36bd9933af7ded46f48b8e24abad8969df8b432f42075"
   },
   "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
   "error": null,
   "start_state": {
     "kind": "record",
-    "opened_by_sign_in": "/odoo/purchase/100019",
-    "path": "/odoo/purchase/100019",
+    "opened_by_sign_in": "/odoo/purchase/100005",
+    "path": "/odoo/purchase/100005",
     "query": "",
     "fragment": "",
     "fields": 3,
@@ -171,11 +183,22 @@
     "focused": null,
     "set_up_contexts_closed": 0
   },
+  "verify_passes": [
+    {
+      "seconds": 0.104,
+      "verified": true
+    },
+    {
+      "seconds": 0.066,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
   "result_file": "gauntlet/reference/odoo/tasks/arabic-report.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/arabic-report-20261003T143400-bbcc.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261003T143427-8a30.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261003T143443-6a3a.json"
+    "gauntlet/reference/odoo/results/arabic-report-20261005T065640-1adf.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261005T065702-aa48.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261005T065721-57bc.json"
   ]
 }
