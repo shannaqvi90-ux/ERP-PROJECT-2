@@ -74,6 +74,8 @@ click or column menu); the top row is marked and Enter in the search box opens i
 - A ranked search costs one sort over at most 10,000 matching rows with a few regular expressions
   per row; broader searches cost what they did before.
 - Search fields stay plain columns with trigram indexes (the index gate is unchanged).
-- The find-user comparison types the first letters of each part of the name ("Maj Ani Pil") and
-  opens the user from the few rows that match: the search matches words anywhere, in any order, and
-  ranks the best first, which Odoo's contiguous-substring search cannot do.
+- The product lets an expert type the first letters of each part of the name ("maj ani pil") and
+  open the best match with Enter: the search matches words anywhere, in any order, and ranks the
+  best first, which Odoo's contiguous-substring search cannot do. The comparison harness's ours
+  find-user driver (owned by p01) is back on the full-name path its guard tests verify (integration
+  commit 53fdba5); measuring the shorter path waits on the lead's guard-test decision (round 4).

@@ -3,11 +3,11 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // Things are found by role and label (the Users link, the search box, the row with the name),
 // never by layout, so the driver keeps working while the users screen changes.
 const usersLink = page => page.getByRole('navigation').getByRole('link', { name: 'Users', exact: true }).first();
+const searchBox = page => page.getByRole('searchbox').or(page.getByLabel(/search/i)).first();
 
 export default {
   built: true,
-  path: 'Users (navigation) > the search box has focus > type the first three letters of each part of the name > the list shows the ' +
-    'best matches first: Enter opens the top row when it is the user, else click the user\'s row: the record shows the sign-in.',
+  path: 'Users (navigation) > search box > type the name > the row with the name > open it: the user\'s record shows the sign-in.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
     const { login, name, lang } = ctx.needles.user;
@@ -31,28 +31,17 @@ export default {
   async run(op, ctx) {
     const { name, login } = ctx.needles.user;
     await op.click(usersLink(op.page), { label: 'Users' });
-    await op.waitFor(() => document.activeElement?.getAttribute('type') === 'search', { label: 'user list ready, search focused' });
-    // What a person who knows the name types into a search that matches words anywhere and ranks
-    // the best match first: the first letters of each part of the name ("maj ani pil"), then they
-    // pick the user from the few rows that match. The list is read once it answers what was typed.
-    // Search ignores case, so no Shift: "maj ani pil".
-    const typed = name.trim().split(/\s+/).map(part => part.slice(0, 3)).join(' ').toLocaleLowerCase();
-    await op.type(typed, { label: 'first letters of each part of the name' });
-    await op.waitFor(t => {
-      const box = document.querySelector('input[type="search"]');
-      return !!box && box.value === t && !document.querySelector('section[aria-busy="true"]') && !!document.querySelector('[role="row"][aria-rowindex="2"]');
-    }, { label: 'results for what was typed', arg: typed });
-    const cell = op.page.getByRole('gridcell', { name, exact: true }).first();
-    if ((await cell.count()) === 0) throw new Error(`"${name}" is not among the rows shown for "${typed}"`);
+    await op.waitFor(searchBox(op.page), { label: 'user list ready' });
+    await op.fill(searchBox(op.page), name, { label: 'user name' });
+    const row = op.page.getByRole('row').filter({ hasText: name }).first();
+    await op.waitFor(row, { label: 'the row with the name' });
     await op.shot('result list');
-    const top = op.page.locator('[role="row"][aria-rowindex="2"]').getByRole('gridcell', { name, exact: true });
-    if ((await top.count()) > 0) await op.press('Enter', { label: 'open the best match', chain: true });
-    else await op.click(cell, { label: 'open the user' });
+    await op.click(row, { label: 'open the user' });
     // The record is open when the sign-in shows outside the list (a panel, dialog or form).
     await op.waitFor(l => [...document.querySelectorAll('input, textarea, dd, output, [role="dialog"], [role="complementary"], form, aside')]
       .some(el => !el.closest('table, [role="grid"], [role="rowgroup"]') && (el.value === l || (el.children.length === 0 && el.textContent.trim() === l) || el.matches('[role="dialog"], [role="complementary"], form, aside') && el.textContent.includes(l))),
     { label: 'the user\'s record with the sign-in', arg: login, timeout: 20_000 })
-      .catch(e => { throw new Error(`no record of the user opened within 20 s (does the users screen have a record view yet?): ${e.message.split('\n')[0]}`); });
+      .catch(e => { throw new Error(`no record of the user opened within 20 s of opening the row (does the users screen have a record view yet?): ${e.message.split('\n')[0]}`); });
     return {};
   },
   async verify(ctx) {
