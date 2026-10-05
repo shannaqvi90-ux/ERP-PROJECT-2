@@ -88,7 +88,6 @@ export function applyLanguage(language: Language): void {
   const root = document.documentElement;
   root.lang = language;
   root.dir = direction(language);
-  document.title = translate(language, "shell.app.title");
   try {
     localStorage.setItem(storageKey, language);
   } catch {
@@ -147,6 +146,22 @@ export function I18nProvider({ initial, initialDigits, children }: { initial?: L
   }, [language, numerals, setLanguage, setNumerals]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+/**
+ * The tab's title: the screen's name, then the product's, in the screen language. Kept current
+ * when the language changes (Alt+L) without a reload. `screenKey` null: the product's name alone.
+ */
+export function documentTitle(language: Language, screenKey: string | null, numerals: Numerals = "latn"): string {
+  const product = translate(language, "shell.app.title", undefined, numerals);
+  return screenKey ? `${translate(language, screenKey, undefined, numerals)} · ${product}` : product;
+}
+
+export function useDocumentTitle(screenKey: string | null): void {
+  const { language, numerals } = useI18n();
+  useEffect(() => {
+    document.title = documentTitle(language, screenKey, numerals);
+  }, [language, numerals, screenKey]);
 }
 
 export function useI18n(): I18n {

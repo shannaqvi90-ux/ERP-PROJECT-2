@@ -1,0 +1,26 @@
+# Uses of browser carriers that outlive a document (web/src, tests excluded): cookies a script can
+# read, window.name, history entries, localStorage, sessionStorage, IndexedDB, Cache Storage,
+# service workers, broadcast channels. What a screen puts in them reaches the next document in the
+# tab or browser, which may belong to the next person on a shared device (critic p04 round 3).
+# Reviewed list: every entry needs a reason after '#' saying why the use never carries one person's
+# tenant data to the next. The G1 client-state gate (tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs)
+# fails on any unreviewed use and on stale entries. The count is how many times the file uses the
+# carrier: a new use in a reviewed file is a new decision.
+# Format: <file> <carrier> <count>
+web/src/kernel/deviceState.ts cookie 3  # The forgetter: reads the names of the cookies a script can see and expires each one at every in-app path and domain when an identity ends; it never writes a value.
+web/src/kernel/deviceState.ts window-name 1  # The forgetter: resets window.name to "" when an identity ends; nothing writes a value into it.
+web/src/kernel/deviceState.ts history 1  # The cookie forgetter moves the document's address to each in-app path (replaceState, same entry, same state) to see path-scoped cookies, then restores the address; it adds no entry and writes no data.
+web/src/kernel/deviceState.ts local-storage 3  # The forgetter: walks the keys and removes every one except the device settings (language, digits, navigation pane) and, when a session ended by itself, the remembered e-mail.
+web/src/kernel/deviceState.ts session-storage 1  # The forgetter: clears sessionStorage when an identity ends, the tab's history epoch with it (kernel/historyGuard).
+web/src/kernel/deviceState.ts indexed-db 4  # The forgetter: lists and deletes every IndexedDB database of the origin when an identity ends; the product creates none.
+web/src/kernel/deviceState.ts cache-storage 2  # The forgetter: deletes every Cache Storage cache of the origin when an identity ends; the product creates none.
+web/src/kernel/historyGuard.ts history 8  # The history guard: stamps every entry the app writes with the tab's identity epoch and replaces any entry of an ended identity with the home address before a screen reads it.
+web/src/kernel/historyGuard.ts session-storage 2  # The tab's identity epoch: a random value (never an id or a name), forgotten with sessionStorage when an identity ends.
+web/src/kernel/i18n.tsx local-storage 4  # The device's interface language and digit choice (erp.language, erp.numerals): device settings kept across sign-outs, never tenant data.
+web/src/kernel/lists/ListView.tsx history 1  # The list's own state in the current entry's address (search, filter, sort, open record); stamped for the identity by kernel/historyGuard and dropped when another identity's Back reaches it.
+web/src/kernel/preferences.ts local-storage 3  # Language and digit changes not yet saved to the server (offline), under erp.pendingPreferences with the user id they belong to; removed by the forgetter when the identity ends, and holds only en/ar and latn/arab.
+web/src/kernel/router.tsx history 1  # The router's pushState for in-app navigation; stamped for the identity by kernel/historyGuard and dropped when another identity's Back reaches it.
+web/src/kernel/session.tsx local-storage 2  # The tabs' shared session mark (tenant id / user id of the signed-in identity) so other tabs start over when it changes; removed by the forgetter when the identity ends.
+web/src/modules/identity/UsersPage.tsx history 1  # The new-user form's flag in the current entry's address (?new); stamped by kernel/historyGuard, carries no data.
+web/src/modules/shell/AppShell.tsx local-storage 4  # The navigation pane's open/closed device setting, and the user's recent screens (paths only) under a per-user key that the forgetter removes when the identity ends.
+web/src/modules/shell/SignInPage.tsx local-storage 2  # The remembered sign-in e-mail of the last person on this device, forgotten when that person signs out (kept only when a session ended by itself).
