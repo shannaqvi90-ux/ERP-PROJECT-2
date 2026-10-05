@@ -42,8 +42,19 @@ export const isApple = (): boolean =>
 
 type KeyLike = Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">;
 
-export function matches(chord: Chord, event: KeyLike, apple = isApple()): boolean {
-  if (event.code !== chord.code) return false;
+/** The key's position when the event does not say (synthetic events, some on-screen keyboards
+ * leave `code` empty): derived from the key for Enter, Escape and Latin letters and digits. */
+function codeOf(event: KeyLike & { key?: string }): string {
+  if (event.code) return event.code;
+  const key = event.key ?? "";
+  if (key === "Enter" || key === "Escape") return key;
+  if (/^[a-z]$/i.test(key)) return `Key${key.toUpperCase()}`;
+  if (/^\d$/.test(key)) return `Digit${key}`;
+  return "";
+}
+
+export function matches(chord: Chord, event: KeyLike & { key?: string }, apple = isApple()): boolean {
+  if (codeOf(event) !== chord.code) return false;
   const mod = apple ? event.metaKey : event.ctrlKey;
   const other = apple ? event.ctrlKey : event.metaKey;
   return mod === chord.mod && !other && event.altKey === chord.alt && event.shiftKey === chord.shift;

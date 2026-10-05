@@ -16,7 +16,7 @@ internal static class UsersList
         ListBinding<User>.For(new ListDefinition(
                 Key, "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
                 [
-                    new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "displayNameAr"),
                     // Shown in place of the name on Arabic screens when given; filtered ("contains") on its own
                     // trigram index. Not a search field: a third field in every word's OR doubles the
                     // cost of the free-text search over 100,000 users.

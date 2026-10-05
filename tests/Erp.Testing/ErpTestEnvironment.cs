@@ -164,9 +164,34 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         var response = await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password, workspace });
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            throw new InvalidOperationException($"Sign-in as {email} failed: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}");
+            throw new InvalidOperationException($"Sign-in as {email} failed: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}" +
+                $" | account: {await SignInDiagnosisAsync(email)}");
         }
         return client;
+    }
+
+    /// <summary>Why an account's sign-in may fail (a failed test says it): whether the account is
+    /// active and its latest recorded attempts, read as the database superuser.</summary>
+    private async Task<string> SignInDiagnosisAsync(string email)
+    {
+        try
+        {
+            await using var connection = new NpgsqlConnection(AdminConnectionString);
+            await connection.OpenAsync();
+            await using var command = new NpgsqlCommand("""
+                SELECT u.is_active::text || ' | ' || coalesce(string_agg(a.outcome || '@' || to_char(a.occurred_at, 'HH24:MI:SS.MS') || ' ' || a.source, ', ' ORDER BY a.occurred_at DESC), 'no attempts')
+                  FROM identity.users u
+                  LEFT JOIN LATERAL (SELECT * FROM identity.sign_in_attempts x WHERE x.user_id = u.id ORDER BY x.occurred_at DESC LIMIT 12) a ON true
+                 WHERE u.email_normalized = lower(@email)
+                 GROUP BY u.id, u.is_active
+                """, connection);
+            command.Parameters.AddWithValue("email", email);
+            return (await command.ExecuteScalarAsync()) as string ?? "no such user";
+        }
+        catch (Exception exception) when (exception is NpgsqlException or InvalidOperationException)
+        {
+            return "not read: " + exception.Message;
+        }
     }
 
     /// <summary>A client authenticated with a bearer token (no cookie, no request header).</summary>

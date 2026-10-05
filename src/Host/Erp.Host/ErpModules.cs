@@ -1,6 +1,7 @@
 using Erp.Kernel.Modules;
 using Erp.Modules.Identity;
 using Erp.Modules.Lists;
+using Erp.Modules.Reports;
 using Erp.Modules.Tenancy;
 
 namespace Erp.Host;
@@ -14,6 +15,8 @@ public static class ErpModules
         new IdentityModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
+        // After every module that registers reports or printable lists: it maps their endpoints.
+        new ReportsModule(),
     ];
 
     /// <summary>

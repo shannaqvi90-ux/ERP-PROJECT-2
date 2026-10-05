@@ -451,7 +451,7 @@ public sealed class TenantActivity
             request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
         }
         using var response = await actor.Client.SendAsync(request);
-        var text = await response.Content.ReadAsStringAsync();
+        var text = await Infrastructure.ResponseText.ReadAsync(response);
         var status = (int)response.StatusCode;
         var location = response.Headers.Location?.ToString() ?? "";
         var headers = ResponseHeaders.Text(response);

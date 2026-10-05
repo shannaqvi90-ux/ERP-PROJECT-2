@@ -52,6 +52,15 @@ public sealed class TenancyModule : ErpModule
         module.List(BranchesList.Create());
         // The access list's rows are identity's users: identity's users list serves its query.
         module.List(AccessList.Definition, servedBy: IdentityLists.Users);
+        // Reports print the three lists exactly as their screens show them.
+        module.ListRows(CompaniesList.Key, async (services, request, http, cancellationToken) =>
+            (await CompanyEndpoints.PageAsync(services.GetRequiredService<TenancyDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
+        module.ListRows(BranchesList.Key, async (services, request, http, cancellationToken) =>
+            (await BranchEndpoints.PageAsync(services.GetRequiredService<TenancyDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
+        module.ListRows(AccessList.Key, async (services, request, http, cancellationToken) =>
+            (await AccessEndpoints.PageAsync(services.GetRequiredService<TenancyDbContext>(), services.GetRequiredService<IUserDirectory>(), request, http, cancellationToken)).Map(r => (object)r));
+        module.Report<Reports.CompanyProfileReport>(Reports.CompanyProfileReport.Definition);
+        module.Report<Reports.BranchDirectoryReport>(Reports.BranchDirectoryReport.Definition);
         module.Seeder<TenancySeeder>();
         module.Seeder<TenancyAccessSeeder>();
         module.IsolationProbe<CompanyLogoProbe>();
@@ -421,7 +430,7 @@ internal sealed class TenantDirectory(TenancyDbContext db, ITenantContext tenant
         }
         return await db.Tenants.AsNoTracking()
             .Where(t => t.Id == tenant.TenantId && t.Status == TenantStatus.Active)
-            .Select(t => new TenantInfo(t.Id, t.Code, t.NameEn, t.NameAr, t.Status))
+            .Select(t => new TenantInfo(t.Id, t.Code, t.NameEn, t.NameAr, t.Status) { TimeZone = t.TimeZone })
             .SingleOrDefaultAsync(cancellationToken);
     }
 }

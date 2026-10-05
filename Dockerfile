@@ -11,6 +11,12 @@ RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=ca
 COPY web/ ./
 RUN npm run check && npm run build
 
+# The screens' string files alone: the reports module embeds them so printed documents use the
+# very texts the screens show (a change to a screen's code does not rebuild the server).
+FROM node:22-alpine AS strings
+COPY web/src/modules/ /modules/
+RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -19,6 +25,7 @@ COPY src/ src/
 RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages \
     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi; \
     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+COPY --from=strings /strings/ web/src/modules/
 RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
