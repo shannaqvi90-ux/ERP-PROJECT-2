@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Erp.Modules.Identity.Auth;
@@ -97,7 +98,7 @@ internal static class AuthEndpoints
                     Expires = success.ExpiresAt,
                     IsEssential = true,
                 });
-                var response = await payload.BuildAsync(success.UserId, success.ExpiresAt, cancellationToken);
+                var response = await payload.BuildForNewSessionAsync(success.TenantId, success.UserId, success.SessionId, success.ExpiresAt, cancellationToken);
                 return TypedResults.Ok(request.IssueToken == true ? response with { Token = success.Token } : response);
             case SignInOutcome.PasswordChangeRequired:
                 return Problems.Result(http, StatusCodes.Status409Conflict, "auth.passwordChangeRequired");
@@ -136,14 +137,42 @@ internal static class AuthEndpoints
         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)
             ? DateTimeOffset.FromUnixTimeSeconds(seconds)
             : (DateTimeOffset?)null;
-        return TypedResults.Ok(await payload.BuildAsync(userId, expires, cancellationToken));
+        return TypedResults.Ok(await payload.BuildAsync(userId, expires, http.User.Permissions(), cancellationToken));
     }
 }
 
 /// <summary>Builds the session payload for a user of the tenant the unit of work is bound to.</summary>
-internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tenants, ShellMenu menu, ModuleCatalog catalog)
+internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tenants, ShellMenu menu, IServiceProvider services)
 {
-    public async Task<SessionResponse> BuildAsync(Guid userId, DateTimeOffset? expiresAt, CancellationToken cancellationToken)
+    /// <summary>The payload of the request's own session: its permissions are the ones every
+    /// endpoint of this request checks (the working company's included).</summary>
+    public Task<SessionResponse> BuildAsync(Guid userId, DateTimeOffset? expiresAt, IReadOnlyCollection<string> permissions, CancellationToken cancellationToken) =>
+        BuildCoreAsync(userId, expiresAt, permissions, cancellationToken);
+
+    /// <summary>
+    /// The payload of a session just signed in to: the same steps the next request's
+    /// authentication takes (the session's scope bound, then the permissions of the working
+    /// company), so the first screen shows exactly what the user may do there.
+    /// </summary>
+    public async Task<SessionResponse> BuildForNewSessionAsync(Guid tenantId, Guid userId, Guid sessionId, DateTimeOffset expiresAt, CancellationToken cancellationToken)
+    {
+        var grants = services.GetRequiredService<SessionGrants>();
+        var held = await grants.LoadAsync(userId, cancellationToken);
+        var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName, u.Language }).SingleAsync(cancellationToken);
+        var resolved = new ResolvedSession(sessionId, tenantId, userId, user.Email, user.DisplayName, user.Language, expiresAt, held.Everywhere.ToList());
+        foreach (var binder in services.GetServices<ISessionScopeBinder>())
+        {
+            await binder.BindAsync(resolved, cancellationToken);
+        }
+        IReadOnlyCollection<string> permissions = resolved.Permissions;
+        foreach (var scope in services.GetServices<ISessionPermissionScope>())
+        {
+            permissions = await scope.ScopeAsync(resolved, permissions, cancellationToken);
+        }
+        return await BuildCoreAsync(userId, expiresAt, permissions, cancellationToken);
+    }
+
+    private async Task<SessionResponse> BuildCoreAsync(Guid userId, DateTimeOffset? expiresAt, IReadOnlyCollection<string> held, CancellationToken cancellationToken)
     {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
@@ -151,7 +180,7 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
             .SingleAsync(cancellationToken);
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");
-        var permissions = await PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+        var permissions = held.ToHashSet(StringComparer.Ordinal);
         return new SessionResponse(
             true,
             user,

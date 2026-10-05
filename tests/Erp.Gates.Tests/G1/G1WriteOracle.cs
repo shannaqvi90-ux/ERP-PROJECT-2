@@ -282,7 +282,7 @@ public static class G1WriteOracle
                 body[name] = new JsonArray();
             }
         }
-        return body;
+        return GrantEscalation.WithoutUnfilledItems(body);
     }
 
     private static HttpRequestMessage Json(HttpMethod method, string path, JsonObject body) =>

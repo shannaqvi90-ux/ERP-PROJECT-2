@@ -59,6 +59,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var catalogue = Env.Factory.Services.GetRequiredService<ModuleCatalog>().PermissionKeys.ToList();
         Assert.Contains(LaterLedgerModule.PermissionKeys[0], catalogue);
         var targets = new TargetRecords(admin, Env);
+        var companies = await GateCompanies.OfAsync(admin);
+        var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
+            .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        JsonNode? CompanyValue(string field, JsonNode? current) => GateCompanies.IsCompanyField(field) ? companies.Other(current) : null;
         var problems = new List<string>();
         var checkedEndpoints = 0;
         var fieldVariants = 0;
@@ -72,7 +76,9 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             var permissions = new[] { endpoint.Permission, "identity.users.read", "identity.roles.read" }.Distinct().ToArray();
             var roleId = await CreatedIdAsync(admin, "/api/identity/roles", new { nameEn = $"Takeover {tag}", nameAr = $"استيلاء {tag}", permissions });
             var email = $"takeover.{tag}@{Env.TenantA.EmailDomain}";
-            await CreatedIdAsync(admin, "/api/identity/users", new { email, displayName = $"Takeover {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { roleId } });
+            var callerId = await CreatedIdAsync(admin, "/api/identity/users", new { email, displayName = $"Takeover {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { roleId } });
+            // The caller works in the companies roles in one company and default companies name.
+            await companies.GiveAccessAsync(callerId);
             using var caller = await Env.SignInAsync(email);
 
             var before = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
@@ -103,6 +109,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             // Control: the same request aimed at a user with no roles succeeds.
             var targetEmail = $"target.{tag}@{Env.TenantA.EmailDomain}";
             var targetId = await CreatedIdAsync(admin, "/api/identity/users", new { email = targetEmail, displayName = $"Target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
+            await companies.GiveAccessAsync(targetId);
             var (controlStatus, controlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => targetId.ToString()), await BodyAsync(caller, openApi, endpoint, targetId, tag));
             if (controlStatus is < 200 or >= 300)
             {
@@ -146,9 +153,9 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                     {
                         k++;
                         var strongBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, strongId, $"{tag}a{k}"), $"{tag}a{k}", Env.TenantA.EmailDomain,
-                            (field, current) => current.Count > 0 ? new JsonArray(current.Take(current.Count - 1).Select(x => x!.DeepClone()).ToArray()) : null);
+                            (field, current) => GrantBearingRecords.Stronger(field, current, administratorRole, catalogue, companies.First), CompanyValue);
                         var weakBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, targetId, $"{tag}t{k}"), $"{tag}t{k}", Env.TenantA.EmailDomain,
-                            (field, current) => GrantBearingRecords.WithinCaller(field, current, roleId, permissions));
+                            (field, current) => GrantBearingRecords.WithinCaller(field, current, roleId, permissions, companies.First), CompanyValue);
                         if (strongBody is null || weakBody is null)
                         {
                             problems.Add($"{endpoint} {spec}: the gate has no different valid value for this field aimed at {label}; extend FieldVariants rather than leave the field untested");
@@ -200,12 +207,14 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{moduleFieldVariants} single-field requests aimed at users holding another module's grants; ratchet minimum {Ratchet.Min("g2.takeoverModuleFieldVariants")}");
     }
 
-    /// <summary>A user as the administrator reads them, with what they can do.</summary>
+    /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>
     private static async Task<string> ReadUserAsync(HttpClient admin, Guid id)
     {
         using var record = await admin.GetAsync($"/api/identity/users/{id}");
         using var access = await admin.GetAsync($"/api/identity/users/{id}/access");
-        return $"{(int)record.StatusCode} {await record.Content.ReadAsStringAsync()} | {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()}";
+        using var workplace = await admin.GetAsync($"/api/identity/users/{id}/default-company");
+        return $"{(int)record.StatusCode} {await record.Content.ReadAsStringAsync()} | {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()} | " +
+               $"{(int)workplace.StatusCode} {await workplace.Content.ReadAsStringAsync()}";
     }
 
     [Fact]

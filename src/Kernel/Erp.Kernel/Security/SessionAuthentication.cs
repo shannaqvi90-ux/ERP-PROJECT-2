@@ -78,6 +78,18 @@ public interface ISessionScopeBinder
     Task<bool> BindAsync(ResolvedSession session, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Runs after every <see cref="ISessionScopeBinder"/>, once the session's scope (the working
+/// company) is bound: returns the permissions the session holds in that scope, starting from
+/// the permissions given (what the resolver found, then what earlier scopes returned).
+/// The identity module adds what roles assigned in the working company grant: a role held only
+/// in one company grants nothing while the user works in another.
+/// </summary>
+public interface ISessionPermissionScope
+{
+    Task<IReadOnlyCollection<string>> ScopeAsync(ResolvedSession session, IReadOnlyCollection<string> permissions, CancellationToken cancellationToken);
+}
+
 public sealed class SessionAuthenticationOptions : AuthenticationSchemeOptions;
 
 /// <summary>Marks the request while the authentication handler resolves its session token. The
@@ -138,6 +150,12 @@ internal sealed class SessionAuthenticationHandler(
             }
         }
 
+        var permissions = session.Permissions;
+        foreach (var scope in Context.RequestServices.GetServices<ISessionPermissionScope>())
+        {
+            permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
+        }
+
         var claims = new List<Claim>
         {
             new(ErpClaims.TenantId, session.TenantId.ToString()),
@@ -149,7 +167,7 @@ internal sealed class SessionAuthenticationHandler(
             new(ErpClaims.ExpiresAt, session.ExpiresAt.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)),
             new(ClaimTypes.NameIdentifier, session.UserId.ToString()),
         };
-        claims.AddRange(session.Permissions.Select(p => new Claim(ErpClaims.Permission, p)));
+        claims.AddRange(permissions.Distinct(StringComparer.Ordinal).Select(p => new Claim(ErpClaims.Permission, p)));
         var identity = new ClaimsIdentity(claims, Scheme.Name, ErpClaims.Email, ClaimTypes.Role);
         return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
     }

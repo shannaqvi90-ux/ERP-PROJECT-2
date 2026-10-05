@@ -3,6 +3,7 @@ using Erp.Kernel.Lists;
 using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
+using Erp.Modules.Identity.Auth;
 using Erp.Modules.Identity.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +74,16 @@ internal static class RoleEndpoints
         var counts = await db.UserRoles.AsNoTracking().GroupBy(ur => ur.RoleId)
             .Select(g => new { RoleId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RoleId, x => x.Count, cancellationToken);
+        // Users who hold the role in one of the caller's companies only.
+        var inCompanies = await db.UserCompanyRoles.AsNoTracking()
+            .Where(c => !db.UserRoles.Any(ur => ur.RoleId == c.RoleId && ur.UserId == c.UserId))
+            .GroupBy(c => c.RoleId)
+            .Select(g => new { RoleId = g.Key, Count = g.Select(c => c.UserId).Distinct().Count() })
+            .ToListAsync(cancellationToken);
+        foreach (var extra in inCompanies)
+        {
+            counts[extra.RoleId] = counts.GetValueOrDefault(extra.RoleId) + extra.Count;
+        }
         var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
         var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
         var result = await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
@@ -90,8 +101,7 @@ internal static class RoleEndpoints
         {
             return Problems.NotFound(http);
         }
-        var count = await db.UserRoles.CountAsync(ur => ur.RoleId == id, cancellationToken);
-        return TypedResults.Ok(ToDto(role, count));
+        return TypedResults.Ok(ToDto(role, await UserCountAsync(db, id, cancellationToken)));
     }
 
     private static async Task<Results<Created<RoleDto>, ProblemHttpResult>> Create(
@@ -103,7 +113,8 @@ internal static class RoleEndpoints
             return validator.ToResult();
         }
         var permissions = request.Permissions!.Distinct().Order(StringComparer.Ordinal).ToList();
-        if (!permissions.All(caller.Has))
+        var held = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
+        if (!held.CoversAll(permissions, null))
         {
             return Problems.Forbidden(http, "identity.grantBeyondOwn");
         }
@@ -119,7 +130,7 @@ internal static class RoleEndpoints
     }
 
     private static async Task<Results<Created<RoleDto>, ProblemHttpResult>> Copy(
-        Guid id, CopyRoleRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+        Guid id, CopyRoleRequest request, IdentityDbContext db, ModuleCatalog catalog, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = new Validator(http)
             .Required("nameEn", request.NameEn).MaxLength("nameEn", request.NameEn, 100)
@@ -133,7 +144,7 @@ internal static class RoleEndpoints
         {
             return Problems.NotFound(http);
         }
-        if (!source.Permissions.All(caller.Has))
+        if (!(await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken)).CoversAll(source.Permissions, null))
         {
             return Problems.Forbidden(http, "identity.roleBeyondOwn");
         }
@@ -170,16 +181,18 @@ internal static class RoleEndpoints
         // will grant: changing a role acts on everyone who holds it (renaming the finance role
         // "Leavers" is as harmful as clearing it), and adding or removing a permission the caller
         // does not hold is an escalation either way.
-        if (!role.Permissions.All(caller.Has))
+        // Roles are defined for the whole workspace and may be held in any company, so changing one
+        // needs what it grants in every company.
+        var held = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
+        if (!held.CoversAll(role.Permissions, null))
         {
             return Problems.Forbidden(http, "identity.roleBeyondOwn");
         }
-        if (!permissions.All(caller.Has))
+        if (!held.CoversAll(permissions, null))
         {
             return Problems.Forbidden(http, "identity.grantBeyondOwn");
         }
-        if (await db.UserRoles.AnyAsync(ur => ur.RoleId == id && ur.UserId == caller.UserId, cancellationToken) &&
-            !role.Permissions.ToHashSet().SetEquals(permissions))
+        if (await CallerHoldsAsync(db, id, caller, cancellationToken) && !role.Permissions.ToHashSet().SetEquals(permissions))
         {
             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
         }
@@ -194,12 +207,11 @@ internal static class RoleEndpoints
         role.Permissions = permissions;
         db.Entry(role).Property(r => r.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        var count = await db.UserRoles.CountAsync(ur => ur.RoleId == id, cancellationToken);
-        return TypedResults.Ok(ToDto(role, count));
+        return TypedResults.Ok(ToDto(role, await UserCountAsync(db, id, cancellationToken)));
     }
 
     private static async Task<Results<NoContent, ProblemHttpResult>> Delete(
-        Guid id, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+        Guid id, IdentityDbContext db, ModuleCatalog catalog, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
         var role = await db.Roles.SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (role is null)
@@ -210,16 +222,18 @@ internal static class RoleEndpoints
         {
             return Problems.Forbidden(http, "identity.systemRole");
         }
-        if (!role.Permissions.All(caller.Has))
+        if (!(await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken)).CoversAll(role.Permissions, null))
         {
             return Problems.Forbidden(http, "identity.roleBeyondOwn");
         }
-        if (await db.UserRoles.AnyAsync(ur => ur.RoleId == id && ur.UserId == caller.UserId, cancellationToken))
+        if (await CallerHoldsAsync(db, id, caller, cancellationToken))
         {
             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
         }
-        // Remove assignments explicitly so each removal is audited by the row trigger.
+        // Remove assignments explicitly so each removal is audited by the row trigger (those in
+        // companies the caller does not work in go with the role, by the foreign key).
         db.UserRoles.RemoveRange(await db.UserRoles.Where(ur => ur.RoleId == id).ToListAsync(cancellationToken));
+        db.UserCompanyRoles.RemoveRange(await db.UserCompanyRoles.Where(ur => ur.RoleId == id).ToListAsync(cancellationToken));
         db.Roles.Remove(role);
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.NoContent();
@@ -256,6 +270,18 @@ internal static class RoleEndpoints
         }
         return validator;
     }
+
+    /// <summary>Users holding the role in every company or in one of the caller's companies.</summary>
+    private static async Task<int> UserCountAsync(IdentityDbContext db, Guid roleId, CancellationToken cancellationToken) =>
+        await db.UserRoles.Where(ur => ur.RoleId == roleId).Select(ur => ur.UserId)
+            .Union(db.UserCompanyRoles.Where(c => c.RoleId == roleId).Select(c => c.UserId))
+            .CountAsync(cancellationToken);
+
+    /// <summary>True when the caller holds the role, in every company or in one.</summary>
+    private static async Task<bool> CallerHoldsAsync(IdentityDbContext db, Guid roleId, ICurrentUser caller, CancellationToken cancellationToken) =>
+        await db.UserRoles.AnyAsync(ur => ur.RoleId == roleId && ur.UserId == caller.UserId, cancellationToken) ||
+        await db.UserCompanyRoles.IgnoreQueryFilters([Erp.Kernel.Data.ModuleDbContext.CompanyFilterName])
+            .AnyAsync(c => c.RoleId == roleId && c.UserId == caller.UserId, cancellationToken);
 
     private static RoleDto ToDto(Role r, int userCount) =>
         new(r.Id, r.NameEn, r.NameAr, r.Permissions, r.IsSystem, userCount, r.Version);

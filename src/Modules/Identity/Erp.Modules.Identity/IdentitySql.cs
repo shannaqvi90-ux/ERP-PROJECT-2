@@ -329,4 +329,48 @@ internal static class IdentitySql
         REVOKE ALL ON FUNCTION identity.resolve_login(text) FROM PUBLIC;
         GRANT EXECUTE ON FUNCTION identity.resolve_login(text) TO erp_app;
         """;
+
+    /// <summary>
+    /// Roles held in one company (critic p03 rounds 1-3 scope; decision p03-identity-roles-per-company):
+    /// the rows belong to their company (the company scope hides other companies' rows; the user's
+    /// own rows stay readable to their session, which reads them before its scope is bound), and
+    /// <c>users.company_role_count</c> counts them in every company, kept by a trigger running with
+    /// the caller's rights (no SECURITY DEFINER: the row inserted or deleted is one the caller may
+    /// write, and the counter is on a row of the caller's own tenant), so an administrator can tell
+    /// that a user holds roles in companies they cannot see. The counter stays out of the audit
+    /// trail; the assignments themselves are audited.
+    /// </summary>
+    public const string CompanyRoles = """
+        CREATE FUNCTION identity.count_company_roles() RETURNS trigger
+            LANGUAGE plpgsql
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+        BEGIN
+            IF TG_OP IN ('DELETE', 'UPDATE') THEN
+                UPDATE identity.users SET company_role_count = company_role_count - 1
+                 WHERE tenant_id = OLD.tenant_id AND id = OLD.user_id;
+            END IF;
+            IF TG_OP IN ('INSERT', 'UPDATE') THEN
+                UPDATE identity.users SET company_role_count = company_role_count + 1
+                 WHERE tenant_id = NEW.tenant_id AND id = NEW.user_id;
+            END IF;
+            RETURN NULL;
+        END;
+        $$;
+        REVOKE ALL ON FUNCTION identity.count_company_roles() FROM PUBLIC;
+        CREATE TRIGGER count_company_roles AFTER INSERT OR DELETE OR UPDATE OF tenant_id, user_id ON identity.user_company_roles
+            FOR EACH ROW EXECUTE FUNCTION identity.count_company_roles();
+
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count');
+        """;
+
+    public const string CompanyRolesDown = """
+        DROP TRIGGER IF EXISTS count_company_roles ON identity.user_company_roles;
+        DROP FUNCTION IF EXISTS identity.count_company_roles();
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at');
+        """;
 }

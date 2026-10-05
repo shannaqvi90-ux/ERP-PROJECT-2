@@ -25,7 +25,9 @@ namespace Erp.Gates.Tests.G2;
 /// </summary>
 public static class GrantEscalation
 {
-    public static readonly string[] GrantFields = ["roleIds", "permissions"];
+    /// <summary>Fields that hand out access: roles in every company, permissions of a role, roles
+    /// in one company.</summary>
+    public static readonly string[] GrantFields = ["roleIds", "permissions", "companyRoles"];
 
     /// <param name="PartialTargets">Requests asking for grants the caller lacks without asking for everything.</param>
     public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, int PartialTargets = 0);
@@ -43,6 +45,8 @@ public static class GrantEscalation
         var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
         var targetRoles = new TargetRecords(admin, env);
+        var companies = await GateCompanies.OfAsync(admin);
+        var company = companies.First;
 
         var grantEndpoints = EndpointInventory.From(env.Factory.Services)
             .Where(e => !e.IsAnonymous && e.HasBody)
@@ -60,8 +64,10 @@ public static class GrantEscalation
             var callerRole = await CreatedIdAsync(admin, "/api/identity/roles",
                 new { nameEn = $"G2 caller {tag}", nameAr = $"مستدعي {tag}", permissions = callerPermissions });
             var email = $"g2.grant.{tag}@{env.TenantA.EmailDomain}";
-            await CreatedIdAsync(admin, "/api/identity/users",
+            var callerId = await CreatedIdAsync(admin, "/api/identity/users",
                 new { email, displayName = $"G2 caller {tag}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { callerRole } });
+            // The caller works in the company roles in one company are given in.
+            await companies.GiveAccessAsync(callerId);
             using var caller = await env.SignInAsync(email);
             var permissionsBefore = await SessionPermissionsAsync(caller);
             var administratorsBefore = await AdministratorCountAsync(admin);
@@ -89,7 +95,7 @@ public static class GrantEscalation
                 control = OnlySchemaFields(openApi, schema, item);
                 escalate = OnlySchemaFields(openApi, schema, item);
                 var currentRoles = item["roleIds"] is JsonArray roles ? roles.Select(r => r!.GetValue<Guid>()).ToList() : [];
-                SetGrants(escalate, [.. currentRoles, administratorRole], everything);
+                SetGrants(escalate, [.. currentRoles, administratorRole], everything, company);
                 asking = async target =>
                 {
                     var body = OnlySchemaFields(openApi, schema, item);
@@ -107,9 +113,9 @@ public static class GrantEscalation
             {
                 path = endpoint.Pattern;
                 escalate = ValidBody(openApi, schema, env, $"{tag}e");
-                SetGrants(escalate, [administratorRole], everything);
+                SetGrants(escalate, [administratorRole], everything, company);
                 control = ValidBody(openApi, schema, env, $"{tag}c");
-                SetGrants(control, [callerRole], [endpoint.Permission]);
+                SetGrants(control, [callerRole], [endpoint.Permission], company);
                 var a = 0;
                 asking = async target =>
                 {
@@ -137,13 +143,33 @@ public static class GrantEscalation
                 problems.Add($"{endpoint}: the caller's own permissions changed");
             }
 
-            // Grants the caller lacks without asking for everything.
+            // Grants the caller lacks without asking for everything: through roles in every company
+            // (and permissions), and, where the body has them, through roles in one company alone.
+            var attempts = new List<(GrantTargets.Target Target, string How, Func<Task<JsonObject>> Body)>();
             foreach (var target in GrantTargets.For(everything, callerPermissions))
             {
-                var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, path, await asking(target));
+                attempts.Add((target, "", () => asking(target)));
+                if (company is { } c && control.ContainsKey("companyRoles"))
+                {
+                    attempts.Add((target, " in one company", async () =>
+                    {
+                        var body = (JsonObject)control.DeepClone();
+                        SetCompanyRoles(body, [await targetRoles.RoleAsync(target.Permissions)], c);
+                        return body;
+                    }));
+                }
+            }
+            foreach (var (target, how, build) in attempts)
+            {
+                var targetBody = await build();
+                if (endpoint.RouteParameters.Count == 0 && targetBody["email"] is JsonValue)
+                {
+                    targetBody["email"] = $"g2.ask.{tag}.{partialTargets}@{env.TenantA.EmailDomain}";
+                }
+                var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, path, targetBody);
                 if (targetStatus != (int)HttpStatusCode.Forbidden)
                 {
-                    problems.Add($"{endpoint}: asking for {target} as a user holding only [{string.Join(", ", callerPermissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
+                    problems.Add($"{endpoint}: asking for {target}{how} as a user holding only [{string.Join(", ", callerPermissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
                 }
                 if (targetUnchanged is not null && await targetUnchanged() is { } targetChanged)
                 {
@@ -203,18 +229,29 @@ public static class GrantEscalation
     private static string GrantsOf(JsonObject item) =>
         string.Join(" | ", GrantFields.Select(f => item[f] is JsonArray a ? string.Join(",", a.Select(x => x!.ToString()).Order(StringComparer.Ordinal)) : ""));
 
-    internal static void SetGrants(JsonObject body, IEnumerable<Guid> roleIds, IEnumerable<string> permissions)
+    /// <summary>Set every grant field the body has: the roles in every company and, with
+    /// <paramref name="company"/>, the same roles in that company (without it, none in one company).</summary>
+    internal static void SetGrants(JsonObject body, IEnumerable<Guid> roleIds, IEnumerable<string> permissions, Guid? company = null)
     {
-        if (body.ContainsKey("roleIds")) body["roleIds"] = new JsonArray(roleIds.Distinct().Select(r => (JsonNode)JsonValue.Create(r)).ToArray());
+        var roles = roleIds.Distinct().ToList();
+        if (body.ContainsKey("roleIds")) body["roleIds"] = new JsonArray(roles.Select(r => (JsonNode)JsonValue.Create(r)).ToArray());
         if (body.ContainsKey("permissions")) body["permissions"] = new JsonArray(permissions.Distinct().Select(p => (JsonNode)JsonValue.Create(p)!).ToArray());
+        if (body.ContainsKey("companyRoles"))
+        {
+            body["companyRoles"] = company is { } c ? new JsonArray(roles.Select(r => (JsonNode)GateCompanies.CompanyRole(r, c)).ToArray()) : new JsonArray();
+        }
     }
+
+    /// <summary>Only the company roles: <paramref name="roleIds"/> in <paramref name="company"/>.</summary>
+    internal static void SetCompanyRoles(JsonObject body, IEnumerable<Guid> roleIds, Guid company) =>
+        body["companyRoles"] = new JsonArray(roleIds.Distinct().Select(r => (JsonNode)GateCompanies.CompanyRole(r, company)).ToArray());
 
     /// <summary>A body that passes validation: unique names and e-mail, a valid password and
     /// language, flags on, no ids.</summary>
     internal static JsonObject ValidBody(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment? env, string tag)
     {
         var k = 0;
-        return openApi.BuildBody(schema, (type, format, name) =>
+        return WithoutUnfilledItems(openApi.BuildBody(schema, (type, format, name) =>
         {
             k++;
             var lower = name?.ToLowerInvariant() ?? "";
@@ -229,7 +266,22 @@ public static class GrantEscalation
                 "boolean" => true,
                 _ => null,
             };
-        }) as JsonObject ?? [];
+        }) as JsonObject ?? []);
+    }
+
+    /// <summary>A list of items the generator could not fill (a company role without a role id) is
+    /// sent empty: an item with a missing reference is refused, which is not what a body meant to
+    /// pass validation asks.</summary>
+    internal static JsonObject WithoutUnfilledItems(JsonObject body)
+    {
+        foreach (var (name, value) in body.ToList())
+        {
+            if (value is JsonArray array && array.Any(item => item is JsonObject obj && obj.Any(p => p.Value is null)))
+            {
+                body[name] = new JsonArray();
+            }
+        }
+        return body;
     }
 
     /// <summary>The item's values for the fields the request schema has.</summary>
