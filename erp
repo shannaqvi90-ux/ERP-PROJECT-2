@@ -30,8 +30,6 @@
 #   ERP_EXTRA_CA_CERTS    PEM file of extra CA certificates the build and test containers must trust
 #                         (networks that inspect TLS). Defaults to NODE_EXTRA_CA_CERTS or SSL_CERT_FILE
 #                         when one of them names a file; unset on an ordinary machine.
-#   ERP_TESTCONTAINERS_HOST  address the test containers reach published ports on (default 127.0.0.1;
-#                         host.docker.internal on Docker Desktop)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -166,15 +164,7 @@ run_toolbox() {
   fi
   # ERP_TEST_DB_DIRECT: the tests reach their PostgreSQL containers at the containers' own
   # addresses (this container shares the Docker host's network), not through Docker's port proxy.
-  # Testcontainers reaches its resource reaper through a published, randomly chosen port. On a
-  # Linux Docker engine that port answers on 127.0.0.1 of the host network; Docker Desktop (WSL2,
-  # macOS, Windows) does not forward such ports to 127.0.0.1 inside its VM, only to
-  # host.docker.internal, so the reaper never answered and every database test failed.
-  local tc_host="${ERP_TESTCONTAINERS_HOST:-127.0.0.1}"
-  if [[ -z "${ERP_TESTCONTAINERS_HOST:-}" ]] && docker info --format '{{.OperatingSystem}}' 2>/dev/null | grep -q 'Docker Desktop'; then
-    tc_host=host.docker.internal
-  fi
-  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE="$tc_host"     -e ERP_TEST_DB_DIRECT=1     "$@"
+  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1     -e ERP_TEST_DB_DIRECT=1     "$@"
 }
 
 verify_cleanup() {
