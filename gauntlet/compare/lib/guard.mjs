@@ -24,6 +24,14 @@
 //    process are refused, so a driver cannot do the task through the back end and count nothing;
 //    op.request (the API channel, which counts each request) uses the original fetch. While
 //    verifying, only reads go through (GET, sign-in for a read session, Odoo read methods).
+//    Installed when this module loads (round 5), before anything else of the harness runs.
+// 4. Drivers do not run in this process at all (round 5, lib/sandbox/): they run in a driver
+//    process with no network, no child process and no worker, and every call they make arrives
+//    here as a request that passes guards 1 to 3 by the phase at the moment it arrives.
+// 5. verify() reads the end state as it stands when the clock stops (round 5): in the verifying
+//    phase every wait is refused (Locator.waitFor, waitForURL, ctx.until ...) and every read times
+//    out after VERIFY_READ_MS, so a driver cannot return early and let verification wait off the
+//    clock. The runner also times two passes of verify() (lib/runner.mjs).
 import http from 'node:http';
 import https from 'node:https';
 
@@ -138,6 +146,34 @@ const ACTING_CLASSES = new Set(['Clock', 'Tracing', 'CDPSession', 'Coverage', 'W
 
 const RAW = new WeakMap(); // proxy -> raw object
 const PROXY = new WeakMap(); // raw object -> proxy
+/** A driver's listener -> the wrapper registered for it (so off(event, listener) finds it). */
+const WRAPPED = new WeakMap();
+
+/** Waiting methods: refused in verify() (round 5), which reads the end state and never waits for it. */
+export const WAITS = Object.freeze(new Set(['waitFor', 'waitForURL', 'waitForLoadState', 'waitForEvent', 'waitForRequest', 'waitForResponse',
+  'waitForTimeout', 'waitForSelector', 'waitForNavigation', 'waitForFunction', 'waitForElementState']));
+/** How long a read in verify() may look for its element (a read, not a wait for the product). */
+export const VERIFY_READ_MS = 500;
+export const verifyReadTimeout = () => VERIFY_READ_MS;
+const clampTimeouts = a => (isPlain(a) && typeof a.timeout === 'number' ? { ...a, timeout: Math.min(Math.max(1, a.timeout), VERIFY_READ_MS) }
+  : isPlain(a) && 'timeout' in a ? { ...a, timeout: VERIFY_READ_MS } : a);
+
+/** Whether a value is one of the guard's proxies, and the Playwright class it guards. */
+export const isGuarded = v => v !== null && (typeof v === 'object' || typeof v === 'function') && RAW.has(v);
+export const guardedClass = v => (RAW.get(v) ?? v)?.constructor?.name || 'Object';
+
+/**
+ * A page function a driver sent as source text (lib/sandbox/): it is only ever serialised into
+ * the page inside the sentinel, never evaluated in the harness process.
+ */
+export class PageFunction {
+  constructor(source) {
+    if (typeof source !== 'string' || !source.trim()) throw new TypeError('a page function needs its source');
+    this.source = source;
+    Object.freeze(this);
+  }
+  toString() { return this.source; }
+}
 // Methods whose function arguments are callbacks the harness process runs (they receive
 // Playwright objects, which must stay guarded). Any other function argument is page script.
 const CALLBACK_METHODS = new Set(['on', 'once', 'addListener', 'prependListener', 'prependOnceListener', 'route', 'routeWebSocket',
@@ -192,7 +228,18 @@ export function guard(raw) {
         if (readOnly() && !ALLOWED_WHILE_MEASURED[cls]?.has(prop)) {
           throw isMeasuring() ? new UncountedAction(`${cls}.${prop}()`) : new ActionOutsideClock(`${cls}.${prop}()`, phase);
         }
-        const callArgs = args.map(a => (typeof a === 'function' && CALLBACK_METHODS.has(prop) ? (...xs) => a(...xs.map(guardValue)) : unwrap(a)));
+        if (phase === 'verifying' && WAITS.has(prop)) {
+          throw new ActionOutsideClock(`${cls}.${prop}() in verify(): verification reads the end state as it stands when the clock stops and never waits for it (wait in run(), on the clock)`, phase);
+        }
+        const callArgs = args.map(a => {
+          if (typeof a === 'function' && CALLBACK_METHODS.has(prop)) {
+            if (!WRAPPED.has(a)) WRAPPED.set(a, (...xs) => a(...xs.map(guardValue)));
+            return WRAPPED.get(a);
+          }
+          if (typeof a === 'function' && WRAPPED.has(a)) return WRAPPED.get(a); // off(event, listener)
+          const raw = unwrap(a);
+          return phase === 'verifying' ? clampTimeouts(raw) : raw;
+        });
         return guardValue(value.apply(target, callArgs));
       };
     },
@@ -306,8 +353,9 @@ function sentinelFactory() {
  * eval) does not block it.
  */
 export function sentinelFunction(fn) {
-  if (typeof fn !== 'function') throw new TypeError('condition must be a function');
-  const body = `return (globalThis.__harnessSentinel || (Object.defineProperty(globalThis, '__harnessSentinel', { value: (${sentinelFactory.toString()})() }), globalThis.__harnessSentinel))((${fn.toString()}), arg);`;
+  if (typeof fn !== 'function' && !(fn instanceof PageFunction)) throw new TypeError('condition must be a function');
+  const source = fn instanceof PageFunction ? fn.source : fn.toString();
+  const body = `return (globalThis.__harnessSentinel || (Object.defineProperty(globalThis, '__harnessSentinel', { value: (${sentinelFactory.toString()})() }), globalThis.__harnessSentinel))((${source}), arg);`;
   // eslint-disable-next-line no-new-func
   return new Function('arg', body);
 }
@@ -371,3 +419,7 @@ export function installNetworkGuard() {
     mod.get = guarded(`${name}.get`, mod.get, null);
   }
 }
+
+// Round 5: installed when the harness loads, before anything else of it runs (a driver module
+// loaded before the first run captured the unguarded fetch).
+installNetworkGuard();

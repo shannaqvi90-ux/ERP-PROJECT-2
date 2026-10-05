@@ -5,8 +5,9 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { ActionOutsideClock, RefusedClaim, UncountedAction, claimPhase, claimViolations, currentPhase, guard, installNetworkGuard, isRefusal,
-  rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
+import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
+import { apiSessionFor } from './api-transport.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
@@ -134,7 +135,7 @@ export async function runTask(taskId, productId, opts = {}) {
   const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
   const executions = [];
   for (const [id, variant] of variants) {
-    executions.push({ id, path: variant.path || driver.path || null, ...(await execute(task, { ...driver, ...variant }, product, productId, needles, out, opts)) });
+    executions.push({ id, path: variant.path || driver.path || null, ...(await execute(task, { ...driver, variant: id }, product, productId, needles, out, opts)) });
   }
   // The screenshots (and the steps listed beside them) are those of one path: the verified path
   // that is best on the most metrics (round 3: the review page showed one path's shots beside
@@ -190,83 +191,157 @@ export function driverFingerprint(productId, taskId) {
   return { file: rel(file), sha256: hash.digest('hex') };
 }
 
+/**
+ * Round 5: what verify() may cost. It runs twice after the clock stops; when the first pass took
+ * longer than the second by more than VERIFY_SLACK_SECONDS (and more than twice as long), the end
+ * state arrived while verification waited for it, off the clock.
+ */
+export const VERIFY_SLACK_SECONDS = 0.5;
+
+/** A driver to run: its module file (and variant), as loadDriver describes it. */
+export function isDriverSpec(d) {
+  return !!d && typeof d === 'object' && typeof d.file === 'string' && !!d.hooks;
+}
+
+/**
+ * The page's requests while the task is measured (lib/operator.mjs settle): long-lived channels
+ * (web sockets, event streams, long polling, Odoo's bus) never end, so they are not waited for.
+ */
+function trackRequests(context) {
+  const inflight = new Set();
+  const tracker = { inflight, lastEnded: null, afterClock: 0 };
+  const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
+  const on = r => { if (!background(r)) inflight.add(r); };
+  const off = r => { if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  context.on('request', on); context.on('requestfinished', off); context.on('requestfailed', off);
+  tracker.stop = () => { context.off('request', on); context.off('requestfinished', off); context.off('requestfailed', off); };
+  return tracker;
+}
+
+/**
+ * Empty the browser's clipboard before the start (round 5): text set-up copied must not be there
+ * to paste. A scratch page of the fresh context copies a single space; it closes before the start
+ * screen opens.
+ */
+async function resetClipboard(context) {
+  const p = await context.newPage();
+  try {
+    await p.setContent('<textarea id="c"> </textarea>');
+    await p.focus('#c');
+    await p.keyboard.press('Control+a');
+    await p.keyboard.press('Control+c');
+  } finally {
+    await p.close().catch(() => {});
+  }
+}
+
 /** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
-  installNetworkGuard();
   takeViolations(); // nothing left over from an earlier run in this process
+  if (!isDriverSpec(driver)) {
+    // Round 5: drivers never run in the harness process (lib/sandbox/). A driver object handed to
+    // execute() would run here, beside the clock and the guards; it is refused, never measured.
+    run.status = 'invalid';
+    run.error = 'refused claim: a driver object handed to the harness process. Drivers run only in the sandboxed driver process: pass the driver module (loadDriver, or describeDriverFile(file)), see lib/sandbox/.';
+    return run;
+  }
+  const host = DriverHost.shared();
   const browser = await launch({ headed: opts.headed });
   let op;
   let page = null; // the raw page the task is measured on (the fresh one, once the start is set)
   let context = null;
-  let apiSession = null;
+  let session = null;
+  let tracker = null;
+  let routed = false;
   const kind = startKind(task);
   // Every wait and step times out after `opts.timeout` (2 minutes; the plant tests use less).
   const timeout = opts.timeout ?? 120_000;
-  // Drivers see only guarded Playwright objects (lib/guard.mjs). In set-up they may act, never run
-  // page script; from the start screen on they may only read, and act only through the operator.
-  const ctx = {
-    task, product, needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, state: {}, browser: guard(browser),
-    // A driver health check (run.mjs --health): set-up may create the dataset records a task needs.
-    health: !!opts.health,
-    useApi(session) {
-      if (currentPhase() !== 'free') throw new UncountedAction('signing in to the API inside the measured part');
-      apiSession = session;
-    },
-    /** Read the page: `fn(arg)` runs in the page inside the sentinel (it may read, never act). */
-    read: (fn, arg = null, { page: on } = {}) => unwrap(on || page).evaluate(sentinelFunction(fn), arg).catch(rethrowSentinel),
-    /** Wait until `fn(arg)` holds in the page (inside the sentinel). */
-    until: (fn, { arg = null, timeout = 120_000, page: on } = {}) =>
-      unwrap(on || page).waitForFunction(sentinelFunction(fn), arg, { timeout, polling: 50 }).catch(rethrowSentinel).then(() => undefined),
-  };
+  // A hook that never answers stops the driver process (set-up of a slow product may take minutes).
+  const hookTimeout = opts.hookTimeout ?? Math.max(timeout * 3, 30_000);
+  const hook = (name, extra = {}) => host.call(name, { file: driver.file, variant: driver.variant ?? null, ...extra }, hookTimeout);
+  const handles = () => ({ browser: session.handleOf(guard(browser)), context: session.handleOf(guard(context)), page: session.handleOf(guard(page)) });
   try {
+    session = new DriverSession(host, { product, timeout });
     context = await newContext(browser);
     page = await context.newPage();
     page.setDefaultTimeout(timeout);
-    ctx.context = guard(context);
-    ctx.page = guard(page);
-    if (driver.setup) await driver.setup(ctx);
-    if (driver.signIn) await driver.signIn(ctx);
+    session.page = guard(page);
+    await hook('begin', {
+      session: { task, product: plainProduct(product), needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, health: !!opts.health, params: opts.params ?? null },
+      handles: handles(),
+    });
+    // Set-up and sign-in may act on the product (fixtures, signing in); never page script.
+    if (driver.hooks.setup) await hook('setup');
+    if (driver.hooks.signIn) await hook('signIn');
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
-    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles));
-    ctx.context = guard(context);
-    ctx.page = guard(page);
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session }));
+    session.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
-    if (driver.observe) await driver.observe(ctx);
+    if (driver.hooks.observe) await hook('observe', { handles: handles() });
     op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout });
-    if (apiSession) op.useApi(apiSession);
+    if (session.apiSession) op.useApi(apiSessionFor(product, session.apiSession));
 
     // A task already done before the clock starts was done by set-up: the run measures nothing.
-    if (driver.verify) {
+    if (driver.hooks.verify) {
       phase.set('verifying');
-      page.setDefaultTimeout(5_000);
+      page.setDefaultTimeout(VERIFY_READ_MS);
       let before = null;
-      try { before = await driver.verify(ctx, undefined); } catch { /* not done (or not checkable without the outcome) */ }
+      try { before = await hook('verify', { handles: handles(), after: false }); } catch { /* not done (or not checkable without the outcome) */ }
       page.setDefaultTimeout(timeout);
       phase.set('frozen');
       if (before?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
     }
 
     await op.shot('start');
+    tracker = kind === 'api' ? null : trackRequests(context);
+    session.op = op.driverView();
     op.start();
     let outcome;
     try {
-      outcome = await driver.run(op.driverView(), ctx);
+      outcome = await hook('run', { handles: handles(), page: session.handleOf(guard(page)), startedAt: Date.now() });
+      // The product's answer to what the driver did is on the clock (round 5).
+      const end = tracker ? await op.settle(tracker, { timeout }) : null;
+      op.finish(end);
     } finally {
       op.finish();
+      session.op = null;
     }
     const missing = op.missingMoments;
     if (missing.length) throw new RefusedClaim(`the task's moments ${missing.map(m => `"${m}"`).join(', ')} were not shot while measuring (every driver shoots every moment the task declares, once)`);
+    // After the clock the page reaches the product no more (round 5): the end state cannot be
+    // finished off the clock, by the page or by verification waiting for it.
+    if (tracker) {
+      tracker.stop();
+      await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
+      routed = true;
+    }
     // The clock stopped at finish(): the done screenshot is taken after it and costs nothing.
     if (kind === 'api') await page.setContent(apiTranscriptHtml(task, op.steps));
     await op.shot('done');
     phase.set('verifying');
-    run.verification = driver.verify ? await driver.verify(ctx, outcome) : { verified: !!outcome?.verified, details: outcome };
-    run.status = run.verification.verified ? 'verified' : 'failed';
+    page.setDefaultTimeout(VERIFY_READ_MS);
+    if (driver.hooks.verify) {
+      const passes = [];
+      for (let i = 0; i < 2; i++) {
+        const t = performance.now();
+        const v = await hook('verify', { handles: handles(), after: true });
+        passes.push({ seconds: round((performance.now() - t) / 1000), verified: v?.verified === true });
+        if (i === 0) run.verification = v;
+      }
+      run.verify_passes = passes;
+      const [first, second] = passes;
+      if (first.verified && first.seconds - second.seconds > VERIFY_SLACK_SECONDS && first.seconds > 2 * second.seconds) {
+        throw new ActionOutsideClock(`verify() took ${first.seconds} s the first time and ${second.seconds} s the second: the end state arrived while it waited, after the clock stopped (wait for the end state in run(), on the clock)`, 'verifying');
+      }
+    } else {
+      run.verification = { verified: !!outcome?.verified, details: outcome };
+    }
+    run.status = run.verification?.verified ? 'verified' : 'failed';
   } catch (err) {
-    if (err instanceof NotBuilt) { run.status = 'not_built'; run.error = err.message; }
+    if (err instanceof NotBuilt || err?.name === 'NotBuilt') { run.status = 'not_built'; run.error = err.message; }
     else if (isRefusal(err)) {
       // The driver acted outside the operator or outside the clock, or declared a shortcut: its
       // counts would be too low.
@@ -279,6 +354,10 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
   } finally {
     op?.finish();
+    tracker?.stop();
+    if (tracker) run.requests_after_clock = tracker.afterClock;
+    if (routed) await context.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
+    page?.setDefaultTimeout(timeout);
     phase.set('free');
     // A refusal the driver caught and swallowed, at any point of the run, still invalidates it.
     const violations = takeViolations();
@@ -286,10 +365,11 @@ export async function execute(task, driver, product, productId, needles, out, op
       run.status = 'invalid';
       run.error = violations[0] + (violations.length > 1 ? ` (and ${violations.length - 1} more)` : '');
     }
-    if (driver.cleanup) {
-      try { await driver.cleanup(ctx); } catch (e) { run.cleanup_error = String(e?.message || e); }
+    if (driver.hooks.cleanup && session && !host.dead) {
+      try { await hook('cleanup', { handles: handles() }); } catch (e) { run.cleanup_error = String(e?.message || e); }
       takeViolations();
     }
+    session?.close();
     await browser.close().catch(() => {});
   }
   if (op) {
@@ -299,6 +379,16 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.screenshots = op.shots.map(({ measured, ...s }) => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
   return run;
+}
+
+/** The product as data for the driver process (functions and patterns stay here). */
+function plainProduct(product) {
+  const out = {};
+  for (const [k, v] of Object.entries(product)) {
+    if (typeof v === 'function' || v instanceof RegExp) continue;
+    out[k] = v && typeof v === 'object' ? JSON.parse(JSON.stringify(v)) : v;
+  }
+  return out;
 }
 
 /** The task's start kind (lib/start.mjs): declared by the task, 'api' for an API task. */
@@ -313,7 +403,7 @@ export function startKind(task) {
  * (cookies; local storage too for a signed-out start); wait until the product is ready and quiet; check and record the
  * start state. Returns the fresh { context, page }.
  */
-async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}) {
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}, { hook, session }) {
   const endedOn = oldPage.url();
   let url = null;
   if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind);
@@ -333,6 +423,7 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   const others = browser.contexts().filter(c => c !== oldContext);
   await Promise.all([oldContext, ...others].map(c => c.close().catch(() => {})));
   const context = await newContext(browser, { storageState });
+  await resetClipboard(context);
   const page = await context.newPage();
   page.setDefaultTimeout(timeout);
   if (kind === 'api') {
@@ -349,7 +440,7 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
     .catch(e => { throw new Error(`the start screen (${kind}, ${url}) did not become ready: ${e.message.split('\n')[0]}`); });
   if (driver.ready) {
     // The driver may name what its start screen shows once loaded (read-only: a locator or selector).
-    const r = typeof driver.ready === 'function' ? driver.ready(guard(page)) : driver.ready;
+    const r = driver.ready === 'function' ? session.decode(await hook('ready', { handles: { page: session.handleOf(guard(page)) } })) : driver.ready;
     const loc = typeof r === 'string' ? page.locator(r) : unwrap(r);
     await loc.first().waitFor({ state: 'visible', timeout });
   }

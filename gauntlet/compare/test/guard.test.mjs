@@ -2,14 +2,19 @@
 // "invalid" (never "verified"), and an honest driver on the same page must still verify. The
 // last plants run the real `ours` sign-in driver, as written and with the round-2 critic's plant
 // (password typed through ctx.page.keyboard), against a stand-in sign-in page.
+//
+// Round 5: drivers run only in the sandboxed driver process (lib/sandbox/). A test's driver is
+// written as a module (test/helpers/driver-module.mjs); the names it uses from this file (the
+// stand-in's address `base`, a planted action ...) are passed to it as constants.
 import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { pathToFileURL } from 'node:url';
 import { execute, layout } from '../lib/runner.mjs';
+import { describeDriverFile } from '../lib/registry.mjs';
+import { SCOPE, plantedFile, sandboxed, sandboxedSource } from './helpers/driver-module.mjs';
 import { HARNESS_DIR } from '../lib/config.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 
@@ -52,6 +57,22 @@ const REMEMBERING = `<!doctype html><html><head><title>Plant page</title></head>
     document.getElementById('go').onclick = () => setTimeout(() => { document.getElementById('out').textContent = 'found ' + document.getElementById('q').value; }, 50);
   </script></body></html>`;
 
+const SLOW_PAGE = `<!doctype html><html><body><input id="q" aria-label="Query"><button id="go">Go</button><div id="out"></div>
+  <script>document.getElementById('go').onclick = async () => {
+    const r = await fetch('/api/slow?q=' + encodeURIComponent(document.getElementById('q').value));
+    document.getElementById('out').textContent = 'found ' + (await r.text()); };</script></body></html>`;
+const DEBOUNCE_PAGE = `<!doctype html><html><body><input id="q" aria-label="Query"><button id="go">Go</button><div id="out"></div>
+  <script>document.getElementById('go').onclick = () => setTimeout(async () => {
+    const r = await fetch('/api/echo?q=' + encodeURIComponent(document.getElementById('q').value));
+    document.getElementById('out').textContent = 'found ' + (await r.text()); }, 600);</script></body></html>`;
+const ASYNC_PAGE = `<!doctype html><html><body><button id="save">Save</button><div id="out"></div>
+  <script>document.getElementById('save').onclick = async () => { await fetch('/api/async-save', { method: 'POST' }); document.getElementById('out').textContent = 'accepted'; };</script></body></html>`;
+const NAV_FORM = '<!doctype html><html><body><form action="/nav-list"><input name="go" id="go" aria-label="Go to" autofocus></form></body></html>';
+const NAV_LIST = '<!doctype html><html><body><input id="s" aria-label="Search" autofocus><div id="out"></div><script>document.getElementById("s").addEventListener("input", e => { document.getElementById("out").textContent = "found " + e.target.value; });</script></body></html>';
+let asyncSaved = false;
+let curlRequests = 0;
+let apiUsers = [];
+
 let server, base, tmp, needles;
 const revoked = new Set();
 let things = 0;
@@ -63,6 +84,7 @@ const FORM = '<!doctype html><html><body><form method="post" action="/form"><inp
 const sid = req => (/(?:^|; )sid=([^;]+)/.exec(req.headers.cookie || '') || [])[1];
 before(async () => {
   needles = loadNeedles();
+  apiUsers = [{ id: 'u1', email: needles.user.login, displayName: needles.user.name, language: 'en', isActive: true, roleIds: [], version: 1 }];
   const users = [
     { name: 'Sara Signin', login: 'signin.tester@demo-trading.example' },
     { name: needles.user.name, login: needles.user.login },
@@ -72,7 +94,37 @@ before(async () => {
     const json = v => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(v)); };
     const html = h => { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(h); };
     const signedIn = !!sid(req) && !revoked.has(sid(req));
-    if (req.url === '/api/auth/sign-in') return json({ token: 't' });
+    // Round 5 stand-ins: a search answered after 2 s, a search sent 600 ms after the click, a save
+    // answered at once but committed 1.5 s later, and the users API of the real api-update-user driver.
+    const u5 = new URL(req.url, 'http://x');
+    if (/curl/i.test(req.headers['user-agent'] || '')) curlRequests++;
+    if (u5.pathname === '/api/slow') { setTimeout(() => { res.writeHead(200); res.end(u5.searchParams.get('q') || ''); }, 2000); return; }
+    if (u5.pathname === '/api/echo') { res.writeHead(200); return res.end(u5.searchParams.get('q') || ''); }
+    if (u5.pathname === '/api/async-save' && req.method === 'POST') { setTimeout(() => { asyncSaved = true; }, 1500); return json({ accepted: true }); }
+    if (u5.pathname === '/api/async-saved') return json({ saved: asyncSaved });
+    if (u5.pathname === '/slow-page') return html(SLOW_PAGE);
+    if (u5.pathname === '/debounce-page') return html(DEBOUNCE_PAGE);
+    if (u5.pathname === '/async-page') return html(ASYNC_PAGE);
+    if (u5.pathname === '/nav-form') return html(NAV_FORM);
+    if (u5.pathname === '/nav-list') return html(NAV_LIST);
+    const apiUser = /^\/api\/identity\/users\/(u\d+)$/.exec(u5.pathname);
+    if (apiUser && req.method === 'PUT' && req.headers.authorization === 'Bearer api') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => { const b = JSON.parse(body || '{}'); const u = apiUsers.find(x => x.id === apiUser[1]); if (u) { u.language = b.language; u.version++; } json(u || {}); });
+      return;
+    }
+    if (apiUser && req.headers.authorization === 'Bearer api') return json(apiUsers.find(x => x.id === apiUser[1]) || {});
+    if (u5.pathname === '/api/identity/users' && req.headers.authorization === 'Bearer api') {
+      const q = (u5.searchParams.get('search') || '').toLowerCase();
+      return json({ items: apiUsers.filter(x => !q || x.email.toLowerCase().includes(q) || x.displayName.toLowerCase().includes(q)) });
+    }
+    if (req.url === '/api/auth/sign-in') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => json({ token: /"email":"api\.tester"/.test(body) ? 'api' : 't' }));
+      return;
+    }
     if (req.url === '/api/auth/sign-out') { if (sid(req)) revoked.add(sid(req)); res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/api/identity/users')) {
       const q = decodeURIComponent(new URL(req.url, 'http://x').searchParams.get('search') || '').toLowerCase();
@@ -106,13 +158,14 @@ after(() => { server?.close(); fs.rmSync(tmp, { recursive: true, force: true });
 // fresh browser context. Plant runs time out after 10 s instead of 2 minutes.
 const TASK = { id: 'plant', title: 'Plant', startAt: 'list', moments: [], input: {} };
 const standIn = () => ({ id: 'ours', baseUrl: base, users: {}, brandWords: [], readyKind: 'default' });
-async function runDriver(driver, task = TASK) {
-  return execute(task, driver, standIn(), 'ours', {}, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
+async function runDriver(driver, task = TASK, scope = {}) {
+  return execute(task, await sandboxed(driver, { base, ...scope }), standIn(), 'ours', {}, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
 }
 
 /** A driver whose run does `act` in the middle of an honest path. */
 function planted(act, extra = {}) {
   return {
+    [SCOPE]: { act },
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run(op, ctx) {
       await op.fill('#q', 'abc', { label: 'query' });
@@ -183,28 +236,29 @@ test('plant: a keyboard kept from set-up and used while measured is refused', as
 });
 
 test('plant: an internal channel kept from set-up is refused there too', async () => {
-  let refused = null;
   const r = await runDriver(planted(async () => {}, {
-    async setup(ctx) { try { ctx.state.channel = ctx.page._channel; } catch (e) { refused = e; } },
+    async setup(ctx) {
+      let refused = null;
+      try { ctx.state.channel = ctx.page._channel; } catch (e) { refused = e; }
+      assert.match(String(refused?.message), /internal of the browser driver/);
+    },
   }));
-  assert.match(String(refused?.message), /internal of the browser driver/);
+  assert.match(String(r.error), /internal of the browser driver/);
   // Instrument 4: a refusal at any point of the run, set-up included, invalidates it.
   assert.equal(r.status, 'invalid', r.error);
 });
 
 test('plant: a driver cannot stop the clock, drop steps or reach the raw page', async () => {
-  let view;
   const r = await runDriver(planted(async op => {
-    view = op;
     assert.equal(op.finish, undefined);
     assert.equal(op.start, undefined);
     assert.ok(Object.isFrozen(op));
+    assert.ok(!('t0' in op) && !('summary' in op) && !('settle' in op));
     op.steps.pop();
     op.steps.length = 0;
   }));
   assert.equal(r.status, 'verified', r.error);
   assert.equal(r.counts.steps, 3, 'steps cannot be removed through the copies a driver sees');
-  assert.ok(!('t0' in view) && !('summary' in view));
 });
 
 test('plant: browserKey refuses an action passed by the driver', async () => {
@@ -250,19 +304,19 @@ const honestRun = async op => { await op.fill('#q', 'abc'); await op.click('#go'
 const verifyFound = async ctx => ({ verified: (await ctx.page.locator('#out').textContent()) === 'found abc' });
 
 test('plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid', async () => {
-  let refused = null;
   const r = await runDriver({
     async signIn(ctx) {
       await ctx.page.goto(base + '/plant');
       // The critic's plant: a listener that fills the field and clicks Go when the measured part types.
       try {
         await ctx.page.evaluate(() => document.getElementById('q').addEventListener('input', () => setTimeout(() => document.getElementById('go').click(), 20), { once: true }));
-      } catch (e) { refused = e; }
+      } catch (e) { ctx.state.refused = e; }
+      assert.match(String(ctx.state.refused?.message), /action outside the clock/);
     },
     async run(op) { await op.click('#q'); await op.type('abc'); await op.waitFor(() => document.getElementById('out').textContent === 'found abc', { timeout: 3000 }); return {}; },
     verify: verifyFound,
   });
-  assert.match(String(refused?.message), /action outside the clock/);
+  assert.match(String(r.error), /action outside the clock/);
   assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
 });
 
@@ -301,7 +355,7 @@ test('plant U2b (round 3): exposed functions, routes and extra headers made in s
     ctx => ctx.page.setExtraHTTPHeaders({ 'X-Shortcut': '1' }),
     ctx => ctx.page.clock.install(),
   ]) {
-    const r = await runDriver({ async signIn(ctx) { await ctx.page.goto(base + '/plant'); try { await act(ctx); } catch { /* swallowed */ } }, run: honestRun, verify: verifyFound });
+    const r = await runDriver({ async signIn(ctx) { await ctx.page.goto(base + '/plant'); try { await act(ctx); } catch { /* swallowed */ } }, run: honestRun, verify: verifyFound }, TASK, { act });
     assert.equal(r.status, 'invalid', `${act}: ${r.status} ${r.error}`);
   }
 });
@@ -393,6 +447,7 @@ test('plant T1 (round 3): screenshots while the product works neither hide its t
   // A slow product: Go answers after 1.5 s.
   const slow = { ...TASK, id: 'plant-slow', moments: ['result'] };
   const mk = shots => ({
+    [SCOPE]: { shots },
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run(op) {
       await op.fill('#q', 'abc');
@@ -409,7 +464,7 @@ test('plant T1 (round 3): screenshots while the product works neither hide its t
   assert.equal(gamed.status, 'invalid', `${gamed.status} ${gamed.error}`);
   assert.match(gamed.error, /does not declare/);
   // A declared moment shot while the product works stays on the clock.
-  const early = await runDriver({ ...mk(async op => { await op.shot('result'); }), async run(op) {
+  const early = await runDriver({ ...mk(async op => { await op.shot('result'); }), [SCOPE]: { shots: null }, async run(op) {
     await op.fill('#q', 'abc'); await op.click('#go'); await op.shot('result');
     await op.waitFor(() => document.getElementById('out').textContent === 'found abc');
     return {};
@@ -418,19 +473,15 @@ test('plant T1 (round 3): screenshots while the product works neither hide its t
   const lastStep = early.steps[early.steps.length - 1];
   assert.ok(early.counts.machine_seconds >= lastStep.at + lastStep.took + 0.05 - 0.002, 'the product time after the last step is on the clock');
   // A declared moment the driver never shoots -> invalid (every driver pays for the same shots).
-  const skipped = await runDriver({ ...mk(async () => {}), async run(op) { await honestRun(op); return {}; } }, slow);
+  const skipped = await runDriver({ ...mk(async () => {}), async run(op) { await honestRun(op); return {}; } }, slow, { honestRun });
   assert.equal(skipped.status, 'invalid', `${skipped.status} ${skipped.error}`);
   assert.match(skipped.error, /were not shot/);
 });
 
 // The real ours sign-in driver, as written and planted.
 const OURS_SIGN_IN = path.join(HARNESS_DIR, 'drivers', 'ours', 'sign-in.mjs');
-async function loadVariant(transform) {
-  const libUrl = pathToFileURL(path.join(HARNESS_DIR, 'lib')).href;
-  const src = transform(fs.readFileSync(OURS_SIGN_IN, 'utf8')).replaceAll("'../../lib/", `'${libUrl}/`);
-  const file = path.join(tmp, `sign-in-${Math.random().toString(36).slice(2)}.mjs`);
-  fs.writeFileSync(file, src);
-  return (await import(pathToFileURL(file).href)).default;
+function loadVariant(transform) {
+  return describeDriverFile(plantedFile(OURS_SIGN_IN, transform));
 }
 const SIGN_IN_TASK = { id: 'sign-in', title: 'Sign in', startAt: 'sign-in', moments: [], input: { user: 'signin.tester@demo-trading.example', password: 'Sign-In-Pass-2026', name: 'Sara Signin' } };
 const signInProduct = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'a', password: 'b' } }, brandWords: [] });
@@ -439,7 +490,7 @@ const signInProduct = () => ({ id: 'ours', baseUrl: base, users: { admin: { logi
 async function executeAll(driver, dir) {
   const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
   const out = [];
-  for (const [id, v] of variants) out.push({ id, ...(await execute(SIGN_IN_TASK, { ...driver, ...v }, signInProduct(), 'ours', {}, layout(path.join(tmp, `${dir}-${id}`)), { timeout: 15_000 })) });
+  for (const [id] of variants) out.push({ id, ...(await execute(SIGN_IN_TASK, { ...driver, variant: id }, signInProduct(), 'ours', {}, layout(path.join(tmp, `${dir}-${id}`)), { timeout: 15_000 })) });
   return out;
 }
 
@@ -480,12 +531,8 @@ test('plant K1 (round 3, the real driver): the ours sign-in driver with every st
 
 // The real ours find-user driver on a stand-in users screen.
 const OURS_FIND_USER = path.join(HARNESS_DIR, 'drivers', 'ours', 'find-user.mjs');
-async function loadFindUser(transform) {
-  const libUrl = pathToFileURL(path.join(HARNESS_DIR, 'lib')).href;
-  const src = transform(fs.readFileSync(OURS_FIND_USER, 'utf8')).replaceAll("'../../lib/", `'${libUrl}/`);
-  const file = path.join(tmp, `find-user-${Math.random().toString(36).slice(2)}.mjs`);
-  fs.writeFileSync(file, src);
-  return (await import(pathToFileURL(file).href)).default;
+function loadFindUser(transform) {
+  return describeDriverFile(plantedFile(OURS_FIND_USER, transform));
 }
 const FIND_USER_TASK = { id: 'find-user', title: 'Find one user', startAt: 'home', moments: ['result list'], input: {} };
 const findUserProduct = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'signin.tester@demo-trading.example', password: 'Sign-In-Pass-2026' } }, brandWords: [] });
@@ -580,7 +627,7 @@ test('plant P2 (round 4): launching another browser in set-up -> invalid', async
 
 test('plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid', async () => {
   for (const act of [ctx => ctx.browser.newBrowserCDPSession(), ctx => ctx.browser.startTracing()]) {
-    const r = await runDriver({ async setup(ctx) { await act(ctx); }, async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, run: honestRun, verify: verifyFound });
+    const r = await runDriver({ async setup(ctx) { await act(ctx); }, async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, run: honestRun, verify: verifyFound }, TASK, { act });
     assert.equal(r.status, 'invalid', `${act}: ${r.status} ${r.error}`);
   }
 });
@@ -602,7 +649,7 @@ test('plant L1 (round 4): set-up changes where the product opens (a home prefere
         return {};
       },
       async verify(ctx) { return { verified: (await ctx.page.locator('#panel:not([hidden])').count()) === 1 && (await ctx.page.locator('#panel').innerText()).includes(needles.user.login) }; },
-    }, task);
+    }, task, { needles });
     assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
     assert.match(r.error, /home start landed on \/users/);
     assert.equal(r.start_state.path, '/users');
@@ -614,11 +661,11 @@ test('plant L1 (round 4): set-up changes where the product opens (a home prefere
 test('plant L2 (round 4): a list start whose address names the task\'s data -> invalid', async () => {
   // The search is typed into the address before the clock (a path, so the query check alone misses it).
   for (const where of [`/users/${encodeURIComponent(needles.user.name)}`, `/users/by-name/${needles.user.name.toLowerCase().replace(/ /g, '-')}`]) {
-    const r = await execute(TASK, {
+    const r = await execute(TASK, await sandboxed({
       async signIn(ctx) { await ctx.page.goto(base + where); },
       run: honestRun,
       verify: verifyFound,
-    }, standIn(), 'ours', needles, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
+    }, { base, where }), standIn(), 'ours', needles, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
     assert.equal(r.status, 'invalid', `${where}: ${r.status} ${r.error}`);
     assert.match(r.error, /names the task's data/);
   }
@@ -651,7 +698,7 @@ test('plant C1 (round 4): text copied to the clipboard in set-up and pasted whil
       },
       async run(op) { await op.click('#q'); await op.press(chord); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'found abc', { timeout: 3000 }); return {}; },
       verify: verifyFound,
-    });
+    }, TASK, { chord });
     assert.equal(r.status, 'invalid', `${chord}: ${r.status} ${r.error}`);
     assert.match(r.error, /not copied inside the measured part/);
   }
@@ -669,4 +716,284 @@ test('control (round 4): text copied inside the measured part may be pasted', as
     async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()).startsWith('found') }; },
   });
   assert.equal(r.status, 'verified', `${r.status} ${r.error}`);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Round 5: nothing a driver does in its own Node process may act uncounted or off the clock. The
+// critic's plants (gauntlet/evidence/p01-odoo-rig/r5/plants/zz-critic-r5.test.mjs) first, then
+// further ways out of the driver process. Each must end "invalid", or, where the product's answer
+// is put on the clock instead, with counts no lower than the honest path's.
+
+const SLOW_RESULT = () => document.getElementById('out').textContent === 'found abcdefghij';
+const slowSignIn = async ctx => { await ctx.page.goto(base + '/slow-page'); };
+
+test('control (round 5): the honest path on the slow page waits for the 2 s answer', async () => {
+  const r = await runDriver({
+    signIn: slowSignIn,
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'found abcdefghij', { label: 'result' }); return {}; },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' }; },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  assert.ok(r.counts.machine_seconds >= 2, `machine ${r.counts.machine_seconds}`);
+  assert.equal(r.verify_passes.length, 2, 'verify() runs twice and both passes are recorded');
+});
+
+test('plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid', async () => {
+  const r = await runDriver({
+    signIn: slowSignIn,
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
+    async verify(ctx, outcome) {
+      if (outcome === undefined) return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
+      await ctx.page.locator('#out', { hasText: 'found abcdefghij' }).waitFor({ state: 'visible' });
+      return { verified: true };
+    },
+  });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error} machine ${r.counts?.machine_seconds}`);
+  assert.match(r.error, /never waits/);
+});
+
+test('plant T2b (round 5): run() returns after the click and verify() reads once -> the 2 s answer is on the clock', async () => {
+  const r = await runDriver({
+    signIn: slowSignIn,
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' }; },
+  });
+  if (r.status === 'verified') assert.ok(r.counts.machine_seconds >= 2, `verified in ${r.counts.machine_seconds} s, under the product's 2 s answer`);
+  assert.ok(r.waits.some(w => w.settle && w.seconds >= 1.9), `the answer the driver did not wait for is system wait: ${JSON.stringify(r.waits)}`);
+});
+
+test('plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid', async () => {
+  asyncSaved = false;
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
+    async run(op) { await op.click('#save'); await op.waitFor(() => document.getElementById('out').textContent === 'accepted'); return {}; },
+    async verify() {
+      // No timer, no page wait: a loop of reads until the commit shows.
+      let saved = false;
+      for (let i = 0; i < 5000 && !saved; i++) saved = (await (await fetch(base + '/api/async-saved')).json()).saved;
+      return { verified: saved };
+    },
+  });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error} ${JSON.stringify(r.verify_passes)}`);
+  assert.match(r.error, /the first time/);
+});
+
+test('plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops', async () => {
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/debounce-page'); },
+    async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
+    async verify(ctx) {
+      // A busy wait (no timer, no page wait) before one read.
+      const t = Date.now(); while (Date.now() - t < 1500) { /* spin */ }
+      return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
+    },
+  });
+  assert.notEqual(r.status, 'verified', `verified with machine ${r.counts?.machine_seconds}`);
+  assert.ok(r.requests_after_clock >= 1, 'the page\'s request after the clock was cut off');
+});
+
+test('plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid', async () => {
+  for (const wait of [ctx => ctx.until(() => document.getElementById('out').textContent.startsWith('found')),
+    ctx => ctx.page.waitForURL('**/plant'), ctx => ctx.page.waitForTimeout(10)]) {
+    const r = await runDriver({ ...planted(async () => {}), async verify(ctx, outcome) { if (outcome !== undefined) await wait(ctx); return { verified: true }; } }, TASK, { wait, act: async () => {} });
+    assert.equal(r.status, 'invalid', `${wait}: ${r.status} ${r.error}`);
+  }
+});
+
+test('plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid', async () => {
+  const before = things;
+  const spec = await sandboxedSource(`
+    const fetchAtLoad = globalThis.fetch;
+    export default {
+      async signIn(ctx) { await ctx.page.goto(${JSON.stringify(base)} + '/plant'); },
+      async run(op) { await op.click('#q'); await fetchAtLoad(${JSON.stringify(base)} + '/api/things', { method: 'POST' }); return {}; },
+      async verify() { return { verified: true }; },
+    };`);
+  const r = await execute(TASK, spec, standIn(), 'ours', {}, layout(path.join(tmp, 'u4')), { timeout: 10_000 });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.equal(things, before, 'the back-end write went through');
+});
+
+test('plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent', async () => {
+  const port = new URL(base).port;
+  const acts = {
+    'child_process (curl)': async () => {
+      const cp = process.getBuiltinModule('node:child_process');
+      await new Promise((resolve, reject) => cp.execFile('curl', ['-s', '-X', 'POST', base + '/api/things'], e => (e ? reject(e) : resolve())));
+    },
+    'net (a raw HTTP request)': async () => {
+      const net = process.getBuiltinModule('node:net');
+      await new Promise((resolve, reject) => {
+        const sock = net.connect(Number(port), '127.0.0.1', () => sock.end('POST /api/things HTTP/1.1\r\nHost: x\r\nContent-Length: 0\r\n\r\n'));
+        sock.on('close', resolve); sock.on('error', reject);
+      });
+    },
+    'http (imported at load)': async () => {
+      await new Promise((resolve, reject) => { const rq = http.request(base + '/api/things', { method: 'POST' }, resolve); rq.on('error', reject); rq.end(); });
+    },
+  };
+  for (const [name, act] of Object.entries(acts)) {
+    const before = things;
+    const r = await runDriver(planted(async () => { try { await escape(); } catch { /* swallowed */ } }), TASK, { escape: act, port });
+    assert.equal(r.status, 'invalid', `${name}: ${r.status} ${r.error}`);
+    assert.match(r.error, /uncounted action/);
+    assert.equal(things, before, `${name}: the back-end write went through`);
+  }
+});
+
+test('plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid', async () => {
+  const acts = {
+    'a socket opened in set-up to use later': () => { globalThis.kept = process.getBuiltinModule('node:net').connect(Number(new URL(base).port), '127.0.0.1'); },
+    'a worker thread': () => new (process.getBuiltinModule('node:worker_threads').Worker)('1', { eval: true }),
+    'an inspector session': () => new (process.getBuiltinModule('node:inspector').Session)().connect(),
+    'module loader hooks': () => process.getBuiltinModule('node:module').register('data:text/javascript,export {}'),
+    'a native binding': () => process.binding('tcp_wrap'),
+    'V8 flags': () => process.getBuiltinModule('node:v8').setFlagsFromString('--allow-natives-syntax'),
+    'a WebSocket': () => new WebSocket(base.replace('http', 'ws')),
+    'a UDP socket': () => process.getBuiltinModule('node:dgram').createSocket('udp4').send('x', 9, '127.0.0.1'),
+    'a fetch to another address': () => fetch('http://127.0.0.1:9/api/things', { method: 'POST' }),
+  };
+  for (const [name, act] of Object.entries(acts)) {
+    const r = await runDriver({ ...planted(async () => {}), async setup() { try { await escape(); } catch { /* swallowed */ } } }, TASK, { escape: act });
+    assert.equal(r.status, 'invalid', `${name}: ${r.status} ${r.error}`);
+  }
+});
+
+test('plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness', async () => {
+  const target = path.join(HARNESS_DIR, 'lib', `zz-planted-${process.pid}.mjs`);
+  try {
+    const direct = await runDriver({ ...planted(async () => {}), async setup() { try { fs.writeFileSync(target, 'export default 1;'); } catch { /* refused */ } } }, TASK, { target });
+    assert.equal(fs.existsSync(target), false, 'the driver process wrote into the harness');
+    assert.equal(direct.status, 'verified', 'a refused write changes nothing else');
+    const viaHarness = await runDriver({ ...planted(async () => {}), async setup(ctx) { await ctx.page.goto(base + '/plant'); try { await ctx.page.screenshot({ path: target }); } catch { /* refused */ } } }, TASK, { target });
+    assert.equal(fs.existsSync(target), false, 'the harness wrote a file where the driver asked');
+    assert.equal(viaHarness.status, 'invalid', `${viaHarness.status} ${viaHarness.error}`);
+    assert.match(viaHarness.error, /outside the driver's scratch folder/);
+  } finally { fs.rmSync(target, { force: true }); }
+});
+
+test('plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid', async () => {
+  const before = things;
+  const r = await runDriver({ ...planted(async () => { await new Promise(res => setTimeout(res, 3000)); }),
+    async signIn(ctx) { setTimeout(() => { fetch(base + '/api/things', { method: 'POST' }).catch(() => {}); }, 1200); await ctx.page.goto(base + '/plant'); } });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.equal(things, before);
+});
+
+test('plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver\'s reach', async () => {
+  delete globalThis.__plantTopLevel;
+  const spec = await sandboxedSource(`
+    globalThis.__plantTopLevel = true;
+    Performance.prototype.now = () => 0;
+    performance.now = () => 0;
+    Date.now = () => 0;
+    export default {
+      async signIn(ctx) { await ctx.page.goto(${JSON.stringify(base)} + '/slow-page'); },
+      async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'found abcdefghij'); return {}; },
+      async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' }; },
+    };`);
+  const r = await execute(TASK, spec, standIn(), 'ours', {}, layout(path.join(tmp, 'u5e')), { timeout: 10_000 });
+  assert.equal(globalThis.__plantTopLevel, undefined, 'the driver module ran in the harness process');
+  assert.equal(r.status, 'verified', r.error);
+  assert.ok(r.counts.machine_seconds >= 2, `machine ${r.counts.machine_seconds}: the driver moved the clock`);
+});
+
+test('plant U5f (round 5): a driver object handed straight to execute() is refused, never measured', async () => {
+  const r = await execute(TASK, { async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, run: honestRun, verify: verifyFound }, standIn(), 'ours', {}, layout(path.join(tmp, 'u5f')), { timeout: 10_000 });
+  assert.equal(r.status, 'invalid');
+  assert.match(r.error, /driver process/);
+});
+
+test('plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent', async () => {
+  // The critic's plant (gauntlet/evidence/p01-odoo-rig/r5/plants/plant-U5-api-update-user-child-process.diff), on the driver as it stands.
+  const file = plantedFile(path.join(HARNESS_DIR, 'drivers', 'ours', 'api-update-user.mjs'), s0 => {
+    const s1 = s0.replace("ctx.useApi({ baseUrl: ctx.product.baseUrl, headers: { Authorization: `Bearer ${api.token}`, 'X-Erp-Request': '1' } });",
+      "ctx.useApi({ baseUrl: ctx.product.baseUrl, headers: { Authorization: `Bearer ${api.token}`, 'X-Erp-Request': '1' } });\n    ctx.state.token = api.token;");
+    const planted = s1.replace(/\n    await op\.request\('PUT'[^\n]*\n/, `
+    const cp = process.getBuiltinModule('node:child_process');
+    const body = JSON.stringify({ displayName: u.displayName, language: 'ar', isActive: u.isActive, roleIds: u.roleIds, version: u.version });
+    await new Promise((resolve, reject) => cp.execFile('curl', ['-sf', '-X', 'PUT', '-H', 'Content-Type: application/json', '-H', 'X-Erp-Request: 1',
+      '-H', \`Authorization: Bearer \${ctx.state.token}\`, '--data', body, \`\${ctx.product.baseUrl}/api/identity/users/\${u.id}\`], e => (e ? reject(e) : resolve())));
+`);
+    assert.notEqual(planted, s1, 'the plant must change the driver');
+    return planted;
+  });
+  const honest = await execute({ id: 'api-update-user', title: 'API', channel: 'api', startAt: 'api', moments: [], input: {} }, await describeDriverFile(path.join(HARNESS_DIR, 'drivers', 'ours', 'api-update-user.mjs')),
+    { id: 'ours', baseUrl: base, users: { admin: { login: 'api.tester', password: 'b' } }, brandWords: [] }, 'ours', needles, layout(path.join(tmp, 'u5g-honest')), { timeout: 10_000 });
+  assert.equal(honest.status, 'verified', `the honest driver on the stand-in: ${honest.error}`);
+  assert.equal(honest.counts.steps, 2);
+  const r = await execute({ id: 'api-update-user', title: 'API', channel: 'api', startAt: 'api', moments: [], input: {} }, await describeDriverFile(file),
+    { id: 'ours', baseUrl: base, users: { admin: { login: 'api.tester', password: 'b' } }, brandWords: [] }, 'ours', needles, layout(path.join(tmp, 'u5g')), { timeout: 10_000 });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error} steps ${r.counts?.steps}`);
+  assert.equal(curlRequests, 0, 'the uncounted PUT reached the back end');
+});
+
+for (const [name, chord, copyFirst] of [['C2 (round 5): ControlOrMeta+v', 'ControlOrMeta+v', false], ['C3 (round 5): an empty copy, then Control+v', 'Control+v', true],
+  ['C4 (round 5): Control+KeyV', 'Control+KeyV', false], ['C5 (round 5): control+V written in other cases', 'control+V', false], ['C6 (round 5): Shift+Control+v', 'Shift+Control+v', false]]) {
+  test(`plant ${name}: text copied in set-up is pasted while measured -> invalid`, async () => {
+    const r = await runDriver({
+      async signIn(ctx) {
+        await ctx.page.goto(base + '/slow-page');
+        await ctx.page.locator('#q').fill('abcdefghij');
+        await ctx.page.locator('#q').press('Control+a');
+        await ctx.page.locator('#q').press('Control+c');
+        await ctx.page.locator('#q').fill('');
+      },
+      async run(op) {
+        await op.click('#q');
+        if (copyFirst) await op.press('Control+c'); // nothing selected in the empty field
+        await op.press(chord); await op.click('#go');
+        await op.waitFor(() => document.getElementById('out').textContent === 'found abcdefghij', { timeout: 5000 });
+        return {};
+      },
+      async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' }; },
+    }, TASK, { chord, copyFirst });
+    assert.equal(r.status, 'invalid', `${chord}: ${r.status} ${r.error}`);
+    assert.match(r.error, /not copied inside the measured part/);
+  });
+}
+
+test('control (round 5): the clipboard is empty at the start, whatever set-up copied', async () => {
+  const r = await runDriver({
+    async signIn(ctx) {
+      await ctx.page.goto(base + '/plant');
+      await ctx.page.locator('#q').fill('abcdefghij');
+      await ctx.page.locator('#q').press('Control+a');
+      await ctx.page.locator('#q').press('Control+c');
+      await ctx.page.locator('#q').fill('');
+    },
+    async run(op, ctx) {
+      // A measured copy of one character, then two pastes: the clipboard holds that character only.
+      await op.fill('#q', 'z'); await op.press('Control+a'); await op.press('Control+c'); await op.press('End'); await op.press('Control+v');
+      assert.equal(await op.page.locator('#q').inputValue(), 'zz');
+      return {};
+    },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#q').inputValue()) === 'zz' }; },
+  });
+  assert.equal(r.status, 'verified', `${r.status} ${r.error}`);
+  const copy = r.steps.find(st => st.chord === 'Control+c');
+  assert.equal(copy.copied_chars, 1);
+});
+
+test('KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step', async () => {
+  const task = { ...TASK, id: 'plant-nav' };
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/nav-form'); },
+    async run(op) {
+      await op.click('#go'); await op.type('list'); await op.press('Enter');
+      await op.waitFor('#s:focus', { label: 'the list opened' });
+      await op.type('abc');
+      await op.waitFor(() => document.getElementById('out')?.textContent === 'found abc');
+      return {};
+    },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'found abc' }; },
+  }, task);
+  assert.equal(r.status, 'verified', r.error);
+  const [, typed, enter, typedAfter] = r.steps;
+  assert.equal(typed.chain, true, 'typing after the click into the field continues it');
+  assert.equal(enter.chain, true, 'Enter after typing continues it');
+  assert.equal(enter.screen, '/nav-form');
+  assert.equal(typedAfter.screen, '/nav-list');
+  assert.equal(typedAfter.chain, false, 'typing on the new screen starts with M');
+  assert.equal(r.counts.klm_operator_counts.M, 2);
 });

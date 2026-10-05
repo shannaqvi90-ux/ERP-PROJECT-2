@@ -16,9 +16,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { continues, keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
 import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskLocators, neutraliseDocument } from './blind.mjs';
-import { RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
+import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
 
 const clock = claimClock();
+// The clock reads the time through a reference taken when the harness loads (round 5: nothing a
+// later module does to performance.now can move it; drivers run in another process anyway).
+const clockNow = performance.now.bind(performance);
 
 /** Keys the browser itself handles (key events in an automated page never reach the browser's own shortcuts). */
 export const BROWSER_KEYS = Object.freeze({
@@ -29,12 +32,55 @@ export const BROWSER_KEYS = Object.freeze({
 });
 
 /**
+ * A chord as the keys it presses: its modifiers (ControlOrMeta resolved for this platform, the
+ * way Playwright resolves it) and its main key, case and order ignored (round 5: the paste check
+ * matched written forms, and 'ControlOrMeta+v' slipped past it).
+ */
+export function parseChord(chord) {
+  const parts = String(chord).replace(/\+\+$/, '+PLUS').split('+').filter(Boolean);
+  const mods = new Set();
+  let key = parts.pop() || '';
+  for (const m of parts) {
+    const l = m.toLowerCase();
+    if (l === 'controlormeta') mods.add(process.platform === 'darwin' ? 'meta' : 'control');
+    else if (l === 'ctrl') mods.add('control');
+    else if (l === 'cmd' || l === 'command' || l === 'os') mods.add('meta');
+    else if (l === 'option') mods.add('alt');
+    else mods.add(l);
+  }
+  if (/^Key[A-Z]$/.test(key)) key = key.slice(3);
+  if (key === 'PLUS') key = '+';
+  return { mods, key: key.length === 1 ? key.toLowerCase() : key.toLowerCase() };
+}
+
+/**
  * Paste and copy chords. Text pasted inside the measured part must have been copied inside it too:
  * the clipboard outlives the set-up browser, so text copied before the clock and pasted after it
- * would be typed outside the clock (round 4).
+ * would be typed outside the clock (round 4). A copy counts only when it copied something: the
+ * operator reads the selection as the copy key is pressed, and a copy of nothing leaves the
+ * clipboard as set-up filled it (round 5). The runner also empties the clipboard at the start.
  */
-const PASTE = /^((Control|Meta)\+(v|Shift\+v|Alt\+v|Shift\+Alt\+v)|Shift\+Insert)$/i;
-const COPY = /^((Control|Meta)\+(c|x|Shift\+c)|Control\+Insert|Shift\+Delete)$/i;
+export function isPaste(chord) {
+  const { mods, key } = parseChord(chord);
+  return (key === 'v' && (mods.has('control') || mods.has('meta'))) || (key === 'insert' && mods.has('shift') && !mods.has('control'));
+}
+export function isCopy(chord) {
+  const { mods, key } = parseChord(chord);
+  return ((key === 'c' || key === 'x') && (mods.has('control') || mods.has('meta'))) || (key === 'insert' && mods.has('control') && !mods.has('shift'))
+    || (key === 'delete' && mods.has('shift'));
+}
+
+/** Page function (run by the operator, not a driver): the text a copy key would copy now. */
+function selectedText() {
+  let a = document.activeElement;
+  while (a?.shadowRoot?.activeElement) a = a.shadowRoot.activeElement;
+  if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) {
+    try {
+      if (typeof a.selectionStart === 'number' && typeof a.selectionEnd === 'number') return a.value.slice(a.selectionStart, a.selectionEnd);
+    } catch { /* an input type without a selection */ }
+  }
+  return String(globalThis.getSelection?.() || '');
+}
 
 /** Control characters press keys (Enter, Tab, Backspace ...) without a step of their own. */
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
@@ -65,7 +111,7 @@ export class NotBuilt extends Error {
 }
 
 export class Operator {
-  #page; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null;
+  #page; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null;
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -99,20 +145,51 @@ export class Operator {
   /** Seconds on the product clock since start(). */
   now() {
     if (this.#t0 === null) return 0;
-    const end = this.#t1 ?? performance.now();
+    const end = this.#t1 ?? clockNow();
     return (end - this.#t0) / 1000;
   }
 
   start() {
     if (this.measuring) return;
-    this.#t0 = performance.now(); this.#t1 = null;
+    this.#t0 = clockNow(); this.#t1 = null;
     clock.begin();
   }
 
-  finish() {
+  /** Stop the clock (at `at`, a time of this clock already passed, when the runner settled the product). */
+  finish(at = null) {
     if (!this.measuring) return;
-    this.#t1 = performance.now();
+    this.#t1 = at !== null && at >= this.#t0 && at <= clockNow() ? at : clockNow();
     clock.end();
+  }
+
+  /**
+   * Round 5: the clock covers the product's answer to every request the measured actions caused.
+   * Called by the runner when the driver's run() returns: if requests of the measured page are
+   * still in flight (`tracker.inflight`: the runner tracks the page's requests, long-lived
+   * channels excepted), the clock keeps running until none is left for `quietMs`, and stops
+   * when the last one ended. The time is system wait. Returns the end time for finish(), or null.
+   */
+  async settle(tracker, { quietMs = 100, timeout = this.defaultTimeout } = {}) {
+    if (!this.measuring || !tracker.inflight.size) return null;
+    const t = this.now();
+    const pending = tracker.inflight.size;
+    const deadline = clockNow() + timeout;
+    let quietSince = null;
+    for (;;) {
+      if (tracker.inflight.size) quietSince = null;
+      else if (quietSince === null) quietSince = tracker.lastEnded ?? clockNow();
+      else if (clockNow() - quietSince >= quietMs) break;
+      if (clockNow() > deadline) throw new Error(`the product was still answering ${tracker.inflight.size} request(s) ${Math.round(timeout / 1000)} s after the driver's last step`);
+      await new Promise(r => setTimeout(r, 10));
+    }
+    const end = Math.max(quietSince, this.#t0);
+    this.#waits.push({ label: `the product still answering when run() returned (${pending} request${pending === 1 ? '' : 's'})`, at: round(t), seconds: round(Math.max(0, (end - this.#t0) / 1000 - t)), settle: true });
+    return end;
+  }
+
+  /** The address path the measured page shows (KLM: a step after a new screen starts with M). */
+  #path() {
+    try { return new URL(this.#page.url()).pathname; } catch { return null; }
   }
 
   get machineSeconds() { return round(this.now()); }
@@ -130,9 +207,11 @@ export class Operator {
 
   #locate(target) { return typeof target === 'string' ? this.#page.locator(target) : unwrap(target); }
 
-  #record(kind, label, keystrokes, started, extra = {}) {
+  #record(kind, label, keystrokes, started, extra = {}, screen = undefined) {
     if (!this.measuring) throw new Error('operator.start() must be called before the first measured step');
     const step = { n: this.#steps.length + 1, kind, label, keystrokes, at: round(started), took: round(this.now() - started), ...extra };
+    // The screen the step began on (its address path); API steps have none.
+    if (kind !== 'request') step.screen = screen === undefined ? this.#startScreen : screen;
     // Continuation (no M) is derived from the steps (lib/klm.mjs), recorded here for reading only.
     step.chain = continues(this.#steps[this.#steps.length - 1] || null, step);
     this.#steps.push(step);
@@ -140,8 +219,11 @@ export class Operator {
     return { ...step };
   }
 
+  #startScreen = null;
+
   #begin() {
     if (!this.measuring) throw new Error('operator.start() must be called before the first measured step');
+    this.#startScreen = this.#path();
     return this.now();
   }
 
@@ -219,12 +301,15 @@ export class Operator {
   async press(chord, opts) {
     const { label } = checkOptions('press', opts);
     if (typeof chord !== 'string' || !chord || CONTROL.test(chord)) throw new UncountedAction(`op.press(${JSON.stringify(chord)}): not a key or chord`);
-    if (PASTE.test(chord) && !this.#steps.some(st => st.kind === 'key' && COPY.test(st.chord))) {
-      throw new UncountedAction(`op.press("${chord}") pastes text that was not copied inside the measured part (the clipboard was filled before the clock); type it with op.type`);
+    if (isPaste(chord) && !this.#copied) {
+      throw new UncountedAction(`op.press("${chord}") pastes text that was not copied inside the measured part (nothing was selected and copied since the clock started; the clipboard was filled before it); type it with op.type`);
     }
     const t = this.#begin();
+    let copied = null;
+    if (isCopy(chord)) copied = await this.#page.evaluate(selectedText).catch(() => '');
     await this.#page.keyboard.press(chord);
-    return this.#record('key', label || chord, keystrokesForChord(chord), t, { chord });
+    if (copied) this.#copied = copied;
+    return this.#record('key', label || chord, keystrokesForChord(chord), t, { chord, ...(copied !== null ? { copied_chars: copied.length } : {}), ...(isPaste(chord) ? { pasted_chars: this.#copied.length } : {}) });
   }
 
   /**
@@ -232,7 +317,7 @@ export class Operator {
    * harness does what the browser would; a driver cannot pass its own action.
    */
   async browserKey(chord, opts = {}) {
-    if (typeof opts === 'function') throw new TypeError('browserKey(chord, { label }): the action is fixed by the key, not passed by the driver');
+    if (typeof opts === 'function' || opts instanceof PageFunction) throw new TypeError('browserKey(chord, { label }): the action is fixed by the key, not passed by the driver');
     const action = BROWSER_KEYS[chord];
     if (!action) throw new Error(`browserKey: ${chord} is not a browser key (${Object.keys(BROWSER_KEYS).join(', ')})`);
     const { label } = checkOptions('browserKey', opts);
@@ -312,7 +397,7 @@ export class Operator {
   async waitFor(what, opts) {
     const { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = checkOptions('waitFor', opts);
     const t = this.now();
-    if (typeof what === 'function') {
+    if (typeof what === 'function' || what instanceof PageFunction) {
       await this.#page.waitForFunction(sentinelFunction(what), arg, { timeout, polling: 50 }).catch(rethrowSentinel);
     } else {
       await this.#locate(what).first().waitFor({ state, timeout });
