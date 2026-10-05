@@ -37,10 +37,26 @@ public sealed class LeakyModuleCollection
     public const string Name = "Leaky module (process-wide planted state)";
 }
 
+/// <summary>The long self-tests ./erp verify runs in test processes of their own (filter on the
+/// trait), so the planted static state of one never meets another's: separate processes, separate
+/// statics. Run in one process (a plain <c>dotnet test</c>), they take turns in
+/// <see cref="LeakyModuleCollection"/> as before.</summary>
+public static class SelfTestProcess
+{
+    public const string Trait = "Process";
+    public const string Http = "self-http";
+    public const string Company = "self-company";
+    public const string NonInterference = "self-noninterference";
+}
+
 [Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
+    // ./erp verify runs this test, the company attack's self-test and the non-interference
+    // self-test each in a test process of its own (trait Process), side by side: the planted state
+    // is static, so within one process the leaky module's tests take turns.
     [Fact]
+    [Trait(SelfTestProcess.Trait, SelfTestProcess.Http)]
     public async Task The_HTTP_attack_catches_planted_header_route_and_body_leaks()
     {
         // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
@@ -104,6 +120,24 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/guarded/", StringComparison.Ordinal));
         Assert.Empty(report.TraceBlindSpots);
 
+        // The tenant each statement runs under, judged by the value it sets (critic p00 round 4):
+        // the X-Acting-For switch, and the units of work bound to a tenant the client chose, ran SQL
+        // under tenant B in requests signed in as tenant A.
+        foreach (var name in new[] { "leaky.acting", "leaky.byHeader", "leaky.byRoute", "leaky.report", "leaky.silent" })
+        {
+            Assert.Contains(report.TenantValueViolations, v => v.Contains($"endpoint:{name})", StringComparison.Ordinal) && v.Contains("SQL ran under tenant", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.TenantValueViolations, v => !v.Contains("/api/leaky/", StringComparison.Ordinal));
+        // The silent switch shows no tenant B data at all: only the value it set gives it away.
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/silent", StringComparison.Ordinal));
+        // Plant T1d: a header found by enumerating the headers. Its name is never learnt, so the
+        // attack never sends it; the enumeration itself is reported, with the code that did it.
+        Assert.Contains(report.InputEnumerations, e => e == $"headers by {typeof(LeakyModule).FullName}");
+        Assert.DoesNotContain(report.InputEnumerations, e => !e.EndsWith(typeof(LeakyModule).FullName!, StringComparison.Ordinal));
+        // A pool built outside the platform: its statements cannot be judged and are reported.
+        Assert.Contains(report.UnobservedStatements, u => u.StartsWith("GET /api/leaky/own-pool", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.UnobservedStatements, u => !u.Contains("/api/leaky/", StringComparison.Ordinal));
+
         // A unit of work built outside dependency injection in a GET (bound to whatever tenant) is
         // not read-only: the trace reports it. The request's own session always is.
         Assert.Contains(report.WritableReads, w => w.Contains("endpoint:leaky.byRoute)", StringComparison.Ordinal));
@@ -146,6 +180,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    [Trait(SelfTestProcess.Trait, SelfTestProcess.Company)]
     public async Task The_company_attack_catches_an_endpoint_that_widens_the_company_scope()
     {
         var report = await CompanyAttack.RunAsync(fixture.Env);

@@ -193,15 +193,18 @@ public static class CompanyAttack
             var schema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var documentedQueries = openApi.Parameters(endpoint.Method, endpoint.Pattern).Where(p => p.In == "query").Select(p => p.Name);
             var queries = documentedQueries.Concat(GuessedQueryNames).Distinct().ToList();
+            var get = endpoint.Method == "GET";
             foreach (var (name, client) in attackers)
             {
+                // Every request of this attacker on this endpoint is built first, in the order (and
+                // with the bodies) of sending them one after another, then sent four at a time.
+                var batch = new List<(string Method, string Path, JsonNode? Body, string Value, string? ControlPath, string? ControlValue)>();
                 // Y's ids in every route parameter (bodies carry Y's ids in every id field).
                 var routeValues = endpoint.RouteParameters.Count == 0 ? [""] : yIds.Take(40).ToList();
                 var n = 0;
                 foreach (var value in routeValues)
                 {
-                    var path = endpoint.Path(_ => value);
-                    await state.SendAsync(name, client, endpoint.Method, path, Body(env, openApi, schema, yIds, n++), [value]);
+                    batch.Add((endpoint.Method, endpoint.Path(_ => value), Body(env, openApi, schema, yIds, n++), value, null, null));
                 }
                 // Y's ids and texts in every query parameter, with a value that exists nowhere for GETs.
                 var basePath = endpoint.Path(_ => Guid.NewGuid().ToString());
@@ -212,13 +215,9 @@ public static class CompanyAttack
                         foreach (var value in yValues)
                         {
                             string Uri(string v) => $"{basePath}?{System.Uri.EscapeDataString(query)}={System.Uri.EscapeDataString(v)}";
-                            var answer = await state.SendAsync(name, client, endpoint.Method, Uri(value), Body(env, openApi, schema, yIds, n++), [value]);
-                            if (endpoint.Method == "GET")
-                            {
-                                var control = Guid.TryParse(value, out _) ? Guid.NewGuid().ToString() : Scramble(value);
-                                var other = await state.SendAsync(name, client, "GET", Uri(control), null, [control]);
-                                state.Compare(name, $"GET {Uri(value)}", answer, other, value, control);
-                            }
+                            var body = Body(env, openApi, schema, yIds, n++);
+                            var controlValue = get ? Guid.TryParse(value, out _) ? Guid.NewGuid().ToString() : Scramble(value) : null;
+                            batch.Add((endpoint.Method, Uri(value), body, value, controlValue is null ? null : Uri(controlValue), controlValue));
                         }
                     }
                 }
@@ -241,8 +240,41 @@ public static class CompanyAttack
                                 body = openApi.BuildBody(bodySchema, (leaf, type, format, leafName) =>
                                     leafName == field && type == "string" && format != "uuid" ? value : openApi.Conform(leaf, Leaf(type, format, yIds, n++)));
                             }
-                            await state.SendAsync(name, client, endpoint.Method, endpoint.Path(_ => ""), body, [value]);
+                            batch.Add((endpoint.Method, endpoint.Path(_ => ""), body, value, null, null));
                         }
+                    }
+                }
+
+                if (get)
+                {
+                    // Reads change nothing: each answer, and its control for a value that exists
+                    // nowhere, is judged as it comes.
+                    await Parallel.ForEachAsync(batch, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
+                    {
+                        var answer = await state.SendAsync(name, client, item.Method, item.Path, item.Body, [item.Value]);
+                        if (item.ControlPath is { } controlPath)
+                        {
+                            var other = await state.SendAsync(name, client, "GET", controlPath, null, [item.ControlValue!]);
+                            state.Compare(name, $"GET {item.Path}", answer, other, item.Value, item.ControlValue!);
+                        }
+                    });
+                }
+                else
+                {
+                    // Writes: the answers are judged once all of them are in, after the Y texts the
+                    // successful ones stored in the attacker's own records count as the attacker's
+                    // own (the writes run at the same time, so an answer may already show a text a
+                    // concurrent write stored).
+                    var answers = new (int Status, string Text)[batch.Count];
+                    await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (i, _) =>
+                        answers[i] = await state.SendRawAsync(client, batch[i].Method, batch[i].Path, batch[i].Body));
+                    for (var i = 0; i < batch.Count; i++)
+                    {
+                        state.RecordWrite(batch[i].Method, answers[i].Status, [batch[i].Value]);
+                    }
+                    for (var i = 0; i < batch.Count; i++)
+                    {
+                        state.Judge(name, batch[i].Method, batch[i].Path, answers[i].Status, answers[i].Text, [batch[i].Value]);
                     }
                 }
             }
@@ -343,15 +375,28 @@ public static class CompanyAttack
         public List<string> Leaks { get; } = [];
         public List<string> Oracles { get; } = [];
         public List<string> ServerErrors { get; } = [];
-        public int Requests { get; private set; }
-        public int DifferentialChecks { get; private set; }
+        public int Requests => _requests;
+        public int DifferentialChecks => _differentialChecks;
 
         public int StoredSkips { get; private set; }
 
         /// <summary>Y texts the attacker wrote into its own records by successful writes.</summary>
         public HashSet<string> Stored { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+        private readonly Lock _lock = new();
+        private int _requests;
+        private int _differentialChecks;
+
         public async Task<(int Status, string Text)> SendAsync(string attacker, HttpClient client, string method, string path, JsonNode? body, IReadOnlyCollection<string> sent)
+        {
+            var (status, text) = await SendRawAsync(client, method, path, body);
+            Judge(attacker, method, path, status, text, sent);
+            RecordWrite(method, status, sent);
+            return (status, text);
+        }
+
+        /// <summary>Send and read the answer, without judging it.</summary>
+        public async Task<(int Status, string Text)> SendRawAsync(HttpClient client, string method, string path, JsonNode? body)
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), path);
             if (body is not null || method is "POST" or "PUT" or "PATCH")
@@ -362,43 +407,64 @@ public static class CompanyAttack
             var text = method == "GET" && response.Content.Headers.ContentType?.MediaType?.StartsWith("image/", StringComparison.Ordinal) == true
                 ? Encoding.Latin1.GetString(await response.Content.ReadAsByteArrayAsync())
                 : await response.Content.ReadAsStringAsync();
-            Requests++;
-            var status = (int)response.StatusCode;
+            Interlocked.Increment(ref _requests);
+            return ((int)response.StatusCode, text);
+        }
+
+        /// <summary>A successful write: the values it carried are stored where the attacker may read them.</summary>
+        public void RecordWrite(string method, int status, IReadOnlyCollection<string> sent)
+        {
+            if (method is "POST" or "PUT" or "PATCH" && status is >= 200 and < 300)
+            {
+                lock (_lock)
+                {
+                    foreach (var value in sent.Where(v => v.Length > 0 && !Guid.TryParse(v, out _)))
+                    {
+                        Stored.Add(value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>Judges one answer for company Y's markers and server errors.</summary>
+        public void Judge(string attacker, string method, string path, int status, string text, IReadOnlyCollection<string> sent)
+        {
             // An echo of what this request sent is not a leak, and neither is a Y text the attacker
             // itself stored earlier in a record it may keep (a user it created, named with Y's
             // branch name, is listed by the access list): those are the attacker's own data.
-            var scrubbed = sent.Concat(Stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length)
+            string[] stored;
+            lock (_lock)
+            {
+                stored = [.. Stored];
+            }
+            var scrubbed = sent.Concat(stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length)
                 .Aggregate(text, (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
             if (victim.FindMarker(scrubbed) is { } marker)
             {
-                Leaks.Add($"{attacker} → {method} {path} → {status}: contains company Y marker {marker}");
-            }
-            if (method is "POST" or "PUT" or "PATCH" && status is >= 200 and < 300)
-            {
-                // A successful write: the values it carried are stored where the attacker may read them.
-                foreach (var value in sent.Where(v => v.Length > 0 && !Guid.TryParse(v, out _)))
-                {
-                    Stored.Add(value);
-                }
+                lock (_lock) Leaks.Add($"{attacker} → {method} {path} → {status}: contains company Y marker {marker}");
             }
             if (status >= 500)
             {
-                ServerErrors.Add($"{attacker} → {method} {path} → {status}: {text[..Math.Min(200, text.Length)]}");
+                lock (_lock) ServerErrors.Add($"{attacker} → {method} {path} → {status}: {text[..Math.Min(200, text.Length)]}");
             }
-            return (status, text);
         }
 
         public void Compare(string attacker, string label, (int Status, string Text) answer, (int Status, string Text) control, string value, string controlValue)
         {
-            if (Stored.Contains(value))
+            bool stored;
+            lock (_lock)
+            {
+                stored = Stored.Contains(value);
+            }
+            if (stored)
             {
                 // The attacker itself stored this text in a record of its own by an earlier valid
                 // write (a user it created, named with Y's branch name): a search finds that record,
                 // which tells it nothing about company Y. Its answers are still judged for leaks.
-                StoredSkips++;
+                lock (_lock) StoredSkips++;
                 return;
             }
-            DifferentialChecks++;
+            Interlocked.Increment(ref _differentialChecks);
             static string Normalize(string text, string a, string b)
             {
                 try
@@ -417,7 +483,7 @@ public static class CompanyAttack
             var right = Normalize(control.Text, value, controlValue);
             if (answer.Status != control.Status || left != right)
             {
-                Oracles.Add($"{attacker} → {label}: {answer.Status} {left[..Math.Min(160, left.Length)]} but for a value that exists nowhere {control.Status} {right[..Math.Min(160, right.Length)]}");
+                lock (_lock) Oracles.Add($"{attacker} → {label}: {answer.Status} {left[..Math.Min(160, left.Length)]} but for a value that exists nowhere {control.Status} {right[..Math.Min(160, right.Length)]}");
             }
         }
     }
@@ -442,9 +508,12 @@ public sealed class CompanySnapshot
         return Columns.GetValueOrDefault(column) ?? [];
     }
 
-    public IReadOnlyList<string> Markers => Ids.Select(i => i.ToString()).Concat(Strings.Where(s => s.Length >= 8)).ToList();
+    public IReadOnlyList<string> Markers => _markers ??= Ids.Select(i => i.ToString()).Concat(Strings.Where(s => s.Length >= 8)).ToList();
 
-    public string? FindMarker(string text) => Markers.FirstOrDefault(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
+    private IReadOnlyList<string>? _markers;
+    private MarkerSearch? _search;
+
+    public string? FindMarker(string text) => (_search ??= new MarkerSearch(Markers)).Find(text);
 
     /// <param name="publicValues">Published API example values: they identify no company.</param>
     public static async Task<CompanySnapshot> TakeAsync(ErpTestEnvironment env, Guid tenant, Guid company, IReadOnlySet<string> publicValues)

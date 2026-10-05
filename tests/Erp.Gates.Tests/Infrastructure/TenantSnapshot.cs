@@ -22,9 +22,13 @@ public sealed class TenantSnapshot
 
     public IEnumerable<Guid> AllIds => IdsByTable.Values.SelectMany(v => v).Append(TenantId).Distinct();
 
-    /// <summary>Strings that must never appear in a response to another tenant.</summary>
-    public IReadOnlyList<string> Markers =>
+    /// <summary>Strings that must never appear in a response to another tenant (computed once:
+    /// a snapshot never changes, and every response of an attack is searched for them).</summary>
+    public IReadOnlyList<string> Markers => _markers ??=
         AllIds.Select(id => id.ToString()).Concat(Canary is null ? [] : [Canary]).Distinct().ToList();
+
+    private IReadOnlyList<string>? _markers;
+    private MarkerSearch? _search;
 
     public static async Task<TenantSnapshot> TakeAsync(ErpTestEnvironment env, Guid tenantId, string? canary, string code)
     {
@@ -73,16 +77,47 @@ public sealed class TenantSnapshot
             .Order(StringComparer.Ordinal)
             .ToList();
 
-    /// <summary>The first marker found in a text, or null.</summary>
-    public string? FindMarker(string text)
+    /// <summary>A marker found in a text (case-insensitive), or null.</summary>
+    public string? FindMarker(string text) => (_search ??= new MarkerSearch(Markers)).Find(text);
+}
+
+/// <summary>
+/// Finds any of a fixed set of markers in a text, case-insensitively, in one pass
+/// (<see cref="System.Buffers.SearchValues{T}"/> of strings: a multi-string search instead of one
+/// scan of the text per marker). Same answer as checking every marker with
+/// <c>Contains(marker, OrdinalIgnoreCase)</c>: null exactly when no marker occurs; otherwise a
+/// marker that occurs.
+/// </summary>
+public sealed class MarkerSearch
+{
+    private readonly string[] _markers;
+    private readonly System.Buffers.SearchValues<string>? _values;
+
+    public MarkerSearch(IEnumerable<string> markers)
     {
-        foreach (var marker in Markers)
+        _markers = markers.Where(m => m.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        _values = _markers.Length == 0 ? null : System.Buffers.SearchValues.Create(_markers, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public string? Find(string text)
+    {
+        if (_values is null)
         {
-            if (text.Contains(marker, StringComparison.OrdinalIgnoreCase))
+            return null;
+        }
+        var at = text.AsSpan().IndexOfAny(_values);
+        if (at < 0)
+        {
+            return null;
+        }
+        string? found = null;
+        foreach (var marker in _markers)
+        {
+            if (text.AsSpan(at).StartsWith(marker, StringComparison.OrdinalIgnoreCase) && (found is null || marker.Length > found.Length))
             {
-                return marker;
+                found = marker;
             }
         }
-        return null;
+        return found ?? _markers.First(m => text.Contains(m, StringComparison.OrdinalIgnoreCase));
     }
 }

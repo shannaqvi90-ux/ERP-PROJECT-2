@@ -808,8 +808,11 @@ input[aria-invalid="true"] {
   margin-block: 0 10px;
 }
 
-/* Printing: only the screen's content, with a small letterhead; never the app's chrome. */
-.print-only {
+/* Printing: only the screen's content, with a small letterhead; never the app's chrome. The
+   footer of a wrapped screen ("printed at / by") is paper only too: its own layout rule below would
+   otherwise show it on screen (critic p00 round 4). */
+.print-only,
+.print-footer.print-only {
   display: none;
 }
 
@@ -854,7 +857,8 @@ input[aria-invalid="true"] {
     overflow: visible;
   }
 
-  .print-only {
+  .print-only,
+  .print-footer.print-only {
     display: flex;
   }
 

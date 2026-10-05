@@ -106,6 +106,55 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.acting").WithSummary("Planted bug: switches tenant from the X-Acting-For header with set_config.").RequirePermission("leaky.data.read");
 
+            // Bug 40 (critic p00 round 4, plant T1d): the tenant from a header found by looping over
+            // the request's headers, with a name nobody can guess (it changes every run), set with
+            // set_config on the request's own connection. The attack never learns the name, so it
+            // never sends it: the recorder must report the enumeration itself.
+            group.MapGet("/support", async (HttpContext http, ErpDbSession session) =>
+            {
+                foreach (var header in http.Request.Headers)
+                {
+                    if (header.Key.Equals(SupportHeader, StringComparison.OrdinalIgnoreCase) && Guid.TryParse(header.Value.ToString(), out var id))
+                    {
+                        await using var command = new NpgsqlCommand(
+                            "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)",
+                            session.Connection, session.Transaction);
+                        command.Parameters.AddWithValue("t", id.ToString());
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+                return Results.Ok(await NamesAsync(session));
+            }).WithName("leaky.support").WithSummary("Planted bug: switches tenant from a header found by enumerating the headers.").RequirePermission("leaky.data.read");
+
+            // Bug 42 (critic p00 round 4, plant T1c without a visible effect): the tenant from a
+            // header read by name, set with set_config, then a query whose answer never reaches the
+            // response. No tenant B data shows, so only the value the statement set gives it away.
+            group.MapGet("/silent", async (HttpContext http, ErpDbSession session) =>
+            {
+                if (http.Request.Headers.TryGetValue("X-Support-Silent", out var header) && Guid.TryParse(header.ToString(), out var id))
+                {
+                    await using var command = new NpgsqlCommand(
+                        "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)",
+                        session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("t", id.ToString());
+                    await command.ExecuteNonQueryAsync();
+                    await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", session.Connection, session.Transaction);
+                    await count.ExecuteScalarAsync();
+                }
+                return Results.Ok(new { done = true });
+            }).WithName("leaky.silent").WithSummary("Planted bug: switches tenant from a header and queries, showing nothing.").RequirePermission("leaky.data.read");
+
+            // Bug 41: a pool of its own, built outside the platform, where the trace cannot read the
+            // values its statements set (only the platform's pools are observed).
+            group.MapGet("/own-pool", async (Microsoft.Extensions.Configuration.IConfiguration configuration, ErpDbSession session) =>
+            {
+                await using var pool = new NpgsqlDataSourceBuilder(Microsoft.Extensions.Configuration.ConfigurationExtensions.GetConnectionString(configuration, "App")).Build();
+                await using var connection = await pool.OpenConnectionAsync();
+                await using var command = new NpgsqlCommand("SELECT count(*) FROM pg_catalog.pg_class", connection);
+                await command.ExecuteScalarAsync();
+                return Results.Ok(await NamesAsync(session));
+            }).WithName("leaky.ownPool").WithSummary("Planted bug: queries through a pool of its own.").RequirePermission("leaky.data.read");
+
             // Bug 23 (critic p01 round 2, plant B): a variable captured by the endpoint lambda
             // keeps the previous caller's workspace and hands it to the next caller in a header.
             string? previousCaller = null;
@@ -732,6 +781,9 @@ public sealed class LeakyModule : ErpModule
     public sealed record LeakyAccessRequest(IReadOnlyList<LeakyCompanyAccess>? Companies);
 
     /// <summary>A unit of work the planted code builds itself, bound to the tenant it was given.</summary>
+    /// <summary>The planted support header's name: different every run, so no attack can guess it.</summary>
+    public static readonly string SupportHeader = "Erp-Support-Workspace-" + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(4));
+
     private static async Task<ErpDbSession> RogueAsync(NpgsqlDataSource dataSource, Guid tenant)
     {
         var rogue = new ErpDbSession(dataSource);

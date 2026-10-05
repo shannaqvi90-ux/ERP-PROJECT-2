@@ -23,6 +23,21 @@ test.describe("app shell", () => {
     expect(errors).toEqual([]);
   });
 
+  test("the printed-at and printed-by stamp of a screen shows on paper only, never on screen", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    const stamp = page.locator(".print-document-screen .print-footer");
+    await expect(stamp).toHaveCount(1);
+    await expect(stamp).toBeHidden();
+    await page.emulateMedia({ media: "print" });
+    await expect(stamp).toBeVisible();
+    await expect(stamp).toContainText("Printed");
+    await page.emulateMedia({ media: "screen" });
+    await expect(stamp).toBeHidden();
+  });
+
   test("switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);

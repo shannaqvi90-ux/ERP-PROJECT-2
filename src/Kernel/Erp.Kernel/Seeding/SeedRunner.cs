@@ -9,14 +9,14 @@ namespace Erp.Kernel.Seeding;
 /// <summary>Runs every module's seeders for each tenant of a plan. Each tenant is seeded in its
 /// own scope and transaction, bound to that tenant, as the application role: row-level security
 /// and the audit trigger apply to seed data exactly as to user data. Seeding runs on the bulk
-/// pool (<see cref="ErpDataSources.BuildBulk"/>): every statement a seeder sends, however it
+/// pool (<c>ErpDataSources.BuildBulk</c>): every statement a seeder sends, however it
 /// creates it, has the long bulk command timeout, so demo volume loads on a saturated machine.</summary>
 public sealed class SeedRunner(IServiceProvider services, ModuleCatalog catalog, IConfiguration configuration, ILogger<SeedRunner> logger)
 {
     public async Task RunAsync(SeedPlan plan, CancellationToken cancellationToken = default)
     {
         var seederTypes = catalog.Modules.SelectMany(m => m.Seeders).ToList();
-        await using var bulk = ErpDataSources.BuildBulk(configuration);
+        await using var bulk = ErpDataSources.BuildBulk(configuration, services.GetServices<IDataSourceObserver>());
         foreach (var tenant in plan.Tenants)
         {
             var started = System.Diagnostics.Stopwatch.StartNew();
