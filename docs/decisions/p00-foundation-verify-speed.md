@@ -110,11 +110,12 @@ Nothing runs less; everything runs side by side or cheaper.
 | G1 company attack, two copies side by side (load 16-22): 4 / 8 requests in flight | same | 278 s / 244 s (same CPU seconds) |
 | G1 company attack alone, 8 in flight, settings on | load about 12 | 164 s |
 | `./erp verify`, `ace941a` (run 2: 8 in flight, settings on) | another builder's verify alongside; load 11 at the start, 23-38 for most of the run | **3,132 s, all green**: .NET stage 2,877 s, web 360 s, end-to-end 192 s after the .NET stage. Processor time of the stages 4,613 s (.NET 4,167, web 244, end-to-end 162, timing 40) |
+| `./erp verify`, `6029f07` (run 4, final: also the stricter setting parser) | another builder's full verify alongside throughout; load 25 at the start, 36-64 for most of the run | **2,909 s, all green**: .NET stage 2,626 s, web 346 s, end-to-end 207 s after the .NET stage. Processor time 4,545 s (.NET 4,096, web 244, end-to-end 163, timing 43) |
 
-Neither run started on a quiet machine (the other builder's suite ran throughout), so neither
-was judged against `verify.quietSeconds`; both stayed under its 3,600 s anyway. Against the
+None of these runs was on a quiet machine (the other builder's suite ran throughout), so none
+was judged against `verify.quietSeconds`; all stayed under its 3,600 s anyway. Against the
 before runs on the same kind of shared machine (4,503-6,004 s for the lead, 7,200 s and still
-running for this round's first measurement) the one command is down to 52-58 minutes with every
+running for this round's first measurement) the one command is down to 48-58 minutes with every
 test, attack, plant and minimum unchanged, and the wave-1 bottleneck (the planted-module
 self-tests in series behind the attack, 6,700 s) is gone: the critical path is now one attack
 (the G1 HTTP attack or its planted-module twin, about 40-50 minutes under that load).
