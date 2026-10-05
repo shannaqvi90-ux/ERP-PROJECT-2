@@ -130,6 +130,10 @@ type TextProps = {
 };
 
 export function TextField(p: TextProps) {
+  // A field with no direction of its own follows its text once it has some (an English trade
+  // licence authority on an Arabic screen reads from its start, not clipped), and the screen's
+  // direction while empty.
+  const dir = p.dir ?? (p.value.trim() === "" ? undefined : "auto");
   return (
     <Field name={p.name} label={p.label} error={p.errors[p.name]} hint={p.hint} wide={p.wide}>
       {(a11y) =>
@@ -138,7 +142,7 @@ export function TextField(p: TextProps) {
             {...a11y}
             name={p.name}
             value={p.value}
-            dir={p.dir}
+            dir={dir}
             maxLength={p.maxLength}
             required={p.required}
             rows={2}
@@ -151,7 +155,7 @@ export function TextField(p: TextProps) {
             name={p.name}
             type={p.type ?? "text"}
             value={p.value}
-            dir={p.dir}
+            dir={dir}
             maxLength={p.maxLength}
             required={p.required}
             autoFocus={p.autoFocus}

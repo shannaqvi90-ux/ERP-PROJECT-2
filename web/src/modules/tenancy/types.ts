@@ -96,6 +96,8 @@ export type UserAccess = {
   canEdit?: boolean;
   /** Text key saying why the access is read-only for the caller. */
   readOnlyReason?: string | null;
+  /** This state of the user's access in the caller's companies; a save sends it back (409 when stale). */
+  version: number;
 };
 
 /** Fired on window when the user switches their working company or branch. */

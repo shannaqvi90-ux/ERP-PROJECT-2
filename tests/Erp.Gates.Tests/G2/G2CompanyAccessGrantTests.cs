@@ -155,31 +155,44 @@ public static class CompanyGrants
                 }
             }
 
-            // 1. A caller holding only this endpoint's permission (and reading access), in company X.
+            // Every user of every case is made first, by the tenant Administrator, before any attack:
+            // a refusal that failed (the Administrator stripped of a company) is then reported as a
+            // problem of that case, not as a set-up that can no longer run.
+            var everywhere = companies.Select(c => new Access(c, true, [])).ToArray();
+            var withoutX = everywhere.Where(a => a.CompanyId != x).ToArray();
+            var xNarrowed = everywhere.Select(a => a.CompanyId == x ? new Access(x, false, [bx1]) : a).ToArray();
             var juniorRole = await CreatedIdAsync(admin, "/api/identity/roles", new
             {
                 nameEn = $"Access clerk {Tag()}", nameAr = $"موظف صلاحيات {Tag()}",
                 permissions = new[] { endpoint.Permission, readPermission ?? endpoint.Permission }.Distinct().ToArray(),
             });
             var junior = await UserAsync("junior", [juniorRole], [new Access(x, true, [])]);
+            var plain = await UserAsync("plain", [], [new Access(x, true, [])]);
+            var clerk = await UserAsync("clerk", [juniorRole], everywhere);
+            var plainEverywhere = await UserAsync("plaineverywhere", [], everywhere);
+            var stale = await UserAsync("stale", [], everywhere);
+            var xAdmin = await UserAsync("xadmin", [administratorRole], [new Access(x, true, [])]);
+            var oneCompany = await UserAsync("onecompany", [], [new Access(x, true, [])]);
+            var branchAdmin = await UserAsync("branchadmin", [administratorRole], [new Access(x, false, [bx1])]);
+            var empty = await UserAsync("empty", [], []);
+            var everyBranch = await UserAsync("everybranch", [], [new Access(x, true, [])]);
+            var bothBranches = await UserAsync("bothbranches", [], [new Access(x, false, [bx1, bx2])]);
             using var juniorClient = await env.SignInAsync(junior.Email);
+            using var clerkClient = await env.SignInAsync(clerk.Email);
+            using var xAdminClient = await env.SignInAsync(xAdmin.Email);
+            using var branchClient = await env.SignInAsync(branchAdmin.Email);
+
+            // 1. A caller holding only this endpoint's permission (and reading access), in company X.
             await Expect("by a user holding only the access permission, removing the Administrator from company X", juniorClient, adminId, [], false);
             await Expect("by a user holding only the access permission, limiting the Administrator to one branch of X", juniorClient, adminId, [new Access(x, false, [bx1])], false);
-            var plain = await UserAsync("plain", [], [new Access(x, true, [])]);
             await Expect("by a user holding only the access permission, limiting a user without roles to one branch of X (control)", juniorClient, plain.Id, [new Access(x, false, [bx1])], true);
             await Expect("by a user holding only the access permission, removing a user without roles from X (control)", juniorClient, plain.Id, [], true);
 
             // 1b. The same permissions, working in every company and every branch: the company and
             // branch rules cannot refuse, only the permission rule can (critic p02 round 3, plant P3).
-            var everywhere = companies.Select(c => new Access(c, true, [])).ToArray();
-            var withoutX = everywhere.Where(a => a.CompanyId != x).ToArray();
-            var xNarrowed = everywhere.Select(a => a.CompanyId == x ? new Access(x, false, [bx1]) : a).ToArray();
-            var clerk = await UserAsync("clerk", [juniorRole], everywhere);
-            using var clerkClient = await env.SignInAsync(clerk.Email);
             await Expect("by a user holding only the access permission who works in every company, removing the Administrator from company X", clerkClient, adminId, withoutX, false);
             await Expect("by a user holding only the access permission who works in every company, limiting the Administrator to one branch of X", clerkClient, adminId, xNarrowed, false);
             await Expect("by a user holding only the access permission who works in every company, taking every company from the Administrator", clerkClient, adminId, [], false);
-            var plainEverywhere = await UserAsync("plaineverywhere", [], everywhere);
             await Expect("by a user holding only the access permission who works in every company, limiting a user without roles to one branch of X (control)", clerkClient, plainEverywhere.Id, xNarrowed, true);
             await Expect("by a user holding only the access permission who works in every company, removing a user without roles from X (control)", clerkClient, plainEverywhere.Id, withoutX, true);
 
@@ -188,7 +201,6 @@ public static class CompanyGrants
             if (HasVersion(openApi, schema) && readPermission is not null)
             {
                 checks++;
-                var stale = await UserAsync("stale", [], everywhere);
                 var staleVersion = await VersionAsync(admin, endpoint, stale.Id);
                 var (moved, movedText) = await SendAsync(admin, endpoint, stale.Id, withoutX, staleVersion);
                 if (moved != 200) problems.Add($"{endpoint}: the administrator could not change a user's access with the version just read: {moved} {Short(movedText)}");
@@ -207,27 +219,21 @@ public static class CompanyGrants
             await Expect("by a user on themselves (unchanged access)", juniorClient, junior.Id, [new Access(x, true, [])], false);
             await Expect("by a user on themselves (removing it)", juniorClient, junior.Id, [], false);
 
-            // 3. An administrator of company X alone, against the tenant Administrator (more companies).
-            var xAdmin = await UserAsync("xadmin", [administratorRole], [new Access(x, true, [])]);
-            using var xAdminClient = await env.SignInAsync(xAdmin.Email);
+            // 3. An administrator of company X alone, against the tenant Administrator (more companies):
+            // the same permissions, so only the company rule can refuse.
             await Expect("by an administrator of company X alone, removing the tenant Administrator (who works in more companies) from X", xAdminClient, adminId, [], false);
             await Expect("by an administrator of company X alone, limiting the tenant Administrator to one branch of X", xAdminClient, adminId, [new Access(x, false, [bx2])], false);
             await Expect("by an administrator, on themselves", xAdminClient, xAdmin.Id, [], false);
-            var oneCompany = await UserAsync("onecompany", [], [new Access(x, true, [])]);
             await Expect("by an administrator of company X alone, removing a user of X alone (control)", xAdminClient, oneCompany.Id, [], true);
 
-            // 4. An administrator limited to branch 1 of company X gives and takes only that branch.
-            var branchAdmin = await UserAsync("branchadmin", [administratorRole], [new Access(x, false, [bx1])]);
-            using var branchClient = await env.SignInAsync(branchAdmin.Email);
-            var empty = await UserAsync("empty", [], []);
+            // 4. An administrator limited to branch 1 of company X gives and takes only that branch:
+            // against users without roles who work in X alone, so only the branch rule can refuse.
             await Expect("by an administrator limited to branch 1 of X, giving every branch of X", branchClient, empty.Id, [new Access(x, true, [])], false);
             await Expect("by an administrator limited to branch 1 of X, giving branch 2 of X", branchClient, empty.Id, [new Access(x, false, [bx2])], false, refusedAsInvalid: true);
             await Expect("by an administrator limited to branch 1 of X, giving branches 1 and 2 of X", branchClient, empty.Id, [new Access(x, false, [bx1, bx2])], false, refusedAsInvalid: true);
             await Expect("by an administrator limited to branch 1 of X, giving branch 1 of X (control)", branchClient, empty.Id, [new Access(x, false, [bx1])], true);
-            var everyBranch = await UserAsync("everybranch", [], [new Access(x, true, [])]);
             await Expect("by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1", branchClient, everyBranch.Id, [new Access(x, false, [bx1])], false);
             await Expect("by an administrator limited to branch 1 of X, removing a user of every branch of X", branchClient, everyBranch.Id, [], false);
-            var bothBranches = await UserAsync("bothbranches", [], [new Access(x, false, [bx1, bx2])]);
             await Expect("by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2", branchClient, bothBranches.Id, [new Access(x, false, [bx1])], false);
         }
 

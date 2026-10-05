@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { api } from "../../kernel/api";
+import { api, ApiError } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
@@ -59,14 +59,21 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
   const [message, setMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Someone else saved this user's access after it was read: the save was refused (409).
+  const [stale, setStale] = useState(false);
 
-  useEffect(() => {
+  const load = () =>
     api<UserAccess>("GET", `/api/tenancy/access/${userId}`)
       .then((a) => {
         setAccess(a);
         setDraft(a.companies);
+        setStale(false);
       })
       .catch((e) => setMessage(problemOf(e).message));
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // Company access is a grant: the server says whether this caller may change this user at all.
@@ -99,13 +106,15 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
     setBusy(true);
     setMessage(null);
     try {
-      const result = await api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft });
+      // The version that was read: the server refuses the save if the access changed since.
+      const result = await api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft, version: access?.version });
       setAccess(result);
       setDraft(result.companies);
       setSaved(true);
       onSaved();
     } catch (error) {
       const problem = problemOf(error);
+      setStale(error instanceof ApiError && error.status === 409);
       setMessage([problem.message, ...Object.values(problem.fields).flat().map((f) => f.message)].join(" "));
     } finally {
       setBusy(false);
@@ -143,6 +152,22 @@ function AccessForm({ userId, onSaved, onClose }: { userId: string; onSaved: () 
       {message && (
         <div className="alert" role="alert">
           {message}
+          {stale && (
+            <>
+              {" "}
+              {t("tenancy.access.changedElsewhere")}{" "}
+              <button
+                type="button"
+                className="button"
+                onClick={() => {
+                  setMessage(null);
+                  void load();
+                }}
+              >
+                {t("tenancy.access.reload")}
+              </button>
+            </>
+          )}
         </div>
       )}
       {saved && (

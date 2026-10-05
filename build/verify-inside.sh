@@ -57,6 +57,8 @@ case "$stage" in
     # G2 on screen: the identity screens' permission gate must catch every planted action offered
     # without its permission.
     node scripts/identity-plant-self-test.mjs
+    # G2 on screen: the same for the tenancy screens (companies, branches, access, workspace).
+    node scripts/tenancy-plant-self-test.mjs
     npm run --silent build
 
     step "Comparison harness (gauntlet/compare): install and unit tests"

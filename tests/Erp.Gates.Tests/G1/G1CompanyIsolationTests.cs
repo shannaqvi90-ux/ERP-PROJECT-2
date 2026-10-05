@@ -175,6 +175,8 @@ public static class CompanyAttack
         await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
         var writeOracleChecks = 0;
         var writeOracleSources = new SortedSet<string>(StringComparer.Ordinal);
+        // (collection, value): values the oracle's own successful writes stored in that collection.
+        var oracleStored = new HashSet<(string, string)>();
         foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
         {
             if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
@@ -187,6 +189,7 @@ public static class CompanyAttack
             {
                 continue;
             }
+            var family = collection ?? endpoint.Pattern.TrimEnd('/');
             foreach (var field in properties.EnumerateObject()
                          .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
                                      G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
@@ -199,7 +202,7 @@ public static class CompanyAttack
                 // never reached the company create and its 409 went unseen).
                 var sent = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var (table, held) in before.ValuesByTable(field)
-                             .SelectMany(t => t.Values.Where(v => before.Strings.Contains(v) && !state.Stored.Contains(v)).Take(3).Select(v => (t.Table, v)))
+                             .SelectMany(t => t.Values.Where(v => before.Strings.Contains(v) && !oracleStored.Contains((family, v))).Take(3).Select(v => (t.Table, v)))
                              .Where(pair => sent.Add(pair.v)))
                 {
                     writeOracleSources.Add($"{endpoint} [{field}] <- {table}");
@@ -210,8 +213,12 @@ public static class CompanyAttack
                     writeOracleChecks++;
                     if (withY is >= 200 and < 300)
                     {
-                        // Now the attacker's own record holds the value: later writes may refuse it for that.
+                        // Now the attacker's own record holds the value: later writes to the same
+                        // collection may refuse it for that (a value stored in another collection,
+                        // a branch code equal to company Y's company code, still goes to the company
+                        // create: critic p02 round 3, plant C4). Its answers are the attacker's own data.
                         state.Stored.Add(held);
+                        oracleStored.Add((family, held));
                     }
                     if (withY != withFresh)
                     {

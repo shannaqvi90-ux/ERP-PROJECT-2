@@ -237,7 +237,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
             <TextField name="fiscalYearStartDay" label={t("tenancy.company.fiscalYearStartDay")} value={draft.fiscalYearStartDay} onChange={set("fiscalYearStartDay")} {...common} dir="ltr" inputMode="numeric" maxLength={2} />
           </div>
         </fieldset>
-        <AddressFields draft={draft} set={set} errors={errors} />
+        <AddressFields draft={draft} set={set} errors={errors} disabled={!editable} />
         <fieldset disabled={!editable}>
           <legend>{t("tenancy.company.contact")}</legend>
           <div className="form-grid">
@@ -249,7 +249,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
       </form>
       {company && <CompanyLogo company={company} editable={can("tenancy.companies.update")} onChange={setCompany} />}
       {company && can("tenancy.branches.read") && (
-        <CompanyBranches companyId={company.id} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
+        <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
       )}
     </div>
   );
@@ -360,13 +360,22 @@ function CompanyLogo({ company, editable, onChange }: { company: Company; editab
 type QuickBranch = { code: string; nameEn: string; nameAr: string; city: string; emirate: Emirate | "" };
 const emptyBranch: QuickBranch = Object.freeze({ code: "", nameEn: "", nameAr: "", city: "", emirate: "" });
 
+/** The start of a new branch's English name: a UAE branch trades under its company's name
+ * followed by its own ("Falcon Logistics LLC - Jebel Ali Branch"), so the line starts with the
+ * company's name and the user types only the branch's part. */
+export const branchNamePrefix = (companyName: string) => (companyName.trim() === "" ? "" : `${companyName.trim()} - `);
+
+/** A branch name the user left at the prefix alone is the company's name itself. */
+export const branchNameOf = (typed: string) => typed.replace(/\s+-\s*$/, "");
+
 /** The company's branches, with a one-line form to add another (Enter saves). A new branch
- * starts in the company's emirate; right after the company is created the line has the focus. */
-function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
+ * starts in the company's emirate, its English name with the company's; right after the company
+ * is created the line has the focus, the caret after the company's name. */
+function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: { companyId: string; companyName: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
   const { t } = useI18n();
   const { can } = useSession();
   const [branches, setBranches] = useState<BranchRow[]>([]);
-  const fresh = (): QuickBranch => ({ ...emptyBranch, emirate: defaultEmirate });
+  const fresh = (): QuickBranch => ({ ...emptyBranch, nameEn: branchNamePrefix(companyName), emirate: defaultEmirate });
   const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -382,8 +391,16 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
+  /** Focus the name with the caret at its end (after the company's name). */
+  const focusName = () => {
+    const input = nameRef.current;
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  };
+
   useEffect(() => {
-    if (autoFocus) nameRef.current?.focus();
+    if (autoFocus) focusName();
   }, [autoFocus]);
 
   const add = async (event: FormEvent) => {
@@ -393,7 +410,7 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
       await api("POST", "/api/tenancy/branches", {
         companyId,
         code: draft.code.trim(),
-        nameEn: draft.nameEn,
+        nameEn: branchNameOf(draft.nameEn),
         nameAr: draft.nameAr,
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,
@@ -404,7 +421,7 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
       setErrors({});
       window.dispatchEvent(new Event(companiesChanged));
       await load();
-      nameRef.current?.focus();
+      focusName();
     } catch (error) {
       const problem = problemOf(error);
       setErrors(problem.fields);

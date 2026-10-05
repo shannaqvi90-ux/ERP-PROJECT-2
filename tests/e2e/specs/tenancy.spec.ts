@@ -46,6 +46,10 @@ test.describe("companies, branches and the working company", () => {
 
     // The first branch: one line, Enter. Saving the new company put the focus on it.
     await expect(page.locator('input[name="branchNameEn"]')).toBeFocused();
+    // The line starts with the company's name: typing goes after it.
+    await expect(page.locator('input[name="branchNameEn"]')).toHaveValue("Al Noor Logistics LLC - ");
+    await page.keyboard.type("Jebel Ali");
+    await expect(page.locator('input[name="branchNameEn"]')).toHaveValue("Al Noor Logistics LLC - Jebel Ali");
     await page.locator('input[name="branchNameEn"]').fill("Head office");
     await page.locator('input[name="branchNameAr"]').fill("المكتب الرئيسي");
     await page.locator('input[name="branchCode"]').fill("hq");
@@ -92,7 +96,13 @@ test.describe("companies, branches and the working company", () => {
     await expect(page.getByRole("button", { name: "New" })).toHaveCount(0);
     await listRows(page).first().click();
     await expect(page.locator('[data-field="code"] input')).toBeDisabled();
+    await expect(page.locator('[data-field="addressLine1"] input')).toBeDisabled();
     await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
+    // Nothing that changes the company or adds to it: no logo upload or removal, no branch line.
+    await expect(page.locator(".record-section h3").last()).toBeVisible();
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Remove logo" })).toHaveCount(0);
+    await expect(page.locator('form.quick-add, input[name="branchNameEn"]')).toHaveCount(0);
   });
 
   test("branches: search word by word, group by company and narrow to one company from the column menu", async ({ page }) => {
@@ -154,6 +164,9 @@ test.describe("companies, branches and the working company", () => {
     await expect(company.getByRole("checkbox").first()).toBeChecked();
     await expect(company.getByLabel("All branches")).not.toBeChecked();
     await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+    // Saving sends the version that was read: the save goes through.
+    await page.keyboard.press("Control+KeyS");
+    await expect(page.locator(".record-form .notice[role=status]")).toHaveText("Saved.");
   });
 
   test("at phone width the working company stays readable and the switcher opens inside the window", async ({ page }) => {
