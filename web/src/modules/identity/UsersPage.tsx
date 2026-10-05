@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
-import { ListView } from "../../kernel/lists/ListView";
+import { ListView, type BulkAction } from "../../kernel/lists/ListView";
+import type { Row } from "../../kernel/lists/model";
 import { useSession } from "../../kernel/session";
 import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
 import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
@@ -14,6 +15,33 @@ function newToUrl(open: boolean) {
   query.delete("new");
   const parts = [query.toString(), open ? "new" : ""].filter(Boolean);
   window.history.replaceState(null, "", `${window.location.pathname}${parts.length ? `?${parts.join("&")}` : ""}`);
+}
+
+/**
+ * Sets the chosen users active or inactive, one saved change per user (the same change the user
+ * panel saves, so every rule of the API applies: never oneself, never someone holding more than
+ * the caller, the record's version). Users already in that state are left alone. Returns how many
+ * changed and how many the API refused.
+ */
+export async function setUsersActive(rows: Row[], active: boolean): Promise<{ changed: number; refused: number }> {
+  let changed = 0;
+  let refused = 0;
+  for (const row of rows) {
+    if (Boolean(row.isActive) === active) continue;
+    try {
+      await api("PUT", `/api/identity/users/${row.id}`, {
+        displayName: row.displayName,
+        language: row.language,
+        isActive: active,
+        roleIds: Array.isArray(row.roleIds) ? row.roleIds : [],
+        version: row.version,
+      });
+      changed++;
+    } catch {
+      refused++;
+    }
+  }
+  return { changed, refused };
 }
 
 /**
@@ -92,6 +120,21 @@ export function UsersPage() {
 
   const roleNames = new Map(roles.map((r) => [r.id, roleName(r, language)]));
 
+  // Bulk actions on the chosen rows (the selection bar): activate or deactivate accounts.
+  const bulkActive = (active: boolean): BulkAction => ({
+    key: active ? "activate" : "deactivate",
+    labelKey: active ? "identity.users.bulk.activate" : "identity.users.bulk.deactivate",
+    permission: "identity.users.update",
+    run: async (rows) => {
+      const { changed, refused } = await setUsersActive(rows, active);
+      setMessage(
+        [t("identity.users.bulk.changed", { count: changed }), refused > 0 ? t("identity.users.bulk.refused", { count: refused }) : ""]
+          .filter(Boolean)
+          .join(" "),
+      );
+    },
+  });
+
   return (
     <section className={creating ? "id-screen with-panel" : "id-screen"}>
       <div className="id-list">
@@ -107,6 +150,7 @@ export function UsersPage() {
           searchPlaceholderKey="identity.users.search"
           can={can}
           openOnClick
+          bulkActions={[bulkActive(false), bulkActive(true)]}
           reloadKey={reload}
           openId={openId}
           onOpenIdChange={onOpenIdChange}
