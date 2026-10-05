@@ -36,6 +36,15 @@ public sealed class CompanyGrantFixture : IAsyncLifetime
 /// <item>nobody changes their own access through it (critic p02 round 2, plant P2: only a module
 /// test noticed when that check was removed).</item>
 /// </list>
+/// Each refusal is also tried by an attacker for whom only that one rule can apply (critic p02
+/// round 3, plant P3: with the "user holds permissions the caller lacks" check removed this gate
+/// still passed, because its only clerk worked in company X alone and the separate "user works in
+/// companies the caller does not" rule refused first). So the clerk who holds only the access
+/// permission is tried a second time working in every company and every branch: then only the
+/// permission rule stands between them and the Administrator. Where the endpoint's request carries
+/// a concurrency token (<c>version</c>), every request sends the version the caller just read, so a
+/// refusal is the grant check's and never a stale version's; and a request with a stale version
+/// must be refused with 409 and change nothing.
 /// </summary>
 public sealed class G2CompanyAccessGrantTests(CompanyGrantFixture fixture) : IClassFixture<CompanyGrantFixture>
 {
@@ -113,7 +122,7 @@ public static class CompanyGrants
                     new { email, displayName = $"Grant {label} {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds });
                 if (access.Length > 0)
                 {
-                    var (status, text) = await SendAsync(admin, endpoint, id, access);
+                    var (status, text) = await SendAsync(admin, endpoint, id, access, readPermission is null ? null : await VersionAsync(admin, endpoint, id));
                     if (status != 200) throw new InvalidOperationException($"the administrator could not give {label} its access: {status} {text}");
                 }
                 return (id, email);
@@ -123,7 +132,9 @@ public static class CompanyGrants
             {
                 checks++;
                 var before = await RowsAsync(target);
-                var (status, text) = await SendAsync(caller, endpoint, target, body);
+                // The version the caller reads now: a refusal must come from the grant check, never from a stale version.
+                var version = readPermission is null ? null : await VersionAsync(caller, endpoint, target);
+                var (status, text) = await SendAsync(caller, endpoint, target, body, version);
                 var after = await RowsAsync(target);
                 if (allowed)
                 {
@@ -157,6 +168,40 @@ public static class CompanyGrants
             var plain = await UserAsync("plain", [], [new Access(x, true, [])]);
             await Expect("by a user holding only the access permission, limiting a user without roles to one branch of X (control)", juniorClient, plain.Id, [new Access(x, false, [bx1])], true);
             await Expect("by a user holding only the access permission, removing a user without roles from X (control)", juniorClient, plain.Id, [], true);
+
+            // 1b. The same permissions, working in every company and every branch: the company and
+            // branch rules cannot refuse, only the permission rule can (critic p02 round 3, plant P3).
+            var everywhere = companies.Select(c => new Access(c, true, [])).ToArray();
+            var withoutX = everywhere.Where(a => a.CompanyId != x).ToArray();
+            var xNarrowed = everywhere.Select(a => a.CompanyId == x ? new Access(x, false, [bx1]) : a).ToArray();
+            var clerk = await UserAsync("clerk", [juniorRole], everywhere);
+            using var clerkClient = await env.SignInAsync(clerk.Email);
+            await Expect("by a user holding only the access permission who works in every company, removing the Administrator from company X", clerkClient, adminId, withoutX, false);
+            await Expect("by a user holding only the access permission who works in every company, limiting the Administrator to one branch of X", clerkClient, adminId, xNarrowed, false);
+            await Expect("by a user holding only the access permission who works in every company, taking every company from the Administrator", clerkClient, adminId, [], false);
+            var plainEverywhere = await UserAsync("plaineverywhere", [], everywhere);
+            await Expect("by a user holding only the access permission who works in every company, limiting a user without roles to one branch of X (control)", clerkClient, plainEverywhere.Id, xNarrowed, true);
+            await Expect("by a user holding only the access permission who works in every company, removing a user without roles from X (control)", clerkClient, plainEverywhere.Id, withoutX, true);
+
+            // 1c. A stale version is refused and changes nothing (two administrators editing one
+            // user's access must not overwrite each other silently).
+            if (HasVersion(openApi, schema) && readPermission is not null)
+            {
+                checks++;
+                var stale = await UserAsync("stale", [], everywhere);
+                var staleVersion = await VersionAsync(admin, endpoint, stale.Id);
+                var (moved, movedText) = await SendAsync(admin, endpoint, stale.Id, withoutX, staleVersion);
+                if (moved != 200) problems.Add($"{endpoint}: the administrator could not change a user's access with the version just read: {moved} {Short(movedText)}");
+                var beforeStale = await RowsAsync(stale.Id);
+                var (staleStatus, staleText) = await SendAsync(admin, endpoint, stale.Id, everywhere, staleVersion);
+                if (staleStatus != 409) problems.Add($"{endpoint}: a request carrying the version read before another change answered {staleStatus}, expected 409: {Short(staleText)}");
+                if (await RowsAsync(stale.Id) != beforeStale) problems.Add($"{endpoint}: a request carrying a stale version changed the user's access rows");
+            }
+            else if (readPermission is not null)
+            {
+                // A user's access is read and saved as a record (a GET at the same route): its save must carry the version read.
+                problems.Add($"{endpoint}: the request carries no concurrency token (version) although the access is read at the same route; two administrators editing one user's access would overwrite each other");
+            }
 
             // 2. Nobody changes their own access.
             await Expect("by a user on themselves (unchanged access)", juniorClient, junior.Id, [new Access(x, true, [])], false);
@@ -209,7 +254,23 @@ public static class CompanyGrants
         return string.Join(",", companies) + " | " + string.Join(",", branchRows);
     }
 
-    private static async Task<(int Status, string Text)> SendAsync(HttpClient client, ApiEndpoint endpoint, Guid target, Access[] access)
+    private static bool HasVersion(OpenApiDocument openApi, JsonElement schema) =>
+        openApi.Resolve(schema).TryGetProperty("properties", out var properties) && properties.TryGetProperty("version", out _);
+
+    /// <summary>The <c>version</c> the GET at the endpoint's own route answers for the target, read
+    /// by <paramref name="client"/> (null when the read is refused or carries none).</summary>
+    private static async Task<JsonNode?> VersionAsync(HttpClient client, ApiEndpoint endpoint, Guid target)
+    {
+        using var response = await client.GetAsync(endpoint.Path(_ => target.ToString()));
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+        var read = JsonNode.Parse(await response.Content.ReadAsStringAsync()) as JsonObject;
+        return read?["version"]?.DeepClone();
+    }
+
+    private static async Task<(int Status, string Text)> SendAsync(HttpClient client, ApiEndpoint endpoint, Guid target, Access[] access, JsonNode? version = null)
     {
         var body = new JsonObject
         {
@@ -220,6 +281,10 @@ public static class CompanyGrants
                 ["branchIds"] = new JsonArray(a.BranchIds.Select(b => (JsonNode)JsonValue.Create(b)).ToArray()),
             }).ToArray()),
         };
+        if (version is not null)
+        {
+            body["version"] = version.DeepClone();
+        }
         using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), endpoint.Path(_ => target.ToString()))
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"),

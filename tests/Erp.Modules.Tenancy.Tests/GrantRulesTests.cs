@@ -36,7 +36,7 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         var id = (await Json(created)).GetProperty("id").GetGuid();
         if (access.Length > 0)
         {
-            Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{id}", new { companies = access })).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(id, new { companies = access })).StatusCode);
         }
         return (id, email);
     }
@@ -61,7 +61,7 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         var seen = await clerk.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{adminId}");
         Assert.False(seen.GetProperty("canEdit").GetBoolean());
         Assert.Equal("tenancy.access.readOnly.permissions", seen.GetProperty("readOnlyReason").GetString());
-        var strip = await clerk.PutAsJsonAsync($"/api/tenancy/access/{adminId}", new { companies = Array.Empty<object>() });
+        var strip = await clerk.PutAccessAsync(adminId, new { companies = Array.Empty<object>() });
         Assert.Equal(HttpStatusCode.Forbidden, strip.StatusCode);
         var problem = await Json(strip);
         Assert.Equal("tenancy.userBeyondOwn", problem.GetProperty("code").GetString());
@@ -72,7 +72,7 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
 
         // A user without roles is the clerk's to change, within X.
         var (plainId, _) = await NewUserAsync(admin, "plain", [], Access(x));
-        Assert.Equal(HttpStatusCode.OK, (await clerk.PutAsJsonAsync($"/api/tenancy/access/{plainId}", new { companies = Array.Empty<object>() })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await clerk.PutAccessAsync(plainId, new { companies = Array.Empty<object>() })).StatusCode);
     }
 
     [Fact]
@@ -112,17 +112,17 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         var option = options.GetProperty("options").EnumerateArray().Single(o => o.GetProperty("id").GetGuid() == x);
         Assert.False(option.GetProperty("canGiveAllBranches").GetBoolean());
         Assert.Equal(new[] { mine }, option.GetProperty("branches").EnumerateArray().Select(b => b.GetProperty("id").GetGuid()));
-        var all = await manager.PutAsJsonAsync($"/api/tenancy/access/{emptyId}", new { companies = new[] { Access(x) } });
+        var all = await manager.PutAccessAsync(emptyId, new { companies = new[] { Access(x) } });
         Assert.Equal(HttpStatusCode.Forbidden, all.StatusCode);
         Assert.Equal("tenancy.grantBeyondOwn", (await Json(all)).GetProperty("code").GetString());
-        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PutAsJsonAsync($"/api/tenancy/access/{emptyId}", new { companies = new[] { Access(x, other) } })).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await manager.PutAsJsonAsync($"/api/tenancy/access/{emptyId}", new { companies = new[] { Access(x, mine) } })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PutAccessAsync(emptyId, new { companies = new[] { Access(x, other) } })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await manager.PutAccessAsync(emptyId, new { companies = new[] { Access(x, mine) } })).StatusCode);
 
         // Taking: never from someone who works in more branches of the company.
         var (everyId, _) = await NewUserAsync(admin, "every", [], Access(x));
-        var narrow = await manager.PutAsJsonAsync($"/api/tenancy/access/{everyId}", new { companies = new[] { Access(x, mine) } });
+        var narrow = await manager.PutAccessAsync(everyId, new { companies = new[] { Access(x, mine) } });
         Assert.Equal(HttpStatusCode.Forbidden, narrow.StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await manager.PutAsJsonAsync($"/api/tenancy/access/{everyId}", new { companies = Array.Empty<object>() })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.PutAccessAsync(everyId, new { companies = Array.Empty<object>() })).StatusCode);
         var kept = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{everyId}");
         Assert.True(kept.GetProperty("companies")[0].GetProperty("allBranches").GetBoolean());
     }
@@ -187,4 +187,102 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         var again = await one.PostAsJsonAsync("/api/tenancy/companies", new { legalNameEn = "Another LLC", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
         Assert.Equal(HttpStatusCode.Forbidden, again.StatusCode);
     }
+    [Fact]
+    public async Task Saving_access_needs_the_version_read_and_two_saves_never_overwrite_each_other()
+    {
+        var (admin, _, x, y, _) = await SetUpAsync();
+        var (targetId, _) = await NewUserAsync(admin, "versioned", [], Access(x));
+        var read = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}");
+        var version = read.GetProperty("version").GetUInt32();
+
+        // No version: refused, nothing changes.
+        var missing = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { Access(x), Access(y) } });
+        Assert.Equal(HttpStatusCode.BadRequest, missing.StatusCode);
+        Assert.Equal("required", (await Json(missing)).GetProperty("errors").GetProperty("version")[0].GetProperty("code").GetString());
+
+        // The version read: saved, and the answer carries the new version.
+        var saved = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { Access(x), Access(y) }, version });
+        Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        var newVersion = (await Json(saved)).GetProperty("version").GetUInt32();
+        Assert.NotEqual(version, newVersion);
+        Assert.Equal(newVersion, await admin.AccessVersionAsync(targetId));
+
+        // The old version again (a second administrator who read before the first saved): 409, nothing changes.
+        var stale = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { Access(x) }, version });
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        Assert.Equal("concurrency", (await Json(stale)).GetProperty("code").GetString());
+        Assert.Equal(2, (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}")).GetProperty("companies").GetArrayLength());
+
+        // Two saves sent at the same moment with the same version: one wins, the other is told.
+        var current = await admin.AccessVersionAsync(targetId);
+        using var second = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var answers = await Task.WhenAll(
+            admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { Access(x) }, version = current }),
+            second.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { Access(y) }, version = current }));
+        Assert.Equal(new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }, answers.Select(a => a.StatusCode).Order());
+        var winner = (await Json(answers.Single(a => a.StatusCode == HttpStatusCode.OK))).GetProperty("companies");
+        Assert.Equal(1, (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}")).GetProperty("companies").GetArrayLength());
+        Assert.Equal(winner.GetRawText(), (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}")).GetProperty("companies").GetRawText());
+
+        // A user nobody gave access yet: two first saves at once, one wins.
+        var (freshId, _) = await NewUserAsync(admin, "fresh", []);
+        var first = await admin.AccessVersionAsync(freshId);
+        var firsts = await Task.WhenAll(
+            admin.PutAsJsonAsync($"/api/tenancy/access/{freshId}", new { companies = new[] { Access(x) }, version = first }),
+            second.PutAsJsonAsync($"/api/tenancy/access/{freshId}", new { companies = new[] { Access(y) }, version = first }));
+        Assert.Equal(new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }, firsts.Select(a => a.StatusCode).Order());
+        Assert.Equal(1, (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{freshId}")).GetProperty("companies").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task The_access_version_tells_nothing_about_companies_the_caller_cannot_see()
+    {
+        var (admin, _, x, y, _) = await SetUpAsync();
+        var (xAdminId, xAdminEmail) = await NewUserAsync(admin, "xversion", [await AdministratorRoleAsync(admin)], Access(x));
+        var (targetId, _) = await NewUserAsync(admin, "seen", [], Access(x));
+        using var xAdmin = await Env.SignInAsync(xAdminEmail);
+        var before = await xAdmin.AccessVersionAsync(targetId);
+        // The tenant administrator gives the target company Y, which the company X administrator cannot see.
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(targetId, new { companies = new[] { Access(x), Access(y) } })).StatusCode);
+        Assert.Equal(before, await xAdmin.AccessVersionAsync(targetId));
+        // A change in company X is seen.
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(targetId, new { companies = new[] { Access(x, (await BranchesOfAsync(admin, x))[0]), Access(y) } })).StatusCode);
+        Assert.NotEqual(before, await xAdmin.AccessVersionAsync(targetId));
+        _ = xAdminId;
+    }
+
+    [Fact]
+    public async Task A_new_company_is_given_to_every_administrator_of_the_whole_workspace_and_to_nobody_holding_less()
+    {
+        var (admin, adminId, x, y, _) = await SetUpAsync();
+        var administrator = await AdministratorRoleAsync(admin);
+        // Critic p02 round 3: a second administrator created a company and the tenant Administrator
+        // lost "every company", could no longer create companies, and could no longer be managed.
+        var everyCompany = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray()
+            .Select(c => Access(c.GetProperty("id").GetGuid())).ToArray();
+        var (_, secondEmail) = await NewUserAsync(admin, "second", [administrator], everyCompany);
+        var (peerId, _) = await NewUserAsync(admin, "peer", [administrator], everyCompany);
+        var (lesserId, _) = await NewUserAsync(admin, "lesser", [], everyCompany);
+        var (oneCompanyId, _) = await NewUserAsync(admin, "onecompany", [administrator], Access(x));
+        using var second = await Env.SignInAsync(secondEmail);
+        var created = await second.PostAsJsonAsync("/api/tenancy/companies", new { code = "", legalNameEn = $"Peer Co {Guid.NewGuid():N}"[..20], legalNameAr = "شركة الأقران", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var company = (await Json(created)).GetProperty("id").GetGuid();
+
+        async Task<bool> WorksIn(Guid user) =>
+            (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{user}")).GetProperty("companies").EnumerateArray().Any(c => c.GetProperty("companyId").GetGuid() == company);
+        Assert.True(await WorksIn(adminId), "the tenant Administrator, who worked in every company, works in the new one");
+        Assert.True(await WorksIn(peerId), "another administrator of every company works in the new one");
+        Assert.False(await WorksIn(lesserId), "a user holding fewer permissions than the creator is given it by hand, not automatically");
+        Assert.False(await WorksIn(oneCompanyId), "an administrator of one company does not gain the new one");
+
+        // The tenant Administrator still holds the whole workspace: creating a company works.
+        var again = await admin.PostAsJsonAsync("/api/tenancy/companies", new { code = "", legalNameEn = $"Again Co {Guid.NewGuid():N}"[..20], legalNameAr = "شركة مرة أخرى", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+        Assert.Equal(HttpStatusCode.Created, again.StatusCode);
+        _ = y;
+    }
+
+    private static async Task<List<Guid>> BranchesOfAsync(HttpClient admin, Guid company) =>
+        (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{company}'")}&sort=code")).GetProperty("items")
+            .EnumerateArray().Select(b => b.GetProperty("id").GetGuid()).ToList();
 }

@@ -32,15 +32,17 @@ public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameE
 /// company and branch the caller could give them (<c>options</c>). <c>canEdit</c> is false, with
 /// the reason as a text key in <c>readOnlyReason</c>, when the caller may not change this user's
 /// access at all (their own access, a user holding permissions the caller lacks, or one who works
-/// in companies the caller does not).</summary>
+/// in companies the caller does not). <c>version</c> identifies this state of the user's access in
+/// the caller's companies: a save sends it back and is refused with 409 when the access changed
+/// since it was read.</summary>
 public sealed record UserAccessDto(Guid UserId, string DisplayName, string Email, bool IsCaller, IReadOnlyList<CompanyAccessDto> Companies,
-    IReadOnlyList<AccessCompanyOption> Options, bool CanEdit = true, string? ReadOnlyReason = null);
+    IReadOnlyList<AccessCompanyOption> Options, bool CanEdit = true, string? ReadOnlyReason = null, uint Version = 0);
 
 public sealed record CompanyAccessRequest(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 
 /// <summary>The full set of the caller's companies the user may work in; companies the caller
-/// cannot see are left as they are.</summary>
-public sealed record UpdateAccessRequest(IReadOnlyList<CompanyAccessRequest>? Companies);
+/// cannot see are left as they are. <c>version</c> is the version that was read.</summary>
+public sealed record UpdateAccessRequest(IReadOnlyList<CompanyAccessRequest>? Companies, uint? Version = null);
 
 internal static class AccessEndpoints
 {
@@ -58,8 +60,9 @@ internal static class AccessEndpoints
 
         group.MapPut("/access/{userId:guid}", Update)
             .WithName("tenancy.access.update")
-            .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company the caller does not; callers cannot change their own access.")
+            .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company the caller does not; callers cannot change their own access. The request carries the version read; 409 when the access changed since.")
             .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.AccessUpdate);
     }
 
@@ -104,7 +107,7 @@ internal static class AccessEndpoints
         Guid userId, UpdateAccessRequest request, TenancyDbContext db, IUserDirectory users, ICurrentUser caller, HttpContext http,
         CancellationToken cancellationToken)
     {
-        var validator = new Validator(http).Must(request.Companies is not null, "companies", "required");
+        var validator = new Validator(http).Must(request.Companies is not null, "companies", "required").Required("version", request.Version);
         var wanted = request.Companies ?? [];
         validator.Must(wanted.All(c => c.CompanyId is not null), "companies", "tenancyAccessCompanyRequired")
             .Must(wanted.All(c => c.AllBranches is not null), "companies", "tenancyAccessAllBranchesRequired")
@@ -131,12 +134,19 @@ internal static class AccessEndpoints
         {
             return Problems.NotFound(http);
         }
+        // One change to a user's access at a time: a second save waits here until the first is
+        // committed, then reads what it wrote (and is refused below as stale).
+        await CompanyAccessRules.LockAsync(db, userId, cancellationToken);
         // Access is a grant: never one's own, never on a stronger user, never beyond one's own.
         var before = await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken);
         if (await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, userId, await users.GetPermissionsAsync(userId, cancellationToken),
                 before.Count, cancellationToken) is { } refusal)
         {
             return Problems.Forbidden(http, refusal);
+        }
+        if (await CompanyAccessRules.VersionAsync(db, userId, cancellationToken) != request.Version)
+        {
+            return Problems.Conflict(http, "concurrency");
         }
         var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
         var after = wanted.ToDictionary(c => c.CompanyId!.Value,
@@ -206,6 +216,6 @@ internal static class AccessEndpoints
                 "tenancy.cannotChangeOwnAccess" => "tenancy.access.readOnly.self",
                 "tenancy.userBeyondOwn" => "tenancy.access.readOnly.permissions",
                 _ => "tenancy.access.readOnly.companies",
-            });
+            }, await CompanyAccessRules.VersionAsync(db, user.Id, cancellationToken));
     }
 }
