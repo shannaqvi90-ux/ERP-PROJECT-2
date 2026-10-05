@@ -16,18 +16,25 @@ namespace Erp.Gates.Tests.G2;
 /// exactly that endpoint's permission (plus reading roles and users) asks it to grant the
 /// Administrator role and every permission in the catalogue: the answer must be 403 and nothing
 /// may change. The same request granting only what the caller already holds must succeed, which
-/// proves the 403 came from the grant check and not from a malformed request.
+/// proves the 403 came from the grant check and not from a malformed request. Asking for
+/// everything cannot tell a correct check from one that compares only part of the grants (critic
+/// p03 round 3, plant P16: a role-create check narrowed to identity permissions minted a role
+/// granting tenancy.tenant.update), so the same request also asks for what the caller lacks in
+/// every shape of <see cref="GrantTargets"/>: each missing permission alone (and a role granting
+/// it), a whole other module, the caller's own plus one more.
 /// </summary>
 public static class GrantEscalation
 {
     public static readonly string[] GrantFields = ["roleIds", "permissions"];
 
-    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked);
+    /// <param name="PartialTargets">Requests asking for grants the caller lacks without asking for everything.</param>
+    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, int PartialTargets = 0);
 
     public static async Task<Result> RunAsync(ErpTestEnvironment env)
     {
         var problems = new List<string>();
         var checkedEndpoints = new List<string>();
+        var partialTargets = 0;
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -35,6 +42,7 @@ public static class GrantEscalation
         using var admin = await env.SignInAsync(env.Email(env.TenantA, "admin"));
         var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var targetRoles = new TargetRecords(admin, env);
 
         var grantEndpoints = EndpointInventory.From(env.Factory.Services)
             .Where(e => !e.IsAnonymous && e.HasBody)
@@ -62,6 +70,7 @@ public static class GrantEscalation
             JsonObject escalate;
             JsonObject control;
             Func<Task<string?>>? targetUnchanged = null;
+            Func<GrantTargets.Target, Task<JsonObject>> asking;
             if (endpoint.RouteParameters.Count > 0)
             {
                 // Update: a fresh target created by the administrator through the collection's POST.
@@ -81,6 +90,12 @@ public static class GrantEscalation
                 escalate = OnlySchemaFields(openApi, schema, item);
                 var currentRoles = item["roleIds"] is JsonArray roles ? roles.Select(r => r!.GetValue<Guid>()).ToList() : [];
                 SetGrants(escalate, [.. currentRoles, administratorRole], everything);
+                asking = async target =>
+                {
+                    var body = OnlySchemaFields(openApi, schema, item);
+                    SetGrants(body, [.. currentRoles, await targetRoles.RoleAsync(target.Permissions)], target.Permissions);
+                    return body;
+                };
                 var grantsBefore = GrantsOf(item);
                 targetUnchanged = async () =>
                 {
@@ -95,6 +110,13 @@ public static class GrantEscalation
                 SetGrants(escalate, [administratorRole], everything);
                 control = ValidBody(openApi, schema, env, $"{tag}c");
                 SetGrants(control, [callerRole], [endpoint.Permission]);
+                var a = 0;
+                asking = async target =>
+                {
+                    var body = ValidBody(openApi, schema, env, $"{tag}p{++a}");
+                    SetGrants(body, [await targetRoles.RoleAsync(target.Permissions)], target.Permissions);
+                    return body;
+                };
             }
 
             var (status, text) = await SendAsync(caller, endpoint.Method, path, escalate);
@@ -115,6 +137,29 @@ public static class GrantEscalation
                 problems.Add($"{endpoint}: the caller's own permissions changed");
             }
 
+            // Grants the caller lacks without asking for everything.
+            foreach (var target in GrantTargets.For(everything, callerPermissions))
+            {
+                var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, path, await asking(target));
+                if (targetStatus != (int)HttpStatusCode.Forbidden)
+                {
+                    problems.Add($"{endpoint}: asking for {target} as a user holding only [{string.Join(", ", callerPermissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
+                }
+                if (targetUnchanged is not null && await targetUnchanged() is { } targetChanged)
+                {
+                    problems.Add($"{endpoint}: asking for {target}: {targetChanged}");
+                }
+                if (!(await SessionPermissionsAsync(caller)).SequenceEqual(permissionsBefore))
+                {
+                    problems.Add($"{endpoint}: asking for {target}: the caller's own permissions changed");
+                }
+                partialTargets++;
+            }
+            if (await AdministratorCountAsync(admin) != administratorsBefore)
+            {
+                problems.Add($"{endpoint}: the number of Administrator users changed while asking for grants the caller lacks");
+            }
+
             var (controlStatus, controlText) = await SendAsync(caller, endpoint.Method, path, control);
             if (controlStatus is < 200 or >= 300)
             {
@@ -122,7 +167,7 @@ public static class GrantEscalation
             }
             checkedEndpoints.Add(endpoint.Key);
         }
-        return new Result(problems, checkedEndpoints);
+        return new Result(problems, checkedEndpoints, partialTargets);
     }
 
     private static async Task<(int Status, string Text)> SendAsync(HttpClient client, string method, string path, JsonObject body)

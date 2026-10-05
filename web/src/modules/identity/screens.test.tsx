@@ -239,14 +239,14 @@ describe("screens hide exactly what a missing permission refuses", () => {
     expect(view!.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.disabled).toBe(true);
   });
 
-  async function openUser(permissions: string[], target: Record<string, unknown>) {
+  async function openUser(permissions: string[], target: Record<string, unknown>, roles: Record<string, unknown>[] = [admin, clerk]) {
     window.history.replaceState(null, "", `/identity/users?open=${target.id as string}`);
     mockFetch((m, url) => {
       if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
       const list = listReply(m, url);
       if (list) return list;
       if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
-      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: roles, total: roles.length } };
       if (url === `/api/identity/users/${target.id as string}`) return { status: 200, body: target };
       return { status: 404, body: {} };
     });
@@ -283,6 +283,39 @@ describe("screens hide exactly what a missing permission refuses", () => {
     expect(buttons).not.toContain("Delete user");
     expect(buttons).toContain("Reset password…");
   });
+  // Critic p03 round 3, plant U2: the screens compared only identity permissions, so someone
+  // holding every identity permission was offered Save, Reset password and Delete on a workspace
+  // manager whose role grants only tenancy permissions. Every permission of another module (and
+  // of a module of a later wave) alone, and on top of what the user holds, makes the record read-only.
+  const elsewhere = ["tenancy.tenant.read", "tenancy.tenant.update", "tenancy.access.update", "lists.views.share", "ledger.entries.post"];
+  for (const permission of elsewhere) {
+    it(`users: someone whose role grants ${permission} is read-only to a user holding every identity permission`, async () => {
+      for (const grants of [[permission], ["identity.users.read", permission]]) {
+        const role = { ...clerk, id: "r-elsewhere", nameEn: "Workspace manager", permissions: grants };
+        const buttons = await openUser(all, { ...invited, id: "u-manager", displayName: "Manager", roleIds: ["r-elsewhere"] }, [admin, clerk, role]);
+        for (const hidden of ["Save", "Reset password…", "Sign out everywhere", "Delete user"]) expect(buttons).not.toContain(hidden);
+        expect(view!.container.textContent).toContain("only someone who holds all of them can change their account");
+        view?.unmount();
+        view = undefined;
+      }
+      // Control: holding that permission too, the same account is editable.
+      const role = { ...clerk, id: "r-elsewhere", nameEn: "Workspace manager", permissions: [permission] };
+      const buttons = await openUser([...all, permission], { ...invited, id: "u-manager", displayName: "Manager", roleIds: ["r-elsewhere"] }, [admin, clerk, role]);
+      for (const shown of ["Save", "Reset password…", "Sign out everywhere", "Delete user"]) expect(buttons).toContain(shown);
+    });
+
+    it(`roles: a role granting ${permission} is read-only to a user holding every identity permission`, async () => {
+      for (const grants of [[permission], ["identity.users.read", permission]]) {
+        const buttons = await openRole(all, { ...clerk, id: "r-elsewhere", nameEn: "Workspace manager", permissions: grants });
+        for (const hidden of ["Save", "Copy role", "Delete role"]) expect(buttons).not.toContain(hidden);
+        expect(view!.container.textContent).toContain("only someone who holds all of them can change, copy or delete it");
+        view?.unmount();
+        view = undefined;
+      }
+      const buttons = await openRole([...all, permission], { ...clerk, id: "r-elsewhere", nameEn: "Workspace manager", permissions: [permission] });
+      for (const shown of ["Save", "Copy role", "Delete role"]) expect(buttons).toContain(shown);
+    });
+  }
 });
 
 // G2 on screen, the list toolbars (critic p03 round 2, plant U1: New role shown without

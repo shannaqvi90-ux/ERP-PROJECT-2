@@ -28,13 +28,19 @@ public static class GrantBearingRecords
 {
     /// <param name="FieldVariants">Every single-field request sent, as "endpoint [field changed]"
     /// or "endpoint [field left out]" (see <see cref="G2.FieldVariants"/>).</param>
-    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, IReadOnlyList<string>? FieldVariants = null);
+    /// <param name="PartialTargets">Requests aimed at records granting what the caller lacks
+    /// without granting everything (<see cref="GrantTargets"/>).</param>
+    /// <param name="ModuleFieldVariants">Single-field requests aimed at records granting one other module.</param>
+    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, IReadOnlyList<string>? FieldVariants = null,
+        int PartialTargets = 0, int ModuleFieldVariants = 0);
 
     public static async Task<Result> RunAsync(ErpTestEnvironment env)
     {
         var problems = new List<string>();
         var checkedEndpoints = new List<string>();
         var fieldVariants = new List<string>();
+        var partialTargets = 0;
+        var moduleFieldVariants = 0;
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -42,6 +48,7 @@ public static class GrantBearingRecords
         using var admin = await env.SignInAsync(env.Email(env.TenantA, "admin"));
         var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var targetRoles = new TargetRecords(admin, env);
 
         var endpoints = EndpointInventory.From(env.Factory.Services);
         var families = endpoints
@@ -54,6 +61,18 @@ public static class GrantBearingRecords
         var n = 0;
         foreach (var (create, createSchema) in families)
         {
+            // Records of this family granting what a caller lacks, created once per grant set.
+            var familyTargets = new Dictionary<string, Guid>(StringComparer.Ordinal);
+            async Task<Guid> TargetAsync(GrantTargets.Target target)
+            {
+                if (familyTargets.TryGetValue(target.Key, out var existing))
+                {
+                    return existing;
+                }
+                var body = GrantEscalation.ValidBody(openApi, createSchema, env, $"t{familyTargets.Count}{Convert.ToHexString(Guid.NewGuid().ToByteArray())[..6].ToLowerInvariant()}");
+                GrantEscalation.SetGrants(body, body.ContainsKey("roleIds") ? [await targetRoles.RoleAsync(target.Permissions)] : [], target.Permissions);
+                return familyTargets[target.Key] = await CreatedIdAsync(admin, create.Pattern, body);
+            }
             var prefix = create.Pattern.TrimEnd('/') + "/{";
             var acting = endpoints.Where(e => e.Method is not ("GET" or "HEAD" or "OPTIONS") && !e.IsAnonymous && e.Pattern.StartsWith(prefix, StringComparison.Ordinal)).ToList();
             foreach (var endpoint in acting)
@@ -99,11 +118,66 @@ public static class GrantBearingRecords
                 }
                 checkedEndpoints.Add(endpoint.Key);
 
+                // Records granting what the caller lacks without granting everything.
+                var g = 0;
+                foreach (var target in GrantTargets.For(everything, callerPermissions))
+                {
+                    var victim = await TargetAsync(target);
+                    var victimItem = create.Pattern.TrimEnd('/') + "/" + victim;
+                    var victimBefore = await ReadAsync(admin, victimItem);
+                    var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(admin, openApi, endpoint, victimItem, $"{tag}g{++g}"));
+                    if (targetStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at {target} by a user holding only [{string.Join(", ", callerPermissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
+                    }
+                    var victimAfter = await ReadAsync(admin, victimItem);
+                    if (victimAfter != victimBefore)
+                    {
+                        problems.Add($"{endpoint}: {target} changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                    }
+                    partialTargets++;
+                }
+
                 // One field at a time: the same endpoint, each writable property changed alone and
-                // left out alone, aimed at the record granting everything and, as the control, at
-                // the record granting only what the caller holds.
+                // left out alone, aimed at the record granting everything and at a record granting
+                // one other module (a path-specific check narrowed to some modules) and, as the
+                // control, at the record granting only what the caller holds.
                 if (endpoint.HasBody && openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is { } schema)
                 {
+                    var moduleTargets = new List<(Guid Id, string Label)>();
+                    foreach (var target in GrantTargets.PerModule(everything, callerPermissions))
+                    {
+                        moduleTargets.Add((await TargetAsync(target), target.Label));
+                    }
+                    var m = 0;
+                    foreach (var spec in FieldVariants.Specs(openApi, schema))
+                    {
+                        foreach (var (moduleTarget, label) in moduleTargets)
+                        {
+                            m++;
+                            var targetItem = create.Pattern.TrimEnd('/') + "/" + moduleTarget;
+                            var targetVariant = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, targetItem, $"{tag}m{m}"), $"{tag}m{m}", env.TenantA.EmailDomain,
+                                (field, current) => current.Count > 0 ? new JsonArray(current.Take(current.Count - 1).Select(x => x!.DeepClone()).ToArray()) : null);
+                            if (targetVariant is null)
+                            {
+                                problems.Add($"{endpoint} {spec}: the gate has no different valid value for this field aimed at {label}; extend FieldVariants rather than leave the field untested");
+                                continue;
+                            }
+                            var targetBefore = await ReadAsync(admin, targetItem);
+                            var (variantStatus, variantText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => moduleTarget.ToString()), targetVariant);
+                            var targetAfter = await ReadAsync(admin, targetItem);
+                            if (variantStatus is >= 200 and < 300)
+                            {
+                                problems.Add($"{endpoint} {spec}: aimed at {label} by a user holding only [{string.Join(", ", callerPermissions)}] answered {variantStatus} (expected 403): {Short(variantText)}");
+                            }
+                            if (targetAfter != targetBefore)
+                            {
+                                problems.Add($"{endpoint} {spec}: {label} changed: before {Short(targetBefore)}; after {Short(targetAfter)}");
+                            }
+                            moduleFieldVariants++;
+                        }
+                    }
+
                     var k = 0;
                     foreach (var spec in FieldVariants.Specs(openApi, schema))
                     {
@@ -145,7 +219,7 @@ public static class GrantBearingRecords
                 }
             }
         }
-        return new Result(problems, checkedEndpoints, fieldVariants);
+        return new Result(problems, checkedEndpoints, fieldVariants, partialTargets, moduleFieldVariants);
     }
 
     /// <summary>A changed grant that stays within what the caller holds: the caller's own role

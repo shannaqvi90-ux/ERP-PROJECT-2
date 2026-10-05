@@ -23,6 +23,13 @@ namespace Erp.Gates.Tests.G1;
 /// same request twice: once with B's value and once with a value of the same shape that exists
 /// nowhere. The two answers must have the same status. The same is done with a value B holds from
 /// its seed data (its administrator's address), which no endpoint wrote.
+///
+/// Names are judged the same way (critic p03 round 3, plant L7: a role-name registry kept outside
+/// the tenant's rows answered 409 for a name another workspace used, and every gate passed):
+/// every text field whose name says it is a name (<c>nameEn</c>, <c>nameAr</c>,
+/// <c>displayName</c>, <c>legalNameEn</c>, …) is used by tenant B through the endpoint and sent by
+/// tenant A beside a name that exists nowhere. Seeded names are not sent: both tenants' seeds share
+/// names such as "Administrator", which a workspace may rightly refuse as its own.
 /// </summary>
 public static class G1WriteOracle
 {
@@ -37,6 +44,10 @@ public static class G1WriteOracle
         var lower = name.ToLowerInvariant();
         return lower.Contains("email") || lower == "code" || lower.EndsWith("code", StringComparison.Ordinal) && !lower.Contains("password");
     }
+
+    /// <summary>A name field: unique within a workspace at most, never across workspaces.</summary>
+    public static bool IsName(string name, string? format) =>
+        format is not ("uuid" or "date" or "date-time") && name.Contains("name", StringComparison.OrdinalIgnoreCase);
 
     public static async Task<Result> RunAsync(ErpTestEnvironment env)
     {
@@ -85,7 +96,9 @@ public static class G1WriteOracle
             }
             var fields = properties.EnumerateObject()
                 .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
-                            IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
+                            (IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null) ||
+                             (IsName(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var g) ? g.GetString() : null) &&
+                              !openApi.Resolve(p.Value).TryGetProperty("enum", out _))))
                 .Select(p => p.Name)
                 .ToList();
             if (fields.Count == 0)
@@ -113,7 +126,7 @@ public static class G1WriteOracle
                     continue;
                 }
                 var pairs = new List<(string Label, string Value)> { ("written by tenant B through this endpoint", used) };
-                if (SeedValue(field) is { } seeded)
+                if (!IsName(field, null) && SeedValue(field) is { } seeded)
                 {
                     pairs.Add(("from tenant B's seed data", seeded));
                 }
@@ -157,6 +170,11 @@ public static class G1WriteOracle
         {
             return $"{local}@{tenant.EmailDomain}";
         }
+        if (IsName(field, null))
+        {
+            var mark = new string(local.Where(char.IsLetterOrDigit).ToArray());
+            return field.EndsWith("Ar", StringComparison.Ordinal) ? $"اسم {mark}" : $"Name {mark}";
+        }
         var code = new string(local.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant();
         return code.Length <= 12 ? code : code[^12..];
     }
@@ -173,10 +191,27 @@ public static class G1WriteOracle
         {
             path = endpoint.Pattern;
             body = Valid(openApi, schema, env, tag, CompanyOf(client));
+            // A record of its own with no id in the route (the workspace's settings): an edit
+            // carries its current values, the version among them.
+            if (endpoint.Method is "PUT" or "PATCH")
+            {
+                using var current = await client.GetAsync(path);
+                if (current.IsSuccessStatusCode && await current.Content.ReadFromJsonAsync<JsonObject>() is { } record)
+                {
+                    foreach (var (name, _) in body.ToList())
+                    {
+                        if (record[name] is { } own)
+                        {
+                            body[name] = own.DeepClone();
+                        }
+                    }
+                }
+            }
         }
         else
         {
             var createBody = Valid(openApi, openApi.RequestSchema("POST", collection)!.Value, env, $"{tag}t", CompanyOf(client));
+            string id;
             using (var create = await client.SendAsync(Json(HttpMethod.Post, collection, createBody)))
             {
                 var created = await create.Content.ReadAsStringAsync();
@@ -184,9 +219,13 @@ public static class G1WriteOracle
                 {
                     return ((int)create.StatusCode, $"creating the record to edit failed: {created}");
                 }
-                path = endpoint.Path(_ => JsonDocument.Parse(created).RootElement.GetProperty("id").GetString()!);
+                id = JsonDocument.Parse(created).RootElement.GetProperty("id").GetString()!;
+                path = endpoint.Path(_ => id);
             }
-            var item = await client.GetFromJsonAsync<JsonObject>(path) ?? [];
+            // The record itself (an action under it, such as a copy, has no GET of its own).
+            using var read = await client.GetAsync($"{collection}/{id}");
+            // An edit carries the record's own values; an action under it (a copy) fresh ones.
+            var item = read.IsSuccessStatusCode && endpoint.Method is "PUT" or "PATCH" ? await read.Content.ReadFromJsonAsync<JsonObject>() ?? [] : [];
             body = Valid(openApi, schema, env, tag, CompanyOf(client));
             foreach (var (name, _) in body.ToList())
             {
@@ -222,6 +261,13 @@ public static class G1WriteOracle
             else if (type == "string" && format == "uuid" && name == "companyId" && companyId.Length > 0)
             {
                 value = JsonValue.Create(companyId);
+            }
+            else if (type == "string" && name is not null && !IsName(name, format) && !name.Contains("email", StringComparison.OrdinalIgnoreCase) &&
+                     OpenApiDocument.Examples(openApi.Resolve(leaf)).FirstOrDefault(e => e.ValueKind == JsonValueKind.String) is { ValueKind: JsonValueKind.String } example)
+            {
+                // A documented expression (a list's column keys, sort, filter, grouping): the
+                // first example is valid where generated text is not.
+                value = JsonValue.Create(example.GetString());
             }
             else if (type == "integer" && value is null)
             {

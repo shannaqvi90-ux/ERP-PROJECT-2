@@ -265,6 +265,55 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public async Task The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions()
+    {
+        // Critic p03 round 3, plants P14 and P16: acting on a role or a member checks only the
+        // identity part of what it grants. A record granting everything still answers 403 (it
+        // also grants identity permissions the caller lacks); a record granting another module's
+        // permissions alone finds the narrowed checks.
+        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        foreach (var planted in new[]
+                 {
+                     "PUT /api/leaky/narrow-roles/{id:guid}", "DELETE /api/leaky/narrow-roles/{id:guid}", "POST /api/leaky/narrow-roles/{id:guid}/copy",
+                     "PUT /api/leaky/narrow-members/{id:guid}", "POST /api/leaky/narrow-members/{id:guid}/password",
+                 })
+        {
+            Assert.Contains(planted, result.Checked);
+            Assert.Contains(result.Problems, p => p.StartsWith($"{planted}: aimed at a record granting only tenancy.", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+            Assert.Contains(result.Problems, p => p.StartsWith($"{planted}: aimed at a record granting every tenancy permission", StringComparison.Ordinal));
+            Assert.Contains(result.Problems, p => p.StartsWith($"{planted}: aimed at a record granting the caller's own permissions plus tenancy.", StringComparison.Ordinal));
+            // The probe aimed only at the record granting everything is blind to this plant.
+            Assert.DoesNotContain(result.Problems, p => p.StartsWith($"{planted}: aimed at a record granting everything", StringComparison.Ordinal));
+        }
+        // The changes are read back: the deleted role and the renamed member.
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/narrow-roles/{id:guid}: a record granting only tenancy.", StringComparison.Ordinal) && p.Contains("changed", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/narrow-members/{id:guid}: a record granting only tenancy.", StringComparison.Ordinal) && p.Contains("changed", StringComparison.Ordinal));
+        // Single fields aimed at a record granting one other module find the narrowing too.
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/narrow-members/{id:guid} [email changed]: aimed at a record granting every tenancy permission", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.True(result.PartialTargets > 0 && result.ModuleFieldVariants > 0);
+    }
+
+    [Fact]
+    public async Task The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions()
+    {
+        // Critic p03 round 3, plant P16 (and P15's shape on members): creating a role, or a member
+        // with roles, checks only the identity part of the grants. Asking for everything is refused;
+        // asking for another module's permission alone, or a role granting it, is not.
+        var result = await GrantEscalation.RunAsync(fixture.Env);
+        foreach (var planted in new[] { "POST /api/leaky/narrow-roles", "POST /api/leaky/narrow-members", "PUT /api/leaky/narrow-roles/{id:guid}", "PUT /api/leaky/narrow-members/{id:guid}" })
+        {
+            Assert.Contains(planted, result.Checked);
+            Assert.Contains(result.Problems, p => p.StartsWith($"{planted}: asking for a record granting only tenancy.", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+            Assert.DoesNotContain(result.Problems, p => p.StartsWith($"{planted}: granting the Administrator role", StringComparison.Ordinal));
+        }
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/narrow-roles/{id:guid}: asking for a record granting only tenancy.", StringComparison.Ordinal) && p.Contains("target grants changed", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/roles", result.Checked);
+        Assert.True(result.PartialTargets > 0);
+    }
+
+    [Fact]
     public void The_process_state_check_catches_a_static_cache_and_a_stateful_singleton()
     {
         var inventory = ProcessState.InspectTypes(typeof(LeakyModule).GetNestedTypes().Append(typeof(LeakyModule)),
@@ -399,5 +448,8 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/users", result.Endpoints);
         Assert.Contains("PUT /api/leaky/members/{id:guid}", result.Endpoints);
+        // Critic p03 round 3, plant L7: the same registry kept for role names.
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/registered-roles [nameEn]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/roles", result.Endpoints);
     }
 }
