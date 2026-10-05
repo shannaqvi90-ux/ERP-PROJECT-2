@@ -31,8 +31,29 @@ The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README
 ## What is measured
 
 Every driver acts only through the instrumented operator (`lib/operator.mjs`), so both products
-are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-tested in
-`test/guard.test.mjs`, linted in `test/drivers-lint.test.mjs`):
+are counted the same way. This is enforced, not trusted (`lib/sandbox/`, `lib/guard.mjs`,
+plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
+`test/drivers-lint.test.mjs`):
+
+- **Drivers never run in the harness process** (round 5). Every harness process starts one driver
+  process (`lib/sandbox/host.mjs`) under Node's permission model (`--permission`: no child process,
+  no worker thread, no native addon, no WASI, no inspector, no `process.binding`; files may be read,
+  and written only in the driver process's own scratch folder, which is its `TMPDIR`), with
+  `lib/sandbox/lockdown.mjs` preloaded before any driver code: no socket of any kind (no
+  connection, no listening, no UDP, no `WebSocket`), no loader hooks, no V8 flags. The driver
+  process holds no Playwright object, no clock and no network. `ctx.page`, `op`, `fetch` and the
+  rest are stand-ins there: every call travels over the IPC channel to the harness, which performs
+  it through the guards below, judged by the phase at the moment it arrives
+  (`lib/sandbox/bridge.mjs`). A fetch captured at load, a child process reached through
+  `process.getBuiltinModule`, a timer left by set-up or a patched clock can therefore only ever
+  produce such a request, or nothing. A refusal inside the driver process is reported to the
+  harness, so a driver that swallows it still has its run marked invalid. The harness reads
+  drivers and task definitions through the driver process too; it never imports one.
+  `execute()` refuses a driver object handed to it directly (that would run in the harness).
+- Set-up and verification reach the product through the harness's fetch: only the product's own
+  address, reads only in `verify()`, nothing while the start is prepared or the task is measured.
+  A file the harness writes for a driver (a screenshot path, a download folder) must lie in the
+  driver process's scratch folder.
 
 - `run(op, ctx)` gets a view of the operator with the counted actions only: no clock, no
   `start`/`finish`, read-only copies of the steps.
@@ -52,14 +73,21 @@ are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-
   storage and history calls, cancels a navigation, and reports any DOM change, event, navigation
   or focus move it caused.
 - While measured, `fetch` and `http(s).request` from the harness are refused, so a task cannot be
-  done through the back end and count nothing. API tasks use `op.request`, which counts.
+  done through the back end and count nothing. API tasks use `op.request`, which counts. The
+  guard is installed when the harness loads. An API task's transport (how a request as typed is
+  carried, for Odoo's JSON-2 form over JSON-RPC) is one of the harness's own (`lib/api-transport.mjs`),
+  named in `ctx.useApi({ transport: 'odoo-json2' })`; a driver cannot pass its own, which could send
+  more than it typed.
 - Drivers may import only `./_common.mjs`, `lib/ours-api.mjs`, `lib/odoo-rpc.mjs`, `lib/xlsx.mjs`
   and Node's file helpers; no Playwright, no network module, no `eval` or dynamic import, no page
   script, no `chain` (lint, `test/drivers-lint.test.mjs`).
 - `op.type` takes printable text only: a control character (`\n`, `\t` …) would press Enter or Tab
   inside one field entry, uncounted, so it is refused (press those keys with `op.press`).
-  A paste chord (Ctrl/Cmd+V, Shift+Insert) is refused unless a copy or cut chord was pressed
-  earlier in the measured part: the browser's clipboard outlives set-up. Counted
+  A paste chord is refused unless text was selected and copied (or cut) earlier in the measured
+  part: the browser's clipboard outlives set-up. Chords are read as the keys they press, whatever
+  their spelling (`ControlOrMeta+v`, `Control+KeyV`, `control+V`, modifiers in any order); a copy
+  counts only when the operator finds a selection as the copy key is pressed (an empty copy leaves
+  the clipboard as set-up filled it); and the runner empties the clipboard before the start. Counted
   actions take only `label` (and `waitFor` its timing options); any other option, `chain` among
   them, is refused.
 
@@ -83,13 +111,22 @@ and from the back end only reads go through (GET, a fixture sign-in, Odoo read m
 may act again.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
-right after its last step or wait. Everything in between counts, screenshots included (round 3:
+right after its last step or wait, once the product has answered: if requests of the measured page
+are still in flight when `run` returns (long-lived channels such as web sockets, event streams and
+Odoo's bus excepted), the clock runs on until the last one ends (round 5; recorded as a system wait
+"the product still answering when run() returned"). After the clock stops the page reaches the
+product no more (its requests are aborted and counted in `requests_after_clock`), so nothing the
+page does later can finish the task off the clock. `verify()` then reads the end state as it
+stands: every wait is refused there (`Locator.waitFor`, `waitForURL`, `waitForTimeout`,
+`ctx.until` …), every read times out after 0.5 s, and `verify()` runs twice, timed
+(`verify_passes`); when the first pass took over 0.5 s longer than the second and more than twice
+as long, it waited for the end state, and the run is invalid. Everything inside the clock counts, screenshots included (round 3:
 taking screenshot time out let a driver hide the product's latency behind screenshots). So that
 both products pay for the same shots, each task declares its `moments`; while measured a driver
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 4); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 5); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -110,7 +147,10 @@ M 1.35 s. One M before every step except a continuation, which the instrument de
 recorded steps (a driver cannot declare it): typing right after a click on the field it types
 into, or right after a key step; Enter right after typing or an arrow key; the same navigation key
 again; Ctrl+A right after a click or Tab; the file choice after the click that opened the dialog.
-One H whenever the hand moves between mouse and keyboard. Details and the exact rules:
+No step continues one that began on another screen (round 5): each step records the address path
+it began on (`screen`), and a step after one that opened a new screen starts with M (reading the
+new screen is a mental step), so typing a name right after the Enter that opened a list carries an
+M in both products. One H whenever the hand moves between mouse and keyboard. Details and the exact rules:
 `lib/klm.mjs`.
 
 Start state, for both products: the task's `startAt`, opened by the runner (see Phases above);
@@ -206,7 +246,7 @@ api-update-user, and switch-to-arabic (p04). Drivers find things by role and lab
 The others report "not built yet" with what they wait for.
 
 An API task (`channel: 'api'` in its definition) has no screens: the driver's `signIn` calls
-`ctx.useApi({ baseUrl, headers, transport? })` outside the measurement and `run` sends each request
+`ctx.useApi({ baseUrl, headers, transport? })` (`transport` names a harness transport) outside the measurement and `run` sends each request
 with `op.request(method, path, body)`. Its start and done screenshots show a neutral HTTP-client
 transcript of the requests, rendered the same way for both products.
 
@@ -234,6 +274,10 @@ export default {
 };
 ```
 
+Drivers run in the driver process (see "What is measured"): `fetch` there goes through the harness
+(the product's own address only), Node-side predicates cannot be passed to Playwright methods (use
+strings, patterns or `ctx.until`), and files may be written only under `os.tmpdir()`.
+
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
 generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
@@ -246,6 +290,21 @@ dataset, so with `ctx.health` a driver's set-up creates the one dataset record i
 A built driver that no longer verifies fails `./erp verify` (round 3: a list change broke
 switch-to-arabic and nothing noticed). Its counts are not a comparison.
 
+## Planting a fault (for critics)
+
+Plant tests run drivers the way the runner does: as module files in the driver process. Write the
+driver as a module (or transform a real one) and hand its description to `execute()`:
+
+```js
+import { execute, layout } from '../lib/runner.mjs';
+import { describeDriverFile } from '../lib/registry.mjs';
+const r = await execute(task, await describeDriverFile('/tmp/plant.mjs'), product, 'ours', needles, layout('/tmp/out'), { timeout: 10_000 });
+```
+
+`test/helpers/driver-module.mjs` writes an inline driver object as such a module (`sandboxed`), a
+module from source text (`sandboxedSource`), or a planted copy of a real driver (`plantedFile`).
+A driver object handed to `execute()` directly is refused (`invalid`): it would run in the harness.
+
 ## Shared dataset
 
 `data/generate.mjs` writes the same 100,000 contacts, 100,000 users, 100,000 exchange rates and
@@ -256,5 +315,6 @@ regenerates them when missing. `needles.json` names the record "find one among 1
 
 Loading it into our product: `ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up`
 (on a fresh database: `./erp down --volumes` first) makes the demo tenant's bulk users exactly the
-dataset's users, with the names, sign-ins and languages the Odoo rig holds. Contacts and rates
+dataset's users, with the names, sign-ins, languages and active flags the Odoo rig holds
+(`users.csv` has an `active` column; every dataset user is active in both products). Contacts and rates
 follow the same pattern when their pieces exist (p16, p08).

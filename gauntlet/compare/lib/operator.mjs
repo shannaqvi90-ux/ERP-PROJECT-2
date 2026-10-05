@@ -179,7 +179,10 @@ export class Operator {
       if (tracker.inflight.size) quietSince = null;
       else if (quietSince === null) quietSince = tracker.lastEnded ?? clockNow();
       else if (clockNow() - quietSince >= quietMs) break;
-      if (clockNow() > deadline) throw new Error(`the product was still answering ${tracker.inflight.size} request(s) ${Math.round(timeout / 1000)} s after the driver's last step`);
+      if (clockNow() > deadline) {
+        const which = [...tracker.inflight].slice(0, 3).map(r => { try { return `${r.method()} ${new URL(r.url()).pathname} (${r.resourceType()})`; } catch { return '?'; } });
+        throw new Error(`the product was still answering ${tracker.inflight.size} request(s) ${Math.round(timeout / 1000)} s after the driver's last step: ${which.join(', ')}`);
+      }
       await new Promise(r => setTimeout(r, 10));
     }
     const end = Math.max(quietSince, this.#t0);

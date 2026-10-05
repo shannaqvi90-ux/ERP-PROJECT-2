@@ -56,6 +56,9 @@ export class DriverHost {
   session = null;
 
   constructor() {
+    if (!process.allowedNodeEnvironmentFlags.has('--permission')) {
+      throw new Error(`the driver sandbox needs Node's permission model (--permission, Node 22.13 or later); this is Node ${process.version}`);
+    }
     this.scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-driver-'));
     const env = { ...process.env, TMPDIR: this.scratch, TMP: this.scratch, TEMP: this.scratch };
     delete env.NODE_OPTIONS;
@@ -246,20 +249,22 @@ export class DriverSession {
     return out;
   }
 
-  /** A file the harness would write for the driver: only inside the driver process's scratch folder. */
+  /**
+   * A file the harness would write for the driver (a screenshot, a PDF, a saved download, a stored
+   * session, a recording): only inside the driver process's scratch folder.
+   */
   #checkWrites(method, args) {
     const inside = p => { const r = path.resolve(String(p)); return r === this.host.scratch || r.startsWith(this.host.scratch + path.sep); };
-    const bad = [];
-    const walk = (v, depth = 0) => {
-      if (!v || typeof v !== 'object' || depth > 4 || isGuarded(v)) return;
-      for (const [k, x] of Object.entries(v)) {
-        if ((k === 'path' || k === 'dir') && typeof x === 'string' && !inside(x)) bad.push(x);
-        else if (x && typeof x === 'object') walk(x, depth + 1);
-      }
-    };
-    args.forEach(a => walk(a));
-    if (method === 'saveAs' && typeof args[0] === 'string' && !inside(args[0])) bad.push(args[0]);
-    if (bad.length) throw new Refusal(`a file written outside the driver's scratch folder (${bad[0]}): the driver process writes only under its TMPDIR`, 'Refusal');
+    const o = args[0] && typeof args[0] === 'object' && !isGuarded(args[0]) ? args[0] : {};
+    const targets = [];
+    if (['screenshot', 'pdf', 'storageState', 'stop', 'stopChunk'].includes(method) && typeof o.path === 'string') targets.push(o.path);
+    if (method === 'saveAs' && typeof args[0] === 'string') targets.push(args[0]);
+    if (['newContext', 'newPage'].includes(method)) {
+      if (typeof o.recordHar?.path === 'string') targets.push(o.recordHar.path);
+      if (typeof o.recordVideo?.dir === 'string') targets.push(o.recordVideo.dir);
+    }
+    const bad = targets.find(t => !inside(t));
+    if (bad) throw new Refusal(`a file written outside the driver's scratch folder (${bad}): the driver process writes only under its TMPDIR`, 'Refusal');
   }
 
   // -- requests from the driver process ------------------------------------------------------------

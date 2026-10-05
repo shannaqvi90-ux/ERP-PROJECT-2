@@ -162,6 +162,8 @@ export async function runTask(taskId, productId, opts = {}) {
     waits: primary.waits,
     screenshots: primary.screenshots,
     counts: primary.counts,
+    verify_passes: primary.verify_passes ?? null,
+    requests_after_clock: primary.requests_after_clock ?? null,
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
   if (variants.length > 1) {
@@ -183,7 +185,8 @@ export async function runTask(taskId, productId, opts = {}) {
         if (m === 'machine_seconds') result.counts.system_wait_seconds = best.counts.system_wait_seconds;
       }
     }
-    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state }));
+    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
+      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -221,10 +224,21 @@ function trackRequests(context) {
   const inflight = new Set();
   const tracker = { inflight, lastEnded: null, afterClock: 0 };
   const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
+  const frameOf = r => { try { return r.frame(); } catch { return null; } };
   const on = r => { if (!background(r)) inflight.add(r); };
   const off = r => { if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  // A document that is replaced (a reload, a link) abandons its requests: their answers can no
+  // longer reach the screen, and the browser reports no end for some of them.
+  const navigated = f => { for (const r of inflight) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
+  const pages = new Set();
+  const watch = p => { if (!pages.has(p)) { pages.add(p); p.on('framenavigated', navigated); } };
+  context.pages().forEach(watch);
+  context.on('page', watch);
   context.on('request', on); context.on('requestfinished', off); context.on('requestfailed', off);
-  tracker.stop = () => { context.off('request', on); context.off('requestfinished', off); context.off('requestfailed', off); };
+  tracker.stop = () => {
+    context.off('request', on); context.off('requestfinished', off); context.off('requestfailed', off); context.off('page', watch);
+    for (const p of pages) p.off('framenavigated', navigated);
+  };
   return tracker;
 }
 

@@ -5,7 +5,7 @@
   "description": "Blind, instrumented side-by-side comparison harness (our product vs the Odoo Community reference).",
   "type": "module",
   "license": "UNLICENSED",
-  "engines": { "node": ">=20" },
+  "engines": { "node": ">=22.13" },
   "scripts": {
     "test": "node --test --test-concurrency=1 \"test/*.test.mjs\"",
     "test:live": "COMPARE_LIVE=1 node --test --test-concurrency=1 \"test/*.test.mjs\"",
