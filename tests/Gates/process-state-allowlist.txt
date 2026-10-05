@@ -13,10 +13,12 @@ static Erp.Modules.Identity.Seeding.DemoPeople.LastNames  # Fixed list of demo l
 # Each is filled by ModuleBuilder while its module's Register runs at start-up and only read
 # afterwards; the G1 HTTP attack also fingerprints all reachable state before and after the
 # attack and fails if any of it changed while tenants used the app.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Commands  # The module's command-line verbs (verb, usage text and handler from code), filled during registration and run only by the operator's command line, never by a request; identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.DbContexts  # The DbContext types the module registered (types from code), filled during registration, identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.EndpointMaps  # The module's endpoint-mapping delegates (route prefix and mapping code), filled during registration and run once while the host maps routes; the delegates and the closures they hold are walked and judged on their own.
 reachable Erp.Kernel.Modules.ModuleDescriptor.IsolationProbes  # The isolation probe types the module registered (types from code), filled during registration.
 reachable Erp.Kernel.Modules.ModuleDescriptor.ListBindings  # The module's list query bindings by list key, filled during registration; each binding is immutable (Column and InMemory return a new binding) and is walked and judged field by field.
+reachable Erp.Kernel.Modules.ModuleDescriptor.ListsServedBy  # Which other module's list serves each of this module's lists (list keys from code), filled during registration and read once when the catalogue resolves bindings at start-up; identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.Lists  # The module's list definitions (immutable records from code), filled during registration.
 reachable Erp.Kernel.Modules.ModuleDescriptor.Menu  # The module's menu entries (immutable records from code), filled during registration.
 reachable Erp.Kernel.Modules.ModuleDescriptor.Permissions  # The permission definitions the module declares in code, filled during registration.
