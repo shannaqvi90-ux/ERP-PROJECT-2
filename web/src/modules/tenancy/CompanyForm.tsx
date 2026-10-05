@@ -110,7 +110,8 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
   const [justCreated, setJustCreated] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const name = useLocalName();
-  const editable = id === null ? can("tenancy.companies.create") : can("tenancy.companies.update");
+  // The company record is shared by every branch: changing it needs every branch of it.
+  const editable = id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && company?.everyBranch !== false;
 
   useEffect(() => {
     if (id === null) return;
@@ -207,6 +208,11 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
             {t("tenancy.common.saved")}
           </div>
         )}
+        {company?.everyBranch === false && can("tenancy.companies.update") && (
+          <div className="notice" data-testid="company-some-branches">
+            {t("tenancy.company.someBranchesOnly")}
+          </div>
+        )}
         <fieldset disabled={!editable}>
           <legend>{t("tenancy.company.general")}</legend>
           <div className="form-grid">
@@ -247,7 +253,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
           </div>
         </fieldset>
       </form>
-      {company && <CompanyLogo company={company} editable={can("tenancy.companies.update")} onChange={setCompany} />}
+      {company && <CompanyLogo company={company} editable={can("tenancy.companies.update") && company.everyBranch !== false} onChange={setCompany} />}
       {company && can("tenancy.branches.read") && (
         <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
       )}

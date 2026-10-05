@@ -41,6 +41,10 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         return (id, email);
     }
 
+    /// <summary>A 1×1 PNG.</summary>
+    private static readonly byte[] OnePixelPng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+
     private static async Task<Guid> AdministratorRoleAsync(HttpClient admin) =>
         (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
@@ -105,6 +109,20 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
         var create = await manager.PostAsJsonAsync("/api/tenancy/branches", new { companyId = x, nameEn = "New shop", country = "AE", isActive = true });
         Assert.Equal(HttpStatusCode.Forbidden, create.StatusCode);
         Assert.Equal("tenancy.branchNeedsEveryBranch", (await Json(create)).GetProperty("code").GetString());
+
+        // The company itself is shared by every branch: read, not changed (critic p02 round 3).
+        var whole = (await manager.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>($"/api/tenancy/companies/{x}"))!;
+        Assert.False(whole["everyBranch"]!.GetValue<bool>());
+        Assert.True((await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{x}")).GetProperty("everyBranch").GetBoolean());
+        var versionBefore = whole["version"]!.GetValue<uint>();
+        whole["tradeLicenceAuthority"] = "Changed by a branch manager";
+        var changeCompany = await manager.PutAsJsonAsync($"/api/tenancy/companies/{x}", whole);
+        Assert.Equal(HttpStatusCode.Forbidden, changeCompany.StatusCode);
+        Assert.Equal("tenancy.companyNeedsEveryBranch", (await Json(changeCompany)).GetProperty("code").GetString());
+        var logo = await manager.PutAsJsonAsync($"/api/tenancy/companies/{x}/logo", new { contentType = "image/png", data = Convert.ToBase64String(OnePixelPng) });
+        Assert.Equal(HttpStatusCode.Forbidden, logo.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.DeleteAsync($"/api/tenancy/companies/{x}/logo")).StatusCode);
+        Assert.Equal(versionBefore, (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{x}")).GetProperty("version").GetUInt32());
 
         // Giving: only the own branch.
         var (emptyId, _) = await NewUserAsync(admin, "empty", []);

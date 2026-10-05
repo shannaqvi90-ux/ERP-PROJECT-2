@@ -22,7 +22,7 @@ const plants = [
   {
     id: "U1",
     what: "company logo upload and remove offered without tenancy.companies.update",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update")} onChange={setCompany}', replace: "editable={true} onChange={setCompany}" }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && company.everyBranch !== false} onChange={setCompany}', replace: "editable={company.everyBranch !== false} onChange={setCompany}" }],
   },
   {
     id: "U2",
@@ -42,12 +42,22 @@ const plants = [
   {
     id: "U-company-save",
     what: "the company form editable and saved without tenancy.companies.update",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update");', replace: ": true;" }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && company?.everyBranch !== false;', replace: ": company?.everyBranch !== false;" }],
   },
   {
     id: "U-company-address",
     what: "the company's address editable without tenancy.companies.update (found by this gate)",
     edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: "<AddressFields draft={draft} set={set} errors={errors} disabled={!editable} />", replace: "<AddressFields draft={draft} set={set} errors={errors} />" }],
+  },
+  {
+    id: "U-company-some-branches",
+    what: "the company record editable by someone who works in only some of its branches",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && company?.everyBranch !== false;', replace: ': can("tenancy.companies.update");' }],
+  },
+  {
+    id: "U-logo-some-branches",
+    what: "the company logo changeable by someone who works in only some of its branches",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && company.everyBranch !== false} onChange={setCompany}', replace: 'editable={can("tenancy.companies.update")} onChange={setCompany}' }],
   },
   {
     id: "U-branch-save",

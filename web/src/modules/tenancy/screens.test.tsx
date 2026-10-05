@@ -89,7 +89,7 @@ const address: Record<Screen, string> = {
   tenant: "/tenancy/tenant",
 };
 
-async function open(screen: Screen, permissions: string[], options: { canEdit?: boolean; path?: string } = {}) {
+async function open(screen: Screen, permissions: string[], options: { canEdit?: boolean; path?: string; everyBranch?: boolean } = {}) {
   window.history.replaceState(null, "", options.path ?? address[screen]);
   mockFetch((_method, url) => {
     const path = new URL(url, "http://localhost").pathname;
@@ -99,7 +99,7 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/lists/tenancy.access/definition") return { status: 200, body: definition("tenancy.access", "/api/tenancy/access", "displayName") };
     if (path.endsWith("/views")) return { status: 200, body: { items: [] } };
     if (path === "/api/tenancy/companies") return { status: 200, body: { items: [company], total: 1, next: null } };
-    if (path === "/api/tenancy/companies/c9") return { status: 200, body: company };
+    if (path === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (path === "/api/tenancy/branches/b1") return { status: 200, body: branch };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
@@ -213,6 +213,12 @@ describe("tenancy screens offer exactly what the user may do", () => {
       expect(shown().container.querySelector(".record-form"), `${screen}: Alt+N with ${permission}`).not.toBeNull();
       closeView();
     }
+  });
+
+  it("companies: a company where the user works in only some branches offers no change to the company itself, and says why", async () => {
+    const offered = await open("companies", all, { everyBranch: false });
+    expect(offered.filter((c) => c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || (c.startsWith("field:") && !c.startsWith("field:branch")))).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="company-some-branches"]')!.textContent).toContain("only some branches of this company");
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {

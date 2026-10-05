@@ -16,6 +16,9 @@ export type CompanyRow = {
 export type Company = {
   id: string;
   code: string;
+  /** False when the user works in only some of the company's branches: the company itself (its
+   * record and logo) is theirs to read, not to change. */
+  everyBranch?: boolean;
   legalNameEn: string;
   legalNameAr: string;
   tradeLicenceNumber: string | null;

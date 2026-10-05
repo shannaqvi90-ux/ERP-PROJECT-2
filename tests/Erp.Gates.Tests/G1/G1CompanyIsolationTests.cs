@@ -175,8 +175,6 @@ public static class CompanyAttack
         await G1WriteOracle.UseWorkingCompanyAsync(oracleClient);
         var writeOracleChecks = 0;
         var writeOracleSources = new SortedSet<string>(StringComparer.Ordinal);
-        // (collection, value): values the oracle's own successful writes stored in that collection.
-        var oracleStored = new HashSet<(string, string)>();
         foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous))
         {
             if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
@@ -189,21 +187,32 @@ public static class CompanyAttack
             {
                 continue;
             }
-            var family = collection ?? endpoint.Pattern.TrimEnd('/');
             foreach (var field in properties.EnumerateObject()
                          .Where(p => openApi.TypeOfSchema(p.Value) == "string" &&
                                      G1WriteOracle.IsIdentifying(p.Name, openApi.Resolve(p.Value).TryGetProperty("format", out var f) ? f.GetString() : null))
                          .Select(p => p.Name))
             {
-                // Only values company Y alone holds (no other row of the tenant has them, so a
-                // refusal can only come from company Y) that the attacker never wrote itself; up
-                // to three from every company table with that column (critic p02 round 3, plant
-                // C4: the first three values found were all branch codes, so company Y's own code
-                // never reached the company create and its 409 went unseen).
+                // Only values company Y alone holds at the moment of sending (no other row of the
+                // tenant has them, checked in the database each time, so a refusal can only come
+                // from company Y, never from a record an earlier write of the attacker's stored the
+                // value in); up to three from every company table with that column (critic p02
+                // round 3, plant C4: the first three values found were all branch codes, so company
+                // Y's own code never reached the company create and its 409 went unseen).
                 var sent = new HashSet<string>(StringComparer.Ordinal);
-                foreach (var (table, held) in before.ValuesByTable(field)
-                             .SelectMany(t => t.Values.Where(v => before.Strings.Contains(v) && !oracleStored.Contains((family, v))).Take(3).Select(v => (t.Table, v)))
-                             .Where(pair => sent.Add(pair.v)))
+                var picked = new List<(string Table, string Value)>();
+                foreach (var (table, values) in before.ValuesByTable(field))
+                {
+                    var taken = 0;
+                    foreach (var value in values.Where(v => before.Strings.Contains(v) && !sent.Contains(v)))
+                    {
+                        if (taken == 3) break;
+                        if (!await before.OnlyVictimHoldsAsync(env, tenant.Id, value)) continue;
+                        sent.Add(value);
+                        picked.Add((table, value));
+                        taken++;
+                    }
+                }
+                foreach (var (table, held) in picked)
                 {
                     writeOracleSources.Add($"{endpoint} [{field}] <- {table}");
                     var tag = $"wo{writeOracleChecks}{Guid.NewGuid():N}"[..12];
@@ -213,12 +222,9 @@ public static class CompanyAttack
                     writeOracleChecks++;
                     if (withY is >= 200 and < 300)
                     {
-                        // Now the attacker's own record holds the value: later writes to the same
-                        // collection may refuse it for that (a value stored in another collection,
-                        // a branch code equal to company Y's company code, still goes to the company
-                        // create: critic p02 round 3, plant C4). Its answers are the attacker's own data.
+                        // Now the attacker's own record holds the value: later writes skip it (the
+                        // database check above), and answers showing it are the attacker's own data.
                         state.Stored.Add(held);
-                        oracleStored.Add((family, held));
                     }
                     if (withY != withFresh)
                     {
@@ -642,6 +648,32 @@ public sealed class CompanySnapshot
 
     public IReadOnlyList<string> Markers => _markers ??= Ids.Select(i => i.ToString()).Concat(Strings.Where(s => s.Length >= 8)).ToList();
 
+    /// <summary>The victim's id and, per table, the condition that picks the victim's rows in it
+    /// (<c>@v</c> is the victim's id).</summary>
+    public Guid VictimId { get; init; }
+
+    public IReadOnlyDictionary<string, string> VictimRows { get; init; } = new Dictionary<string, string>();
+
+    /// <summary>True when no row of the tenant outside the victim's rows (and the audit trail)
+    /// holds <paramref name="value"/> now, read with the superuser.</summary>
+    public async Task<bool> OnlyVictimHoldsAsync(ErpTestEnvironment env, Guid tenant, string value)
+    {
+        await using var admin = await env.OpenAdminAsync();
+        foreach (var table in await DbCatalog.TenantTablesAsync(admin))
+        {
+            if (table.Schema == "audit") continue;
+            var own = VictimRows.GetValueOrDefault(table.Qualified);
+            if (await DbCatalog.ScalarAsync<bool>(admin,
+                    $"SELECT EXISTS (SELECT 1 FROM {table.Qualified} t WHERE tenant_id = @t" + (own is null ? "" : $" AND NOT coalesce(({own}), false)") +
+                    " AND strpos(lower(t::text), lower(@value)) > 0)",
+                    ("t", tenant), ("v", VictimId), ("value", value)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private IReadOnlyList<string>? _markers;
     private MarkerSearch? _search;
 
@@ -696,6 +728,8 @@ public sealed class CompanySnapshot
             Ids = ids.Distinct().ToList(), Strings = unique, Checksums = checksums,
             Columns = byColumn.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.Distinct(StringComparer.Ordinal).ToList(), StringComparer.Ordinal),
             TableColumns = byTable,
+            VictimId = company,
+            VictimRows = tables.ToDictionary(t => t.Qualified, _ => "company_id = @v"),
         };
     }
 
@@ -760,6 +794,8 @@ public sealed class CompanySnapshot
             Ids = ids.Distinct().ToList(), Strings = unique, Checksums = checksums,
             Columns = byColumn.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.Distinct(StringComparer.Ordinal).ToList(), StringComparer.Ordinal),
             TableColumns = byTable,
+            VictimId = branch,
+            VictimRows = sources.ToDictionary(x => x.Table.Qualified, x => x.Where.Replace("@b", "@v", StringComparison.Ordinal)),
         };
     }
 
