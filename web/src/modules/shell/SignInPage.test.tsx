@@ -210,15 +210,20 @@ describe("sign-in screen", () => {
     expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "auditor@outside.example", password: "Demo-Pass-2026" });
   });
 
-  it("on the team's sign-in address, a remembered e-mail of the team shows as its local part with the password focused", async () => {
+  it("on the team's sign-in address, a remembered e-mail of the team shows whole with the password focused, and signs in as itself", async () => {
     window.history.replaceState(null, "", "/?domain=alnoor.example");
     localStorage.setItem("erp.lastEmail", "admin@alnoor.example");
-    mockFetch(signedOut());
+    const calls = mockFetch(signedOut());
     view = await render(<App language="en" />);
     await settle();
-    expect(view.container.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("admin");
-    expect(view.container.querySelector<HTMLInputElement>('input[name="username"]')!.value).toBe("admin@alnoor.example");
+    expect(view.container.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("admin@alnoor.example");
+    // The domain is not shown a second time after an address that already has one.
+    expect(view.container.querySelector("#email-domain")).toBeNull();
     expect(document.activeElement).toBe(view.container.querySelector('input[name="password"]'));
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
   });
 
   it("ignores an address whose domain is not a host name", async () => {

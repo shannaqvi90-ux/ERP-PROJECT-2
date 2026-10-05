@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
-import { fullEmail, localPart, teamDomain } from "../../kernel/signInAddress";
+import { fullEmail, teamDomain } from "../../kernel/signInAddress";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -41,9 +41,11 @@ export function SignInPage() {
   const { signIn } = useSession();
   // A set-up link may carry the e-mail (never the code); otherwise this device's last one. On the
   // team's sign-in address the domain is filled in: the person types only the part before "@".
+  // An e-mail the screen already knows is shown whole (the domain is not repeated after it): it is
+  // the person's own sign-in, exactly as it will be sent.
   const [domain] = useState(() => teamDomain(window.location.search));
   const remembered = new URLSearchParams(window.location.search).get("email") ?? rememberedEmail();
-  const [email, setEmail] = useState(() => localPart(remembered, domain));
+  const [email, setEmail] = useState(remembered);
   const suffix = domain && !email.includes("@") ? `@${domain}` : null;
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
