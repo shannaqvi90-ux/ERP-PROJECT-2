@@ -255,7 +255,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       if (broken) throw broken;
       expect(alphaSteps).toEqual(bravoSteps);
       expect(uncached, "API responses without Cache-Control: no-store").toEqual([]);
-      console.log(`client isolation: ${alphaSteps.length} steps per tenant judged on ${markers.length} markers in 8 carriers; ${alphaMarker.email} (A) and ${bravoMarker.email} (B)`);
+      console.log(`client isolation: ${alphaSteps.length} steps per tenant judged on ${markers.length} markers in ${allCarriers.length} carriers; ${alphaMarker.email} (A) and ${bravoMarker.email} (B)`);
     } finally {
       await bravo.context.delete(`/api/identity/users/${bravoMarker.id}`).catch(() => undefined);
       await alpha.context.delete(`/api/identity/users/${alphaMarker.id}`).catch(() => undefined);
@@ -334,6 +334,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       }
       expect(findings, `B's markers after A pressed Back (A visited ${visited.join(", ")})`).toEqual([]);
       expect(visited.length, "A went Back through B's entries").toBeGreaterThanOrEqual(3);
+      console.log(`history: B left ${bravoAddresses.length} addresses with its search and record; A went Back ${visited.length} times: ${visited.map((u) => new URL(u).pathname + new URL(u).search).join(" ")}`);
     } finally {
       await bravo.context.delete(`/api/identity/users/${bravoMarker.id}`).catch(() => undefined);
       await bravo.context.dispose();

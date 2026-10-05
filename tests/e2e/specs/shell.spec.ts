@@ -38,6 +38,47 @@ test.describe("app shell", () => {
     await expect(stamp).toBeHidden();
   });
 
+  test("nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    for (const language of ["en", "ar"]) {
+      if (language === "ar") {
+        await page.keyboard.press("Alt+l");
+        await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      }
+      const paperOnly = page.locator(".print-only");
+      expect(await paperOnly.count()).toBeGreaterThanOrEqual(2);
+      const shown = await paperOnly.evaluateAll((nodes) => nodes.filter((n) => getComputedStyle(n).display !== "none" || (n as HTMLElement).offsetHeight > 0).map((n) => n.className));
+      expect(shown, `paper-only parts shown on screen (${language})`).toEqual([]);
+      await page.emulateMedia({ media: "print" });
+      await expect(page.locator(".print-screen-head")).toBeVisible();
+      await expect(page.locator(".print-document-screen .print-footer")).toBeVisible();
+      await page.emulateMedia({ media: "screen" });
+    }
+    // Restore the viewer's language for the tests that follow.
+    await page.keyboard.press("Alt+l");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("the tab's title names the screen, and follows the language at once", async ({ page }) => {
+    await freshStart(page, "en");
+    await expect(page).toHaveTitle("Sign in · ERP");
+    await signIn(page, users.viewer);
+    await expect(navigation(page)).toBeVisible();
+    await expect(page).toHaveTitle("Home · ERP");
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page).toHaveTitle("Users · ERP");
+    await page.keyboard.press("Alt+l");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    await expect(page).toHaveTitle("المستخدمون · نظام تخطيط الموارد");
+    await page.keyboard.press("Alt+h");
+    await expect(page).toHaveTitle("الرئيسية · نظام تخطيط الموارد");
+    await page.keyboard.press("Alt+l");
+    await expect(page).toHaveTitle("Home · ERP");
+  });
+
   test("switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);
@@ -274,6 +315,9 @@ test.describe("app shell", () => {
       // The column titles still print, as plain headings, in Arabic.
       expect(visible.headings).toEqual(expect.arrayContaining(["الاسم", "البريد الإلكتروني"]));
       await expect(page.locator(".print-document .print-title")).toHaveText("المستخدمون");
+      // The printout says it holds only the rows on screen, of how many (critic p04 round 3).
+      await expect(page.locator(".list-print-scope")).toBeVisible();
+      await expect(page.locator(".list-print-scope")).toContainText("من أصل");
     } finally {
       await page.emulateMedia({ media: "screen" });
     }
