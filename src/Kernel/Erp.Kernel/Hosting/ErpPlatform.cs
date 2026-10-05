@@ -316,6 +316,7 @@ public static class ErpPlatform
                 return true;
             case "seed":
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
+                await app.Services.GetRequiredService<DatabaseMigrator>().RefreshStatisticsAsync(cancellationToken);
                 return true;
             case "setup":
                 // One step for a fresh or existing database: roles, migrations, then idempotent seed.
@@ -325,6 +326,7 @@ public static class ErpPlatform
                 }
                 await app.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync(cancellationToken);
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
+                await app.Services.GetRequiredService<DatabaseMigrator>().RefreshStatisticsAsync(cancellationToken);
                 return true;
             default:
                 var catalog = app.Services.GetRequiredService<ModuleCatalog>();
