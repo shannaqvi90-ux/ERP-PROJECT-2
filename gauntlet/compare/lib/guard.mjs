@@ -34,6 +34,7 @@
 //    clock. The runner also times two passes of verify() (lib/runner.mjs).
 import http from 'node:http';
 import https from 'node:https';
+import { parseExpressionAt } from 'acorn';
 
 // Every refusal is also recorded here, so a driver that catches the error and carries on still
 // has its run marked invalid (the runner reads the record after the measured part).
@@ -141,8 +142,10 @@ const SCRIPT = ['evaluate', 'evaluateHandle', 'evaluateAll', '$eval', '$$eval', 
 export const ALWAYS_REFUSED = Object.freeze(new Set(SCRIPT));
 /** Classes whose every method acts (a page clock, a tracing session, a debugging session ...). */
 // BrowserType launches or connects to another browser, which the runner neither guards nor closes.
+// APIRequestContext (page.request): an HTTP client of its own in the harness process, which a set-up
+// could leave running into the measured part (round 5); drivers use fetch, which the harness waits for.
 const ACTING_CLASSES = new Set(['Clock', 'Tracing', 'CDPSession', 'Coverage', 'Worker', 'JSHandle', 'ElementHandle', 'Video', 'WebSocketRoute', 'Route',
-  'BrowserType', 'Electron', 'Android', 'AndroidDevice', 'Selectors']);
+  'BrowserType', 'Electron', 'Android', 'AndroidDevice', 'Selectors', 'APIRequestContext']);
 
 const RAW = new WeakMap(); // proxy -> raw object
 const PROXY = new WeakMap(); // raw object -> proxy
@@ -164,12 +167,23 @@ export const guardedClass = v => (RAW.get(v) ?? v)?.constructor?.name || 'Object
 
 /**
  * A page function a driver sent as source text (lib/sandbox/): it is only ever serialised into
- * the page inside the sentinel, never evaluated in the harness process.
+ * the page inside the sentinel, never evaluated in the harness process. The text must be exactly
+ * one function expression (parsed, not run): a crafted text such as
+ * "() => 1), document.forms[0].submit(), (() => 1" would otherwise close the sentinel's call and
+ * act on the page outside it.
  */
 export class PageFunction {
   constructor(source) {
     if (typeof source !== 'string' || !source.trim()) throw new TypeError('a page function needs its source');
-    this.source = source;
+    const text = source.trim();
+    let node;
+    try { node = parseExpressionAt(text, 0, { ecmaVersion: 'latest' }); } catch (e) {
+      throw new RefusedClaim(`a page function that is not one function expression (${e.message})`);
+    }
+    if (!['ArrowFunctionExpression', 'FunctionExpression'].includes(node.type) || node.end !== text.length || node.generator) {
+      throw new RefusedClaim(`a page function that is not exactly one function expression: ${text.slice(0, 80)}`);
+    }
+    this.source = text;
     Object.freeze(this);
   }
   toString() { return this.source; }

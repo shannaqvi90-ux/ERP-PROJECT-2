@@ -149,6 +149,7 @@ const BUILDERS = new Set(['locator', 'getByRole', 'getByText', 'getByLabel', 'ge
   'browserType', 'context', 'mainFrame', 'page', 'frame', 'browser', 'request', 'parentFrame']);
 const OP_METHODS = new Set(['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'waitFor', 'shot']);
 const MAX_POST_DATA = 1 << 20;
+const API_HEADERS = new Set(['authorization', 'cookie', 'x-erp-request', 'accept', 'accept-language']);
 
 /** One run of one driver: the objects handed to the driver process and its requests. */
 export class DriverSession {
@@ -436,6 +437,11 @@ export class DriverSession {
     const s = this.decode(session);
     if (!s || typeof s.baseUrl !== 'string') throw new TypeError('useApi({ baseUrl, headers, transport })');
     if (new URL(s.baseUrl).origin !== this.origin) throw new Refusal(`an API session on ${s.baseUrl} for a driver of ${this.origin}`, 'Refusal');
+    // The headers a signed-in HTTP client sends, and nothing that changes what a typed request does
+    // (a method override, for example): typed and sent stay the same request.
+    for (const h of Object.keys(s.headers || {})) {
+      if (!API_HEADERS.has(h.toLowerCase())) throw new Refusal(`an API session header "${h}": only ${[...API_HEADERS].join(', ')} are set before the clock`, 'Refusal');
+    }
     this.apiSession = s;
     return true;
   }

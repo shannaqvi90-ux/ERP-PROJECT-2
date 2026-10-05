@@ -8,7 +8,7 @@ code, views or text; drivers operate its screens as a user would.
 ## One command
 
 ```bash
-cd gauntlet/compare && npm ci                    # once (playwright-core only; uses the preinstalled Chromium)
+cd gauntlet/compare && npm ci                    # once (playwright-core and acorn; uses the preinstalled Chromium; Node 22.13+)
 
 node run.mjs --list                              # the tasks
 node run.mjs --task find-record --product odoo   # Odoo baseline -> gauntlet/reference/odoo/
@@ -52,6 +52,13 @@ plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
   `execute()` refuses a driver object handed to it directly (that would run in the harness).
 - Set-up and verification reach the product through the harness's fetch: only the product's own
   address, reads only in `verify()`, nothing while the start is prepared or the task is measured.
+  Playwright's own HTTP client (`page.request`) is refused in every phase (a request it left running
+  in set-up would land inside the measured part); calls set-up leaves running through fetch are
+  waited for before the start. An API session carries only the headers a signed-in client sends
+  (authorization, cookie, `X-Erp-Request`, accept), nothing that changes what a typed request does.
+- A function a driver hands to the page (`ctx.read`, `ctx.until`, `op.waitFor`) arrives as its text.
+  The harness parses it (acorn, MIT) and accepts exactly one function expression, so a crafted text
+  cannot close the sentinel's call and run page script outside it.
   A file the harness writes for a driver (a screenshot path, a download folder) must lie in the
   driver process's scratch folder.
 
@@ -111,16 +118,27 @@ and from the back end only reads go through (GET, a fixture sign-in, Odoo read m
 may act again.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
-right after its last step or wait, once the product has answered: if requests of the measured page
-are still in flight when `run` returns (long-lived channels such as web sockets, event streams and
-Odoo's bus excepted), the clock runs on until the last one ends (round 5; recorded as a system wait
-"the product still answering when run() returned"). After the clock stops the page reaches the
-product no more (its requests are aborted and counted in `requests_after_clock`), so nothing the
-page does later can finish the task off the clock. `verify()` then reads the end state as it
-stands: every wait is refused there (`Locator.waitFor`, `waitForURL`, `waitForTimeout`,
-`ctx.until` …), every read times out after 0.5 s, and `verify()` runs twice, timed
-(`verify_passes`); when the first pass took over 0.5 s longer than the second and more than twice
-as long, it waited for the end state, and the run is invalid. Everything inside the clock counts, screenshots included (round 3:
+right after its last step or wait. Round 5 closes the ways to finish a task after that:
+
+- If a request that changes the product (a document load, or any method but GET, HEAD and
+  OPTIONS that is not one of the reference's documented read calls) is still under way when `run`
+  returns, the clock runs on until it ends: a save is the product's answer to the task (system
+  wait "the product still answering when run() returned"). Reads still loading (avatars, a chatter)
+  are not waited for.
+- When the clock stops the page's own script is frozen (no timer, network callback or animation
+  frame of the product runs any more; reading and screenshots still work) and its new requests are
+  aborted (`requests_after_clock`), so the screen `verify()` reads is the screen at the end of the
+  measured part. It is thawed for clean-up.
+- `verify()` reads; it never waits. Every wait is refused there (`Locator.waitFor`, `waitForURL`,
+  `waitForTimeout`, `ctx.until` …) and every read times out after 0.5 s. `verify()` runs twice and
+  each pass is metered (`verify_passes`): a pass that asked the harness nothing for over 1 s (it
+  slept or spun), sent over 100 requests or the same back-end read twice (it polled), or a first
+  pass over 3 s and three times slower than the second, waited for the end state, and the run is
+  invalid.
+- Back-end calls set-up left running are waited for before the start, so they land before the
+  clock (where "already done before the clock" sees them), never inside it.
+
+Everything inside the clock counts, screenshots included (round 3:
 taking screenshot time out let a driver hide the product's latency behind screenshots). So that
 both products pay for the same shots, each task declares its `moments`; while measured a driver
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after

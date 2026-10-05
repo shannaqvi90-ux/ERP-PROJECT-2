@@ -957,6 +957,37 @@ test('plant U5h (round 5): a slow back-end call set-up leaves running lands befo
   assert.match(r.error, /already done before the clock/);
 });
 
+test('plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid', async () => {
+  // The driver process sends functions as their text; a crafted text would close the sentinel's
+  // call and click Go outside it. Sent as a plain object, and through a patched toString.
+  for (const via of ['object', 'toString']) {
+    const r = await runDriver(planted(async op => {
+      const crafted = "() => true), document.getElementById('go').click(), (() => true";
+      if (via === 'object') await op.waitFor({ __fn: crafted });
+      else { const f = () => true; Object.defineProperty(f, 'toString', { value: () => crafted }); Function.prototype.toString = function () { return crafted; }; await op.waitFor(f); }
+    }), TASK, { via });
+    assert.equal(r.status, 'invalid', `${via}: ${r.status} ${r.error}`);
+    assert.match(r.error, /not exactly one function expression/);
+  }
+});
+
+test('plant U5j (round 5): set-up leaves a request of Playwright\'s own HTTP client running -> invalid', async () => {
+  const r = await runDriver({ ...planted(async () => {}), async setup(ctx) { await ctx.page.goto(base + '/plant'); try { ctx.page.request.post(base + '/api/slow-things').catch(() => {}); } catch { /* refused */ } } });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.match(r.error, /APIRequestContext/);
+});
+
+test('plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid', async () => {
+  const task = { id: 'api-plant', title: 'API plant', channel: 'api', input: {} };
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.useApi({ baseUrl: base, headers: { Authorization: 'Bearer t', 'X-HTTP-Method-Override': 'POST' } }); },
+    async run(op) { await op.request('GET', '/api/things'); return {}; },
+    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+  }, task);
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.match(r.error, /header/);
+});
+
 test('plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver\'s reach', async () => {
   delete globalThis.__plantTopLevel;
   const spec = await sandboxedSource(`

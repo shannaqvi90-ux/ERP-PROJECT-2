@@ -54,22 +54,43 @@ screenshot `path`, a download folder) must lie in the scratch folder. API transp
 request is carried) are the harness's own, by name (`lib/api-transport.mjs`), because a driver's
 transport function could send more than it typed.
 
+A function a driver hands to the page travels as text; the harness parses it with acorn (MIT,
+pinned) and accepts exactly one function expression, because the text is composed into the
+sentinel's call and a crafted text could otherwise close that call and run page script outside it.
+Playwright's own HTTP client (`page.request`) is refused for drivers in every phase (it runs in the
+harness process and a request it left running in set-up would land inside the measured part); set-up
+uses fetch, whose calls still running at the start are awaited first. An API session may carry only
+the headers a signed-in client sends.
+
 The harness also reads driver metadata and task definitions through the driver process, so no
 module from `drivers/` or `tasks/` runs in the harness process at all. `execute()` refuses a driver
 object handed to it directly.
 
-## Decision 2: the product's answer is on the clock; verification reads once
+## Decision 2: the product's answer is on the clock; verification reads the end state once
 
-- When `run()` returns, requests of the measured page that are still in flight keep the clock
-  running until the last one ends (a system wait). Honest drivers wait for their end state, so for
-  them nothing changes; a driver that returns early pays for the answer it did not wait for.
-  Long-lived channels (web sockets, event streams, long polling, Odoo's bus) are not waited for.
-- After the clock stops, the page's requests are aborted (`requests_after_clock`), so nothing the
-  page does later can finish the task off the clock.
+- When `run()` returns, a request of the measured page that changes the product (a document load,
+  or any method but GET, HEAD and OPTIONS that is not one of the reference's documented read calls)
+  keeps the clock running until it ends: a save still under way is the product's answer to the
+  task. Reads still loading are not waited for. The first version of this rule waited for every
+  request; the re-captured Odoo baselines showed it charging the reference for avatars and its
+  chatter loading after the task's end state was on screen (up to 0.9 s on sign-in), which would
+  have favoured our product, so it was narrowed. Only the reference's documented read calls are
+  exempted by name, so a misclassification can only shorten the reference's clock.
+- When the clock stops, the page's own script is frozen (Chromium's
+  `Emulation.setScriptExecutionDisabled`: no timer, network callback or animation frame of the
+  product runs; Playwright's reads, `ctx.read` and screenshots still work) and the page's new
+  requests are aborted (`requests_after_clock`). The screen verification reads is therefore the
+  screen at the end of the measured part: a late answer, a debounced search, a delayed render can
+  no longer finish the task off the clock. The pages are thawed for clean-up.
 - In the verifying phase every wait is refused and every read times out after 0.5 s.
-- `verify()` runs twice, timed. A first pass more than 0.5 s and more than twice as slow as the
-  second waited for the end state (by a busy loop, polling the back end, anything) and the run is
-  invalid. This catches waiting without having to list every way to wait.
+- `verify()` runs twice and each pass is metered by the harness (it sees every request the driver
+  process sends): a pass that asked nothing for over 1 s (sleeping or spinning), sent over 100
+  requests or the same back-end read twice (polling), or a first pass over 3 s and three times
+  slower than the second, waited for the end state, and the run is invalid. A first version
+  compared the two passes' times with a 0.5 s margin; an honest Odoo import verification took
+  0.82 s cold and 0.25 s warm, so the timing rule alone was too fragile and became the last resort.
+- Back-end calls that set-up left running are awaited before the start (off the clock), so they
+  land where "already done before the clock" sees them.
 
 ## Decision 3: chords are read as keys; a copy needs a selection
 

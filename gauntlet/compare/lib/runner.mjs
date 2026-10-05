@@ -37,10 +37,10 @@ export const RESULT_SCHEMA = 1;
  */
 /*   5: drivers run only in a sandboxed driver process (lib/sandbox/): no network, no child process,
  *      no worker, writes only to a scratch folder; every call reaches the harness as a request that
- *      the guards judge by phase. The clock runs until the product has answered the requests the
- *      measured actions caused (settle); after it the page reaches the product no more. verify()
- *      reads once: waits are refused, reads time out after 0.5 s, and it runs twice, timed (a first
- *      pass much slower than the second waited for the end state). Paste needs a copy of a
+ *      the guards judge by phase. The clock runs until requests that change the product are
+ *      answered (settle); when it stops the page's script is frozen and its new requests aborted.
+ *      verify() reads once: waits are refused, reads time out after 0.5 s, and two passes are
+ *      metered (pauses, polling, repeated reads, a much slower first pass). Paste needs a copy of a
  *      selection inside the measured part (chords normalised) and the clipboard is emptied at the
  *      start. KLM: no step continues one that began on another screen. API transports are the
  *      harness's own, by name.
