@@ -13,9 +13,22 @@ export type User = {
   createdAt: string;
   version: number;
   pendingSetup: boolean;
+  /** Roles held in one company only (those of the companies the signed-in user works in). */
+  companyRoles?: CompanyRole[];
+  /** The user also holds roles in companies the signed-in user does not work in. */
+  rolesElsewhere?: boolean;
   setupCode?: string;
   setupCodeExpiresAt?: string;
 };
+
+/** A role held in one company only. */
+export type CompanyRole = { roleId: string; companyId: string };
+
+/** A company the signed-in user works in. */
+export type Company = { id: string; code: string; legalNameEn: string; legalNameAr: string };
+
+/** The company a user starts in (null: their first company by code) and the companies they may work in. */
+export type DefaultCompany = { userId: string; companyId: string | null; companies: Company[]; version: number };
 
 export type UserPage = { items: User[]; total: number };
 
@@ -43,9 +56,32 @@ export type Permission = {
 
 export type AccessView = {
   userId: string;
-  roles: { id: string; nameEn: string; nameAr: string; isSystem: boolean }[];
-  permissions: { key: string; module: string; label: string; moduleLabel: string; grantedBy: string[] }[];
+  /** Roles held in every company (companyId null) or in one. */
+  roles: { id: string; nameEn: string; nameAr: string; isSystem: boolean; companyId?: string | null }[];
+  permissions: {
+    key: string;
+    module: string;
+    label: string;
+    moduleLabel: string;
+    grantedBy: string[];
+    grants?: { roleId: string; companyId: string | null }[];
+  }[];
+  /** The companies named by roles held in one company. */
+  companies?: Company[];
+  /** The user also holds roles in companies the signed-in user does not work in (not shown). */
+  rolesElsewhere?: boolean;
 };
+
+/** A company's short name in the screen's language. */
+export const companyName = (company: Pick<Company, "code" | "legalNameEn" | "legalNameAr">, language: string) =>
+  `${company.code} · ${language === "ar" ? company.legalNameAr || company.legalNameEn : company.legalNameEn || company.legalNameAr}`;
+
+/** True when the two lists hold the same company roles, in any order. */
+export function sameCompanyRoles(a: CompanyRole[], b: CompanyRole[]) {
+  const key = (x: CompanyRole) => `${x.roleId}/${x.companyId}`;
+  const left = new Set(a.map(key));
+  return left.size === new Set(b.map(key)).size && b.every((x) => left.has(key(x)));
+}
 
 export type SignIn = {
   id: string;
@@ -199,18 +235,22 @@ export const userName = (user: { displayName: string; displayNameAr?: string | n
 /**
  * What the signed-in user may do to another user's account on screen, mirroring the server: every
  * action needs its own permission, none acts on oneself here, and none acts on someone whose roles
- * grant a permission the signed-in user lacks (that would be a way to take the account over).
+ * (in every company or in one) grant a permission the signed-in user lacks, or who holds roles in
+ * companies the signed-in user does not work in (either would be a way to take the account over).
  * Deleting is only for someone who has never signed in. Roles that are not loaded (the user may
  * not read roles) cannot be judged, and the server still decides.
  */
 export function userActions(
-  user: Pick<User, "id" | "roleIds" | "lastSignInAt">,
+  user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere">,
   roles: Pick<Role, "id" | "permissions">[],
   held: ReadonlySet<string>,
   selfId: string | null,
 ) {
   const self = user.id === selfId;
-  const beyondOwn = user.roleIds.some((id) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false);
+  // Roles in every company and roles in one company alike; roles in companies the signed-in user
+  // does not work in cannot be judged from here, so they count as beyond.
+  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;
+  const beyondOwn = user.roleIds.some(grantsBeyond) || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) || user.rolesElsewhere === true;
   const others = !self && !beyondOwn;
   return {
     self,

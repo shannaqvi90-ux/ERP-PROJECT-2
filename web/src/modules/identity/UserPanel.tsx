@@ -2,8 +2,14 @@ import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent 
 import { api, ApiError } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
 import { RolePicker } from "./RolePicker";
 import {
+  companyName,
+  sameCompanyRoles,
+  type Company,
+  type CompanyRole,
+  type DefaultCompany,
   completeEmail,
   domainOf,
   isEmail,
@@ -267,6 +273,10 @@ export function UserDetail({
   const [userLanguage, setUserLanguage] = useState<"en" | "ar">("en");
   const [active, setActive] = useState(true);
   const [roleIds, setRoleIds] = useState<string[]>([]);
+  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [defaultCompany, setDefaultCompany] = useState<DefaultCompany | null>(null);
+  const [startsIn, setStartsIn] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const id = useId();
@@ -291,8 +301,24 @@ export function UserDetail({
         setUserLanguage(u.language);
         setActive(u.isActive);
         setRoleIds(u.roleIds);
+        setCompanyRoles(u.companyRoles ?? []);
       })
       .catch((e: Error) => live && setError(e.message));
+    // Companies the signed-in user works in (roles in one company are given there), and where
+    // this user starts work. Neither is needed to show the record, so a failure leaves them out.
+    api<Company[]>("GET", "/api/identity/companies").then(
+      (list) => live && setCompanies(Array.isArray(list) ? list : []),
+      () => live && setCompanies([]),
+    );
+    api<DefaultCompany>("GET", `/api/identity/users/${userId}/default-company`).then(
+      (d) => {
+        if (!live) return;
+        const known = d && Array.isArray(d.companies) ? d : null;
+        setDefaultCompany(known);
+        setStartsIn(known?.companyId ?? null);
+      },
+      () => live && setDefaultCompany(null),
+    );
     return () => {
       live = false;
     };
@@ -317,8 +343,15 @@ export function UserDetail({
         roleIds,
         version: user.version,
         ...(!self && email.trim() !== user.email ? { email: email.trim() } : {}),
+        ...(!self && !sameCompanyRoles(companyRoles, user.companyRoles ?? []) ? { companyRoles } : {}),
       });
       setUser(saved);
+      setCompanyRoles(saved.companyRoles ?? []);
+      if (!self && defaultCompany && startsIn !== defaultCompany.companyId) {
+        const next = await api<DefaultCompany>("PUT", `/api/identity/users/${user.id}/default-company`, { companyId: startsIn, version: defaultCompany.version });
+        setDefaultCompany(next);
+        setStartsIn(next.companyId);
+      }
       setNotice({ kind: "info", text: t("identity.form.saved") });
       onSaved(saved);
     } catch (e) {
@@ -410,6 +443,20 @@ export function UserDetail({
             <RolePicker roles={roles} selected={roleIds} onChange={setRoleIds} canGrant={canGrant} disabled={!editable || self} />
           ) : (
             <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
+          )}
+          {can("identity.roles.read") && (companies.length > 0 || companyRoles.length > 0 || user.rolesElsewhere) && (
+            <CompanyRolesEditor
+              companies={companies}
+              roles={roles}
+              value={companyRoles}
+              onChange={setCompanyRoles}
+              canGrant={canGrant}
+              disabled={!editable || self}
+              rolesElsewhere={user.rolesElsewhere}
+            />
+          )}
+          {defaultCompany && (
+            <DefaultCompanyField companies={defaultCompany.companies} value={startsIn} onChange={setStartsIn} disabled={!editable || self} />
           )}
           {self && <p className="muted">{t("identity.form.selfNote")}</p>}
           {error && (
@@ -582,10 +629,21 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
     );
   if (!view) return <p className="muted">{t("identity.loading")}</p>;
   const names = new Map([...roles, ...view.roles].map((r) => [r.id, roleName(r, language)]));
+  const companiesById = new Map((view.companies ?? []).map((c) => [c.id, c]));
+  const where = (companyId: string | null | undefined) =>
+    companyId ? (companiesById.get(companyId) ? companyName(companiesById.get(companyId)!, language) : companyId) : t("identity.access.everyCompany");
+  // Each reason a permission is held: the role and where it applies.
+  const reasons = (p: AccessView["permissions"][number]) =>
+    (p.grants ?? p.grantedBy.map((roleId) => ({ roleId, companyId: null }))).map((g) =>
+      g.companyId ? t("identity.access.inCompany", { role: names.get(g.roleId) ?? g.roleId, company: where(g.companyId) }) : names.get(g.roleId) ?? g.roleId,
+    );
   const modules = [...new Set(view.permissions.map((p) => p.moduleLabel))];
+  const distinctRoles = new Set(view.roles.map((r) => `${r.id}/${r.companyId ?? ""}`)).size;
   return (
     <div className="id-access">
-      <p>{t("identity.access.summary", { count: view.permissions.length, roles: view.roles.length })}</p>
+      <p>{t("identity.access.summary", { count: view.permissions.length, roles: distinctRoles })}</p>
+      {view.roles.some((r) => r.companyId) && <p className="muted">{t("identity.access.companyNote")}</p>}
+      {view.rolesElsewhere && <p className="muted">{t("identity.companyRoles.elsewhere")}</p>}
       {view.permissions.length === 0 && <p className="muted">{t("identity.access.nothing")}</p>}
       {modules.map((module) => (
         <table key={module} className="grid">
@@ -602,7 +660,7 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
               .map((p) => (
                 <tr key={p.key}>
                   <td title={p.key}>{p.label}</td>
-                  <td>{p.grantedBy.map((r) => names.get(r) ?? r).join(language === "ar" ? "، " : ", ")}</td>
+                  <td>{reasons(p).join(language === "ar" ? "، " : ", ")}</td>
                 </tr>
               ))}
           </tbody>
