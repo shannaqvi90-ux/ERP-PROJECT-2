@@ -375,9 +375,9 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var row = Expression.Parameter(typeof(T), "row");
         var conditions = new List<Expression>();
-        foreach (var (_, spellings) in plan.Words)
+        foreach (var (word, spellings) in plan.Words)
         {
-            conditions.Add(AnyField(row, spellings.Select(s => "%" + EscapeLike(s) + "%"), database));
+            conditions.Add(AnyField(row, SearchFieldsFor([word]), spellings.Select(s => "%" + EscapeLike(s) + "%"), database));
         }
         if (plan.Filter is { } filter)
         {
@@ -390,12 +390,19 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return source.Where(Expression.Lambda<Func<T, bool>>(conditions.Aggregate(Expression.AndAlso), row));
     }
 
-    /// <summary>Some search field matches one of the patterns.</summary>
-    private Expression AnyField(ParameterExpression row, IEnumerable<string> patterns, bool database)
+    /// <summary>The search fields quick search tries for all of the words: every field of any
+    /// script, and a field of Arabic script only when every word has an Arabic letter (a Latin word
+    /// cannot occur in it, so trying it would only cost time).</summary>
+    private IReadOnlyList<string> SearchFieldsFor(IReadOnlyList<string> words) =>
+        Definition.SearchFields.Where(f => Definition.Column(f) is { } field && words.All(w => ListSearch.Reaches(field, w))).ToList();
+
+    /// <summary>Some of the fields matches one of the patterns (false when no field can).</summary>
+    private Expression AnyField(ParameterExpression row, IReadOnlyList<string> fields, IEnumerable<string> patterns, bool database)
     {
         var list = patterns.ToList();
-        return Definition.SearchFields
+        return fields
             .SelectMany(field => list.Select(pattern => Like(Value(field, row), pattern, database)))
+            .DefaultIfEmpty(Expression.Constant(false))
             .Aggregate(Expression.OrElse);
     }
 
@@ -411,22 +418,27 @@ public sealed class ListBinding<T> : IListBinding where T : class
         // Regular expressions (case-insensitive), one per field and test: much cheaper per row
         // than one LIKE per spelling, and a letter class covers every Arabic spelling at once.
         Expression Score(Expression condition, int score) => Expression.Condition(condition, Expression.Constant(score), Expression.Constant(0));
-        Expression Any(string pattern) => Definition.SearchFields.Select(field => RegexMatch(Value(field, row), pattern, database)).Aggregate(Expression.OrElse);
+        // Each test looks only at the fields the words can occur in (see SearchFieldsFor).
+        Expression Any(IReadOnlyList<string> fields, string pattern) =>
+            fields.Select(field => RegexMatch(Value(field, row), pattern, database)).DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse);
         var words = plan.Words.Select(w => ListSearch.Pattern(w.Word)).ToList();
         var separators = "[" + string.Concat(ListSearch.WordSeparators) + "]";
         var parts = new List<Expression>();
-        foreach (var word in words)
+        foreach (var (typed, _) in plan.Words)
         {
-            parts.Add(Expression.Condition(Any("^" + word), Expression.Constant(ListSearch.FieldStartScore), Score(Any(separators + word), ListSearch.WordStartScore)));
+            var word = ListSearch.Pattern(typed);
+            var fields = SearchFieldsFor([typed]);
+            parts.Add(Expression.Condition(Any(fields, "^" + word), Expression.Constant(ListSearch.FieldStartScore), Score(Any(fields, separators + word), ListSearch.WordStartScore)));
         }
         // The whole search equal to a field, at its start, or its words in the typed order (the
         // first at the start, each next one at the start of a later word: "yous wang" for
-        // "Yousef Wang", not "Wang Yousef").
-        parts.Add(Score(Any("^" + string.Join(" ", words) + "$"), ListSearch.ExactScore));
+        // "Yousef Wang", not "Wang Yousef"), in the fields every word can occur in.
+        var whole = SearchFieldsFor(plan.Words.Select(w => w.Word).ToList());
+        parts.Add(Score(Any(whole, "^" + string.Join(" ", words) + "$"), ListSearch.ExactScore));
         if (words.Count > 1)
         {
-            parts.Add(Score(Any("^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
-            parts.Add(Score(Any("^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
+            parts.Add(Score(Any(whole, "^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
+            parts.Add(Score(Any(whole, "^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
         }
         var score = parts.Aggregate(Expression.Add);
         var first = Value(Definition.SearchFields[0], row);

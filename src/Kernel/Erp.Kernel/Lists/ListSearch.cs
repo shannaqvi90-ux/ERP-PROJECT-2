@@ -133,6 +133,26 @@ public static class ListSearch
         return pattern.ToString();
     }
 
+    /// <summary>The word contains a letter of the Arabic script (Arabic, Arabic Supplement and the
+    /// presentation forms), so it may occur in a search field marked <see cref="ListTextScript.Arabic"/>.</summary>
+    public static bool HasArabicLetter(string word)
+    {
+        foreach (var c in word)
+        {
+            if (char.IsLetter(c) && c is (>= '\u0600' and <= '\u06FF') or (>= '\u0750' and <= '\u077F')
+                or (>= '\u08A0' and <= '\u08FF') or (>= '\uFB50' and <= '\uFDFF') or (>= '\uFE70' and <= '\uFEFF'))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Whether quick search tries the word on a search field: every word on a field of
+    /// any script, only words with an Arabic letter on a field of Arabic script.</summary>
+    public static bool Reaches(ListColumn field, string word) =>
+        field.Script == ListTextScript.Any || HasArabicLetter(word);
+
     private static string? GroupOf(char c)
     {
         foreach (var group in Groups)

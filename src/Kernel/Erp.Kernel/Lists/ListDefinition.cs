@@ -16,6 +16,19 @@ public enum ListColumnType
     Reference,
 }
 
+/// <summary>The writing system a text column holds, which tells quick search which words can
+/// occur in it.</summary>
+public enum ListTextScript
+{
+    /// <summary>Any text (a name typed in either script, an e-mail address): every search word
+    /// is tried on it.</summary>
+    Any,
+
+    /// <summary>Text in Arabic script (a name in Arabic beside a Latin one): only search words
+    /// that contain an Arabic letter are tried on it, so a Latin search costs no more for it.</summary>
+    Arabic,
+}
+
 /// <summary>One allowed value of a <see cref="ListColumnType.Choice"/> column.</summary>
 /// <param name="Value">The value as stored and sent in filters.</param>
 /// <param name="LabelKey">Web string key of the value's label.</param>
@@ -29,6 +42,8 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Aggregate">Groups carry the column's total (number and money columns).</param>
 /// <param name="Hidden">Not shown until the user adds it with the column chooser.</param>
 /// <param name="Choices">The values of a choice column, with their labels.</param>
+/// <param name="Script">The writing system of a text column's values; quick search tries a search
+/// field marked <see cref="ListTextScript.Arabic"/> only with words that contain an Arabic letter.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -38,7 +53,8 @@ public sealed record ListColumn(
     bool Groupable = false,
     bool Aggregate = false,
     bool Hidden = false,
-    IReadOnlyList<ListChoice>? Choices = null);
+    IReadOnlyList<ListChoice>? Choices = null,
+    ListTextScript Script = ListTextScript.Any);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
@@ -137,6 +153,14 @@ public sealed partial record ListDefinition(
         foreach (var field in SearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
         {
             yield return $"list '{Key}': search field '{field}' is not a text column";
+        }
+        foreach (var column in Columns.Where(c => c.Script != ListTextScript.Any && c.Type != ListColumnType.Text))
+        {
+            yield return $"list '{Key}': column '{column.Key}' names a script but is not a text column";
+        }
+        if (SearchFields.Count > 0 && SearchFields.All(f => Column(f) is { Script: not ListTextScript.Any }))
+        {
+            yield return $"list '{Key}': every search field is limited to one script, so some searches could never match (keep at least one field of any script)";
         }
         if (DefaultSort is { } sort && Error(() => ListSortKey.Parse(sort, this)) is { } sortError)
         {
