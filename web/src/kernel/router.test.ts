@@ -29,5 +29,10 @@ describe("routes", () => {
     window.history.replaceState(null, "", `/tenancy/companies?open=${id}`);
     expect(recordInAddress()).toBe(id);
     expect(recordAddress(id, `open=${id}`)).toBe(`/tenancy/companies/${id}`);
+    // So does the users and roles screens' older ?new (one new-record address: <screen>/new).
+    window.history.replaceState(null, "", "/identity/users?new&q=noor");
+    expect(recordInAddress()).toBe("new");
+    expect(recordAddress("new", "new=&q=noor")).toBe("/identity/users/new?q=noor");
+    expect(recordAddress(null, "new=&q=noor")).toBe("/identity/users?q=noor");
   });
 });

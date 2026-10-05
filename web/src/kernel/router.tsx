@@ -39,9 +39,11 @@ export function matchRoute(path: string, all: RouteDef[] = routes): RouteDef | u
   return splitPath(path, all).route;
 }
 
-/** The record the current address opens: /screen/<id> or /screen/new (or ?open= from older links). */
+/** The record the current address opens: /screen/<id> or /screen/new, or, from links made before
+ * p06, ?open=<id> (companies, branches: ?open=new) and ?new (users, roles). */
 export function recordInAddress(): string | null {
-  return splitPath(window.location.pathname).record ?? new URLSearchParams(window.location.search).get("open");
+  const query = new URLSearchParams(window.location.search);
+  return splitPath(window.location.pathname).record ?? query.get("open") ?? (query.has("new") ? "new" : null);
 }
 
 /** The address of the current screen with one of its records open (or none): /screen/<id>, plus the query. */
@@ -53,6 +55,7 @@ export function recordAddress(record: string | null, query: string): string {
 export function recordPath(screen: string, record: string | null, query = ""): string {
   const params = new URLSearchParams(query);
   params.delete("open");
+  params.delete("new");
   // An id that is not a uuid (a test's "u1") stays in the query, where any text is safe.
   if (record && !recordSegment.test(record)) params.set("open", record);
   const text = params.toString();
