@@ -95,3 +95,15 @@ with the e-mail field empty and focused; it remembers the last user only behind 
 button next to the field label, which is at least one more action than typing the password.
 Odoo 20 also offers "Use a Passkey"; the compared task is a password sign-in, so neither product
 is measured with one.
+
+## Also on the sign-in screen (round 6)
+
+- **Show/Hide the password**: a button joined to the end of the password field (the next Tab stop
+  after it; Space or Enter on it toggles, and the focus goes back to the field), so a person can
+  check a long password before sending it. The field's label is its own `<label for>`, so the
+  button never becomes part of the field's name.
+- **Caps Lock is on**: said under the password field (a status message the field refers to) while
+  a key event in the field reports Caps Lock, gone when it is off or the field loses focus — a
+  wrong-case password is the commonest failed sign-in and each failure counts toward the lockout.
+
+Odoo's screen has both; ours had neither. Neither changes the measured path (no step, no key).
