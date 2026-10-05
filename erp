@@ -27,6 +27,8 @@
 #                         become exactly the dataset's users, as in the Odoo reference. Applies when the
 #                         demo database is first seeded (./erp down --volumes to start again).
 #                         Unset: generated demo users.
+#   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
+#                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
 #   ERP_EXTRA_CA_CERTS    PEM file of extra CA certificates the build and test containers must trust
 #                         (networks that inspect TLS). Defaults to NODE_EXTRA_CA_CERTS or SSL_CERT_FILE
 #                         when one of them names a file; unset on an ordinary machine.
@@ -159,16 +161,33 @@ toolbox() {
   }
 }
 
+# The address at which a container on the Docker host's network reaches the ports Testcontainers
+# publishes at random (its resource reaper's, and a test database's when not connected directly).
+# Docker's own Linux engine: 127.0.0.1. Docker Desktop (WSL 2, macOS, Windows): there the host
+# network's 127.0.0.1 reaches ports published at a fixed number but not the random ones (measured
+# on the owner's PC, Docker Desktop 29.5: connection refused, so the reaper never started and every
+# database test failed), while host.docker.internal reaches both. ERP_TESTCONTAINERS_HOST overrides.
+testcontainers_host() {
+  if [[ -n "${ERP_TESTCONTAINERS_HOST:-}" ]]; then
+    printf '%s\n' "$ERP_TESTCONTAINERS_HOST"
+  elif docker info --format '{{.OperatingSystem}}' 2>/dev/null | grep -qi 'docker desktop'; then
+    echo host.docker.internal
+  else
+    echo 127.0.0.1
+  fi
+}
+
 run_toolbox() {
   local out="$1"
   shift
+  [[ -n "${TC_HOST_RESOLVED:-}" ]] || TC_HOST_RESOLVED="$(testcontainers_host)"
   local ca=()
   if [[ -n "${ERP_EXTRA_CA_CERTS:-}" ]]; then
     ca=(-v "$ERP_EXTRA_CA_CERTS":/etc/erp-extra-ca.crt:ro)
   fi
   # ERP_TEST_DB_DIRECT: the tests reach their PostgreSQL containers at the containers' own
   # addresses (this container shares the Docker host's network), not through Docker's port proxy.
-  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1     -e ERP_TEST_DB_DIRECT=1     "$@"
+  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE="$TC_HOST_RESOLVED"     -e ERP_TEST_DB_DIRECT=1     "$@"
 }
 
 verify_cleanup() {
@@ -315,5 +334,5 @@ case "${1:-}" in
   psql) shift; cmd_psql "$@" ;;
   tenant) shift; cmd_tenant "$@" ;;
   http) shift; http "$@" ;;
-  *) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,/^set -euo pipefail/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
