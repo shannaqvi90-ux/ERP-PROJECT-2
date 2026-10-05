@@ -52,3 +52,14 @@ Compared with Odoo's edit-and-save: Odoo forms save on Alt+S (or auto-save on le
 on Alt+J; ours saves on Ctrl+S (the key every desktop application uses), asks before losing changes
 rather than saving them silently, and shows server validation on the field rather than a
 notification.
+
+## Wave 1 integrity items absorbed (2026-10-05)
+
+`gauntlet/integrity/wave-1-a.md` left four form divergences for p06:
+
+| Item | Now |
+|---|---|
+| Identity handled keys on the form element, tenancy through the shell registry | Every record form gets its keys from `RecordForm` through the shortcut registry, so they are in the shortcut sheet under "Forms". The two forms that are not record forms (copy a role; change my password) use the kernel's `formKeys`: the same chords, matched by key position. |
+| Identity mapped field errors with its own `fieldErrors`, tenancy with `problemOf`/`Field` | Record forms map server errors in `useRecordForm`; every field is the kernel `Field` shape, my account's password fields included. Tenancy's `problemOf` remains only for the two inline helpers on the company form that are not record forms (logo upload, the one-line add-a-branch row); they show the server's message beside themselves. |
+| Identity's save keys missing from the shortcut sheet | Listed (see the first row). |
+| New record at `?new` (users, roles) or `?open=new` (companies, branches) | One address: `<screen>/new`. Older links keep working: `?open=<id>`, `?open=new` and `?new` open the same record and the address is rewritten to the path. |
