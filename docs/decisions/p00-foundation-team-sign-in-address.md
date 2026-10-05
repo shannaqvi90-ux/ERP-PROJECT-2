@@ -60,3 +60,38 @@ The plants against the real driver (H1, K1) still apply unchanged.
   so it would tie again, and it puts a person's address in browser history and shared links.
 - **Space or another printable key to leave the e-mail field**: it hides a step inside typing; the
   harness refuses control characters in typing for the same reason.
+
+## Measured on the owner's PC (2026-10-05)
+
+`node gauntlet/compare/run.mjs --task sign-in --product both --repeat 3` against a fresh
+`./erp up` and the shared Odoo reference rig (Odoo's three runs, ours three runs, medians):
+
+| Variant | Product | Steps | Keystrokes | Machine s | KLM human s | Human + wait s |
+|---|---|---|---|---|---|---|
+| new device (nothing remembered) | Odoo | 4 | 57 | 0.89 | 19.06 | 19.89 |
+| new device, team's address | ours | 4 | 35 | 0.35 | 11.55 | 11.74 |
+| returning (best per metric) | ours | 2 | 21 | 0.22 | 7.63 | 7.81 |
+
+The first measurement found the returning variant **invalid**: on the team's address the screen
+showed a remembered e-mail as its local part (`signin.tester` before `@demo-trading.example`), and
+the harness's fair-start check (`lib/start.mjs`) accepts only the task's whole sign-in in a filled
+field. The screen now shows an e-mail it already knows whole, with no domain after it — it is the
+person's own sign-in, exactly as it will be sent — and the unit and end-to-end tests check that.
+The check was not loosened.
+
+### Why the new-device path still has four steps
+
+A password sign-in on a browser that knows nothing needs four separate actions in any product, as
+the harness counts them: who you are (a field entry), leaving that field (a key), the password (a
+field entry), sending it (a key). Every way to merge two of them was considered and refused:
+a printable key that leaves the field hides a step inside typing (the harness refuses the same in
+drivers); finishing the field when a known name is complete needs the list of names (an
+enumeration oracle for anonymous visitors); a personal address (`?email=`) is matched by Odoo's
+`/web/login?login=`; a password that alone identifies a person needs passwords unique within a
+team. Ours wins every other measure on that path (22 fewer keystrokes, 7.5 fewer modelled
+seconds, a third of the machine time) and every measure on the returning path. Checked on the
+rig (Odoo 20, 2026-10-05): after a session ends without signing out, Odoo's sign-in screen opens
+with the e-mail field empty and focused; it remembers the last user only behind a "Choose a user"
+button next to the field label, which is at least one more action than typing the password.
+Odoo 20 also offers "Use a Passkey"; the compared task is a password sign-in, so neither product
+is measured with one.
