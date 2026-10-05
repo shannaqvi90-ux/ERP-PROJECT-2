@@ -420,3 +420,23 @@ describe("identity form keys", () => {
     expect(run({ ctrlKey: true, altKey: true, key: "s", code: "KeyS" })).toEqual({ saved: 0, closed: 0, prevented: false });
   });
 });
+
+describe("my account", () => {
+  it("shows the team's sign-in address for the user's own e-mail domain, in both languages", async () => {
+    for (const language of ["en", "ar"] as const) {
+      window.history.replaceState(null, "", "/identity/me");
+      mockFetch((_m, url) => {
+        if (url === "/api/auth/session") return { status: 200, body: session(all, language) };
+        return listReply(_m, url) ?? { status: 404, body: {} };
+      });
+      view = await render(<App language={language} />);
+      await settle();
+      const address = view.container.querySelector('[data-testid="team-address"]')!;
+      expect(address.textContent).toBe(`${window.location.origin}/?domain=demo-trading.example`);
+      expect(address.getAttribute("dir")).toBe("ltr");
+      expect(view.container.textContent).toContain(language === "en" ? "Team sign-in address" : "عنوان تسجيل الدخول لفريقك");
+      view.unmount();
+      view = undefined;
+    }
+  });
+});
