@@ -162,9 +162,17 @@ run_toolbox() {
   if [[ -n "${ERP_EXTRA_CA_CERTS:-}" ]]; then
     ca=(-v "$ERP_EXTRA_CA_CERTS":/etc/erp-extra-ca.crt:ro)
   fi
+  # Docker Desktop publishes a random host port (the kind Testcontainers' reaper, Ryuk, asks for)
+  # where a container on the host network cannot reach it, so the reaper never starts and every
+  # Testcontainers test fails. There the reaper is off and the test containers carry a label
+  # instead, removed by verify's clean-up (the tests reach PostgreSQL at its own address anyway).
+  local reaper=()
+  if [[ "$(docker info --format '{{.OperatingSystem}}' 2>/dev/null)" == *"Docker Desktop"* ]]; then
+    reaper=(-e TESTCONTAINERS_RYUK_DISABLED=true -e ERP_TEST_CONTAINER_LABEL="${VERIFY_PROJECT:-$ERP_PROJECT}")
+  fi
   # ERP_TEST_DB_DIRECT: the tests reach their PostgreSQL containers at the containers' own
   # addresses (this container shares the Docker host's network), not through Docker's port proxy.
-  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1     -e ERP_TEST_DB_DIRECT=1     "$@"
+  docker run --rm --network host "${ca[@]}" "${reaper[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1     -e ERP_TEST_DB_DIRECT=1     "$@"
 }
 
 verify_cleanup() {
@@ -174,6 +182,8 @@ verify_cleanup() {
     [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
   done
   docker rm -f "${VERIFY_PROJECT}-dotnet" "${VERIFY_PROJECT}-web" "${VERIFY_PROJECT}-e2e" "${VERIFY_PROJECT}-timing" >/dev/null 2>&1 || true
+  # Test containers of this run, where the reaper is off (Docker Desktop, see run_toolbox).
+  docker ps -aq --filter "label=erp.test-run=${VERIFY_PROJECT}" | xargs -r docker rm -f -v >/dev/null 2>&1 || true
   compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
   docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
