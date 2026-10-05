@@ -48,6 +48,9 @@ export function SignInPage() {
   const [email, setEmail] = useState(remembered);
   const suffix = domain && !email.includes("@") ? `@${domain}` : null;
   const [password, setPassword] = useState("");
+  // The password may be shown while it is typed (checked before sending); Caps Lock is announced.
+  const [showPassword, setShowPassword] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Message | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -91,6 +94,11 @@ export function SignInPage() {
     const problem = emailProblem();
     setFieldErrors(problem ? { email: problem } : {});
     if (!problem) passwordRef.current?.focus();
+  }
+
+  /** Caps Lock as the last key event in the password field reports it (no other way to read it). */
+  function onPasswordKey(event: KeyboardEvent<HTMLInputElement>) {
+    setCapsLock(event.getModifierState?.("CapsLock") === true);
   }
 
   async function submit(workspace?: string) {
@@ -200,25 +208,50 @@ export function SignInPage() {
             // Password managers save and fill the whole e-mail, not the part typed in the field.
             <input className="visually-hidden" type="email" name="username" aria-label={t("shell.signIn.email")} autoComplete="username" value={fullEmail(email, domain)} readOnly tabIndex={-1} aria-hidden="true" />
           )}
-          <label className="field">
-            <span className="field-label">{t("shell.signIn.password")}</span>
-            <input
-              ref={passwordRef}
-              name="password"
-              type="password"
-              dir="ltr"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={fieldErrors.password ? true : undefined}
-              aria-describedby={fieldErrors.password ? "password-error" : undefined}
-            />
+          <div className="field">
+            <label className="field-label" htmlFor="signin-password">{t("shell.signIn.password")}</label>
+            <span className="signin-password" dir="ltr">
+              <input
+                ref={passwordRef}
+                id="signin-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                dir="ltr"
+                autoComplete="current-password"
+                autoCapitalize="off"
+                spellCheck={false}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={onPasswordKey}
+                onKeyUp={onPasswordKey}
+                onBlur={() => setCapsLock(false)}
+                aria-invalid={fieldErrors.password ? true : undefined}
+                aria-describedby={[capsLock ? "caps-lock" : "", fieldErrors.password ? "password-error" : ""].filter(Boolean).join(" ") || undefined}
+              />
+              <button
+                type="button"
+                className="signin-reveal"
+                aria-label={t(showPassword ? "shell.signIn.hidePassword" : "shell.signIn.showPassword")}
+                title={t(showPassword ? "shell.signIn.hidePassword" : "shell.signIn.showPassword")}
+                onClick={() => {
+                  setShowPassword((shown) => !shown);
+                  passwordRef.current?.focus();
+                }}
+              >
+                {t(showPassword ? "shell.signIn.hide" : "shell.signIn.show")}
+              </button>
+            </span>
+            {capsLock && (
+              <span id="caps-lock" className="signin-caps" role="status">
+                {t("shell.signIn.capsLock")}
+              </span>
+            )}
             {fieldErrors.password && (
               <span id="password-error" className="field-error">
                 {fieldErrors.password}
               </span>
             )}
-          </label>
+          </div>
           {!changing && <p className="muted signin-hint">{t("shell.signIn.setupHint")}</p>}
           {changing && (
             <>

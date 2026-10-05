@@ -116,6 +116,27 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
   });
 
+  test("the password can be shown from the keyboard to check it, then hidden, and still signs in", async ({ page }) => {
+    await freshStart(page, "en");
+    await page.keyboard.type(users.admin);
+    await page.keyboard.press("Tab");
+    await page.keyboard.type(password);
+    const field = page.locator('input[name="password"]');
+    await expect(field).toHaveAttribute("type", "password");
+    // Tab reaches the Show button right after the field; Space presses it and the focus returns.
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Show the password" })).toBeFocused();
+    await page.keyboard.press("Space");
+    await expect(field).toHaveAttribute("type", "text");
+    await expect(field).toHaveValue(password);
+    await expect(field).toBeFocused();
+    await page.getByRole("button", { name: "Hide the password" }).click();
+    await expect(field).toHaveAttribute("type", "password");
+    await paceSignIn(page);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+  });
+
   test("on the team's sign-in address in Arabic the domain stays left to right after the field", async ({ page }) => {
     await freshStart(page, "ar");
     await page.goto("/?domain=alnoor.example");
