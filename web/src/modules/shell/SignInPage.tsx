@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
+import { fullEmail, localPart, teamDomain } from "../../kernel/signInAddress";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -38,9 +39,12 @@ const fromServer = (text: string, language: Language, code?: string): Message =>
 export function SignInPage() {
   const { t, language } = useI18n();
   const { signIn } = useSession();
-  // A set-up link may carry the e-mail (never the code); otherwise this device's last one.
+  // A set-up link may carry the e-mail (never the code); otherwise this device's last one. On the
+  // team's sign-in address the domain is filled in: the person types only the part before "@".
+  const [domain] = useState(() => teamDomain(window.location.search));
   const remembered = new URLSearchParams(window.location.search).get("email") ?? rememberedEmail();
-  const [email, setEmail] = useState(remembered);
+  const [email, setEmail] = useState(() => localPart(remembered, domain));
+  const suffix = domain && !email.includes("@") ? `@${domain}` : null;
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Message | null>(null);
@@ -70,10 +74,27 @@ export function SignInPage() {
     if (changing) newPasswordRef.current?.focus();
   }, [changing]);
 
+  function emailProblem(): string | undefined {
+    const value = fullEmail(email, domain);
+    if (!value) return t("shell.signIn.emailRequired");
+    if (!emailPattern.test(value)) return t("shell.signIn.emailInvalid");
+    return undefined;
+  }
+
+  /** Enter in the e-mail field while the password is still empty goes on to the password, as
+   * Tab does, without calling the problem of a missing password an error. */
+  function onEmailKey(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || password || changing || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    const problem = emailProblem();
+    setFieldErrors(problem ? { email: problem } : {});
+    if (!problem) passwordRef.current?.focus();
+  }
+
   async function submit(workspace?: string) {
     const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) errors.email = t("shell.signIn.emailRequired");
-    else if (!emailPattern.test(email.trim())) errors.email = t("shell.signIn.emailInvalid");
+    const signInEmail = fullEmail(email, domain);
+    errors.email = emailProblem();
     if (!password) errors.password = t("shell.signIn.passwordRequired");
     setFieldErrors(errors);
     if (errors.email || errors.password) {
@@ -93,10 +114,10 @@ export function SignInPage() {
     setBusy(true);
     setError(null);
     try {
-      const result = await signIn(email.trim(), password, workspace, changing ? newPassword : undefined);
+      const result = await signIn(signInEmail, password, workspace, changing ? newPassword : undefined);
       if (result.kind === "ok") {
         try {
-          localStorage.setItem(lastEmailKey, email.trim());
+          localStorage.setItem(lastEmailKey, signInEmail);
         } catch {
           // Not remembered on this device.
         }
@@ -144,24 +165,39 @@ export function SignInPage() {
         <form onSubmit={onSubmit} noValidate aria-describedby={error ? "signin-error" : undefined}>
           <label className="field">
             <span className="field-label">{t("shell.signIn.email")}</span>
-            <input
-              ref={emailRef}
-              name="email"
-              type="email"
-              dir="ltr"
-              autoComplete="username"
-              inputMode="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={fieldErrors.email ? true : undefined}
-              aria-describedby={fieldErrors.email ? "email-error" : undefined}
-            />
+            <span className={suffix ? "signin-email has-domain" : "signin-email"} dir="ltr">
+              <input
+                ref={emailRef}
+                name="email"
+                type={domain ? "text" : "email"}
+                dir="ltr"
+                autoComplete={suffix ? "off" : "username"}
+                autoCapitalize="off"
+                spellCheck={false}
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={onEmailKey}
+                aria-invalid={fieldErrors.email ? true : undefined}
+                aria-describedby={[suffix ? "email-domain" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
+              />
+              {suffix && (
+                <span id="email-domain" className="signin-domain" title={t("shell.signIn.domainHint")}>
+                  {suffix}
+                  <span className="visually-hidden"> {t("shell.signIn.domainHint")}</span>
+                </span>
+              )}
+            </span>
             {fieldErrors.email && (
               <span id="email-error" className="field-error">
                 {fieldErrors.email}
               </span>
             )}
           </label>
+          {suffix && (
+            // Password managers save and fill the whole e-mail, not the part typed in the field.
+            <input className="visually-hidden" type="email" name="username" aria-label={t("shell.signIn.email")} autoComplete="username" value={fullEmail(email, domain)} readOnly tabIndex={-1} aria-hidden="true" />
+          )}
           <label className="field">
             <span className="field-label">{t("shell.signIn.password")}</span>
             <input

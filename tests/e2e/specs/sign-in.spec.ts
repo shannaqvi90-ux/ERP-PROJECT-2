@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { freshStart, password, signIn, users } from "./demo";
+import { freshStart, paceSignIn, password, signIn, users } from "./demo";
 
 test.describe("sign in to an empty workspace", () => {
   test("keyboard only, in English, lands in the workspace with its menu", async ({ page }) => {
@@ -72,5 +72,35 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.locator('input[name="email"]')).toBeFocused();
     await expect(page.locator('input[name="email"]')).toHaveValue("");
     expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBeNull();
+  });
+
+  test("first visit on the team's sign-in address: the part before @, Enter, the password, Enter", async ({ page }) => {
+    await freshStart(page, "en");
+    // The address every user of the team is given (My account, set-up hand-over).
+    await page.goto("/?domain=alnoor.example");
+    const email = page.locator('input[name="email"]');
+    await expect(email).toBeFocused();
+    await expect(page.locator("#email-domain")).toContainText("@alnoor.example");
+    await paceSignIn(page);
+    await page.keyboard.type("admin");
+    await page.keyboard.press("Enter");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(page.locator(".field-error")).toHaveCount(0);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBe(users.admin);
+    // My account shows the same address to copy and share.
+    await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "My account" }).click();
+    await expect(page.getByTestId("team-address")).toHaveText(/\/\?domain=alnoor\.example$/);
+  });
+
+  test("on the team's sign-in address in Arabic the domain stays left to right after the field", async ({ page }) => {
+    await freshStart(page, "ar");
+    await page.goto("/?domain=alnoor.example");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    const field = await page.locator('input[name="email"]').boundingBox();
+    const domain = await page.locator("#email-domain").boundingBox();
+    expect(domain!.x).toBeGreaterThan(field!.x); // e-mail addresses read left to right in both languages
   });
 });

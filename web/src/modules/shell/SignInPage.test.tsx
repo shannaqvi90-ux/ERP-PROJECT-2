@@ -137,6 +137,98 @@ describe("sign-in screen", () => {
     expect(view.container.querySelector('[role="alert"]')!.textContent).toContain("Sign-in failed");
     expect(view.container.querySelector<HTMLInputElement>('input[name="password"]')!.value).toBe("");
   });
+
+  function pressEnter(target: HTMLElement): boolean {
+    const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    act(() => {
+      target.dispatchEvent(event);
+    });
+    return event.defaultPrevented;
+  }
+
+  const signedOut = () => (method: string, url: string) => {
+    if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+    if (method === "POST" && url === "/api/auth/sign-in") return { status: 200, body: session };
+    return { status: 404, body: {} };
+  };
+
+  it("goes on to the password with Enter in the e-mail field, without an error or a call", async () => {
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    setInput(email, "admin@alnoor.example");
+    expect(pressEnter(email)).toBe(true);
+    expect(document.activeElement).toBe(view.container.querySelector('input[name="password"]'));
+    expect(view.container.querySelector(".field-error")).toBeNull();
+    expect(calls.filter((c) => c.url.includes("sign-in"))).toHaveLength(0);
+  });
+
+  it("stays in the e-mail field on Enter when the e-mail is not valid, and says why", async () => {
+    mockFetch(signedOut());
+    view = await render(<App language="ar" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    setInput(email, "admin");
+    expect(pressEnter(email)).toBe(true);
+    expect(document.activeElement).toBe(email);
+    expect(view.container.querySelector(".field-error")!.textContent).toBe("أدخل عنوان بريد إلكتروني صحيحًا.");
+  });
+
+  it("on the team's sign-in address fills in the domain: the local part signs in", async () => {
+    window.history.replaceState(null, "", "/?domain=Alnoor.Example");
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    expect(document.activeElement).toBe(email);
+    expect(view.container.querySelector("#email-domain")!.textContent).toContain("@alnoor.example");
+    expect(email.getAttribute("aria-describedby")).toBe("email-domain");
+    setInput(email, "admin");
+    pressEnter(email);
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    expect(document.activeElement).toBe(password);
+    setInput(password, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
+    // The device remembers the whole e-mail.
+    expect(localStorage.getItem("erp.lastEmail")).toBe("admin@alnoor.example");
+  });
+
+  it("on the team's sign-in address, typing @ signs in with the address as typed", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    setInput(email, "auditor@outside.example");
+    expect(view.container.querySelector("#email-domain")).toBeNull();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "auditor@outside.example", password: "Demo-Pass-2026" });
+  });
+
+  it("on the team's sign-in address, a remembered e-mail of the team shows as its local part with the password focused", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    localStorage.setItem("erp.lastEmail", "admin@alnoor.example");
+    mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    expect(view.container.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("admin");
+    expect(view.container.querySelector<HTMLInputElement>('input[name="username"]')!.value).toBe("admin@alnoor.example");
+    expect(document.activeElement).toBe(view.container.querySelector('input[name="password"]'));
+  });
+
+  it("ignores an address whose domain is not a host name", async () => {
+    window.history.replaceState(null, "", "/?domain=%3Cscript%3E.example");
+    mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    expect(view.container.querySelector("#email-domain")).toBeNull();
+    expect(view.container.querySelector<HTMLInputElement>('input[name="email"]')!.type).toBe("email");
+  });
 });
 
 describe("shell", () => {

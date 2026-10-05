@@ -316,7 +316,7 @@ export function startKind(task) {
 async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}) {
   const endedOn = oldPage.url();
   let url = null;
-  if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind);
+  if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind, task);
   else if (kind === 'record' || kind === 'list') {
     const problem = screenUrlProblem(product, endedOn);
     if (problem) throw new ActionOutsideClock(problem, 'set-up');

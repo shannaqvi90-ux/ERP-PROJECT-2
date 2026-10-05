@@ -32,7 +32,7 @@ function variant(returning) {
   return {
     path: returning
       ? 'A browser whose last session ended without signing out: the e-mail is remembered and the password has focus: type the password > Enter.'
-      : 'The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.',
+      : 'The team\'s sign-in address fills in the e-mail domain and focuses the e-mail field: type the part before "@" > Enter (goes on to the password) > type the password > Enter.',
     async signIn(ctx) {
       const { user, password } = ctx.task.input;
       const page = ctx.page;
@@ -51,11 +51,15 @@ function variant(returning) {
     ready: page => page.locator('input:focus'),
     async run(op, ctx) {
       const { user, password } = ctx.task.input;
-      const remembered = (await emailField(op.page).inputValue()) === user
+      // On the team's sign-in address the screen shows the domain after the field (and the field
+      // holds only the part before "@"); the user types what the screen still needs.
+      const domain = ((await op.page.locator('#email-domain').count()) ? (await op.page.locator('#email-domain').innerText()) : '').trim().split(/\s/)[0];
+      const typed = domain && user.toLowerCase().endsWith(domain.toLowerCase()) ? user.slice(0, -domain.length) : user;
+      const remembered = ((await emailField(op.page).inputValue()) === typed)
         && (await op.page.locator('input:focus').getAttribute('type')) === 'password';
       if (!remembered) {
-        await op.type(user, { label: 'e-mail' });
-        await op.press('Tab', { label: 'next field (password)' });
+        await op.type(typed, { label: 'e-mail' });
+        await op.press('Enter', { label: 'next field (password)' });
       }
       await op.type(password, { label: 'password' });
       await op.press('Enter', { label: 'sign in' });
@@ -67,7 +71,7 @@ function variant(returning) {
 
 export default {
   built: true,
-  path: 'Sign-in screen: e-mail > Tab > password > Enter; on a returning browser the e-mail is remembered: password > Enter.',
+  path: 'Team sign-in address: the part of the e-mail before "@" > Enter > password > Enter; on a returning browser the e-mail is remembered: password > Enter.',
   run: variant(false).run,
   variants: { 'new-device': variant(false), returning: variant(true) },
   async setup(ctx) { ctx.state.userId = await ensureUser(ctx); },

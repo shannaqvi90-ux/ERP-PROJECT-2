@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { teamSignInAddress } from "../../kernel/signInAddress";
 import { api, ApiError } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
@@ -46,7 +47,7 @@ export function formKeys(event: KeyboardEvent, save: () => void, close: () => vo
 function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
   const { t, formatDateTime } = useI18n();
   const [copied, setCopied] = useState(false);
-  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: window.location.origin });
+  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: teamSignInAddress(window.location.origin, notice.email) });
   return (
     <div className="id-notice" role="status">
       <p>{t("identity.code.intro")}</p>

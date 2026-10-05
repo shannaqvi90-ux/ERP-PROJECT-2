@@ -20,12 +20,21 @@ const PAGE = `<!doctype html><html><head><title>Plant page</title></head><body>
 
 // Stand-in for our sign-in screen, home screen, users list and the API calls the ours drivers make.
 // The session is a cookie the sign-in screen sets; signing out revokes it on the server.
+// Like ours, the team's sign-in address (?domain=) shows the domain after the e-mail field, and
+// Enter in the e-mail field with no password yet goes on to the password.
 const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
-  <form id="f"><label>E-mail <input name="email" autofocus></label><label>Password <input name="password" type="password"></label><button type="submit">Sign in</button></form>
+  <form id="f"><label>E-mail <input name="email" autofocus></label><span id="email-domain" hidden></span><label>Password <input name="password" type="password"></label><button type="submit">Sign in</button></form>
   <script>
+    const domain = new URLSearchParams(location.search).get('domain');
+    const shown = document.getElementById('email-domain');
+    if (domain) { shown.hidden = false; shown.textContent = '@' + domain; }
+    const full = () => { const v = document.forms.f.email.value; return domain && !v.includes('@') ? v + '@' + domain : v; };
+    document.forms.f.email.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !document.forms.f.password.value) { e.preventDefault(); document.forms.f.password.focus(); }
+    });
     document.getElementById('f').addEventListener('submit', e => {
       e.preventDefault();
-      const ok = e.target.email.value === 'signin.tester@demo-trading.example' && e.target.password.value === 'Sign-In-Pass-2026';
+      const ok = full() === 'signin.tester@demo-trading.example' && e.target.password.value === 'Sign-In-Pass-2026';
       if (ok) { document.cookie = 'sid=' + Math.random().toString(36).slice(2) + '; path=/'; location.href = '/'; }
     });
   </script></body></html>`;
@@ -449,6 +458,9 @@ test('the real ours sign-in driver verifies on a stand-in sign-in page', async (
   for (const r of runs) {
     assert.equal(r.status, 'verified', `${r.id}: ${r.error}`);
     assert.equal(r.counts.steps, 4, `${r.id}: the stand-in remembers nothing, so every path types the e-mail`);
+    // On the team's sign-in address the domain is filled in: "signin.tester" (13) + Enter + the
+    // password (20 with Shift) + Enter.
+    assert.equal(r.counts.keystrokes, 35, `${r.id}: the team's address fills in the domain`);
   }
 });
 
