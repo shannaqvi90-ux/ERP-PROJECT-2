@@ -9,6 +9,7 @@ namespace Erp.Gates.Tests.SelfTests;
 /// share <see cref="GateSelfTests"/>'s environment.
 /// </summary>
 [Collection(LeakyModuleCollection.Name)]
+[Trait(SelfTestProcess.Trait, SelfTestProcess.NonInterference)]
 public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
     /// <summary>State shared across requests that leaks only a number (lead, round 4): a count

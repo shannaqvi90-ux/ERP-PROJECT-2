@@ -122,7 +122,7 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
     [Fact]
     public async Task Migrations_and_seeding_are_idempotent()
     {
-        await Env.Factory.Services.GetRequiredService<DatabaseBootstrap>().RunAsync();
+        await Env.BootstrapAsync();
         await Env.Factory.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
         await using var admin = await Env.OpenAdminAsync();
         await using var count = new NpgsqlCommand("SELECT count(*) FROM identity.users", admin);

@@ -19,14 +19,26 @@ namespace Erp.Testing;
 /// roles created by the bootstrap, migrations applied as the owner role, seed data written by the
 /// application role through row-level security. The web app runs in memory and connects only as
 /// the application role.
+/// <para>
+/// Each environment has a database of its own on one PostgreSQL server per test process
+/// (<see cref="TestDatabaseServer"/>), not a server of its own: starting a container per test
+/// class made the suite spend most of its time starting servers and migrating. Gate environments
+/// (<see cref="StartGateAsync"/>) are copied from a template database that the same bootstrap,
+/// migrations and seeding produced once per process and settings (PostgreSQL
+/// <c>CREATE DATABASE … TEMPLATE</c>); every copy then runs the bootstrap and the migrator again
+/// (database privileges, no pending migration, the security invariants) before it is used.
+/// Environments of an explicit <see cref="SeedPlan"/> (<see cref="StartAsync"/>) are seeded in
+/// their own database as before.
+/// </para>
 /// </summary>
 public sealed class ErpTestEnvironment : IAsyncDisposable
 {
     public const string Password = "Gate-Pass-2026!";
 
-    private ErpTestEnvironment(PostgreSqlContainer container, ErpAppFactory factory, SeedPlan plan, string admin, string owner, string app)
+    private ErpTestEnvironment(TestDatabaseServer server, string database, ErpAppFactory factory, SeedPlan plan, string admin, string owner, string app)
     {
-        Container = container;
+        Server = server;
+        DatabaseName = database;
         Factory = factory;
         Plan = plan;
         AdminConnectionString = admin;
@@ -34,7 +46,17 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         AppConnectionString = app;
     }
 
-    public PostgreSqlContainer Container { get; }
+    private TestDatabaseServer Server { get; }
+
+    /// <summary>The PostgreSQL server (shared by every environment of this test process).</summary>
+    public PostgreSqlContainer Container => Server.Container;
+
+    /// <summary>The port the environment connects to the server on.</summary>
+    public int DatabasePort => Server.Port;
+
+    /// <summary>This environment's database on <see cref="Container"/>.</summary>
+    public string DatabaseName { get; }
+
     public ErpAppFactory Factory { get; }
     public SeedPlan Plan { get; }
 
@@ -57,64 +79,72 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public SeedTenant TenantA => Plan.Tenants[0];
     public SeedTenant TenantB => Plan.Tenants[1];
 
-    /// <summary>The gate profile: tenant A (attacker) and tenant B (victim, full of canaries).</summary>
-    public static Task<ErpTestEnvironment> StartGateAsync(IDictionary<string, string?>? settings = null) =>
-        StartAsync(SeedPlan.Gate(NewCanary(), Password), settings);
+    /// <summary>The gate profile: tenant A (attacker) and tenant B (victim, full of canaries),
+    /// copied from this process's gate template for <paramref name="settings"/>.</summary>
+    public static async Task<ErpTestEnvironment> StartGateAsync(IDictionary<string, string?>? settings = null)
+    {
+        var server = await TestDatabaseServer.GetAsync();
+        var template = await server.GateTemplateAsync(settings, async templateDatabase =>
+        {
+            var plan = SeedPlan.Gate(NewCanary(), Password);
+            return (await SeedAsync(server, templateDatabase, plan, settings), plan);
+        });
+        var database = server.NewDatabaseName();
+        await server.CopyAsync(template.Database, database);
+        var factory = new ErpAppFactory(server.Configuration(database, settings));
+        try
+        {
+            // The copy is checked like a fresh database: privileges on the database itself (not
+            // copied by PostgreSQL), no pending migration and the security invariants.
+            await server.BootstrapAsync(factory);
+            await factory.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
+        }
+        catch
+        {
+            await factory.DisposeAsync();
+            await server.DropAsync(database);
+            throw;
+        }
+        return server.Environment(database, factory, template.Plan);
+    }
 
     public static string NewCanary() => "CNRY" + Convert.ToHexString(RandomNumberGenerator.GetBytes(5));
 
+    /// <summary>A database of its own, bootstrapped, migrated and seeded with <paramref name="plan"/>.</summary>
     public static async Task<ErpTestEnvironment> StartAsync(SeedPlan plan, IDictionary<string, string?>? settings = null)
     {
-        var adminPassword = Secret();
-        var container = new PostgreSqlBuilder("postgres:16-alpine")
-            .WithUsername("postgres")
-            .WithPassword(adminPassword)
-            .WithDatabase("postgres")
-            .WithCommand("-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "max_connections=300")
-            .Build();
-        await container.StartAsync();
-
-        var server = new NpgsqlConnectionStringBuilder(container.GetConnectionString());
-        string For(string user, string password, string database) => new NpgsqlConnectionStringBuilder
-        {
-            Host = server.Host,
-            Port = server.Port,
-            Username = user,
-            Password = password,
-            Database = database,
-            Pooling = true,
-            MaxPoolSize = 100,
-            // Inspection and set-up statements of the tests themselves (ANALYZE of 100,000 rows,
-            // checksums of every table) on a saturated machine. The application role keeps
-            // Npgsql's default: the product sets its own timeouts (ErpDataSources).
-            CommandTimeout = user == DatabaseRoles.App ? 30 : 600,
-        }.ConnectionString;
-
-        var adminServer = For("postgres", adminPassword, "postgres");
-        var admin = For("postgres", adminPassword, "erp");
-        var owner = For(DatabaseRoles.Owner, Secret(), "erp");
-        var app = For(DatabaseRoles.App, Secret(), "erp");
-
-        var config = new Dictionary<string, string?>
-        {
-            ["ConnectionStrings:Admin"] = adminServer,
-            ["ConnectionStrings:Owner"] = owner,
-            ["ConnectionStrings:App"] = app,
-            ["Erp:RateLimits:SignInPerMinute"] = "100000",
-            ["Logging:LogLevel:Default"] = "Warning",
-            ["Logging:LogLevel:Erp"] = "Warning",
-        };
-        foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
-        {
-            config[key] = value;
-        }
-        var factory = new ErpAppFactory(config);
-        var services = factory.Services;
-        await services.GetRequiredService<DatabaseBootstrap>().RunAsync();
-        await services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
-        await services.GetRequiredService<SeedRunner>().RunAsync(plan);
-        return new ErpTestEnvironment(container, factory, plan, admin, owner, app);
+        var server = await TestDatabaseServer.GetAsync();
+        var database = server.NewDatabaseName();
+        var factory = await SeedAsync(server, database, plan, settings);
+        return server.Environment(database, factory, plan);
     }
+
+    /// <summary>Bootstrap, migrate and seed <paramref name="database"/> through a new app host.</summary>
+    private static async Task<ErpAppFactory> SeedAsync(TestDatabaseServer server, string database, SeedPlan plan, IDictionary<string, string?>? settings)
+    {
+        var factory = new ErpAppFactory(server.Configuration(database, settings));
+        try
+        {
+            var services = factory.Services;
+            await server.BootstrapAsync(factory);
+            await services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
+            await services.GetRequiredService<SeedRunner>().RunAsync(plan);
+            return factory;
+        }
+        catch
+        {
+            await factory.DisposeAsync();
+            await server.DropAsync(database);
+            throw;
+        }
+    }
+
+    internal static ErpTestEnvironment Create(TestDatabaseServer server, string database, ErpAppFactory factory, SeedPlan plan, string admin, string owner, string app) =>
+        new(server, database, factory, plan, admin, owner, app);
+
+    /// <summary>Run the product's bootstrap (roles, database, privileges) for this environment
+    /// again. The roles are shared by every environment of the server, so bootstraps take turns.</summary>
+    public Task BootstrapAsync() => Server.BootstrapAsync(Factory);
 
     /// <summary>An unauthenticated client that sends the X-Erp-Request header.</summary>
     public HttpClient CreateClient(bool requestHeader = true)
@@ -197,10 +227,8 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await Factory.DisposeAsync();
-        await Container.DisposeAsync();
+        await Server.DropAsync(DatabaseName);
     }
-
-    private static string Secret() => Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
 }
 
 /// <summary>Hosts the real <c>Program</c> with test connection strings.</summary>
@@ -236,6 +264,7 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<RequestInputRecorder>();
+            services.AddSingleton<IDataSourceObserver, StatementCapture.Observer>();
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, RequestInputRecorder.StartupFilter>();
             _descriptors = services.ToList();
         });

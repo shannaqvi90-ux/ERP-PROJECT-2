@@ -4,6 +4,18 @@ using Npgsql;
 namespace Erp.Kernel.Data;
 
 /// <summary>
+/// Watches the application role's pools as the platform builds them: tracing enrichment, metrics or
+/// diagnostics (for example OpenTelemetry, or the isolation gate's capture of the values each
+/// statement sets). Registered in dependency injection; production registers none. An observer
+/// configures the builder before the pool is built and may not change the role or host it
+/// connects to (<see cref="ErpDataSources"/> refuses).
+/// </summary>
+public interface IDataSourceObserver
+{
+    void Configure(NpgsqlDataSourceBuilder builder);
+}
+
+/// <summary>
 /// The application role's connection pools. Requests use the ordinary one (Npgsql's 30-second
 /// command timeout: a request that runs longer is a fault). Bulk work (seeding, imports) gets its
 /// own pool whose every command, <c>COPY</c> and EF statement inherits a long timeout from the
@@ -25,13 +37,37 @@ public static class ErpDataSources
     /// mistakes that bring back load-dependent failures.</summary>
     public const int MinimumBulkCommandTimeoutSeconds = 600;
 
+    /// <summary>Statements each pooled connection keeps prepared (least recently used go first).</summary>
+    public const int AutoPreparedStatements = 256;
+
     /// <summary>The application role's pool for requests.</summary>
-    public static NpgsqlDataSource BuildApp(IConfiguration configuration) =>
-        new NpgsqlDataSourceBuilder(AppConnectionString(configuration, "erp-app", null)).Build();
+    public static NpgsqlDataSource BuildApp(IConfiguration configuration) => BuildApp(configuration, []);
+
+    /// <summary>The application role's pool for requests, configured by each observer.</summary>
+    public static NpgsqlDataSource BuildApp(IConfiguration configuration, IEnumerable<IDataSourceObserver> observers) =>
+        Build(AppConnectionString(configuration, "erp-app", null), observers);
 
     /// <summary>The application role's pool for bulk work (seeding, imports).</summary>
-    public static NpgsqlDataSource BuildBulk(IConfiguration configuration) =>
-        new NpgsqlDataSourceBuilder(AppConnectionString(configuration, "erp-bulk", BulkCommandTimeoutSeconds(configuration))).Build();
+    public static NpgsqlDataSource BuildBulk(IConfiguration configuration) => BuildBulk(configuration, []);
+
+    /// <summary>The application role's pool for bulk work, configured by each observer.</summary>
+    public static NpgsqlDataSource BuildBulk(IConfiguration configuration, IEnumerable<IDataSourceObserver> observers) =>
+        Build(AppConnectionString(configuration, "erp-bulk", BulkCommandTimeoutSeconds(configuration)), observers);
+
+    private static NpgsqlDataSource Build(string connectionString, IEnumerable<IDataSourceObserver> observers)
+    {
+        var builder = new NpgsqlDataSourceBuilder(connectionString);
+        foreach (var observer in observers)
+        {
+            observer.Configure(builder);
+        }
+        var built = builder.ConnectionStringBuilder;
+        if (built.Username != DatabaseRoles.App || built.Host != new NpgsqlConnectionStringBuilder(connectionString).Host)
+        {
+            throw new InvalidOperationException("An observer may watch the application role's pool, not change whom it connects as or where.");
+        }
+        return builder.Build();
+    }
 
     /// <summary>The configured bulk command timeout (validated).</summary>
     public static int BulkCommandTimeoutSeconds(IConfiguration configuration)
@@ -60,6 +96,17 @@ public static class ErpDataSources
             throw new InvalidOperationException($"The application must connect as {DatabaseRoles.App}, not '{builder.Username}'.");
         }
         builder.ApplicationName ??= applicationName;
+        // Every request sends the same few statements (the session lookup, the tenant and company
+        // binding, the permission check, the module's queries). Npgsql prepares a statement on a
+        // pooled connection once it has run there twice, so PostgreSQL plans it once per
+        // connection instead of on every request: planning a statement under the row-level
+        // security policies takes milliseconds, running it a fraction of that. A statement the
+        // pool has not seen lately (an unusual list filter) is simply planned as before.
+        if (builder.MaxAutoPrepare == 0)
+        {
+            builder.MaxAutoPrepare = AutoPreparedStatements;
+            builder.AutoPrepareMinUsages = 2;
+        }
         if (commandTimeout is { } seconds)
         {
             builder.CommandTimeout = Math.Max(builder.CommandTimeout, seconds);

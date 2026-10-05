@@ -17,7 +17,8 @@ namespace Erp.Gates.Tests.Infrastructure;
 /// <param name="ResolvingSession">True while the kernel's authentication handler resolved the session.</param>
 /// <param name="App">The application (module catalogue) that ran it, null outside a request.</param>
 /// <param name="Port">Database port the statement went to.</param>
-public sealed record TracedCall(string Function, string? Endpoint, string? Path, bool ResolvingSession, object? App, int? Port, string Statement)
+/// <param name="Database">Database the statement went to (environments share one server).</param>
+public sealed record TracedCall(string Function, string? Endpoint, string? Path, bool ResolvingSession, object? App, int? Port, string Statement, string? Database = null)
 {
     public string Caller => ResolvingSession ? "authentication" : Endpoint is null ? "outside any request" : $"endpoint:{Endpoint}";
 }
@@ -49,6 +50,20 @@ public sealed record TracedBind(string Tenant, string ActorKind, string? Endpoin
 /// <param name="User">Database user of the connection, when Npgsql reports it.</param>
 public sealed record TracedSetting(string Statement, string? Endpoint, string? Path, string? Caller, bool FromSession, string? User, object? App);
 
+/// <summary>A change of a session setting by a statement sent inside a request, with the value it
+/// actually sets (read from the statement's parameters) and the request it served.</summary>
+/// <param name="Change">The setting, value and scope the statement set.</param>
+/// <param name="RequiredTenant">The tenant the request may run under: the signed-in principal's on
+/// an endpoint that requires a permission (an empty id for a principal without a tenant), or null
+/// for anonymous requests, the session lookup and sign-in.</param>
+/// <param name="Caller">Innermost product type on the stack when the statement started.</param>
+/// <param name="ProcessId">PostgreSQL backend process the statement ran on.</param>
+public sealed record TracedSettingChange(SqlSettings.Change Change, string? Endpoint, string? Path, string? Method, string? Request, string? RequiredTenant,
+    bool ResolvingSession, string? Caller, int ProcessId, object? App)
+{
+    public string Where => $"{Method} {Path} ({(Endpoint is null ? "no endpoint" : "endpoint:" + Endpoint)})";
+}
+
 /// <summary>
 /// Watches every SQL statement the application sends to PostgreSQL (Npgsql's ActivitySource) and
 /// every binding of a unit of work to a tenant (the kernel's <see cref="TenantBinding"/> source).
@@ -71,6 +86,10 @@ public static class SqlTrace
     private static readonly ConcurrentQueue<TracedBind> Binds = new();
     private static readonly ConcurrentQueue<TracedSetting> Settings = new();
     private static readonly ConcurrentQueue<(string Request, long Sequence, object? App)> ReadOnlys = new();
+    private static readonly ConcurrentQueue<TracedSettingChange> Changes = new();
+    private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> Unobserved = new();
+    private static readonly ConcurrentDictionary<object, int> ObservedByApp = new(ReferenceEqualityComparer.Instance);
+    private static readonly ConcurrentDictionary<(object App, string Request), string> Principals = new();
     private static int _requestStatements;
     private static long _sequence;
     private static readonly HttpContextAccessor Accessor = new();
@@ -99,14 +118,48 @@ public static class SqlTrace
     public static IReadOnlyList<TracedCall> For(ErpTestEnvironment env, int since = 0)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        var port = env.Container.GetMappedPublicPort(5432);
-        return Calls.Skip(since).Where(c => ReferenceEquals(c.App, app) || (c.App is null && c.Port == port)).ToList();
+        var port = env.DatabasePort;
+        return Calls.Skip(since).Where(c => ReferenceEquals(c.App, app) || (c.App is null && c.Port == port && c.Database == env.DatabaseName)).ToList();
     }
 
     public static int Mark => Calls.Count;
 
     /// <summary>Positions in every queue, for <see cref="BindsFor"/> and <see cref="SettingsFor"/>.</summary>
-    public static TraceMark Snapshot() => new(Calls.Count, Binds.Count, Settings.Count, _requestStatements) { ReadOnlys = ReadOnlys.Count };
+    public static TraceMark Snapshot() => new(Calls.Count, Binds.Count, Settings.Count, _requestStatements)
+    {
+        ReadOnlys = ReadOnlys.Count,
+        Changes = Changes.Count,
+        Unobserved = Unobserved.Count,
+    };
+
+    /// <summary>Setting changes (with the values they set) inside one environment's requests since <paramref name="since"/>.</summary>
+    public static IReadOnlyList<TracedSettingChange> ChangesFor(ErpTestEnvironment env, TraceMark since)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return Changes.Skip(since.Changes).Where(c => ReferenceEquals(c.App, app)).ToList();
+    }
+
+    /// <summary>The tenant a request may run under once its session is known: the signed-in
+    /// principal's, for a request to an endpoint that requires a permission (an empty id for a
+    /// principal without a tenant); null for anonymous requests and sign-in. Statements of the
+    /// session lookup itself run before the principal exists, so the request's later statements
+    /// tell.</summary>
+    public static string? PrincipalOf(TracedSettingChange change) =>
+        change.RequiredTenant ?? (change.App is { } app && change.Request is { } request && Principals.TryGetValue((app, request), out var tenant) ? tenant : null);
+
+    /// <summary>Statements inside one environment's requests since <paramref name="since"/> that
+    /// carried no capture of their parameters: sent on a pool the platform did not build, which
+    /// the gate cannot judge.</summary>
+    public static IReadOnlyList<string> UnobservedFor(ErpTestEnvironment env, TraceMark since)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return Unobserved.Skip(since.Unobserved).Where(u => ReferenceEquals(u.App, app))
+            .Select(u => $"{u.Where}: {u.Statement}").Distinct().ToList();
+    }
+
+    /// <summary>Statements inside one environment's requests whose parameters the gate captured (all time).</summary>
+    public static int ObservedFor(ErpTestEnvironment env) =>
+        env.Factory.Services.GetService(typeof(ModuleCatalog)) is { } app && ObservedByApp.TryGetValue(app, out var n) ? n : 0;
 
     /// <summary>Requests (trace identifier and order) whose transaction was made read-only since <paramref name="since"/>.</summary>
     public static IReadOnlyList<(string Request, long Sequence)> ReadOnlyFor(ErpTestEnvironment env, TraceMark since)
@@ -137,16 +190,12 @@ public static class SqlTrace
     private sealed record Caller(string? Endpoint, string? Path, string? Method, bool ResolvingSession, object? App, string? PrincipalTenant, string? CodeCaller, bool FromSession)
     {
         public string? Request { get; init; }
+        public string? RequiredTenant { get; init; }
         public long Sequence { get; init; }
         public bool ReadOnlyRequest { get; init; }
     }
 
-    /// <summary>A statement that changes a session or transaction setting.</summary>
-    private static readonly Regex SettingStatement = new(
-        @"\bset_config\s*\(|(^|;)\s*(set|reset|discard)\b",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
-    public static bool ChangesSettings(string statement) => SettingStatement.IsMatch(statement);
+    public static bool ChangesSettings(string statement) => StatementCapture.ChangesSettings(statement);
 
     private static void Capture(Activity activity)
     {
@@ -167,33 +216,17 @@ public static class SqlTrace
             SessionResolution.IsInProgress(http),
             http?.RequestServices.GetService(typeof(ModuleCatalog)),
             http?.User.Identity?.IsAuthenticated == true ? http.User.FindTenantId()?.ToString() ?? "" : null,
-            // Which code sent a statement is only needed inside requests (the settings rule).
-            http is not null && activity.Source.Name == "Npgsql" ? CodeCaller() : null,
+            // Which code sent a statement is worked out by the statement capture, and only for
+            // statements that change settings (the settings rule): a stack walk per statement
+            // cost more than everything else the trace does.
+            null,
             inSession)
         {
             Request = http?.TraceIdentifier,
+            RequiredTenant = http is null ? null : TenantBinding.RequiredTenant(http)?.ToString(),
             Sequence = activity.Source.Name == TenantBinding.SourceName ? Interlocked.Increment(ref _sequence) : 0,
             ReadOnlyRequest = http is not null && Erp.Kernel.Http.ReadOnlyRequests.Applies(http),
         });
-    }
-
-    /// <summary>The outermost product type on the stack: the class whose method (or async state
-    /// machine, lambda or local function) sent the statement.</summary>
-    private static string? CodeCaller()
-    {
-        foreach (var frame in new StackTrace(2, false).GetFrames())
-        {
-            var type = frame.GetMethod()?.DeclaringType;
-            while (type?.DeclaringType is not null)
-            {
-                type = type.DeclaringType;
-            }
-            if (type?.Namespace is { } ns && ns.StartsWith("Erp.", StringComparison.Ordinal) && type != typeof(SqlTrace))
-            {
-                return type.FullName;
-            }
-        }
-        return null;
     }
 
     private static void Record(Activity activity)
@@ -224,10 +257,42 @@ public static class SqlTrace
         if (activity.GetCustomProperty(CallerProperty) is Caller { Path: not null } inRequest)
         {
             Interlocked.Increment(ref _requestStatements);
+            if (inRequest is { RequiredTenant: { } required, App: { } principalApp, Request: { } principalRequest })
+            {
+                Principals.TryAdd((principalApp, principalRequest), required);
+            }
+            var capture = StatementCapture.Of(activity);
             if (ChangesSettings(text))
             {
-                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, inRequest.CodeCaller, inRequest.FromSession,
+                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, capture?.Caller, inRequest.FromSession,
                     UserOf(activity), inRequest.App));
+            }
+            // The tenant each statement runs under: every setting change is read with the values of
+            // the statement's own parameters. A statement without a capture went through a pool the
+            // platform did not build, where the gate cannot see its values.
+            if (capture is { } captured)
+            {
+                if (inRequest.App is { } observedApp)
+                {
+                    ObservedByApp.AddOrUpdate(observedApp, 1, (_, n) => n + 1);
+                }
+                foreach (var command in captured.Commands.Where(c => StatementCapture.NamesSettings(c.Text)))
+                {
+                    // Kept: what the rules judge (the tenant, a computed name, an app.* setting for
+                    // the whole connection); other settings, set transaction-locally, are dropped
+                    // here to keep the trace small over a hundred thousand requests.
+                    foreach (var change in SqlSettings.Parse(command.Text, command.Parameters).Where(c => c.Name is null ||
+                                 c.Name.Equals(SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase) ||
+                                 (c.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase) && c.Local != true)))
+                    {
+                        Changes.Enqueue(new TracedSettingChange(change, inRequest.Endpoint, inRequest.Path, inRequest.Method, inRequest.Request,
+                            inRequest.RequiredTenant, inRequest.ResolvingSession, captured.Caller, captured.ProcessId, inRequest.App));
+                    }
+                }
+            }
+            else
+            {
+                Unobserved.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 160 ? text : text[..160] + "…", inRequest.App));
             }
         }
         var lower = text.ToLowerInvariant();
@@ -245,7 +310,7 @@ public static class SqlTrace
                 string s when int.TryParse(s, out var p) => p,
                 _ => (int?)null,
             };
-            Calls.Enqueue(new TracedCall(function, caller.Endpoint, caller.Path, caller.ResolvingSession, caller.App, port, text));
+            Calls.Enqueue(new TracedCall(function, caller.Endpoint, caller.Path, caller.ResolvingSession, caller.App, port, text, activity.GetTagItem("db.namespace") as string));
         }
     }
 
@@ -267,6 +332,8 @@ public static class SqlTrace
 public sealed record TraceMark(int Calls, int Binds, int Settings, int RequestStatements)
 {
     public int ReadOnlys { get; init; }
+    public int Changes { get; init; }
+    public int Unobserved { get; init; }
 }
 
 /// <summary>
@@ -318,6 +385,73 @@ public static class TenantBindingRules
                      (s.User is not null && s.User != DatabaseRoles.App ? $" as database user {s.User}" : ""))
         .Distinct()
         .ToList();
+
+    /// <summary>
+    /// The tenant every statement of a request actually runs under, judged by value: a statement
+    /// can run under a tenant only if a statement of its transaction set <c>app.tenant_id</c> to it
+    /// (a value left on the connection by an earlier transaction, or set for the whole connection,
+    /// is ignored by row-level security). So every change of <c>app.tenant_id</c> inside a request
+    /// must set the signed-in principal's tenant on an endpoint that requires a permission, and a
+    /// tenant the kernel's session declared binding (<see cref="TracedBind"/>, the same request)
+    /// anywhere else (sign-in, the session lookup); nothing may change an <c>app.*</c> setting for
+    /// the whole connection; and a setting whose name or tenant value the statement computes, where
+    /// the gate cannot read it, is refused rather than trusted.
+    /// </summary>
+    public static IReadOnlyList<string> TenantValueViolations(IEnumerable<TracedSettingChange> changes, IEnumerable<TracedBind> binds,
+        Func<TracedSettingChange, string?>? principalOf = null)
+    {
+        principalOf ??= c => c.RequiredTenant;
+        var declared = binds.Where(b => b.Request is not null)
+            .ToLookup(b => b.Request!, b => b.Tenant, StringComparer.Ordinal);
+        var problems = new List<string>();
+        foreach (var c in changes)
+        {
+            var sent = $"{Short(c.Change.Source)} sent by {c.Caller ?? "unknown code"} on backend {c.ProcessId}";
+            if (c.Change.Name is null)
+            {
+                problems.Add($"{c.Where}: a setting whose name the statement computes ({sent}); the gate cannot tell which setting it changes");
+                continue;
+            }
+            if (!c.Change.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            if (c.Change.Local != true)
+            {
+                problems.Add($"{c.Where}: {c.Change.Name} set for the whole connection, not the transaction ({sent})");
+            }
+            if (!c.Change.Name.Equals(SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            if (c.Change.Computed)
+            {
+                problems.Add($"{c.Where}: the tenant is computed by the statement, so the gate cannot read which tenant its SQL runs under ({sent})");
+                continue;
+            }
+            var value = c.Change.Value ?? "";
+            if (value.Length == 0)
+            {
+                continue; // no tenant: row-level security shows nothing (fail closed)
+            }
+            if (principalOf(c) is { } required)
+            {
+                if (!SameTenant(value, required))
+                {
+                    problems.Add($"{c.Where}: SQL ran under tenant {value} but the signed-in principal's tenant is {(required == Guid.Empty.ToString() ? "none" : required)} ({sent})");
+                }
+                continue;
+            }
+            if (c.Request is null || !declared[c.Request].Any(t => SameTenant(value, t)))
+            {
+                problems.Add($"{c.Where}: SQL ran under tenant {value}, which the kernel's session never declared binding in this request ({sent})");
+            }
+        }
+        return problems.Distinct().ToList();
+    }
+
+    private static bool SameTenant(string value, string tenant) =>
+        Guid.TryParse(value, out var a) && Guid.TryParse(tenant, out var b) ? a == b : string.Equals(value, tenant, StringComparison.OrdinalIgnoreCase);
 
     private static string Short(string statement)
     {
