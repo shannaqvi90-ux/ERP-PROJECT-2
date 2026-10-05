@@ -143,6 +143,17 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.support").WithSummary("Planted bug: switches tenant from a header found by enumerating the headers.").RequirePermission("leaky.data.read");
 
+            // A query parameter picked out of the raw query string by a name the code compares
+            // itself (p06): the recorder never learns the name, so the read of the raw string is
+            // reported, while the framework's own parse of the query (every report reads its
+            // parameters by name from the parsed query) is not.
+            group.MapGet("/raw-query", async (HttpContext http, ErpDbSession session) =>
+            {
+                var raw = http.Request.QueryString.Value ?? "";
+                var picked = raw.TrimStart('?').Split('&').FirstOrDefault(p => p.StartsWith("support-" + "ref=", StringComparison.Ordinal));
+                return Results.Ok(new { picked = picked is not null, names = await NamesAsync(session) });
+            }).WithName("leaky.rawQuery").WithSummary("Planted bug: picks a query parameter out of the raw query string.").RequirePermission("leaky.data.read");
+
             // Bug 42 (critic p00 round 4, plant T1c without a visible effect): the tenant from a
             // header read by name, set with set_config, then a query whose answer never reaches the
             // response. No tenant B data shows, so only the value the statement set gives it away.

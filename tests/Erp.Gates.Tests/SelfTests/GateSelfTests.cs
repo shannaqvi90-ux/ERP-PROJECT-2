@@ -138,6 +138,9 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Plant T1d: a header found by enumerating the headers. Its name is never learnt, so the
         // attack never sends it; the enumeration itself is reported, with the code that did it.
         Assert.Contains(report.InputEnumerations, e => e == $"headers by {typeof(LeakyModule).FullName}");
+        // A parameter picked out of the raw query string is reported; the framework's parse of the
+        // query that every report endpoint triggers is not (only the planted module may appear).
+        Assert.Contains(report.InputEnumerations, e => e == $"raw query string by {typeof(LeakyModule).FullName}");
         Assert.DoesNotContain(report.InputEnumerations, e => !e.EndsWith(typeof(LeakyModule).FullName!, StringComparison.Ordinal));
         // A pool built outside the platform: its statements cannot be judged and are reported.
         Assert.Contains(report.UnobservedStatements, u => u.StartsWith("GET /api/leaky/own-pool", StringComparison.Ordinal));
