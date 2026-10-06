@@ -199,7 +199,9 @@ async function openRole(permissions: string[], role = clerk) {
     if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
     const list = listReply(m, url);
     if (list) return list;
-    if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk, role], total: 3 } };
+    // The role opened is listed once, whether it is the clerk or another role.
+    const items = [admin, clerk, role].filter((r, i, all) => all.findIndex((x) => x.id === r.id) === i);
+    if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items, total: items.length } };
     if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
     return { status: 404, body: {} };
   });

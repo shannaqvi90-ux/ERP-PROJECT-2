@@ -91,3 +91,10 @@ Built on p02's company scope as planned, with these differences from the plan ab
   keyboard), and the access view names the company each permission counts in.
 - **Demo.** The accountant (`accountant@…`) holds "Staff" (switch company, own profile) everywhere,
   "Company manager" in the first company and "Read-only" in the second.
+- **Printed and exported.** The "Users by role" report (p06's report framework) lists every
+  holding: a role held everywhere leaves "Only in company" empty, a role held in one company names
+  it (code and legal name in the report's language). The rows are read through row-level
+  security, so a caller sees the same company roles as on the user's record; a company the
+  directory does not name prints as its id rather than empty, so it is never read as "every
+  company". The report's own query is three plain queries joined by UNION ALL (EF Core cannot
+  translate a lateral join over a union).
