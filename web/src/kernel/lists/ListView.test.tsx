@@ -223,7 +223,7 @@ describe("list view", () => {
 
 describe("printing a list", () => {
   it("offers PDF, CSV and Excel in both languages, the screen's language first, and opens with Alt+Shift+R", async () => {
-    mockFetch((method, url) => {
+    mockFetch((_method, url) => {
       const parsed = new URL(url, "http://localhost");
       if (parsed.pathname.endsWith("/definition")) return { status: 200, body: { ...definition, printable: true } };
       if (parsed.pathname.endsWith("/views")) return { status: 200, body: { items: [], total: 0 } };
