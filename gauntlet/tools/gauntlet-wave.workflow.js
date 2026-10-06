@@ -33,7 +33,8 @@ Environment facts (this machine):
 const ENV_NOTES = `
 ${MACHINE_NOTES}
 - The shared Odoo reference rig (compose project "odoo-reference", data in external volumes odoo-reference-db and odoo-reference-filestore; port 8069; sign-ins and commands in tools/odoo-reference/README.md) is never yours to stop: never run down/down -v/rm on it, even if its project name looks like your own. Other agents' containers are not yours either. Never run docker system prune, docker volume prune, docker image prune -a or docker builder prune -a. Clean up only your own compose project and the images it built (docker compose -p <yours> down -v --rmi local) when you finish.
-- Processes: every agent runs as the same Linux user, so `pkill -f`, `killall` or any kill by name pattern also kills other agents' runs (it once killed four `./erp verify` runs at once). Stop only your own processes, by the PID you started or by your own compose project and container names.
+- Full verify runs share the machine: run every full \`./erp verify\` (and any other whole-suite run) through the verify slots, \`${REPO}/gauntlet/tools/verify-slot.sh ./erp verify\` (environment variables before it as usual). It waits for one of three machine-wide slots; time a run from the 'slot taken' line it prints, not from when you started waiting. Never bypass it: seven verifies at once once drove the load to 420 and every run failed on timeouts.
+- Processes: every agent runs as the same Linux user, so \`pkill -f\`, \`killall\` or any kill by name pattern also kills other agents' runs (it once killed four \`./erp verify\` runs at once). Stop only your own processes, by the PID you started or by your own compose project and container names.
 - The integration working tree ${REPO} is shared by integrators, recorders and integrity checkers from more than one workflow. Before any write there (merge, commit, push, file copy), take the integration lock: \`until mkdir ${ROOT}/.integration.lock 2>/dev/null; do if [ -n "$(find ${ROOT}/.integration.lock -maxdepth 0 -mmin +360)" ]; then rm -rf ${ROOT}/.integration.lock; fi; sleep 15; done; echo "<your role and piece> $(date -u +%FT%TZ)" > ${ROOT}/.integration.lock/owner\`. Release it with \`rm -rf ${ROOT}/.integration.lock\` as soon as your writes are pushed, including when you fail or give up. Builders and critics never write in ${REPO} and never take the lock.
 - Commit trailer to end every commit message with:
 ${TRAILER}`
@@ -147,7 +148,7 @@ Read ${REPO}/CLAUDE.md and ${REPO}/gauntlet/plan.md first.
 
 Steps:
 0. Take the integration lock (see environment notes) and hold it until step 5 is done or you give up; then release it.
-1. In ${REPO}: confirm you are on ${BRANCH} with a clean tree for tracked files (\`git status\`). Record the current HEAD as the rollback point.
+1. In ${REPO}: confirm you are on ${BRANCH} with a clean tree for tracked files (\`git status\`). Record the current HEAD as the rollback point. If an earlier integrator died part-way, HEAD may already hold an unpushed merge of piece/${p.id}: then origin/${BRANCH} is the rollback point and you verify (and if needed fix) that merge instead of merging again.
 2. \`git merge --no-ff --no-edit piece/${p.id}\`. Resolve conflicts so both sides keep their behaviour; never resolve by dropping a test, a gate or a ratchet minimum (CLAUDE.md rule 9: the bar only moves up).
 3. Build and run the whole suite with the one command (\`./erp verify\` if it exists; otherwise the closest full build and test). Use compose project name \`integ\` and ports 19000-19099 for anything you run. If a failure comes from the interaction between pieces, fix it minimally and commit the fix. If the piece itself is broken and you cannot fix it in a small, obvious change, reset ${BRANCH} to the rollback point (\`git reset --hard <rollback>\` is allowed only for your own unpushed merge) and report the problem precisely so the builder can fix it.
 4. Stage only the files you changed (never \`git add -A\`: other agents may leave untracked files). Commit messages are factual. End every commit message with:
@@ -206,21 +207,36 @@ ${JSON.stringify(v, null, 2)}
 Return the recorded id printed by record.mjs, the commit SHA and whether it was pushed.`
 }
 
+// agent() returns null when the subagent dies on a terminal API error (usage limit, 529 overload).
+// Try the same step again rather than moving the piece on to its next round with nothing built.
+async function retrying(what, fn) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const r = await fn()
+    if (r) return r
+    log(`${what}: agent died (attempt ${attempt} of 3)`)
+  }
+  return null
+}
+
 async function runPiece(p) {
   let last = p.lastVerdict || null
   const results = []
   for (let i = 0; i < ROUNDS; i++) {
     const round = p.startRound + i
     let build, integ
-    if (p.judgeCommit && i === 0) {
+    if (p.builtHead && i === 0) {
+      // This round was built in an earlier run but never integrated.
+      build = { head_commit: p.builtHead, notes_for_integrator: p.builtNotes || '', human_gates: p.builtHumanGates || [] }
+      integ = await serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
+    } else if (p.judgeCommit && i === 0) {
       // This round was built and integrated in an earlier run but never judged.
       build = { human_gates: [] }
       integ = { merged: true, pushed: true, commit: p.judgeCommit }
     } else {
     log(`${p.id}: round ${round} build`)
-    build = await agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, effort: 'high' })
-    if (!build) { log(`${p.id}: builder died in round ${round}`); results.push({ round, outcome: 'builder-died' }); continue }
-    integ = await serial(() => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' }))
+    build = await retrying(`${p.id} r${round} build`, () => agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, effort: 'high' }))
+    if (!build) { log(`${p.id}: builder died three times in round ${round}; piece stopped`); results.push({ round, outcome: 'builder-died' }); break }
+    integ = await serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
     }
     if (!integ || !integ.merged || !integ.pushed) {
       const problem = integ ? (integ.problem || 'merged/pushed false without detail') : 'integrator died'
@@ -230,10 +246,10 @@ async function runPiece(p) {
       continue
     }
     log(`${p.id}: round ${round} judging ${integ.commit.slice(0, 10)}`)
-    const verdict = await agent(criticPrompt(p, round, integ.commit) + (p.criticNote ? `\n\nNOTE FROM THE LEAD (facts about the repository, not claims about quality; check them yourself):\n${p.criticNote}` : ''), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' })
-    if (!verdict) { log(`${p.id}: critic died in round ${round}`); results.push({ round, outcome: 'critic-died', commit: integ.commit }); continue }
+    const verdict = await retrying(`${p.id} r${round} judge`, () => agent(criticPrompt(p, round, integ.commit) + (p.criticNote ? `\n\nNOTE FROM THE LEAD (facts about the repository, not claims about quality; check them yourself):\n${p.criticNote}` : ''), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' }))
+    if (!verdict) { log(`${p.id}: critic died three times in round ${round}; piece stopped`); results.push({ round, outcome: 'critic-died', commit: integ.commit }); break }
     const humanGates = [...(build.human_gates || []), ...(verdict.human_gates || [])].map(g => ({ piece: p.id, ...g }))
-    const rec = await serial(() => agent(recorderPrompt(verdict, humanGates), { label: `record:${p.id}:r${round}`, phase: 'Record', schema: REC_SCHEMA, effort: 'low' }))
+    const rec = await serial(() => retrying(`${p.id} r${round} record`, () => agent(recorderPrompt(verdict, humanGates), { label: `record:${p.id}:r${round}`, phase: 'Record', schema: REC_SCHEMA, effort: 'low' })))
     log(`${p.id}: round ${round} ${verdict.verdict} — ${verdict.biggest_gap.title}`)
     results.push({ round, outcome: 'judged', verdict: verdict.verdict, gap: verdict.biggest_gap.title, commit: integ.commit, recorded: rec ? rec.recorded_id : null })
     last = verdict
