@@ -14,6 +14,9 @@ public sealed class UsersVolumeFixture : IAsyncLifetime
     public const int Volume = 100_000;
     public const string NeedleName = "Shamma Waleed Al Romaithi";
 
+    /// <summary>The same person's name in Arabic script (no generated user has these words).</summary>
+    public const string NeedleNameAr = "شما وليد الرميثي";
+
     public ErpTestEnvironment Env { get; private set; } = null!;
 
     public SeedTenant Main => Env.Plan.Tenants[0];
@@ -31,6 +34,7 @@ public sealed class UsersVolumeFixture : IAsyncLifetime
         {
             email = $"shamma.romaithi@{Main.EmailDomain}",
             displayName = NeedleName,
+            displayNameAr = NeedleNameAr,
             language = "ar",
             password = ErpTestEnvironment.Password,
         });
@@ -107,6 +111,36 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
             timings.Add(timing);
             Assert.Contains(page.GetProperty("items").EnumerateArray(), u => u.GetProperty("displayName").GetString() == UsersVolumeFixture.NeedleName);
             Assert.True(page.GetProperty("total").GetInt32() <= 2, $"'{search}' matched {page.GetProperty("total").GetInt32()} users");
+            Assert.True(timing.WithinBudget, string.Join("\n", timings));
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine(string.Join("\n", timings));
+    }
+
+    [Fact]
+    public async Task One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
+        var timings = new List<Timing>();
+        // As written, with the spellings people type for one another (alef maqsura for final yeh,
+        // a hamza on the alef), in any order, and mixed with a Latin word.
+        foreach (var search in new[] { "شما الرميثي", "شما الرميثى", "الرميثي شمأ", "وليد الرميثي", "shamma الرميثي" })
+        {
+            var (page, timing) = await TimedAsync(admin, $"/api/identity/users?search={Uri.EscapeDataString(search)}");
+            timings.Add(timing);
+            var items = page.GetProperty("items").EnumerateArray().ToList();
+            Assert.True(items.Count > 0, $"'{search}' found nobody");
+            Assert.Equal(UsersVolumeFixture.NeedleNameAr, items[0].GetProperty("displayNameAr").GetString());
+            Assert.True(page.GetProperty("total").GetInt32() <= 2, $"'{search}' matched {page.GetProperty("total").GetInt32()} users");
+            Assert.True(timing.WithinBudget, string.Join("\n", timings));
+        }
+
+        // Broad Arabic searches over the generated Arabic names (a fifth of 100,000 users), ranked
+        // (a name shared by thousands) and too broad to rank (one letter), stay within the budget too.
+        foreach (var search in new[] { "فاطمه", "فاطمة المنصوري", "ا" })
+        {
+            var (page, timing) = await TimedAsync(admin, $"/api/identity/users?search={Uri.EscapeDataString(search)}");
+            timings.Add(timing with { Uri = $"{timing.Uri} ({page.GetProperty("total").GetInt32()} rows)" });
+            Assert.True(page.GetProperty("total").GetInt32() > 50, $"'{search}' matched {page.GetProperty("total").GetInt32()} users");
             Assert.True(timing.WithinBudget, string.Join("\n", timings));
         }
         TestContext.Current.TestOutputHelper?.WriteLine(string.Join("\n", timings));

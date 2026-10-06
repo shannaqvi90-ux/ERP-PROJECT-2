@@ -99,10 +99,21 @@ public static class ListSearch
         }
         // As typed first, then the spellings that change fewest letters (the likeliest ones, kept
         // when a phrase of several words has to be cut to a bounded number of spellings).
-        return spellings.Distinct(StringComparer.Ordinal)
+        var result = spellings.Distinct(StringComparer.Ordinal)
             .OrderBy(s => s.Where((c, i) => c != text[i]).Count())
             .ThenBy(s => s, StringComparer.Ordinal)
             .ToList();
+        // A word typed with short vowels or shadda is also tried exactly as typed, first: a name
+        // stored with them ("مُحَمَّد") is then found by typing it as it is written.
+        if (text.Length != word.Length)
+        {
+            result.Insert(0, word);
+            if (result.Count > MaxSpellings)
+            {
+                result.RemoveAt(result.Count - 1);
+            }
+        }
+        return result;
     }
 
     /// <summary>A search word as a regular expression both PostgreSQL (<c>~*</c>) and .NET read
@@ -111,6 +122,9 @@ public static class ListSearch
     public static string Pattern(string word)
     {
         var pattern = new StringBuilder();
+        // In an Arabic word, every letter may be followed in the stored value by short vowels,
+        // shadda or tatweel (written or not), so "محمد" ranks "مُحَمَّد" as it ranks "محمد".
+        var marks = HasArabicLetter(word) ? IgnorableClass : "";
         foreach (var c in word)
         {
             if (IsIgnorable(c))
@@ -119,11 +133,11 @@ public static class ListSearch
             }
             if (GroupOf(c) is { } group)
             {
-                pattern.Append('[').Append(group).Append(']');
+                pattern.Append('[').Append(group).Append(']').Append(marks);
             }
             else if (char.IsLetterOrDigit(c))
             {
-                pattern.Append(c);
+                pattern.Append(c).Append(char.IsLetter(c) ? marks : "");
             }
             else
             {
@@ -132,6 +146,10 @@ public static class ListSearch
         }
         return pattern.ToString();
     }
+
+    /// <summary>Any run of the marks <see cref="IsIgnorable"/> accepts, as a regular expression both
+    /// PostgreSQL and .NET read alike (the characters themselves, no escapes or ranges).</summary>
+    private const string IgnorableClass = "[\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652\u0670\u0640]*";
 
     /// <summary>The word contains a letter of the Arabic script (Arabic, Arabic Supplement and the
     /// presentation forms), so it may occur in a search field marked <see cref="ListTextScript.Arabic"/>.</summary>

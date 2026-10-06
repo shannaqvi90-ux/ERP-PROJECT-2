@@ -332,6 +332,10 @@ public sealed class ListEngineTests
         Assert.Equal(["ليلى الهاشمي"], await Find(names, "ليلي"));
         // Short vowels typed in the search are ignored (stored ones still have to be typed).
         Assert.Equal(["أحمد المنصوري"], await Find(names, "أَحْمَد"));
+        // A name stored with short vowels and shadda is found by typing it as it is written, and
+        // ranks as the exact match ahead of a longer name without them.
+        Assert.Equal(["مُحَمَّد علي"], await Find(names, "مُحَمَّد"));
+        Assert.Equal("مُحَمَّد علي", (await Find([.. names, "مُحَمَّد علي الكبير"], "مُحَمَّد علي"))[0]);
         // The whole name in other spellings is still the exact match, ahead of longer names.
         Assert.Equal("فاطمة الزعابي", (await Find([.. names, "فاطمة الزعابي الكبيرة"], "فاطمه الزعابى"))[0]);
         // "احمد" never matches "محمد": only the letter variants are interchangeable.
@@ -352,6 +356,11 @@ public sealed class ListEngineTests
         var many = ListSearch.Spellings("ااااااااا");
         Assert.InRange(many.Count, 2, ListSearch.MaxSpellings);
         Assert.Equal("ااااااااا", many[0]);
+        // A word with marks is tried as typed first, then without them, still within the bound.
+        var marked = ListSearch.Spellings("مُحَمَّد");
+        Assert.Equal(["مُحَمَّد", "محمد"], marked);
+        Assert.InRange(ListSearch.Spellings("أَاااااااا").Count, 2, ListSearch.MaxSpellings);
+        Assert.Equal("أَاااااااا", ListSearch.Spellings("أَاااااااا")[0]);
     }
 
     [Fact]
