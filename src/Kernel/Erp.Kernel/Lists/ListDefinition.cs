@@ -16,19 +16,6 @@ public enum ListColumnType
     Reference,
 }
 
-/// <summary>The writing system a text column holds, which tells quick search which words can
-/// occur in it.</summary>
-public enum ListTextScript
-{
-    /// <summary>Any text (a name typed in either script, an e-mail address): every search word
-    /// is tried on it.</summary>
-    Any,
-
-    /// <summary>Text in Arabic script (a name in Arabic beside a Latin one): only search words
-    /// that contain an Arabic letter are tried on it, so a Latin search costs no more for it.</summary>
-    Arabic,
-}
-
 /// <summary>One allowed value of a <see cref="ListColumnType.Choice"/> column.</summary>
 /// <param name="Value">The value as stored and sent in filters.</param>
 /// <param name="LabelKey">Web string key of the value's label.</param>
@@ -42,8 +29,6 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Aggregate">Groups carry the column's total (number and money columns).</param>
 /// <param name="Hidden">Not shown until the user adds it with the column chooser.</param>
 /// <param name="Choices">The values of a choice column, with their labels.</param>
-/// <param name="Script">The writing system of a text column's values; quick search tries a search
-/// field marked <see cref="ListTextScript.Arabic"/> only with words that contain an Arabic letter.</param>
 /// <param name="LabelField">For a reference column: the row property that names the referenced
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
@@ -58,7 +43,6 @@ public sealed record ListColumn(
     bool Aggregate = false,
     bool Hidden = false,
     IReadOnlyList<ListChoice>? Choices = null,
-    ListTextScript Script = ListTextScript.Any,
     string? LabelField = null,
     string? ArabicField = null);
 
@@ -89,6 +73,9 @@ public sealed record ListPreset(string Key, string LabelKey, string? Filter = nu
 /// <param name="DefaultSort">Sort applied when the request names none: column keys separated by
 /// commas, a leading '-' meaning descending.</param>
 /// <param name="Presets">Built-in views every user of the list gets.</param>
+/// <param name="ArabicSearchFields">Column keys a search word written in Arabic letters matches
+/// instead of <paramref name="SearchFields"/> (for example a name and its Arabic spelling, but not an
+/// e-mail address, which never holds Arabic letters). Null: Arabic words match the search fields.</param>
 public sealed partial record ListDefinition(
     string Key,
     string LabelKey,
@@ -98,8 +85,19 @@ public sealed partial record ListDefinition(
     IReadOnlyList<string> SearchFields,
     string SearchParameter = "search",
     string? DefaultSort = null,
-    IReadOnlyList<ListPreset>? Presets = null)
+    IReadOnlyList<ListPreset>? Presets = null,
+    IReadOnlyList<string>? ArabicSearchFields = null)
 {
+    /// <summary>The fields a search word matches: <see cref="ArabicSearchFields"/> for a word
+    /// written in Arabic letters when the list names them, else <see cref="SearchFields"/>. Arabic
+    /// letters only (<see cref="ListSearch.HasArabicLetter"/>): a number typed in Arabic-Indic digits
+    /// ("١٢٣") is not a word in Arabic and still searches every search field.</summary>
+    public IReadOnlyList<string> SearchFieldsFor(string word) =>
+        ArabicSearchFields is { Count: > 0 } arabic && ListSearch.HasArabicLetter(word) ? arabic : SearchFields;
+
+    /// <summary>Every field any search word can match.</summary>
+    public IEnumerable<string> AllSearchFields => SearchFields.Concat(ArabicSearchFields ?? []).Distinct(StringComparer.Ordinal);
+
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
     /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
@@ -152,21 +150,13 @@ public sealed partial record ListDefinition(
                 yield return $"list '{Key}': column '{column.Key}' lists choice '{duplicate.Key}' twice";
             }
         }
-        foreach (var field in SearchFields.Where(f => Columns.All(c => c.Key != f)))
+        foreach (var field in AllSearchFields.Where(f => Columns.All(c => c.Key != f)))
         {
             yield return $"list '{Key}': search field '{field}' is not a column";
         }
-        foreach (var field in SearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
+        foreach (var field in AllSearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
         {
             yield return $"list '{Key}': search field '{field}' is not a text column";
-        }
-        foreach (var column in Columns.Where(c => c.Script != ListTextScript.Any && c.Type != ListColumnType.Text))
-        {
-            yield return $"list '{Key}': column '{column.Key}' names a script but is not a text column";
-        }
-        if (SearchFields.Count > 0 && SearchFields.All(f => Column(f) is { Script: not ListTextScript.Any }))
-        {
-            yield return $"list '{Key}': every search field is limited to one script, so some searches could never match (keep at least one field of any script)";
         }
         if (DefaultSort is { } sort && Error(() => ListSortKey.Parse(sort, this)) is { } sortError)
         {

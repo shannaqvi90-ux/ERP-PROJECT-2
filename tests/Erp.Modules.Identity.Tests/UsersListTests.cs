@@ -206,6 +206,20 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
     }
 
     [Fact]
+    public async Task Search_finds_a_name_written_in_Arabic()
+    {
+        // Critic p03 round 3: searching "عمر حداد" found nobody although Arabic screens show it.
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var search in new[] { "عمر حداد", "حداد", "حداد عمر", "omar حداد" })
+        {
+            var page = await Get(admin, $"/api/identity/users?search={Q(search)}");
+            Assert.Contains(Items(page), u => u.GetProperty("email").GetString() == Env.Email(Env.TenantA, "viewer"));
+        }
+        // Every Arabic word must match: one that matches nobody finds nobody.
+        Assert.Equal(0, (await Get(admin, $"/api/identity/users?search={Q("حداد زززق")}")).GetProperty("total").GetInt32());
+    }
+
+    [Fact]
     public async Task Filters_select_exactly_the_matching_rows()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

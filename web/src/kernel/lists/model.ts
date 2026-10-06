@@ -22,8 +22,6 @@ export type ListColumn = {
   hidden: boolean;
   choices: ListChoice[];
   operators: Operator[];
-  /** Writing system of a text column: quick search tries an "arabic" one only with words in Arabic script. */
-  script?: "any" | "arabic";
 };
 
 export type ListPreset = { key: string; labelKey: string; filter: string | null; sort: string | null; groupBy: string | null };
@@ -34,6 +32,8 @@ export type ListDefinition = {
   endpoint: string;
   columns: ListColumn[];
   searchFields: string[];
+  /** The fields a search word written in Arabic letters matches (the search fields when the list names none). */
+  arabicSearchFields?: string[];
   defaultSort: string | null;
   presets: ListPreset[];
   canShare: boolean;

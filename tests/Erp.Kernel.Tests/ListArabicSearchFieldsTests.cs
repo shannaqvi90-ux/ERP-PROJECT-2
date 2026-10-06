@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Kernel.Tests;
 
-/// <summary>A search field of Arabic script (a name in Arabic beside a Latin one): Arabic words
-/// find rows through it, Latin words never try it, so a list gains the field without making
-/// every Latin search wider.</summary>
-public sealed class ListScriptSearchTests
+/// <summary>Arabic search fields (<see cref="ListDefinition.ArabicSearchFields"/>, a name in Arabic
+/// beside a Latin one): words written in Arabic letters find rows through them, Latin words never
+/// try them, so a list gains the Arabic name without making every Latin search wider.</summary>
+public sealed class ListArabicSearchFieldsTests
 {
     public sealed class Person
     {
@@ -25,12 +25,17 @@ public sealed class ListScriptSearchTests
         [
             new ListColumn("name", "crm.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
             new ListColumn("email", "crm.people.email", ListColumnType.Text, Filterable: true),
-            new ListColumn("nameAr", "crm.people.nameAr", ListColumnType.Text, Filterable: true, Script: ListTextScript.Arabic),
+            new ListColumn("nameAr", "crm.people.nameAr", ListColumnType.Text, Filterable: true),
         ],
-        SearchFields: ["name", "email", "nameAr"],
-        DefaultSort: "name");
+        SearchFields: ["name", "email"],
+        DefaultSort: "name",
+        // This list keeps the address for Arabic words (internationalised addresses).
+        ArabicSearchFields: ["name", "email", "nameAr"]);
 
-    private static ListBinding<Person> Binding() => ListBinding<Person>.For(People, p => p.Id)
+    /// <summary>The same list as the users list shapes it: Arabic words search the two names only.</summary>
+    private static readonly ListDefinition NamesOnly = People with { ArabicSearchFields = ["name", "nameAr"] };
+
+    private static ListBinding<Person> Binding(ListDefinition? definition = null) => ListBinding<Person>.For(definition ?? People, p => p.Id)
         .Column("name", p => p.Name).Column("email", p => p.Email).Column("nameAr", p => p.NameAr);
 
     private static readonly List<Person> Rows =
@@ -53,9 +58,9 @@ public sealed class ListScriptSearchTests
         return new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
     }
 
-    private static async Task<IReadOnlyList<string>> Find(string search)
+    private static async Task<IReadOnlyList<string>> Find(string search, ListDefinition? definition = null)
     {
-        var result = await Binding().InMemory("test rows").QueryAsync(Rows.AsQueryable(), new ListRequest { Search = search, Take = 200 }, Http(), CancellationToken.None);
+        var result = await Binding(definition).InMemory("test rows").QueryAsync(Rows.AsQueryable(), new ListRequest { Search = search, Take = 200 }, Http(), CancellationToken.None);
         Assert.Null(result.Problem);
         return result.Rows.Select(r => r.Name).ToList();
     }
@@ -81,13 +86,41 @@ public sealed class ListScriptSearchTests
     }
 
     [Fact]
+    public async Task Arabic_words_search_only_the_Arabic_search_fields_and_Latin_words_only_the_search_fields()
+    {
+        // The users list's shape: an Arabic word no longer looks in the address.
+        Assert.Empty(await Find("حسن", NamesOnly));
+        Assert.Equal(["Omar Haddad"], await Find("حداد", NamesOnly));
+        Assert.Equal(["مريم الكعبي"], await Find("مريم", NamesOnly));
+        Assert.Empty(await Find("zzqq", NamesOnly));
+        // A list that names no Arabic search fields searches its search fields with every word.
+        var noArabic = People with { ArabicSearchFields = null };
+        Assert.Equal(["Hassan Ali"], await Find("حسن", noArabic));
+        Assert.Equal(["Layla Hashimi"], await Find("zzqq", noArabic with { SearchFields = ["name", "email", "nameAr"] }));
+    }
+
+    [Theory]
+    [InlineData("فاطمه", new[] { "name", "nameAr" })]
+    [InlineData("ﻓﺎﻃﻤﺔ", new[] { "name", "nameAr" })]
+    [InlineData("x@مثال", new[] { "name", "nameAr" })]
+    [InlineData("omar", new[] { "name", "email" })]
+    [InlineData("١٢٣", new[] { "name", "email" })]
+    [InlineData("o'neil-2", new[] { "name", "email" })]
+    public void A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(string word, string[] fields)
+    {
+        Assert.Equal(fields, NamesOnly.SearchFieldsFor(word));
+        Assert.Equal(["name", "email", "nameAr"], NamesOnly.AllSearchFields);
+        Assert.Equal(["name", "email"], (People with { ArabicSearchFields = null }).SearchFieldsFor(word));
+    }
+
+    [Fact]
     public void A_Latin_search_queries_the_same_fields_as_before_and_an_Arabic_one_adds_the_Arabic_field()
     {
         using var db = new PeopleDb();
         // The conditions and the order (relevance), without the selected columns.
-        string Sql(string search)
+        string Sql(string search, ListDefinition? definition = null)
         {
-            var sql = Binding().Apply(db.People, new ListRequest { Search = search }).ToQueryString();
+            var sql = Binding(definition).Apply(db.People, new ListRequest { Search = search }).ToQueryString();
             return sql[sql.IndexOf("FROM people", StringComparison.Ordinal)..];
         }
 
@@ -109,24 +142,35 @@ public sealed class ListScriptSearchTests
         Assert.Equal(3, where.Split("~*").Length - 1);
         Assert.Equal(3 * ListSearch.Spellings("فاطمه").Count, where.Split("ILIKE").Length - 1);
         Assert.True(where.IndexOf("~*", StringComparison.Ordinal) < where.IndexOf("ILIKE", StringComparison.Ordinal), where);
+
+        // The users list's shape: an Arabic word tries two fields, as many as a Latin word.
+        var namesOnly = Where(Sql("فاطمه", NamesOnly));
+        Assert.DoesNotContain("email", namesOnly, StringComparison.Ordinal);
+        Assert.Equal(2, namesOnly.Split("~*").Length - 1);
+        Assert.Equal(2 * ListSearch.Spellings("فاطمه").Count, namesOnly.Split("ILIKE").Length - 1);
+        // Mixed words: each word in its own fields; the whole-search ranking only in the field both share.
+        var mixed = Sql("omar حداد", NamesOnly);
+        Assert.Contains("name_ar", Where(mixed), StringComparison.Ordinal);
+        Assert.Contains("email", Where(mixed), StringComparison.Ordinal);
     }
 
     [Fact]
-    public void A_script_is_named_only_for_text_and_one_search_field_stays_open_to_every_word()
+    public void Arabic_search_fields_are_text_columns_and_are_bound()
     {
-        var onlyArabic = People with
+        var notAColumn = People with { ArabicSearchFields = ["name", "nameFr"] };
+        Assert.Contains(notAColumn.Problems("crm"), p => p.Contains("search field 'nameFr' is not a column", StringComparison.Ordinal));
+        var number = People with
         {
-            Columns = [new ListColumn("nameAr", "crm.people.nameAr", ListColumnType.Text, Sortable: true, Script: ListTextScript.Arabic)],
-            SearchFields = ["nameAr"],
-            DefaultSort = "nameAr",
+            Columns = [.. People.Columns, new ListColumn("count", "crm.people.count", ListColumnType.Number)],
+            ArabicSearchFields = ["name", "count"],
         };
-        Assert.Contains(onlyArabic.Problems("crm"), p => p.Contains("every search field is limited to one script", StringComparison.Ordinal));
-        var numberWithScript = People with
-        {
-            Columns = [.. People.Columns, new ListColumn("count", "crm.people.count", ListColumnType.Number, Script: ListTextScript.Arabic)],
-        };
-        Assert.Contains(numberWithScript.Problems("crm"), p => p.Contains("names a script but is not a text column", StringComparison.Ordinal));
+        Assert.Contains(number.Problems("crm"), p => p.Contains("search field 'count' is not a text column", StringComparison.Ordinal));
         Assert.Empty(People.Problems("crm"));
+        Assert.Empty(NamesOnly.Problems("crm"));
+        // An Arabic search field without a binding is reported at start-up like any search field.
+        var unbound = ListBinding<Person>.For(People, p => p.Id).Column("name", p => p.Name).Column("email", p => p.Email);
+        Assert.Contains(unbound.Problems(), p => p.Contains("'nameAr'", StringComparison.Ordinal));
+        Assert.Empty(Binding().Problems());
     }
 
     [Theory]

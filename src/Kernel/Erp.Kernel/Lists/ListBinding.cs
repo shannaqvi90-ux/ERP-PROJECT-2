@@ -170,7 +170,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var list = Definition.Key;
         foreach (var column in Definition.Columns)
         {
-            var needsBinding = column.Sortable || column.Filterable || column.Groupable || column.Aggregate || Definition.SearchFields.Contains(column.Key);
+            var needsBinding = column.Sortable || column.Filterable || column.Groupable || column.Aggregate || Definition.AllSearchFields.Contains(column.Key);
             if (!_columns.TryGetValue(column.Key, out var bound))
             {
                 if (needsBinding)
@@ -183,7 +183,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             {
                 yield return $"list '{list}': column '{column.Key}' ({column.Type}) is bound to a {bound.ValueType.Name}";
             }
-            if (Definition.SearchFields.Contains(column.Key) && bound.ValueType != typeof(string))
+            if (Definition.AllSearchFields.Contains(column.Key) && bound.ValueType != typeof(string))
             {
                 yield return $"list '{list}': search field '{column.Key}' must be bound to text";
             }
@@ -403,11 +403,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return source.Where(Expression.Lambda<Func<T, bool>>(conditions.Aggregate(Expression.AndAlso), row));
     }
 
-    /// <summary>The search fields quick search tries for all of the words: every field of any
-    /// script, and a field of Arabic script only when every word has an Arabic letter (a Latin word
-    /// cannot occur in it, so trying it would only cost time).</summary>
+    /// <summary>The search fields quick search tries for all of the words: the fields each word
+    /// matches (<see cref="ListDefinition.SearchFieldsFor"/>: the Arabic search fields for a word
+    /// written in Arabic letters), kept only when every word matches them.</summary>
     private IReadOnlyList<string> SearchFieldsFor(IReadOnlyList<string> words) =>
-        Definition.SearchFields.Where(f => Definition.Column(f) is { } field && words.All(w => ListSearch.Reaches(field, w))).ToList();
+        words.Select(Definition.SearchFieldsFor)
+            .Aggregate((IEnumerable<string>)Definition.AllSearchFields.ToList(), (fields, wordFields) => fields.Where(wordFields.Contains))
+            .ToList();
 
     /// <summary>Some of the fields matches one of the patterns (false when no field can).</summary>
     private Expression AnyField(ParameterExpression row, IReadOnlyList<string> fields, IEnumerable<string> patterns, bool database)

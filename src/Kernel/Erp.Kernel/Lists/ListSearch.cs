@@ -169,7 +169,7 @@ public static class ListSearch
     private const string IgnorableClass = "[\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652\u0670\u0640]*";
 
     /// <summary>The word contains a letter of the Arabic script (Arabic, Arabic Supplement and the
-    /// presentation forms), so it may occur in a search field marked <see cref="ListTextScript.Arabic"/>.</summary>
+    /// presentation forms).</summary>
     public static bool HasArabicLetter(string word)
     {
         foreach (var c in word)
@@ -182,11 +182,6 @@ public static class ListSearch
         }
         return false;
     }
-
-    /// <summary>Whether quick search tries the word on a search field: every word on a field of
-    /// any script, only words with an Arabic letter on a field of Arabic script.</summary>
-    public static bool Reaches(ListColumn field, string word) =>
-        field.Script == ListTextScript.Any || HasArabicLetter(word);
 
     private static string? GroupOf(char c)
     {

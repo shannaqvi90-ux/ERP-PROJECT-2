@@ -5,8 +5,9 @@ namespace Erp.Modules.Identity.Users;
 
 /// <summary>
 /// The users list: its columns, search fields, built-in views and the query binding that serves
-/// them from <c>identity.users</c>. Search runs on trigram indexes over the display name, the
-/// normalised e-mail and (for words in Arabic script) the Arabic name; every sortable column has a (tenant_id, column, id) index.
+/// them from <c>identity.users</c>. Search runs on trigram indexes over the display name and the
+/// normalised e-mail; a word written in Arabic letters searches the display name and the Arabic name
+/// (its own trigram index) instead; every sortable column has a (tenant_id, column, id) index.
 /// </summary>
 internal static class UsersList
 {
@@ -17,11 +18,10 @@ internal static class UsersList
                 Key, "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
                 [
                     new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "displayNameAr"),
-                    // Shown in place of the name on Arabic screens when given; filtered ("contains") and
-                    // searched on its own trigram index. Arabic script: quick search tries it only for words
-                    // with an Arabic letter, so a Latin search still ORs two fields per word, not three.
-                    new ListColumn("displayNameAr", "identity.users.nameAr", ListColumnType.Text, Filterable: true, Hidden: true,
-                        Script: ListTextScript.Arabic),
+                    // Shown in place of the name on Arabic screens when given; filtered ("contains") on its own
+                    // trigram index, and searched by words written in Arabic letters (with the name, not
+                    // the address): still two fields per word, so the search over 100,000 users costs the same.
+                    new ListColumn("displayNameAr", "identity.users.nameAr", ListColumnType.Text, Filterable: true, Hidden: true),
                     new ListColumn("email", "identity.users.email", ListColumnType.Text, Sortable: true, Filterable: true),
                     new ListColumn("language", "identity.users.language", ListColumnType.Choice, Filterable: true, Groupable: true,
                         Choices: [new ListChoice("en", "identity.language.en"), new ListChoice("ar", "identity.language.ar")]),
@@ -31,7 +31,8 @@ internal static class UsersList
                     new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice),
                     new ListColumn("createdAt", "identity.users.created", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
                 ],
-                SearchFields: ["displayName", "email", "displayNameAr"],
+                SearchFields: ["displayName", "email"],
+                ArabicSearchFields: ["displayName", "displayNameAr"],
                 DefaultSort: "-createdAt",
                 Presets:
                 [
