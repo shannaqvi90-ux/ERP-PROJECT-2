@@ -78,6 +78,17 @@ owner's PC, five runs each, first request included after the vacuum step:
   (30 patterns) 40–57 ms, with 32 spellings (96 patterns) 39–40 ms, with all 50 spellings 44–64 ms;
   the index scans take under 2 ms and the recheck stops at the first pattern a row matches.
   Before this, "شمة" found none of the demo's 1,055 users named "شمّة".
+- **One regular expression per field before the LIKE patterns.** The planner drives the index
+  from one word's patterns and rechecks every other word's on each candidate row: a row that does
+  not match then costs one LIKE per spelling and field (96 for a word of 32 spellings). A word
+  with several spellings is now first tested with one case-insensitive regular expression per
+  field that accepts every spelling (letter classes, marks after any letter); the LIKE patterns
+  stay, so the trigram indexes still find the rows and the result is exactly theirs. `~*` is not
+  leakproof, which only matters for driving an index under row-level security; as a filter it runs
+  after the tenant condition like any other. Measured over 100,000 users ("شمه المنصورى", 117
+  rows; PostgreSQL alone): 82–124 ms with the LIKE patterns only, 40–46 ms with the expression
+  first. Over HTTP on the demo with the machine shared by other agents (load 78–95 on 16
+  threads), the two-word Arabic searches went from 270–380 ms to 100–280 ms.
 - **Known limit.** A word typed without short vowels (fatha, damma, kasra, sukun, tanween) does
   not find a value stored with them ("محمد" does not find "مُحَمَّد"); they are rare in stored
   names, and matching them in general would need the value with its marks removed, which under
