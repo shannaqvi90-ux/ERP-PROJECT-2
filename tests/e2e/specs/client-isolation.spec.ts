@@ -288,10 +288,12 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
     const bravo = await apiAs(bravoAdmin);
     const token = `zh${unique()}`;
     const bravoMarker = await createMarkerUser(bravo.context, "gulfsteel.example", token, "Bravo");
-    const markers = [token, "gulfsteel", "Gulf Steel", "الخليج لتصنيع", bravo.session.tenant.id, bravo.session.user.id, bravoMarker.id];
+    const bravoCompanies = (await (await bravo.context.get("/api/tenancy/companies?take=1")).json()) as { items: { id: string }[] };
+    const bravoCompany = bravoCompanies.items[0].id;
+    const markers = [token, "gulfsteel", "Gulf Steel", "الخليج لتصنيع", bravo.session.tenant.id, bravo.session.user.id, bravoMarker.id, bravoCompany];
     try {
       // B searches its users (the list writes ?q= to the address), opens its marker from the
-      // palette (?q=<e-mail>&open=<id>), moves on and signs out.
+      // palette (?q=<e-mail>&open=<id>), opens its company's report, moves on and signs out.
       await freshStart(page, "en");
       await signIn(page, bravoAdmin);
       await page.locator('nav.navpane a[href="/identity/users"]').first().click();
@@ -309,6 +311,12 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       await expect(page).toHaveURL(new RegExp(`open=${bravoMarker.id}`));
       bravoAddresses.push(page.url());
       await page.keyboard.press("Escape");
+      // B opens its company's printed profile: the reports screen keeps the report and B's
+      // company id in the address (?report=…&company=<id>).
+      await page.goto(`/reports/catalog?report=tenancy.companyProfile&company=${bravoCompany}&run=1`);
+      await expect(page.getByTestId("report-document").locator("article")).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`company=${bravoCompany}`));
+      bravoAddresses.push(page.url());
       await page.locator('nav.navpane a[href="/identity/roles"]').first().click();
       await expect(page.locator("table tbody tr").first()).toBeVisible();
       // B's addresses carry B's search and record: this test has teeth.
@@ -333,7 +341,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
         await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
       }
       expect(findings, `B's markers after A pressed Back (A visited ${visited.join(", ")})`).toEqual([]);
-      expect(visited.length, "A went Back through B's entries").toBeGreaterThanOrEqual(3);
+      expect(visited.length, "A went Back through B's entries").toBeGreaterThanOrEqual(4);
       console.log(`history: B left ${bravoAddresses.length} addresses with its search and record; A went Back ${visited.length} times: ${visited.map((u) => new URL(u).pathname + new URL(u).search).join(" ")}`);
     } finally {
       await bravo.context.delete(`/api/identity/users/${bravoMarker.id}`).catch(() => undefined);

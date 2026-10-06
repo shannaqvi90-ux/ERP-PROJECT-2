@@ -318,6 +318,8 @@ test.describe("app shell", () => {
       // The printout says it holds only the rows on screen, of how many (critic p04 round 3).
       await expect(page.locator(".list-print-scope")).toBeVisible();
       await expect(page.locator(".list-print-scope")).toContainText("من أصل");
+      // The users list is printable: the note points at the report path that prints every row.
+      await expect(page.locator(".list-print-scope")).toContainText("طباعة أو تصدير");
     } finally {
       await page.emulateMedia({ media: "screen" });
     }
