@@ -293,7 +293,8 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
     const markers = [token, "gulfsteel", "Gulf Steel", "الخليج لتصنيع", bravo.session.tenant.id, bravo.session.user.id, bravoMarker.id, bravoCompany];
     try {
       // B searches its users (the list writes ?q= to the address), opens its marker from the
-      // palette (?q=<e-mail>&open=<id>), opens its company's report, moves on and signs out.
+      // palette (the record's id in the address: /identity/users/<id>?q=<e-mail>), opens its
+      // company's report, moves on and signs out.
       await freshStart(page, "en");
       await signIn(page, bravoAdmin);
       await page.locator('nav.navpane a[href="/identity/users"]').first().click();
@@ -308,7 +309,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       const option = page.locator('[role="dialog"].palette [role="option"]', { hasText: token });
       await expect(option).toBeVisible();
       await option.click();
-      await expect(page).toHaveURL(new RegExp(`open=${bravoMarker.id}`));
+      await expect(page).toHaveURL(new RegExp(bravoMarker.id));
       bravoAddresses.push(page.url());
       await page.keyboard.press("Escape");
       // B opens its company's printed profile: the reports screen keeps the report and B's
