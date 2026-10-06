@@ -50,3 +50,15 @@ counts calls (found field by field).
 - The isolation gate takes longer (each list query is walked page by page in both tenants).
 - A future module that caches anything on a registration object fails the process-state gate until
   the field is made immutable, scoped to the request, keyed by tenant, or reviewed on its own line.
+
+## Round 4 (2026-10-06): forms and reports merged in
+
+- The reachable-state walk reached the registrations p06 added to `ModuleDescriptor`
+  (`ListRowReaders`, `Reports`) and the embedded PDF font faces of the `PdfFonts` singleton. Each
+  field is reviewed on its own line, as for the other registration fields; the font's bounding box
+  became an immutable array, so the only reviewed font fields are the bundled font bytes and the
+  HarfBuzz objects made immutable when the face is built.
+- The G2 list-endpoint gate keeps going when a refused caller got through and removed a view, so
+  it reports every finding (the 204 to the share-only caller, the changed views, the
+  administrator's 404s) instead of stopping at the first 404. Checked with round 1's plant P2 with
+  the endpoint filter removed as well: every list's shared-view DELETE is named.
