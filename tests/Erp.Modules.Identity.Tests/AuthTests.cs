@@ -161,6 +161,9 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
 
         var signOut = await bearer.PostAsync("/api/auth/sign-out", null);
         Assert.Equal(HttpStatusCode.NoContent, signOut.StatusCode);
+        // The browser drops every cookie of the site, also those a screen scoped to a path the
+        // signing-out document cannot see (critic p04 round 3, plant C2).
+        Assert.Equal("\"cookies\"", string.Join(",", signOut.Headers.GetValues("Clear-Site-Data")));
         Assert.Equal(HttpStatusCode.Unauthorized, (await bearer.GetAsync("/api/identity/users")).StatusCode);
         var session = await bearer.GetFromJsonAsync<JsonElement>("/api/auth/session");
         Assert.False(session.GetProperty("authenticated").GetBoolean());
