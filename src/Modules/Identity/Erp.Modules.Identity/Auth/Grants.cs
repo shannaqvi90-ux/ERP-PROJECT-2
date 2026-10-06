@@ -13,8 +13,6 @@ namespace Erp.Modules.Identity.Auth;
 /// </summary>
 internal sealed class UserGrants
 {
-    public static readonly UserGrants None = new(new HashSet<string>(StringComparer.Ordinal), new Dictionary<Guid, HashSet<string>>(), 0);
-
     public UserGrants(HashSet<string> everywhere, Dictionary<Guid, HashSet<string>> byCompany, int hidden)
     {
         Everywhere = everywhere;

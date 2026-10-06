@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -26,12 +27,14 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
 
     public const string SourcePrefix = "device:";
 
-    private static readonly Lazy<byte[]> ProcessKey = new(() => RandomNumberGenerator.GetBytes(32));
+    // Random per process when no key is configured (devices are then forgotten on restart); the
+    // same for every tenant and never written after start-up.
+    private static readonly ImmutableArray<byte> ProcessKey = ImmutableArray.Create(RandomNumberGenerator.GetBytes(32));
 
     private sealed record Entry(string E, string D);
 
     private byte[] Key =>
-        string.IsNullOrWhiteSpace(options.Value.DeviceKey) ? ProcessKey.Value : SHA256.HashData(Encoding.UTF8.GetBytes(options.Value.DeviceKey));
+        string.IsNullOrWhiteSpace(options.Value.DeviceKey) ? ProcessKey.ToArray() : SHA256.HashData(Encoding.UTF8.GetBytes(options.Value.DeviceKey));
 
     /// <summary>The failure-count source of a device that has signed in to this address before, or null.</summary>
     public string? SourceFor(HttpContext http, string email)

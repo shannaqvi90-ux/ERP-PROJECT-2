@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
 using Erp.Kernel.Modules;
@@ -152,24 +153,35 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
     /// <summary>
     /// The payload of a session just signed in to: the same steps the next request's
     /// authentication takes (the session's scope bound, then the permissions of the working
-    /// company), so the first screen shows exactly what the user may do there.
+    /// company), so the first screen shows exactly what the user may do there. They run in a
+    /// fresh service scope with its own unit of work bound to the new session's tenant and user:
+    /// a request that arrived with another valid session has already bound that session's
+    /// company and branch scope (set once per request), which must neither be widened nor
+    /// reused for the new session.
     /// </summary>
     public async Task<SessionResponse> BuildForNewSessionAsync(Guid tenantId, Guid userId, Guid sessionId, DateTimeOffset expiresAt, CancellationToken cancellationToken)
     {
-        var grants = services.GetRequiredService<SessionGrants>();
+        await using var fresh = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+        var provider = fresh.ServiceProvider;
+        var unit = provider.GetRequiredService<ErpDbSession>();
+        unit.CorrelationId = services.GetRequiredService<ErpDbSession>().CorrelationId;
+        // Reads only; the scope's transaction is rolled back when it is disposed.
+        await unit.BeginAsync(tenantId, userId, ErpDbSession.UserActorKind, cancellationToken);
+        var grants = provider.GetRequiredService<SessionGrants>();
         var held = await grants.LoadAsync(userId, cancellationToken);
-        var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName, u.Language }).SingleAsync(cancellationToken);
+        var freshDb = provider.GetRequiredService<IdentityDbContext>();
+        var user = await freshDb.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName, u.Language }).SingleAsync(cancellationToken);
         var resolved = new ResolvedSession(sessionId, tenantId, userId, user.Email, user.DisplayName, user.Language, expiresAt, held.Everywhere.ToList());
-        foreach (var binder in services.GetServices<ISessionScopeBinder>())
+        foreach (var binder in provider.GetServices<ISessionScopeBinder>())
         {
             await binder.BindAsync(resolved, cancellationToken);
         }
         IReadOnlyCollection<string> permissions = resolved.Permissions;
-        foreach (var scope in services.GetServices<ISessionPermissionScope>())
+        foreach (var scope in provider.GetServices<ISessionPermissionScope>())
         {
             permissions = await scope.ScopeAsync(resolved, permissions, cancellationToken);
         }
-        return await BuildCoreAsync(userId, expiresAt, permissions, cancellationToken);
+        return await provider.GetRequiredService<SessionPayload>().BuildCoreAsync(userId, expiresAt, permissions, cancellationToken);
     }
 
     private async Task<SessionResponse> BuildCoreAsync(Guid userId, DateTimeOffset? expiresAt, IReadOnlyCollection<string> held, CancellationToken cancellationToken)

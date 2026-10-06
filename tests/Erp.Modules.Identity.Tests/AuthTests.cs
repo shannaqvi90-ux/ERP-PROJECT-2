@@ -182,6 +182,39 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
         Assert.Equal(HttpStatusCode.Unauthorized, (await bearer.GetAsync("/api/identity/users")).StatusCode);
     }
 
+    /// <summary>A browser that is still signed in signs in again, as the same person or as someone
+    /// of another workspace: the request arrives with a valid session whose company and branch scope
+    /// are already bound, and the new session's answer is built for the new session alone (the G1
+    /// HTTP gate found a 500 here on p03 round 4).</summary>
+    [Fact]
+    public async Task Signing_in_from_a_signed_in_browser_answers_for_the_new_session_only()
+    {
+        using var client = await Env.SignInAsync(AdminA);
+        var again = await client.PostAsJsonAsync("/api/auth/sign-in", new { email = AdminA, password = ErpTestEnvironment.Password });
+        Assert.True(again.StatusCode == HttpStatusCode.OK, await again.Content.ReadAsStringAsync());
+        Assert.Equal(Env.TenantA.Code, (await Json(again)).GetProperty("tenant").GetProperty("code").GetString());
+
+        var adminB = Env.Email(Env.TenantB, "admin");
+        var other = await client.PostAsJsonAsync("/api/auth/sign-in", new { email = adminB, password = ErpTestEnvironment.Password });
+        Assert.True(other.StatusCode == HttpStatusCode.OK, await other.Content.ReadAsStringAsync());
+        var body = await Json(other);
+        Assert.Equal(Env.TenantB.Code, body.GetProperty("tenant").GetProperty("code").GetString());
+        Assert.Equal(adminB, body.GetProperty("user").GetProperty("email").GetString());
+
+        // The cookie now carries the new session: the next request is tenant B's administrator.
+        var session = await client.GetFromJsonAsync<JsonElement>("/api/auth/session");
+        Assert.Equal(adminB, session.GetProperty("user").GetProperty("email").GetString());
+        Assert.Equal(Env.TenantB.Code, session.GetProperty("tenant").GetProperty("code").GetString());
+        Assert.Equal(
+            body.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).ToList(),
+            session.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).ToList());
+        using var fresh = await Env.SignInAsync(adminB);
+        static List<Guid> Ids(JsonElement list) => list.EnumerateArray().Select(c => c.GetProperty("id").GetGuid()).Order().ToList();
+        Assert.Equal(
+            Ids(await fresh.GetFromJsonAsync<JsonElement>("/api/identity/companies")),
+            Ids(await client.GetFromJsonAsync<JsonElement>("/api/identity/companies")));
+    }
+
     [Fact]
     public async Task Cookie_requests_that_change_data_need_the_request_header()
     {
