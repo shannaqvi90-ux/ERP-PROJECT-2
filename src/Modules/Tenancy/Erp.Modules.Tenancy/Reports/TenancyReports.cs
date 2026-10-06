@@ -69,10 +69,15 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
         var branches = await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
             .ToListAsync(cancellationToken);
+        // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a
+        // company with no Arabic legal name is headed by its English one in an Arabic document,
+        // not by its code and nothing.
+        var name = new LocalText(company.LegalNameEn, company.LegalNameAr);
+        var heading = new LocalText($"{company.Code} \u00B7 {name.For("en")}", $"{company.Code} \u00B7 {name.For("ar")}");
         var english = string.Join(", ", new[] { company.AddressLine1, company.AddressLine2, company.City }.Where(s => !string.IsNullOrWhiteSpace(s)));
         return new ReportData
         {
-            Subject = new LocalText($"{company.Code} \u00B7 {company.LegalNameEn}", $"{company.Code} \u00B7 {company.LegalNameAr}"),
+            Subject = heading,
             Facts = new Dictionary<string, object?>
             {
                 ["code"] = company.Code,
@@ -102,7 +107,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
                 ["phone"] = b.Phone,
                 ["active"] = b.IsActive,
             }).ToList(),
-            ParameterTexts = new Dictionary<string, LocalText> { ["company"] = new($"{company.Code} \u00B7 {company.LegalNameEn}", $"{company.Code} \u00B7 {company.LegalNameAr}") },
+            ParameterTexts = new Dictionary<string, LocalText> { ["company"] = heading },
         };
     }
 }

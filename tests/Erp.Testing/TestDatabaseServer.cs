@@ -114,6 +114,10 @@ public sealed class TestDatabaseServer
             // checksums of every table) on a saturated machine. The application role keeps
             // Npgsql's default: the product sets its own timeouts (ErpDataSources).
             CommandTimeout = user == DatabaseRoles.App ? 30 : 600,
+            // Opening a connection of the tests' own set-up (bootstrap, seeding, inspection) on a
+            // machine shared by several suites: Npgsql's 15 s default ran out in fixture set-up
+            // while the load average was above 100, failing whole test classes before any test ran.
+            Timeout = user == DatabaseRoles.App ? 15 : 120,
         }.ConnectionString;
 
     /// <summary>The app's configuration for <paramref name="database"/>, then the test's settings.</summary>
