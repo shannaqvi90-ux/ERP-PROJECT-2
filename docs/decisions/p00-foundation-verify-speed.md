@@ -184,3 +184,35 @@ again, every attempt's output stays in the stage's log, and the stopped attempt'
 removed so the ratchet counts each test once. Checked with a stand-in `dotnet` (launcher failure
 then pass: passes on the second attempt with one result file; launcher failure plus a failed test:
 fails at once; launcher failure three times: fails).
+
+## Round 6, resumed (2026-10-07): both load-driven changes withdrawn
+
+Full verifies now go through three machine-wide slots (`gauntlet/tools/verify-slot.sh`), so a
+verify no longer shares the machine with six others. At that load neither change above, nor the
+10-minute wait of the test HTTP clients (commit `03cb965`, made after one request of a gate run at
+load 100+ waited past HttpClient's default 100 s), is needed, and both could hide a real hang:
+
+- **The .NET launcher re-run is removed** (`build/verify-inside.sh` is the integration branch's
+  again): each .NET test process runs once and its failure, whatever it is, fails verify.
+- **The test clients wait HttpClient's default 100 s again** (`tests/Erp.Testing/ErpTestEnvironment.cs`
+  is the integration branch's again): a request that takes longer fails its test.
+
+Measured through the verify slot (`gauntlet/tools/verify-slot.sh ./erp verify`, timed from the
+slot being taken), with the two other slots busy with other agents' verifies: load average 29 at
+the start, 60-135 during the run, 16 threads.
+
+| Run | Commit | Wall time | .NET stage | Result |
+|---|---|---|---|---|
+| 1 | `6da5a6f` (merge + the withdrawal) | 2,619 s | passed: no launcher failure, no client time-out | failed in the end-to-end stage: the comparison harness's create-company-branch health check (a race in the company form, fixed in `918dcd8`; see below) |
+
+The longest work in run 1 was the G1 HTTP isolation test (32 min 7 s, main process) and the
+planted HTTP-attack self-test (33 min 49 s, its own process), side by side; with three verifies
+on the machine each gets roughly a third of it, which is why the wall time is about 2.7 times the
+977 s of the quiet run of 2026-10-05. Nothing was narrowed to shorten it.
+
+**The run-1 failure was a product bug, not load.** The create-company-branch driver typed a new
+branch and pressed Enter; the row never appeared. The company form reads the company's branches
+when it opens and again after a branch is added; on a busy server the first read can answer after
+the second, and its older, empty list replaced the new branch. Only the latest read's answer is
+shown now (`CompanyForm.tsx`), and a web unit test holds the first read back until after the add
+and checks the row stays (it fails without the fix).

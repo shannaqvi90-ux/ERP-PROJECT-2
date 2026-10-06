@@ -206,3 +206,27 @@ three runs each (machine seconds are the range of the three):
 | Ours, returning | 2 | 21 | 0.31-0.88 | 7.63 | 7.83-8.43 |
 
 The whole-e-mail path alone is strictly lower than Odoo's new-device path on all five measures.
+
+## Round 6, finished: measured again at ordinary load (2026-10-07)
+
+`COMPARE_OURS_URL=http://localhost:20000 node run.mjs --task sign-in --product both --repeat 3`
+against `./erp up` of this branch (merged with the integration branch at `ff65952`) and the shared
+Odoo rig, load average about 80 (three verify slots busy). Verdict **win**. Per path, three runs
+each (machine seconds are the range):
+
+| Product, path | Steps | Keystrokes | Machine s | KLM human s | Human + wait s |
+|---|---|---|---|---|---|
+| Odoo, new device | 4 | 57 | 1.99-4.34 | 19.06 | 20.89-23.10 |
+| Odoo, returning (the harness's path) | 4 | 57 | 1.99-2.83 | 19.06 | 20.85-21.70 |
+| Ours, new device, part before "@" + Enter | 4 | 35 | 0.33-0.49 | 11.55 | 11.74-11.87 |
+| Ours, new device, whole e-mail (moves on) | 3 | 56 | 0.49-0.51 | 18.78 | 19.01-19.08 |
+| Ours, returning | 2 | 21 | 0.27-0.40 | 7.63 | 7.82-7.93 |
+
+The round-5 verdict's tie (new device, 4 / 57 / 19.06 on both sides) is gone on every measure:
+with nothing remembered, ours takes 3 steps (whole e-mail) or 35 keystrokes and 11.55 modelled
+seconds (part before "@"), against Odoo's 4, 57 and 19.06, and a quarter of the machine time. The
+whole-e-mail path alone is lower than Odoo's on all five measures, so no measure rests on combining
+paths. Neither path depends on anything the device remembers.
+
+The earlier note above that the step tie at the floor would go to the owner as a human gate is
+withdrawn: the floor was not where it was thought to be, and no gate is needed for this task.
