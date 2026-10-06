@@ -150,6 +150,10 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public HttpClient CreateClient(bool requestHeader = true)
     {
         var client = Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true, AllowAutoRedirect = false });
+        // In-process requests have no network to wait on, only the machine: on a shared machine at
+        // load 100+ one request of a long gate run waited past HttpClient's default 100 s and the run
+        // failed without any finding. Speed is judged by the timing budgets (Load=Timing), not here.
+        client.Timeout = TimeSpan.FromMinutes(10);
         if (requestHeader)
         {
             client.DefaultRequestHeaders.Add("X-Erp-Request", "1");
@@ -202,6 +206,7 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<TokenBody>();
         var client = Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        client.Timeout = TimeSpan.FromMinutes(10); // as CreateClient: the machine, not the product, is waited on
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", body!.Token);
         return client;
     }
