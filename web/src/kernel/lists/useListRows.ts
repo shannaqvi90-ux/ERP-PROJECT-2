@@ -31,6 +31,8 @@ export type ListRows = {
   /** Every row loaded so far, in order (for selection and copy). */
   loadedRows: () => Row[];
   reload: () => void;
+  /** The position of a loaded row in the list, or -1 when it is not loaded. */
+  indexOf: (id: string) => number;
 };
 
 /**
@@ -120,5 +122,16 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
 
   const reload = useCallback(() => setReloads((r) => r + 1), []);
 
-  return { total, ranked, groups, error, loading, version, loadedKey, rowAt, ensure, loadedRows, reload };
+  /** The position of a loaded row in the list, or -1 when it is not loaded. */
+  const indexOf = useCallback((id: string) => {
+    const state = shown.current;
+    if (!state) return -1;
+    for (const [chunk, rows] of state.rows) {
+      const at = rows.findIndex((r) => r.id === id);
+      if (at >= 0) return chunk * chunkSize + at;
+    }
+    return -1;
+  }, []);
+
+  return { total, ranked, groups, error, loading, version, loadedKey, rowAt, ensure, loadedRows, reload, indexOf };
 }

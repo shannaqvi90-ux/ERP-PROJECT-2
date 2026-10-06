@@ -404,9 +404,8 @@ public static class CompanyAttack
                 request.Content = new StringContent((body ?? new JsonObject()).ToJsonString(), Encoding.UTF8, "application/json");
             }
             using var response = await client.SendAsync(request);
-            var text = method == "GET" && response.Content.Headers.ContentType?.MediaType?.StartsWith("image/", StringComparison.Ordinal) == true
-                ? Encoding.Latin1.GetString(await response.Content.ReadAsByteArrayAsync())
-                : await response.Content.ReadAsStringAsync();
+            // Images as their bytes, printed documents and exports as their decoded text.
+            var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             return ((int)response.StatusCode, text);
         }

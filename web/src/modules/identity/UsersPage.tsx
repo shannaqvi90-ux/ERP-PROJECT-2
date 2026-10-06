@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../kernel/api";
+import { newRecord, useRecordPanel } from "../../kernel/forms/recordPanel";
 import { useI18n } from "../../kernel/i18n";
 import { ListView, type BulkAction } from "../../kernel/lists/ListView";
 import type { Row } from "../../kernel/lists/model";
@@ -8,14 +9,6 @@ import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
 import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
-
-/** The new-user form's part of the address (?new); the list keeps its own (?q=, ?open=id, …). */
-function newToUrl(open: boolean) {
-  const query = new URLSearchParams(window.location.search);
-  query.delete("new");
-  const parts = [query.toString(), open ? "new" : ""].filter(Boolean);
-  window.history.replaceState(null, "", `${window.location.pathname}${parts.length ? `?${parts.join("&")}` : ""}`);
-}
 
 /**
  * Sets the chosen users active or inactive, one saved change per user (the same change the user
@@ -46,34 +39,20 @@ export async function setUsersActive(rows: Row[], active: boolean): Promise<{ ch
 
 /**
  * Users: the shared list (search as you type, filters, sort, views, keyboard) with the open user
- * in the list's details panel (?open=id). Keyboard first: "/" finds, "n" starts a new user, arrow
- * keys move through the rows, Enter opens one, Escape closes the panel; in a form Ctrl+Enter
- * saves. Buttons and fields the user's roles do not grant are not shown (the API refuses them
- * anyway).
+ * in the list's details panel (?open=id) and a new user at ?open=new, as on every list screen.
+ * Keyboard first: "/" finds, "n" or Alt+N starts a new user, arrow keys move through the rows,
+ * Enter opens one, Escape closes the panel; in the form Ctrl+S or Ctrl+Enter saves and
+ * Alt+PageDown/PageUp moves to the next or previous user. Buttons and fields the user's roles do
+ * not grant are not shown (the API refuses them anyway).
  */
 export function UsersPage() {
   const { t, language } = useI18n();
   const { can } = useSession();
   const [roles, setRoles] = useState<Role[]>([]);
-  const [creating, setCreatingState] = useState(() => new URLSearchParams(window.location.search).has("new"));
-  const [openId, setOpenId] = useState<string | null>(() => new URLSearchParams(window.location.search).get("open"));
+  const panel = useRecordPanel(can("identity.users.create"));
   // The one-time notice (set-up code) of a user just created, shown once in their panel.
   const [notices, setNotices] = useState<Record<string, Notice>>({});
-  const [reload, setReload] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
-
-  const setCreating = useCallback((next: boolean) => {
-    setCreatingState(next);
-    newToUrl(next);
-  }, []);
-
-  const onOpenIdChange = useCallback(
-    (id: string | null) => {
-      setOpenId(id);
-      if (id) setCreating(false);
-    },
-    [setCreating],
-  );
 
   useEffect(() => {
     if (!can("identity.roles.read")) return;
@@ -87,11 +66,8 @@ export function UsersPage() {
     chord: newRecordChord,
     labelKey: "identity.users.new",
     groupKey: "identity.shortcuts.group",
-    enabled: can("identity.users.create"),
-    run: () => {
-      setOpenId(null);
-      setCreating(true);
-    },
+    enabled: Boolean(panel.startNew),
+    run: () => panel.startNew?.(),
   });
 
   // Screen shortcuts, only while the user is not typing in a field.
@@ -104,19 +80,14 @@ export function UsersPage() {
         event.preventDefault();
         search.focus();
         search.select();
-      } else if (event.key.toLowerCase() === "n" && can("identity.users.create")) {
+      } else if (event.key.toLowerCase() === "n" && panel.startNew) {
         event.preventDefault();
-        setOpenId(null);
-        setCreating(true);
-      } else if (event.key === "Escape" && creating) {
-        setCreating(false);
-      } else if (event.key === "Escape" && openId) {
-        setOpenId(null);
+        panel.startNew();
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [can, creating, openId, setCreating]);
+  }, [panel.startNew]);
 
   const roleNames = new Map(roles.map((r) => [r.id, roleName(r, language)]));
 
@@ -136,7 +107,7 @@ export function UsersPage() {
   });
 
   return (
-    <section className={creating ? "id-screen with-panel" : "id-screen"}>
+    <section className="id-screen">
       <div className="id-list">
         {message && (
           <div className="id-notice" role="status">
@@ -151,33 +122,47 @@ export function UsersPage() {
           can={can}
           openOnClick
           bulkActions={[bulkActive(false), bulkActive(true)]}
-          reloadKey={reload}
-          openId={openId}
-          onOpenIdChange={onOpenIdChange}
-          renderRecord={(id, close) => (
-            <UserDetail
-              key={id}
-              userId={id}
-              roles={roles}
-              notice={notices[id]}
-              onClose={close}
-              onSaved={() => setReload((n) => n + 1)}
-              onDeleted={(user) => {
-                setMessage(t("identity.users.deleted", { name: userName(user, language) }));
-                setReload((n) => n + 1);
-                close();
-              }}
-            />
-          )}
+          reloadKey={panel.reload}
+          openId={panel.openId}
+          onOpenIdChange={panel.onOpenIdChange}
+          renderRecord={(id, close, nav) =>
+            id === newRecord ? (
+              <NewUserForm
+                key={panel.formKey}
+                roles={roles}
+                onClose={close}
+                onCreated={(user) => {
+                  setNotices((all) => ({
+                    ...all,
+                    [user.id]: user.setupCode
+                      ? { kind: "code", code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
+                      : { kind: "info", text: t("identity.form.created") },
+                  }));
+                  panel.saved(user.id);
+                }}
+              />
+            ) : (
+              <UserDetail
+                key={id}
+                userId={id}
+                roles={roles}
+                notice={notices[id]}
+                nav={nav}
+                onClose={close}
+                onSaved={() => panel.refresh()}
+                onDeleted={(user) => {
+                  setMessage(t("identity.users.deleted", { name: userName(user, language) }));
+                  panel.removed();
+                }}
+              />
+            )
+          }
           actions={
-            can("identity.users.create") && (
+            panel.startNew && (
               <button
                 type="button"
                 className="button primary"
-                onClick={() => {
-                  setOpenId(null);
-                  setCreating(true);
-                }}
+                onClick={panel.startNew}
                 aria-keyshortcuts={`${chordForAria(newRecordChord)} N`}
                 title={chordKeys(newRecordChord).join("+")}
               >
@@ -206,25 +191,6 @@ export function UsersPage() {
           }}
         />
       </div>
-      {creating && (
-        <aside className="id-panel" aria-label={t("identity.users.panel")}>
-          <NewUserForm
-            roles={roles}
-            onClose={() => setCreating(false)}
-            onCreated={(user) => {
-              setReload((n) => n + 1);
-              setNotices((all) => ({
-                ...all,
-                [user.id]: user.setupCode
-                  ? { kind: "code", code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
-                  : { kind: "info", text: t("identity.form.created") },
-              }));
-              setCreating(false);
-              setOpenId(user.id);
-            }}
-          />
-        </aside>
-      )}
     </section>
   );
 }

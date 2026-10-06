@@ -38,6 +38,8 @@ export type ListDefinition = {
   presets: ListPreset[];
   canShare: boolean;
   maxTake: number;
+  /** The reports module prints and exports this list (/api/reports/lists/{key}). */
+  printable?: boolean;
 };
 
 export type SavedView = {

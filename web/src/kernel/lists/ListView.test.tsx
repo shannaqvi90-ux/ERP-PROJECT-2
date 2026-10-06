@@ -116,9 +116,28 @@ describe("list view", () => {
     expect(calls.some((c) => c.url.includes("search=shamma+romaithi"))).toBe(true);
     const panel = v.container.querySelector("[role=region].list-record");
     expect(panel?.textContent).toContain("Shamma Waleed Al Romaithi");
-    expect(window.location.search).toContain("open=");
+    // The open record has its own address: the screen's path and the record's id.
+    expect(window.location.pathname).toMatch(/^\/identity\/users\/[0-9a-f-]{36}$/);
+    expect(window.location.search).toBe("?q=shamma+romaithi");
     await key(panel!, "Escape");
     expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
+  });
+
+  it("closes an open record with Escape wherever the focus is on the page", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "shamma romaithi");
+    await key(search, "Enter");
+    await wait(250);
+    await settle();
+    expect(v.container.querySelector("[role=region].list-record")).not.toBeNull();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await key(document.body, "Escape");
+    expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
   });
 
   it("lists a search best match first and opens the best match with Enter", async () => {
@@ -143,7 +162,9 @@ describe("list view", () => {
     await settle();
     const panel = v.container.querySelector("[role=region].list-record");
     expect(panel?.querySelector("h2")?.textContent).toBe("Person 1");
-    expect(window.location.search).toContain("open=00000000-0000-7000-8000-000000000001");
+    // The open record is addressed by path (/identity/users/<id>), the search stays in the query.
+    expect(window.location.pathname).toBe("/identity/users/00000000-0000-7000-8000-000000000001");
+    expect(window.location.search).toBe("?q=person+1");
   });
 
   it("keeps the default order and Enter's usual meaning when the server did not rank a broad search", async () => {

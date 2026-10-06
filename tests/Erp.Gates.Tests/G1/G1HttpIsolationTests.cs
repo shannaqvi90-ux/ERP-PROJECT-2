@@ -58,7 +58,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
             $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
-            $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks, {report.TracedLookups} traced lookups");
+            $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
 
         Assert.True(report.Leaks.Count == 0, $"{report.Leaks.Count} leaks:\n" + string.Join("\n", report.Leaks.Take(50)));
         Assert.True(report.Oracles.Count == 0, $"{report.Oracles.Count} answers that tell tenant B's values apart from values that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
@@ -287,8 +287,11 @@ public static class IsolationAttack
                     victim.Markers.Concat(values.Strings).Distinct().ToList()), CancellationToken.None);
                 state.Requests += result.Attempts;
                 probesRun++;
-                foreach (var observed in result.Observed)
+                foreach (var raw in result.Observed)
                 {
+                    // A probe may hand over a whole body as "body:<media type>;base64,<data>"; it is
+                    // decoded like any response (PDF text, spreadsheet cells), not searched as bytes.
+                    var observed = ObservedBody.Decode(raw);
                     if (state.FindMarker(observed, []) is { } marker)
                     {
                         state.Leaks.Add($"probe {probe.Name}: observed tenant B marker {marker}");
@@ -306,6 +309,13 @@ public static class IsolationAttack
         // other method, so no write can change a list between a GET and its control.
         var admin = attackers[0];
         var anonymous = attackers[^1];
+        // Read now, after the earlier phases' writes: tenant A's records now hold some published
+        // values (an emirate), and a control must be a value no tenant holds when it is sent.
+        state.UnheldPublished = await UnheldPublishedValuesAsync(Env, endpoints.SelectMany(e => openApi.Parameters(e.Method, e.Pattern)));
+        // Tenant B's values tenant A now holds itself, written by the earlier phases' valid
+        // requests (a branch in B's emirate): A's answer for them shows A's own records, so it is
+        // judged for B's markers but not compared with a value that exists nowhere.
+        state.AttackerHeld = await HeldByAsync(Env, a.Id, values.Strings);
         var work = new List<(bool Get, Func<Task> Run)>();
         foreach (var endpoint in endpoints)
         {
@@ -634,6 +644,7 @@ public static class IsolationAttack
             ParameterAttacks = state.ParameterAttacks,
             BodyValueAttacks = state.BodyValueAttacks,
             DifferentialChecks = state.DifferentialChecks,
+            AttackerHeldSkips = state.AttackerHeldSkips,
             TracedLookups = traced.Count,
             VictimRequests = activity.Requests,
             VictimConcurrentRequests = activity.ConcurrentRequests,
@@ -849,6 +860,10 @@ public static class IsolationAttack
         return type switch
         {
             "string" when format == "uuid" => TenantActivity.OwnIdFor(lower, own),
+            // A sign-in that carries a new password changes the attacker's own password: once the
+            // request counter made "switch-<n>" long enough to be a valid password, every later
+            // reconnect failed. The switch inputs are judged on a plain, successful sign-in.
+            "string" when signIn && lower.Contains("newpassword") => null,
             "string" when lower.Contains("email") => signIn ? env.Email(env.TenantA, "admin") : $"switch{n}@{env.TenantA.EmailDomain}",
             "string" when lower == "workspace" => env.TenantA.Code,
             "string" when lower == "password" => signIn ? ErpTestEnvironment.Password : "Switch-Password-2026!",
@@ -861,6 +876,61 @@ public static class IsolationAttack
             "boolean" => true,
             _ => null,
         };
+    }
+
+    /// <summary>Every value the API document enumerates for a parameter that no tenant holds in
+    /// any text column of any tenant table (read with the superuser).</summary>
+    private static async Task<IReadOnlySet<string>> UnheldPublishedValuesAsync(ErpTestEnvironment env, IEnumerable<ApiParameter> parameters)
+    {
+        var published = parameters.SelectMany(p => p.Enum ?? []).Distinct(StringComparer.Ordinal).ToArray();
+        var unheld = new HashSet<string>(published, StringComparer.Ordinal);
+        if (published.Length == 0)
+        {
+            return unheld;
+        }
+        await using var admin = await env.OpenAdminAsync();
+        foreach (var table in await DbCatalog.TenantTablesAsync(admin))
+        {
+            foreach (var column in await DbCatalog.ColumnsAsync(admin, table))
+            {
+                if (column.Name == "tenant_id" || column.Type.EndsWith("[]", StringComparison.Ordinal) ||
+                    !(column.Type.StartsWith("text", StringComparison.Ordinal) || column.Type.StartsWith("character varying", StringComparison.Ordinal) || column.Type == "citext"))
+                {
+                    continue;
+                }
+                var held = await DbCatalog.ReadAsync(admin, $"SELECT DISTINCT \"{column.Name}\"::text FROM {table.Qualified} WHERE \"{column.Name}\"::text = ANY(@values)",
+                    r => r.GetString(0), ("values", published));
+                unheld.ExceptWith(held);
+            }
+        }
+        return unheld;
+    }
+
+    /// <summary>Of the given text values, those a tenant holds in any text column of any tenant table.</summary>
+    private static async Task<IReadOnlySet<string>> HeldByAsync(ErpTestEnvironment env, Guid tenant, IReadOnlyList<string> candidates)
+    {
+        var held = new HashSet<string>(StringComparer.Ordinal);
+        if (candidates.Count == 0)
+        {
+            return held;
+        }
+        var values = candidates.ToArray();
+        await using var admin = await env.OpenAdminAsync();
+        foreach (var table in await DbCatalog.TenantTablesAsync(admin))
+        {
+            foreach (var column in await DbCatalog.ColumnsAsync(admin, table))
+            {
+                if (column.Name == "tenant_id" || column.Type.EndsWith("[]", StringComparison.Ordinal) ||
+                    !(column.Type.StartsWith("text", StringComparison.Ordinal) || column.Type.StartsWith("character varying", StringComparison.Ordinal) || column.Type == "citext"))
+                {
+                    continue;
+                }
+                held.UnionWith(await DbCatalog.ReadAsync(admin,
+                    $"SELECT DISTINCT \"{column.Name}\"::text FROM {table.Qualified} WHERE tenant_id = @t AND \"{column.Name}\"::text = ANY(@values)",
+                    r => r.GetString(0), ("t", tenant), ("values", values)));
+            }
+        }
+        return held;
     }
 
     /// <summary>Values to send in one parameter: ids for uuid parameters, every value for text,
@@ -1041,7 +1111,7 @@ public static class IsolationAttack
         public async Task<int> SendAsync(Attacker attacker, ApiEndpoint endpoint, HttpRequestMessage request, string label, IReadOnlyCollection<string>? sent = null)
         {
             using var response = await attacker.Client.SendAsync(request);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             var status = (int)response.StatusCode;
             Judge(attacker, endpoint, label, status, text, ResponseHeaders.Text(response), sent ?? []);
@@ -1083,22 +1153,75 @@ public static class IsolationAttack
             {
                 return;
             }
-            var control = ControlFor(value);
-            var (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+            if (AttackerHeld.Contains(value))
+            {
+                Interlocked.Increment(ref _attackerHeldSkips);
+                return;
+            }
+            var control = ControlFor(value, parameter);
+            var (controlStatus, controlText, controlHeaders) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
             // in every answer ("user" in "Users and access") is treated the same on both sides.
             var normalized = Normalize(Normalize(text, value), control);
             var controlNormalized = Normalize(Normalize(controlText, control), value);
+            if ((status != controlStatus || normalized != controlNormalized) && (Stamped(headers) || Stamped(controlHeaders)))
+            {
+                // A printed document shows the minute it was printed (in its own language and digits,
+                // so not every reader can scrub it): two answers a moment apart on either side of a
+                // minute differ by it alone. The pair is asked once more; an answer that tells the
+                // values apart does so again.
+                (status, text, var retryHeaders) = await RawAsync(attacker, endpoint, uri, bodySchema, openApi, b, n);
+                Judge(attacker, endpoint, $"{uri} [{parameter.In} {parameter.Name}, asked again]", status, text, retryHeaders, [value]);
+                (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+                normalized = Normalize(Normalize(text, value), control);
+                controlNormalized = Normalize(Normalize(controlText, control), value);
+            }
             if (status != controlStatus || normalized != controlNormalized)
             {
                 lock (_lock) Oracles.Add($"{attacker.Name} → GET {uri} [{parameter.In} {parameter.Name}]: {status} {Short(normalized, 160)} " +
-                            $"but for a value that exists nowhere {controlStatus} {Short(controlNormalized, 160)}");
+                            $"but for a value that exists nowhere ({control}) {controlStatus} {Short(controlNormalized, 160)}; first difference: " +
+                            $"{Short(normalized[FirstDifference(normalized, controlNormalized)..], 160)} | {Short(controlNormalized[FirstDifference(normalized, controlNormalized)..], 160)}");
             }
         }
 
+        private static int FirstDifference(string a, string b)
+        {
+            var i = 0;
+            while (i < a.Length && i < b.Length && a[i] == b[i]) i++;
+            return Math.Max(0, Math.Min(i, Math.Min(a.Length, b.Length)) - 40);
+        }
+
+        private static bool Stamped(string headers) =>
+            headers.Contains(ResponseText.PrintedAtHeader + ":", StringComparison.OrdinalIgnoreCase);
+
         /// <summary>A value of the same shape that exists in no tenant: every letter and digit
         /// replaced at random, punctuation kept (so "a.b@c.example" stays file-like and e-mail-like).</summary>
+        /// <summary>Published values (a parameter's enumeration) that no tenant holds in any text column.</summary>
+        public IReadOnlySet<string> UnheldPublished { get; set; } = new HashSet<string>();
+
+        /// <summary>Tenant B's text values tenant A holds itself when the parameter phase starts.</summary>
+        public IReadOnlySet<string> AttackerHeld { get; set; } = new HashSet<string>();
+
+        private int _attackerHeldSkips;
+
+        /// <summary>Differentials not made because tenant A held the value itself.</summary>
+        public int AttackerHeldSkips => _attackerHeldSkips;
+
+        /// <summary>The value that exists nowhere to compare with. For a parameter whose values the
+        /// document enumerates, any other text is refused by validation, so a random value would
+        /// tell nothing; the control is another published value that no tenant holds (the
+        /// enumeration's own "exists nowhere"). Without one, a random value as for any parameter.</summary>
+        private string ControlFor(string value, ApiParameter parameter)
+        {
+            if (parameter.Enum is { } members && members.Contains(value, StringComparer.Ordinal) &&
+                members.FirstOrDefault(m => m != value && UnheldPublished.Contains(m)) is { } other)
+            {
+                return other;
+            }
+            return ControlFor(value);
+        }
+
         private static string ControlFor(string value)
         {
             if (Guid.TryParse(value, out _))
@@ -1123,7 +1246,7 @@ public static class IsolationAttack
             }
             using var response = await attacker.Client.SendAsync(request);
             Interlocked.Increment(ref _requests);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await ResponseText.ReadAsync(response);
             if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
             {
                 await attacker.ConnectAsync();
@@ -1287,6 +1410,9 @@ public sealed record IsolationReport(
     public int ParameterAttacks { get; init; }
     public int BodyValueAttacks { get; init; }
     public int DifferentialChecks { get; init; }
+
+    /// <summary>Tenant B values not compared because tenant A held them itself by then.</summary>
+    public int AttackerHeldSkips { get; init; }
     public int TracedLookups { get; init; }
 
     /// <summary>Requests tenant B sent while sharing the process with the attack.</summary>

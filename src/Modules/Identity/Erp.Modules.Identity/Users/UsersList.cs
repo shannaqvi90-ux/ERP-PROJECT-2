@@ -16,7 +16,7 @@ internal static class UsersList
         ListBinding<User>.For(new ListDefinition(
                 Key, "identity.users.title", IdentityPermissions.UsersRead, "/api/identity/users",
                 [
-                    new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("displayName", "identity.users.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "displayNameAr"),
                     // Shown in place of the name on Arabic screens when given; filtered ("contains") and
                     // searched on its own trigram index. Arabic script: quick search tries it only for words
                     // with an Arabic letter, so a Latin search still ORs two fields per word, not three.

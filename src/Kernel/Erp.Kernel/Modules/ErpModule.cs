@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Erp.Kernel.Data;
 using Erp.Kernel.Lists;
+using Erp.Kernel.Reports;
 using Erp.Kernel.Security;
 using Erp.Kernel.Seeding;
 using Erp.Kernel.Shell;
@@ -62,6 +63,13 @@ public sealed class ModuleDescriptor
     /// <summary>Lists of this module served by another module's list binding: list key to the
     /// key of the list whose rows serve it (see <see cref="ModuleBuilder.List(ListDefinition, string)"/>).</summary>
     public Dictionary<string, string> ListsServedBy { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Readers that return the rows of this module's lists exactly as their endpoints do
+    /// (reports print and export them), by list key.</summary>
+    public Dictionary<string, ListRowReader> ListRowReaders { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Reports this module contributes.</summary>
+    public List<ReportRegistration> Reports { get; } = [];
 }
 
 /// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
@@ -206,6 +214,42 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Let reports print and export one of this module's lists: <paramref name="reader"/>
+    /// returns a page of the list's rows exactly as the list's endpoint does (same query contract,
+    /// same row shape), inside the caller's unit of work. The reports module pages through it for
+    /// <c>/api/reports/lists/{list key}</c>, under the list's own permission.</summary>
+    public ModuleBuilder ListRows(string listKey, ListRowReader reader)
+    {
+        if (_descriptor.Lists.All(l => l.Key != listKey))
+        {
+            throw new InvalidOperationException($"list '{listKey}': register the list in module '{Name}' before its row reader");
+        }
+        if (!_descriptor.ListRowReaders.TryAdd(listKey, reader))
+        {
+            throw new InvalidOperationException($"list '{listKey}': has two row readers");
+        }
+        return this;
+    }
+
+    /// <summary>Register a report (parameters, columns, groupings, totals) whose rows
+    /// <typeparamref name="TSource"/> produces; the reports module serves it under the report's
+    /// permission. Checked at registration.</summary>
+    public ModuleBuilder Report<TSource>(ReportDefinition definition) where TSource : class, IReportSource
+    {
+        var problems = definition.Problems(Name).ToList();
+        if (_descriptor.Reports.Any(r => r.Definition.Key == definition.Key))
+        {
+            problems.Add($"report '{definition.Key}' is registered twice");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.Reports.Add(new ReportRegistration(definition, typeof(TSource), Name));
+        Services.AddScoped<TSource>();
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -239,6 +283,16 @@ public sealed class ModuleCatalog
     public ListBinding<T> ListBinding<T>(string key) where T : class =>
         _modules.Select(m => m.ListBindings.GetValueOrDefault(key)).OfType<ListBinding<T>>().FirstOrDefault()
         ?? throw new InvalidOperationException($"List '{key}' has no query binding over {typeof(T).Name}.");
+
+    /// <summary>Every registered report.</summary>
+    public IEnumerable<ReportRegistration> Reports => _modules.SelectMany(m => m.Reports);
+
+    /// <summary>The registered report with this key, or null.</summary>
+    public ReportRegistration? FindReport(string key) => Reports.FirstOrDefault(r => r.Definition.Key == key);
+
+    /// <summary>Every list whose rows reports can print, with its row reader.</summary>
+    public IEnumerable<(ListDefinition List, ListRowReader Reader)> PrintableLists =>
+        _modules.SelectMany(m => m.ListRowReaders.Select(r => (m.Lists.Single(l => l.Key == r.Key), r.Value)));
 
     public IEnumerable<MenuEntry> Menu => _modules.SelectMany(m => m.Menu).OrderBy(m => m.Order).ThenBy(m => m.Key, StringComparer.Ordinal);
 

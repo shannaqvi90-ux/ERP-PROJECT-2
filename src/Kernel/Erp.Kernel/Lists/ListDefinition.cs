@@ -44,6 +44,10 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Choices">The values of a choice column, with their labels.</param>
 /// <param name="Script">The writing system of a text column's values; quick search tries a search
 /// field marked <see cref="ListTextScript.Arabic"/> only with words that contain an Arabic letter.</param>
+/// <param name="LabelField">For a reference column: the row property that names the referenced
+/// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
+/// <param name="ArabicField">A row property holding the value in Arabic script (a user's
+/// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -54,7 +58,9 @@ public sealed record ListColumn(
     bool Aggregate = false,
     bool Hidden = false,
     IReadOnlyList<ListChoice>? Choices = null,
-    ListTextScript Script = ListTextScript.Any);
+    ListTextScript Script = ListTextScript.Any,
+    string? LabelField = null,
+    string? ArabicField = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
