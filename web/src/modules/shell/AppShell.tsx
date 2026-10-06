@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { allowed, extensions } from "../../kernel/extensions";
 import { Icon } from "../../kernel/icons";
-import { translate, useI18n, type Language } from "../../kernel/i18n";
+import { translate, useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { PrintDocument } from "../../kernel/print";
 import { Link, matchRoute, navigate, usePath } from "../../kernel/router";
 import { sessionUserName, useSession, type Session } from "../../kernel/session";
@@ -90,9 +90,7 @@ export function AppShell({ session }: { session: Session }) {
   const Screen = allowedRoute ? route.component : null;
   const titleKey = route ? route.titleKey : "shell.notFound.title";
 
-  useEffect(() => {
-    document.title = `${t(titleKey)} · ${t("shell.app.title")}`;
-  }, [titleKey, t]);
+  useDocumentTitle(titleKey);
 
   // A new screen takes the focus, unless it already put the focus somewhere inside itself.
   useEffect(() => {

@@ -268,6 +268,22 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     }
 
     [Fact]
+    public async Task The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names()
+    {
+        // Critic p04 round 3, plant N1: PUT /me/preferences with an optional userId changed the
+        // Administrator's language for a viewer. Here in the body (documented) and in a header.
+        var result = await G2.SubjectInjection.RunAsync(fixture.Env, e => e.Name is "leaky.languageFor" or "leaky.nicknameFor");
+        Assert.Equal(["PUT /api/leaky/me/language", "PUT /api/leaky/me/nickname"], result.Checked.Order(StringComparer.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/me/language [Body]", StringComparison.Ordinal) && p.Contains("identity.users changed", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/me/language [Body]", StringComparison.Ordinal) && p.Contains("own session changed", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/me/nickname [Header]", StringComparison.Ordinal) && p.Contains("identity.users changed", StringComparison.Ordinal));
+        // Only the carrier each plant honours: the check names what it found, nothing else.
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/me/language [Query]", StringComparison.Ordinal) || p.StartsWith("PUT /api/leaky/me/language [Header]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/me/nickname [Body]", StringComparison.Ordinal) || p.StartsWith("PUT /api/leaky/me/nickname [Query]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.Contains("cannot tell", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check()
     {
         // Critic p03 round 1, plant P2: deleting a role never checks what it grants.
