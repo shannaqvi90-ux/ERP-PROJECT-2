@@ -66,7 +66,8 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
     },
     initial: (a) => ({ companies: a?.companies ?? [] }),
     canEdit: editable,
-    save: (draft) => api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft.companies }),
+    // The version that was read: the server refuses the save (409) if the access changed since.
+    save: (draft, read) => api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft.companies, version: read?.version }),
     onSaved: () => onSaved(),
   }, userId);
   const access = form.record;
@@ -91,6 +92,11 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
       {access && !access.isCaller && access.canEdit === false && access.readOnlyReason && (
         <div className="notice" data-testid="access-read-only">
           {t(access.readOnlyReason)}
+        </div>
+      )}
+      {form.conflict && (
+        <div className="alert" role="alert" data-testid="access-changed-elsewhere">
+          {t("tenancy.access.changedElsewhere")}
         </div>
       )}
       {access && access.options.length === 0 && <p className="muted">{t("tenancy.access.noCompanies")}</p>}

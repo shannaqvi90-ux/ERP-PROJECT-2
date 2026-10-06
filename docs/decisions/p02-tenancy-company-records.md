@@ -47,3 +47,13 @@ it is filled in. Codes are offered, not demanded.
 These are the fields a UAE trading or manufacturing company prints on invoices and needs for
 registration, in both languages from the first screen. Deactivation instead of deletion keeps
 the ledger rules (traceability) possible for the modules that will post against them.
+
+### Round 4: the Arabic company profile's heading
+
+"A missing Arabic name prints the English one" did not hold for the company profile's heading
+and its company parameter: they joined the code to the Arabic name before the document's
+language was chosen, so a company with no Arabic legal name was headed "ALN · " in an Arabic
+document (the fallback of `LocalText` never applied to a text that was not empty). Both are now
+built from the name's own fallback, and `CompanyTests` checks the heading in Arabic with and
+without an Arabic name. The Arabic legal name stays optional: whether a registered Arabic name is
+required on a printed document is a statutory question, not settled here.
