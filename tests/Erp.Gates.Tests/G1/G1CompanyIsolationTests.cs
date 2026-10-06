@@ -658,8 +658,27 @@ public sealed class CompanySnapshot
 
     public IReadOnlyDictionary<string, string> VictimRows { get; init; } = new Dictionary<string, string>();
 
+    /// <summary>
+    /// The text a row holds for the uniqueness checks: every column of a textual type (text, codes,
+    /// names, JSON, text arrays), lower-cased, never ids, numbers or timestamps. Comparing the whole
+    /// row's text made the checks depend on chance: a short value of company Y such as its PO box
+    /// "20002" appears in another row's random id or in a timestamp's microseconds in some runs and
+    /// not others, so the attack's values (and the ratchet's request count) changed from run to run.
+    /// Null when the table has no textual column.
+    /// </summary>
+    internal static string? TextOfRow(IEnumerable<ColumnInfo> columns)
+    {
+        static bool Textual(string type)
+        {
+            var baseType = type.EndsWith("[]", StringComparison.Ordinal) ? type[..^2] : type;
+            return baseType.StartsWith("character", StringComparison.Ordinal) || baseType is "text" or "json" or "jsonb" or "citext" or "name";
+        }
+        var parts = columns.Where(c => Textual(c.Type)).Select(c => $"lower(t.\"{c.Name}\"::text)").ToList();
+        return parts.Count == 0 ? null : $"concat_ws(chr(31), {string.Join(", ", parts)})";
+    }
+
     /// <summary>True when no row of the tenant outside the victim's rows (and the audit trail)
-    /// holds <paramref name="value"/> now, read with the superuser.</summary>
+    /// holds <paramref name="value"/> in a textual column now, read with the superuser.</summary>
     public async Task<bool> OnlyVictimHoldsAsync(ErpTestEnvironment env, Guid tenant, string value)
     {
         await using var admin = await env.OpenAdminAsync();
@@ -667,9 +686,13 @@ public sealed class CompanySnapshot
         {
             if (table.Schema == "audit") continue;
             var own = VictimRows.GetValueOrDefault(table.Qualified);
+            if (TextOfRow(await DbCatalog.ColumnsAsync(admin, table)) is not { } text)
+            {
+                continue;
+            }
             if (await DbCatalog.ScalarAsync<bool>(admin,
                     $"SELECT EXISTS (SELECT 1 FROM {table.Qualified} t WHERE tenant_id = @t" + (own is null ? "" : $" AND NOT coalesce(({own}), false)") +
-                    " AND strpos(lower(t::text), lower(@value)) > 0)",
+                    $" AND strpos({text}, lower(@value)) > 0)",
                     ("t", tenant), ("v", VictimId), ("value", value)))
             {
                 return false;
@@ -719,8 +742,12 @@ public sealed class CompanySnapshot
         {
             if (table.Schema == "audit") continue;
             var isCompanyTable = tables.Contains(table);
+            if (TextOfRow(await DbCatalog.ColumnsAsync(admin, table)) is not { } text)
+            {
+                continue;
+            }
             others.AddRange(await DbCatalog.ReadAsync(admin,
-                $"SELECT lower(t::text) FROM {table.Qualified} t WHERE tenant_id = @t" + (isCompanyTable ? " AND company_id <> @c" : ""),
+                $"SELECT {text} FROM {table.Qualified} t WHERE tenant_id = @t" + (isCompanyTable ? " AND company_id <> @c" : ""),
                 r => r.GetString(0), ("t", tenant), ("c", company)));
         }
         var unique = strings.Distinct(StringComparer.Ordinal)
@@ -785,8 +812,12 @@ public sealed class CompanySnapshot
         {
             if (table.Schema == "audit") continue;
             var own = sources.Where(x => x.Table == table).Select(x => x.Where).FirstOrDefault();
+            if (TextOfRow(await DbCatalog.ColumnsAsync(admin, table)) is not { } text)
+            {
+                continue;
+            }
             others.AddRange(await DbCatalog.ReadAsync(admin,
-                $"SELECT lower(t::text) FROM {table.Qualified} t WHERE tenant_id = @t" + (own is null ? "" : $" AND NOT coalesce(({own}), false)"),
+                $"SELECT {text} FROM {table.Qualified} t WHERE tenant_id = @t" + (own is null ? "" : $" AND NOT coalesce(({own}), false)"),
                 r => r.GetString(0), ("t", tenant), ("b", branch)));
         }
         var unique = strings.Distinct(StringComparer.Ordinal)
