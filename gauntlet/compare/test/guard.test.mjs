@@ -70,6 +70,10 @@ const ASYNC_PAGE = `<!doctype html><html><body><button id="save">Save</button><d
 const NAV_FORM = '<!doctype html><html><body><form action="/nav-list"><input name="go" id="go" aria-label="Go to" autofocus></form></body></html>';
 const NAV_LIST = '<!doctype html><html><body><input id="s" aria-label="Search" autofocus><div id="out"></div><script>document.getElementById("s").addEventListener("input", e => { document.getElementById("out").textContent = "found " + e.target.value; });</script></body></html>';
 let asyncSaved = false;
+// A save answered at once and committed 1.5 s later. Its timer can outlive the test that clicked
+// Save, so each test resets the state and cancels saves still pending from an earlier test.
+const asyncSaveTimers = new Set();
+const resetAsyncSave = () => { for (const t of asyncSaveTimers) clearTimeout(t); asyncSaveTimers.clear(); asyncSaved = false; };
 let curlRequests = 0;
 let echoHits = 0;
 let apiUsers = [];
@@ -103,7 +107,7 @@ before(async () => {
     if (u5.pathname === '/api/slow-things' && req.method === 'POST') { setTimeout(() => { things++; json({ id: 8 }); }, 1500); return; }
     if (u5.pathname === '/api/echo') { echoHits++; }
     if (u5.pathname === '/api/echo') { res.writeHead(200); return res.end(u5.searchParams.get('q') || ''); }
-    if (u5.pathname === '/api/async-save' && req.method === 'POST') { setTimeout(() => { asyncSaved = true; }, 1500); return json({ accepted: true }); }
+    if (u5.pathname === '/api/async-save' && req.method === 'POST') { const t = setTimeout(() => { asyncSaveTimers.delete(t); asyncSaved = true; }, 1500); asyncSaveTimers.add(t); return json({ accepted: true }); }
     if (u5.pathname === '/api/async-saved') return json({ saved: asyncSaved });
     if (u5.pathname === '/slow-page') return html(SLOW_PAGE);
     if (u5.pathname === '/save-page') return html('<!doctype html><html><body><button id="save" onclick="fetch(\'/api/slow-things\', { method: \'POST\' })">Save</button></body></html>');
@@ -801,7 +805,7 @@ test('control (round 5): images and reads still loading when run() returns are n
 });
 
 test('plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid', async () => {
-  asyncSaved = false;
+  resetAsyncSave();
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
     async run(op) { await op.click('#save'); await op.waitFor(() => document.getElementById('out').textContent === 'accepted'); return {}; },
@@ -834,7 +838,7 @@ test('plant T2d (round 5): a request the page sends 600 ms after the click canno
 });
 
 test('plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly', async () => {
-  asyncSaved = false;
+  resetAsyncSave();
   const t = performance.now();
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
@@ -852,7 +856,7 @@ test('plant T2h (round 6): verify() that polls is refused on arrival, before the
 });
 
 test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid', async () => {
-  asyncSaved = false;
+  resetAsyncSave();
   const sleeper = await runDriver({
     signIn: slowSignIn,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
@@ -860,6 +864,7 @@ test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read
   });
   assert.equal(sleeper.status, 'invalid', `${sleeper.status} ${sleeper.error}`);
   assert.match(sleeper.error, /paused/);
+  resetAsyncSave();
   const poller = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
     async run(op) { await op.click('#save'); await op.waitFor(() => document.getElementById('out').textContent === 'accepted'); return {}; },
