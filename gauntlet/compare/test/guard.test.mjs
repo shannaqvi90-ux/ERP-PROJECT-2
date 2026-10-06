@@ -21,7 +21,8 @@ const PAGE = `<!doctype html><html><head><title>Plant page</title></head><body>
 // Stand-in for our sign-in screen, home screen, users list and the API calls the ours drivers make.
 // The session is a cookie the sign-in screen sets; signing out revokes it on the server.
 // Like ours, the team's sign-in address (?domain=) shows the domain after the e-mail field, and
-// Enter in the e-mail field with no password yet goes on to the password.
+// Enter in the e-mail field with no password yet goes on to the password; the whole e-mail in the
+// team's domain, typed while the password is empty, moves on to the password by itself.
 const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
   <form id="f"><label>E-mail <input name="email" autofocus></label><span id="email-domain" hidden></span><label>Password <input name="password" type="password"></label><button type="submit">Sign in</button></form>
   <script>
@@ -29,6 +30,9 @@ const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
     const shown = document.getElementById('email-domain');
     if (domain) { shown.hidden = false; shown.textContent = '@' + domain; }
     const full = () => { const v = document.forms.f.email.value; return domain && !v.includes('@') ? v + '@' + domain : v; };
+    document.forms.f.email.addEventListener('input', e => {
+      if (domain && !document.forms.f.password.value && e.target.value.toLowerCase() === e.target.value.split('@')[0].toLowerCase() + '@' + domain && e.target.value.indexOf('@') > 0) document.forms.f.password.focus();
+    });
     document.forms.f.email.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !document.forms.f.password.value) { e.preventDefault(); document.forms.f.password.focus(); }
     });
@@ -457,13 +461,33 @@ async function executeAll(driver, dir) {
 test('the real ours sign-in driver verifies on a stand-in sign-in page', async () => {
   const runs = await executeAll(await loadVariant(s => s), 'si-ok');
   assert.ok(runs.length >= 1);
+  assert.deepEqual(runs.map(r => r.id), ['new-device', 'new-device-whole-e-mail', 'returning']);
   for (const r of runs) {
     assert.equal(r.status, 'verified', `${r.id}: ${r.error}`);
+    if (r.id === 'new-device-whole-e-mail') {
+      // The whole e-mail (34 keys and Shift for "@") moves on by itself: no key between the fields,
+      // so the password starts with a new mental step (M) in the model.
+      assert.equal(r.counts.steps, 3, `${r.id}: e-mail, password, Enter`);
+      assert.equal(r.counts.keystrokes, 56, `${r.id}: the whole e-mail, the password (20 with Shift), Enter`);
+      assert.deepEqual(r.steps.map(st => st.kind), ['type', 'type', 'key']);
+      continue;
+    }
     assert.equal(r.counts.steps, 4, `${r.id}: the stand-in remembers nothing, so every path types the e-mail`);
     // On the team's sign-in address the domain is filled in: "signin.tester" (13) + Enter + the
     // password (20 with Shift) + Enter.
     assert.equal(r.counts.keystrokes, 35, `${r.id}: the team's address fills in the domain`);
   }
+});
+
+test('the whole-e-mail path fails on a sign-in screen that does not move on by itself (no password typed into the e-mail field)', async () => {
+  const driver = await loadVariant(s => s);
+  // A product the harness has no sign-in address for starts on the plain address, which names no
+  // team domain: the stand-in, like ours, cannot know where the address ends, so it never moves on.
+  const product = { ...signInProduct(), id: 'ours-plain-address' };
+  const r = await execute(SIGN_IN_TASK, { ...driver, ...driver.variants['new-device-whole-e-mail'] }, product, 'ours', {}, layout(path.join(tmp, 'si-whole-no-domain')), { timeout: 15_000 });
+  assert.notEqual(r.status, 'verified');
+  assert.match(String(r.error), /moved on to the password|password"\]:focus/);
+  assert.equal(r.steps.length, 1, 'only the e-mail was typed; the password never went into the e-mail field');
 });
 
 test("plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid", async () => {
