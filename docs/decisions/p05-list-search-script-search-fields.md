@@ -57,3 +57,20 @@ owner's PC, five runs each, first request included after the vacuum step:
 - *A regular expression with letter classes in the WHERE clause* (one condition per field
   instead of one ILIKE per spelling): `~*` is not leakproof, so under row-level security it could
   not use the trigram index, and the leakproof set may only shrink (`g1.leakproofChanges`).
+
+## Round 4 additions (2026-10-06)
+
+- **Arabic-name search is timed at demo volume.** `UsersListVolumeTests` now times the Arabic name
+  over 100,000 users within the same budget as the Latin searches (median under 400 ms, no run
+  over 1 s): as written, with the spellings people type for one another, in any order, mixed with a
+  Latin word, and broad Arabic searches (a common first name, one letter).
+- **Names stored with short vowels or shadda.** A search word typed with marks ("مُحَمَّد") was
+  tried only without them, so the name as stored with them was never found. Such a word is now
+  also tried exactly as typed (first, within `MaxSpellings`), and the relevance patterns accept
+  marks after every letter of an Arabic word, so "مُحَمَّد علي" still ranks as the exact match.
+- **Known limit.** A word typed *without* marks does not find a value stored *with* them
+  ("محمد" does not find "مُحَمَّد"): matching would need the value with its marks removed, which
+  under row-level security can drive the trigram index only as a plain column (an expression such
+  as `translate()` is not leakproof). That is a stored, normalised search column in the owning
+  module's table (for users, p03's `identity.users`), left to that module; the shared comparison
+  dataset and typed business data rarely carry marks.
