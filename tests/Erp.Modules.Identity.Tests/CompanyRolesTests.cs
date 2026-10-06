@@ -216,4 +216,39 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
             Assert.Contains("tenancy.branches.read", inY);
         }
     }
+
+    [Fact]
+    public async Task Users_by_role_lists_a_role_held_in_one_company_with_that_company()
+    {
+        var (admin, x, _) = await AdminAsync();
+        var company = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/companies")).EnumerateArray().Single(c => c.GetProperty("id").GetGuid() == x);
+        var code = company.GetProperty("code").GetString();
+        var reporter = await RoleAsync(admin, "Company reporter", "identity.users.read");
+        // One person holds the role everywhere and in X; another holds it in X only.
+        var both = (await UserAsync(admin, "cr.report.both", [new { roleId = reporter, companyId = x }], [reporter])).GetProperty("email").GetString();
+        var onlyX = (await UserAsync(admin, "cr.report.onlyx", [new { roleId = reporter, companyId = x }])).GetProperty("email").GetString();
+
+        static List<(string Role, string Email, string Company)> Rows(JsonElement document)
+        {
+            var columns = document.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("key").GetString()).ToList();
+            return document.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+                .Select(r => r.GetProperty("cells"))
+                .Select(c => (c[columns.IndexOf("role")].GetProperty("text").GetString() ?? "", c[columns.IndexOf("email")].GetProperty("text").GetString() ?? "",
+                    c[columns.IndexOf("company")].GetProperty("text").GetString() ?? ""))
+                .ToList();
+        }
+
+        var chosen = Rows(await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/identity.usersByRole?role={reporter}&groupBy="));
+        Assert.Equal(3, chosen.Count);
+        var bothRows = chosen.Where(r => r.Email == both).Select(r => r.Company).OrderBy(c => c, StringComparer.Ordinal).ToList();
+        Assert.Equal(["", $"{code} · {company.GetProperty("legalNameEn").GetString()}"], bothRows);
+        Assert.Equal($"{code} · {company.GetProperty("legalNameEn").GetString()}", Assert.Single(chosen, r => r.Email == onlyX).Company);
+
+        // Without a chosen role, the person holding a role in one company only is listed under that
+        // role, not under "no value"; in Arabic the company prints with its Arabic name.
+        var all = Rows(await admin.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.usersByRole?groupBy=&language=ar"));
+        var row = Assert.Single(all, r => r.Email == onlyX);
+        Assert.Equal("دور Company reporter", row.Role);
+        Assert.Equal($"{code} · {company.GetProperty("legalNameAr").GetString()}", row.Company);
+    }
 }
