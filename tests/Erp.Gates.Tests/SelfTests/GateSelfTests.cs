@@ -200,6 +200,21 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains("tenancy.branches", report.ChangedTables);
         // The in-tenant write oracle: a company create that answers 409 for company Y's code.
         Assert.Contains(report.Oracles, o => o.Contains("POST /api/leaky/companies [code]", StringComparison.Ordinal));
+        Assert.Contains("POST /api/leaky/companies [code] <- tenancy.companies", report.WriteOracleSources);
+        Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    [Trait(SelfTestProcess.Trait, SelfTestProcess.Company)]
+    public async Task The_branch_attack_catches_reads_and_writes_that_ignore_the_branch_limits()
+    {
+        // Critic p02 round 3, plant C3: a user limited to one branch reads and renames the
+        // company's other branches through code that relies on row-level security alone.
+        var report = await CompanyAttack.RunAsync(fixture.Env, CompanyAttack.Layer.Branch);
+        Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/branch-names", StringComparison.Ordinal) && l.StartsWith("branch-limited administrator", StringComparison.Ordinal));
+        Assert.Contains("tenancy.branches", report.ChangedTables);
+        Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Empty(report.Escalations);
         Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
     }
 
@@ -217,6 +232,19 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("on themselves (unchanged access): answered 200", StringComparison.Ordinal));
         Assert.Contains(result.Problems, p => p.StartsWith(planted, StringComparison.Ordinal) && p.Contains("rows changed", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.StartsWith("the tenant Administrator", StringComparison.Ordinal));
+
+        // Critic p02 round 3, plant P3: only the permission rule missing. The clerk of company X
+        // alone is still refused (by the company rule), which is why the gate once passed; the
+        // clerk who works in every company is not.
+        const string partly = "PUT /api/leaky/company-access-partly-checked/{userId:guid}";
+        Assert.Contains(partly, result.Endpoints);
+        Assert.Contains(result.Problems, p => p.StartsWith(partly, StringComparison.Ordinal) &&
+                                              p.Contains("who works in every company, removing the Administrator from company X: answered 200", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(partly, StringComparison.Ordinal) &&
+                                                    p.Contains("by a user holding only the access permission, removing the Administrator from company X", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(partly, StringComparison.Ordinal) && p.Contains("on themselves", StringComparison.Ordinal));
+        // The product's endpoint carries a version and refuses a stale one.
+        Assert.DoesNotContain(result.Problems, p => p.Contains("concurrency token", StringComparison.Ordinal) || p.Contains("stale version", StringComparison.Ordinal));
     }
 
     [Fact]

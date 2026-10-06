@@ -316,4 +316,24 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         var logo = await a.GetAsync($"/api/tenancy/companies/{first.Id}/logo");
         Assert.Equal($"\"{first.Hash}\"", logo.Headers.ETag!.Tag);
     }
+
+    [Fact]
+    public async Task A_company_with_no_arabic_legal_name_is_headed_by_its_english_name_in_an_arabic_profile()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var created = await admin.PostAsJsonAsync("/api/tenancy/companies", Company("T-NOAR", "No Arabic Name Trading LLC", ""));
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var id = (await Json(created)).GetProperty("id").GetGuid();
+
+        var arabic = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={id}&language=ar");
+        Assert.Equal("T-NOAR \u00B7 No Arabic Name Trading LLC", arabic.GetProperty("subject").GetString());
+        Assert.Contains(arabic.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("text").GetString() == "T-NOAR \u00B7 No Arabic Name Trading LLC");
+
+        // A company that has an Arabic legal name is headed by it.
+        var named = (await Json(await admin.PostAsJsonAsync("/api/tenancy/companies", Company("T-WITHAR", "With Arabic Name LLC", "شركة بالاسم العربي ذ.م.م")))).GetProperty("id").GetGuid();
+        var withArabic = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={named}&language=ar");
+        Assert.Equal("T-WITHAR \u00B7 شركة بالاسم العربي ذ.م.م", withArabic.GetProperty("subject").GetString());
+        var english = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={named}&language=en");
+        Assert.Equal("T-WITHAR \u00B7 With Arabic Name LLC", english.GetProperty("subject").GetString());
+    }
 }
