@@ -66,6 +66,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.groupBy", f.Language), strings.Get(groupColumn.LabelKey, f.Language), groupBy));
         }
         var facts = (definition.Facts ?? [])
+            .Where(fact => run.Prints(fact.Key))
             .Where(fact => data.Facts.TryGetValue(fact.Key, out var v) && v is not null)
             .Select(fact =>
             {
@@ -73,9 +74,22 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 return new ReportDocumentFact(strings.Get(fact.LabelKey, f.Language), cell.Text, cell.Value);
             })
             .ToList();
-        var columns = definition.Columns.Select(Spec).ToList();
-        return await ComposeAsync(definition.Key, strings.Get(definition.LabelKey, f.Language), data.Subject?.For(f.Language), parameters, facts,
-            columns, data.Rows, groupBy, data.MatchCount ?? data.Rows.Count, data.Truncated, f, cancellationToken);
+        // Columns and facts of another area that the caller cannot read are left out whatever the
+        // source returned, and the document says what was left out.
+        var columns = definition.Columns.Where(c => run.Prints(c.Key)).Select(Spec).ToList();
+        var rows = columns.Count == 0 ? [] : data.Rows;
+        var withheld = definition.Columns.Concat(definition.Facts ?? []).Where(c => !run.Prints(c.Key))
+            .Select(c => strings.Get(c.LabelKey, f.Language)).Distinct(StringComparer.Ordinal).ToList();
+        var notes = withheld.Count == 0
+            ? []
+            : new[] { strings.Get("reports.text.withheld", f.Language, new Dictionary<string, object?> { ["columns"] = string.Join(f.Arabic ? "\u060C " : ", ", withheld) }) };
+        if (groupBy is not null && !run.Prints(groupBy))
+        {
+            groupBy = null;
+        }
+        var document = await ComposeAsync(definition.Key, strings.Get(definition.LabelKey, f.Language), data.Subject?.For(f.Language), parameters, facts,
+            columns, rows, groupBy, columns.Count == 0 ? 0 : data.MatchCount ?? data.Rows.Count, columns.Count != 0 && data.Truncated, f, cancellationToken);
+        return document with { Notes = notes };
     }
 
     /// <summary>A list's document: the rows a list query selects, with the list's own labels.</summary>

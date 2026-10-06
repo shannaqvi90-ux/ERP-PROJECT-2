@@ -236,6 +236,31 @@ public static class ErpPlatform
             throw new InvalidOperationException("Endpoint authorisation is incomplete:\n" + string.Join("\n", problems));
         }
         ValidateLists(app, catalog);
+        ValidateReports(catalog);
+    }
+
+    /// <summary>Every permission a report's column, fact or parameter needs beyond the report's own
+    /// is in the catalogue. The host refuses to start otherwise (a misspelt key would withhold the
+    /// column from everyone, or, checked nowhere, show it to everyone).</summary>
+    private static void ValidateReports(ModuleCatalog catalog)
+    {
+        var problems = new List<string>();
+        foreach (var definition in catalog.Reports.Select(r => r.Definition))
+        {
+            var extras = definition.Columns.Concat(definition.Facts ?? []).Select(c => (Name: c.Key, c.Permission))
+                .Concat(definition.Parameters.Select(p => (Name: p.Key, p.Permission)));
+            foreach (var (name, permission) in extras)
+            {
+                if (permission is not null && !catalog.IsPermission(permission))
+                {
+                    problems.Add($"report '{definition.Key}': '{name}' needs permission '{permission}', which is not in any module's catalogue");
+                }
+            }
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException("Report registrations are inconsistent:\n" + string.Join("\n", problems));
+        }
     }
 
     /// <summary>Every registered list is served by a GET endpoint that declares the list's
