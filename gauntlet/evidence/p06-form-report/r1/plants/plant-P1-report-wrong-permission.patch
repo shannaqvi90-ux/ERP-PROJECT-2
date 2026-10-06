@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index 9b93e31..0757fa8 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -19,7 +19,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         Enumerable.Range(1, 12).Select(m => new ListChoice(m.ToString(System.Globalization.CultureInfo.InvariantCulture), $"tenancy.month.{m}")).ToList();
+ 
+     public static readonly ReportDefinition Definition = new(
+-        Key, "tenancy.report.companyProfile", TenancyPermissions.CompaniesRead,
++        Key, "tenancy.report.companyProfile", TenancyPermissions.WorkplaceRead, // PLANT P1: the company profile under the workplace switcher's permission
+         [new ReportParameter("company", "tenancy.report.company", ReportParameterType.Reference, Required: true, Lookup: CompaniesList.Key)],
+         [
+             new ReportColumn("code", "tenancy.branch.code", ListColumnType.Text),

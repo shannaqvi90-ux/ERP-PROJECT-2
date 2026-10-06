@@ -1,0 +1,19 @@
+form title ALN-AUH · Al Noor Technical Services LLC
+sections ["General","Registration","Accounting","Address","Contact"]
+field types ["legalNameEn:INPUT/text","legalNameAr:INPUT/text","code:INPUT/text","isActive:INPUT/checkbox","tradeLicenceNumber:INPUT/text","tradeLicenceAuthority:INPUT/text","taxRegistrationNumber:INPUT/text","baseCurrency:INPUT/text","fiscalYearStartMonth:SELECT/","fiscalYearStartDay:INPUT/text","addressLine1:INPUT/text","addressLine2:INPUT/text","city:INPUT/text","emirate:SELECT/","poBox:INPUT/text","country:INPUT/text","addressAr:TEXTAREA/","phone:INPUT/tel","email:INPUT/email","website:INPUT/url"]
+  shot 01-company-form-en
+selection after click [0,15,15]
+dirty marker ALN-AUH · Al Noor Technical Services LLC ●Unsaved changes‹1 of 4›PrintDiscard changesSaveClose
+after Escape dialog visible true
+  shot 02-leave-warning-en
+  [native dialog] confirm You have unsaved changes. Leave and discard them?
+url after nav attempt (dismissed) http://localhost:20650/tenancy/companies/018dca08-f08c-7912-b468-38f88c981d22
+after Alt+Z value +971 2 555 7810 orig +971 2 555 7810
+errors ["Some fields need attention.","Enter a valid e-mail address."]
+focused field email
+  shot 03-server-validation-en
+conflict message ["Someone else changed this record after you opened it. Reload it and try again.Show the latest version"]
+  shot 04-conflict-en
+restored +971 2 555 7810
+after Alt+PageDown ALN-DXB · Al Noor Trading LLC 2 of 4
+print menu items ["PDF in English","PDF in Arabic","Show the document on screen"]
