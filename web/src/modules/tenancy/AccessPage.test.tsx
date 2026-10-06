@@ -35,15 +35,17 @@ const dubai = {
   branches: [{ id: "b1", code: "DXB-1", nameEn: "Deira", nameAr: "ديرة", isActive: true }],
 };
 
-function serve(access: object, puts: unknown[]) {
+function serve(access: object, puts: unknown[], conflict = false) {
+  let reads = 0;
   return mockFetch((method, url, body) => {
     if (url === "/api/auth/session") return { status: 200, body: session };
     if (url === "/api/lists/tenancy.access/definition") return { status: 200, body: definition };
     if (url === "/api/lists/tenancy.access/views") return { status: 200, body: { items: [] } };
     if (url.startsWith("/api/tenancy/access?")) return { status: 200, body: { items: [], total: 0, next: null } };
-    if (url === "/api/tenancy/access/u2" && method === "GET") return { status: 200, body: access };
+    if (url === "/api/tenancy/access/u2" && method === "GET") return { status: 200, body: { ...access, version: 70 + reads++ } };
     if (url === "/api/tenancy/access/u2" && method === "PUT") {
       puts.push(body);
+      if (conflict && puts.length === 1) return { status: 409, body: { code: "concurrency", title: "Someone else changed this record." } };
       return { status: 200, body: { ...access, companies: (body as { companies: unknown[] }).companies } };
     }
     return { status: 404, body: {} };
@@ -85,6 +87,47 @@ describe("company access screen", () => {
       view!.container.querySelector<HTMLFormElement>(".record-form")!.requestSubmit();
       await new Promise((r) => setTimeout(r, 0));
     });
-    expect(puts).toEqual([{ companies: [{ companyId: "c1", allBranches: false, branchIds: ["b1"] }] }]);
+    // The save carries the version that was read.
+    expect(puts).toEqual([{ companies: [{ companyId: "c1", allBranches: false, branchIds: ["b1"] }], version: 70 }]);
+  });
+
+  it("says when another administrator saved first and reloads their change on request", async () => {
+    window.history.replaceState(null, "", "/tenancy/access?open=u2");
+    const puts: unknown[] = [];
+    serve({ userId: "u2", displayName: "New clerk", email: "clerk@alnoor.example", isCaller: false, companies: [],
+      options: [dubai], canEdit: true, readOnlyReason: null }, puts, true);
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => {
+      view!.container.querySelector<HTMLInputElement>('[data-company="AN-DXB"] input[type="checkbox"]')!.click();
+    });
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".record-form")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const alerts = [...view.container.querySelectorAll('.record-form [role="alert"]')];
+    expect(alerts.map((a) => a.textContent).join(" ")).toContain("Another administrator changed this user's access after you opened it.");
+    expect(view.container.querySelector('[data-company="AN-DXB"] input[type="checkbox"]')!.matches(":checked")).toBe(true);
+    const reload = alerts.flatMap((a) => [...a.querySelectorAll("button")]).find((b) => b.textContent === "Show the latest version")!;
+    expect(reload).toBeTruthy();
+    await act(async () => {
+      reload.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await settle();
+    // The draft is replaced by what is saved now, with the new version for the next save.
+    expect(view.container.querySelector('.record-form [role="alert"]')).toBeNull();
+    expect(view.container.querySelector<HTMLInputElement>('[data-company="AN-DXB"] input[type="checkbox"]')!.checked).toBe(false);
+    await act(async () => {
+      view!.container.querySelector<HTMLInputElement>('[data-company="AN-DXB"] input[type="checkbox"]')!.click();
+    });
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".record-form")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(puts).toEqual([
+      { companies: [{ companyId: "c1", allBranches: true, branchIds: [] }], version: 70 },
+      { companies: [{ companyId: "c1", allBranches: true, branchIds: [] }], version: 71 },
+    ]);
   });
 });

@@ -16,6 +16,9 @@ export type CompanyRow = {
 export type Company = {
   id: string;
   code: string;
+  /** False when the user works in only some of the company's branches: the company itself (its
+   * record and logo) is theirs to read, not to change. */
+  everyBranch?: boolean;
   legalNameEn: string;
   legalNameAr: string;
   tradeLicenceNumber: string | null;
@@ -96,6 +99,8 @@ export type UserAccess = {
   canEdit?: boolean;
   /** Text key saying why the access is read-only for the caller. */
   readOnlyReason?: string | null;
+  /** This state of the user's access in the caller's companies; a save sends it back (409 when stale). */
+  version: number;
 };
 
 /** Fired on window when the user switches their working company or branch. */
