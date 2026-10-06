@@ -27,6 +27,8 @@ export const PRODUCTS = Object.freeze({
       admin: { login: env.COMPARE_ODOO_ADMIN || 'admin', password: env.COMPARE_ODOO_ADMIN_PASSWORD || 'admin' },
       approver: { login: env.COMPARE_ODOO_APPROVER || 'approver', password: env.COMPARE_ODOO_APPROVER_PASSWORD || 'approver' },
       buyer: { login: env.COMPARE_ODOO_BUYER || 'buyer', password: env.COMPARE_ODOO_BUYER_PASSWORD || 'buyer' },
+      // A purchase administrator who works in Arabic (print-list-arabic); set-up creates it when missing.
+      arabic: { login: env.COMPARE_ODOO_ARABIC || 'arabic.reporter', password: env.COMPARE_ODOO_ARABIC_PASSWORD || 'arabic.reporter' },
     },
   }),
   ours: Object.freeze({

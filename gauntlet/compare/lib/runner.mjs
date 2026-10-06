@@ -654,6 +654,12 @@ export function promoteBaseline(outDir, chosen, runs) {
   return baseline;
 }
 
+/**
+ * The owner's open question on ties at zero (gauntlet/goal.md sets the rule; the owner decides,
+ * gauntlet/needs-human.md). The rule is applied unchanged; a tie at zero is reported plainly.
+ */
+export const TIE_AT_ZERO_QUESTION = 'Should a metric on which both products score 0 count toward the tie rule? Under the rule as written it is a tie, and a tie is a loss, so the task cannot be won on that metric whatever ours does. Applied as written until the owner decides.';
+
 /** Compare one run of each product. A tie is a loss. */
 export function compareRuns(ours, odoo) {
   const usable = r => r && r.status === 'verified';
@@ -661,15 +667,28 @@ export function compareRuns(ours, odoo) {
   for (const m of METRICS) {
     const a = ours?.counts?.[m];
     const b = odoo?.counts?.[m];
-    const outcome = !usable(ours) || !usable(odoo) ? 'not_comparable' : a < b ? 'win' : a === b ? 'tie (a tie is a loss)' : 'loss';
-    metrics[m] = { ours: a ?? null, odoo: b ?? null, outcome };
+    const comparable = usable(ours) && usable(odoo);
+    const zero = comparable && a === 0 && b === 0;
+    const outcome = !comparable ? 'not_comparable' : a < b ? 'win' : zero ? 'tie at zero (a tie is a loss)' : a === b ? 'tie (a tie is a loss)' : 'loss';
+    metrics[m] = { ours: a ?? null, odoo: b ?? null, outcome, ...(zero ? { tie_at_zero: true } : {}) };
   }
   let verdict;
   if (ours?.status === 'not_built') verdict = 'not_built';
   else if (!usable(ours)) verdict = `ours ${ours?.status || 'missing'}`;
   else if (!usable(odoo)) verdict = `odoo ${odoo?.status || 'missing'} (fix the reference before judging)`;
   else verdict = Object.values(metrics).every(x => x.outcome === 'win') ? 'win' : 'loss';
-  return { task: ours?.task || odoo?.task, verdict, rule: 'Ours must be strictly lower on every metric; a tie is a loss.', metrics, runs: { ours: ours?.result_file || null, odoo: odoo?.result_file || null } };
+  const tiesAtZero = Object.entries(metrics).filter(([, x]) => x.tie_at_zero).map(([m]) => m);
+  // Whether the verdict rests on ties at zero alone: every other metric is a win.
+  const decidedByZeroTies = verdict === 'loss' && tiesAtZero.length > 0 && Object.values(metrics).every(x => x.outcome === 'win' || x.tie_at_zero);
+  return {
+    task: ours?.task || odoo?.task, verdict, rule: 'Ours must be strictly lower on every metric; a tie is a loss.', metrics,
+    ties_at_zero: tiesAtZero,
+    ...(tiesAtZero.length ? {
+      tie_at_zero_note: `${tiesAtZero.join(', ')}: both products score 0, which no path can beat. ${decidedByZeroTies ? 'Every other metric is a win: this loss comes from the tie at zero alone. ' : ''}${TIE_AT_ZERO_QUESTION}`,
+      loss_only_from_ties_at_zero: decidedByZeroTies,
+    } : {}),
+    runs: { ours: ours?.result_file || null, odoo: odoo?.result_file || null },
+  };
 }
 
 /** Median of several runs of the same task and product (machine seconds vary run to run). */

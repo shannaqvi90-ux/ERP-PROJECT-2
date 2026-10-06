@@ -17,6 +17,13 @@ node run.mjs --task find-record --product both --out ../evidence/p05/r1/compare 
 node run.mjs --task find-record --product ours --out /tmp/x                         # ours only
 ```
 
+Our product allows 30 sign-ins a minute per client. The harness keeps every sign-in it makes under one
+budget of 24 a minute and waits out a 429 (`lib/sign-in-limit.mjs`, `signInLimit` in `lib/config.mjs`):
+the runner paces a driver's browser sign-in (on a 429 it closes the context, waits for the abandoned
+attempt to end, waits out the window and signs in again in a fresh context), and the fetch bridge paces
+an API session's sign-in from the driver process. Pacing never happens inside a measured part, and a
+paced wait inside `verify()` is reported apart (`paced_seconds`) and not charged to the pass.
+
 Options: `--task <id|id,id|all>`, `--product odoo|ours|both`, `--out <dir>`, `--repeat N`
 (median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid.
 With `--product both` the two products run in a random order per task (recorded in `key.json`).
@@ -35,7 +42,9 @@ are counted the same way. This is enforced, not trusted (`lib/sandbox/`, `lib/gu
 plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
 `test/drivers-lint.test.mjs`):
 
-- **Drivers never run in the harness process** (round 5). Every harness process starts one driver
+- **Drivers never run in the harness process** (round 5), and **every run has a driver process of its own** (round 6):
+  a driver that patched its process's globals (timers, promises, a shared helper) would otherwise slow or steer the next run
+  in it, the other product's driver included (`--product both`); plant X1 in `test/sandbox.test.mjs`. Every harness process starts one driver
   process (`lib/sandbox/host.mjs`) under Node's permission model (`--permission`: no child process,
   no worker thread, no native addon, no WASI, no inspector, no `process.binding`; files may be read,
   and written only in the driver process's own scratch folder, which is its `TMPDIR`), with
@@ -177,6 +186,12 @@ usually signed in, on the screen the product shows right after sign-in. End stat
 
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
+A metric on which both products score 0 (no keystrokes on a pointer-only path, for example) is a
+tie under that rule, so the task cannot be won on it whatever ours does. The harness applies the
+rule unchanged and reports such a metric plainly: its outcome reads `tie at zero (a tie is a loss)`,
+the comparison lists it in `ties_at_zero` with a `tie_at_zero_note`, says whether the loss comes from
+ties at zero alone (`loss_only_from_ties_at_zero`), and `run.mjs` prints `TIE AT ZERO`. Whether such
+a metric should count toward the tie rule is the owner's question (gauntlet/needs-human.md).
 
 A scroll (`op.scrollTo`) is a step modelled like a click (P + BB), so a path that needs one never
 looks free. A click that makes the product send a file (`op.clickForDownload`) is one step; the
@@ -257,12 +272,14 @@ removed (plan.md); the ratchet counts them.
 | attach-file (p11) | paperclip > Attach files > choose the file | |
 | see-and-rerun-job (p12) | Settings > scroll > developer mode > Technical > Scheduled Actions > search > open > Run Manually | Odoo shows no last-run time and no message after the run |
 | export-filtered-list (p14) | Contacts > tag > Search Tag for > select page > Select all > Actions > Export > Export | the verification reads the workbook |
+| print-list-arabic (p06) | (working in Arabic) Purchase orders list > type the vendor > Enter > header check box > Print > Purchase Order | the list report named in p06's spec; Community has no printed table of a list, its nearest feature prints the selected orders' own document in one PDF; the vendor's partners get Arabic in set-up (restored in clean-up); our product's stand-in list is the users list until purchase orders exist |
 
 Every task names the piece (`piece`) whose critic fills in its `ours` driver. Built `ours` drivers:
 sign-in, find-user, create-restricted-user, api-update-user, switch-to-arabic and
 reach-screen-keyboard (p04), create-company-branch and switch-company (p02), edit-and-save and
 arabic-report (p06; until contacts and purchase orders exist they use a company and its printed
-company profile as the stand-in record and document). Drivers find things by role and label, not layout.
+company profile as the stand-in record and document), print-list-arabic (the users list, printed as a
+PDF report in Arabic, stands in for the vendor's purchase orders). Drivers find things by role and label, not layout.
 The others report "not built yet" with what they wait for.
 
 An API task (`channel: 'api'` in its definition) has no screens: the driver's `signIn` calls

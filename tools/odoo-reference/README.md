@@ -19,7 +19,8 @@ A first run on an empty machine takes about three minutes once the images are pu
 Sign-ins (local rig only, bound to 127.0.0.1): `admin`/`admin`, `approver`/`approver` (purchase
 manager), `buyer`/`buyer` (purchase user). The harness adds task users as it needs them:
 `lang.tester` (switch to Arabic; works in Contacts), `noor.editor` (makes the change the
-who-changed-field task looks for) and `signin.tester@demo-trading.example` (sign in).
+who-changed-field task looks for), `signin.tester@demo-trading.example` (sign in) and
+`arabic.reporter` (a purchase administrator who works in Arabic; print-list-arabic).
 
 | Main list | Odoo model | Our counterpart |
 |---|---|---|
