@@ -138,6 +138,22 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 covered++;
                 continue;
             }
+            if (module.Name == "reports" && ReportRoutePermission(catalog, endpoint.Pattern) is { } report)
+            {
+                // A report's run route and a printable list's print route declare exactly the
+                // permission of the data they print: the report's own, or the list's.
+                var declared = endpoint.IsAnonymous ? "anonymous" : string.Join(",", endpoint.Permissions);
+                if (report.Expected is null)
+                {
+                    problems.Add($"{endpoint.Key}: under {report.Prefix} but names no registered {report.Kind}; review it in a map");
+                }
+                else if (declared != report.Expected)
+                {
+                    problems.Add($"{endpoint.Key} declares {declared}; a {report.Kind} route must declare {report.Expected}");
+                }
+                covered++;
+                continue;
+            }
             if (!maps.Any(m => m.Prefixes.Any(p => endpoint.Pattern.StartsWith(p, StringComparison.Ordinal))))
             {
                 problems.Add($"{endpoint.Key} (module {module.Name}) is under no reviewed map in {ReviewedPermissionMap.Folder}; add tests/Gates/endpoint-permissions/{module.Name}.txt");
@@ -149,6 +165,26 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.Contains(Endpoints, e => e.Pattern.StartsWith("/api/tenancy/", StringComparison.Ordinal));
         Assert.True(covered >= Ratchet.Min("g2.moduleRoutesReviewed"), $"{covered} module endpoints reviewed; ratchet minimum {Ratchet.Min("g2.moduleRoutesReviewed")}");
+    }
+
+    /// <summary>The permission a route under <c>/api/reports/run/&lt;report key&gt;</c> or
+    /// <c>/api/reports/lists/&lt;list key&gt;</c> must declare (null when it names no registered
+    /// report or printable list); null for any other route of the reports module (reviewed in a map).</summary>
+    public static (string Prefix, string Kind, string? Expected)? ReportRoutePermission(ModuleCatalog catalog, string pattern)
+    {
+        const string run = "/api/reports/run/";
+        const string lists = "/api/reports/lists/";
+        if (pattern.StartsWith(run, StringComparison.Ordinal))
+        {
+            var key = pattern[run.Length..].Split('/')[0];
+            return (run, "report", catalog.FindReport(key)?.Definition.Permission);
+        }
+        if (pattern.StartsWith(lists, StringComparison.Ordinal))
+        {
+            var key = pattern[lists.Length..].Split('/')[0];
+            return (lists, "printable list", catalog.PrintableLists.Where(p => p.List.Key == key).Select(p => p.List.Permission).FirstOrDefault());
+        }
+        return null;
     }
 
     /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by

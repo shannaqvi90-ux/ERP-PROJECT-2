@@ -13,6 +13,7 @@ const violationRecord = claimViolations();
 const takeViolations = () => violationRecord.take();
 const phase = claimPhase();
 import { apiTranscriptHtml } from './api-transcript.mjs';
+import { paceSignIn, signInAttempts, waitOutSignInLimit } from './sign-in-limit.mjs';
 import { brandingFor } from './blind.mjs';
 import { describe, driverPath, loadDriver, loadTask } from './registry.mjs';
 import { OPERATORS, OPERATOR_SOURCE, round } from './klm.mjs';
@@ -191,6 +192,40 @@ export function driverFingerprint(productId, taskId) {
 }
 
 /** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
+// Our product refuses a burst of sign-ins with 429 (lib/sign-in-limit.mjs). A driver's browser
+// sign-in is paced; one the server refuses anyway is tried again after the window in a fresh
+// browser context (`restart` replaces the runner's own context and page, which ctx.read uses too),
+// so the abandoned attempt, still waiting for its working screen, ends with its page.
+async function signInWithinLimit(driver, ctx, productId, currentPage, restart) {
+  if (productId !== 'ours') {
+    await driver.signIn(ctx);
+    return;
+  }
+  for (let attempt = 1; ; attempt++) {
+    await paceSignIn();
+    const page = currentPage();
+    let onResponse;
+    const refused = new Promise(resolve => {
+      onResponse = r => {
+        if (r.status() === 429 && r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/auth/sign-in') resolve(true);
+      };
+      page.on('response', onResponse);
+    });
+    const signedIn = driver.signIn(ctx).then(() => false);
+    let limited;
+    try {
+      limited = await Promise.race([signedIn, refused]);
+    } finally {
+      page.off('response', onResponse);
+    }
+    if (!limited) return;
+    signedIn.catch(() => {});
+    if (attempt === signInAttempts) throw new Error(`our product refused the browser sign-in with 429 ${attempt} times`);
+    await waitOutSignInLimit();
+    await restart();
+  }
+}
+
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
   installNetworkGuard();
@@ -226,7 +261,16 @@ export async function execute(task, driver, product, productId, needles, out, op
     ctx.context = guard(context);
     ctx.page = guard(page);
     if (driver.setup) await driver.setup(ctx);
-    if (driver.signIn) await driver.signIn(ctx);
+    if (driver.signIn) {
+      await signInWithinLimit(driver, ctx, productId, () => page, async () => {
+        await context.close();
+        context = await newContext(browser);
+        page = await context.newPage();
+        page.setDefaultTimeout(timeout);
+        ctx.context = guard(context);
+        ctx.page = guard(page);
+      });
+    }
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');

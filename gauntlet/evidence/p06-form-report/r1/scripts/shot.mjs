@@ -1,0 +1,10 @@
+import { chromium } from '/home/shan/critic/p06-explore/node_modules/playwright-core/index.mjs';
+const [,, file, out, pageNo] = process.argv;
+const b = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const p = await b.newPage({ viewport: { width: 960, height: 1360 } });
+p.on('console', m => console.log('console', m.text()));
+await p.goto(`http://127.0.0.1:20699/view.html?f=${encodeURIComponent(file)}&p=${pageNo || 1}`);
+await p.waitForFunction(() => document.title.startsWith('done'), null, { timeout: 30000 });
+console.log(await p.title());
+await p.locator('canvas').screenshot({ path: out, type: 'jpeg', quality: 75 });
+await b.close();
