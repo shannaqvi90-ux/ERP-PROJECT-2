@@ -146,10 +146,17 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     /// again. The roles are shared by every environment of the server, so bootstraps take turns.</summary>
     public Task BootstrapAsync() => Server.BootstrapAsync(Factory);
 
+    /// <summary>How long a test client waits for an answer (see <see cref="CreateClient"/>).</summary>
+    public static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(5);
+
     /// <summary>An unauthenticated client that sends the X-Erp-Request header.</summary>
     public HttpClient CreateClient(bool requestHeader = true)
     {
         var client = Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true, AllowAutoRedirect = false });
+        // Several agents share the owner's machine and its load can reach twenty runnable threads
+        // per processor; a request (a PDF, a workbook) then waits for a processor far longer than
+        // HttpClient's 100-second default. A request that never answers still fails, later.
+        client.Timeout = RequestTimeout;
         if (requestHeader)
         {
             client.DefaultRequestHeaders.Add("X-Erp-Request", "1");
@@ -202,6 +209,7 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<TokenBody>();
         var client = Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        client.Timeout = RequestTimeout;
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", body!.Token);
         return client;
     }

@@ -90,6 +90,9 @@ public static partial class IsolationAttack
         }
 
         var parallel = new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests };
+        // Tenant B's own shapes two at a time: every one renders a whole document (PDF, workbook),
+        // and tenant A's requests and B's background reader share the processors with them.
+        var victimParallel = new ParallelOptions { MaxDegreeOfParallelism = 2 };
 
         List<string> VictimPaths(ShapePlan plan) =>
             plan.Shapes.SelectMany(shape => new[] { Join(plan.VictimPath, shape), plan.VictimQuery is null ? null : Join(Join(plan.VictimPath, shape), plan.VictimQuery) })
@@ -98,7 +101,7 @@ public static partial class IsolationAttack
         // Before: tenant B asks for every shape, and every one must be answered.
         foreach (var plan in plans)
         {
-            await Parallel.ForEachAsync(VictimPaths(plan), parallel, async (path, _) =>
+            await Parallel.ForEachAsync(VictimPaths(plan), victimParallel, async (path, _) =>
             {
                 Interlocked.Increment(ref victimRequests);
                 // Every actor of tenant B asks: an administrator and a read-only user may each be
@@ -164,7 +167,7 @@ public static partial class IsolationAttack
         // not reach it.
         foreach (var plan in plans)
         {
-            await Parallel.ForEachAsync(VictimPaths(plan), parallel, async (path, _) =>
+            await Parallel.ForEachAsync(VictimPaths(plan), victimParallel, async (path, _) =>
             {
                 Interlocked.Increment(ref victimRequests);
                 await activity.ReadPathAsync(path, "tenant B asks for every answer shape after tenant A");

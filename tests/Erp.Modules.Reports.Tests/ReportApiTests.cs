@@ -282,11 +282,17 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             var directory = await branchesOnly.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?company={companyId}&groupBy=city&language=en");
             var companyCells = directory.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()).Select(r => r.GetProperty("cells")[0].GetProperty("text").GetString()).Distinct().ToList();
             Assert.Equal([company.GetProperty("code").GetString()], companyCells);
-            // Nowhere in the rows, groups or parameters (the letterhead names the caller's own working company).
+            // Nowhere in the rows, groups or parameters is the company named with its legal name
+            // (the letterhead names the caller's own working company; a branch's own name may
+            // happen to contain the company's words).
+            var named = $"{company.GetProperty("code").GetString()} \u00B7 {company.GetProperty("legalNameEn").GetString()}";
             foreach (var section in new[] { "groups", "parameters" })
             {
-                Assert.DoesNotContain(company.GetProperty("legalNameEn").GetString()!, directory.GetProperty(section).GetRawText(), StringComparison.Ordinal);
+                Assert.DoesNotContain(named, JsonSerializer.Serialize(directory.GetProperty(section), new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), StringComparison.Ordinal);
             }
+            using var companiesToo = await UserWithAsync(admin, "directory.both", "tenancy.branches.read", "tenancy.companies.read");
+            var named2 = await companiesToo.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?company={companyId}&groupBy=city&language=en");
+            Assert.Contains(named2.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()), r => r.GetProperty("cells")[0].GetProperty("text").GetString() == named);
         }
     }
 
@@ -330,5 +336,26 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         }
         var pdf = PdfText.Of(await admin.GetByteArrayAsync("/api/reports/run/identity.roleSummary?format=pdf&language=en"));
         Assert.Contains("Total", pdf, StringComparison.Ordinal);
+    }
+
+    /// <summary>Role names come from every page of the roles list: a workspace with more roles than
+    /// one page holds still prints every name, and the print ends (no page read twice).</summary>
+    [Fact]
+    public async Task A_users_list_names_roles_beyond_the_first_page_of_roles()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        Guid last = Guid.Empty;
+        for (var i = 0; i < 230; i++)
+        {
+            using var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Zz paging role {i:000}", nameAr = $"دور الصفحات {i:000}", permissions = new[] { "identity.users.read" } });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            last = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        }
+        var email = $"paging.roles@{Env.TenantA.EmailDomain}";
+        using var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Paging roles", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { last } });
+        Assert.Equal(HttpStatusCode.Created, user.StatusCode);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=paging.roles", timeout.Token));
+        Assert.Contains("Zz paging role 229", csv, StringComparison.Ordinal);
     }
 }

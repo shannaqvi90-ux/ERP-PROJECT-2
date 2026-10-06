@@ -74,9 +74,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw(body);
             Raw("\nendobj\n");
         }
-        void Stream(int id, byte[] data, string extra = "")
+        void Stream(int id, byte[] data, string extra = "", byte[]? alreadyCompressed = null)
         {
-            var compressed = Deflate(data);
+            var compressed = alreadyCompressed ?? Deflate(data);
             Begin(id);
             Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
             output.Write(compressed);
@@ -124,7 +124,7 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             var box = face.BoundingBox;
             Object(descriptor, $"<< /Type /FontDescriptor /FontName /{face.Name} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
                                $"/Ascent {face.Ascent} /Descent {face.Descent} /CapHeight {face.CapHeight} /StemV {(face.Bold ? 120 : 80)} /FontWeight {(face.Bold ? 700 : 400)} /FontFile2 {file} 0 R >>");
-            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}");
+            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}", face.CompressedSfnt);
             Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Texts)));
         }
         Object(pages, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
