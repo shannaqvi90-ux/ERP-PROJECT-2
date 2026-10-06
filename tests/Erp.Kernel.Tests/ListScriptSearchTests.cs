@@ -98,6 +98,17 @@ public sealed class ListScriptSearchTests
         var arabic = Sql("فاطمه");
         Assert.Contains("name_ar", arabic, StringComparison.Ordinal);
         Assert.Contains("email", arabic, StringComparison.Ordinal);
+
+        // The conditions alone (relevance orders with regular expressions in either case).
+        static string Where(string sql) => sql[sql.IndexOf("WHERE", StringComparison.Ordinal)..sql.IndexOf("ORDER BY", StringComparison.Ordinal)];
+        // A Latin word: one LIKE per field, no regular expression.
+        Assert.DoesNotContain("~*", Where(latin), StringComparison.Ordinal);
+        // An Arabic word (many spellings): one regular expression per field it can occur in, which
+        // refuses most rows before the LIKE patterns (one per spelling and field) are tried.
+        var where = Where(arabic);
+        Assert.Equal(3, where.Split("~*").Length - 1);
+        Assert.Equal(3 * ListSearch.Spellings("فاطمه").Count, where.Split("ILIKE").Length - 1);
+        Assert.True(where.IndexOf("~*", StringComparison.Ordinal) < where.IndexOf("ILIKE", StringComparison.Ordinal), where);
     }
 
     [Fact]
