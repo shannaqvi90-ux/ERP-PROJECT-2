@@ -1,0 +1,33 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 9da4200..694ca35 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -51,6 +51,8 @@ internal static class ReportEndpoints
+ {
+     public static readonly System.Collections.Immutable.ImmutableArray<string> Formats = ["json", "pdf", "csv", "xlsx"];
+     private const int MaxColumns = 30;
++    // PLANT L1: printed list documents cached by list and query, with no tenant in the key.
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ReportDocument> PrintCache = new();
+ 
+     public static void Map(RouteGroupBuilder group)
+     {
+@@ -165,6 +167,11 @@ internal static class ReportEndpoints
+         {
+             return validator.ToResult();
+         }
++        var cacheKey = list.Key + "|" + Single(query, "search") + "|" + Single(query, "filter") + "|" + Single(query, "sort") + "|" + Single(query, "columns") + "|" + common.GroupBy + "|" + common.Options.Language;
++        if (PrintCache.TryGetValue(cacheKey, out var cachedDocument))
++        {
++            return Output(http, cachedDocument, common, pdf);
++        }
+         var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+         var rows = new List<JsonElement>();
+         string? after = null;
+@@ -194,6 +201,7 @@ internal static class ReportEndpoints
+         }
+         var shown = new ListRequest { Search = Single(query, "search"), Filter = Single(query, "filter"), Sort = Single(query, "sort") };
+         var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken);
++        PrintCache[cacheKey] = document;
+         return Output(http, document, common, pdf);
+     }
+ 

@@ -48,6 +48,9 @@ they grant; the screens offer nothing else.
 | `src/Kernel/Erp.Kernel/Lists` | The list query engine: definitions, bindings, filter language, keyset paging, grouping |
 | `src/Modules/Lists` | Saved views and the per-list definition endpoints (`/api/lists/<key>/…`) |
 | `web/src/kernel/lists` | The list screen every module reuses (virtualised keyboard grid, filters, views) |
+| `web/src/kernel/forms` | The record form every module reuses (fields, save/discard keys, server errors, leave guard, print) |
+| `src/Kernel/Erp.Kernel/Reports` | Report definitions, parameters, columns and the source contract |
+| `src/Modules/Reports` | The report engine: catalogue, run and list print endpoints, PDF (Arabic shaping), CSV, XLSX |
 | `web/` | React 19 + TypeScript + Vite; `src/modules/<module>/` holds each module's screens and strings |
 | `tests/Erp.Gates.Tests` | Hard gates G1 (tenant isolation), G2 (permissions) and rule gates |
 | `tests/Gates/` | Reviewed allowlists the gates read, and the G3 clean-clone script |
@@ -87,7 +90,18 @@ they grant; the screens offer nothing else.
    module's route prefixes and one line per endpoint with its permission and why no broader one
    (G2 refuses any `/api/<module>/` route under no map; the lists module's per-list routes derive
    their permission from the list instead).
-6. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
+6. Printing. Every list is printable: register its rows reader with
+   `module.ListRows(listKey, PageAsync)` (the same page function its GET endpoint uses) and
+   `/api/reports/lists/<key>` prints exactly what the list's query selects, as PDF in English or
+   Arabic, CSV or XLSX; a list that cannot be printed is named with a reason in
+   `tests/Gates/unprintable-lists.txt`. A report (parameters, grouping, totals, a record's
+   document) is a `ReportDefinition` with an `IReportSource` that returns rows:
+   `module.Report<TSource>(definition)`; it is served at `/api/reports/run/<key>` under its own
+   permission, and its labels are web string keys (`docs/decisions/p06-form-report-report-framework.md`).
+   Screens edit records with the kernel form (`web/src/kernel/forms`: `useRecordForm`,
+   `RecordForm`, the field components), which brings save and discard keys, server errors on their
+   fields, the unsaved-changes guard, next/previous and Print (`docs/decisions/p06-form-report-form-framework.md`).
+7. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
    controls (the company/branch switcher), status-line items and command palette sources, each
    with a permission (`docs/decisions/p04-shell-layout-and-extension-points.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.

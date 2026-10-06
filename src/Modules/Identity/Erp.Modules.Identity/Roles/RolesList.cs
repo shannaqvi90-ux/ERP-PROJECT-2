@@ -15,7 +15,7 @@ internal static class RolesList
         ListBinding<RoleDto>.For(new ListDefinition(
                 Key, "identity.roles.title", IdentityPermissions.RolesRead, "/api/identity/roles",
                 [
-                    new ListColumn("nameEn", "identity.roles.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("nameEn", "identity.roles.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "nameAr"),
                     new ListColumn("nameAr", "identity.roles.nameAr", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true),
                     new ListColumn("isSystem", "identity.roles.kind", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true),
                     new ListColumn("userCount", "identity.roles.users", ListColumnType.Number, Sortable: true, Filterable: true, Aggregate: true),

@@ -29,8 +29,8 @@ export function CompaniesPage() {
         reloadKey={panel.reload}
         openId={panel.openId}
         onOpenIdChange={panel.onOpenIdChange}
-        renderRecord={(id, close) => (
-          <CompanyForm key={panel.formKey} id={id === newRecord ? null : id} onSaved={panel.saved} onClose={close} />
+        renderRecord={(id, close, nav) => (
+          <CompanyForm key={panel.formKey} id={id === newRecord ? null : id} onSaved={panel.saved} onClose={close} nav={nav} />
         )}
         actions={
           panel.startNew && (

@@ -3,11 +3,15 @@ import { api, ApiError } from "../../kernel/api";
 import { useI18n, type Language } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { teamSignInAddress } from "../../kernel/signInAddress";
+import { formKeys } from "../../kernel/forms/RecordForm";
+import { Field } from "../../kernel/forms/fields";
 import "./identity.css";
 
 /**
  * The signed-in user's own account: interface language and password. Changing the password
  * proves the current one (through sign-in) and ends every other session of the account.
+ * Not a record form (nothing to load, no version): it uses the kernel's field shape (`Field`:
+ * label, hint and message linked to the input) and the kernel's save keys (`formKeys`).
  */
 export function MyAccountPage() {
   const { t, language, setLanguage } = useI18n();
@@ -113,23 +117,22 @@ export function MyAccountPage() {
           {t("identity.language.ar")}
         </label>
       </fieldset>
-      <form className="id-form" noValidate onSubmit={(e) => void changePassword(e)}>
+      <form
+        className="id-form"
+        noValidate
+        onSubmit={(e) => void changePassword(e)}
+        onKeyDown={(e) => formKeys(e, () => e.currentTarget.requestSubmit(), () => undefined)}
+      >
         <h2>{t("identity.me.changePassword")}</h2>
-        <label className="field">
-          <span className="field-label">{t("identity.me.current")}</span>
-          <input name="current" type="password" dir="ltr" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} aria-invalid={errors.current ? true : undefined} />
-          {errors.current && <span className="field-error">{errors.current}</span>}
-        </label>
-        <label className="field">
-          <span className="field-label">{t("identity.me.new")}</span>
-          <input name="new" type="password" dir="ltr" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} aria-invalid={errors.next ? true : undefined} />
-          {errors.next && <span className="field-error">{errors.next}</span>}
-        </label>
-        <label className="field">
-          <span className="field-label">{t("identity.me.repeat")}</span>
-          <input name="repeat" type="password" dir="ltr" autoComplete="new-password" value={repeat} onChange={(e) => setRepeat(e.target.value)} aria-invalid={errors.repeat ? true : undefined} />
-          {errors.repeat && <span className="field-error">{errors.repeat}</span>}
-        </label>
+        <Field name="current" label={t("identity.me.current")} errors={errors.current ? [errors.current] : []}>
+          {(a) => <input {...a} name="current" type="password" dir="ltr" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />}
+        </Field>
+        <Field name="new" label={t("identity.me.new")} errors={errors.next ? [errors.next] : []}>
+          {(a) => <input {...a} name="new" type="password" dir="ltr" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />}
+        </Field>
+        <Field name="repeat" label={t("identity.me.repeat")} errors={errors.repeat ? [errors.repeat] : []}>
+          {(a) => <input {...a} name="repeat" type="password" dir="ltr" autoComplete="new-password" value={repeat} onChange={(e) => setRepeat(e.target.value)} />}
+        </Field>
         <p className="muted">{t("identity.me.othersEnd")}</p>
         <button type="submit" className="button primary" disabled={busy}>
           {t("identity.me.changePassword")}

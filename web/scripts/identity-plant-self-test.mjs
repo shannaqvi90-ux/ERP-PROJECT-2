@@ -20,17 +20,28 @@ const plants = [
   {
     id: "U1",
     what: "New role offered without identity.roles.create",
-    edits: [{ file: "src/modules/identity/RolesPage.tsx", find: '            can("identity.roles.create") && (', replace: "            (" }],
+    // The screen offers New through the record panel, which is given the permission: the plant
+    // shows the button regardless and makes it open a new role.
+    edits: [
+      { file: "src/modules/identity/RolesPage.tsx", find: "            panel.startNew && (", replace: "            (" },
+      { file: "src/modules/identity/RolesPage.tsx", find: "onClick={panel.startNew}", replace: "onClick={() => panel.onOpenIdChange(newRecord)}" },
+    ],
   },
   {
     id: "U1-users",
     what: "New user offered without identity.users.create",
-    edits: [{ file: "src/modules/identity/UsersPage.tsx", find: '            can("identity.users.create") && (', replace: "            (" }],
+    edits: [
+      { file: "src/modules/identity/UsersPage.tsx", find: "            panel.startNew && (", replace: "            (" },
+      { file: "src/modules/identity/UsersPage.tsx", find: "onClick={panel.startNew}", replace: "onClick={() => panel.onOpenIdChange(newRecord)}" },
+    ],
   },
   {
     id: "U1-shortcut",
     what: "Alt+N opens a new role without identity.roles.create",
-    edits: [{ file: "src/modules/identity/RolesPage.tsx", find: '    enabled: can("identity.roles.create"),', replace: "    enabled: true," }],
+    edits: [
+      { file: "src/modules/identity/RolesPage.tsx", find: "    enabled: Boolean(panel.startNew),", replace: "    enabled: true," },
+      { file: "src/modules/identity/RolesPage.tsx", find: "    run: () => panel.startNew?.(),", replace: "    run: () => panel.onOpenIdChange(newRecord)," },
+    ],
   },
   {
     id: "U-delete",

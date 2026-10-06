@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../kernel/api";
+import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
+import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
+import { useRecordForm } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { ListView, type ReferenceSource } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
 import { AddressFields } from "./CompanyForm";
 import { listSearch, loadAll, newRecord, useRecordPanel } from "./records";
 import { companiesChanged, type Branch, type CompanyRow } from "./types";
-import { CheckField, problemOf, SelectField, TextField, useLocalName, useScreenKeys, type Emirate, type FieldErrors } from "./ui";
+import { useLocalName, useScreenKeys, type Emirate } from "./ui";
 
 /**
  * Branches of every company the user may work in: the shared list (search, filters, sort, group
@@ -62,9 +65,10 @@ export function BranchesPage() {
         openId={panel.openId}
         onOpenIdChange={panel.onOpenIdChange}
         references={references}
-        renderRecord={(id, close) => (
+        renderRecord={(id, close, nav) => (
           <BranchForm
             key={panel.formKey}
+            nav={nav}
             id={id === newRecord ? null : id}
             companies={id === newRecord ? companies.filter((c) => c.isActive) : companies}
             defaultCompanyId={companies.find((c) => c.isActive)?.id ?? ""}
@@ -106,10 +110,28 @@ type Draft = {
   phone: string;
   email: string;
   isActive: boolean;
-  version: number | null;
 };
 
 const optional = (value: string) => (value.trim() === "" ? null : value.trim());
+
+function draftOf(b: Branch | null, defaultCompanyId: string): Draft {
+  return {
+    companyId: b?.companyId ?? defaultCompanyId,
+    code: b?.code ?? "",
+    nameEn: b?.nameEn ?? "",
+    nameAr: b?.nameAr ?? "",
+    addressLine1: b?.addressLine1 ?? "",
+    addressLine2: b?.addressLine2 ?? "",
+    city: b?.city ?? "",
+    emirate: b?.emirate ?? "",
+    poBox: b?.poBox ?? "",
+    country: b?.country ?? "AE",
+    addressAr: b?.addressAr ?? "",
+    phone: b?.phone ?? "",
+    email: b?.email ?? "",
+    isActive: b?.isActive ?? true,
+  };
+}
 
 function BranchForm({
   id,
@@ -117,164 +139,76 @@ function BranchForm({
   defaultCompanyId,
   onSaved,
   onClose,
+  nav,
 }: {
   id: string | null;
   companies: CompanyRow[];
   defaultCompanyId: string;
   onSaved: (id: string) => void;
   onClose: () => void;
+  nav?: RecordNavigation;
 }) {
   const { t } = useI18n();
   const { can } = useSession();
   const name = useLocalName();
-  const [branch, setBranch] = useState<Branch | null>(null);
-  const [draft, setDraft] = useState<Draft>({
-    companyId: defaultCompanyId,
-    code: "",
-    nameEn: "",
-    nameAr: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    emirate: "",
-    poBox: "",
-    country: "AE",
-    addressAr: "",
-    phone: "",
-    email: "",
-    isActive: true,
-    version: null,
-  });
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [message, setMessage] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const editable = id === null ? can("tenancy.branches.create") : can("tenancy.branches.update");
-
-  useEffect(() => {
-    if (id === null) return;
-    api<Branch>("GET", `/api/tenancy/branches/${id}`)
-      .then((b) => {
-        setBranch(b);
-        setDraft({
-          companyId: b.companyId,
-          code: b.code,
-          nameEn: b.nameEn,
-          nameAr: b.nameAr,
-          addressLine1: b.addressLine1 ?? "",
-          addressLine2: b.addressLine2 ?? "",
-          city: b.city ?? "",
-          emirate: b.emirate ?? "",
-          poBox: b.poBox ?? "",
-          country: b.country,
-          addressAr: b.addressAr ?? "",
-          phone: b.phone ?? "",
-          email: b.email ?? "",
-          isActive: b.isActive,
-          version: b.version,
-        });
-      })
-      .catch((e) => setMessage(problemOf(e).message));
-  }, [id]);
-
-  const set = <K extends keyof Draft>(key: K) => (value: Draft[K]) => {
-    setDraft((d) => ({ ...d, [key]: value }));
-    setSaved(false);
-  };
-
-  const save = async (event?: FormEvent) => {
-    event?.preventDefault();
-    if (!editable || busy) return;
-    setBusy(true);
-    setMessage(null);
-    const body = {
-      companyId: draft.companyId || null,
-      code: draft.code.trim(),
-      nameEn: draft.nameEn,
-      nameAr: draft.nameAr,
-      addressLine1: optional(draft.addressLine1),
-      addressLine2: optional(draft.addressLine2),
-      city: optional(draft.city),
-      emirate: draft.emirate === "" ? null : draft.emirate,
-      poBox: optional(draft.poBox),
-      country: draft.country.trim().toUpperCase(),
-      addressAr: optional(draft.addressAr),
-      phone: optional(draft.phone),
-      email: optional(draft.email),
-      isActive: draft.isActive,
-      version: draft.version,
-    };
-    try {
-      const result = id === null ? await api<Branch>("POST", "/api/tenancy/branches", body) : await api<Branch>("PUT", `/api/tenancy/branches/${id}`, body);
-      setBranch(result);
-      setDraft((d) => ({ ...d, version: result.version }));
-      setErrors({});
-      setSaved(true);
-      onSaved(result.id);
+  const form = useRecordForm<Branch, Draft>({
+    load: id === null ? undefined : (signal) => api<Branch>("GET", `/api/tenancy/branches/${id}`, undefined, { signal }),
+    initial: (b) => draftOf(b, defaultCompanyId),
+    canEdit: id === null ? can("tenancy.branches.create") : can("tenancy.branches.update"),
+    save: (draft, branch) => {
+      const body = {
+        companyId: draft.companyId || null,
+        code: draft.code.trim(),
+        nameEn: draft.nameEn,
+        nameAr: draft.nameAr,
+        addressLine1: optional(draft.addressLine1),
+        addressLine2: optional(draft.addressLine2),
+        city: optional(draft.city),
+        emirate: draft.emirate === "" ? null : draft.emirate,
+        poBox: optional(draft.poBox),
+        country: draft.country.trim().toUpperCase(),
+        addressAr: optional(draft.addressAr),
+        phone: optional(draft.phone),
+        email: optional(draft.email),
+        isActive: draft.isActive,
+        version: branch?.version ?? null,
+      };
+      return branch === null ? api<Branch>("POST", "/api/tenancy/branches", body) : api<Branch>("PUT", `/api/tenancy/branches/${branch.id}`, body);
+    },
+    onSaved: (saved) => {
+      onSaved(saved.id);
       window.dispatchEvent(new Event(companiesChanged));
-    } catch (error) {
-      const problem = problemOf(error);
-      setErrors(problem.fields);
-      setMessage(problem.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  useScreenKeys({ onSave: () => void save(), onClose });
-  const common = { errors };
+    },
+  }, id);
+  const branch = form.record;
+  const bind = form.bind;
   return (
-    <form className="record-form" onSubmit={save} noValidate aria-label={t("tenancy.branch.form")}>
-      <div className="record-header">
-        <h2>{id === null ? t("tenancy.branch.new") : `${branch?.companyCode ?? ""} · ${branch?.code ?? ""}`}</h2>
-        <div className="record-actions">
-          {editable && (
-            <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
-              {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
-            </button>
-          )}
-          <button type="button" className="button" onClick={onClose} title={t("tenancy.common.closeHint")} aria-keyshortcuts="Escape">
-            {t("tenancy.common.close")}
-          </button>
-        </div>
-      </div>
-      {message && (
-        <div className="alert" role="alert">
-          {message}
-        </div>
-      )}
-      {saved && (
-        <div className="notice" role="status">
-          {t("tenancy.common.saved")}
-        </div>
-      )}
-      <fieldset disabled={!editable}>
-        <legend>{t("tenancy.company.general")}</legend>
-        <div className="form-grid">
-          <SelectField
-            name="companyId"
-            label={t("tenancy.branch.company")}
-            value={draft.companyId}
-            options={companies.map((c) => ({ value: c.id, label: `${c.code} · ${name(c.legalNameEn, c.legalNameAr)}` }))}
-            empty={companies.length === 0 ? (branch?.companyCode ?? "") : undefined}
-            onChange={(v) => set("companyId")(v)}
-            disabled={id !== null}
-            errors={errors}
-          />
-          <TextField name="nameEn" label={t("tenancy.branch.nameEn")} value={draft.nameEn} onChange={set("nameEn")} {...common} dir="ltr" maxLength={200} autoFocus={id === null} />
-          <TextField name="nameAr" label={t("tenancy.branch.nameAr")} value={draft.nameAr} onChange={set("nameAr")} {...common} dir="rtl" maxLength={200} />
-          <TextField name="code" label={t("tenancy.branch.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
-          <CheckField name="isActive" label={t("tenancy.common.active")} checked={draft.isActive} onChange={set("isActive")} />
-        </div>
-      </fieldset>
-      <AddressFields draft={draft} set={set} errors={errors} disabled={!editable} />
-      <fieldset disabled={!editable}>
-        <legend>{t("tenancy.company.contact")}</legend>
-        <div className="form-grid">
-          <TextField name="phone" label={t("tenancy.address.phone")} value={draft.phone} onChange={set("phone")} {...common} dir="ltr" type="tel" maxLength={30} />
-          <TextField name="email" label={t("tenancy.address.email")} value={draft.email} onChange={set("email")} {...common} dir="ltr" type="email" maxLength={254} />
-        </div>
-      </fieldset>
-    </form>
+    <RecordForm
+      form={form}
+      label={t("tenancy.branch.form")}
+      title={branch ? `${branch.companyCode} · ${branch.code}` : t("tenancy.branch.new")}
+      subtitle={branch ? name(branch.nameEn, branch.nameAr) : undefined}
+      onClose={onClose}
+      nav={nav}
+    >
+      <FormSection title={t("tenancy.company.general")}>
+        <SelectField
+          field={bind("companyId")}
+          label={t("tenancy.branch.company")}
+          options={companies.map((c) => ({ value: c.id, label: `${c.code} · ${name(c.legalNameEn, c.legalNameAr)}` }))}
+          empty={companies.length === 0 ? (branch?.companyCode ?? "") : undefined}
+          disabled={id !== null}
+        />
+        <TextField field={bind("nameEn")} label={t("tenancy.branch.nameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
+        <TextField field={bind("nameAr")} label={t("tenancy.branch.nameAr")} dir="rtl" maxLength={200} />
+        <TextField field={bind("code")} label={t("tenancy.branch.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
+        <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
+      </FormSection>
+      <AddressFields form={form} />
+      <FormSection title={t("tenancy.company.contact")}>
+        <TextField field={bind("phone")} label={t("tenancy.address.phone")} dir="ltr" type="tel" maxLength={30} />
+        <TextField field={bind("email")} label={t("tenancy.address.email")} dir="ltr" type="email" maxLength={254} />
+      </FormSection>
+    </RecordForm>
   );
 }
