@@ -192,3 +192,17 @@ move on, the run fails and the password is never typed into the e-mail field. Th
 stand-in moves on the same way and the honest-driver test asserts 3 steps and 56 keystrokes for
 that path (4 and 35 for the others, unchanged); a new test runs the path on the plain address,
 where nothing moves on, and checks it fails after one step.
+
+**Measured on the owner's PC (2026-10-06, load average 90-150 from other agents' runs)**:
+`COMPARE_OURS_URL=http://localhost:20000 node gauntlet/compare/run.mjs --task sign-in --product both --repeat 3`
+against `./erp up` of this branch and the shared Odoo rig. Verdict **win**. Each new-device path,
+three runs each (machine seconds are the range of the three):
+
+| Product, path | Steps | Keystrokes | Machine s | KLM human s | Human + wait s |
+|---|---|---|---|---|---|
+| Odoo, new device | 4 | 57 | 2.41-3.19 | 19.06 | 21.29-22.04 |
+| Ours, new device, part before "@" + Enter | 4 | 35 | 0.43-0.95 | 11.55 | 11.85-12.35 |
+| Ours, new device, whole e-mail (moves on) | 3 | 56 | 0.52-1.09 | 18.78 | 19.09-19.59 |
+| Ours, returning | 2 | 21 | 0.31-0.88 | 7.63 | 7.83-8.43 |
+
+The whole-e-mail path alone is strictly lower than Odoo's new-device path on all five measures.
