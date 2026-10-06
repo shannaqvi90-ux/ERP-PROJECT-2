@@ -4,7 +4,10 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // through our screens: Companies (navigation) > Alt+N (English legal name focused) > the company
 // name > Ctrl+S (the new company's branch line takes the focus) > the branch name > Enter. The
 // company code and the branch code are optional (made from the names); the branch starts in the
-// company's emirate.
+// company's emirate. Since round 4 the branch line starts with the company's name ("<company> - ",
+// the caret after it), as a UAE branch trades under its company's name: the operator reads what
+// the line already holds and types only the rest of the branch's name (all of it, after selecting
+// the line, when the name does not start that way).
 //
 // Companies cannot be deleted (only deactivated), so set-up and clean-up retire any earlier copy:
 // renamed and deactivated, outside the measured part, as the Odoo driver does when a delete fails.
@@ -47,7 +50,13 @@ function build(keyboard) { return async (op, ctx) => {
   else await op.click('.record-form button[type=submit]', { label: 'Save' });
   // Saving a new company moves the focus to its branch line: no click to reach it.
   await op.waitFor('input[name="branchNameEn"]:focus', { label: 'saved: branch line focused' });
-  await op.type(branch, { label: 'branch name' });
+  const offered = await op.page.locator('input[name="branchNameEn"]').inputValue();
+  if (offered && branch.startsWith(offered)) {
+    await op.type(branch.slice(offered.length), { label: 'branch name (after the company name already there)' });
+  } else {
+    if (offered) await op.press('Control+a', { label: 'select the offered name' });
+    await op.type(branch, { label: 'branch name' });
+  }
   await op.shot('branch filled in');
   if (keyboard) await op.press('Enter', { label: 'Add branch (Enter)' });
   else await op.click('form.quick-add button[type=submit]', { label: 'Add branch' });
@@ -58,11 +67,11 @@ function build(keyboard) { return async (op, ctx) => {
 
 export default {
   built: true,
-  path: 'Companies (navigation) > New > company name > Save > branch name (focused) > Add. Two expert variants; the result counts the better one per metric.',
+  path: 'Companies (navigation) > New > company name > Save > rest of the branch name (the line, focused, starts with the company name) > Add. Two expert variants; the result counts the better one per metric.',
   run: build(true),
   variants: {
-    keyboard: { path: 'Companies > Alt+N > company name > Ctrl+S > branch name > Enter', run: build(true) },
-    pointer: { path: 'Companies > New > company name > Save > branch name > Add', run: build(false) },
+    keyboard: { path: 'Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter', run: build(true) },
+    pointer: { path: 'Companies > New > company name > Save > rest of the branch name > Add', run: build(false) },
   },
   async setup(ctx) { await retire(ctx); },
   async signIn(ctx) {

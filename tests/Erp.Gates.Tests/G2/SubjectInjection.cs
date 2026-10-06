@@ -258,9 +258,12 @@ public static class SubjectInjection
     private static async Task GrantEveryCompanyAsync(HttpClient admin, Guid userId)
     {
         var companies = (await admin.GetFromJsonAsync<JsonObject>("/api/tenancy/companies?take=200"))?["items"] as JsonArray ?? [];
+        // An access save carries the version read (tenancy refuses a missing or stale one).
+        var read = await admin.GetFromJsonAsync<JsonObject>($"/api/tenancy/access/{userId}");
         var body = new JsonObject
         {
             ["companies"] = new JsonArray(companies.Select(c => (JsonNode)new JsonObject { ["companyId"] = c!["id"]!.DeepClone(), ["allBranches"] = true }).ToArray()),
+            ["version"] = read?["version"]?.DeepClone(),
         };
         using var response = await admin.PutAsync($"/api/tenancy/access/{userId}", new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"));
         if (!response.IsSuccessStatusCode)

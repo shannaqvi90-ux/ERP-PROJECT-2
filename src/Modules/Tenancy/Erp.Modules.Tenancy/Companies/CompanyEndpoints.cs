@@ -7,6 +7,7 @@ using Erp.Kernel.Http;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
+using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +20,9 @@ using Erp.Modules.Tenancy.Access;
 
 namespace Erp.Modules.Tenancy.Companies;
 
-/// <summary>A company as the company form shows it.</summary>
+/// <summary>A company as the company form shows it. <c>everyBranch</c> is false when the caller works
+/// in only some of its branches: they read the company but may not change the company itself (its
+/// record or logo), which every branch shares.</summary>
 public sealed record CompanyDto(
     Guid Id,
     string Code,
@@ -47,7 +50,8 @@ public sealed record CompanyDto(
     int BranchCount,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    uint Version);
+    uint Version,
+    bool EveryBranch = true);
 
 /// <summary>A row of the companies list.</summary>
 public sealed record CompanyRow(
@@ -111,14 +115,14 @@ internal static class CompanyEndpoints
 
         group.MapPost("/companies", Create)
             .WithName("tenancy.companies.create")
-            .WithSummary("Create a company. Only a caller who works in every company of the workspace (company codes are unique across it); the creator may work in the new company (all branches) from then on.")
+            .WithSummary("Create a company. Only a caller who works in every company of the workspace (company codes are unique across it). The creator may work in the new company (all branches) from then on, and so may every other user who worked in every company and holds at least the creator's permissions (the workspace's other administrators keep the whole workspace).")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.CompaniesCreate);
 
         group.MapPut("/companies/{id:guid}", Update)
             .WithName("tenancy.companies.update")
-            .WithSummary("Change a company the caller may work in, or deactivate it (isActive false). Changing the code needs every company of the workspace.")
+            .WithSummary("Change a company the caller may work in, or deactivate it (isActive false). Needs every branch of the company (the record is shared by all of them); changing the code needs every company of the workspace.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.CompaniesUpdate);
@@ -132,14 +136,14 @@ internal static class CompanyEndpoints
 
         group.MapPut("/companies/{id:guid}/logo", PutLogo)
             .WithName("tenancy.companies.logo.put")
-            .WithSummary("Replace the company's logo: PNG, JPEG or WebP, at most 512 KB, base64 in data.")
+            .WithSummary("Replace the company's logo: PNG, JPEG or WebP, at most 512 KB, base64 in data. Needs every branch of the company.")
             .ProducesValidationProblem()
             .Surface(SurfaceKind.File)
             .RequirePermission(TenancyPermissions.CompaniesUpdate);
 
         group.MapDelete("/companies/{id:guid}/logo", DeleteLogo)
             .WithName("tenancy.companies.logo.delete")
-            .WithSummary("Remove the company's logo.")
+            .WithSummary("Remove the company's logo. Needs every branch of the company.")
             .Surface(SurfaceKind.File)
             .RequirePermission(TenancyPermissions.CompaniesUpdate);
     }
@@ -185,18 +189,20 @@ internal static class CompanyEndpoints
             Version = c.Version,
         });
 
-    private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
+        CancellationToken cancellationToken)
     {
         var company = await db.Companies.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (company is null)
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
     }
 
     private static async Task<Results<Created<CompanyDto>, ProblemHttpResult>> Create(
-        SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+        SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, IUserDirectory users, TenancyBranchScope branchScope,
+        HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: false);
         if (!validator.IsValid)
@@ -223,17 +229,36 @@ internal static class CompanyEndpoints
         var company = new Company();
         company.CompanyId = company.Id;
         Apply(company, request, code);
+        // Whoever works in every company now and holds at least the creator's permissions (the
+        // workspace's other administrators) works in the new one too: otherwise the first new
+        // company would take the whole workspace from them, and with it the right to create
+        // companies and to be managed by anyone but the creator. Users holding less are given it
+        // by hand on the access screen.
+        var companiesBefore = await db.Tenants.AsNoTracking().Where(t => t.Id == session.TenantId).Select(t => t.CompanyCount).SingleAsync(cancellationToken);
+        var everywhere = await db.CompanyTotals.AsNoTracking().Where(t => t.CompanyCount >= companiesBefore && t.UserId != caller.UserId)
+            .Select(t => t.UserId).ToListAsync(cancellationToken);
+        var peers = new List<Guid>();
+        foreach (var user in everywhere)
+        {
+            var held = await users.GetPermissionsAsync(user, cancellationToken);
+            if (caller.Permissions.All(held.Contains))
+            {
+                peers.Add(user);
+            }
+        }
         // The creator works in the new company from now on; it joins this request's scope so the
-        // company and the creator's access to it can be written.
+        // company and the access to it can be written.
         await session.IncludeNewCompanyAsync(company.Id, cancellationToken);
         db.Companies.Add(company);
         db.CompanyAccess.Add(new UserCompanyAccess { UserId = caller.UserId, CompanyId = company.Id, AllBranches = true });
+        db.CompanyAccess.AddRange(peers.Select(user => new UserCompanyAccess { UserId = user, CompanyId = company.Id, AllBranches = true }));
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, company, cancellationToken));
+        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, company, cancellationToken));
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Update(
-        Guid id, SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
+        Guid id, SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, TenancyBranchScope branchScope, HttpContext http,
+        CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: true);
         if (!validator.IsValid)
@@ -244,6 +269,12 @@ internal static class CompanyEndpoints
         if (company is null)
         {
             return Problems.NotFound(http);
+        }
+        // The company record is shared by every branch: someone limited to some branches reads it
+        // but does not change it.
+        if (!branchScope.HoldsEveryBranch(company.Id))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
         }
         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
         if (code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
@@ -258,7 +289,7 @@ internal static class CompanyEndpoints
         Apply(company, request, code);
         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
     }
 
     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
@@ -276,7 +307,7 @@ internal static class CompanyEndpoints
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> PutLogo(
-        Guid id, UploadLogoRequest request, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+        Guid id, UploadLogoRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = new Validator(http)
             .Required("contentType", request.ContentType)
@@ -299,19 +330,28 @@ internal static class CompanyEndpoints
         {
             return Problems.NotFound(http);
         }
+        if (!branchScope.HoldsEveryBranch(company.Id))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+        }
         company.Logo = bytes;
         company.LogoContentType = request.ContentType;
         company.LogoHash = CompanyLogo.Hash(company.Id, bytes!);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
     }
 
-    private static async Task<Results<NoContent, ProblemHttpResult>> DeleteLogo(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<NoContent, ProblemHttpResult>> DeleteLogo(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
+        CancellationToken cancellationToken)
     {
         var company = await db.Companies.SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (company is null)
         {
             return Problems.NotFound(http);
+        }
+        if (!branchScope.HoldsEveryBranch(company.Id))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
         }
         if (company.Logo is not null)
         {
@@ -370,13 +410,14 @@ internal static class CompanyEndpoints
         company.IsActive = r.IsActive!.Value;
     }
 
-    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, Company c, CancellationToken cancellationToken)
+    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, Company c, CancellationToken cancellationToken)
     {
         var branches = await db.Branches.CountAsync(b => b.CompanyId == c.Id, cancellationToken);
         return new CompanyDto(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.TradeLicenceNumber, c.TradeLicenceAuthority, c.TaxRegistrationNumber,
             c.BaseCurrency, c.FiscalYearStartMonth, c.FiscalYearStartDay, c.AddressLine1, c.AddressLine2, c.City,
             TenancyValidation.ParseEmirate(c.Emirate), c.PoBox, c.Country, c.AddressAr, c.Phone, c.Email, c.Website,
-            c.Logo is not null || c.LogoHash is not null, c.LogoHash, c.IsActive, branches, c.CreatedAt, c.UpdatedAt, c.Version);
+            c.Logo is not null || c.LogoHash is not null, c.LogoHash, c.IsActive, branches, c.CreatedAt, c.UpdatedAt, c.Version,
+            branchScope.HoldsEveryBranch(c.Id));
     }
 }
 

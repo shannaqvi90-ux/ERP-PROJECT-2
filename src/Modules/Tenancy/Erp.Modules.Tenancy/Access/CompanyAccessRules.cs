@@ -1,3 +1,6 @@
+using System.Buffers.Binary;
+using System.Security.Cryptography;
+using System.Text;
 using Erp.Kernel.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +50,47 @@ internal static class CompanyAccessRules
             .Select(b => new { b.CompanyId, b.BranchId }).ToListAsync(cancellationToken);
         return companies.ToDictionary(c => c.CompanyId, c => new CompanyHolding(c.CompanyId,
             c.AllBranches ? null : branches.Where(b => b.CompanyId == c.CompanyId).Select(b => b.BranchId).ToHashSet()));
+    }
+
+    /// <summary>
+    /// The version of the user's access as the caller sees it: a hash over the user's company and
+    /// branch access rows in the caller's scope, each with its row version (<c>xmin</c>). Any
+    /// insert, change or delete of one of those rows changes it; rows in companies the caller cannot
+    /// see do not take part, so it tells the caller nothing about them.
+    /// </summary>
+    public static async Task<uint> VersionAsync(TenancyDbContext db, Guid userId, CancellationToken cancellationToken)
+    {
+        var companies = await db.CompanyAccess.AsNoTracking().Where(a => a.UserId == userId)
+            .Select(a => new { a.CompanyId, a.AllBranches, a.Version }).ToListAsync(cancellationToken);
+        var branches = await db.BranchAccess.AsNoTracking().Where(b => b.UserId == userId)
+            .Select(b => new { b.BranchId, b.Version }).ToListAsync(cancellationToken);
+        var text = new StringBuilder();
+        foreach (var c in companies.OrderBy(c => c.CompanyId))
+        {
+            text.Append('c').Append(c.CompanyId).Append(':').Append(c.AllBranches).Append(':').Append(c.Version).Append(';');
+        }
+        foreach (var b in branches.OrderBy(b => b.BranchId))
+        {
+            text.Append('b').Append(b.BranchId).Append(':').Append(b.Version).Append(';');
+        }
+        return BinaryPrimitives.ReadUInt32LittleEndian(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString())));
+    }
+
+    /// <summary>
+    /// Serialises changes to one user's access: the user's row of <c>user_company_totals</c> (made
+    /// when missing; a second request making it at the same moment gets a unique violation, 409) is
+    /// updated, which holds its row lock until the request's transaction ends. Rolled back with the
+    /// request when it does not succeed.
+    /// </summary>
+    public static async Task LockAsync(TenancyDbContext db, Guid userId, CancellationToken cancellationToken)
+    {
+        var touched = await db.CompanyTotals.Where(t => t.UserId == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.UpdatedAt, DateTimeOffset.UtcNow), cancellationToken);
+        if (touched == 0)
+        {
+            db.CompanyTotals.Add(new UserCompanyTotal { UserId = userId, CompanyCount = 0 });
+            await db.SaveChangesAsync(cancellationToken);
+        }
     }
 
     /// <summary>How many companies the user may work in, in the whole workspace.</summary>

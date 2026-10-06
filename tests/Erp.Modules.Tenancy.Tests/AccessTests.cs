@@ -45,7 +45,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
             Assert.Equal(JsonValueKind.Null, none.GetProperty("companyId").ValueKind);
         }
 
-        var granted = await admin.PutAsJsonAsync($"/api/tenancy/access/{id}", new
+        var granted = await admin.PutAccessAsync(id, new
         {
             companies = new[] { new { companyId = x, allBranches = false, branchIds = new[] { branchesOfX[1] } } },
         });
@@ -81,10 +81,10 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
     {
         var (admin, x, y, _) = await SetUpAsync();
         var (limitedId, limitedEmail) = await NewUserAsync(admin, "limited", administrator: true);
-        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{limitedId}",
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(limitedId,
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
         var (targetId, _) = await NewUserAsync(admin, "target", administrator: false);
-        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(targetId,
             new { companies = new[] { new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
 
         using var limited = await Env.SignInAsync(limitedEmail);
@@ -94,14 +94,14 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         Assert.Equal(x, seen.GetProperty("options").EnumerateArray().Single().GetProperty("id").GetGuid());
 
         // Granting Y is refused; granting X keeps the target's Y untouched.
-        var grantY = await limited.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } });
+        var grantY = await limited.PutAccessAsync(targetId, new { companies = new[] { new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } });
         Assert.Equal(HttpStatusCode.BadRequest, grantY.StatusCode);
         Assert.Equal("unknownIds", (await Json(grantY)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
         // The target works in Y, which the caller does not: it holds more, so the caller cannot
         // change its access at all (company access is a grant) and is told so before trying.
         Assert.False(seen.GetProperty("canEdit").GetBoolean());
         Assert.Equal("tenancy.access.readOnly.companies", seen.GetProperty("readOnlyReason").GetString());
-        var beyond = await limited.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+        var beyond = await limited.PutAccessAsync(targetId,
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } });
         Assert.Equal(HttpStatusCode.Forbidden, beyond.StatusCode);
         Assert.Equal("tenancy.userBeyondOwnCompanies", (await Json(beyond)).GetProperty("code").GetString());
@@ -110,30 +110,30 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         // A user who works in no company outside the caller's is the caller's to give X to.
         var (plainId, _) = await NewUserAsync(admin, "plain", administrator: false);
         Assert.True((await limited.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{plainId}")).GetProperty("canEdit").GetBoolean());
-        Assert.Equal(HttpStatusCode.OK, (await limited.PutAsJsonAsync($"/api/tenancy/access/{plainId}",
+        Assert.Equal(HttpStatusCode.OK, (await limited.PutAccessAsync(plainId,
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
         // The administrator, who works in both, gives the target X as well; Y stays.
-        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}",
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(targetId,
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() }, new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
         var full = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{targetId}");
         Assert.Equal(new[] { x, y }.Order(), full.GetProperty("companies").EnumerateArray().Select(c => c.GetProperty("companyId").GetGuid()).Order());
 
         // Own access cannot be changed by oneself.
-        var self = await limited.PutAsJsonAsync($"/api/tenancy/access/{limitedId}", new { companies = Array.Empty<object>() });
+        var self = await limited.PutAccessAsync(limitedId, new { companies = Array.Empty<object>() });
         Assert.Equal(HttpStatusCode.Forbidden, self.StatusCode);
         Assert.Equal("tenancy.cannotChangeOwnAccess", (await Json(self)).GetProperty("code").GetString());
         Assert.True((await limited.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{limitedId}")).GetProperty("isCaller").GetBoolean());
 
         // Branches must belong to the company they are listed under; a company may not be listed twice.
         var branchOfY = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{y}'")}")).GetProperty("items")[0].GetProperty("id").GetGuid();
-        var wrong = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { new { companyId = x, allBranches = false, branchIds = new[] { branchOfY } } } });
+        var wrong = await admin.PutAccessAsync(targetId, new { companies = new[] { new { companyId = x, allBranches = false, branchIds = new[] { branchOfY } } } });
         Assert.Equal("tenancyAccessBranchOfOtherCompany", (await Json(wrong)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
-        var twice = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new
+        var twice = await admin.PutAccessAsync(targetId, new
         {
             companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() }, new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } },
         });
         Assert.Equal("tenancyAccessCompanyTwice", (await Json(twice)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
-        var empty = await admin.PutAsJsonAsync($"/api/tenancy/access/{targetId}", new { companies = new[] { new { companyId = x, allBranches = false, branchIds = Array.Empty<Guid>() } } });
+        var empty = await admin.PutAccessAsync(targetId, new { companies = new[] { new { companyId = x, allBranches = false, branchIds = Array.Empty<Guid>() } } });
         Assert.Equal("tenancyAccessBranchesRequired", (await Json(empty)).GetProperty("errors").GetProperty("companies")[0].GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/tenancy/access/{Guid.NewGuid()}")).StatusCode);
     }
@@ -143,7 +143,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
     {
         var (admin, x, y, _) = await SetUpAsync();
         var (id, email) = await NewUserAsync(admin, "switcher", administrator: true);
-        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{id}", new
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(id, new
         {
             companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() }, new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } },
         })).StatusCode);
@@ -163,7 +163,7 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
         }
 
         // Access to Y removed: the next request works in X.
-        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/tenancy/access/{id}",
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(id,
             new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } })).StatusCode);
         using var after = await Env.SignInAsync(email);
         Assert.Equal(x, (await after.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace")).GetProperty("companyId").GetGuid());

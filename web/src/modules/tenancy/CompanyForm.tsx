@@ -94,10 +94,16 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   const months = useMonths();
   const name = useLocalName();
   const [justCreated, setJustCreated] = useState(false);
+  // The company record is shared by every branch: changing it needs every branch of it (the
+  // server answers 403 companyNeedsEveryBranch otherwise), so the form is read-only with the reason.
+  const [everyBranch, setEveryBranch] = useState(true);
   const form = useRecordForm<Company, Draft>({
-    load: id === null ? undefined : (signal) => api<Company>("GET", `/api/tenancy/companies/${id}`, undefined, { signal }),
+    load: id === null ? undefined : (signal) => api<Company>("GET", `/api/tenancy/companies/${id}`, undefined, { signal }).then((c) => {
+      setEveryBranch(c.everyBranch !== false);
+      return c;
+    }),
     initial: draftOf,
-    canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update"),
+    canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch,
     save: (draft, company) => {
       const body = {
         code: draft.code.trim(),
@@ -143,12 +149,13 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       title={company ? `${company.code} · ${name(company.legalNameEn, company.legalNameAr)}` : t("tenancy.company.new")}
       onClose={onClose}
       nav={nav}
+      readOnlyReason={company && !everyBranch && can("tenancy.companies.update") ? t("tenancy.company.someBranchesOnly") : undefined}
       document={company ? { report: "tenancy.companyProfile", parameter: "company", id: company.id } : undefined}
       after={
         company && (
           <>
-            <CompanyLogo company={company} editable={can("tenancy.companies.update")} onChange={form.adopt} />
-            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />}
+            <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt} />
+            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />}
           </>
         )
       }
@@ -276,13 +283,22 @@ function CompanyLogo({ company, editable, onChange }: { company: Company; editab
 type QuickBranch = { code: string; nameEn: string; nameAr: string; city: string; emirate: Emirate | "" };
 const emptyBranch: QuickBranch = Object.freeze({ code: "", nameEn: "", nameAr: "", city: "", emirate: "" });
 
+/** The start of a new branch's English name: a UAE branch trades under its company's name
+ * followed by its own ("Falcon Logistics LLC - Jebel Ali Branch"), so the line starts with the
+ * company's name and the user types only the branch's part. */
+export const branchNamePrefix = (companyName: string) => (companyName.trim() === "" ? "" : `${companyName.trim()} - `);
+
+/** A branch name the user left at the prefix alone is the company's name itself. */
+export const branchNameOf = (typed: string) => typed.replace(/\s+-\s*$/, "");
+
 /** The company's branches, with a one-line form to add another (Enter saves). A new branch
- * starts in the company's emirate; right after the company is created the line has the focus. */
-function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
+ * starts in the company's emirate, its English name with the company's; right after the company
+ * is created the line has the focus, the caret after the company's name. */
+function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: { companyId: string; companyName: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
   const { t } = useI18n();
   const { can } = useSession();
   const [branches, setBranches] = useState<BranchRow[]>([]);
-  const fresh = (): QuickBranch => ({ ...emptyBranch, emirate: defaultEmirate });
+  const fresh = (): QuickBranch => ({ ...emptyBranch, nameEn: branchNamePrefix(companyName), emirate: defaultEmirate });
   const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -298,8 +314,16 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
+  /** Focus the name with the caret at its end (after the company's name). */
+  const focusName = () => {
+    const input = nameRef.current;
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  };
+
   useEffect(() => {
-    if (autoFocus) nameRef.current?.focus();
+    if (autoFocus) focusName();
   }, [autoFocus]);
 
   const add = async (event: FormEvent) => {
@@ -309,7 +333,7 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
       await api("POST", "/api/tenancy/branches", {
         companyId,
         code: draft.code.trim(),
-        nameEn: draft.nameEn,
+        nameEn: branchNameOf(draft.nameEn),
         nameAr: draft.nameAr,
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,
@@ -320,7 +344,7 @@ function CompanyBranches({ companyId, defaultEmirate, autoFocus }: { companyId: 
       setErrors({});
       window.dispatchEvent(new Event(companiesChanged));
       await load();
-      nameRef.current?.focus();
+      focusName();
     } catch (error) {
       const problem = problemOf(error);
       setErrors(problem.fields);
