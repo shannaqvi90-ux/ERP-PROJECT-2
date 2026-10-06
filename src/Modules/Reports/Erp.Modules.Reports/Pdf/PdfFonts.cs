@@ -53,7 +53,7 @@ public sealed class PdfFontFace : IDisposable
     public int Ascent { get; }
     public int Descent { get; }
     public int CapHeight { get; }
-    public int[] BoundingBox { get; }
+    public System.Collections.Immutable.ImmutableArray<int> BoundingBox { get; }
 
     public bool Covers(int codepoint) => Font.TryGetGlyph((uint)codepoint, out _);
 
