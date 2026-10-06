@@ -809,11 +809,13 @@ input[aria-invalid="true"] {
 }
 
 /* Printing: only the screen's content, with a small letterhead; never the app's chrome. The
-   footer of a wrapped screen ("printed at / by") is paper only too: its own layout rule below would
-   otherwise show it on screen (critic p00 round 4). */
-.print-only,
-.print-footer.print-only {
-  display: none;
+   letterhead and the footer of a wrapped screen ("printed at / by") are paper only: on a screen
+   nothing marked print-only shows, whatever layout rule of its own it has (critics p00 round 4 and
+   p04 round 3 each found one shown on screen). */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
 }
 
 @page {
@@ -857,8 +859,7 @@ input[aria-invalid="true"] {
     overflow: visible;
   }
 
-  .print-only,
-  .print-footer.print-only {
+  .print-only {
     display: flex;
   }
 
@@ -874,6 +875,12 @@ input[aria-invalid="true"] {
 
   .grid th {
     position: static;
+  }
+
+  .list-print-scope {
+    font-size: 9pt;
+    color: #57606a;
+    margin-block: 0 6px;
   }
 
   .grid tr {

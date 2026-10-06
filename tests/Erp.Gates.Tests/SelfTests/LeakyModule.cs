@@ -253,6 +253,37 @@ public sealed class LeakyModule : ErpModule
             group.MapPut("/me/density", (DensityRequest request, ErpDbSession session, ICurrentUser caller) => SaveDensityAsync(request, session, caller, previousSaver))
                 .WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
 
+            // Bug 43 (critic p04 round 3, plant N1): a "me" endpoint with an optional, documented
+            // userId acts on whichever user the body names. The caller holds the endpoint's own
+            // permission, so only the object-level check (G2 SubjectInjection) can see it.
+            group.MapPut("/me/language", async (LanguageForRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (request.Language is not ("en" or "ar"))
+                {
+                    return Results.BadRequest();
+                }
+                await using var command = new NpgsqlCommand("UPDATE identity.users SET language = @l WHERE id = @u", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("l", request.Language);
+                command.Parameters.AddWithValue("u", request.UserId ?? caller.UserId);
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(new { language = request.Language });
+            }).WithName("leaky.languageFor").WithSummary("Planted bug: changes the language of any user the body names.").RequirePermission("leaky.data.update");
+
+            // Bug 44: the same, with the user named in a header nobody documents.
+            group.MapPut("/me/nickname", async (NicknameRequest request, ErpDbSession session, ICurrentUser caller, HttpContext http) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.Nickname))
+                {
+                    return Results.BadRequest();
+                }
+                var target = Guid.TryParse(http.Request.Headers["X-On-Behalf-Of"].ToString(), out var named) ? named : caller.UserId;
+                await using var command = new NpgsqlCommand("UPDATE identity.users SET display_name = @n WHERE id = @u", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("n", request.Nickname);
+                command.Parameters.AddWithValue("u", target);
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(new { nickname = request.Nickname });
+            }).WithName("leaky.nicknameFor").WithSummary("Planted bug: renames the user an X-On-Behalf-Of header names.").RequirePermission("leaky.data.update");
+
             // Bug 24 (critic p00 round 2, plant P2): a write guarded by a read permission.
             group.MapPost("/users/{id:guid}/reactivate", async (Guid id, ErpDbSession session) =>
             {
@@ -710,6 +741,10 @@ public sealed class LeakyModule : ErpModule
         previous[0] = new LeakySaver(mine);
         return Results.Ok(new { displayName = last is null ? mine : $"{mine} (after {last.Email})", density = request.Density });
     }
+
+    public sealed record LanguageForRequest([property: AllowedTextValues("en", "ar")] string? Language, Guid? UserId);
+
+    public sealed record NicknameRequest(string? Nickname);
 
     public sealed record ThemeRequest([property: AllowedTextValues("calm", "bright")] string? Theme);
 
