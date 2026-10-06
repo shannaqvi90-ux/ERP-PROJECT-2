@@ -282,7 +282,11 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             var directory = await branchesOnly.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?company={companyId}&groupBy=city&language=en");
             var companyCells = directory.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()).Select(r => r.GetProperty("cells")[0].GetProperty("text").GetString()).Distinct().ToList();
             Assert.Equal([company.GetProperty("code").GetString()], companyCells);
-            Assert.DoesNotContain(company.GetProperty("legalNameEn").GetString()!, directory.GetRawText(), StringComparison.Ordinal);
+            // Nowhere in the rows, groups or parameters (the letterhead names the caller's own working company).
+            foreach (var section in new[] { "groups", "parameters" })
+            {
+                Assert.DoesNotContain(company.GetProperty("legalNameEn").GetString()!, directory.GetProperty(section).GetRawText(), StringComparison.Ordinal);
+            }
         }
     }
 
