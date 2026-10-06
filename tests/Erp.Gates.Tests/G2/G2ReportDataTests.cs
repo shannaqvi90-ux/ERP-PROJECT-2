@@ -95,6 +95,7 @@ public static class ReportDataCheck
             var anonymous = await CorpusAsync(users[Key([reads[0]])], endpoints.Where(e => e.Method == "GET" && e.IsAnonymous));
 
             var problems = new List<string>();
+            var printedBy = new HashSet<string>(StringComparer.Ordinal);
             var runs = 0;
             var judged = 0;
             foreach (var (report, permissions) in sets)
@@ -133,6 +134,7 @@ public static class ReportDataCheck
                                 continue;
                             }
                             judged++;
+                            printedBy.Add(report.Key);
                             if (!corpus.Contains(value, StringComparison.Ordinal))
                             {
                                 problems.Add($"{report.Key} (permission {report.Permission}) as a user holding exactly [{string.Join(", ", permissions)}]: " +
@@ -141,6 +143,10 @@ public static class ReportDataCheck
                         }
                     }
                 }
+            }
+            foreach (var report in reports.Where(r => !printedBy.Contains(r.Key)))
+            {
+                problems.Add($"{report.Key}: no run printed anything of the workspace's data, so the check was blind to it");
             }
             return new Result(problems.Distinct().ToList(), reports.Count, sets.Count, runs, judged);
         }
@@ -216,6 +222,13 @@ public static class ReportDataCheck
         var email = $"{prefix}-{n}@{env.TenantA.EmailDomain}";
         using var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {name}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
         Assert.True(user.StatusCode == HttpStatusCode.Created, $"user for [{string.Join(", ", permissions)}]: {(int)user.StatusCode}");
+        // The user works in every company of the workspace (all branches), so what a report
+        // prints is decided by its permissions alone, not by the company scope.
+        var userId = (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray()
+            .Select(c => new { companyId = c.GetProperty("id").GetGuid(), allBranches = true }).ToList();
+        using var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies });
+        Assert.True(access.IsSuccessStatusCode, $"company access for [{string.Join(", ", permissions)}]: {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()}");
         return await env.SignInAsync(email);
     }
 
