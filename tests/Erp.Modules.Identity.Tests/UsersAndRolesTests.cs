@@ -58,6 +58,43 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
     }
 
     [Fact]
+    public async Task Racing_deletes_and_unblocks_of_one_user_answer_without_a_server_error()
+    {
+        // p04 dbd6e84: a user removed between the target check and the load answered 500 (the G1
+        // gate's parallel write phase hit it). Every request racing on one user, delete or unblock,
+        // either succeeds or is told the user is gone (404) or changed under it (409), never a
+        // server error. With deletes alone exactly one wins; once unblocks change the row, every
+        // racing delete may lose (409), and a delete sent afterwards then removes the user.
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        for (var round = 0; round < 6; round++)
+        {
+            var withUnblocks = round % 2 == 1;
+            var created = await admin.PostAsJsonAsync("/api/identity/users", new
+            {
+                email = $"race{round}.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}",
+                displayName = $"Race {round}",
+                language = "en",
+                password = ErpTestEnvironment.Password,
+            });
+            Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+            var id = (await Json(created)).GetProperty("id").GetString();
+            var answers = await Task.WhenAll(Enumerable.Range(0, 12).Select(i => withUnblocks && i % 3 == 2
+                ? admin.PostAsync($"/api/identity/users/{id}/unblock", null)
+                : admin.DeleteAsync($"/api/identity/users/{id}")));
+            var seen = string.Join(", ", answers.Select(a => $"{a.RequestMessage!.Method} {(int)a.StatusCode}"));
+            Assert.All(answers, a => Assert.True(a.StatusCode is HttpStatusCode.NoContent or HttpStatusCode.NotFound or HttpStatusCode.Conflict, seen));
+            var deleted = answers.Count(a => a.StatusCode == HttpStatusCode.NoContent && a.RequestMessage!.Method == HttpMethod.Delete);
+            Assert.True(withUnblocks ? deleted <= 1 : deleted == 1, seen);
+            if (deleted == 0)
+            {
+                Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/identity/users/{id}")).StatusCode);
+            }
+            Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/identity/users/{id}")).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await admin.DeleteAsync($"/api/identity/users/{id}")).StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task Saving_over_someone_elses_change_is_refused()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
