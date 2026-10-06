@@ -710,6 +710,75 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { userId });
             }).WithName("leaky.companyAccess").WithSummary("Planted bug: gives company access with no grant check.").RequirePermission("leaky.data.update");
 
+            // Bug 15 (critic p02 round 3, plant P3): the grant check without its permission rule.
+            // Refuses the caller's own access and a user who works in a company the caller does
+            // not, but never compares the user's permissions with the caller's: a clerk who works
+            // in every company changes the Administrator's access. (Like bug 14 it only adds
+            // access, so the self-test environment keeps its administrators.)
+            group.MapPut("/company-access-partly-checked/{userId:guid}", async (Guid userId, LeakyAccessRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (userId == caller.UserId)
+                {
+                    return Results.Problem(statusCode: 403, title: "own access");
+                }
+                await using (var count = new NpgsqlCommand(
+                    "SELECT coalesce((SELECT company_count FROM tenancy.user_company_totals WHERE user_id = @u), 0) > (SELECT count(*) FROM tenancy.user_company_access WHERE user_id = @u)",
+                    session.Connection, session.Transaction))
+                {
+                    count.Parameters.AddWithValue("u", userId);
+                    if ((bool)(await count.ExecuteScalarAsync())!)
+                    {
+                        return Results.Problem(statusCode: 403, title: "works in companies the caller does not");
+                    }
+                }
+                foreach (var company in request.Companies ?? [])
+                {
+                    await using var command = new NpgsqlCommand(
+                        "INSERT INTO tenancy.user_company_access (id, tenant_id, user_id, company_id, all_branches, created_at, updated_at) " +
+                        "SELECT gen_random_uuid(), erp.current_tenant_id(), @u, c.id, @all, now(), now() FROM tenancy.companies c WHERE c.id = @c " +
+                        "ON CONFLICT (tenant_id, user_id, company_id) DO UPDATE SET all_branches = EXCLUDED.all_branches OR tenancy.user_company_access.all_branches; " +
+                        "INSERT INTO tenancy.user_branch_access (id, tenant_id, user_id, company_id, branch_id, created_at, updated_at) " +
+                        "SELECT gen_random_uuid(), erp.current_tenant_id(), @u, b.company_id, b.id, now(), now() FROM tenancy.branches b " +
+                        "WHERE b.company_id = @c AND b.id = ANY(@b) AND NOT @all ON CONFLICT DO NOTHING",
+                        session.Connection, session.Transaction);
+                    command.Parameters.AddWithValue("u", userId);
+                    command.Parameters.AddWithValue("c", company.CompanyId ?? Guid.Empty);
+                    command.Parameters.AddWithValue("all", company.AllBranches ?? true);
+                    command.Parameters.AddWithValue("b", (company.BranchIds ?? []).ToArray());
+                    await command.ExecuteNonQueryAsync();
+                }
+                return Results.Ok(new { userId });
+            }).WithName("leaky.companyAccessPartlyChecked").WithSummary("Planted bug: gives company access without comparing permissions.").RequirePermission("leaky.data.update");
+
+            // Bug 16 (critic p02 round 3, plant C3): lists the branches of the caller's companies
+            // with SQL of its own, which row-level security limits to the company scope but not to
+            // the branches a branch-limited user may work in (tenancy's branch filter is an
+            // application filter): a user of one branch reads every branch of the company.
+            group.MapGet("/branch-names", async (ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT id::text || ' ' || code || ' ' || name_en FROM tenancy.branches ORDER BY id", session.Connection, session.Transaction);
+                await using var reader = await command.ExecuteReaderAsync();
+                var names = new List<string>();
+                while (await reader.ReadAsync())
+                {
+                    names.Add(reader.GetString(0));
+                }
+                return Results.Ok(names);
+            }).WithName("leaky.branchNames").WithSummary("Planted bug: reads every branch of the caller's companies.").RequirePermission("leaky.data.read");
+
+            // Bug 17 (critic p02 round 3, plant C3): renames any branch of the caller's companies.
+            group.MapPut("/branch-names/{id:guid}", async (Guid id, LeakyBranchRename request, ErpDbSession session) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.NameEn))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["nameEn"] = ["required"] });
+                }
+                await using var command = new NpgsqlCommand("UPDATE tenancy.branches SET name_en = @n, updated_at = now() WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("n", request.NameEn.Trim());
+                return await command.ExecuteNonQueryAsync() == 1 ? Results.Ok(new { id }) : Results.NotFound();
+            }).WithName("leaky.branchRename").WithSummary("Planted bug: renames any branch of the caller's companies.").RequirePermission("leaky.data.update");
+
             // Bug 8: grants whatever roles the body names to the caller (no check against the caller's own permissions).
             group.MapPost("/grants", async (GrantRequest request, ErpDbSession session, ICurrentUser caller) =>
             {
@@ -927,6 +996,8 @@ public sealed class LeakyModule : ErpModule
     public sealed record LeakyBranchRequest(Guid? CompanyId, string? Code, string? NameEn, string? Email);
 
     public sealed record LeakyCompanyRequest(string? Code, string? LegalNameEn);
+
+    public sealed record LeakyBranchRename(string? NameEn);
 
     public sealed record LeakyCompanyAccess(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 

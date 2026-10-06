@@ -209,16 +209,36 @@ const problems = [];
   }
 }
 
+/** Each failed test of a vitest run with the first line of its error, colours removed. */
+function failures(output) {
+  const lines = output.replace(/\x1b\[[0-9;]*m/g, "").split("\n");
+  const found = [];
+  lines.forEach((line, i) => {
+    if (/^\s*FAIL\s/.test(line)) found.push(`    ${line.trim()} :: ${(lines[i + 1] ?? "").trim()}`);
+  });
+  return found.join("\n");
+}
+
 async function judgePlant(plant) {
   const dir = copyWeb();
   try {
     for (const edit of [...(plant.extra ?? []), ...plant.edits]) apply(dir, edit, plant);
-    const result = await runGate(dir);
-    const output = `${result.stdout}\n${result.stderr}`;
-    if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);
     // Caught by an assertion of the gate, not by a plant that no longer compiles or loads.
-    else if (!/AssertionError/.test(output) || /SyntaxError|Transform failed|Failed to load/.test(output))
-      problems.push(`${plant.id}: the gate failed for another reason than the leak:\n${output.slice(-3000)}`);
+    const otherReason = (output) => !/AssertionError/.test(output) || /SyntaxError|Transform failed|Failed to load/.test(output);
+    let result = await runGate(dir);
+    let output = `${result.stdout}\n${result.stderr}`;
+    // On a machine shared by several suites a planted run once failed with no assertion at all
+    // (every later test's sign-in field missing) where the same plant is caught by an assertion
+    // on a quieter run. That run judged nothing, so it is run once more; the plant still counts as
+    // caught only when the gate fails on an assertion.
+    if (result.status !== 0 && otherReason(output)) {
+      console.log(`  (${plant.id}: the gate failed without an assertion; running it again)\n${failures(output)}`);
+      result = await runGate(dir);
+      output = `${result.stdout}\n${result.stderr}`;
+    }
+    if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);
+    else if (otherReason(output))
+      problems.push(`${plant.id}: the gate failed for another reason than the leak:\n${failures(output)}\n${output.slice(-3000)}`);
     else console.log(`${plant.id}: caught (${plant.what})`);
   } catch (error) {
     problems.push(String(error instanceof Error ? error.message : error));
