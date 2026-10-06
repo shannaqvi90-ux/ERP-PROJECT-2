@@ -811,6 +811,13 @@ export function ListView(props: ListViewProps) {
         </div>
       )}
 
+      {/* On paper the list holds the rows on screen: the printout says which, of how many, and
+          where a printable list prints every row (the report engine's Print or export). */}
+      {!grouped && rows.total !== null && rows.total > range.end - range.start && range.end > range.start && (
+        <p className="print-only list-print-scope">
+          {t(definition?.printable ? "lists.print.partialReport" : "lists.print.partial", { from: i18n.formatNumber(range.start + 1), to: i18n.formatNumber(range.end), total: i18n.formatNumber(rows.total) })}
+        </p>
+      )}
       <div className={`list-body${recordOpen ? " has-record" : ""}`}>
         <div ref={gridRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
         <table

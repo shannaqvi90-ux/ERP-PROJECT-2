@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalog, catalog, direction, translate } from "./i18n";
+import { applyLanguage, buildCatalog, catalog, direction, documentTitle, translate } from "./i18n";
 
 describe("strings", () => {
   it("has the same keys in English and Arabic", () => {
@@ -42,5 +42,20 @@ describe("strings", () => {
   it("writes Arabic right to left", () => {
     expect(direction("ar")).toBe("rtl");
     expect(direction("en")).toBe("ltr");
+  });
+});
+
+describe("document title", () => {
+  it("names the screen, then the product, in the screen language", () => {
+    expect(documentTitle("en", "shell.home.title")).toBe("Home · ERP");
+    expect(documentTitle("ar", "shell.home.title")).toBe("الرئيسية · نظام تخطيط الموارد");
+    expect(documentTitle("ar", null)).toBe("نظام تخطيط الموارد");
+  });
+
+  it("switching the language does not reset the title to the product's name alone", () => {
+    document.title = documentTitle("en", "shell.home.title");
+    applyLanguage("ar");
+    expect(document.title).toBe("Home · ERP");
+    applyLanguage("en");
   });
 });

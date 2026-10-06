@@ -90,6 +90,8 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
   // The identity this document has held, once it has held one; and whether it is ending.
   const held = useRef<string | null>(null);
   const ending = useRef(false);
+  // The in-app paths of the identity's screens: cookies scoped to any of them are forgotten too.
+  const visited = useRef<string[]>([]);
 
   const refresh = useCallback(async () => {
     if (ending.current) return;
@@ -107,7 +109,7 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     if (ending.current) return;
     ending.current = true;
     setState({ status: "leaving" });
-    await forgetIdentity({ keepEmail });
+    await forgetIdentity({ keepEmail, appPaths: visited.current });
     startOver("/");
   }, []);
 
@@ -143,6 +145,7 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
         return;
       }
       held.current = identity;
+      visited.current = state.session.menu.map((item) => item.path);
       try {
         if (localStorage.getItem(sessionMarkKey) !== identity) localStorage.setItem(sessionMarkKey, identity);
       } catch {
@@ -172,7 +175,7 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
       // The document is replaced anyway; the fresh one asks the server who is signed in.
     } finally {
       // Signing out forgets the remembered e-mail too: the next person sees an empty sign-in.
-      await forgetIdentity({ keepEmail: false });
+      await forgetIdentity({ keepEmail: false, appPaths: visited.current });
       startOver("/");
     }
   }, []);
