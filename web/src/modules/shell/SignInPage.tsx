@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { useI18n, type Language } from "../../kernel/i18n";
+import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
 import { fullEmail, teamDomain } from "../../kernel/signInAddress";
 import { useSession, type Workspace } from "../../kernel/session";
@@ -39,6 +39,7 @@ const fromServer = (text: string, language: Language, code?: string): Message =>
 export function SignInPage() {
   const { t, language } = useI18n();
   const { signIn } = useSession();
+  useDocumentTitle("shell.signIn.title");
   // A set-up link may carry the e-mail (never the code); otherwise this device's last one. On the
   // team's sign-in address the domain is filled in: the person types only the part before "@".
   // An e-mail the screen already knows is shown whole (the domain is not repeated after it): it is
