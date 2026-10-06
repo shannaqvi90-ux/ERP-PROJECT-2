@@ -136,7 +136,8 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
 
         // Broad Arabic searches over the generated Arabic names (a fifth of 100,000 users), ranked
         // (a name shared by thousands) and too broad to rank (one letter), stay within the budget too.
-        foreach (var search in new[] { "فاطمه", "فاطمة المنصوري", "ا" })
+        // "شمة" typed without the shadda finds the users stored as "شمّة".
+        foreach (var search in new[] { "فاطمه", "فاطمة المنصوري", "شمة", "ا" })
         {
             var (page, timing) = await TimedAsync(admin, $"/api/identity/users?search={Uri.EscapeDataString(search)}");
             timings.Add(timing with { Uri = $"{timing.Uri} ({page.GetProperty("total").GetInt32()} rows)" });

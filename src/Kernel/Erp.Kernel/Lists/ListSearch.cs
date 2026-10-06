@@ -42,9 +42,10 @@ public static class ListSearch
     /// <summary>Characters that start a word inside a field (a name's parts, an e-mail's parts).</summary>
     internal static readonly System.Collections.Immutable.ImmutableArray<string> WordSeparators = [" ", "."];
 
-    /// <summary>The spellings a search word matches: itself without short vowels and tatweel, and
-    /// its Arabic letter variants (at most <see cref="MaxSpellings"/>). Latin words match only
-    /// themselves.</summary>
+    /// <summary>The spellings a search word matches: itself without short vowels and tatweel, its
+    /// Arabic letter variants, each with a shadda after one letter, and (when typed with marks) the
+    /// word as typed; at most <see cref="MaxSpellings"/>, the likeliest first. Latin words match
+    /// only themselves.</summary>
     public static IReadOnlyList<string> Spellings(string word)
     {
         var plain = new StringBuilder(word.Length);
@@ -97,11 +98,27 @@ public static class ListSearch
                 }))
                 .ToList();
         }
+        var ranked = spellings.Select(s => (Spelling: s, Changes: s.Where((c, i) => c != text[i]).Count(), Shadda: false)).ToList();
+        // Names are often stored with a shadda on one letter ("شمّة", "محمّد", "عليّ") and typed
+        // without it: an Arabic word also matches each spelling with a shadda after one of its
+        // letters (the first excepted), as one more change. The trigram indexes read the shadda as
+        // part of the word, so these patterns are served by the index like the others.
+        if (HasArabicLetter(text))
+        {
+            ranked.AddRange(ranked.ToList().SelectMany(r => Enumerable.Range(1, r.Spelling.Length - 1)
+                .Where(i => IsArabicLetter(r.Spelling[i]))
+                .Select(i => (r.Spelling.Insert(i + 1, Shadda), r.Changes + 1, true))));
+        }
         // As typed first, then the spellings that change fewest letters (the likeliest ones, kept
         // when a phrase of several words has to be cut to a bounded number of spellings).
-        var result = spellings.Distinct(StringComparer.Ordinal)
-            .OrderBy(s => s.Where((c, i) => c != text[i]).Count())
-            .ThenBy(s => s, StringComparer.Ordinal)
+        // Among spellings with as many changes, the letter variants before the added shadda.
+        var result = ranked
+            .OrderBy(r => r.Changes)
+            .ThenBy(r => r.Shadda)
+            .ThenBy(r => r.Spelling, StringComparer.Ordinal)
+            .Select(r => r.Spelling)
+            .Distinct(StringComparer.Ordinal)
+            .Take(MaxSpellings)
             .ToList();
         // A word typed with short vowels or shadda is also tried exactly as typed, first: a name
         // stored with them ("مُحَمَّد") is then found by typing it as it is written.
@@ -182,6 +199,10 @@ public static class ListSearch
         }
         return null;
     }
+
+    private const string Shadda = "\u0651";
+
+    private static bool IsArabicLetter(char c) => HasArabicLetter(c.ToString());
 
     /// <summary>Arabic short vowels, shadda, sukun, superscript alef and tatweel.</summary>
     private static bool IsIgnorable(char c) => c is >= 'ً' and <= 'ْ' or 'ٰ' or 'ـ';

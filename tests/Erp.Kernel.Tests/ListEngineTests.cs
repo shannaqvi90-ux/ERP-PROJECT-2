@@ -335,6 +335,13 @@ public sealed class ListEngineTests
         // A name stored with short vowels and shadda is found by typing it as it is written, and
         // ranks as the exact match ahead of a longer name without them.
         Assert.Equal(["مُحَمَّد علي"], await Find(names, "مُحَمَّد"));
+        // A name stored with a shadda is found by typing it without one, in any letter spelling.
+        string[] stored = ["شمّة المنصوري", "محمّد علي", "عليّ حسن", "شمسة الكعبي"];
+        Assert.Equal(["شمّة المنصوري"], await Find(stored, "شمة"));
+        Assert.Equal(["شمّة المنصوري"], await Find(stored, "شمه المنصورى"));
+        Assert.Equal(["محمّد علي"], await Find(stored, "محمد"));
+        Assert.Equal(["عليّ حسن", "محمّد علي"], (await Find(stored, "علي")).Order(StringComparer.Ordinal));
+        Assert.Equal("محمّد علي", (await Find(stored, "محمد علي"))[0]);
         Assert.Equal("مُحَمَّد علي", (await Find([.. names, "مُحَمَّد علي الكبير"], "مُحَمَّد علي"))[0]);
         // The whole name in other spellings is still the exact match, ahead of longer names.
         Assert.Equal("فاطمة الزعابي", (await Find([.. names, "فاطمة الزعابي الكبيرة"], "فاطمه الزعابى"))[0]);
@@ -350,7 +357,14 @@ public sealed class ListEngineTests
         Assert.Equal("فاطمه", fatima[0]);
         Assert.Contains("فاطمة", fatima);
         Assert.Contains("فأطمة", fatima);
-        Assert.Equal(10, fatima.Count);
+        // Every letter variant (10) and, filling the bound, the likeliest of them with a shadda
+        // after one letter (one change before two).
+        string[] letterVariants = ["فاطمه", "فاطمة", "فأطمه", "فأطمة", "فإطمه", "فإطمة", "فآطمه", "فآطمة", "فٱطمه", "فٱطمة"];
+        Assert.All(letterVariants, v => Assert.Contains(v, fatima));
+        Assert.Equal(letterVariants.Length, fatima.Count(s => !s.Contains('\u0651')));
+        Assert.Contains("فاطمّة", fatima);
+        Assert.Contains("فاطمّه", fatima);
+        Assert.Equal(ListSearch.MaxSpellings, fatima.Count);
         // One letter changed before two.
         Assert.True(fatima.ToList().IndexOf("فاطمة") < fatima.ToList().IndexOf("فأطمة"));
         var many = ListSearch.Spellings("ااااااااا");
@@ -358,7 +372,10 @@ public sealed class ListEngineTests
         Assert.Equal("ااااااااا", many[0]);
         // A word with marks is tried as typed first, then without them, still within the bound.
         var marked = ListSearch.Spellings("مُحَمَّد");
-        Assert.Equal(["مُحَمَّد", "محمد"], marked);
+        Assert.Equal(["مُحَمَّد", "محمد"], marked.Take(2));
+        Assert.Contains("محمّد", marked);
+        // A Latin word gets no shadda.
+        Assert.Equal(["wang"], ListSearch.Spellings("wang"));
         Assert.InRange(ListSearch.Spellings("أَاااااااا").Count, 2, ListSearch.MaxSpellings);
         Assert.Equal("أَاااااااا", ListSearch.Spellings("أَاااااااا")[0]);
     }
