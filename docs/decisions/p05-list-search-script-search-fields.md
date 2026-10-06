@@ -95,3 +95,38 @@ owner's PC, five runs each, first request included after the vacuum step:
   row-level security can drive the trigram index only as a plain column (an expression such as
   `translate()` is not leakproof): a stored, normalised search column in the owning module's table
   (for users, p03's `identity.users`), left to that module.
+
+## Round 4: one mechanism, `ListDefinition.ArabicSearchFields` (2026-10-07)
+
+p03's round-4 branch (`34f94ee`, not yet integrated) solved the same problem with a different
+shape: `ListDefinition.ArabicSearchFields`, the fields a word written in Arabic letters matches
+*instead of* `SearchFields`. Two mechanisms for one rule would leave every later list to choose
+between them, so p05 keeps one, p03's:
+
+- `ListColumn.Script` and `ListTextScript` are gone. `ListDefinition` carries
+  `ArabicSearchFields`, `SearchFieldsFor(word)` and `AllSearchFields` with p03's text, so the
+  two branches make the same change to that file. One difference: a word counts as Arabic only
+  when it has an Arabic *letter* (`ListSearch.HasArabicLetter`, already used by the spellings and
+  the relevance patterns), so a number typed in Arabic-Indic digits ("١٢٣") still searches every
+  search field (a phone or document number column of a later list), where p03's range test
+  would have sent it to the Arabic fields only.
+- The list engine asks the definition which fields each word matches; the whole-search relevance
+  tests use the fields every word matches (for "omar حداد": the name only).
+- The users list is p03's: Latin words search the name and the e-mail, Arabic words the name and
+  the Arabic name. An Arabic word no longer tries the e-mail address, so each word ORs two
+  fields again, as p03 measured the budget for. A list that needs internationalised addresses
+  found by Arabic words names the address among its Arabic search fields
+  (`ListArabicSearchFieldsTests` covers both shapes and the generated SQL).
+- The list definition endpoint reports `arabicSearchFields` (the search fields when a list names
+  none) instead of a per-column `script`.
+- p03's tests are taken unchanged (`Search_finds_a_name_written_in_Arabic`, and the 100,000-user
+  `One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second`), and the
+  volume needle's Arabic name is p03's "شمة وليد الرميثي". p05's own Arabic volume test keeps its
+  spellings (heh for teh marbuta, alef maqsura, a typed shadda, mixed with Latin) against that
+  name; generated users share the first name ("شمّة") but not the family name, so each search
+  still finds at most two users.
+
+Measured on the 100,000-user demo (`./erp up`, generated users plus the needle), round trip over
+HTTP, six runs, with the machine's load average near 100 from other agents: "شمة الرميثي" 46–110
+ms, "فاطمه الزعابى" 40–75 ms, "omar حداد" 19–106 ms, "ا" (20,167 rows, too broad to rank) 195–363
+ms. PostgreSQL's own time for the page query of "شمة الرميثي" was 9–14 ms.
