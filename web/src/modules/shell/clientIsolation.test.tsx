@@ -309,9 +309,7 @@ async function signOut() {
 /** The tab's current history entry, as the browser would keep it for Back. */
 const entry = () => ({ url: window.location.pathname + window.location.search + window.location.hash, state: window.history.state as unknown });
 
-// The first journey sleeps in fixed steps for about 20 s; the plant self-test runs several copies
-// at once beside the other verify stages, so 30 s timed out on a loaded machine (the checks are unchanged).
-describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 120_000 }, () => {
+describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000 }, () => {
   it("tenant A sees, and the tab keeps, nothing of tenant B after B signs out", async () => {
     serveTwoTenants();
     view = await render(<App language="en" />);
