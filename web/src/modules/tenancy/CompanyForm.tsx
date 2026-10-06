@@ -304,10 +304,20 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: 
   const [message, setMessage] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  const load = () =>
-    loadAll<BranchRow>("/api/tenancy/branches", `companyId eq '${companyId}'`)
-      .then(setBranches)
-      .catch((e) => setMessage(problemOf(e).message));
+  // Only the latest load's answer is shown: on a busy server the load made when the form opens can
+  // answer after the one made right after a branch is added, and its older (empty) list would
+  // replace the new branch.
+  const loads = useRef(0);
+  const load = () => {
+    const mine = ++loads.current;
+    return loadAll<BranchRow>("/api/tenancy/branches", `companyId eq '${companyId}'`)
+      .then((rows) => {
+        if (mine === loads.current) setBranches(rows);
+      })
+      .catch((e) => {
+        if (mine === loads.current) setMessage(problemOf(e).message);
+      });
+  };
 
   useEffect(() => {
     void load();
