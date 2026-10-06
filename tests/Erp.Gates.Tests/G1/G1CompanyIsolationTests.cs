@@ -161,7 +161,7 @@ public static class CompanyAttack
             (label, await env.SignInAsync(email)),
             (viewerLabel, await env.SignInAsync(env.Email(tenant, "viewer"))),
         };
-        var state = new State(before);
+        var state = new State(before, victimName);
         var yIds = before.Ids.Select(i => i.ToString()).ToList();
         var yValues = yIds.Take(25).Concat(before.Strings.Take(25)).ToList();
         var attacked = 0;
@@ -499,7 +499,7 @@ public static class CompanyAttack
         return new string(value.Select((c, i) => char.IsLetter(c) ? (char)('a' + random[i] % 26) : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray());
     }
 
-    private sealed class State(CompanySnapshot victim)
+    private sealed class State(CompanySnapshot victim, string victimName)
     {
         public List<string> Leaks { get; } = [];
         public List<string> Oracles { get; } = [];
@@ -554,7 +554,7 @@ public static class CompanyAttack
             }
         }
 
-        /// <summary>Judges one answer for company Y's markers and server errors.</summary>
+        /// <summary>Judges one answer for the victim's (company Y's or branch Z's) markers and server errors.</summary>
         public void Judge(string attacker, string method, string path, int status, string text, IReadOnlyCollection<string> sent)
         {
             // An echo of what this request sent is not a leak, and neither is a Y text the attacker
@@ -569,7 +569,7 @@ public static class CompanyAttack
                 .Aggregate(text, (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
             if (victim.FindMarker(scrubbed) is { } marker)
             {
-                lock (_lock) Leaks.Add($"{attacker} → {method} {path} → {status}: contains company Y marker {marker}");
+                lock (_lock) Leaks.Add($"{attacker} → {method} {path} → {status}: contains {victimName} marker {marker}");
             }
             if (status >= 500)
             {
