@@ -44,3 +44,19 @@ in a list grid, sort marks, key hints (`kbd`, elements with `aria-keyshortcuts`,
 line) and anything a module marks `.no-print`. Form fields print as their values (no borders or
 backgrounds). An end-to-end test prints the users list in Arabic and requires no visible button,
 checkbox, sort mark or hint, with the Arabic column titles still printed.
+
+## Round 4: printing a screen and printing a list are two paths, and the printout says so
+
+The critic printed the 100,006-user list from the browser and got one page of the ~20 rows on
+screen under a heading of 100,006 users. Two paths now exist, each with its own job:
+
+- **Ctrl+P / the palette's Print** prints the screen as it stands, through this base. For a list
+  that is the rows on screen, so the printout carries a paper-only line saying which rows it holds
+  of how many (`lists.print.partial`).
+- **Print or export** (p06's report engine, `/api/reports/lists/{key}`) prints or exports the whole
+  list as filtered, sorted and grouped, as PDF (English or Arabic), CSV or Excel. When a list has
+  that menu, the paper-only line names it as the way to print every row
+  (`lists.print.partialReport`), instead of the shell growing a second whole-list printer.
+
+The shell does not page through a large list to print it: the report engine owns whole-list output
+and its limits, and one place renders a list's rows on paper for every module.
