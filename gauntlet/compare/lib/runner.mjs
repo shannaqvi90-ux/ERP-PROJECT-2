@@ -431,7 +431,9 @@ export async function execute(task, driver, product, productId, needles, out, op
       phase.set('verifying');
       page.setDefaultTimeout(VERIFY_READ_MS);
       let before = null;
-      try { before = await hook('verify', { handles: handles(), after: false }); } catch { /* not done (or not checkable without the outcome) */ }
+      // Metered like the passes after the clock: it reads, it does not poll (a refusal invalidates the run).
+      session.startVerifyMeter({ maxRequests: VERIFY_MAX_REQUESTS, label: 'verify() before the clock' });
+      try { before = await hook('verify', { handles: handles(), after: false }); } catch { /* not done (or not checkable without the outcome) */ } finally { session.stopVerifyMeter(); }
       page.setDefaultTimeout(timeout);
       phase.set('frozen');
       if (before?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
@@ -470,7 +472,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       const passes = [];
       for (let i = 0; i < 2; i++) {
         const t = performance.now();
-        session.startVerifyMeter();
+        session.startVerifyMeter({ maxRequests: VERIFY_MAX_REQUESTS, label: i === 0 ? 'verify()' : 'verify() (second pass)' });
         let v;
         try { v = await hook('verify', { handles: handles(), after: true }); } finally {
           // A sign-in the harness paced under the product's limit is the harness's time, not the pass's.

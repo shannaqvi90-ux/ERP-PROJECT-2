@@ -62,5 +62,13 @@ has: 53 users of the shared dataset match the search) through the list's own Pri
 The driver reads the menu's words from the product's Arabic resource file rather than repeating
 them.
 
+## Decision 5: verify() is refused as it polls, before the clock too
+
+The meter judged a pass only when it ended. A pass that polled hundreds of times ran until the
+hook timed out, the driver process was stopped and the run ended in a plain error, not an
+invalid run (seen under load in `./erp verify`). The bridge now refuses, on arrival, the request
+over the limit (100) or a back-end read sent a second time in one pass, and the check before
+the clock ("already done by set-up?") is metered the same way. Plant T2h.
+
 A screenshot that Chromium fails to capture on a loaded machine is taken again (twice at most);
 any other failure still ends the run.

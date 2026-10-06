@@ -294,8 +294,20 @@ export class DriverSession {
    * stretch in which it asked the harness nothing (it was sleeping, spinning or computing), and any
    * back-end read it sent twice (polling). The runner judges the record (lib/runner.mjs).
    */
-  startVerifyMeter() {
-    this.meter = { started: performance.now(), requests: 0, outstanding: 0, idleSince: performance.now(), longestPause: 0, seen: new Set(), repeated: [], pacedMs: 0 };
+  /**
+   * Meter a verify() pass. With `maxRequests`, the pass is refused as it polls (round 6): the request
+   * over the limit, or a back-end read sent a second time, is refused on arrival instead of being
+   * answered until the hook times out (a pass that polls for minutes would end the driver process
+   * and the run in a plain error instead of an invalid run).
+   */
+  startVerifyMeter({ maxRequests = Infinity, label = 'verify()' } = {}) {
+    this.meter = { started: performance.now(), requests: 0, outstanding: 0, idleSince: performance.now(), longestPause: 0, seen: new Set(), repeated: [], pacedMs: 0, maxRequests, label };
+  }
+
+  #meterCheck(meter) {
+    if (!meter || meter !== this.meter) return;
+    if (meter.requests > meter.maxRequests) throw new ActionOutsideClock(`${meter.label} sent over ${meter.maxRequests} requests: it polled for the end state`, 'verifying');
+    if (meter.repeated.length && Number.isFinite(meter.maxRequests)) throw new ActionOutsideClock(`${meter.label} read ${meter.repeated[0]} twice: verification reads once, it does not poll for the end state`, 'verifying');
   }
 
   stopVerifyMeter() {
@@ -333,7 +345,7 @@ export class DriverSession {
   // -- requests from the driver process ------------------------------------------------------------
   async handle(m) {
     const meter = this.#meterIn(m);
-    try { return await this.#dispatch(m); } finally { this.#meterOut(meter); }
+    try { this.#meterCheck(meter); return await this.#dispatch(m); } finally { this.#meterOut(meter); }
   }
 
   async #dispatch(m) {

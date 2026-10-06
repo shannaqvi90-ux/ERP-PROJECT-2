@@ -833,6 +833,24 @@ test('plant T2d (round 5): a request the page sends 600 ms after the click canno
   assert.match(r.error, /paused/);
 });
 
+test('plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly', async () => {
+  asyncSaved = false;
+  const t = performance.now();
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/async-page'); },
+    async run(op) { await op.click('#save'); await op.waitFor(() => document.getElementById('out').textContent === 'accepted'); return {}; },
+    async verify() {
+      // Polls whether or not the task ran (no outcome check): already before the clock.
+      let saved = false;
+      for (let i = 0; i < 100000 && !saved; i++) saved = (await (await fetch(`${base}/api/async-saved?n=${i}`)).json()).saved;
+      return { verified: saved };
+    },
+  });
+  assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
+  assert.match(r.error, /verify\(\) before the clock sent over 100 requests: it polled/);
+  assert.ok((performance.now() - t) / 1000 < 60, 'refused on arrival, not after the hook timed out');
+});
+
 test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid', async () => {
   asyncSaved = false;
   const sleeper = await runDriver({
