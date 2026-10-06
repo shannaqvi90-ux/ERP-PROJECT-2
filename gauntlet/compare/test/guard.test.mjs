@@ -570,7 +570,7 @@ test('plant H2 (round 3, the real driver): ours find-user signs in, opens Users 
   });
   const r = await runFindUser(driver);
   assert.notEqual(r.status, 'verified', `the planted driver verified with ${r.counts?.steps} steps`);
-  assert.equal(r.start_state?.path, '/', 'the measured part starts on the screen after sign-in, whatever sign-in opened');
+  assert.equal(r.start_state?.path, '/', `the measured part starts on the screen after sign-in, whatever sign-in opened (run: ${r.status}, ${String(r.error).split('\n')[0]})`);
 });
 
 test('an API task counts each request, and its screenshots show the neutral request transcript', async () => {
