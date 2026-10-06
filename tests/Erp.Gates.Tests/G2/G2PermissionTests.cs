@@ -508,6 +508,43 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.Contains("not in any module's catalogue", error.Message, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p00 round 5, plant P2: the permission is declared as metadata, but the
+    /// endpoint's authorization is only <c>.RequireAuthorization()</c>, so any signed-in user
+    /// passes. The host must refuse to start, before any request is made.</summary>
+    [Fact]
+    public void The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: null,
+            shape: e => e.WithMetadata(new RequiresPermissionAttribute("rogue.things.read")).RequireAuthorization())));
+        Assert.Contains("no authorization policy on it requires that permission", error.Message, StringComparison.Ordinal);
+
+        // A policy that requires another permission does not count either.
+        error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: null, listPermission: "rogue.things.write",
+            shape: e => e.WithMetadata(new RequiresPermissionAttribute("rogue.things.read"))
+                .RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme)
+                    .RequireAuthenticatedUser().AddRequirements(new PermissionRequirement("rogue.things.write")).Build()))));
+        Assert.Contains("no authorization policy on it requires that permission", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => BuildHost(new RogueModule(declare: null,
+            shape: e => e.RequirePermission("rogue.things.read").AllowAnonymous())));
+        Assert.Contains("allows anonymous callers, so it is never checked", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission()
+    {
+        var unenforced = Env.Factory.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>().Endpoints
+            .Where(e => e.Metadata.GetMetadata<RequiresPermissionAttribute>() is { } p && !ErpPlatform.EnforcesPermission(e, p.Permission))
+            .Select(e => e.DisplayName)
+            .ToList();
+        Assert.True(unenforced.Count == 0, "Declared but not enforced: " + string.Join(", ", unenforced));
+        Assert.True(Permissioned.Count >= Ratchet.Min("g2.permissionedEndpoints"));
+    }
+
     [Fact]
     public void The_host_refuses_a_list_whose_endpoint_declares_another_permission()
     {
@@ -609,7 +646,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         app.UseErpPlatform();
     }
 
-    private sealed class RogueModule(string? declare, bool register = true, string? listPermission = null) : ErpModule
+    private sealed class RogueModule(string? declare, bool register = true, string? listPermission = null, Action<RouteHandlerBuilder>? shape = null) : ErpModule
     {
         public override string Name => "rogue";
 
@@ -628,7 +665,11 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             module.Endpoints(group =>
             {
                 var endpoint = group.MapGet("/things", () => "secret");
-                if (declare is not null)
+                if (shape is not null)
+                {
+                    shape(endpoint);
+                }
+                else if (declare is not null)
                 {
                     endpoint.RequirePermission(declare);
                 }
