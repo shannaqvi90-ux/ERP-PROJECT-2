@@ -20,6 +20,19 @@ export function fullEmail(typed: string, domain: string | null): string {
   return domain && value && !value.includes("@") ? `${value}@${domain}` : value;
 }
 
+/**
+ * Whether the field now holds a whole e-mail address in the team's domain ("sara@alnoor.example"
+ * on the address of alnoor.example): nothing more can follow it, so the screen moves on to the
+ * password, as Tab or Enter would. Only the team's own domain ends the field: elsewhere the screen
+ * cannot know where an address ends.
+ */
+export function completesTeamEmail(typed: string, domain: string | null): boolean {
+  if (!domain) return false;
+  const value = typed.trim().toLowerCase();
+  const at = value.indexOf("@");
+  return at > 0 && at === value.lastIndexOf("@") && !/\s/.test(value) && value.slice(at + 1) === domain;
+}
+
 /** The text the e-mail field starts with: the part before "@" when the e-mail is in the team's domain. */
 export function localPart(email: string, domain: string | null): string {
   return domain && email.toLowerCase().endsWith(`@${domain}`) ? email.slice(0, -domain.length - 1) : email;

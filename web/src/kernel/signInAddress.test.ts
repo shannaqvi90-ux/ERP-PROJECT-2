@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fullEmail, localPart, teamDomain, teamSignInAddress } from "./signInAddress";
+import { completesTeamEmail, fullEmail, localPart, teamDomain, teamSignInAddress } from "./signInAddress";
 
 describe("team sign-in address", () => {
   it("reads a host name from the address, lower case, and nothing else", () => {
@@ -22,6 +22,21 @@ describe("team sign-in address", () => {
     expect(localPart("Sara@ALNOOR.example", "alnoor.example")).toBe("Sara");
     expect(localPart("sara@other.example", "alnoor.example")).toBe("sara@other.example");
     expect(localPart("sara@notalnoor.example", "alnoor.example")).toBe("sara@notalnoor.example");
+  });
+
+  it("knows an address is whole only when it ends in exactly the team's domain", () => {
+    expect(completesTeamEmail("sara@alnoor.example", "alnoor.example")).toBe(true);
+    expect(completesTeamEmail("Sara@ALNOOR.Example", "alnoor.example")).toBe(true);
+    // Not yet whole, or another domain: the screen cannot know where it ends.
+    expect(completesTeamEmail("sara@alnoor.exampl", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("sara@alnoor.example.ae", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("sara@notalnoor.example", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("sara", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("@alnoor.example", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("a@b@alnoor.example", "alnoor.example")).toBe(false);
+    expect(completesTeamEmail("sa ra@alnoor.example", "alnoor.example")).toBe(false);
+    // Without the team's address no domain ends the field.
+    expect(completesTeamEmail("sara@alnoor.example", null)).toBe(false);
   });
 
   it("builds the address for a user's e-mail", () => {

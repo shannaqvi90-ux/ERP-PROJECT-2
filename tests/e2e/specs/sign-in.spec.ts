@@ -95,6 +95,23 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByTestId("team-address")).toHaveText(/\/\?domain=alnoor\.example$/);
   });
 
+  test("first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter", async ({ page }) => {
+    await freshStart(page, "en");
+    await page.goto("/?domain=alnoor.example");
+    const email = page.locator('input[name="email"]');
+    await expect(email).toBeFocused();
+    await expect(page.locator("#email-moves-on")).toHaveText("Typing your whole address moves on to the password.");
+    await paceSignIn(page);
+    // Typed as a person types it, key by key: the screen moves on when the address is whole.
+    await page.keyboard.type(users.admin);
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(email).toHaveValue(users.admin);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBe(users.admin);
+  });
+
   test("returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter", async ({ page, context }) => {
     await freshStart(page, "en");
     await page.goto("/?domain=alnoor.example");

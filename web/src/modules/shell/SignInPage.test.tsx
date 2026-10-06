@@ -183,7 +183,7 @@ describe("sign-in screen", () => {
     const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
     expect(document.activeElement).toBe(email);
     expect(view.container.querySelector("#email-domain")!.textContent).toContain("@alnoor.example");
-    expect(email.getAttribute("aria-describedby")).toBe("email-domain");
+    expect(email.getAttribute("aria-describedby")).toBe("email-domain email-moves-on");
     setInput(email, "admin");
     pressEnter(email);
     const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
@@ -224,6 +224,80 @@ describe("sign-in screen", () => {
     await submit(view.container);
     await settle();
     expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
+  });
+
+  it("on the team's sign-in address, typing the whole e-mail moves on to the password, and the note says so first", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    expect(view.container.querySelector("#email-moves-on")!.textContent).toBe("Typing your whole address moves on to the password.");
+    expect(email.getAttribute("aria-describedby")).toBe("email-domain email-moves-on");
+    // Named by its label alone, not by the domain or the note inside the label.
+    expect(document.getElementById(email.getAttribute("aria-labelledby")!)!.textContent).toBe("E-mail");
+    setInput(email, "admin@alnoor.exampl");
+    expect(document.activeElement).toBe(email);
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(password);
+    expect(view.container.querySelector(".field-error")).toBeNull();
+    setInput(password, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
+  });
+
+  it("after moving on, Backspace in the empty password goes back to the end of the e-mail", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    mockFetch(signedOut());
+    view = await render(<App language="ar" />);
+    await settle();
+    expect(view.container.querySelector("#email-moves-on")!.textContent).toBe("كتابة عنوانك كاملًا تنقلك إلى كلمة المرور.");
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(password);
+    const backspace = new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true });
+    act(() => {
+      password.dispatchEvent(backspace);
+    });
+    expect(backspace.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(email);
+    expect(email.selectionStart).toBe("admin@alnoor.example".length);
+    // A Backspace that was not after moving on stays an ordinary key in the password field.
+    password.focus();
+    const again = new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true });
+    act(() => {
+      password.dispatchEvent(again);
+    });
+    expect(again.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(password);
+  });
+
+  it("does not move on while the password already holds text, nor for another domain, nor without the team's address", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    let email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    let password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    setInput(email, "admin@alnoor.example.ae");
+    expect(document.activeElement).toBe(email);
+    setInput(password, "Demo-Pass-2026");
+    email.focus();
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(email);
+    view.unmount();
+
+    window.history.replaceState(null, "", "/");
+    view = await render(<App language="en" />);
+    await settle();
+    email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    expect(view.container.querySelector("#email-moves-on")).toBeNull();
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(email);
   });
 
   it("shows and hides the password from a button after the field, keeping the focus in the field, in both languages", async () => {

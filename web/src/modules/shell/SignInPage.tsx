@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
-import { fullEmail, teamDomain } from "../../kernel/signInAddress";
+import { completesTeamEmail, fullEmail, teamDomain } from "../../kernel/signInAddress";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -65,6 +65,8 @@ export function SignInPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const workspaceRef = useRef<HTMLButtonElement>(null);
+  // The screen moved the focus on to the password by itself (the whole team e-mail was typed).
+  const movedOn = useRef(false);
 
   // Keyboard first: the first empty field has focus on arrival and again after switching
   // language, so the next keystroke always types into the form.
@@ -97,9 +99,32 @@ export function SignInPage() {
     if (!problem) passwordRef.current?.focus();
   }
 
+  /** On the team's address, typing the whole e-mail (the team's domain included) ends the field:
+   * the screen moves on to the password, as Tab or Enter would (the note under the field says so
+   * beforehand). Only while the password is empty, and only when the address becomes whole. */
+  function onEmailChange(value: string) {
+    const wasWhole = completesTeamEmail(email, domain);
+    setEmail(value);
+    if (wasWhole || changing || password || !completesTeamEmail(value, domain)) return;
+    movedOn.current = true;
+    setFieldErrors((errors) => ({ ...errors, email: undefined }));
+    passwordRef.current?.focus();
+  }
+
   /** Caps Lock as the last key event in the password field reports it (no other way to read it). */
   function onPasswordKey(event: KeyboardEvent<HTMLInputElement>) {
     setCapsLock(event.getModifierState?.("CapsLock") === true);
+  }
+
+  /** Backspace in the still-empty password after the screen moved on goes back to the e-mail's end. */
+  function onPasswordKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    onPasswordKey(event);
+    if (event.key !== "Backspace" || password || !movedOn.current) return;
+    event.preventDefault();
+    movedOn.current = false;
+    const field = emailRef.current;
+    field?.focus();
+    field?.setSelectionRange(field.value.length, field.value.length);
   }
 
   async function submit(workspace?: string) {
@@ -175,11 +200,13 @@ export function SignInPage() {
         <p className="signin-lead">{t("shell.signIn.lead")}</p>
         <form onSubmit={onSubmit} noValidate aria-describedby={error ? "signin-error" : undefined}>
           <label className="field">
-            <span className="field-label">{t("shell.signIn.email")}</span>
+            <span id="signin-email-label" className="field-label">{t("shell.signIn.email")}</span>
             <span className={suffix ? "signin-email has-domain" : "signin-email"} dir="ltr">
               <input
                 ref={emailRef}
                 name="email"
+                // Named by its label alone: the domain, the note and an error inside the label describe it.
+                aria-labelledby="signin-email-label"
                 type={domain ? "text" : "email"}
                 dir="ltr"
                 autoComplete={suffix ? "off" : "username"}
@@ -187,10 +214,10 @@ export function SignInPage() {
                 spellCheck={false}
                 inputMode="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => onEmailChange(e.target.value)}
                 onKeyDown={onEmailKey}
                 aria-invalid={fieldErrors.email ? true : undefined}
-                aria-describedby={[suffix ? "email-domain" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
+                aria-describedby={[suffix ? "email-domain" : "", domain && !changing ? "email-moves-on" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
               />
               {suffix && (
                 <span id="email-domain" className="signin-domain" title={t("shell.signIn.domainHint")}>
@@ -199,6 +226,11 @@ export function SignInPage() {
                 </span>
               )}
             </span>
+            {domain && !changing && (
+              <span id="email-moves-on" className="muted signin-note">
+                {t("shell.signIn.domainMovesOn")}
+              </span>
+            )}
             {fieldErrors.email && (
               <span id="email-error" className="field-error">
                 {fieldErrors.email}
@@ -223,7 +255,7 @@ export function SignInPage() {
                 spellCheck={false}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={onPasswordKey}
+                onKeyDown={onPasswordKeyDown}
                 onKeyUp={onPasswordKey}
                 onBlur={() => setCapsLock(false)}
                 aria-invalid={fieldErrors.password ? true : undefined}
