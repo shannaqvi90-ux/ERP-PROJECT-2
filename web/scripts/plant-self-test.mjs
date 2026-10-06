@@ -4,10 +4,13 @@
 // For every plant this script copies the web sources to a temporary folder, applies the plant
 // there (never in the working tree), runs the gate, and requires the gate to FAIL. A plant the gate
 // does not catch fails this script. Plant P9 is the critic's round-2 plant: a module-level cache of
-// palette answers that nothing clears at sign-out.
+// palette answers that nothing clears at sign-out. Plants C1 and C2 are the critic's round-3 plants
+// (palette answers in window.name; the last opened record in a cookie), each with the forgetting
+// step that now neutralises it taken out, and the H plants break the history guard that keeps one
+// identity's addresses (?q=, ?open=) from the next person pressing Back (critic p04 round 3).
 //
 // Usage: node scripts/plant-self-test.mjs   (from web/, after npm ci)
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -43,7 +46,7 @@ const plants = [
   {
     id: "P9-email",
     what: "signing out keeps the signed-out person's e-mail on the sign-in screen",
-    edits: [{ file: "src/kernel/session.tsx", find: "await forgetIdentity({ keepEmail: false });", replace: "await forgetIdentity({ keepEmail: true });" }],
+    edits: [{ file: "src/kernel/session.tsx", find: "await forgetIdentity({ keepEmail: false, appPaths: visited.current });", replace: "await forgetIdentity({ keepEmail: true, appPaths: visited.current });" }],
   },
   {
     id: "P9-storage",
@@ -85,6 +88,80 @@ const plants = [
       },
     ],
   },
+  {
+    id: "C2",
+    what: "the last record opened from the palette kept in a cookie (path=/), and signing out does not forget cookies",
+    edits: [{ file: "src/kernel/deviceState.ts", find: "  clearCookies(appPaths);\n", replace: "" }],
+    extra: [
+      {
+        file: "src/modules/shell/CommandPalette.tsx",
+        find: "    if (!entry) return;\n    onClose();",
+        replace:
+          "    if (!entry) return;\n    if (entry.id.includes(\":\")) document.cookie = `erp.recentRecord=${encodeURIComponent(`${entry.title} ${entry.subtitle ?? \"\"} ${entry.path ?? \"\"}`)}; path=/; max-age=31536000`;\n    onClose();",
+      },
+    ],
+  },
+  {
+    id: "C2-path",
+    what: "the record cookie scoped to the screen's path (/identity), and signing out forgets cookies only at /",
+    edits: [{ file: "src/kernel/deviceState.ts", find: "    const paths = cookiePaths([...appPaths, window.location.pathname]);", replace: "    const paths = [\"/\"];" }],
+    extra: [
+      {
+        file: "src/modules/shell/CommandPalette.tsx",
+        find: "    if (!entry) return;\n    onClose();",
+        replace:
+          "    if (!entry) return;\n    if (entry.id.includes(\":\")) document.cookie = `erp.recentRecord=${encodeURIComponent(`${entry.title} ${entry.subtitle ?? \"\"} ${entry.path ?? \"\"}`)}; path=/identity; max-age=31536000`;\n    onClose();",
+      },
+    ],
+  },
+  {
+    id: "C1",
+    what: "palette answers kept in the tab's window.name, and signing out does not reset it",
+    edits: [{ file: "src/kernel/deviceState.ts", find: "  window.name = \"\";\n", replace: "" }],
+    extra: [
+      {
+        file: "src/modules/shell/CommandPalette.tsx",
+        find: "    setRemote(Object.fromEntries(asked.map((s) => [s.key, { status: \"searching\", items: [] } as SourceState])));\n    if (asked.length === 0) return;",
+        replace:
+          "    const holder = document.defaultView!;\n    let answered: Record<string, SourceState> = {};\n    try { answered = JSON.parse(holder.name || \"{}\"); } catch { answered = {}; }\n    setRemote(Object.fromEntries(asked.map((s) => [s.key, answered[`${s.key}:${trimmed}`] ?? ({ status: \"searching\", items: [] } as SourceState)])));\n    if (asked.length === 0) return;\n    if (asked.every((s) => answered[`${s.key}:${trimmed}`])) return;",
+      },
+      {
+        file: "src/modules/shell/CommandPalette.tsx",
+        find: "            const { items, total } = Array.isArray(answer) ? { items: answer, total: undefined } : answer;",
+        replace:
+          "            const { items, total } = Array.isArray(answer) ? { items: answer, total: undefined } : answer;\n            answered[`${source.key}:${trimmed}`] = { status: \"done\", items: items.slice(0, shownPerSource), total };\n            holder.name = JSON.stringify(answered);",
+      },
+    ],
+  },
+  {
+    id: "H1",
+    what: "the history guard trusts every entry: Back into the signed-out person's address opens it",
+    edits: [
+      { file: "src/kernel/historyGuard.ts", find: "  } else if (!entryIsCurrent()) {\n    forgetEntry(originalReplace);\n  }", replace: "  }" },
+      { file: "src/kernel/historyGuard.ts", find: "    if (entryIsCurrent(event.state)) return;", replace: "    return;" },
+    ],
+  },
+  {
+    id: "H2",
+    what: "Back and reload are trusted like a typed address",
+    edits: [{ file: "src/kernel/historyGuard.ts", find: "  if (kind === \"navigate\" || kind === \"prerender\") {", replace: "  if (kind !== undefined) {" }],
+  },
+  {
+    id: "H3",
+    what: "the history epoch survives the end of an identity (sessionStorage cleared except the epoch)",
+    edits: [
+      {
+        file: "src/kernel/deviceState.ts",
+        find: "    sessionStorage.clear();\n",
+        replace: "    const epoch = sessionStorage.getItem(\"erp.historyEpoch\");\n    sessionStorage.clear();\n    if (epoch) sessionStorage.setItem(\"erp.historyEpoch\", epoch);\n",
+      },
+    ],
+  },
+  {
+    id: "H4",
+    what: "inside a document, Back to an entry of another identity is not checked",
+    edits: [{ file: "src/kernel/historyGuard.ts", find: "    if (entryIsCurrent(event.state)) return;", replace: "    return;" }],
+  },
 ];
 
 function copyWeb() {
@@ -104,27 +181,39 @@ function apply(dir, edit, plant) {
   writeFileSync(path, text.replace(edit.find, edit.replace));
 }
 
+/** Runs the gate in a copy; resolves with its exit status and output. */
 function runGate(dir) {
-  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", gate], { cwd: dir, encoding: "utf8" });
+  return new Promise((resolve) => {
+    const child = spawn(join(dir, "node_modules", ".bin", "vitest"), ["run", gate], { cwd: dir });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => (stdout += chunk));
+    child.stderr.on("data", (chunk) => (stderr += chunk));
+    child.on("close", (status) => resolve({ status, stdout, stderr }));
+  });
 }
+
+/** How many plants run at once (each is one vitest process). */
+const parallel = Math.max(1, Math.min(4, Number(process.env.ERP_PLANT_PARALLEL ?? 4)));
 
 const problems = [];
 // The control: the unplanted copy passes the gate (else a failing gate would "catch" every plant).
 {
   const dir = copyWeb();
   try {
-    const control = runGate(dir);
+    const control = await runGate(dir);
     if (control.status !== 0) problems.push(`control: the gate fails without any plant:\n${control.stdout}\n${control.stderr}`);
     else console.log("control: the gate passes on the unplanted product");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
-for (const plant of plants) {
+
+async function judgePlant(plant) {
   const dir = copyWeb();
   try {
     for (const edit of [...(plant.extra ?? []), ...plant.edits]) apply(dir, edit, plant);
-    const result = runGate(dir);
+    const result = await runGate(dir);
     const output = `${result.stdout}\n${result.stderr}`;
     if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);
     // Caught by an assertion of the gate, not by a plant that no longer compiles or loads.
@@ -137,6 +226,13 @@ for (const plant of plants) {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+
+const queue = [...plants];
+await Promise.all(
+  Array.from({ length: parallel }, async () => {
+    for (let plant = queue.shift(); plant; plant = queue.shift()) await judgePlant(plant);
+  }),
+);
 if (problems.length > 0) {
   console.error(`\nclient isolation gate self-test FAILED:\n  ${problems.join("\n  ")}`);
   process.exit(1);

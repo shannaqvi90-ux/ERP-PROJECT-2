@@ -105,6 +105,101 @@ public sealed partial class G1ClientStateTests
         Assert.Equal(["answered"], Inspect(palette, plantedPalette).Stateful.Select(b => b.Name));
     }
 
+    private const string CarrierAllowlist = "tests/Gates/client-carriers.txt";
+
+    /// <summary>
+    /// The browser carriers that outlive a document in a tab or a browser: what a screen puts in
+    /// them reaches the next document, which may belong to the next person on the device. Cookies
+    /// a script can read and <c>window.name</c> survive the document replacement that ends an
+    /// identity; history entries (addresses with search text and record ids) stay in the tab after
+    /// sign-out; storage, IndexedDB, Cache Storage, service workers and broadcast channels outlive
+    /// the document by design (critic p04 round 3, plants C1 and C2).
+    /// </summary>
+    public static readonly IReadOnlyList<(string Kind, Regex Pattern)> Carriers =
+    [
+        ("cookie", new Regex(@"\bdocument\s*\.\s*cookie\b|\bcookieStore\b", RegexOptions.Compiled)),
+        ("window-name", new Regex(@"\b(window|self|globalThis|top|parent|opener|frames)\s*\.\s*name\b|\bdefaultView\b", RegexOptions.Compiled)),
+        ("history", new Regex(@"\b(pushState|replaceState)\b", RegexOptions.Compiled)),
+        ("local-storage", new Regex(@"\blocalStorage\b", RegexOptions.Compiled)),
+        ("session-storage", new Regex(@"\bsessionStorage\b", RegexOptions.Compiled)),
+        ("indexed-db", new Regex(@"\bindexedDB\b", RegexOptions.Compiled)),
+        ("cache-storage", new Regex(@"\bcaches\s*\.", RegexOptions.Compiled)),
+        ("service-worker", new Regex(@"\bserviceWorker\b|\bSharedWorker\b", RegexOptions.Compiled)),
+        ("broadcast", new Regex(@"\bBroadcastChannel\b", RegexOptions.Compiled)),
+    ];
+
+    /// <summary>Every use of a carrier that outlives the document, per file and kind, with how often.</summary>
+    public static IReadOnlyList<string> CarrierUses(string file, string source)
+    {
+        var stripped = StripComments(source);
+        var uses = new List<string>();
+        foreach (var (kind, pattern) in Carriers)
+        {
+            var count = pattern.Matches(stripped).Count;
+            if (count > 0)
+            {
+                uses.Add($"{file} {kind} {count}");
+            }
+        }
+        return uses;
+    }
+
+    /// <summary>
+    /// Every use of a carrier that outlives the document is a reviewed decision, listed with how
+    /// often the file uses it (a new use in a reviewed file is a new decision too) and the reason
+    /// it never carries one person's tenant data to the next: the kernel forgets it when the
+    /// identity ends (kernel/deviceState), stamps it for the identity (kernel/historyGuard), or it
+    /// holds a device setting only. A cookie written by a screen, a palette cache in
+    /// <c>window.name</c> (the critic's plants C2 and C1) fail here before any browser runs.
+    /// </summary>
+    [Fact]
+    public void Every_use_of_a_carrier_that_outlives_the_document_is_reviewed()
+    {
+        var reviewed = Repo.ReadReviewedList(CarrierAllowlist);
+        var problems = reviewed.Where(r => r.Reason.Length < 20).Select(r => $"{CarrierAllowlist}: '{r.Entry}' needs a reason (after #) saying why it never carries one person's data to the next").ToList();
+        var allowed = reviewed.Select(r => r.Entry).ToHashSet(StringComparer.Ordinal);
+        var found = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var path in WebSources())
+        {
+            var relative = Path.GetRelativePath(Repo.Root, path).Replace('\\', '/');
+            foreach (var use in CarrierUses(relative, File.ReadAllText(path)))
+            {
+                found.Add(use);
+                if (!allowed.Contains(use))
+                {
+                    problems.Add($"{use}: this carrier outlives the document and can hand one person's data to the next on the device. Forget it when the identity ends (kernel/deviceState), keep the data in memory, or review it in {CarrierAllowlist}.");
+                }
+            }
+        }
+        problems.AddRange(allowed.Where(a => !found.Contains(a)).Select(a => $"{CarrierAllowlist}: '{a}' no longer matches the web sources; update or remove the stale entry"));
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        var kinds = found.Select(f => f.Split(' ')[1]).Distinct().Count();
+        Assert.True(Carriers.Count >= Ratchet.Min("g1.clientCarrierKinds"), $"{Carriers.Count} carrier kinds inspected; ratchet minimum {Ratchet.Min("g1.clientCarrierKinds")}");
+        Assert.True(found.Count >= Ratchet.Min("g1.clientCarrierUsesReviewed"), $"{found.Count} carrier uses reviewed ({kinds} kinds in use); ratchet minimum {Ratchet.Min("g1.clientCarrierUsesReviewed")}");
+    }
+
+    /// <summary>Self-test: the critic's round-3 plants C1 and C2, in the product's palette source, are found.</summary>
+    [Fact]
+    public void The_carrier_inventory_finds_the_planted_cookie_and_window_name()
+    {
+        const string palette = "web/src/modules/shell/CommandPalette.tsx";
+        var product = File.ReadAllText(Repo.PathOf(palette.Split('/')));
+        Assert.Empty(CarrierUses(palette, product));
+
+        const string runStart = "    if (!entry) return;\n";
+        Assert.Contains(runStart, product);
+        var c2 = product.Replace(runStart, runStart + "    if (entry.id.includes(\":\")) document.cookie = `erp.recentRecord=${encodeURIComponent(entry.title)}; path=/; max-age=31536000`;\n", StringComparison.Ordinal);
+        Assert.Equal([$"{palette} cookie 1"], CarrierUses(palette, c2));
+
+        const string asked = "    if (asked.length === 0) return;\n";
+        Assert.Contains(asked, product);
+        var c1 = product.Replace(asked, asked + "    const holder = document.defaultView!;\n    holder.name = JSON.stringify(remote);\n", StringComparison.Ordinal);
+        Assert.Equal([$"{palette} window-name 1"], CarrierUses(palette, c1));
+
+        var stored = product.Replace(asked, asked + "    window.localStorage.setItem(\"erp.palette\", trimmed);\n    navigator.serviceWorker.register(\"/sw.js\");\n", StringComparison.Ordinal);
+        Assert.Equal([$"{palette} local-storage 1", $"{palette} service-worker 1"], CarrierUses(palette, stored));
+    }
+
     private static IEnumerable<string> WebSources() =>
         Directory.EnumerateFiles(Repo.PathOf("web", "src"), "*.*", SearchOption.AllDirectories)
             .Where(f => f.EndsWith(".ts", StringComparison.Ordinal) || f.EndsWith(".tsx", StringComparison.Ordinal))

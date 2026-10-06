@@ -1,5 +1,6 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installHistoryGuard, type NavigationKind } from "../../kernel/historyGuard";
 import { navigate } from "../../kernel/router";
 import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
 import { listReply } from "../../test/lists";
@@ -17,6 +18,12 @@ import { App } from "./App";
  * case. A module cache that is not identity-scoped therefore fails this gate even though the real
  * product would also replace the document. The end-to-end gate (tests/e2e/specs/client-isolation)
  * judges the real browser, its storage and its JavaScript heap.
+ *
+ * Besides the page and storage, the judges read the carriers that outlive a document in a tab:
+ * cookies a script can read, `window.name`, the address and `history.state`. B's history entries
+ * stay in the tab after B signs out (the browser keeps them; nothing can take them out), so after A
+ * signs in, the test goes Back into each of B's entries, as a new document (Back across documents,
+ * or a reload) and inside A's document (popstate), and judges what A then sees.
  */
 
 type Tenant = {
@@ -27,6 +34,8 @@ type Tenant = {
   admin: { id: string; email: string; displayName: string };
   users: { id: string; email: string; displayName: string }[];
   roleName: string;
+  /** What the tenant's person types in the users list's search box. */
+  searchWord: string;
 };
 
 const bravo: Tenant = {
@@ -41,6 +50,7 @@ const bravo: Tenant = {
     { id: "ub-canary-7q4", email: "canary.zx81@gulfsteel.example", displayName: "Canary Zx81 Bravo" },
   ],
   roleName: "Bravocanary Steel Clerk",
+  searchWord: "Bravocanary Salem",
 };
 
 const alpha: Tenant = {
@@ -55,6 +65,7 @@ const alpha: Tenant = {
     { id: "ua-canary-3", email: "canary.amal@alnoor.example", displayName: "Canary Amal Alpha" },
   ],
   roleName: "Trading Clerk",
+  searchWord: "Mansoori",
 };
 
 /** Everything that identifies tenant B: none of it may ever appear in tenant A's tab. */
@@ -162,7 +173,9 @@ async function wait(ms: number) {
 function visibleState(): string {
   const inputs = [...document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea")].map((i) => i.value);
   const storage = (store: Storage) => Array.from({ length: store.length }, (_, i) => `${store.key(i)}=${store.getItem(store.key(i)!)}`);
-  return [document.title, document.body.innerHTML, ...inputs, ...storage(localStorage), ...storage(sessionStorage)].join("\n");
+  const address = decodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+  const cookies = decodeURIComponent(document.cookie);
+  return [document.title, document.body.innerHTML, ...inputs, ...storage(localStorage), ...storage(sessionStorage), address, JSON.stringify(window.history.state), cookies, window.name].join("\n");
 }
 
 function leaks(): string[] {
@@ -171,17 +184,42 @@ function leaks(): string[] {
 }
 
 let view: Rendered | undefined;
+let removeGuard: (() => void) | undefined;
+
+/**
+ * A new document opens on the given entry (its address and state, as the browser keeps them), the
+ * way main.tsx starts: the history guard first, then the App. `kind` is how the browser got there.
+ */
+async function newDocumentAt(kind: NavigationKind, url: string, state: unknown) {
+  view?.unmount();
+  removeGuard?.();
+  History.prototype.replaceState.call(window.history, state, "", url);
+  removeGuard = installHistoryGuard(kind);
+  view = await render(<App language="en" />);
+  await settle();
+}
+
+function expireAllCookies() {
+  for (const name of document.cookie.split(";").map((c) => c.split("=")[0]!.trim()).filter(Boolean)) {
+    for (const path of ["/", "/identity", "/identity/", "/identity/users", "/tenancy"]) document.cookie = `${name}=; max-age=0; path=${path}`;
+  }
+}
 
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
-  window.history.replaceState(null, "", "/");
+  expireAllCookies();
+  window.name = "";
+  History.prototype.replaceState.call(window.history, null, "", "/");
+  removeGuard = installHistoryGuard("navigate");
   vi.mocked(window.location.replace).mockClear();
 });
 
 afterEach(() => {
   view?.unmount();
   view = undefined;
+  removeGuard?.();
+  removeGuard = undefined;
 });
 
 async function signInAs(tenant: Tenant) {
@@ -228,11 +266,19 @@ async function journey(tenant: Tenant, judge: (step: string) => void): Promise<n
       await settle();
     }
   }
-  // Every screen of the menu.
+  // Every screen of the menu; on the users list, the person searches (the list keeps the search
+  // text in the address, ?q=).
   for (const item of menu) {
     act(() => navigate(item.path));
     await wait(300);
     step(`screen ${item.path}`);
+    if (item.path === "/identity/users") {
+      const search = document.querySelector<HTMLInputElement>('main input[type="search"]');
+      expect(search, "the users list has a search box").not.toBeNull();
+      setInput(search!, tenant.searchWord);
+      await wait(600);
+      step("users searched");
+    }
   }
   // A record by address, and the dialogs.
   act(() => navigate(`/identity/users?open=${tenant.users[1]!.id}`));
@@ -255,13 +301,13 @@ async function signOut() {
   await act(async () => button.click());
   await wait(50);
   expect(window.location.replace).toHaveBeenCalledWith("/");
-  // The product now loads a fresh document. Here the App is mounted again in the same JavaScript
-  // memory (see the comment at the top).
-  view!.unmount();
-  window.history.replaceState(null, "", "/");
-  view = await render(<App language="en" />);
-  await settle();
+  // The product now loads a fresh document at "/" (location.replace: a navigation). Here the App
+  // is mounted again in the same JavaScript memory (see the comment at the top).
+  await newDocumentAt("navigate", "/", null);
 }
+
+/** The tab's current history entry, as the browser would keep it for Back. */
+const entry = () => ({ url: window.location.pathname + window.location.search + window.location.hash, state: window.history.state as unknown });
 
 describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000 }, () => {
   it("tenant A sees, and the tab keeps, nothing of tenant B after B signs out", async () => {
@@ -270,12 +316,21 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     await settle();
 
     // B works, and its markers are on screen while it does (the journey really touched B's data).
+    // Every address B's journey leaves in the tab's history is kept, with its state.
     await signInAs(bravo);
     const seenByB = new Set<string>();
-    const bSteps = await journey(bravo, () => bravoMarkers.forEach((m) => visibleState().includes(m) && seenByB.add(m)));
+    const bEntries = new Map<string, unknown>();
+    const bSteps = await journey(bravo, () => {
+      bravoMarkers.forEach((m) => visibleState().includes(m) && seenByB.add(m));
+      const now = entry();
+      bEntries.set(now.url, now.state);
+    });
     expect(seenByB.has("Zx81")).toBe(true);
     expect(seenByB.has("Bravocanary")).toBe(true);
     expect(seenByB.has("Gulf Steel")).toBe(true);
+    // B's own addresses carry B's search text and record ids: the history test below has teeth.
+    const bAddresses = [...bEntries.keys()].join("\n");
+    expect(bravoMarkers.filter((m) => decodeURIComponent(bAddresses).includes(m)).length, `B's addresses: ${bAddresses}`).toBeGreaterThan(0);
     await signOut();
 
     // The signed-out tab: an empty sign-in, nothing of B stored.
@@ -290,6 +345,65 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     });
     expect(aSteps).toBe(bSteps);
     expect(found).toEqual([]);
+
+    // A presses Back (or Forward, or reloads) into each of B's entries, which the tab still holds.
+    for (const [url, state] of bEntries) {
+      for (const kind of ["back_forward", "reload"] as const) {
+        await newDocumentAt(kind, url, state);
+        await wait(300);
+        for (const marker of leaks()) found.push(`${kind} to B's ${url}: ${marker}`);
+        expect(document.querySelector(".workspace-name")?.textContent, "A is still signed in").toBe(alpha.nameEn);
+      }
+      // Inside A's document: the browser restores B's entry and fires popstate.
+      History.prototype.replaceState.call(window.history, state, "", url);
+      act(() => {
+        window.dispatchEvent(new PopStateEvent("popstate", { state }));
+      });
+      await wait(300);
+      for (const marker of leaks()) found.push(`popstate to B's ${url}: ${marker}`);
+    }
+    expect(found).toEqual([]);
+
+    // A's own entries still work: Back to A's own search keeps it (the guard is not a blunt wipe).
+    act(() => navigate(`/identity/users?q=${encodeURIComponent(alpha.searchWord)}`));
+    await wait(300);
+    const own = entry();
+    await newDocumentAt("back_forward", own.url, own.state);
+    await wait(300);
+    expect(window.location.search).toBe(`?q=${alpha.searchWord}`);
+    expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
+  });
+
+  it("an address someone types or follows is kept, and stamped for the person in the tab", async () => {
+    serveTwoTenants();
+    await newDocumentAt("navigate", `/identity/users?q=${encodeURIComponent(alpha.searchWord)}`, null);
+    await signInAs(alpha);
+    await wait(300);
+    expect(window.location.search).toBe(`?q=${alpha.searchWord}`);
+    expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
+  });
+
+  it("signing out forgets every cookie the document can read, whatever its path, and the tab's window name", async () => {
+    serveTwoTenants();
+    view = await render(<App language="en" />);
+    await settle();
+    await signInAs(bravo);
+    act(() => navigate("/identity/users"));
+    await wait(300);
+    document.cookie = `erp.recentRecord=${encodeURIComponent(bravo.users[2]!.email)}; path=/; max-age=31536000`;
+    document.cookie = `erp.listCache=${bravo.users[1]!.id}; path=/identity; max-age=31536000`;
+    document.cookie = `erp.lastRole=${encodeURIComponent(bravo.roleName)}; max-age=31536000`;
+    window.name = JSON.stringify({ palette: bravo.users.map((u) => u.email) });
+    expect(decodeURIComponent(document.cookie)).toContain("gulfsteel");
+    // Signed out from the screen the cookies were written on (cookies scoped to paths this
+    // document cannot see are dropped by the sign-out answer's Clear-Site-Data, judged end to end).
+    await signOut();
+    expect(document.cookie).toBe("");
+    for (const path of ["/identity", "/identity/users"]) {
+      History.prototype.replaceState.call(window.history, null, "", path);
+      expect(document.cookie, `cookies seen at ${path}`).toBe("");
+    }
+    expect(window.name).toBe("");
   });
 
   it("signing out forgets what the tab stored for the person and keeps only the device's settings", async () => {
@@ -300,10 +414,14 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     localStorage.setItem("erp.someModuleCache", JSON.stringify({ q: "admin", rows: bravo.users }));
     localStorage.setItem("thirdParty.state", bravo.admin.email);
     sessionStorage.setItem("erp.draft", bravo.roleName);
+    const bravoEpoch = sessionStorage.getItem("erp.historyEpoch");
+    expect(bravoEpoch).toBeTruthy();
     await signOut();
     const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).sort();
     expect(keys.every((k) => ["erp.language", "erp.numerals", "erp.navOpen"].includes(k!))).toBe(true);
-    expect(sessionStorage.length).toBe(0);
+    // The fresh document holds only its own new history epoch (kernel/historyGuard), not B's.
+    expect(Array.from({ length: sessionStorage.length }, (_, i) => sessionStorage.key(i))).toEqual(["erp.historyEpoch"]);
+    expect(sessionStorage.getItem("erp.historyEpoch")).not.toBe(bravoEpoch);
   });
 
   it("a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail", async () => {

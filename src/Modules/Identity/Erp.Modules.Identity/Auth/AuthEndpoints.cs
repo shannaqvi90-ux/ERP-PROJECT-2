@@ -121,6 +121,11 @@ internal static class AuthEndpoints
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.RevokedAt, now), cancellationToken);
         }
         http.Response.Cookies.Delete(Kernel.Security.SessionAuthenticationDefaults.CookieName, new CookieOptions { Path = "/", HttpOnly = true, SameSite = SameSiteMode.Strict });
+        // Signing out ends the person's use of this browser: every cookie of the site goes, also
+        // one a screen might have scoped to a path the signing-out document cannot see (the shell
+        // forgets the ones it can see itself, kernel/deviceState). Storage is left to the shell,
+        // which keeps the device's own settings (language, digits).
+        http.Response.Headers["Clear-Site-Data"] = "\"cookies\"";
         return TypedResults.NoContent();
     }
 
