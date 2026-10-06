@@ -69,10 +69,17 @@ internal static class AccessEndpoints
     private static async Task<Results<Ok<ListPage<AccessRow>>, ProblemHttpResult>> List(
         TenancyDbContext db, IUserDirectory users, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var result = await PageAsync(db, users, request, http, cancellationToken);
+        return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    /// <summary>One page of the access list exactly as the endpoint serves it (reports print it too).</summary>
+    internal static async Task<ListResult<AccessRow>> PageAsync(TenancyDbContext db, IUserDirectory users, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
         var result = await users.QueryListAsync(AccessList.Key, request, http, cancellationToken);
-        if (result.Problem is { } problem)
+        if (result.Problem is not null)
         {
-            return problem;
+            return result.Map(_ => (AccessRow)null!);
         }
         var ids = result.Rows.Select(u => u.Id).ToList();
         var access = await (from a in db.CompanyAccess.AsNoTracking()
@@ -89,7 +96,7 @@ internal static class AccessEndpoints
             .ToListAsync(cancellationToken);
         var byUser = access.GroupBy(a => a.UserId).ToDictionary(g => g.Key,
             g => (IReadOnlyList<AccessCompanySummary>)g.Select(a => new AccessCompanySummary(a.CompanyId, a.Code, a.AllBranches, a.Branches)).ToList());
-        return TypedResults.Ok(result.ToPage(u => new AccessRow(u.Id, u.DisplayName, u.Email, byUser.GetValueOrDefault(u.Id) ?? [])));
+        return result.Map(u => new AccessRow(u.Id, u.DisplayName, u.Email, byUser.GetValueOrDefault(u.Id) ?? []));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Get(

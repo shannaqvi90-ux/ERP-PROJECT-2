@@ -30,6 +30,10 @@ public sealed class RequestInputRecorder
     private readonly ConcurrentDictionary<string, byte> _query = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, byte> _cookies = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, byte> _enumerations = new(StringComparer.Ordinal);
+
+    /// <summary>True on this thread while the query feature parses the raw query string.</summary>
+    [ThreadStatic]
+    private static bool _parsingQuery;
     private int _requests;
 
     /// <summary>Reviewed product types that may enumerate request inputs (tests/Gates/request-input-enumeration.txt).</summary>
@@ -218,7 +222,20 @@ public sealed class RequestInputRecorder
         {
             get
             {
-                var current = inner.Query;
+                // The framework's query feature parses the raw query string into the collection the
+                // first time it is asked for: that read is the parse, not code choosing an input by
+                // a name it compares itself (every name read from the collection is recorded, and
+                // enumerating the collection is recorded as an enumeration).
+                IQueryCollection current;
+                _parsingQuery = true;
+                try
+                {
+                    current = inner.Query;
+                }
+                finally
+                {
+                    _parsingQuery = false;
+                }
                 if (!ReferenceEquals(current, _source))
                 {
                     _source = current;
@@ -349,7 +366,10 @@ public sealed class RequestInputRecorder
         {
             get
             {
-                recorder.Enumerated("raw query string");
+                if (!_parsingQuery)
+                {
+                    recorder.Enumerated("raw query string");
+                }
                 return inner.QueryString;
             }
             set => inner.QueryString = value;

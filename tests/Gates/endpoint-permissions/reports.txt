@@ -1,0 +1,8 @@
+# Reviewed endpoint-to-permission map of the reports module (G2). The report and list-printing
+# routes (/api/reports/run/<report key> and /api/reports/lists/<list key>) are not listed here:
+# each must declare exactly the permission of the report or list it prints, which the G2 gate
+# derives from the registrations (G2PermissionTests.ReportRoutePermission). Only the catalogue is
+# reviewed here.
+prefix /api/reports/catalog
+
+GET /api/reports/catalog reports.catalog.read # the titles, parameters and columns of the reports and lists the caller may run (filtered by their own permissions); no data

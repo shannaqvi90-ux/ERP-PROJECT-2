@@ -42,7 +42,7 @@ test.describe("companies, branches and the working company", () => {
     await page.keyboard.press("Control+KeyS");
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
     await expect(page.locator(".record-header h2")).toHaveText(`${code} · Al Noor Logistics LLC`);
-    await expect(page).toHaveURL(/[?&]open=[0-9a-f-]{36}/);
+    await expect(page).toHaveURL(/\/tenancy\/[a-z]+\/[0-9a-f-]{36}(\?|$)/);
 
     // The first branch: one line, Enter. Saving the new company put the focus on it.
     await expect(page.locator('input[name="branchNameEn"]')).toBeFocused();
@@ -159,7 +159,7 @@ test.describe("companies, branches and the working company", () => {
     await expect(listRows(page)).toHaveCount(1);
     await expect(listRows(page).first()).toContainText("ALN-DXB (2)");
     await listRows(page).first().click();
-    await expect(page).toHaveURL(/[?&]open=[0-9a-f-]{36}/);
+    await expect(page).toHaveURL(/\/tenancy\/[a-z]+\/[0-9a-f-]{36}(\?|$)/);
     const company = page.locator('.access-company[data-company="ALN-DXB"]');
     await expect(company.getByRole("checkbox").first()).toBeChecked();
     await expect(company.getByLabel("All branches")).not.toBeChecked();

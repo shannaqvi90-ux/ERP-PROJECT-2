@@ -151,17 +151,24 @@ internal static class CompanyEndpoints
     private static async Task<Results<Ok<ListPage<CompanyRow>>, ProblemHttpResult>> List(
         TenancyDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var result = await PageAsync(db, catalog, request, http, cancellationToken);
+        return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    /// <summary>One page of the companies list exactly as the endpoint serves it (reports print it too).</summary>
+    internal static async Task<ListResult<CompanyRow>> PageAsync(TenancyDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
         var result = await catalog.ListBinding<Company>(CompaniesList.Key).QueryAsync(ListRows(db.Companies), request, http, cancellationToken);
-        if (result.Problem is { } problem)
+        if (result.Problem is not null)
         {
-            return problem;
+            return result.Map(_ => (CompanyRow)null!);
         }
         var ids = result.Rows.Select(c => c.Id).ToList();
         var branches = await db.Branches.AsNoTracking().Where(b => ids.Contains(b.CompanyId))
             .GroupBy(b => b.CompanyId).Select(g => new { CompanyId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.CompanyId, g => g.Count, cancellationToken);
-        return TypedResults.Ok(result.ToPage(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
-            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version)));
+        return result.Map(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
+            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version));
     }
 
     /// <summary>The columns a list row needs, never the logo bytes (up to 512 KB a company): a

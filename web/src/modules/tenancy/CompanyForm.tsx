@@ -1,21 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../kernel/api";
+import { BooleanField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
+import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
+import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { loadAll } from "./records";
 import { companiesChanged, type BranchRow, type Company } from "./types";
-import {
-  CheckField,
-  emirates,
-  problemOf,
-  SelectField,
-  TextField,
-  useMonths,
-  useLocalName,
-  useScreenKeys,
-  type Emirate,
-  type FieldErrors,
-} from "./ui";
+import { emirates, problemOf, useMonths, useLocalName, type Emirate, type FieldErrors } from "./ui";
 
 type Draft = {
   code: string;
@@ -38,7 +30,6 @@ type Draft = {
   email: string;
   website: string;
   isActive: boolean;
-  version: number | null;
 };
 
 const blank: Draft = Object.freeze({
@@ -62,10 +53,10 @@ const blank: Draft = Object.freeze({
   email: "",
   website: "",
   isActive: true,
-  version: null,
 });
 
-function draftOf(c: Company): Draft {
+function draftOf(c: Company | null): Draft {
+  if (!c) return { ...blank };
   return {
     code: c.code,
     legalNameEn: c.legalNameEn,
@@ -87,7 +78,6 @@ function draftOf(c: Company): Draft {
     email: c.email ?? "",
     website: c.website ?? "",
     isActive: c.isActive,
-    version: c.version,
   };
 }
 
@@ -96,206 +86,133 @@ const optional = (value: string) => (value.trim() === "" ? null : value.trim());
 /** Currencies offered first; any ISO 4217 code is accepted. */
 const currencies = Object.freeze(["AED", "SAR", "OMR", "QAR", "BHD", "KWD", "USD", "EUR", "GBP", "INR", "PKR", "CNY"]);
 
-/** Create or edit one company; once saved, its branches can be added right below. */
-export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSaved: (id: string) => void; onClose: () => void }) {
+/** Create or edit one company (the shared record form: keys, unsaved changes, server errors,
+ * previous and next, print in English or Arabic); once saved, its branches can be added below. */
+export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; onSaved: (id: string) => void; onClose: () => void; nav?: RecordNavigation }) {
   const { t } = useI18n();
   const { can } = useSession();
   const months = useMonths();
-  const [company, setCompany] = useState<Company | null>(null);
-  const [draft, setDraft] = useState<Draft>(blank);
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [message, setMessage] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [justCreated, setJustCreated] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const name = useLocalName();
-  // The company record is shared by every branch: changing it needs every branch of it.
-  const editable = id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && company?.everyBranch !== false;
-
-  useEffect(() => {
-    if (id === null) return;
-    api<Company>("GET", `/api/tenancy/companies/${id}`)
-      .then((c) => {
-        setCompany(c);
-        setDraft(draftOf(c));
-      })
-      .catch((e) => setMessage(problemOf(e).message));
-  }, [id]);
-
-  const set = <K extends keyof Draft>(key: K) => (value: Draft[K]) => {
-    setDraft((d) => ({ ...d, [key]: value }));
-    setSaved(false);
-  };
-
-  const save = async (event?: FormEvent) => {
-    event?.preventDefault();
-    if (!editable || busy) return;
-    setBusy(true);
-    setMessage(null);
-    const body = {
-      code: draft.code.trim(),
-      legalNameEn: draft.legalNameEn,
-      legalNameAr: draft.legalNameAr,
-      tradeLicenceNumber: optional(draft.tradeLicenceNumber),
-      tradeLicenceAuthority: optional(draft.tradeLicenceAuthority),
-      taxRegistrationNumber: optional(draft.taxRegistrationNumber),
-      baseCurrency: draft.baseCurrency.trim().toUpperCase(),
-      fiscalYearStartMonth: Number.parseInt(draft.fiscalYearStartMonth, 10) || null,
-      fiscalYearStartDay: Number.parseInt(draft.fiscalYearStartDay, 10) || null,
-      addressLine1: optional(draft.addressLine1),
-      addressLine2: optional(draft.addressLine2),
-      city: optional(draft.city),
-      emirate: draft.emirate === "" ? null : draft.emirate,
-      poBox: optional(draft.poBox),
-      country: draft.country.trim().toUpperCase(),
-      addressAr: optional(draft.addressAr),
-      phone: optional(draft.phone),
-      email: optional(draft.email),
-      website: optional(draft.website),
-      isActive: draft.isActive,
-      version: draft.version,
-    };
-    try {
-      const result = id === null
-        ? await api<Company>("POST", "/api/tenancy/companies", body)
-        : await api<Company>("PUT", `/api/tenancy/companies/${id}`, body);
-      setCompany(result);
-      setDraft(draftOf(result));
-      setErrors({});
-      setSaved(true);
+  const [justCreated, setJustCreated] = useState(false);
+  // The company record is shared by every branch: changing it needs every branch of it (the
+  // server answers 403 companyNeedsEveryBranch otherwise), so the form is read-only with the reason.
+  const [everyBranch, setEveryBranch] = useState(true);
+  const form = useRecordForm<Company, Draft>({
+    load: id === null ? undefined : (signal) => api<Company>("GET", `/api/tenancy/companies/${id}`, undefined, { signal }).then((c) => {
+      setEveryBranch(c.everyBranch !== false);
+      return c;
+    }),
+    initial: draftOf,
+    canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch,
+    save: (draft, company) => {
+      const body = {
+        code: draft.code.trim(),
+        legalNameEn: draft.legalNameEn,
+        legalNameAr: draft.legalNameAr,
+        tradeLicenceNumber: optional(draft.tradeLicenceNumber),
+        tradeLicenceAuthority: optional(draft.tradeLicenceAuthority),
+        taxRegistrationNumber: optional(draft.taxRegistrationNumber),
+        baseCurrency: draft.baseCurrency.trim().toUpperCase(),
+        fiscalYearStartMonth: Number.parseInt(draft.fiscalYearStartMonth, 10) || null,
+        fiscalYearStartDay: Number.parseInt(draft.fiscalYearStartDay, 10) || null,
+        addressLine1: optional(draft.addressLine1),
+        addressLine2: optional(draft.addressLine2),
+        city: optional(draft.city),
+        emirate: draft.emirate === "" ? null : draft.emirate,
+        poBox: optional(draft.poBox),
+        country: draft.country.trim().toUpperCase(),
+        addressAr: optional(draft.addressAr),
+        phone: optional(draft.phone),
+        email: optional(draft.email),
+        website: optional(draft.website),
+        isActive: draft.isActive,
+        version: company?.version ?? null,
+      };
+      return company === null
+        ? api<Company>("POST", "/api/tenancy/companies", body)
+        : api<Company>("PUT", `/api/tenancy/companies/${company.id}`, body);
+    },
+    onSaved: (saved, created) => {
       // A new company's next step is its first branch: the branch line takes the focus.
-      setJustCreated(id === null);
-      onSaved(result.id);
+      setJustCreated(created);
+      onSaved(saved.id);
       window.dispatchEvent(new Event(companiesChanged));
-    } catch (error) {
-      const problem = problemOf(error);
-      setErrors(problem.fields);
-      setMessage(problem.message);
-      const first = Object.keys(problem.fields)[0];
-      formRef.current?.querySelector<HTMLElement>(`[data-field="${first}"] input, [data-field="${first}"] select, [data-field="${first}"] textarea`)?.focus();
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+  }, id);
+  const company = form.record;
+  const bind = form.bind;
 
-  useScreenKeys({ onSave: () => void save(), onClose });
-
-  const common = { errors };
   return (
-    <div className="record">
-      <form ref={formRef} className="record-form" onSubmit={save} noValidate aria-label={t("tenancy.company.form")}>
-        <div className="record-header">
-          <h2>{id === null && !company ? t("tenancy.company.new") : `${company?.code ?? ""} · ${company ? name(company.legalNameEn, company.legalNameAr) : ""}`}</h2>
-          <div className="record-actions">
-            {editable && (
-              <button type="submit" className="button primary" disabled={busy} title={t("tenancy.common.saveHint")} aria-keyshortcuts="Control+S Control+Enter">
-                {busy ? t("tenancy.common.saving") : t("tenancy.common.save")}
-              </button>
-            )}
-            <button type="button" className="button" onClick={onClose} title={t("tenancy.common.closeHint")} aria-keyshortcuts="Escape">
-              {t("tenancy.common.close")}
-            </button>
-          </div>
-        </div>
-        {message && (
-          <div className="alert" role="alert">
-            {message}
-          </div>
-        )}
-        {saved && (
-          <div className="notice" role="status">
-            {t("tenancy.common.saved")}
-          </div>
-        )}
-        {company?.everyBranch === false && can("tenancy.companies.update") && (
-          <div className="notice" data-testid="company-some-branches">
-            {t("tenancy.company.someBranchesOnly")}
-          </div>
-        )}
-        <fieldset disabled={!editable}>
-          <legend>{t("tenancy.company.general")}</legend>
-          <div className="form-grid">
-            <TextField name="legalNameEn" label={t("tenancy.company.legalNameEn")} value={draft.legalNameEn} onChange={set("legalNameEn")} {...common} dir="ltr" maxLength={200} autoFocus={id === null} />
-            <TextField name="legalNameAr" label={t("tenancy.company.legalNameAr")} value={draft.legalNameAr} onChange={set("legalNameAr")} {...common} dir="rtl" maxLength={200} hint={draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
-            <TextField name="code" label={t("tenancy.company.code")} value={draft.code} onChange={set("code")} {...common} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
-            <CheckField name="isActive" label={t("tenancy.common.active")} checked={draft.isActive} onChange={set("isActive")} />
-          </div>
-        </fieldset>
-        <fieldset disabled={!editable}>
-          <legend>{t("tenancy.company.registration")}</legend>
-          <div className="form-grid">
-            <TextField name="tradeLicenceNumber" label={t("tenancy.company.tradeLicenceNumber")} value={draft.tradeLicenceNumber} onChange={set("tradeLicenceNumber")} {...common} dir="ltr" maxLength={50} />
-            <TextField name="tradeLicenceAuthority" label={t("tenancy.company.tradeLicenceAuthority")} value={draft.tradeLicenceAuthority} onChange={set("tradeLicenceAuthority")} {...common} maxLength={100} />
-            <TextField name="taxRegistrationNumber" label={t("tenancy.company.taxRegistrationNumber")} value={draft.taxRegistrationNumber} onChange={set("taxRegistrationNumber")} {...common} dir="ltr" inputMode="numeric" maxLength={20} />
-          </div>
-        </fieldset>
-        <fieldset disabled={!editable}>
-          <legend>{t("tenancy.company.accounting")}</legend>
-          <div className="form-grid">
-            <TextField name="baseCurrency" label={t("tenancy.company.baseCurrency")} value={draft.baseCurrency} onChange={set("baseCurrency")} {...common} dir="ltr" maxLength={3} upper list="tenancy-currencies" hint={t("tenancy.company.baseCurrencyHint")} />
-            <datalist id="tenancy-currencies">
-              {currencies.map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
-            <SelectField name="fiscalYearStartMonth" label={t("tenancy.company.fiscalYearStartMonth")} value={draft.fiscalYearStartMonth} options={months} onChange={(v) => set("fiscalYearStartMonth")(v)} {...common} />
-            <TextField name="fiscalYearStartDay" label={t("tenancy.company.fiscalYearStartDay")} value={draft.fiscalYearStartDay} onChange={set("fiscalYearStartDay")} {...common} dir="ltr" inputMode="numeric" maxLength={2} />
-          </div>
-        </fieldset>
-        <AddressFields draft={draft} set={set} errors={errors} disabled={!editable} />
-        <fieldset disabled={!editable}>
-          <legend>{t("tenancy.company.contact")}</legend>
-          <div className="form-grid">
-            <TextField name="phone" label={t("tenancy.address.phone")} value={draft.phone} onChange={set("phone")} {...common} dir="ltr" type="tel" maxLength={30} />
-            <TextField name="email" label={t("tenancy.address.email")} value={draft.email} onChange={set("email")} {...common} dir="ltr" type="email" maxLength={254} />
-            <TextField name="website" label={t("tenancy.company.website")} value={draft.website} onChange={set("website")} {...common} dir="ltr" type="url" maxLength={200} />
-          </div>
-        </fieldset>
-      </form>
-      {company && <CompanyLogo company={company} editable={can("tenancy.companies.update") && company.everyBranch !== false} onChange={setCompany} />}
-      {company && can("tenancy.branches.read") && (
-        <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
-      )}
-    </div>
+    <RecordForm
+      form={form}
+      label={t("tenancy.company.form")}
+      title={company ? `${company.code} · ${name(company.legalNameEn, company.legalNameAr)}` : t("tenancy.company.new")}
+      onClose={onClose}
+      nav={nav}
+      readOnlyReason={company && !everyBranch && can("tenancy.companies.update") ? t("tenancy.company.someBranchesOnly") : undefined}
+      document={company ? { report: "tenancy.companyProfile", parameter: "company", id: company.id } : undefined}
+      after={
+        company && (
+          <>
+            <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt} />
+            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />}
+          </>
+        )
+      }
+    >
+      <FormSection title={t("tenancy.company.general")}>
+        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
+        <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+          hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
+        <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
+        <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
+      </FormSection>
+      <FormSection title={t("tenancy.company.registration")}>
+        <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />
+        <TextField field={bind("tradeLicenceAuthority")} label={t("tenancy.company.tradeLicenceAuthority")} maxLength={100} />
+        <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={20} />
+      </FormSection>
+      <FormSection title={t("tenancy.company.accounting")}>
+        <TextField field={bind("baseCurrency")} label={t("tenancy.company.baseCurrency")} dir="ltr" maxLength={3} upper list="tenancy-currencies" hint={t("tenancy.company.baseCurrencyHint")} />
+        <datalist id="tenancy-currencies">
+          {currencies.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
+        <SelectField field={bind("fiscalYearStartMonth")} label={t("tenancy.company.fiscalYearStartMonth")} options={months} />
+        <TextField field={bind("fiscalYearStartDay")} label={t("tenancy.company.fiscalYearStartDay")} dir="ltr" inputMode="numeric" maxLength={2} />
+      </FormSection>
+      <AddressFields form={form} />
+      <FormSection title={t("tenancy.company.contact")}>
+        <TextField field={bind("phone")} label={t("tenancy.address.phone")} dir="ltr" type="tel" maxLength={30} />
+        <TextField field={bind("email")} label={t("tenancy.address.email")} dir="ltr" type="email" maxLength={254} />
+        <TextField field={bind("website")} label={t("tenancy.company.website")} dir="ltr" type="url" maxLength={200} />
+      </FormSection>
+    </RecordForm>
   );
 }
 
+type AddressDraft = { addressLine1: string; addressLine2: string; city: string; emirate: Emirate | ""; poBox: string; country: string; addressAr: string };
+
 /** Address fields shared by companies and branches. */
-export function AddressFields<D extends { addressLine1: string; addressLine2: string; city: string; emirate: Emirate | ""; poBox: string; country: string; addressAr: string }>({
-  draft,
-  set,
-  errors,
-  disabled,
-}: {
-  draft: D;
-  set: <K extends keyof D>(key: K) => (value: D[K]) => void;
-  errors: FieldErrors;
-  disabled?: boolean;
-}) {
+export function AddressFields<R, D extends AddressDraft>({ form }: { form: RecordFormState<R, D> }) {
   const { t } = useI18n();
-  const common = { errors };
+  const bind = form.bind as unknown as RecordFormState<R, AddressDraft>["bind"];
   return (
-    <fieldset disabled={disabled}>
-      <legend>{t("tenancy.address.title")}</legend>
-      <div className="form-grid">
-        <TextField name="addressLine1" label={t("tenancy.address.line1")} value={draft.addressLine1} onChange={set("addressLine1") as (v: string) => void} {...common} maxLength={200} />
-        <TextField name="addressLine2" label={t("tenancy.address.line2")} value={draft.addressLine2} onChange={set("addressLine2") as (v: string) => void} {...common} maxLength={200} />
-        <TextField name="city" label={t("tenancy.address.city")} value={draft.city} onChange={set("city") as (v: string) => void} {...common} maxLength={100} />
-        <SelectField
-          name="emirate"
-          label={t("tenancy.address.emirate")}
-          value={draft.emirate}
-          empty={t("tenancy.address.noEmirate")}
-          options={emirates.map((e) => ({ value: e, label: t(`tenancy.emirate.${e}`) }))}
-          onChange={set("emirate") as (v: Emirate | "") => void}
-          {...common}
-        />
-        <TextField name="poBox" label={t("tenancy.address.poBox")} value={draft.poBox} onChange={set("poBox") as (v: string) => void} {...common} dir="ltr" maxLength={20} />
-        <TextField name="country" label={t("tenancy.address.country")} value={draft.country} onChange={set("country") as (v: string) => void} {...common} dir="ltr" maxLength={2} upper hint={t("tenancy.address.countryHint")} />
-        <TextField name="addressAr" label={t("tenancy.address.arabic")} value={draft.addressAr} onChange={set("addressAr") as (v: string) => void} {...common} dir="rtl" maxLength={400} multiline wide />
-      </div>
-    </fieldset>
+    <FormSection title={t("tenancy.address.title")}>
+      <TextField field={bind("addressLine1")} label={t("tenancy.address.line1")} maxLength={200} />
+      <TextField field={bind("addressLine2")} label={t("tenancy.address.line2")} maxLength={200} />
+      <TextField field={bind("city")} label={t("tenancy.address.city")} maxLength={100} />
+      <SelectField
+        field={bind("emirate")}
+        label={t("tenancy.address.emirate")}
+        empty={t("tenancy.address.noEmirate")}
+        options={emirates.map((e) => ({ value: e, label: t(`tenancy.emirate.${e}`) }))}
+      />
+      <TextField field={bind("poBox")} label={t("tenancy.address.poBox")} dir="ltr" maxLength={20} />
+      <TextField field={bind("country")} label={t("tenancy.address.country")} dir="ltr" maxLength={2} upper hint={t("tenancy.address.countryHint")} />
+      <TextAreaField field={bind("addressAr")} label={t("tenancy.address.arabic")} dir="rtl" maxLength={400} />
+    </FormSection>
   );
 }
 

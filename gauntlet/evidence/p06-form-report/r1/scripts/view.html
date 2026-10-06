@@ -1,0 +1,12 @@
+<!doctype html><html><body style="margin:0;background:#888"><div id=out></div>
+<script type="module">
+import * as pdfjs from '/node_modules/pdfjs-dist/build/pdf.mjs';
+pdfjs.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
+const file = new URLSearchParams(location.search).get('f');
+const doc = await pdfjs.getDocument({ url: '/files/' + file }).promise;
+const page = await doc.getPage(Number(new URLSearchParams(location.search).get('p') || 1));
+const vp = page.getViewport({ scale: 1.6 });
+const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height; document.getElementById('out').appendChild(c);
+await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+document.title = 'done ' + doc.numPages;
+</script></body></html>

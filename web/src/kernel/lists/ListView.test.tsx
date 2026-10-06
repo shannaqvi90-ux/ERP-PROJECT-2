@@ -114,9 +114,28 @@ describe("list view", () => {
     expect(calls.some((c) => c.url.includes("search=shamma+romaithi"))).toBe(true);
     const panel = v.container.querySelector("[role=region].list-record");
     expect(panel?.textContent).toContain("Shamma Waleed Al Romaithi");
-    expect(window.location.search).toContain("open=");
+    // The open record has its own address: the screen's path and the record's id.
+    expect(window.location.pathname).toMatch(/^\/identity\/users\/[0-9a-f-]{36}$/);
+    expect(window.location.search).toBe("?q=shamma+romaithi");
     await key(panel!, "Escape");
     expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
+  });
+
+  it("closes an open record with Escape wherever the focus is on the page", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "shamma romaithi");
+    await key(search, "Enter");
+    await wait(250);
+    await settle();
+    expect(v.container.querySelector("[role=region].list-record")).not.toBeNull();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await key(document.body, "Escape");
+    expect(v.container.querySelector(".list-record")).toBeNull();
+    expect(window.location.pathname).toBe("/identity/users");
   });
 
   it("moves through rows with the keyboard, selects with Space and copies the selection", async () => {

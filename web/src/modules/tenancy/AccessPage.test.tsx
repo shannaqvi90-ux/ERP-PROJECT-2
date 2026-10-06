@@ -105,10 +105,11 @@ describe("company access screen", () => {
       view!.container.querySelector<HTMLFormElement>(".record-form")!.requestSubmit();
       await new Promise((r) => setTimeout(r, 0));
     });
-    const alert = view.container.querySelector('.record-form [role="alert"]')!;
-    expect(alert.textContent).toContain("Another administrator changed this user's access after you opened it.");
+    const alerts = [...view.container.querySelectorAll('.record-form [role="alert"]')];
+    expect(alerts.map((a) => a.textContent).join(" ")).toContain("Another administrator changed this user's access after you opened it.");
     expect(view.container.querySelector('[data-company="AN-DXB"] input[type="checkbox"]')!.matches(":checked")).toBe(true);
-    const reload = [...alert.querySelectorAll("button")].find((b) => b.textContent === "Reload")!;
+    const reload = alerts.flatMap((a) => [...a.querySelectorAll("button")]).find((b) => b.textContent === "Show the latest version")!;
+    expect(reload).toBeTruthy();
     await act(async () => {
       reload.click();
       await new Promise((r) => setTimeout(r, 0));
