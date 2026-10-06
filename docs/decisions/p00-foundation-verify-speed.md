@@ -159,3 +159,28 @@ reason: a start-only reading would have judged that run. Like every maximum it m
 - **node_modules cached between runs**: `npm ci` takes seconds off the critical path now that the
   web stage runs beside the .NET stage, and a shared cache volume written by two runs at once
   could corrupt.
+
+## Round 6 (2026-10-06): measured on the owner's PC, and xUnit's launcher under extreme load
+
+Measured: `./erp verify` of the round-6 merge (`1a12139` plus the decision records) on the owner's
+PC (16 threads, 24 GB for WSL) took **4,998 s** wall time, with four other agents' `./erp verify`
+runs and builds alongside it: load average 92 when it started, 263 at its peak, 107-187 during
+the .NET stage. The longest work was the planted HTTP-attack self-test (1 h 6 min in its own
+process) and the main test process (1.06 h); the web stage, the clean stack and the end-to-end
+tests (63 passed, 3.4 min) finished inside that time. The last green run on the same machine with
+less company took 977 s (2026-10-05). Nothing was removed or narrowed to shorten it; the wall
+time follows the machine's load (see above), and `verify.cpuSeconds` judges the work itself.
+
+That run failed in two of the four .NET test processes before any of their tests ran:
+`Catastrophic failure: System.InvalidOperationException: Test process did not return valid JSON`.
+xUnit v3's launcher asks the test assembly to describe itself in a child process and parses the
+child's standard output; xUnit's own exit watchdog (`ConsoleRunner.Run`) prints "Waiting 10
+seconds for foreground threads to exit..." to that output when the child has not exited one second
+after answering, which at load 263 it had not. No product or test code runs in that child.
+
+`build/verify-inside.sh` now runs a .NET test process again (at most twice more) only when its
+output has that launcher message and no test of the attempt failed; a failing test is never run
+again, every attempt's output stays in the stage's log, and the stopped attempt's result files are
+removed so the ratchet counts each test once. Checked with a stand-in `dotnet` (launcher failure
+then pass: passes on the second attempt with one result file; launcher failure plus a failed test:
+fails at once; launcher failure three times: fails).
