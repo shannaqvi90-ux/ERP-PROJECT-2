@@ -89,39 +89,12 @@ case "$stage" in
     # and the three long self-tests of the planted module, each in a process of its own. Their
     # planted state is static, so in one process they would have to take turns (they do, in a
     # plain dotnet test); separate processes keep it apart. Every test still runs exactly once.
-    #
-    # xUnit v3's launcher asks each test assembly for its description in a child process and reads
-    # the answer from the child's standard output. If the child takes over a second to exit (seen
-    # at load average 260 on 16 threads), xUnit's own exit watchdog prints a line after the answer,
-    # the answer no longer parses, and the whole assembly is reported as a catastrophic failure
-    # without running a test ("Test process did not return valid JSON"). Only that case runs again
-    # (at most twice more), and only when no test of the attempt failed: a failing test is never
-    # run again. Every attempt's output stays in the log; the stopped attempt's result files (this
-    # process's own prefix) are removed so every test is counted once.
     dotnet_test() {
       local name="$1"
       shift
-      local attempt log="$out/dotnet-$name.log" attempt_log="$out/dotnet-$name.attempt.log"
-      : >"$log"
-      for attempt in 1 2 3; do
-        if dotnet test "$@" -c Release --no-build --verbosity quiet \
-            --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
-            >"$attempt_log" 2>&1; then
-          cat "$attempt_log" >>"$log"
-          rm -f "$attempt_log"
-          return 0
-        fi
-        cat "$attempt_log" >>"$log"
-        if [[ $attempt -lt 3 ]] \
-            && grep -q 'Catastrophic failure: System.InvalidOperationException: Test process did not return valid JSON' "$attempt_log" \
-            && ! grep -Eq '^[[:space:]]+Failed [A-Za-z_]' "$attempt_log"; then
-          rm -f "$out/trx/${name}_"*.trx
-          printf '\n== %s: attempt %s stopped in xUnit'"'"'s launcher (a test assembly answered too slowly to describe itself; no test failed); running it again\n\n' "$name" "$attempt" >>"$log"
-          continue
-        fi
-        rm -f "$attempt_log"
-        return 1
-      done
+      dotnet test "$@" -c Release --no-build --verbosity quiet \
+          --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
+          >"$out/dotnet-$name.log" 2>&1
     }
     selftests=(self-http self-company self-noninterference)
     exclude="Load!=Timing"
