@@ -411,9 +411,13 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         return null;
     }
 
+    /// <summary>The letterhead: the working company's legal name to a caller who may see companies
+    /// (their records or the workplace switcher), otherwise the workspace's name (every signed-in
+    /// user's session shows it).</summary>
     private async Task<string> IssuerAsync(string language, CancellationToken cancellationToken)
     {
-        if (await companies.GetWorkingAsync(cancellationToken) is { } company)
+        if ((caller.Has(TenancyPermissions.CompaniesRead) || caller.Has(TenancyPermissions.WorkplaceRead)) &&
+            await companies.GetWorkingAsync(cancellationToken) is { } company)
         {
             return new LocalText(company.LegalNameEn, company.LegalNameAr).For(language);
         }

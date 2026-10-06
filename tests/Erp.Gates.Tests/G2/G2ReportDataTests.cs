@@ -371,9 +371,9 @@ public static class ReportDataCheck
         }
     }
 
-    /// <summary>What a document prints of data: its subject, the parameters' and facts' values,
-    /// group labels, cells and totals. Not its title, labels or fixed texts (the product's own
-    /// words), nor the letterhead (the caller's own company and name, shown by the shell).</summary>
+    /// <summary>What a document prints of data: its letterhead (the issuing company), subject, the
+    /// parameters' and facts' values, group labels, cells and totals. Not its title, labels or fixed
+    /// texts (the product's own words), nor who printed it (the caller's own name).</summary>
     private static string PrintedText(JsonElement document)
     {
         var text = new StringBuilder();
@@ -381,6 +381,7 @@ public static class ReportDataCheck
         {
             if (e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String) text.Append(v.GetString()).Append('\n');
         }
+        Add(document, "issuer");
         Add(document, "subject");
         foreach (var section in new[] { "parameters", "facts" })
         {
