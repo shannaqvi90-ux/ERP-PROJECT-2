@@ -67,6 +67,18 @@ tables need the gates.
    copy of the sources and requires the gate to fail on each; `./erp verify` runs it. The gate
    found a real fault on its first run: the company form's address fields stayed editable for a
    user without `tenancy.companies.update` (the fieldset was never disabled); fixed.
+5. **On the shared record form (after p06 round 1).** The tenancy forms now render through the
+   kernel's `useRecordForm`/`RecordForm`. The plants were rewritten against that code, and the
+   self-test gained critic p06 round 1's plant P3b (the company form's `canEdit: true`, which
+   passed all 175 web unit tests then because this gate was not yet on the integration branch)
+   and the same fault on the branch, access and workspace forms, plus the access form's boxes left
+   changeable: seventeen plants. Two plants that fit the old code were no longer faults on the new
+   one and were made real rather than dropped: a field inside a read-only `FormSection` is in a
+   disabled fieldset, so the address plant moves the fields out of the section as well as binding
+   them editable; and the workspace form is drawn only for `tenancy.tenant.update`, so its P3b
+   also draws it for everyone. The "only some branches" reason is now the form's read-only reason
+   (`record-read-only`), and a stale access save (409 `concurrency`) shows the form's
+   "show the latest version" with the access-specific explanation.
 
 Each of the critic's product plants was re-applied to a copy of the product and run against the
 gates that must catch it (P3: the grant gate; C3: the branch attack; C4: the company attack):
