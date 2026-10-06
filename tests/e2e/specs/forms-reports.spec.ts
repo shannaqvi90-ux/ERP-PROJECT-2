@@ -104,12 +104,25 @@ test.describe("record forms and printed documents", () => {
     await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
     await page.goto("/identity/users");
     await expect(listRows(page).first()).toBeVisible();
-    await page.getByRole("button", { name: "Print or export" }).click();
-    const csvHref = await page.getByRole("menuitem", { name: "CSV file" }).getAttribute("href");
+    // Alt+Shift+R opens the menu from the keyboard (Alt+R prints an open record), and says so.
+    const menuButton = page.getByRole("button", { name: "Print or export" });
+    await expect(menuButton).toHaveAttribute("aria-keyshortcuts", "Alt+Shift+R");
+    await page.keyboard.press("Alt+Shift+KeyR");
+    await expect(page.getByRole("menuitem", { name: "PDF in English" })).toBeVisible();
+    const csvHref = await page.getByRole("menuitem", { name: "CSV in English" }).getAttribute("href");
     expect(csvHref).toMatch(/^\/api\/reports\/lists\/identity\.users\?/);
     const csv = await page.request.get(csvHref!);
     expect(csv.status()).toBe(200);
-    expect(await csv.text()).toContain("admin@alnoor.example");
+    const csvText = await csv.text();
+    expect(csvText).toContain("admin@alnoor.example");
+    // Roles by name (the administrator may read roles), sign-ins as the wall clock to the second.
+    expect(csvText).toMatch(/Administrator/);
+    expect(csvText).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d+/);
+    // CSV and Excel come in Arabic too: Arabic column titles.
+    const arabicCsvHref = await page.getByRole("menuitem", { name: "CSV in Arabic" }).getAttribute("href");
+    expect(arabicCsvHref).toContain("language=ar");
+    expect(await (await page.request.get(arabicCsvHref!)).text()).toContain("البريد الإلكتروني");
+    expect(await page.getByRole("menuitem", { name: "Excel in Arabic" }).getAttribute("href")).toContain("format=xlsx&language=ar");
     const pdf = await page.request.get((await page.getByRole("menuitem", { name: "PDF in Arabic" }).getAttribute("href"))!);
     expect(pdf.headers()["content-type"]).toBe("application/pdf");
   });

@@ -8,8 +8,8 @@ namespace Erp.Modules.Reports;
 
 /// <summary>
 /// A report's rows as CSV (UTF-8 with a byte-order mark, so spreadsheet programs read Arabic
-/// correctly; raw values: decimals with a dot, ISO dates) and as an XLSX workbook (numbers and
-/// dates as real numbers with formats, text as text, the sheet right to left for an Arabic
+/// correctly; raw values: decimals with a dot, ISO dates, moments as the document's wall clock to
+/// the second) and as an XLSX workbook (numbers, dates and moments as real numbers with formats, text as text, the sheet right to left for an Arabic
 /// document, column titles in the document's language). Grouped reports carry the group as
 /// their first column. Written by hand from the Office Open XML parts (no dependency).
 /// </summary>
@@ -47,6 +47,9 @@ public static class Exports
     private static string CsvValue(ReportCell cell, ReportDocumentColumn column) => cell.Value switch
     {
         null => "",
+        // A moment as the document's wall clock to the second ("2026-10-05 22:54:59", in the
+        // document's time zone, as the PDF prints it), which spreadsheet programs read as a date and time.
+        string s when column.Type == "dateTime" && WallClock(s) is { } local => local.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
         bool or string when column.Type is "boolean" or "choice" => cell.Text,
         string s => s,
         long or int => Convert.ToString(cell.Value, CultureInfo.InvariantCulture)!,
@@ -167,11 +170,20 @@ public static class Exports
                 return $"<c r=\"{reference}\" s=\"{styles.For($"#,##0.{new string('0', Math.Max(2, digits))} \"{code}\"")}\"><v>{text}</v></c>";
             case "date" when cell.Value is string iso && DateOnly.TryParseExact(iso, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date):
                 return $"<c r=\"{reference}\" s=\"{styles.For("yyyy-mm-dd")}\"><v>{Serial(date.ToDateTime(TimeOnly.MinValue))}</v></c>";
+            case "dateTime" when cell.Value is string instant && WallClock(instant) is { } local:
+                return $"<c r=\"{reference}\" s=\"{styles.For("yyyy-mm-dd hh:mm")}\"><v>{Serial(local)}</v></c>";
             case "boolean" or "choice" or "dateTime" or "reference" or "text":
             default:
                 return TextCell(reference, cell.Text, 0);
         }
     }
+
+    /// <summary>The wall-clock time of a document's moment (its raw value carries the document's
+    /// time zone offset), to the second.</summary>
+    private static DateTime? WallClock(string value) =>
+        DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var instant)
+            ? new DateTime(instant.DateTime.Ticks - instant.DateTime.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Unspecified)
+            : null;
 
     private static string Serial(DateTime value) =>
         ((decimal)(value - new DateTime(1899, 12, 30)).Ticks / TimeSpan.TicksPerDay).ToString("0.########", CultureInfo.InvariantCulture);

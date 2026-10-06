@@ -27,7 +27,7 @@ internal static class UsersList
                     new ListColumn("isActive", "identity.users.status", ListColumnType.Boolean, Filterable: true, Groupable: true),
                     new ListColumn("lastSignInAt", "identity.users.lastSignIn", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     // Shown from each row's role ids (names come from the roles list); not sorted or filtered.
-                    new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice),
+                    new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice, ValuesFrom: Roles.RolesList.Key),
                     new ListColumn("createdAt", "identity.users.created", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
                 ],
                 SearchFields: ["displayName", "email"],

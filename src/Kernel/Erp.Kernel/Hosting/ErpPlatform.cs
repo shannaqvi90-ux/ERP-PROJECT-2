@@ -283,6 +283,10 @@ public static class ErpPlatform
             {
                 problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
             }
+            foreach (var column in list.Columns.Where(c => c.ValuesFrom is not null && catalog.FindList(c.ValuesFrom) is null))
+            {
+                problems.Add($"list '{list.Key}': column '{column.Key}' takes its values from '{column.ValuesFrom}', which is not a registered list");
+            }
             if (catalog.ListBindings.All(b => b.Definition.Key != list.Key) &&
                 catalog.Modules.Select(m => m.ListsServedBy.GetValueOrDefault(list.Key)).FirstOrDefault(s => s is not null) is { } servedBy)
             {

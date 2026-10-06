@@ -112,6 +112,53 @@ describe("companies screen", () => {
     expect(branch.body).toMatchObject({ companyId: "c9", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", isActive: true });
   });
 
+  it("shows a branch added from the keyboard in the company's branch table, even when the first read of the table answers last (lead, p06 round 2)", async () => {
+    // The first read of the branch table (made when the form opens) answers only after the read
+    // that follows the new branch: an answer arriving last must not put the stale, empty table back.
+    let releaseFirst: () => void = () => {};
+    let branchReads = 0;
+    const headOffice = { id: "b9", companyId: "c9", companyCode: "AN-AJM", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", city: null, emirate: null, isActive: true, version: 1 };
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
+      if (url.startsWith("/api/tenancy/branches?")) {
+        branchReads++;
+        if (branchReads === 1) {
+          return new Promise((resolve) => {
+            releaseFirst = () => resolve({ status: 200, body: { items: [], total: 0, next: null } });
+          });
+        }
+        return { status: 200, body: { items: [headOffice], total: 1, next: null } };
+      }
+      if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: headOffice };
+      return { status: 404, body: {} };
+    });
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    view = await render(<App language="en" />);
+    await settle();
+    const nameEn = view.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]')!;
+    nameEn.focus();
+    setInput(nameEn, "Head office");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="branchNameAr"]')!, "المكتب الرئيسي");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="branchCode"]')!, "hq");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await settle();
+    const rows = () => [...view!.container.querySelectorAll('section[aria-label="Branches"] tbody tr')].map((r) => r.textContent ?? "");
+    expect(rows().some((r) => r.includes("Head office"))).toBe(true);
+    await act(async () => {
+      releaseFirst();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await settle();
+    expect(rows().some((r) => r.includes("Head office"))).toBe(true);
+  });
+
   it("saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces both on the save button", async () => {
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session };

@@ -93,8 +93,11 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     }
 
     /// <summary>A list's document: the rows a list query selects, with the list's own labels.</summary>
+    /// <param name="names">For a choice column whose values are other records' ids (<see cref="ListColumn.ValuesFrom"/>):
+    /// those records' names by id, when the caller may read them; without them the document shows how many there are.</param>
     public async Task<ReportDocument> BuildListAsync(ListDefinition list, IReadOnlyList<JsonElement> rows, int matchCount, ListRequest request,
-        IReadOnlyList<ListColumn> columns, string? groupBy, ReportOptions options, CancellationToken cancellationToken)
+        IReadOnlyList<ListColumn> columns, string? groupBy, ReportOptions options, CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names = null)
     {
         var f = new ReportFormatter(options.Language, options.Numerals, options.TimeZone);
         var parameters = new List<ReportDocumentFact>();
@@ -124,7 +127,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             var group = list.Column(groupBy)!;
             specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices));
         }
-        var typed = rows.Select(row => ListRow(list, row, specs, f.Language)).ToList();
+        var typed = rows.Select(row => ListRow(list, row, specs, f.Language, names)).ToList();
         var shown = specs.Where(s => columns.Any(c => c.Key == s.Key)).ToList();
         return await ComposeAsync(list.Key, strings.Get(list.LabelKey, f.Language), null, parameters, [], shown, typed, groupBy,
             matchCount, matchCount > rows.Count, f, cancellationToken, specs);
@@ -272,7 +275,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             case DateOnly date:
                 return new ReportCell(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), f.Date(date));
             case DateTimeOffset instant:
-                return new ReportCell(instant.ToString("O", CultureInfo.InvariantCulture), f.DateTime(instant));
+                // The raw value in the document's time zone, to the second (its offset says which zone).
+                var local = TimeZoneInfo.ConvertTime(instant, f.TimeZone);
+                local = local.AddTicks(-(local.Ticks % TimeSpan.TicksPerSecond));
+                return new ReportCell(local.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture), f.DateTime(instant));
             case IReadOnlyList<string> many:
                 return new ReportCell(many, f.Integer(many.Count));
             case string s when column.Type == ListColumnType.Choice:
@@ -305,7 +311,8 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     private static string TypeName(ListColumnType type) => JsonNamingPolicy.CamelCase.ConvertName(type.ToString());
 
     /// <summary>The typed values of a list row (as the list's endpoint returns it) for the columns.</summary>
-    private static Dictionary<string, object?> ListRow(ListDefinition list, JsonElement row, IReadOnlyList<ColumnSpec> columns, string language)
+    private static Dictionary<string, object?> ListRow(ListDefinition list, JsonElement row, IReadOnlyList<ColumnSpec> columns, string language,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names)
     {
         var values = new Dictionary<string, object?>(StringComparer.Ordinal);
         foreach (var spec in columns)
@@ -328,6 +335,12 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 ListColumnType.Date => DateOnly.ParseExact(element.GetString()![..10], "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 ListColumnType.DateTime => DateTimeOffset.Parse(element.GetString()!, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 ListColumnType.Boolean => element.ValueKind == JsonValueKind.True,
+                // Other records' ids (a user's roles): their names, in the document's language and
+                // alphabetical order, when the caller may read them; otherwise the ids (printed as a count).
+                ListColumnType.Choice when element.ValueKind == JsonValueKind.Array && names?.GetValueOrDefault(column.Key) is { } known =>
+                    string.Join(language == Languages.Arabic ? "\u060C " : ", ", element.EnumerateArray()
+                        .Select(e => known.GetValueOrDefault(e.ToString())?.For(language)).OfType<string>()
+                        .Order(StringComparer.Create(CultureInfo.GetCultureInfo(language == Languages.Arabic ? "ar-AE" : "en-AE"), ignoreCase: true))),
                 ListColumnType.Choice when element.ValueKind == JsonValueKind.Array => element.EnumerateArray().Select(e => e.ToString()).ToList(),
                 ListColumnType.Reference when column.LabelField is { } labelField && row.TryGetProperty(labelField, out var label) && label.ValueKind == JsonValueKind.String => label.GetString(),
                 _ => element.ValueKind == JsonValueKind.String ? element.GetString() : element.ToString(),

@@ -215,8 +215,58 @@ internal static class ReportEndpoints
             after = page.Next;
         }
         var shown = new ListRequest { Search = Single(query, "search"), Filter = Single(query, "filter"), Sort = Single(query, "sort") };
-        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken);
+        var recordNames = await NamesAsync(list, columns, http, json, cancellationToken);
+        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken, recordNames);
         return Output(http, document, common, pdf);
+    }
+
+    /// <summary>Most records of another list read to name the ids a printed column holds.</summary>
+    private const int MaxNamedRecords = 5000;
+
+    /// <summary>For each printed column whose values are another list's record ids (a user's roles):
+    /// those records' names by id, read through that list's own reader (row-level security, the
+    /// company scope) and only when the caller holds that list's permission.</summary>
+    private static async Task<IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>> NamesAsync(ListDefinition list, IReadOnlyList<ListColumn> columns,
+        HttpContext http, JsonSerializerOptions json, CancellationToken cancellationToken)
+    {
+        var catalog = http.RequestServices.GetRequiredService<ModuleCatalog>();
+        var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
+        var result = new Dictionary<string, IReadOnlyDictionary<string, LocalText>>(StringComparer.Ordinal);
+        foreach (var column in columns.Where(c => c.ValuesFrom is not null))
+        {
+            var source = catalog.PrintableLists.FirstOrDefault(p => p.List.Key == column.ValuesFrom);
+            if (source.List is null || !caller.Has(source.List.Permission) || source.List.SearchFields.Count == 0)
+            {
+                continue;
+            }
+            var nameField = source.List.SearchFields[0];
+            var arabicField = source.List.Column(nameField)?.ArabicField;
+            var names = new Dictionary<string, LocalText>(StringComparer.OrdinalIgnoreCase);
+            string? after = null;
+            while (names.Count < MaxNamedRecords)
+            {
+                var page = await source.Reader(http.RequestServices, new ListRequest { After = after, Take = ListRequest.MaxTake }, http, cancellationToken);
+                if (page.Problem is not null)
+                {
+                    break;
+                }
+                foreach (var row in page.Rows.Select(r => JsonSerializer.SerializeToElement(r, r.GetType(), json)))
+                {
+                    if (row.TryGetProperty("id", out var id) && row.TryGetProperty(nameField, out var name) && name.ValueKind == JsonValueKind.String)
+                    {
+                        var arabic = arabicField is not null && row.TryGetProperty(arabicField, out var ar) && ar.ValueKind == JsonValueKind.String ? ar.GetString() : null;
+                        names[id.ToString()] = new LocalText(name.GetString(), arabic);
+                    }
+                }
+                if (page.Next is null)
+                {
+                    break;
+                }
+                after = page.Next;
+            }
+            result[column.Key] = names;
+        }
+        return result;
     }
 
     private static IResult Output(HttpContext http, ReportDocument document, Common common, PdfReportRenderer pdf)
