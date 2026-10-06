@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useI18n, type Language } from "../../kernel/i18n";
+import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
@@ -38,6 +38,7 @@ const fromServer = (text: string, language: Language, code?: string): Message =>
 export function SignInPage() {
   const { t, language } = useI18n();
   const { signIn } = useSession();
+  useDocumentTitle("shell.signIn.title");
   // A set-up link may carry the e-mail (never the code); otherwise this device's last one.
   const remembered = new URLSearchParams(window.location.search).get("email") ?? rememberedEmail();
   const [email, setEmail] = useState(remembered);
