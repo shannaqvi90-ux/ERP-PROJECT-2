@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
 import { api } from "../../kernel/api";
 
-/** The record panel's id while a new record is being created (?open=new). */
-export const newRecord = "new";
+/** The record panel's id while a new record is being created (?open=new, the kernel's). */
+export { newRecord } from "../../kernel/forms/recordPanel";
 
 /** One page of a registered list (the list query contract). */
 export type ListPage<T> = { items: T[]; total: number; next?: string | null };
@@ -23,40 +22,8 @@ export async function loadAll<T>(endpoint: string, filter?: string): Promise<T[]
   return rows;
 }
 
-/**
- * The open record of a list screen, in the list's details panel: an existing record (?open=id)
- * or a new one (?open=new). Saving a new record keeps its form on screen (so "Saved." stays
- * visible) while the address moves to the saved record's id.
- */
-export function useRecordPanel(canCreate: boolean) {
-  const [openId, setOpenId] = useState<string | null>(() => {
-    const open = new URLSearchParams(window.location.search).get("open");
-    return open === newRecord && !canCreate ? null : open;
-  });
-  const [formKey, setFormKey] = useState(() => openId ?? "");
-  const [reload, setReload] = useState(0);
-
-  const onOpenIdChange = useCallback((id: string | null) => {
-    setOpenId(id);
-    setFormKey(id ?? "");
-  }, []);
-  const startNew = useMemo(
-    () =>
-      canCreate
-        ? () => {
-            setOpenId(newRecord);
-            setFormKey(`${newRecord}-${Date.now()}`);
-          }
-        : undefined,
-    [canCreate],
-  );
-  const saved = useCallback((id: string) => {
-    setOpenId(id);
-    setReload((n) => n + 1);
-  }, []);
-
-  return { openId, formKey, reload, onOpenIdChange, startNew, saved };
-}
+/** The open record of a list screen (the shared kernel hook: ?open=id or ?open=new on every screen). */
+export { useRecordPanel } from "../../kernel/forms/recordPanel";
 
 /** The list's search box, for the "/" shortcut (the list framework renders it). */
 export const listSearch = {

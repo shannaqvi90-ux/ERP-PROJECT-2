@@ -185,16 +185,23 @@ internal static class UserEndpoints
     private static async Task<Results<Ok<ListPage<UserDto>>, ProblemHttpResult>> List(
         IdentityDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var result = await PageAsync(db, catalog, request, http, cancellationToken);
+        return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(u => u));
+    }
+
+    /// <summary>One page of the users list exactly as the endpoint serves it (reports print it too).</summary>
+    internal static async Task<ListResult<UserDto>> PageAsync(IdentityDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
         var result = await catalog.ListBinding<User>(UsersList.Key).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
-        if (result.Problem is { } problem)
+        if (result.Problem is not null)
         {
-            return problem;
+            return result.Map(_ => (UserDto)null!);
         }
         var ids = result.Rows.Select(u => u.Id).ToList();
         var roles = await RolesOf(db, ids, cancellationToken);
         var pending = await PendingSetupOf(db, ids, cancellationToken);
         var companyRoles = await CompanyRolesOf(db, ids, cancellationToken);
-        return TypedResults.Ok(result.ToPage(u => ToDto(u, roles, pending, companyRoles)));
+        return result.Map(u => ToDto(u, roles, pending, companyRoles));
     }
 
     private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)

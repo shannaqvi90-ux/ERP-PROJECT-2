@@ -4,7 +4,8 @@ using System.Text.Json.Nodes;
 namespace Erp.Gates.Tests.Infrastructure;
 
 /// <summary>A documented route, query or header parameter.</summary>
-public sealed record ApiParameter(string Name, string In, string Type, string? Format);
+/// <param name="Enum">The values the document publishes for it (an enumeration), when it does.</param>
+public sealed record ApiParameter(string Name, string In, string Type, string? Format, IReadOnlyList<string>? Enum = null);
 
 /// <summary>The OpenAPI document served by the running app.</summary>
 public sealed class OpenApiDocument(JsonElement root)
@@ -58,7 +59,11 @@ public sealed class OpenApiDocument(JsonElement root)
             var schema = parameter.TryGetProperty("schema", out var sc) ? Resolve(sc) : default;
             var type = schema.ValueKind == JsonValueKind.Object ? TypeOf(schema) ?? "string" : "string";
             var format = schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("format", out var f) ? f.GetString() : null;
-            list.Add(new ApiParameter(parameter.GetProperty("name").GetString()!, parameter.GetProperty("in").GetString()!, type, format));
+            var members = schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("enum", out var e) && e.ValueKind == JsonValueKind.Array
+                ? e.EnumerateArray().Where(v => v.ValueKind == JsonValueKind.String).Select(v => v.GetString()!).ToList()
+                : null;
+            list.Add(new ApiParameter(parameter.GetProperty("name").GetString()!, parameter.GetProperty("in").GetString()!, type, format,
+                members is { Count: > 0 } ? members : null));
         }
         return list;
     }

@@ -37,6 +37,23 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { tenant = cachedTenant });
             }).WithName("leaky.cachedTenant").WithSummary("Planted bug: caches the workspace in a static field.").RequirePermission("leaky.data.read");
 
+            // Bugs 31 and 32 (p06 gates first): the same static cache behind exports. Tenant B's
+            // name reaches tenant A inside a compressed PDF content stream and inside a spreadsheet
+            // cell of a zipped workbook, where a search of the raw bytes sees nothing; the gate
+            // reads them as a reader would.
+            group.MapGet("/export.pdf", async (ErpDbSession session) =>
+            {
+                exportedTenant ??= await FirstTenantNameAsync(session);
+                return Results.File(PlantedExports.Pdf(exportedTenant ?? ""), "application/pdf", "leaky.pdf");
+            }).WithName("leaky.exportPdf").WithSummary("Planted bug: a PDF export of a workspace name cached in a static field.")
+              .Surface(SurfaceKind.Export).RequirePermission("leaky.data.read");
+            group.MapGet("/export.xlsx", async (ErpDbSession session) =>
+            {
+                exportedTenant ??= await FirstTenantNameAsync(session);
+                return Results.File(PlantedExports.Xlsx(exportedTenant ?? ""), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "leaky.xlsx");
+            }).WithName("leaky.exportXlsx").WithSummary("Planted bug: a workbook export of a workspace name cached in a static field.")
+              .Surface(SurfaceKind.Export).RequirePermission("leaky.data.read");
+
             // Bug 10: a singleton that hands each caller the list the previous caller read.
             group.MapGet("/recent", async (ErpDbSession session, LastListHolder holder) =>
             {
@@ -125,6 +142,17 @@ public sealed class LeakyModule : ErpModule
                 }
                 return Results.Ok(await NamesAsync(session));
             }).WithName("leaky.support").WithSummary("Planted bug: switches tenant from a header found by enumerating the headers.").RequirePermission("leaky.data.read");
+
+            // A query parameter picked out of the raw query string by a name the code compares
+            // itself (p06): the recorder never learns the name, so the read of the raw string is
+            // reported, while the framework's own parse of the query (every report reads its
+            // parameters by name from the parsed query) is not.
+            group.MapGet("/raw-query", async (HttpContext http, ErpDbSession session) =>
+            {
+                var raw = http.Request.QueryString.Value ?? "";
+                var picked = raw.TrimStart('?').Split('&').FirstOrDefault(p => p.StartsWith("support-" + "ref=", StringComparison.Ordinal));
+                return Results.Ok(new { picked = picked is not null, names = await NamesAsync(session) });
+            }).WithName("leaky.rawQuery").WithSummary("Planted bug: picks a query parameter out of the raw query string.").RequirePermission("leaky.data.read");
 
             // Bug 42 (critic p00 round 4, plant T1c without a visible effect): the tenant from a
             // header read by name, set with set_config, then a query whose answer never reaches the
@@ -805,12 +833,20 @@ public sealed class LeakyModule : ErpModule
     }
 
     private static string? cachedTenant;
+    private static string? exportedTenant;
+
+    private static async Task<string?> FirstTenantNameAsync(ErpDbSession session)
+    {
+        await using var command = new NpgsqlCommand("SELECT name_en || ' ' || code FROM tenancy.tenants", session.Connection, session.Transaction);
+        return (string?)await command.ExecuteScalarAsync();
+    }
 
     /// <summary>Empties the planted process-wide state. It is static, so it outlives any one test
     /// environment: a self-test that relies on which tenant fills it first starts from empty.</summary>
     internal static void ResetProcessState()
     {
         cachedTenant = null;
+        exportedTenant = null;
         PersonCards.Clear();
     }
 

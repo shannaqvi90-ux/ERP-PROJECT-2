@@ -1,5 +1,8 @@
-import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { api, ApiError } from "../../kernel/api";
+import { useEffect, useId, useState } from "react";
+import { api } from "../../kernel/api";
+import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
+import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
+import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
@@ -26,27 +29,9 @@ import {
 
 type Notice = { kind: "code"; code: string; expiresAt?: string; email: string } | { kind: "info"; text: string };
 
-type Errors = Record<string, string>;
-
-function fieldErrors(error: unknown): Errors {
-  if (!(error instanceof ApiError)) return {};
-  const out: Errors = {};
-  for (const [field, list] of Object.entries(error.fieldErrors)) out[field] = list[0]?.message ?? error.message;
-  return out;
-}
-
-/** Ctrl+Enter or Ctrl+S saves, Escape closes: the same in every identity form and in tenancy's
- * forms. S is matched by key position (KeyboardEvent.code), as the shell's shortcuts are, so it
- * also saves on an Arabic keyboard layout, where that key types "س". */
-export function formKeys(event: KeyboardEvent, save: () => void, close: () => void) {
-  if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === "Enter" || event.code === "KeyS" || event.key.toLowerCase() === "s")) {
-    event.preventDefault();
-    save();
-  } else if (event.key === "Escape") {
-    event.preventDefault();
-    close();
-  }
-}
+/** Ctrl+Enter or Ctrl+S saves, Escape closes: the kernel's form keys (kernel/forms), kept here
+ * under their old name for the identity forms that are not record forms. */
+export { formKeys };
 
 /** The set-up code to hand over once, with the sign-in address and its expiry. */
 function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
@@ -73,183 +58,167 @@ function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
   );
 }
 
-/** New user: e-mail (completed with the workspace's domain), name suggested from it, language,
- * roles, and an invitation code or a password. */
+type NewUserDraft = {
+  email: string;
+  displayName: string;
+  language: "en" | "ar";
+  roleIds: string[];
+  method: "invite" | "password";
+  password: string;
+  mustChangePassword: boolean;
+};
+
+/** New user (the shared record form): e-mail (completed with the workspace's domain), name
+ * suggested from it, language, roles, and an invitation code or a password. */
 export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCreated: (user: User) => void; onClose: () => void }) {
   const { t, language } = useI18n();
   const { state, can } = useSession();
   const domain = state.status === "signedIn" ? domainOf(state.session.user.email) : null;
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [nameTouched, setNameTouched] = useState(false);
-  const [userLanguage, setUserLanguage] = useState<"en" | "ar">(language);
-  const [roleIds, setRoleIds] = useState<string[]>([]);
-  const [method, setMethod] = useState<"invite" | "password">("invite");
-  const [password, setPassword] = useState("");
-  const [mustChange, setMustChange] = useState(true);
-  const [errors, setErrors] = useState<Errors>({});
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
   const id = useId();
-
-  useEffect(() => emailRef.current?.focus(), []);
+  const form = useRecordForm<User, NewUserDraft>({
+    initial: () => ({ email: "", displayName: "", language, roleIds: [], method: "invite", password: "", mustChangePassword: true }),
+    canEdit: can("identity.users.create"),
+    validate: (draft) => {
+      const full = completeEmail(draft.email, domain);
+      const local: FormErrors = {};
+      if (!full) local.email = [t("identity.form.emailRequired")];
+      else if (!isEmail(full)) local.email = [t("identity.form.emailInvalid")];
+      if (!(draft.displayName.trim() || nameFromEmail(full))) local.displayName = [t("identity.form.nameRequired")];
+      if (draft.method === "password" && draft.password.length < 10) local.password = [t("identity.form.passwordShort")];
+      return local;
+    },
+    save: (draft) => {
+      const full = completeEmail(draft.email, domain);
+      return api<User>("POST", "/api/identity/users", {
+        email: full,
+        displayName: draft.displayName.trim() || nameFromEmail(full),
+        language: draft.language,
+        roleIds: draft.roleIds,
+        ...(draft.method === "password" ? { password: draft.password, mustChangePassword: draft.mustChangePassword } : {}),
+      });
+    },
+    onSaved: (user) => onCreated(user),
+  });
+  const { draft, set, errors } = form;
 
   function commitEmail() {
-    const full = completeEmail(email, domain);
-    if (full !== email) setEmail(full);
-    if (!nameTouched && full) setName(nameFromEmail(full));
-    return full;
-  }
-
-  async function save() {
-    if (busy) return;
-    const full = commitEmail();
-    const displayName = name.trim() || nameFromEmail(full);
-    const local: Errors = {};
-    if (!full) local.email = t("identity.form.emailRequired");
-    else if (!isEmail(full)) local.email = t("identity.form.emailInvalid");
-    if (!displayName) local.displayName = t("identity.form.nameRequired");
-    if (method === "password" && password.length < 10) local.password = t("identity.form.passwordShort");
-    setErrors(local);
-    if (Object.keys(local).length > 0) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const user = await api<User>("POST", "/api/identity/users", {
-        email: full,
-        displayName,
-        language: userLanguage,
-        roleIds,
-        ...(method === "password" ? { password, mustChangePassword: mustChange } : {}),
-      });
-      onCreated(user);
-    } catch (e) {
-      setErrors(fieldErrors(e));
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
+    const full = completeEmail(draft.email, domain);
+    form.update((d) => ({ ...d, email: full, displayName: !nameTouched && full ? nameFromEmail(full) : d.displayName }));
   }
 
   const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
   const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
 
   return (
-    <form
-      ref={formRef}
-      className="id-form"
-      noValidate
-      aria-labelledby={`${id}-title`}
-      onSubmit={(e: FormEvent) => {
-        e.preventDefault();
-        void save();
-      }}
-      onKeyDown={(e) => formKeys(e, () => void save(), onClose)}
-    >
-      <h2 id={`${id}-title`}>{t("identity.users.new")}</h2>
-      <label className="field">
-        <span className="field-label">{t("identity.users.email")}</span>
-        <span className="id-email">
-          <input
-            ref={emailRef}
-            name="email"
-            type="text"
-            inputMode="email"
-            dir="ltr"
-            autoComplete="off"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onBlur={commitEmail}
-            aria-invalid={errors.email ? true : undefined}
-            aria-describedby={`${id}-email-hint`}
-          />
-          {domain && !email.includes("@") && (
-            <span className="id-suffix" dir="ltr" aria-hidden="true">
-              @{domain}
+    <RecordForm form={form} title={t("identity.users.new")} onClose={onClose} saveLabel={t("identity.form.create")}>
+      <div className="id-form">
+        <FormSection columns={false}>
+          <div className="field" data-field="email">
+            <label className="field-label" htmlFor={`${id}-email`}>
+              {t("identity.users.email")}
+            </label>
+            <span className="id-email">
+              <input
+                id={`${id}-email`}
+                name="email"
+                type="text"
+                inputMode="email"
+                dir="ltr"
+                autoComplete="off"
+                autoFocus
+                value={draft.email}
+                onChange={(e) => set("email")(e.target.value)}
+                onBlur={commitEmail}
+                aria-invalid={errors.email ? true : undefined}
+                aria-describedby={`${id}-email-hint`}
+              />
+              {domain && !draft.email.includes("@") && (
+                <span className="id-suffix" dir="ltr" aria-hidden="true">
+                  @{domain}
+                </span>
+              )}
             </span>
+            <span id={`${id}-email-hint`} className={errors.email ? "field-error" : "id-hint"}>
+              {errors.email?.join(" ") ?? (domain ? t("identity.form.domainHint", { domain }) : "")}
+            </span>
+          </div>
+          <TextField
+            field={{ ...form.bind("displayName"), onChange: (v) => { setNameTouched(true); set("displayName")(v); } }}
+            label={t("identity.users.name")}
+          />
+          <SelectField
+            field={form.bind("language") as FieldBinding<"en" | "ar" | "">}
+            label={t("identity.users.language")}
+            options={[
+              { value: "en" as const, label: t("identity.language.en") },
+              { value: "ar" as const, label: t("identity.language.ar") },
+            ]}
+          />
+          {can("identity.roles.read") ? (
+            <RolePicker roles={roles} selected={draft.roleIds} onChange={set("roleIds")} canGrant={canGrant} />
+          ) : (
+            <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
           )}
-        </span>
-        <span id={`${id}-email-hint`} className={errors.email ? "field-error" : "id-hint"}>
-          {errors.email ?? (domain ? t("identity.form.domainHint", { domain }) : "")}
-        </span>
-      </label>
-      <label className="field">
-        <span className="field-label">{t("identity.users.name")}</span>
-        <input
-          name="displayName"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setNameTouched(true);
-          }}
-          aria-invalid={errors.displayName ? true : undefined}
-        />
-        {errors.displayName && <span className="field-error">{errors.displayName}</span>}
-      </label>
-      <label className="field">
-        <span className="field-label">{t("identity.users.language")}</span>
-        <select name="language" value={userLanguage} onChange={(e) => setUserLanguage(e.target.value as "en" | "ar")}>
-          <option value="en">{t("identity.language.en")}</option>
-          <option value="ar">{t("identity.language.ar")}</option>
-        </select>
-      </label>
-      {can("identity.roles.read") ? (
-        <RolePicker roles={roles} selected={roleIds} onChange={setRoleIds} canGrant={canGrant} />
-      ) : (
-        <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
-      )}
-      <fieldset className="id-method">
-        <legend className="field-label">{t("identity.form.signInMethod")}</legend>
-        <label>
-          <input type="radio" name="method" checked={method === "invite"} onChange={() => setMethod("invite")} />
-          {t("identity.form.invite")}
-        </label>
-        <label>
-          <input type="radio" name="method" checked={method === "password"} onChange={() => setMethod("password")} />
-          {t("identity.form.setPassword")}
-        </label>
-        {method === "password" && (
-          <>
-            <label className="field">
-              <span className="field-label">{t("identity.form.password")}</span>
-              <input name="password" type="password" dir="ltr" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={errors.password ? true : undefined} />
-              {errors.password && <span className="field-error">{errors.password}</span>}
+          <fieldset className="id-method">
+            <legend className="field-label">{t("identity.form.signInMethod")}</legend>
+            <label>
+              <input type="radio" name="method" checked={draft.method === "invite"} onChange={() => set("method")("invite")} />
+              {t("identity.form.invite")}
             </label>
             <label>
-              <input type="checkbox" checked={mustChange} onChange={(e) => setMustChange(e.target.checked)} />
-              {t("identity.form.mustChange")}
+              <input type="radio" name="method" checked={draft.method === "password"} onChange={() => set("method")("password")} />
+              {t("identity.form.setPassword")}
             </label>
-          </>
-        )}
-      </fieldset>
-      {error && (
-        <div className="alert" role="alert">
-          {error}
-        </div>
-      )}
-      <div className="id-actions">
-        <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
-          {t("identity.form.create")}
-        </button>
-        <button type="button" className="button" onClick={onClose} aria-keyshortcuts="Escape">
-          {t("identity.form.cancel")}
-        </button>
-        <span className="muted id-hint">{t("identity.form.keys")}</span>
+            {draft.method === "password" && (
+              <>
+                <div className="field" data-field="password">
+                  <label className="field-label" htmlFor={`${id}-password`}>
+                    {t("identity.form.password")}
+                  </label>
+                  <input id={`${id}-password`} name="password" type="password" dir="ltr" autoComplete="new-password" value={draft.password}
+                    onChange={(e) => set("password")(e.target.value)} aria-invalid={errors.password ? true : undefined} />
+                  {errors.password && <span className="field-error">{errors.password.join(" ")}</span>}
+                </div>
+                <label>
+                  <input type="checkbox" checked={draft.mustChangePassword} onChange={(e) => set("mustChangePassword")(e.target.checked)} />
+                  {t("identity.form.mustChange")}
+                </label>
+              </>
+            )}
+          </fieldset>
+          <p className="muted id-hint">{t("identity.form.keys")}</p>
+        </FormSection>
       </div>
-    </form>
+    </RecordForm>
   );
 }
 
-type Tab = "details" | "access" | "history";
+type DetailDraft = {
+  email: string;
+  displayName: string;
+  displayNameAr: string;
+  language: "en" | "ar";
+  isActive: boolean;
+  roleIds: string[];
+  /** Roles that apply in one company only. */
+  companyRoles: CompanyRole[];
+  /** Where the user starts work (null: their first company by code). */
+  startsIn: string | null;
+};
 
-/** One user: details (editable with the right permission), what they can do and why, and their
- * sign-in history, plus the account actions (reset password, sign out everywhere, unblock). */
+/** The user as the form holds it: the record, and where they start work when the caller may see
+ * it (null when the caller may not, or it could not be read: the field is then left out). */
+type UserRecord = User & { defaultCompany: DefaultCompany | null };
+
+/** One user (the shared record form): details (editable with the right permission), what they can
+ * do and why, and their sign-in history, plus the account actions (reset password, sign out
+ * everywhere, unblock, delete). */
 export function UserDetail({
   userId,
   roles,
   notice: initialNotice,
+  nav,
   onSaved,
   onClose,
   onDeleted,
@@ -257,231 +226,178 @@ export function UserDetail({
   userId: string;
   roles: Role[];
   notice?: Notice;
+  nav?: RecordNavigation;
   onSaved: (user: User) => void;
   onClose: () => void;
   onDeleted?: (user: User) => void;
 }) {
   const { t, language, formatDateTime } = useI18n();
   const { state, can } = useSession();
-  const [user, setUser] = useState<User | null>(null);
-  const [tab, setTab] = useState<Tab>("details");
   const [notice, setNotice] = useState<Notice | undefined>(initialNotice);
-  const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [nameAr, setNameAr] = useState("");
-  const [email, setEmail] = useState("");
-  const [userLanguage, setUserLanguage] = useState<"en" | "ar">("en");
-  const [active, setActive] = useState(true);
-  const [roleIds, setRoleIds] = useState<string[]>([]);
-  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [defaultCompany, setDefaultCompany] = useState<DefaultCompany | null>(null);
-  const [startsIn, setStartsIn] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const id = useId();
   const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
   const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
   const selfId = state.status === "signedIn" ? state.session.user.id : null;
   const self = selfId === userId;
-  const allowed = userActions(user ?? { id: userId, roleIds: [], lastSignInAt: null }, roles, granted, selfId);
-  const editable = allowed.edit;
+  const [loaded, setLoaded] = useState<User | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const allowed = userActions(loaded ?? { id: userId, roleIds: [], lastSignInAt: null }, roles, granted, selfId);
+  const form = useRecordForm<UserRecord, DetailDraft>({
+    load: async (signal) => {
+      // Where the user starts work is not needed to show the record, so a failure leaves it out.
+      const [user, defaultCompany] = await Promise.all([
+        api<User>("GET", `/api/identity/users/${userId}`, undefined, { signal }),
+        api<DefaultCompany>("GET", `/api/identity/users/${userId}/default-company`, undefined, { signal }).then(
+          (d) => (d && Array.isArray(d.companies) ? d : null),
+          () => null,
+        ),
+      ]);
+      setLoaded(user);
+      return { ...user, defaultCompany };
+    },
+    initial: (u) => ({
+      email: u?.email ?? "",
+      displayName: u?.displayName ?? "",
+      displayNameAr: u?.displayNameAr ?? "",
+      language: u?.language ?? "en",
+      isActive: u?.isActive ?? true,
+      roleIds: u?.roleIds ?? [],
+      companyRoles: u?.companyRoles ?? [],
+      startsIn: u?.defaultCompany?.companyId ?? null,
+    }),
+    canEdit: Boolean(loaded) && allowed.edit,
+    save: async (draft, user) => {
+      const saved = await api<User>("PUT", `/api/identity/users/${userId}`, {
+        displayName: draft.displayName.trim(),
+        displayNameAr: draft.displayNameAr.trim(),
+        language: draft.language,
+        isActive: draft.isActive,
+        roleIds: draft.roleIds,
+        version: user?.version,
+        ...(!self && user && draft.email.trim() !== user.email ? { email: draft.email.trim() } : {}),
+        ...(!self && user && !sameCompanyRoles(draft.companyRoles, user.companyRoles ?? []) ? { companyRoles: draft.companyRoles } : {}),
+      });
+      let defaultCompany = user?.defaultCompany ?? null;
+      if (!self && defaultCompany && draft.startsIn !== defaultCompany.companyId) {
+        defaultCompany = await api<DefaultCompany>("PUT", `/api/identity/users/${userId}/default-company`, {
+          companyId: draft.startsIn,
+          version: defaultCompany.version,
+        });
+      }
+      return { ...saved, defaultCompany };
+    },
+    onSaved: (saved) => {
+      setLoaded(saved);
+      setNotice(undefined);
+      onSaved(saved);
+    },
+  }, userId);
+  const user = form.record;
 
+  useEffect(() => setNotice(initialNotice), [initialNotice, userId]);
+
+  // Companies the signed-in user works in: roles in one company are given there. Not needed to
+  // show the record, so a failure leaves the editor to the roles the user already holds.
   useEffect(() => {
     let live = true;
-    setUser(null);
-    setError(null);
-    api<User>("GET", `/api/identity/users/${userId}`)
-      .then((u) => {
-        if (!live) return;
-        setUser(u);
-        setName(u.displayName);
-        setNameAr(u.displayNameAr ?? "");
-        setEmail(u.email);
-        setUserLanguage(u.language);
-        setActive(u.isActive);
-        setRoleIds(u.roleIds);
-        setCompanyRoles(u.companyRoles ?? []);
-      })
-      .catch((e: Error) => live && setError(e.message));
-    // Companies the signed-in user works in (roles in one company are given there), and where
-    // this user starts work. Neither is needed to show the record, so a failure leaves them out.
     api<Company[]>("GET", "/api/identity/companies").then(
       (list) => live && setCompanies(Array.isArray(list) ? list : []),
       () => live && setCompanies([]),
     );
-    api<DefaultCompany>("GET", `/api/identity/users/${userId}/default-company`).then(
-      (d) => {
-        if (!live) return;
-        const known = d && Array.isArray(d.companies) ? d : null;
-        setDefaultCompany(known);
-        setStartsIn(known?.companyId ?? null);
-      },
-      () => live && setDefaultCompany(null),
-    );
     return () => {
       live = false;
     };
-  }, [userId]);
-
-  useEffect(() => setNotice(initialNotice), [initialNotice, userId]);
-
-  useEffect(() => {
-    if (user) headingRef.current?.focus();
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function save() {
-    if (!user || !editable || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const saved = await api<User>("PUT", `/api/identity/users/${user.id}`, {
-        displayName: name.trim(),
-        displayNameAr: nameAr.trim(),
-        language: userLanguage,
-        isActive: active,
-        roleIds,
-        version: user.version,
-        ...(!self && email.trim() !== user.email ? { email: email.trim() } : {}),
-        ...(!self && !sameCompanyRoles(companyRoles, user.companyRoles ?? []) ? { companyRoles } : {}),
-      });
-      setUser(saved);
-      setCompanyRoles(saved.companyRoles ?? []);
-      if (!self && defaultCompany && startsIn !== defaultCompany.companyId) {
-        const next = await api<DefaultCompany>("PUT", `/api/identity/users/${user.id}/default-company`, { companyId: startsIn, version: defaultCompany.version });
-        setDefaultCompany(next);
-        setStartsIn(next.companyId);
-      }
-      setNotice({ kind: "info", text: t("identity.form.saved") });
-      onSaved(saved);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
+  }, []);
 
   if (!user) {
-    return (
-      <section className="id-form" aria-busy={!error}>
-        {error ? (
-          <div className="alert" role="alert">
-            {error}
-          </div>
-        ) : (
-          <p className="muted">{t("identity.loading")}</p>
-        )}
-      </section>
-    );
+    return <RecordForm form={form} title="" onClose={onClose}>{null}</RecordForm>;
   }
 
+  const bind = form.bind;
+  const details = (
+    <>
+      {allowed.beyondOwn && <p className="muted">{t("identity.users.beyondOwnNote")}</p>}
+      <FormSection columns={false}>
+        <TextField field={bind("email")} label={t("identity.users.email")} type="email" dir="ltr" disabled={self} />
+        <TextField field={bind("displayName")} label={t("identity.users.name")} />
+        <TextField field={bind("displayNameAr")} label={t("identity.users.nameAr")} dir="rtl" />
+        <SelectField
+          field={bind("language") as FieldBinding<"en" | "ar" | "">}
+          label={t("identity.users.language")}
+          options={[
+            { value: "en" as const, label: t("identity.language.en") },
+            { value: "ar" as const, label: t("identity.language.ar") },
+          ]}
+        />
+        <BooleanField field={bind("isActive")} label={t("identity.form.active")} disabled={self} />
+        {can("identity.roles.read") ? (
+          <RolePicker roles={roles} selected={form.draft.roleIds} onChange={form.set("roleIds")} canGrant={canGrant} disabled={form.readOnly || self} />
+        ) : (
+          <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
+        )}
+        {can("identity.roles.read") && (companies.length > 0 || form.draft.companyRoles.length > 0 || user.rolesElsewhere) && (
+          <CompanyRolesEditor
+            companies={companies}
+            roles={roles}
+            value={form.draft.companyRoles}
+            onChange={form.set("companyRoles")}
+            canGrant={canGrant}
+            disabled={form.readOnly || self}
+            rolesElsewhere={user.rolesElsewhere}
+          />
+        )}
+        {user.defaultCompany && (
+          <DefaultCompanyField
+            companies={user.defaultCompany.companies}
+            value={form.draft.startsIn}
+            onChange={form.set("startsIn")}
+            disabled={form.readOnly || self}
+          />
+        )}
+        {self && <p className="muted">{t("identity.form.selfNote")}</p>}
+      </FormSection>
+      {(allowed.resetPassword || allowed.signOutEverywhere || allowed.delete) && (
+        <AccountActions user={user} allowed={allowed} onNotice={setNotice} onDeleted={() => onDeleted?.(user)} />
+      )}
+    </>
+  );
+
   return (
-    <section className="id-form" aria-labelledby={`${id}-title`} onKeyDown={(e) => formKeys(e, () => void save(), onClose)}>
-      <h2 id={`${id}-title`} ref={headingRef} tabIndex={-1}>
-        {userName(user, language)}
-      </h2>
-      <p className="muted" dir="ltr">
-        {user.email}
-      </p>
-      <p className="id-badges">
-        <span className={user.isActive ? "id-badge ok" : "id-badge off"}>{user.isActive ? t("identity.users.active") : t("identity.users.inactive")}</span>
-        {user.pendingSetup && <span className="id-badge warn">{t("identity.users.pendingSetup")}</span>}
-        <span className="muted">
-          {t("identity.users.lastSignIn")}: {user.lastSignInAt ? formatDateTime(user.lastSignInAt) : t("identity.users.never")}
-        </span>
-      </p>
-      {notice?.kind === "code" && <CodeNotice notice={notice} />}
-      {notice?.kind === "info" && (
-        <div className="id-notice" role="status">
-          {notice.text}
-        </div>
-      )}
-      <div role="tablist" className="id-tabs" aria-label={t("identity.users.sections")}>
-        {(["details", "access", "history"] as Tab[])
-          .filter((x) => x !== "history" || can("identity.signIns.read"))
-          .map((x) => (
-            <button key={x} type="button" role="tab" aria-selected={tab === x} className={tab === x ? "id-tab active" : "id-tab"} onClick={() => setTab(x)}>
-              {t(`identity.tab.${x}`)}
-            </button>
-          ))}
-      </div>
-      {tab === "details" && (
-        <form
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            void save();
-          }}
-        >
-          {allowed.beyondOwn && <p className="muted">{t("identity.users.beyondOwnNote")}</p>}
-          <fieldset disabled={!editable} className="id-plain">
-            <label className="field">
-              <span className="field-label">{t("identity.users.email")}</span>
-              <input name="email" type="email" dir="ltr" value={email} disabled={self} onChange={(e) => setEmail(e.target.value)} />
-            </label>
-            <label className="field">
-              <span className="field-label">{t("identity.users.name")}</span>
-              <input name="displayName" value={name} onChange={(e) => setName(e.target.value)} />
-            </label>
-            <label className="field">
-              <span className="field-label">{t("identity.users.nameAr")}</span>
-              <input name="displayNameAr" dir="rtl" lang="ar" value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
-            </label>
-            <label className="field">
-              <span className="field-label">{t("identity.users.language")}</span>
-              <select value={userLanguage} onChange={(e) => setUserLanguage(e.target.value as "en" | "ar")}>
-                <option value="en">{t("identity.language.en")}</option>
-                <option value="ar">{t("identity.language.ar")}</option>
-              </select>
-            </label>
-            <label className="id-check">
-              <input type="checkbox" checked={active} disabled={self} onChange={(e) => setActive(e.target.checked)} />
-              {t("identity.form.active")}
-            </label>
-          </fieldset>
-          {can("identity.roles.read") ? (
-            <RolePicker roles={roles} selected={roleIds} onChange={setRoleIds} canGrant={canGrant} disabled={!editable || self} />
-          ) : (
-            <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
-          )}
-          {can("identity.roles.read") && (companies.length > 0 || companyRoles.length > 0 || user.rolesElsewhere) && (
-            <CompanyRolesEditor
-              companies={companies}
-              roles={roles}
-              value={companyRoles}
-              onChange={setCompanyRoles}
-              canGrant={canGrant}
-              disabled={!editable || self}
-              rolesElsewhere={user.rolesElsewhere}
-            />
-          )}
-          {defaultCompany && (
-            <DefaultCompanyField companies={defaultCompany.companies} value={startsIn} onChange={setStartsIn} disabled={!editable || self} />
-          )}
-          {self && <p className="muted">{t("identity.form.selfNote")}</p>}
-          {error && (
-            <div className="alert" role="alert">
-              {error}
-            </div>
-          )}
-          <div className="id-actions">
-            {editable && (
-              <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter Control+S">
-                {t("identity.form.save")}
-              </button>
-            )}
-            <button type="button" className="button" onClick={onClose} aria-keyshortcuts="Escape">
-              {t("identity.form.close")}
-            </button>
+    <div className="id-form">
+      <RecordForm
+        form={form}
+        title={userName(user, language)}
+        subtitle={
+          <>
+            <span dir="ltr">{user.email}</span>
+            <span className="id-badges">
+              <span className={user.isActive ? "id-badge ok" : "id-badge off"}>{user.isActive ? t("identity.users.active") : t("identity.users.inactive")}</span>
+              {user.pendingSetup && <span className="id-badge warn">{t("identity.users.pendingSetup")}</span>}
+              <span className="muted">
+                {t("identity.users.lastSignIn")}: {user.lastSignInAt ? formatDateTime(user.lastSignInAt) : t("identity.users.never")}
+              </span>
+            </span>
+          </>
+        }
+        onClose={onClose}
+        nav={nav}
+        readOnlyReason={allowed.beyondOwn ? t("identity.users.beyondOwnNote") : undefined}
+      >
+        {notice?.kind === "code" && <CodeNotice notice={notice} />}
+        {notice?.kind === "info" && (
+          <div className="id-notice" role="status">
+            {notice.text}
           </div>
-          {(allowed.resetPassword || allowed.signOutEverywhere || allowed.delete) && (
-            <AccountActions user={user} allowed={allowed} onNotice={setNotice} onDeleted={() => onDeleted?.(user)} />
-          )}
-        </form>
-      )}
-      {tab === "access" && <AccessTab userId={user.id} roles={roles} language={language} />}
-      {tab === "history" && <HistoryTab userId={user.id} canUnblock={allowed.unblock} />}
-    </section>
+        )}
+        <FormTabs
+          label={t("identity.users.sections")}
+          tabs={[
+            { key: "details", label: t("identity.tab.details"), content: details },
+            { key: "access", label: t("identity.tab.access"), content: <AccessTab userId={user.id} roles={roles} language={language} /> },
+            { key: "history", label: t("identity.tab.history"), content: <HistoryTab userId={user.id} canUnblock={allowed.unblock} />, hidden: !can("identity.signIns.read") },
+          ]}
+        />
+      </RecordForm>
+    </div>
   );
 }
 

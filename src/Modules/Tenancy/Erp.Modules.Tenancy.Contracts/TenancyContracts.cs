@@ -1,7 +1,11 @@
 namespace Erp.Modules.Tenancy.Contracts;
 
 /// <summary>Public facts about a tenant other modules may use.</summary>
-public sealed record TenantInfo(Guid Id, string Code, string NameEn, string NameAr, string Status);
+public sealed record TenantInfo(Guid Id, string Code, string NameEn, string NameAr, string Status)
+{
+    /// <summary>The workspace's time zone (IANA), in which its documents show times.</summary>
+    public string TimeZone { get; init; } = "Asia/Dubai";
+}
 
 /// <summary>Reads the current tenant (the one the unit of work is bound to). Other modules use
 /// this instead of the tenancy tables.</summary>

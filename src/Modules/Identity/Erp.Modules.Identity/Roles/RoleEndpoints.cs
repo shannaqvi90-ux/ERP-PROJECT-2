@@ -71,6 +71,13 @@ internal static class RoleEndpoints
     private static async Task<Results<Ok<ListPage<RoleDto>>, ProblemHttpResult>> List(
         IdentityDbContext db, ModuleCatalog catalog, [AsParameters] ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var result = await PageAsync(db, catalog, request, http, cancellationToken);
+        return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    /// <summary>One page of the roles list exactly as the endpoint serves it (reports print it too).</summary>
+    internal static async Task<ListResult<RoleDto>> PageAsync(IdentityDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+    {
         var counts = await db.UserRoles.AsNoTracking().GroupBy(ur => ur.RoleId)
             .Select(g => new { RoleId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RoleId, x => x.Count, cancellationToken);
@@ -86,12 +93,7 @@ internal static class RoleEndpoints
         }
         var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
         var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
-        var result = await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
-        if (result.Problem is { } problem)
-        {
-            return problem;
-        }
-        return TypedResults.Ok(result.ToPage(r => r));
+        return await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
     }
 
     private static async Task<Results<Ok<RoleDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)

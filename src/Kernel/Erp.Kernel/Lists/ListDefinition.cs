@@ -29,6 +29,10 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Aggregate">Groups carry the column's total (number and money columns).</param>
 /// <param name="Hidden">Not shown until the user adds it with the column chooser.</param>
 /// <param name="Choices">The values of a choice column, with their labels.</param>
+/// <param name="LabelField">For a reference column: the row property that names the referenced
+/// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
+/// <param name="ArabicField">A row property holding the value in Arabic script (a user's
+/// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -38,7 +42,9 @@ public sealed record ListColumn(
     bool Groupable = false,
     bool Aggregate = false,
     bool Hidden = false,
-    IReadOnlyList<ListChoice>? Choices = null);
+    IReadOnlyList<ListChoice>? Choices = null,
+    string? LabelField = null,
+    string? ArabicField = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>

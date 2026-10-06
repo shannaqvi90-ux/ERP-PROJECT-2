@@ -31,4 +31,9 @@ public sealed record IsolationProbeContext(
 /// <param name="Attempts">Number of attempts made.</param>
 /// <param name="Observed">Everything the probe saw (response bodies, file contents, job output);
 /// the gate scans it for tenant B's identifiers and canaries.</param>
-public sealed record IsolationProbeResult(int Attempts, IReadOnlyList<string> Observed);
+public sealed record IsolationProbeResult(int Attempts, IReadOnlyList<string> Observed)
+{
+    /// <summary>A whole response body handed to the gate to decode as a reader would (a PDF's
+    /// text, a spreadsheet's cells) rather than search as bytes.</summary>
+    public static string Body(string mediaType, byte[] bytes) => $"body:{mediaType};base64,{Convert.ToBase64String(bytes)}";
+}
