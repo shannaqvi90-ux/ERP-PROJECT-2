@@ -678,7 +678,15 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 var view = endpoint.Pattern.Contains("/shared-views", StringComparison.Ordinal) ? shared : personal;
                 if (endpoint.Method == "PUT")
                 {
-                    view = await admin.GetFromJsonAsync<JsonElement>(endpoint.Path(_ => view.GetProperty("id").GetString()!));
+                    // A refused caller that got through above may have deleted the view: report
+                    // every problem found so far rather than stopping at the missing view.
+                    using var current = await admin.GetAsync(endpoint.Path(_ => view.GetProperty("id").GetString()!));
+                    if (!current.IsSuccessStatusCode)
+                    {
+                        problems.Add($"{endpoint}: the administrator's view answered {(int)current.StatusCode} before the administrator's own change (did a refused caller remove it?)");
+                        continue;
+                    }
+                    view = await current.Content.ReadFromJsonAsync<JsonElement>();
                 }
                 using var request = ViewRequest(endpoint, view, columns, endpoint.Method == "POST" ? $"Again {list.Key}" : null);
                 using var response = await admin.SendAsync(request);
