@@ -68,9 +68,19 @@ owner's PC, five runs each, first request included after the vacuum step:
   tried only without them, so the name as stored with them was never found. Such a word is now
   also tried exactly as typed (first, within `MaxSpellings`), and the relevance patterns accept
   marks after every letter of an Arabic word, so "مُحَمَّد علي" still ranks as the exact match.
-- **Known limit.** A word typed *without* marks does not find a value stored *with* them
-  ("محمد" does not find "مُحَمَّد"): matching would need the value with its marks removed, which
-  under row-level security can drive the trigram index only as a plain column (an expression such
-  as `translate()` is not leakproof). That is a stored, normalised search column in the owning
-  module's table (for users, p03's `identity.users`), left to that module; the shared comparison
-  dataset and typed business data rarely carry marks.
+- **Shadda typed or not.** Names are often stored with a shadda on one letter ("شمّة", "محمّد",
+  "عليّ") and typed without it. An Arabic word now also matches each of its spellings with a
+  shadda after one letter (the first excepted), counted as one more change, with the letter
+  variants first at equal changes and the whole set still bounded by `MaxSpellings` (32).
+  `show_trgm('شمّة')` shows PostgreSQL's trigram extraction reads the shadda as part of the word,
+  so these patterns are served by the trigram index like the others. Measured on the 100,000-user
+  demo (PostgreSQL alone, three runs): "فاطمه" over three fields with its 10 letter spellings
+  (30 patterns) 40–57 ms, with 32 spellings (96 patterns) 39–40 ms, with all 50 spellings 44–64 ms;
+  the index scans take under 2 ms and the recheck stops at the first pattern a row matches.
+  Before this, "شمة" found none of the demo's 1,055 users named "شمّة".
+- **Known limit.** A word typed without short vowels (fatha, damma, kasra, sukun, tanween) does
+  not find a value stored with them ("محمد" does not find "مُحَمَّد"); they are rare in stored
+  names, and matching them in general would need the value with its marks removed, which under
+  row-level security can drive the trigram index only as a plain column (an expression such as
+  `translate()` is not leakproof): a stored, normalised search column in the owning module's table
+  (for users, p03's `identity.users`), left to that module.
