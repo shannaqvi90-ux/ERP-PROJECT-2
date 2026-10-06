@@ -107,3 +107,35 @@ is measured with one.
   wrong-case password is the commonest failed sign-in and each failure counts toward the lockout.
 
 Odoo's screen has both; ours had neither. Neither changes the measured path (no step, no key).
+
+## Round 6, after the merge: where a password sign-in can and cannot beat Odoo (2026-10-06)
+
+The round-5 verdict asks for the new-device path to beat Odoo on steps too. Checked again
+against the harness's rules and Odoo 20's own sign-in screen, without changing either:
+
+- **New device, team's bookmark** (nothing remembered, the address names no user —
+  `lib/start.mjs`: "it never names the user"). Two unknown values (who, the password) need two
+  field entries, one move between them and one send: four steps in any product. Ours: 4 steps,
+  35 keystrokes, 11.55 modelled seconds; Odoo: 4, 57, 19.06. The step tie is at the floor.
+  Every way below it either names the user before the clock (a list of the team's people in the
+  address or on the screen, `?email=`), needs a server list of people for anonymous visitors (an
+  enumeration oracle, and a new anonymous endpoint and cross-tenant function, which
+  `gauntlet/ratchet.json` caps at 12 and 2 — maximums only go down), hides a step inside typing,
+  or is not a password (a passkey; Odoo 20 offers "Use a Passkey" too, and it would need the same
+  anonymous endpoint and cross-tenant lookup).
+- **Returning browser** (the last session ended without the Sign out button). Ours: the e-mail is
+  remembered and the password has focus — 2 steps, 21 keystrokes. Odoo 20 remembers the last
+  users in the browser too (read on the rig, `web/static/src/core/user_switch`): with one
+  remembered user its screen shows an empty e-mail field and a "Choose a user" link in the field's
+  label; choosing (click the link, click the user) fills the e-mail and focuses the password:
+  4 steps, 21 keystrokes (password and Enter). Ours wins steps and time; keystrokes tie at the
+  floor (the password itself), and a click on the Sign in button instead of Enter takes both
+  products to 20.
+
+So a password sign-in that types the same password in both products cannot be strictly lower on
+every measure in either start state; the floor ties are structural, not a missing feature. The
+harness's present Odoo `returning` variant types the e-mail instead of choosing the remembered
+user, which an expert would not do; with best-per-metric scoring that makes Odoo's keystrokes
+57 instead of 21. This is recorded here so no win rests on it; changing the reference driver is
+the harness owner's (p01) call, and whether a tie at the floor counts as a loss, or whether the
+compared task admits passkeys, is the owner's (raised by this round's builder as a human gate).
