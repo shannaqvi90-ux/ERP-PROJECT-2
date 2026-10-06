@@ -139,3 +139,56 @@ user, which an expert would not do; with best-per-metric scoring that makes Odoo
 57 instead of 21. This is recorded here so no win rests on it; changing the reference driver is
 the harness owner's (p01) call, and whether a tie at the floor counts as a loss, or whether the
 compared task admits passkeys, is the owner's (raised by this round's builder as a human gate).
+
+## Round 6, resumed: the whole team e-mail ends the field (2026-10-06)
+
+The floor above was wrong in one place. "Finishing the field when a known name is complete needs
+the list of names" is true of the **part before "@"**, but not of the **whole address**: on the
+team's address the screen already knows the domain, from the address alone, so once the field
+holds `someone@<team domain>` nothing more can follow and the screen can leave the field itself.
+No list, no lookup, no request: the same information the domain fill-in already uses.
+
+**Decision.** On the team's sign-in address, when the e-mail field *becomes* a whole address in
+the team's domain (one `@`, a non-empty part before it, no spaces, the domain exactly the
+address's, any letter case) and the password is still empty, the focus moves to the password
+(`completesTeamEmail` in `kernel/signInAddress.ts`, `onEmailChange` in `SignInPage.tsx`).
+
+- **Said beforehand, on screen.** A note under the field on the team's address, in English and
+  Arabic: "Typing your whole address moves on to the password." It is part of the field's
+  description (`aria-describedby`), so a screen reader says it on arrival. Moving the focus on
+  input is a change of context that WCAG 2.2 SC 3.2.2 (On Input) allows when the person is told
+  before using the field; the note is that notice. The field's name stays "E-mail"
+  (`aria-labelledby` its label alone, so the domain and the note describe it, never rename it).
+- **Easy to undo.** Backspace in the still-empty password, right after the screen moved on, goes
+  back to the end of the e-mail (and only then; elsewhere Backspace is an ordinary key).
+- **Never over typed text.** It does not move on when the password already holds text, when the
+  address was already whole (editing it), on another domain, or on the plain address (no domain
+  is known there, so the screen cannot know where an address ends).
+- **Both paths stay.** The part before "@" then Enter is still the path with fewest keys; typing
+  the whole address, as most people do by habit, is now the path with fewest steps.
+- **Known edge.** A person whose own domain *extends* the team's (`x@alnoor.example.ae` on the
+  address of `alnoor.example`) is outside that team's domain by definition, but if they type on
+  that team's address the screen moves on after `alnoor.example`. The note said so, the e-mail
+  stays visible, Backspace returns, and a sign-in sent that way fails with the ordinary message.
+
+**Effect on the compared task** (new device, team's address; the harness's KLM rules):
+
+| Path | Steps | Keystrokes | KLM human s |
+|---|---|---|---|
+| Odoo: e-mail, Tab, password, Enter | 4 | 57 | 19.06 (M 2, K 57, H 1) |
+| Ours: part before "@", Enter, password, Enter | 4 | 35 | 11.55 (M 1, K 35, H 1) |
+| Ours: whole e-mail (the screen moves on), password, Enter | 3 | 56 | 18.78 (M 2, K 56, H 1) |
+
+The harness counts each product's best verified path per metric (`lib/runner.mjs`), so on a new
+device ours is now strictly lower than Odoo on steps (3 < 4), keystrokes (35 < 57) and modelled
+time (11.55 < 19.06), with machine time measured. The whole-e-mail path alone is also strictly
+lower on every counted measure (3 < 4, 56 < 57, 18.78 < 19.06): no measure rests on combining
+paths. The password path the person moves on to starts a new mental step in the model (no key
+joins the fields), which is why its modelled time is close to Odoo's.
+
+**Harness.** `drivers/ours/sign-in.mjs` has a third path, `new-device-whole-e-mail`: it types the
+whole e-mail and then *waits* for the password field to have focus (5 s); if the screen did not
+move on, the run fails and the password is never typed into the e-mail field. The guard test's
+stand-in moves on the same way and the honest-driver test asserts 3 steps and 56 keystrokes for
+that path (4 and 35 for the others, unchanged); a new test runs the path on the plain address,
+where nothing moves on, and checks it fails after one step.
