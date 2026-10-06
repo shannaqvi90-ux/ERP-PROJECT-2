@@ -139,8 +139,19 @@ function apply(dir, edit, plant) {
   writeFileSync(path, text.replace(edit.find, edit.replace));
 }
 
+// Vitest gives a worker a fixed 60 s to start; on a machine shared by several suites (load
+// averages above 150 were seen) that runs out before any test runs. Such a run judged nothing, so
+// it is run again (up to three times); any other result, pass or fail, stands as it is.
+const workerDidNotStart = /\[vitest-pool(-runner)?\]: (Timeout waiting for worker to respond|Timeout starting \w+ runner)|Failed to start \w+ worker/;
+
 function runGate(dir) {
-  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", gate], { cwd: dir, encoding: "utf8" });
+  let result;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    result = spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", gate], { cwd: dir, encoding: "utf8" });
+    if (result.status === 0 || !workerDidNotStart.test(`${result.stdout}\n${result.stderr}`)) return result;
+    console.log(`  (vitest's worker did not start in time on attempt ${attempt}; the gate judged nothing, running it again)`);
+  }
+  return result;
 }
 
 const problems = [];
