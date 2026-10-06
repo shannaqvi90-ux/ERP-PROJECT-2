@@ -63,14 +63,7 @@ public sealed class TestDatabaseServer
     private static async Task<TestDatabaseServer> StartAsync()
     {
         var adminPassword = Secret();
-        var builder = new PostgreSqlBuilder("postgres:16-alpine");
-        // Where ./erp verify turns Testcontainers' reaper off (Docker Desktop), the run's clean-up
-        // removes the containers carrying its label instead.
-        if (System.Environment.GetEnvironmentVariable("ERP_TEST_CONTAINER_LABEL") is { Length: > 0 } run)
-        {
-            builder = builder.WithLabel("erp.test-run", run);
-        }
-        var container = builder
+        var container = new PostgreSqlBuilder("postgres:16-alpine")
             .WithUsername("postgres")
             .WithPassword(adminPassword)
             .WithDatabase("postgres")
