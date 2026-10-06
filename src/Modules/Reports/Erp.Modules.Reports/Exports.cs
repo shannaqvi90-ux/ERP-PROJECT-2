@@ -118,10 +118,16 @@ public static class Exports
                 sheet.Append("</row>");
             }
         }
-        sheet.Append("</sheetData>");
-        if (r > 1)
+        var lastDataRow = r;
+        if (lastDataRow > 1 && document.Columns.Any(c => c.Total))
         {
-            sheet.Append($"<autoFilter ref=\"A1:{Reference(columnCount - 1, r)}\"/>");
+            r++;
+            sheet.Append(TotalRow(document, r, lastDataRow, styles));
+        }
+        sheet.Append("</sheetData>");
+        if (lastDataRow > 1)
+        {
+            sheet.Append($"<autoFilter ref=\"A1:{Reference(columnCount - 1, lastDataRow)}\"/>");
         }
         sheet.Append("</worksheet>");
 
@@ -140,7 +146,7 @@ public static class Exports
             Entry(zip, "xl/workbook.xml",
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
                 $"<sheets><sheet name=\"{SecurityElement.Escape(SheetName(document.Title))}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
-                (r > 1 ? $"<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"0\" hidden=\"1\">'{SecurityElement.Escape(SheetName(document.Title)).Replace("'", "''", StringComparison.Ordinal)}'!$A$1:${Column(columnCount - 1)}${r}</definedName></definedNames>" : "") +
+                (lastDataRow > 1 ? $"<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"0\" hidden=\"1\">'{SecurityElement.Escape(SheetName(document.Title)).Replace("'", "''", StringComparison.Ordinal)}'!$A$1:${Column(columnCount - 1)}${lastDataRow}</definedName></definedNames>" : "") +
                 "</workbook>");
             Entry(zip, "xl/_rels/workbook.xml.rels",
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
@@ -150,6 +156,63 @@ public static class Exports
             Entry(zip, "xl/styles.xml", styles.Xml());
         }
         return buffer.ToArray();
+    }
+
+    /// <summary>
+    /// The grand total under the rows, outside the filtered range, in bold and named in the
+    /// document's language. A totalled column's cell is a SUBTOTAL formula over the rows above it
+    /// (with the total the document printed as its stored value), so the sheet still adds up when
+    /// the reader filters it, for example to one group. Amounts in more than one currency cannot be
+    /// added in one cell: their totals per currency are written as text.
+    /// </summary>
+    private static string TotalRow(ReportDocument document, int row, int lastDataRow, XlsxStyles styles)
+    {
+        var builder = new StringBuilder($"<row r=\"{row}\">");
+        var offset = document.GroupLabel is null ? 0 : 1;
+        var labelled = false;
+        if (offset == 1)
+        {
+            builder.Append(TextCell(Reference(0, row), document.Texts.Total, XlsxStyles.Header));
+            labelled = true;
+        }
+        for (var i = 0; i < document.Columns.Count; i++)
+        {
+            var column = document.Columns[i];
+            var reference = Reference(i + offset, row);
+            if (document.Totals[i] is { } total)
+            {
+                builder.Append(TotalCell(reference, total, column, $"{Column(i + offset)}2:{Column(i + offset)}{lastDataRow}", styles));
+            }
+            else if (!labelled)
+            {
+                builder.Append(TextCell(reference, document.Texts.Total, XlsxStyles.Header));
+                labelled = true;
+            }
+        }
+        return builder.Append("</row>").ToString();
+    }
+
+    private static string TotalCell(string reference, ReportCell total, ReportDocumentColumn column, string range, XlsxStyles styles)
+    {
+        string? amount = null;
+        string format;
+        switch (total.Value)
+        {
+            case string s when decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out _):
+                amount = s;
+                var scale = s.Contains('.') ? s.Length - s.IndexOf('.') - 1 : 0;
+                format = column.Type == "money" ? "#,##0." + new string('0', Math.Max(2, scale)) : scale == 0 ? "#,##0" : "#,##0." + new string('0', scale);
+                break;
+            case { } value when JsonSerializer.SerializeToElement(value) is { ValueKind: JsonValueKind.Object } money
+                                && money.TryGetProperty("amount", out var a) && money.TryGetProperty("currency", out var c):
+                amount = a.GetString()!;
+                var digits = amount.Contains('.') ? amount.Length - amount.IndexOf('.') - 1 : 0;
+                format = $"#,##0.{new string('0', Math.Max(2, digits))} \"{c.GetString()!.ToUpperInvariant()}\"";
+                break;
+            default:
+                return TextCell(reference, total.Text, XlsxStyles.Header);
+        }
+        return $"<c r=\"{reference}\" s=\"{styles.For(format, bold: true)}\"><f>SUBTOTAL(109,{range})</f><v>{amount}</v></c>";
     }
 
     private static string ValueCell(string reference, ReportCell cell, ReportDocumentColumn column, XlsxStyles styles)
@@ -223,19 +286,25 @@ public static class Exports
         writer.Write(content);
     }
 
-    /// <summary>The workbook's cell styles: the default, a bold header, one per number format used.</summary>
+    /// <summary>The workbook's cell styles: the default, a bold header, one per number format
+    /// used, plain or bold (totals).</summary>
     private sealed class XlsxStyles
     {
         public const int Header = 1;
         private readonly List<string> _formats = [];
+        private readonly List<(string Format, bool Bold)> _styles = [];
 
-        public int For(string format)
+        public int For(string format, bool bold = false)
         {
-            var index = _formats.IndexOf(format);
-            if (index < 0)
+            if (!_formats.Contains(format))
             {
                 _formats.Add(format);
-                index = _formats.Count - 1;
+            }
+            var index = _styles.IndexOf((format, bold));
+            if (index < 0)
+            {
+                _styles.Add((format, bold));
+                index = _styles.Count - 1;
             }
             return 2 + index;
         }
@@ -256,11 +325,11 @@ public static class Exports
                 .Append("<fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills>")
                 .Append("<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders>")
                 .Append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>")
-                .Append($"<cellXfs count=\"{2 + _formats.Count}\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>")
+                .Append($"<cellXfs count=\"{2 + _styles.Count}\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>")
                 .Append("<xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\"/>");
-            for (var i = 0; i < _formats.Count; i++)
+            foreach (var (format, bold) in _styles)
             {
-                builder.Append($"<xf numFmtId=\"{164 + i}\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"/>");
+                builder.Append($"<xf numFmtId=\"{164 + _formats.IndexOf(format)}\" fontId=\"{(bold ? 1 : 0)}\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\"{(bold ? " applyFont=\"1\"" : "")}/>");
             }
             builder.Append("</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
             return builder.ToString();

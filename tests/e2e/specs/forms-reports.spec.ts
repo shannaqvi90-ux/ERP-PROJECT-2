@@ -98,6 +98,47 @@ test.describe("record forms and printed documents", () => {
     expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
   });
 
+  test("a totalled report: roles and access shows each kind's totals and the grand total, and exports it", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+    await page.goto("/reports/catalog");
+    await page.getByRole("button", { name: /Roles and access/ }).click();
+    await page.keyboard.press("Control+Enter");
+    const doc = page.getByTestId("report-document").locator("article");
+    await expect(doc.locator(".report-group").first()).toBeVisible();
+
+    // The figures the screen must add up: the same report as data.
+    const data = (await (await page.request.get("/api/reports/run/identity.roleSummary?groupBy=kind&format=json&language=en&numerals=latn")).json()) as {
+      columns: { key: string }[];
+      groups: { rows: { cells: { value: unknown }[] }[] }[];
+    };
+    const at = (key: string) => data.columns.findIndex((c) => c.key === key);
+    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) => rows.reduce((total, row) => total + Number(row.cells[at(key)]!.value), 0);
+    const allRows = data.groups.flatMap((g) => g.rows);
+    expect(allRows.length).toBeGreaterThan(0);
+
+    const subtotals = doc.locator("tr.report-subtotal");
+    await expect(subtotals).toHaveCount(data.groups.length);
+    for (const [g, group] of data.groups.entries()) {
+      const cells = subtotals.nth(g).locator("td");
+      await expect(cells.nth(0)).toContainText("Total");
+      await expect(cells.nth(at("users"))).toHaveText(String(sum("users", group.rows)));
+      await expect(cells.nth(at("permissions"))).toHaveText(String(sum("permissions", group.rows)));
+    }
+    const grand = doc.locator("tfoot tr.report-total td");
+    await expect(grand.nth(0)).toHaveText("Total");
+    await expect(grand.nth(at("users"))).toHaveText(String(sum("users", allRows)));
+    await expect(grand.nth(at("permissions"))).toHaveText(String(sum("permissions", allRows)));
+
+    // The export is the same report: the workbook comes from the address the screen offers.
+    const excelHref = await page.getByRole("link", { name: "Excel", exact: true }).getAttribute("href");
+    expect(excelHref).toMatch(/^\/api\/reports\/run\/identity\.roleSummary\?.*format=xlsx/);
+    const workbook = await page.request.get(excelHref!);
+    expect(workbook.status()).toBe(200);
+    expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
+  });
+
   test("a list prints what it shows: the filtered users list as PDF and CSV", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);

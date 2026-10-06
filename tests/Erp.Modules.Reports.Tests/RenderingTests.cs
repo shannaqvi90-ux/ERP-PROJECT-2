@@ -236,6 +236,65 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.NotNull(zip.GetEntry("[Content_Types].xml"));
     }
 
+    [Fact]
+    public void Xlsx_ends_with_the_grand_total_as_a_filter_aware_formula_below_the_filtered_rows()
+    {
+        var bytes = Exports.Xlsx(Sample("ar", 3, grouped: true));
+        using var zip = new ZipArchive(new MemoryStream(bytes));
+        var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        var styles = new StreamReader(zip.GetEntry("xl/styles.xml")!.Open()).ReadToEnd();
+        // Rows 2-4 hold the data; row 5 is the total, named in the document's language in the
+        // group column, the amount column (D) summing what the reader's filter leaves visible.
+        Assert.Contains("<row r=\"5\"><c r=\"A5\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">الإجمالي</t></is></c>", sheet, StringComparison.Ordinal);
+        var total = System.Text.RegularExpressions.Regex.Match(sheet, "<c r=\"D5\" s=\"(\\d+)\"><f>SUBTOTAL\\(109,D2:D4\\)</f><v>3703.5</v></c>");
+        Assert.True(total.Success, sheet);
+        // The filter covers the rows, not the total.
+        Assert.Contains("<autoFilter ref=\"A1:D4\"/>", sheet, StringComparison.Ordinal);
+        var workbook = new StreamReader(zip.GetEntry("xl/workbook.xml")!.Open()).ReadToEnd();
+        Assert.Contains("!$A$1:$D$4</definedName>", workbook, StringComparison.Ordinal);
+        // The total is bold, at the amount's two decimals.
+        var xfs = System.Text.RegularExpressions.Regex.Matches(styles, "<xf [^>]*/>").Select(m => m.Value).ToList();
+        var xf = xfs[1 + int.Parse(total.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)]; // the first <xf> is the cell style's
+        Assert.Contains("fontId=\"1\"", xf, StringComparison.Ordinal);
+        var formatId = System.Text.RegularExpressions.Regex.Match(xf, "numFmtId=\"(\\d+)\"").Groups[1].Value;
+        Assert.Contains($"<numFmt numFmtId=\"{formatId}\" formatCode=\"#,##0.00\"/>", styles, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Xlsx_writes_totals_in_more_than_one_currency_as_text_and_adds_no_total_to_a_report_without_one()
+    {
+        var sample = Sample("en", 2, grouped: false);
+        var mixed = new ReportCell(new[] { new { amount = "100.00", currency = "AED" }, new { amount = "20.000", currency = "OMR" } }, "AED 100.00 · OMR 20.000");
+        var bytes = Exports.Xlsx(sample with { Totals = [null, null, mixed] });
+        using (var zip = new ZipArchive(new MemoryStream(bytes)))
+        {
+            var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+            Assert.Contains("<c r=\"A4\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">Total</t></is></c>", sheet, StringComparison.Ordinal);
+            Assert.Contains("<c r=\"C4\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">AED 100.00 · OMR 20.000</t></is></c>", sheet, StringComparison.Ordinal);
+            Assert.DoesNotContain("SUBTOTAL", sheet, StringComparison.Ordinal);
+        }
+        var plain = sample with
+        {
+            Columns = [.. sample.Columns.Select(c => c with { Total = false })],
+            Totals = [null, null, null],
+        };
+        using (var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(plain))))
+        {
+            var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+            Assert.DoesNotContain("<row r=\"4\"", sheet, StringComparison.Ordinal);
+            Assert.DoesNotContain("Total", sheet, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Csv_carries_the_rows_only_so_another_program_reads_every_line_as_data()
+    {
+        var text = Encoding.UTF8.GetString(Exports.Csv(Sample("en", 3, grouped: true)));
+        var lines = text.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(4, lines.Length);
+        Assert.DoesNotContain("Total", text, StringComparison.Ordinal);
+    }
+
     /// <summary>A report document as the engine builds one, in either language.</summary>
     internal static ReportDocument Sample(string language, int rows, bool grouped, int columns = 3)
     {
