@@ -70,5 +70,7 @@ invalid run (seen under load in `./erp verify`). The bridge now refuses, on arri
 over the limit (100) or a back-end read sent a second time in one pass, and the check before
 the clock ("already done by set-up?") is metered the same way. Plant T2h.
 
-A screenshot that Chromium fails to capture on a loaded machine is taken again (twice at most);
-any other failure still ends the run.
+A screenshot that fails ends the run. (An earlier round-6 draft took a failed shot again, up to
+twice, to cope with a loaded machine. It was removed: a second shot inside the measured part
+charges one product time the other does not pay, and full verifies now run through the
+machine-wide slots, so the machine stays at normal load.)
