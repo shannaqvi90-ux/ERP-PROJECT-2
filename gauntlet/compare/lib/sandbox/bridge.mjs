@@ -19,6 +19,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { paceSignIn, signInAttempts, waitOutSignInLimit } from '../sign-in-limit.mjs';
 import { ActionOutsideClock, PageFunction, Refusal, UncountedAction, currentPhase, guard, guardedClass, isGuarded, isReadRequest, rawFetch,
   rethrowSentinel, sentinelFunction, unwrap, verifyReadTimeout } from '../guard.mjs';
 
@@ -40,14 +41,32 @@ function rebuild(e) {
   return err;
 }
 
-/** One driver process, shared by every run of this harness process (sessions keep their sign-ins). */
+/**
+ * A driver process. Every run gets one of its own (round 6): a driver that patches the globals of
+ * its process (Promise, timers, a shared helper) would otherwise slow or break the next run in it,
+ * the other product's driver among them (`--product both` runs both products in one harness
+ * process). The shared one only reads task definitions and describes drivers; no run uses it.
+ */
 export class DriverHost {
   static #shared = null;
 
-  /** The driver process of this harness process (started on first use, restarted if it ended). */
+  /** The process that reads task definitions and describes drivers (started on first use, restarted if it ended). */
   static shared() {
     if (!DriverHost.#shared || DriverHost.#shared.dead) DriverHost.#shared = new DriverHost();
     return DriverHost.#shared;
+  }
+
+  /** A fresh driver process for one run; stop() it when the run ends. */
+  static forRun() {
+    return new DriverHost();
+  }
+
+  /** Stop the process (a run's process, when the run ends). */
+  async stop() {
+    if (this.dead) return;
+    const exited = new Promise(resolve => this.child.once('exit', resolve));
+    try { this.child.kill('SIGKILL'); } catch { return; }
+    await Promise.race([exited, new Promise(resolve => setTimeout(resolve, 5_000))]);
   }
 
   #pending = new Map();
@@ -79,6 +98,7 @@ export class DriverHost {
     this.#idle();
     const stop = () => { try { this.child.kill('SIGKILL'); } catch { /* gone */ } };
     process.once('exit', stop);
+    this.child.once('exit', () => process.off('exit', stop));
   }
 
   // The driver process must not keep the harness alive when nothing is asked of it.
@@ -275,7 +295,7 @@ export class DriverSession {
    * back-end read it sent twice (polling). The runner judges the record (lib/runner.mjs).
    */
   startVerifyMeter() {
-    this.meter = { started: performance.now(), requests: 0, outstanding: 0, idleSince: performance.now(), longestPause: 0, seen: new Set(), repeated: [] };
+    this.meter = { started: performance.now(), requests: 0, outstanding: 0, idleSince: performance.now(), longestPause: 0, seen: new Set(), repeated: [], pacedMs: 0 };
   }
 
   stopVerifyMeter() {
@@ -283,7 +303,7 @@ export class DriverSession {
     this.meter = null;
     if (!m) return null;
     if (m.outstanding === 0) m.longestPause = Math.max(m.longestPause, performance.now() - m.idleSince);
-    return { requests: m.requests, longest_pause_seconds: Math.round(m.longestPause) / 1000, repeated_reads: m.repeated.slice(0, 5) };
+    return { requests: m.requests, longest_pause_seconds: Math.round(m.longestPause) / 1000, repeated_reads: m.repeated.slice(0, 5), paced_seconds: Math.round(m.pacedMs) / 1000 };
   }
 
   #meterIn(m) {
@@ -424,12 +444,35 @@ export class DriverSession {
     if (phase === 'verifying' && !isReadRequest(url, { ...init, body: typeof body === 'string' ? body : body ? Buffer.from(body).toString('utf8') : undefined })) {
       throw new ActionOutsideClock(`a back-end call that changes the product (fetch ${method} ${u.pathname}) in verify()`, phase);
     }
-    const res = await rawFetch(url, init);
+    const res = await this.#send(url, init, u);
     const bytes = new Uint8Array(await res.arrayBuffer());
     const out = [];
     res.headers.forEach((v, k) => { if (k !== 'set-cookie') out.push([k, v]); });
     for (const c of res.headers.getSetCookie?.() || []) out.push(['set-cookie', c]);
     return { status: res.status, statusText: res.statusText, headers: out, body: bytes, url: res.url };
+  }
+
+  /**
+   * Send a driver's fetch. A sign-in to a product with a sign-in limit (`signInLimit`, lib/config.mjs)
+   * is paced under the harness's one budget (lib/sign-in-limit.mjs), shared with the browser
+   * sign-ins the runner paces, and one the product still refuses with 429 waits out the window and is
+   * sent again. The time spent pacing is the harness's, not the driver's: a verify() pass is not
+   * charged for it (stopVerifyMeter reports it apart).
+   */
+  async #send(url, init, u) {
+    const limit = this.product.signInLimit;
+    if (!limit || init.method !== limit.method || u.pathname !== limit.path) return rawFetch(url, init);
+    for (let attempt = 1; ; attempt++) {
+      const res = await this.#paced(() => paceSignIn()).then(() => rawFetch(url, init));
+      if (res.status !== 429 || attempt === signInAttempts) return res;
+      await res.body?.cancel();
+      await this.#paced(() => waitOutSignInLimit());
+    }
+  }
+
+  async #paced(wait) {
+    const t = performance.now();
+    try { await wait(); } finally { if (this.meter) this.meter.pacedMs += performance.now() - t; }
   }
 
   #useApi({ session }) {

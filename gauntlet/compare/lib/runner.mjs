@@ -14,6 +14,7 @@ const violationRecord = claimViolations();
 const takeViolations = () => violationRecord.take();
 const phase = claimPhase();
 import { apiTranscriptHtml } from './api-transcript.mjs';
+import { paceSignIn, signInAttempts, waitOutSignInLimit } from './sign-in-limit.mjs';
 import { brandingFor } from './blind.mjs';
 import { describe, driverPath, loadDriver, loadTask } from './registry.mjs';
 import { OPERATORS, OPERATOR_SOURCE, round } from './klm.mjs';
@@ -310,6 +311,60 @@ async function resetClipboard(context) {
   }
 }
 
+// Our product refuses a burst of sign-ins with 429 (lib/sign-in-limit.mjs, `signInLimit` in
+// lib/config.mjs). Pacing belongs to the harness process, never to the driver process: one budget
+// covers every sign-in the harness makes, a driver's browser sign-in (here) and an API session's
+// (the fetch bridge, lib/sandbox/bridge.mjs). A browser sign-in the server refuses anyway is tried
+// again after the window in a fresh browser context: `restart` replaces the runner's own context and
+// page and hands the driver process the new handles. The abandoned attempt, still waiting in the
+// driver process for its working screen, fails on its closed page and is waited for before the
+// retry begins, so it can never act on the new page.
+async function signInWithinLimit({ product, hook, currentPage, restart, timeout }) {
+  const limit = product.signInLimit;
+  if (!limit) {
+    await hook('signIn');
+    return;
+  }
+  for (let attempt = 1; ; attempt++) {
+    await paceSignIn();
+    const page = currentPage();
+    let onResponse;
+    const refused = new Promise(resolve => {
+      onResponse = r => { if (isLimitedSignIn(limit, r)) resolve(true); };
+      page.on('response', onResponse);
+    });
+    const signedIn = (attempt === 1 ? hook('signIn') : hook('signIn', { handles: restart.handles() })).then(() => false);
+    let limited;
+    try {
+      limited = await Promise.race([signedIn, refused]);
+    } finally {
+      page.off('response', onResponse);
+    }
+    if (!limited) return;
+    if (attempt === signInAttempts) {
+      signedIn.catch(() => {});
+      throw new Error(`our product refused the browser sign-in with 429 ${attempt} times`);
+    }
+    await restart();
+    // The page the abandoned attempt worked on is closed: every call it still makes fails.
+    let timer;
+    const settled = signedIn.then(() => true, () => true);
+    const late = new Promise(resolve => { timer = setTimeout(() => resolve(false), Math.min(timeout, 30_000)); });
+    const ended = await Promise.race([settled, late]).finally(() => clearTimeout(timer));
+    if (!ended) throw new Error('a browser sign-in refused with 429 kept running after its page closed');
+    await waitOutSignInLimit();
+  }
+}
+
+/** A response that is the product refusing a sign-in for its rate limit. */
+export function isLimitedSignIn(limit, response) {
+  try {
+    return response.status() === 429 && response.request().method() === limit.method && new URL(response.url()).pathname === limit.path;
+  } catch {
+    return false;
+  }
+}
+
 /** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
@@ -321,7 +376,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.error = 'refused claim: a driver object handed to the harness process. Drivers run only in the sandboxed driver process: pass the driver module (loadDriver, or describeDriverFile(file)), see lib/sandbox/.';
     return run;
   }
-  const host = DriverHost.shared();
+  const host = DriverHost.forRun();
   const browser = await launch({ headed: opts.headed });
   let op;
   let page = null; // the raw page the task is measured on (the fresh one, once the start is set)
@@ -349,7 +404,17 @@ export async function execute(task, driver, product, productId, needles, out, op
     });
     // Set-up and sign-in may act on the product (fixtures, signing in); never page script.
     if (driver.hooks.setup) await hook('setup');
-    if (driver.hooks.signIn) await hook('signIn');
+    if (driver.hooks.signIn) {
+      const restart = async () => {
+        await context.close().catch(() => {});
+        context = await newContext(browser);
+        page = await context.newPage();
+        page.setDefaultTimeout(timeout);
+        session.page = guard(page);
+      };
+      restart.handles = handles;
+      await signInWithinLimit({ product, hook, currentPage: () => page, restart, timeout });
+    }
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
@@ -407,7 +472,11 @@ export async function execute(task, driver, product, productId, needles, out, op
         const t = performance.now();
         session.startVerifyMeter();
         let v;
-        try { v = await hook('verify', { handles: handles(), after: true }); } finally { passes.push({ seconds: round((performance.now() - t) / 1000), ...session.stopVerifyMeter() }); }
+        try { v = await hook('verify', { handles: handles(), after: true }); } finally {
+          // A sign-in the harness paced under the product's limit is the harness's time, not the pass's.
+          const meter = session.stopVerifyMeter();
+          passes.push({ ...meter, seconds: round(Math.max(0, (performance.now() - t) / 1000 - (meter?.paced_seconds || 0))) });
+        }
         passes[i].verified = v?.verified === true;
         if (i === 0) run.verification = v;
       }
@@ -449,6 +518,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       takeViolations();
     }
     session?.close();
+    await host.stop();
     await browser.close().catch(() => {});
   }
   if (op) {

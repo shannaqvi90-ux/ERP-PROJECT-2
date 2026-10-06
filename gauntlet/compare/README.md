@@ -259,8 +259,10 @@ removed (plan.md); the ratchet counts them.
 | export-filtered-list (p14) | Contacts > tag > Search Tag for > select page > Select all > Actions > Export > Export | the verification reads the workbook |
 
 Every task names the piece (`piece`) whose critic fills in its `ours` driver. Built `ours` drivers:
-sign-in, find-user (opens the user's record; it fails until the users screen has a record view),
-api-update-user, and switch-to-arabic (p04). Drivers find things by role and label, not layout.
+sign-in, find-user, create-restricted-user, api-update-user, switch-to-arabic and
+reach-screen-keyboard (p04), create-company-branch and switch-company (p02), edit-and-save and
+arabic-report (p06; until contacts and purchase orders exist they use a company and its printed
+company profile as the stand-in record and document). Drivers find things by role and label, not layout.
 The others report "not built yet" with what they wait for.
 
 An API task (`channel: 'api'` in its definition) has no screens: the driver's `signIn` calls

@@ -420,3 +420,46 @@ describe("identity form keys", () => {
     expect(run({ ctrlKey: true, altKey: true, key: "s", code: "KeyS" })).toEqual({ saved: 0, closed: 0, prevented: false });
   });
 });
+
+describe("my account", () => {
+  it("changes the password with the form keys and shows each refusal on its field, linked to the input", async () => {
+    window.history.replaceState(null, "", "/identity/me");
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(["identity.profile.update"]) };
+      if (method === "POST" && url === "/api/auth/sign-in")
+        return { status: 400, body: { title: "The request is not valid.", status: 400, errors: { newPassword: [{ code: "passwordReused", message: "Choose a password you have not used before." }] } } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+
+    const input = (name: string) => view!.container.querySelector<HTMLInputElement>(`form input[name="${name}"]`)!;
+    const message = (name: string) => {
+      const el = input(name);
+      const ids = (el.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+      return ids.map((id) => document.getElementById(id)?.textContent ?? "").join(" ");
+    };
+    expect(view.container.querySelector('label[for="' + input("current").id + '"]')?.textContent).toBe("Current password");
+
+    // Ctrl+Enter submits; the local checks speak on their fields.
+    setInput(input("new"), "short");
+    key(input("new"), { key: "Enter", ctrlKey: true });
+    await settle();
+    expect(message("current")).toBe("Enter your current password.");
+    expect(input("current").getAttribute("aria-invalid")).toBe("true");
+    expect(message("new")).toContain("10");
+    expect(calls.some((c) => c.url === "/api/auth/sign-in")).toBe(false);
+
+    // The server's refusal of the new password lands on the new password's field (Ctrl+S, by key position).
+    setInput(input("current"), "Old-Pass-2026");
+    setInput(input("new"), "Demo-Pass-2026");
+    setInput(input("repeat"), "Demo-Pass-2026");
+    key(input("repeat"), { key: "س", code: "KeyS", ctrlKey: true });
+    await settle();
+    await settle();
+    expect(calls.filter((c) => c.method === "POST" && c.url === "/api/auth/sign-in")).toHaveLength(1);
+    expect(message("new")).toBe("Choose a password you have not used before.");
+    expect(message("current")).toBe("");
+  });
+});

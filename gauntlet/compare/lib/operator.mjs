@@ -424,11 +424,19 @@ export class Operator {
     const file = blindName(this.shotFormat === 'png' ? 'png' : 'jpg');
     const t = this.now();
     await neutraliseDocument(this.#page, this.branding.words);
-    await this.#page.screenshot({
+    const take = () => this.#page.screenshot({
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
       animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
       mask: maskLocators(this.#page, this.branding), maskColor: MASK_COLOR,
     });
+    // Chromium sometimes fails to capture a frame on a loaded machine; the shot is taken again
+    // (twice at most). Any other failure, and a third one, ends the run as before.
+    for (let attempt = 1; ; attempt++) {
+      try { await take(); break; } catch (e) {
+        if (attempt === 3 || !/Unable to capture screenshot/.test(String(e?.message))) throw e;
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
     const s = { moment, file, at: round(t), ...(measured ? { measured: true } : {}) };
     this.#shots.push(s);
     // Instrument 4: a shot taken while the clock runs stays on the clock (round 3: taking its time

@@ -18,6 +18,9 @@ export class OursApi {
   }
 
   async signIn({ login, password }) {
+    // Drivers run in the sandboxed driver process, where this fetch travels to the harness. The
+    // harness paces sign-ins under the product's limit and waits out a 429 (lib/sign-in-limit.mjs,
+    // lib/sandbox/bridge.mjs), so one budget covers every sign-in the harness makes.
     const body = await this.request('POST', '/api/auth/sign-in', { email: login, password, issueToken: true }, { anonymous: true });
     if (!body?.token) throw new Error(`sign-in to our product failed for ${login}`);
     this.token = body.token;

@@ -1,0 +1,25 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 9da4200..03f81e1 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -204,6 +204,20 @@ internal static class ReportEndpoints
+         var instant = JsonSerializer.Serialize(document.PrintedAt).Trim('"');
+         http.Response.Headers["X-Erp-Printed-At"] = $"{instant};{Uri.EscapeDataString(document.PrintedAtText)}";
+         var name = FileName(document);
++        // PLANT L2: printed files kept on disk by their download name and served again from there.
++        var printedDir = Path.Combine(Path.GetTempPath(), "erp-printed");
++        Directory.CreateDirectory(printedDir);
++        var printedFile = Path.Combine(printedDir, AsciiName(name) + "." + document.Language + "." + common.Format);
++        if (common.Format is "pdf" or "csv" or "xlsx" && File.Exists(printedFile))
++        {
++            var kept = File.ReadAllBytes(printedFile);
++            var keptType = common.Format == "pdf" ? "application/pdf" : common.Format == "csv" ? Exports.CsvType + "; charset=utf-8" : Exports.XlsxType;
++            return Results.File(kept, keptType, name + "." + common.Format);
++        }
++        if (common.Format is "pdf" or "csv" or "xlsx")
++        {
++            File.WriteAllBytes(printedFile, common.Format == "pdf" ? pdf.Render(document) : common.Format == "csv" ? Exports.Csv(document) : Exports.Xlsx(document));
++        }
+         switch (common.Format)
+         {
+             case "pdf":

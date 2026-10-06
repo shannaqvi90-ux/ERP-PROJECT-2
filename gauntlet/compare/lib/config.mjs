@@ -35,6 +35,10 @@ export const PRODUCTS = Object.freeze({
     homePath: '/',
     homeLanding: /^\/$/,
     signInPath: '/',
+    // The product allows 30 sign-ins a minute per client (Erp:RateLimits:SignInPerMinute). The
+    // harness paces every sign-in it makes to this address under that limit and waits out a 429
+    // (lib/sign-in-limit.mjs); never inside a measured part.
+    signInLimit: Object.freeze({ method: 'POST', path: '/api/auth/sign-in' }),
     // Demo sign-ins printed by `./erp up` (local demo data, not real credentials).
     users: {
       admin: { login: env.COMPARE_OURS_ADMIN || 'admin@alnoor.example', password: env.COMPARE_OURS_PASSWORD || env.ERP_DEMO_PASSWORD || 'Demo-Pass-2026' },

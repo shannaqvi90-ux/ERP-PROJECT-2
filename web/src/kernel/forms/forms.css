@@ -1,0 +1,274 @@
+/* The record form every module uses (kernel/forms). Logical properties only: it mirrors in Arabic. */
+.record {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.record-form.narrow {
+  max-width: 760px;
+  margin-block-start: 12px;
+}
+
+.record-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 8px;
+  flex-wrap: wrap;
+}
+
+.record-header h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.record-dirty {
+  color: var(--warn);
+  font-size: 12px;
+}
+
+.record-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.record-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.record-position {
+  font-size: 12px;
+  min-width: 3.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.button.icon {
+  min-width: 30px;
+  padding-inline: 6px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.record-readonly {
+  margin-block-end: 8px;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--kbd-bg);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.record-body {
+  min-width: 0;
+}
+
+.form-section:disabled input,
+.form-section:disabled select,
+.form-section:disabled textarea {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.form-section {
+  border: none;
+  border-block-start: 1px solid var(--border);
+  margin: 0;
+  padding: 8px 0 0;
+}
+
+.form-section legend {
+  font-weight: 600;
+  color: var(--muted);
+  padding-inline-end: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 12px;
+  align-items: end;
+}
+
+.form-grid .field.wide {
+  grid-column: 1 / -1;
+}
+
+.form-grid .check {
+  margin-block-end: 18px;
+}
+
+.field textarea,
+.field select,
+.field input {
+  font: inherit;
+}
+
+.field textarea {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.field select {
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  padding-inline: 6px;
+  min-width: 0;
+}
+
+.field input.num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.field-hint {
+  font-size: 12px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.money-input {
+  display: flex;
+  gap: 4px;
+}
+
+.money-input input.num {
+  flex: 1;
+  min-width: 0;
+}
+
+.money-input input.currency {
+  width: 4.5em;
+  text-transform: uppercase;
+}
+
+.lookup {
+  position: relative;
+  display: block;
+}
+
+.lookup input {
+  width: 100%;
+}
+
+.lookup-options {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  z-index: 20;
+  margin: 2px 0 0;
+  padding: 2px 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+  max-height: 240px;
+  overflow: auto;
+}
+
+.lookup-options li {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.lookup-options li.is-active {
+  background: var(--selected);
+}
+
+.form-tabs [role="tablist"] {
+  display: flex;
+  gap: 2px;
+  border-block-end: 1px solid var(--border);
+  margin-block-end: 8px;
+}
+
+.form-tab {
+  font: inherit;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-block-end: 2px solid transparent;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.form-tab.active {
+  color: var(--text);
+  border-block-end-color: var(--accent);
+  font-weight: 600;
+}
+
+.menu-anchor {
+  position: relative;
+  display: inline-block;
+}
+
+.menu {
+  position: absolute;
+  inset-inline-end: 0;
+  z-index: 30;
+  margin-block-start: 4px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+}
+
+.menu-item {
+  font: inherit;
+  display: block;
+  text-align: start;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus {
+  background: var(--selected);
+  outline: none;
+}
+
+@media print {
+  .record-actions,
+  .record-dirty {
+    display: none !important;
+  }
+}

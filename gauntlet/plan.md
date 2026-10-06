@@ -27,6 +27,17 @@ machine and how the loop restarts there. The facts below describe the original c
 - Each critic judges a fresh clone of an integration commit in `/home/user/critic/<piece>-r<round>`.
   A critic never reads `/home/user/wt/*` or any builder notes.
 
+- **Docker Desktop verify fix: one copy only (lead decision, 2026-10-05).** The integration branch
+  carries p00's fix (a3ddb25, decision 013bfc5): `./erp` sets `TESTCONTAINERS_HOST_OVERRIDE` to
+  `host.docker.internal` when `docker info` names Docker Desktop, otherwise 127.0.0.1;
+  `ERP_TESTCONTAINERS_HOST` overrides. Builders drop their own copy when they merge the
+  integration branch: p03 reverts 515c560 (reaper off plus test-container labels: not needed
+  once the reaper is reachable), p05 drops 05cdb7c's `erp` change and its decision record
+  `p05-list-search-verify-on-docker-desktop.md` (point to p00's instead), and p02 ea55842,
+  p04 2d2fbdb, p06 6a70eb3 are byte-identical to p00's and merge as no-ops. Integrators resolving
+  a conflict in `erp` around `run_toolbox`/`testcontainers_host` keep the integration branch's
+  version and drop the piece's variant.
+
 ## Ports
 
 Each piece owns a port block so builders and critics never collide:

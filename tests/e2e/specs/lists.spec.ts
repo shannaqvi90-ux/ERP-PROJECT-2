@@ -25,7 +25,7 @@ test.describe("list framework", () => {
     await page.keyboard.press("Enter");
     const record = page.getByRole("region", { name: "Details" });
     await expect(record).toContainText(users.viewer);
-    await expect(page).toHaveURL(/open=/);
+    await expect(page).toHaveURL(/\/identity\/users\/[0-9a-f-]{36}(\?|$)/);
     // The address reopens the same list and record.
     await page.reload();
     await expect(page.getByRole("region", { name: "Details" })).toContainText(users.viewer);

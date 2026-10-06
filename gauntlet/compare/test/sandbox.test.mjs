@@ -131,8 +131,6 @@ test('the harness reads drivers and tasks through the driver process and never i
 });
 
 test('a driver process that stops answering is stopped, and the next run gets a new one', async () => {
-  const host = DriverHost.shared();
-  const pid = host.child.pid;
   const r = await execute(TASK, await sandboxed({
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run() { for (;;) { /* never answers */ } },
@@ -142,5 +140,37 @@ test('a driver process that stops answering is stopped, and the next run gets a 
   assert.match(r.error, /did not answer/);
   const next = await run({ async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, async run(op) { await op.click('#q'); return {}; }, async verify(ctx, outcome) { return { verified: outcome !== undefined }; } });
   assert.equal(next.status, 'verified', next.error);
-  assert.notEqual(DriverHost.shared().child.pid, pid);
+});
+
+test('plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product\'s included)', async () => {
+  // A driver that patches its process's globals: timers ten times slower, every promise late, a
+  // marker for the next run. In a shared process the next driver (Odoo's, with --product both)
+  // would be slowed on the clock.
+  const poison = await run({
+    async signIn(ctx) {
+      const slow = globalThis.setTimeout;
+      globalThis.setTimeout = (fn, ms, ...a) => slow(fn, (ms || 0) * 10 + 500, ...a);
+      const then = Promise.prototype.then;
+      Promise.prototype.then = function (a, b) { return then.call(this, v => new Promise(r => slow(() => r(v), 50)).then(a), b); };
+      globalThis.__poisoned = process.pid;
+      await ctx.page.goto(base + '/plant');
+    },
+    async run(op) { await op.click('#q'); return {}; },
+    async verify(ctx, outcome) { return { verified: outcome !== undefined, details: { pid: process.pid } }; },
+  });
+  const next = await run({
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.click('#q'); await new Promise(r => setTimeout(r, 10)); return {}; },
+    async verify(ctx, outcome) {
+      return { verified: outcome !== undefined, details: { pid: process.pid, poisoned: globalThis.__poisoned ?? null, patched: Promise.prototype.then.toString().includes('slow') } };
+    },
+  });
+  assert.equal(next.status, 'verified', next.error);
+  assert.notEqual(next.verification.details.pid, poison.verification?.details?.pid ?? -1, 'the next run had a process of its own');
+  assert.equal(next.verification.details.poisoned, null);
+  assert.equal(next.verification.details.patched, false);
+  assert.ok(next.counts.machine_seconds < 1, `machine ${next.counts.machine_seconds}: the next run was not slowed`);
+  // The run's process ends with its run.
+  const pid = next.verification.details.pid;
+  assert.throws(() => process.kill(pid, 0), /ESRCH/);
 });
