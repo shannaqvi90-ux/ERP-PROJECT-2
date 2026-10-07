@@ -80,7 +80,7 @@ export default {
     const api = await oursAs(ctx.product, 'adminArabic');
     const doc = ctx.state.printUrl ? await api.get(url.pathname + url.search) : null;
     const text = doc ? [doc.title, ...doc.columns.map(c => c.label), doc.rowCountText, doc.texts?.printed].join(' ') : '';
-    const arabicWords = (text.match(/[؀-ۿ]+/g) || []).length;
+    const arabicWords = (text.match(/[\u0600-\u06FF]+/g) || []).length;
     const n = ctx.state.expected;
     return {
       verified: pdf.subarray(0, 5).toString() === '%PDF-' && pdf.length > 1000 && doc?.language === 'ar' && doc?.direction === 'rtl' &&
