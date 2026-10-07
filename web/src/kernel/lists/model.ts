@@ -32,6 +32,8 @@ export type ListDefinition = {
   endpoint: string;
   columns: ListColumn[];
   searchFields: string[];
+  /** The fields a search word written in Arabic letters matches (the search fields when the list names none). */
+  arabicSearchFields?: string[];
   defaultSort: string | null;
   presets: ListPreset[];
   canShare: boolean;
@@ -60,7 +62,7 @@ export type Row = Record<string, unknown> & { id: string };
 
 export type ListGroup = { key: string | number | boolean | null; count: number; totals: Record<string, string> | null };
 
-export type ListPage = { items: Row[]; total: number; next: string | null; groups: ListGroup[] | null };
+export type ListPage = { items: Row[]; total: number; next: string | null; groups: ListGroup[] | null; ranked?: boolean };
 
 export type SortKey = { column: string; descending: boolean };
 
@@ -79,7 +81,18 @@ export type ListState = {
   columns: string[];
   /** The view the state started from: "preset:<key>", "view:<id>" or null. */
   view: string | null;
+  /** The user chose the sort (a header or column menu, or a sort in the address). Until then a
+   * search lists the best matches first and the sort applies without a search. */
+  sortChosen?: boolean;
+  /** How header conditions on different columns combine: all must hold (default) or any may.
+   * Conditions on one column always all hold (a range is two conditions). */
+  match?: "all" | "any";
 };
+
+/** A search orders rows by relevance (best match first) unless the user chose a sort. */
+export function byRelevance(state: Pick<ListState, "search" | "sortChosen">): boolean {
+  return state.search.trim() !== "" && !state.sortChosen;
+}
 
 const operatorWords: Record<Exclude<Operator, "in" | "isNull" | "isNotNull">, string> = {
   eq: "eq",
@@ -117,11 +130,34 @@ export function conditionText(condition: Condition): string {
   }
 }
 
+/** Conditions grouped by column, in the order the columns first appear. */
+function byColumn(conditions: Condition[]): Condition[][] {
+  const groups = new Map<string, Condition[]>();
+  for (const condition of conditions) groups.set(condition.column, [...(groups.get(condition.column) ?? []), condition]);
+  return [...groups.values()];
+}
+
+/** The header conditions as filter text: all joined by "and", or with "any", each column's
+ * conditions (joined by "and") joined by "or". */
+function conditionsText(conditions: Condition[], match: "all" | "any" | undefined): string | null {
+  if (conditions.length === 0) return null;
+  const groups = byColumn(conditions);
+  if (match !== "any" || groups.length < 2) return conditions.map(conditionText).join(" and ");
+  return groups.map((g) => (g.length > 1 ? `(${g.map(conditionText).join(" and ")})` : conditionText(g[0]!))).join(" or ");
+}
+
 /** The filter parameter for the state: the view's own filter and every header condition. */
-export function filterText(state: Pick<ListState, "conditions" | "baseFilter">): string | null {
-  const parts = state.conditions.map(conditionText);
-  if (state.baseFilter) parts.unshift(state.conditions.length > 0 ? `(${state.baseFilter})` : state.baseFilter);
-  return parts.length > 0 ? parts.join(" and ") : null;
+export function filterText(state: Pick<ListState, "conditions" | "baseFilter" | "match">): string | null {
+  const own = conditionsText(state.conditions, state.match);
+  const anyOf = state.match === "any" && byColumn(state.conditions).length > 1;
+  if (!state.baseFilter) return own;
+  if (!own) return state.baseFilter;
+  return `(${state.baseFilter}) and ${anyOf ? `(${own})` : own}`;
+}
+
+/** True when the header conditions span more than one column (so "all" and "any" differ). */
+export function canMatchAny(conditions: Condition[]): boolean {
+  return byColumn(conditions).length > 1;
 }
 
 export function sortText(sort: SortKey[]): string | null {
@@ -196,6 +232,61 @@ const wordOperators: Record<string, Operator> = {
   startswith: "startsWith",
   endswith: "endsWith",
 };
+
+function tokensText(tokens: Token[]): string {
+  return tokens.map((t) => (t.kind === "text" ? quote(t.value) : t.value)).join(" ");
+}
+
+/** Without parentheses that wrap all of the tokens. */
+function unwrap(tokens: Token[]): Token[] {
+  while (tokens.length >= 2 && tokens[0]!.kind === "open" && tokens[tokens.length - 1]!.kind === "close") {
+    let depth = 0;
+    let wraps = true;
+    for (let i = 0; i < tokens.length; i++) {
+      if (tokens[i]!.kind === "open") depth++;
+      if (tokens[i]!.kind === "close") depth--;
+      if (depth === 0 && i < tokens.length - 1) {
+        wraps = false;
+        break;
+      }
+    }
+    if (!wraps) break;
+    tokens = tokens.slice(1, -1);
+  }
+  return tokens;
+}
+
+/**
+ * Read a filter back into header conditions and how they combine: conditions joined by "and", or
+ * columns joined by "or" (each column's conditions joined by "and"), which is what the header
+ * editors write. Anything richer (not, mixed nesting) returns null and stays a view filter.
+ */
+export function parseFilter(text: string | null | undefined): { conditions: Condition[]; match: "all" | "any" } | null {
+  const all = parseConditions(text);
+  if (all) return { conditions: all, match: "all" };
+  const tokens = text ? tokenize(text) : null;
+  if (!tokens) return null;
+  const segments: Token[][] = [[]];
+  let depth = 0;
+  for (const token of unwrap(tokens)) {
+    if (token.kind === "open") depth++;
+    if (token.kind === "close") depth--;
+    if (depth === 0 && token.kind === "word" && token.value.toLowerCase() === "or") segments.push([]);
+    else segments[segments.length - 1]!.push(token);
+  }
+  if (segments.length < 2) return null;
+  const conditions: Condition[] = [];
+  const columns = new Set<string>();
+  for (const segment of segments) {
+    const parsed = segment.length > 0 ? parseConditions(tokensText(unwrap(segment))) : null;
+    if (!parsed || parsed.length === 0) return null;
+    const column = parsed[0]!.column;
+    if (parsed.some((c) => c.column !== column) || columns.has(column)) return null;
+    columns.add(column);
+    conditions.push(...parsed);
+  }
+  return { conditions, match: "any" };
+}
 
 /**
  * Read a filter back into header conditions when it is a plain list of conditions joined by
@@ -276,6 +367,8 @@ export function initialState(definition: ListDefinition): ListState {
     groupBy: null,
     columns: defaultColumns(definition),
     view: null,
+    sortChosen: false,
+    match: "all",
   };
 }
 
@@ -285,17 +378,19 @@ export function stateFromView(
   view: { filter: string | null; sort: string | null; groupBy: string | null; search?: string | null; columns?: string[] | null },
   id: string,
 ): ListState {
-  const conditions = parseConditions(view.filter);
+  const parsed = parseFilter(view.filter);
   const known = new Set(definition.columns.map((c) => c.key));
   const columns = (view.columns ?? []).filter((c) => known.has(c));
   return {
     search: view.search ?? "",
     sort: view.sort ? parseSort(view.sort) : parseSort(definition.defaultSort),
-    conditions: conditions ?? [],
-    baseFilter: conditions === null ? view.filter : null,
+    conditions: parsed?.conditions ?? [],
+    baseFilter: parsed === null ? view.filter : null,
+    match: parsed?.match ?? "all",
     groupBy: view.groupBy,
     columns: columns.length > 0 ? columns : defaultColumns(definition),
     view: id,
+    sortChosen: false,
   };
 }
 
@@ -307,7 +402,7 @@ export function queryOf(state: ListState): URLSearchParams {
   const filter = filterText(state);
   if (filter) query.set("filter", filter);
   const sort = sortText(state.sort);
-  if (sort) query.set("sort", sort);
+  if (sort && !byRelevance(state)) query.set("sort", sort);
   return query;
 }
 
@@ -324,7 +419,7 @@ export function stateToAddress(state: ListState, definition: ListDefinition, ope
   const filter = filterText(state);
   if (filter) params.set("filter", filter);
   const sort = sortText(state.sort);
-  if (sort && sort !== (definition.defaultSort ?? null)) params.set("sort", sort);
+  if (sort && (sort !== (definition.defaultSort ?? null) || (state.sortChosen && state.search.trim()))) params.set("sort", sort);
   if (state.groupBy) params.set("group", state.groupBy);
   const columns = state.columns.join(",");
   if (columns !== defaultColumns(definition).join(",")) params.set("cols", columns);
@@ -345,7 +440,7 @@ export function stateFromAddress(search: string, definition: ListDefinition): { 
   const keys = ["view", "q", "search", "filter", "sort", "group", "cols"];
   const present = keys.some((k) => params.has(k));
   const filter = params.get("filter");
-  const conditions = parseConditions(filter);
+  const parsed = parseFilter(filter);
   const known = new Set(definition.columns.map((c) => c.key));
   const columns = (params.get("cols") ?? "").split(",").filter((c) => known.has(c));
   const group = params.get("group");
@@ -355,11 +450,13 @@ export function stateFromAddress(search: string, definition: ListDefinition): { 
     state: {
       search: searchFromAddress(search),
       sort: params.has("sort") ? parseSort(params.get("sort")) : base.sort,
-      conditions: conditions ?? [],
-      baseFilter: conditions === null ? filter : null,
+      conditions: parsed?.conditions ?? [],
+      baseFilter: parsed === null ? filter : null,
+      match: parsed?.match ?? "all",
       groupBy: group && definition.columns.some((c) => c.key === group && c.groupable) ? group : null,
       columns: columns.length > 0 ? columns : base.columns,
       view: params.get("view"),
+      sortChosen: params.has("sort"),
     },
   };
 }

@@ -185,6 +185,28 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.True(report.WritePairs > 0, "no write-after-write pair succeeded on both sides");
         Assert.Empty(report.WritePairBlindSpots);
         Assert.DoesNotContain(report.AttackerUnsuccessfulWrites, w => w.Contains("/api/leaky/me/", StringComparison.Ordinal));
+
+        // A list whose totals and group counts are remembered across tenants (critic p05 round 1,
+        // plant L3): no tenant B id or text reaches tenant A, only B's numbers. The answers are
+        // judged against each tenant's own rows, in both directions, and only that list is wrong.
+        Assert.Contains(report.ListAnswersWrong, w => w.StartsWith("tenant B asks first, tenant A judged", StringComparison.Ordinal) &&
+                                                      w.Contains("/api/leaky/people", StringComparison.Ordinal) && w.Contains("answered total", StringComparison.Ordinal));
+        Assert.Contains(report.ListAnswersWrong, w => w.Contains("/api/leaky/people", StringComparison.Ordinal) && w.Contains("groupBy=language", StringComparison.Ordinal));
+        Assert.Contains(report.ListAnswersWrong, w => w.StartsWith("tenant A asks first, tenant B judged", StringComparison.Ordinal) &&
+                                                      w.Contains("/api/leaky/people", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal));
+        Assert.Empty(report.ListAnswersBlind);
+
+        // The planted state changed while the tenants used the app (the list memory on the module
+        // instance, reached through the module catalogue; the stateful singleton); the product's
+        // did not. (The static workspace cache is filled by tenant B before the snapshot and kept,
+        // so it does not change; the marker check above catches it.)
+        var changes = "\n" + string.Join("\n", report.StateChanges);
+        Assert.True(report.StateChanges.Any(c => c.StartsWith("singleton Erp.Kernel.Modules.ModuleCatalog._modules[", StringComparison.Ordinal) &&
+                                                 c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal)), "no change to the planted totals:" + changes);
+        Assert.True(report.StateChanges.Any(c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal)), "no change to the planted groups:" + changes);
+        Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal)), "no change to the stateful singleton:" + changes);
+        Assert.True(report.StateChanges.All(c => c.Contains("Leaky", StringComparison.Ordinal)), "product state changed:" + changes);
     }
 
     [Fact]
@@ -342,7 +364,74 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
         Assert.True(running.ClosuresInspected > 0, "no endpoint closure was inspected");
         Assert.True(running.DelegateObjectsWalked > running.EndpointsWalked, "the endpoint delegate walk reached nothing beyond the delegates");
+
+        // A reviewed root is not trusted for what it holds (critic p05 round 1): the planted list's
+        // memory sits on the module instance, reached from the module catalogue.
+        Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._totals" && f.Why.Contains("ModuleCatalog._modules", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._groups");
     }
+
+    [Fact]
+    public void The_reachable_state_walk_judges_every_field_of_registration_objects()
+    {
+        // The shape of plant L3: a catalogue (reviewed) holding modules holding a dictionary of
+        // bindings, one of which keeps a count cache; and a registration lambda that captures a
+        // counter it writes.
+        var planted = new PlantedCatalog();
+        var result = ReachableState.Inspect([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly], new HashSet<Type>(), new HashSet<Type> { typeof(PlantedCatalog) });
+        Assert.Contains(result.Findings, f => f.Key == $"reachable {ReachableState.TypeName(typeof(PlantedBinding<>))}._counts" && f.Why.Contains("_modules[0].Bindings[", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Key == $"reachable {ReachableState.TypeName(typeof(PlantedBinding<>))}.Calls" && f.Why.Contains("reassigned", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Key.StartsWith("reachable closure ", StringComparison.Ordinal) && f.Key.EndsWith(".seen", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Key.Contains("ImmutableBinding", StringComparison.Ordinal));
+
+        // The fingerprint sees the cache fill.
+        var before = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
+        planted.Use("tenant-b-search");
+        var after = ReachableState.Fingerprint([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly]);
+        var differences = ReachableState.Differences(before, after);
+        // Named by path, with the type of each product object below the root (a catalogue's
+        // modules are found by type, not only by position).
+        Assert.Contains(differences, d => d.StartsWith($"singleton PlantedCatalog._modules[0]({ReachableState.TypeName(typeof(PlantedModule))}).Bindings[users]({ReachableState.TypeName(typeof(PlantedBinding<>))})._counts", StringComparison.Ordinal));
+        // The planted lambda's captured counter and a framework dictionary's internals are not
+        // reported as changes of the catalogue (only what the walk is meant to see).
+        Assert.DoesNotContain(differences, d => d.Contains("_version", StringComparison.Ordinal));
+    }
+
+    private sealed class PlantedCatalog
+    {
+        private readonly List<PlantedModule> _modules = [new PlantedModule()];
+
+        public void Use(string key) => _modules[0].Bindings["users"].Remember(key);
+    }
+
+    private sealed class PlantedModule
+    {
+        public Dictionary<string, PlantedBinding<string>> Bindings { get; } = new() { ["users"] = new PlantedBinding<string>() };
+
+        public ImmutableBinding Clean { get; } = new("roles");
+
+        public Action Register { get; } = Registration();
+
+        private static Action Registration()
+        {
+            var seen = 0;
+            return () => seen++;
+        }
+    }
+
+    private sealed class PlantedBinding<T>
+    {
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _counts = new();
+        public int Calls;
+
+        public void Remember(string key)
+        {
+            _counts[key] = 1004;
+            Calls++;
+        }
+    }
+
+    private sealed record ImmutableBinding(string Key);
 
     [Fact]
     public async Task The_grant_escalation_check_catches_an_endpoint_that_grants_any_role()
@@ -360,7 +449,9 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Critic p00 round 2, plant P2: a POST that reactivates users while declaring a read permission.
         var result = ReadPermissionWrites.Check(EndpointInventory.From(fixture.Env.Factory.Services));
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        // The planted list's own saved-view endpoints (a reader saving their own view) are the
+        // planted module's too: they are reviewed for product lists, not for this one.
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);

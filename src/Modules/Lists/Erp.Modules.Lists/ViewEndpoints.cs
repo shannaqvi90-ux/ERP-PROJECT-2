@@ -27,7 +27,8 @@ public sealed record ListPresetDto(string Key, string LabelKey, string? Filter, 
 /// share views.</summary>
 public sealed record ListDefinitionDto(
     string Key, string LabelKey, string Endpoint, IReadOnlyList<ListColumnDto> Columns, IReadOnlyList<string> SearchFields,
-    string? DefaultSort, IReadOnlyList<ListPresetDto> Presets, bool CanShare, int MaxTake, bool Printable = false);
+    string? DefaultSort, IReadOnlyList<ListPresetDto> Presets, bool CanShare, int MaxTake, bool Printable = false,
+    IReadOnlyList<string>? ArabicSearchFields = null);
 
 public sealed record SavedViewDto(
     Guid Id, string ListKey, string Name, bool IsShared, bool IsDefault, bool IsMine, IReadOnlyList<string> Columns,
@@ -108,6 +109,7 @@ internal static class ViewEndpoints
             routes.MapPost("/shared-views", (SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Create(c.FindList(key)!, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.create")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithViewSchema(list)
                 .WithSummary($"Share a view of the {key} list with everyone who can read it (also needs the list's read permission).")
                 .ProducesValidationProblem()
@@ -116,6 +118,7 @@ internal static class ViewEndpoints
             routes.MapPut("/shared-views/{id:guid}", (Guid id, SaveViewRequest request, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Update(c.FindList(key)!, id, request, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.update")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithViewSchema(list)
                 .WithSummary($"Change a shared view of the {key} list (also needs the list's read permission).")
                 .ProducesValidationProblem()
@@ -124,10 +127,21 @@ internal static class ViewEndpoints
             routes.MapDelete("/shared-views/{id:guid}", (Guid id, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
                     Delete(c.FindList(key)!, id, shared: true, db, caller, http, ct))
                 .WithName($"{name}.sharedViews.delete")
+                .AddEndpointFilter(AlsoRequires(list.Permission))
                 .WithSummary($"Delete a shared view of the {key} list (also needs the list's read permission).")
                 .RequirePermission(ListsPermissions.ViewsShare);
         }
     }
+
+    /// <summary>Shared-view writes declare the share permission; they also need the list's own
+    /// permission. Checked before the handler runs (a list the caller cannot read does not exist
+    /// for them: 404), and again inside the handler.</summary>
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> AlsoRequires(string permission) =>
+        async (context, next) =>
+        {
+            var caller = context.HttpContext.RequestServices.GetRequiredService<ICurrentUser>();
+            return caller.Has(permission) ? await next(context) : Problems.NotFound(context.HttpContext);
+        };
 
     /// <summary>Document the request body of a view endpoint for this list: the column keys and
     /// groupable columns it accepts as enums, a valid sort and filter as examples.</summary>
@@ -187,7 +201,8 @@ internal static class ViewEndpoints
         (list.Presets ?? []).Select(p => new ListPresetDto(p.Key, p.LabelKey, p.Filter, p.Sort, p.GroupBy)).ToList(),
         caller.Has(ListsPermissions.ViewsShare),
         ListRequest.MaxTake,
-        Printable: printable);
+        Printable: printable,
+        ArabicSearchFields: list.ArabicSearchFields is { Count: > 0 } arabic ? arabic : list.SearchFields);
 
     private static async Task<Ok<ListPage<SavedViewDto>>> Views(string list, ListsDbContext db, ICurrentUser caller, CancellationToken cancellationToken)
     {

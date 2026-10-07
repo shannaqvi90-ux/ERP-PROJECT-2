@@ -66,10 +66,13 @@ they grant; the screens offer nothing else.
    and its GET endpoint takes `[AsParameters] ListRequest` and returns
    `catalog.ListBinding<Row>(key).QueryAsync(...)` as a `ListPage<T>`: search, filter language, sort,
    keyset and offset paging and grouping come with it (`docs/decisions/p05-list-search-query-contract.md`),
-   and `/api/lists/<key>/definition` and saved views appear for it automatically. A list whose rows
-   belong to another module is registered with `module.List(definition, servedBy: "<other list>")` and
-   queried through that module's contract (the access list over identity's users,
-   `docs/decisions/p02-tenancy-lists-on-the-list-contract.md`).
+   so does best-match-first ordering of searches with Arabic spelling variants
+   (`docs/decisions/p05-list-search-relevance.md`), and `/api/lists/<key>/definition` and saved views
+   appear for it automatically. A binding holds no state (keep caches off registration objects: the
+   G1 gates walk them field by field and judge every list answer against the asking tenant's rows).
+   A list whose rows belong to another module is registered with
+   `module.List(definition, servedBy: "<other list>")` and queried through that module's contract
+   (the access list over identity's users, `docs/decisions/p02-tenancy-lists-on-the-list-contract.md`).
 2. Migrations in the module (`dotnet ef migrations add … --project src/Modules/<Name>/Erp.Modules.<Name>`);
    call `migrationBuilder.GrantSchemaUsage(schema)` and `migrationBuilder.ProtectTenantTable(schema, table)`
    for every table, and `migrationBuilder.ProtectCompanyTable(schema, table)` for every table whose rows
@@ -80,7 +83,7 @@ they grant; the screens offer nothing else.
 3. `Resources/en.json` and `ar.json` (permission and problem texts), web screens
    (`routes.tsx`: each screen's path and permission match its menu entry; a list screen is a
    `<ListView listKey=…>`) and `i18n/{en,ar}.json` under `web/src/modules/<name>/`. List endpoints
-   return `{ items, total, next, groups }`. Counts are plural messages
+   return `{ items, total, next, groups, ranked }`. Counts are plural messages
    (`{count, plural, one {# item} other {# items}}`; Arabic needs zero, one, two, few, many, other).
 4. One line in `src/Host/Erp.Host/ErpModules.cs` and one project reference in `Erp.Host.csproj`.
    Another module is used only through its `….Contracts` project (and events); a module's

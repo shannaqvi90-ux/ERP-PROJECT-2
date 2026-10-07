@@ -15,6 +15,8 @@ type Chunks = {
 export type ListRows = {
   /** Rows matching the query (null until the first page arrives). */
   total: number | null;
+  /** The server listed the rows best match first (a search without a sort, not too broad). */
+  ranked: boolean;
   groups: ListGroup[] | null;
   error: ApiError | Error | null;
   /** True while the first page of the current query is loading. */
@@ -45,6 +47,7 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
   const chunks = useRef<Chunks | null>(null);
   const shown = useRef<Chunks | null>(null);
   const [total, setTotal] = useState<number | null>(null);
+  const [ranked, setRanked] = useState(false);
   const [groups, setGroups] = useState<ListGroup[] | null>(null);
   const [error, setError] = useState<ApiError | Error | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,6 +74,7 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
           if (index === 0) {
             shown.current = state;
             setTotal(page.total);
+            setRanked(page.ranked === true);
             setGroups(page.groups ?? null);
             setLoading(false);
             setLoadedKey(state.key);
@@ -129,5 +133,5 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
     return -1;
   }, []);
 
-  return { total, groups, error, loading, version, loadedKey, rowAt, ensure, loadedRows, reload, indexOf };
+  return { total, ranked, groups, error, loading, version, loadedKey, rowAt, ensure, loadedRows, reload, indexOf };
 }

@@ -136,6 +136,10 @@ public sealed class TenantActivity
         e.Method != "GET" && e.Method != "HEAD" && e.Name is not ("auth.signIn" or "auth.signOut") &&
         !e.Pattern.Contains("{*", StringComparison.Ordinal);
 
+    /// <summary>This tenant's administrator, signed in since the activity started (signing in again
+    /// later can meet the sign-in throttle the attack set off with this tenant's e-mail).</summary>
+    public HttpClient AdminClient => Admin.Client;
+
     /// <summary>
     /// Every endpoint that changes data, called by this tenant's administrator on its own records
     /// with a body that passes validation: creates first (their new ids become the targets of the

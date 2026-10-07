@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Erp.Kernel.Data;
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
@@ -22,9 +24,39 @@ public sealed class LeakyModule : ErpModule
     {
         module.Permissions("leaky.data.read", "leaky.data.update", "leaky.data.delete");
         module.Services.AddSingleton<LastListHolder>();
+
+        // Bug 27 (critic p05 round 1, plant L3): a registered list whose answers reuse the total of
+        // the first caller that sent the same search, filter and grouping, whatever its tenant.
+        // Every row stays the caller's own; only the numbers leak.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                PeopleList, "leaky.people.title", "leaky.data.read", "/api/leaky/people",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("language", "leaky.people.language", ListColumnType.Choice, Filterable: true, Groupable: true,
+                        Choices: [new ListChoice("en", "leaky.people.en"), new ListChoice("ar", "leaky.people.ar")]),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .Column("language", p => p.Language)
+            .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<CountCache>();
         module.Endpoints(group =>
         {
+            group.MapGet("/people", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(PeopleList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                var total = _totals.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Total);
+                var groups = result.Groups is null ? null : _groups.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Groups);
+                return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
+            }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
+
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
             group.MapGet("/cached-tenant", async (ErpDbSession session) =>
@@ -754,6 +786,26 @@ public sealed class LeakyModule : ErpModule
     {
         await using var command = new NpgsqlCommand("SELECT name_en || ' ' || code FROM tenancy.tenants", session.Connection, session.Transaction);
         return (string?)await command.ExecuteScalarAsync();
+    }
+
+    public const string PeopleList = "leaky.people";
+
+    // Bug 27's memory, on the module instance: reachable from the module catalogue.
+    private readonly ConcurrentDictionary<string, int> _totals = new();
+    private readonly ConcurrentDictionary<string, IReadOnlyList<ListGroup>> _groups = new();
+
+    public sealed record Person(Guid Id, string DisplayName, string Language);
+
+    private static async Task<List<Person>> PeopleAsync(ErpDbSession session)
+    {
+        await using var command = new NpgsqlCommand("SELECT id, display_name, language FROM identity.users", session.Connection, session.Transaction);
+        await using var reader = await command.ExecuteReaderAsync();
+        var people = new List<Person>();
+        while (await reader.ReadAsync())
+        {
+            people.Add(new Person(reader.GetGuid(0), reader.GetString(1), reader.GetString(2)));
+        }
+        return people;
     }
 
     /// <summary>Empties the planted process-wide state. It is static, so it outlives any one test

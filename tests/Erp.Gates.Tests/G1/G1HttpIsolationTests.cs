@@ -60,62 +60,83 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
 
-        Assert.True(report.Leaks.Count == 0, $"{report.Leaks.Count} leaks:\n" + string.Join("\n", report.Leaks.Take(50)));
-        Assert.True(report.Oracles.Count == 0, $"{report.Oracles.Count} answers that tell tenant B's values apart from values that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
-        Assert.True(report.LookupMisuse.Count == 0, "Reviewed cross-tenant lookups ran from unreviewed callers:\n" + string.Join("\n", report.LookupMisuse));
-        Assert.True(report.ChangedTables.Count == 0, "Tenant B rows changed during the attack in: " + string.Join(", ", report.ChangedTables));
-        Assert.True(report.ServerErrors.Count == 0, $"{report.ServerErrors.Count} server errors:\n" + string.Join("\n", report.ServerErrors.Take(20)));
-        Assert.True(report.UncoveredSurfaces.Count == 0, "Endpoint families without an isolation probe: " + string.Join(", ", report.UncoveredSurfaces));
-        Assert.True(report.UntracedFunctions.Count == 0, "The SQL trace never saw these reviewed functions run from their reviewed caller, so it may be blind: " + string.Join(", ", report.UntracedFunctions));
-        Assert.True(report.BindViolations.Count == 0, "Requests bound a tenant other than the signed-in session's:\n" + string.Join("\n", report.BindViolations.Take(30)));
-        Assert.True(report.SettingViolations.Count == 0, "Session settings changed by code other than the kernel's session:\n" + string.Join("\n", report.SettingViolations.Take(30)));
-        Assert.True(report.WritableReads.Count == 0, "Requests that only read ran in a writable transaction:\n" + string.Join("\n", report.WritableReads.Take(30)));
-        Assert.True(report.TraceBlindSpots.Count == 0, "The tenant binding trace may be blind: " + string.Join("; ", report.TraceBlindSpots));
-        Assert.True(report.TenantValueViolations.Count == 0, "Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):\n" +
+        // Every check runs and every failing one is reported together: a plant caught by one
+        // check must not hide whether the others (list answers, process state) caught it too.
+        var failures = new List<string>();
+        void Check(bool condition, string message)
+        {
+            if (!condition)
+            {
+                failures.Add(message);
+            }
+        }
+        void CheckAtLeast(int value, string key)
+        {
+            if (value < Ratchet.Min(key))
+            {
+                failures.Add($"{key}: {value}; ratchet minimum {Ratchet.Min(key)}");
+            }
+        }
+        Check(report.Leaks.Count == 0, $"{report.Leaks.Count} leaks:\n" + string.Join("\n", report.Leaks.Take(50)));
+        Check(report.Oracles.Count == 0, $"{report.Oracles.Count} answers that tell tenant B's values apart from values that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
+        Check(report.LookupMisuse.Count == 0, "Reviewed cross-tenant lookups ran from unreviewed callers:\n" + string.Join("\n", report.LookupMisuse));
+        Check(report.ChangedTables.Count == 0, "Tenant B rows changed during the attack in: " + string.Join(", ", report.ChangedTables));
+        Check(report.ServerErrors.Count == 0, $"{report.ServerErrors.Count} server errors:\n" + string.Join("\n", report.ServerErrors.Take(20)));
+        Check(report.UncoveredSurfaces.Count == 0, "Endpoint families without an isolation probe: " + string.Join(", ", report.UncoveredSurfaces));
+        Check(report.UntracedFunctions.Count == 0, "The SQL trace never saw these reviewed functions run from their reviewed caller, so it may be blind: " + string.Join(", ", report.UntracedFunctions));
+        Check(report.BindViolations.Count == 0, "Requests bound a tenant other than the signed-in session's:\n" + string.Join("\n", report.BindViolations.Take(30)));
+        Check(report.SettingViolations.Count == 0, "Session settings changed by code other than the kernel's session:\n" + string.Join("\n", report.SettingViolations.Take(30)));
+        Check(report.WritableReads.Count == 0, "Requests that only read ran in a writable transaction:\n" + string.Join("\n", report.WritableReads.Take(30)));
+        Check(report.TraceBlindSpots.Count == 0, "The tenant binding trace may be blind: " + string.Join("; ", report.TraceBlindSpots));
+        Check(report.TenantValueViolations.Count == 0, "Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):\n" +
                                                              string.Join("\n", report.TenantValueViolations.Take(30)));
-        Assert.True(report.UnobservedStatements.Count == 0, "Statements sent inside requests on a pool the platform did not build, whose tenant the gate cannot judge:\n" +
+        Check(report.UnobservedStatements.Count == 0, "Statements sent inside requests on a pool the platform did not build, whose tenant the gate cannot judge:\n" +
                                                             string.Join("\n", report.UnobservedStatements.Take(30)));
-        Assert.True(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
+        Check(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
                                                          string.Join("\n", report.InputEnumerations.Take(30)));
-        Assert.True(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
-        AssertAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
-        AssertAtLeast(report.StatementsObserved, "g1.statementsObserved");
-        AssertAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
-        AssertAtLeast(report.SwitchInputAttacks, "g1.switchInputAttacks");
-        AssertAtLeast(report.SwitchHeaderNames, "g1.switchHeaderNames");
-        AssertAtLeast(report.ResponsesHeaderJudged, "g1.responsesHeaderJudged");
-        AssertAtLeast(report.EndpointsAttacked, "g1.endpointsAttacked");
-        AssertAtLeast(report.VictimRouteValuesReplayed, "g1.victimRouteValuesReplayed");
-        AssertAtLeast(report.VictimPreTouches, "g1.victimPreTouches");
-        AssertAtLeast(report.Requests, "g1.attackRequests");
-        AssertAtLeast(report.ProbesRun, "g1.isolationProbes");
-        AssertAtLeast(report.VictimValues, "g1.victimValues");
-        AssertAtLeast(report.ParameterAttacks, "g1.parameterAttacks");
-        AssertAtLeast(report.BodyValueAttacks, "g1.bodyValueAttacks");
-        AssertAtLeast(report.DifferentialChecks, "g1.differentialChecks");
-        AssertAtLeast(report.TracedLookups, "g1.tracedLookups");
-        Assert.True(report.VictimBlindSpots.Count == 0, "Tenant B's concurrent activity may have been blind:\n" + string.Join("\n", report.VictimBlindSpots));
-        AssertAtLeast(report.VictimRequests, "g1.victimRequests");
-        AssertAtLeast(report.VictimConcurrentRequests, "g1.victimConcurrentRequests");
-        AssertAtLeast(report.VictimWrites, "g1.victimWrites");
-        AssertAtLeast(report.ReverseChecks, "g1.reverseChecks");
+        Check(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
+        CheckAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
+        CheckAtLeast(report.StatementsObserved, "g1.statementsObserved");
+        CheckAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
+        CheckAtLeast(report.SwitchInputAttacks, "g1.switchInputAttacks");
+        CheckAtLeast(report.SwitchHeaderNames, "g1.switchHeaderNames");
+        CheckAtLeast(report.ResponsesHeaderJudged, "g1.responsesHeaderJudged");
+        CheckAtLeast(report.EndpointsAttacked, "g1.endpointsAttacked");
+        CheckAtLeast(report.VictimRouteValuesReplayed, "g1.victimRouteValuesReplayed");
+        CheckAtLeast(report.VictimPreTouches, "g1.victimPreTouches");
+        CheckAtLeast(report.Requests, "g1.attackRequests");
+        CheckAtLeast(report.ProbesRun, "g1.isolationProbes");
+        CheckAtLeast(report.VictimValues, "g1.victimValues");
+        CheckAtLeast(report.ParameterAttacks, "g1.parameterAttacks");
+        CheckAtLeast(report.BodyValueAttacks, "g1.bodyValueAttacks");
+        CheckAtLeast(report.DifferentialChecks, "g1.differentialChecks");
+        CheckAtLeast(report.TracedLookups, "g1.tracedLookups");
+        Check(report.VictimBlindSpots.Count == 0, "Tenant B's concurrent activity may have been blind:\n" + string.Join("\n", report.VictimBlindSpots));
+        CheckAtLeast(report.VictimRequests, "g1.victimRequests");
+        CheckAtLeast(report.VictimConcurrentRequests, "g1.victimConcurrentRequests");
+        CheckAtLeast(report.VictimWrites, "g1.victimWrites");
+        CheckAtLeast(report.ReverseChecks, "g1.reverseChecks");
         // Every endpoint that changes data (other than signing in and out) succeeded for tenant B.
-        Assert.True(report.VictimUnsuccessfulWrites.Count == 0,
+        Check(report.VictimUnsuccessfulWrites.Count == 0,
             "Tenant B's own writes must succeed so their handlers run to the end; these did not:\n" + string.Join("\n", report.VictimUnsuccessfulWrites));
-        AssertAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
+        CheckAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
         // Write after write: tenant A's own valid writes, each right after tenant B's, succeeded
         // (a refused write never reaches the code that could hand on tenant B's state).
-        Assert.True(report.AttackerUnsuccessfulWrites.Count == 0,
+        Check(report.AttackerUnsuccessfulWrites.Count == 0,
             "Tenant A's own writes in the write-after-write phase must succeed; these did not:\n" + string.Join("\n", report.AttackerUnsuccessfulWrites));
-        Assert.True(report.WritePairBlindSpots.Count == 0, "The write-after-write phase may have been blind:\n" + string.Join("\n", report.WritePairBlindSpots));
-        AssertAtLeast(report.WritePairs, "g1.writePairs");
-        AssertAtLeast(report.WritePairEndpoints, "g1.writePairEndpoints");
-        Assert.True(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
-        AssertAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
+        Check(report.WritePairBlindSpots.Count == 0, "The write-after-write phase may have been blind:\n" + string.Join("\n", report.WritePairBlindSpots));
+        CheckAtLeast(report.WritePairs, "g1.writePairs");
+        CheckAtLeast(report.WritePairEndpoints, "g1.writePairEndpoints");
+        Check(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
+        CheckAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
+        Check(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
+        Check(report.ListAnswersBlind.Count == 0, "The list answer check may be blind:\n" + string.Join("\n", report.ListAnswersBlind));
+        CheckAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
+        CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
+        Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
+        CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
+        Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed:\n\n" + string.Join("\n\n", failures));
     }
-
-    private static void AssertAtLeast(int value, string key) =>
-        Assert.True(value >= Ratchet.Min(key), $"{key}: {value}; ratchet minimum {Ratchet.Min(key)}");
 }
 
 /// <summary>
@@ -162,6 +183,11 @@ public static class IsolationAttack
         // Tenant B keeps writing its own records during the attack (right before and after each
         // write tenant A sends); only changes between tenant B's own writes count as the attack's.
         activity.TrackChangesFrom(victim);
+
+        // Everything reachable from the app's singletons and static fields, before tenant A
+        // attacks; compared with the same after the attack (state that changes under traffic).
+        var (stateRoots, productAssemblies) = ProcessState.LiveRoots(Env.Factory);
+        var stateBefore = ReachableState.Fingerprint(stateRoots, productAssemblies);
 
         var attackers = new List<Attacker>
         {
@@ -458,6 +484,19 @@ public static class IsolationAttack
 
         Phase($"registered lists through their query contract: {listQueryAttacks} attacks, {state.Requests - listAttacksBefore} requests");
 
+        // Phase 2c: what list answers add up to (totals, group counts, sums) must be the asking
+        // tenant's own, after the other tenant sent exactly the same request first; both ways.
+        var listAnswers = new List<ListAnswers.Result>();
+        {
+            var victimAdmin = activity.AdminClient;
+            var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
+            var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
+            var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
+        }
+        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
+
         // Phase 3: every tenant B text value in every string field of every request body. Values the
         // attacker managed to store in its own tenant are its own data from then on.
         foreach (var endpoint in endpoints.Where(e => e.HasBody))
@@ -531,6 +570,9 @@ public static class IsolationAttack
               $"{activity.SuccessfulWrites} successful own writes, {activity.ReverseChecks} responses judged for tenant A markers");
 
         var changed = await activity.ChangedByOthersAsync();
+        var (rootsAfter, _) = ProcessState.LiveRoots(Env.Factory);
+        var stateAfter = ReachableState.Fingerprint(rootsAfter, productAssemblies);
+        var stateChanges = ReachableState.Differences(stateBefore, stateAfter);
 
         // The reviewed cross-tenant lookups ran only from their reviewed callers, and the trace saw
         // each of them run from that caller (a blind trace would pass anything).
@@ -628,6 +670,12 @@ public static class IsolationAttack
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             ListQueryAttacks = listQueryAttacks,
             ListRefusals = state.ListRefusals,
+            ListAnswersWrong = listAnswers.SelectMany(r => r.Wrong).ToList(),
+            ListAnswersBlind = listAnswers.SelectMany(r => r.Blind).ToList(),
+            ListAnswerQueries = listAnswers.Sum(r => r.Queries),
+            ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
+            StateChanges = stateChanges,
+            StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
@@ -1422,6 +1470,26 @@ public sealed record IsolationReport(
 
     /// <summary>Reasons the write-after-write phase may have been blind.</summary>
     public IReadOnlyList<string> WritePairBlindSpots { get; init; } = [];
+
+    /// <summary>List answers whose total, groups or sums disagree with the asking tenant's own
+    /// rows (or whose rows are not its own), after the other tenant sent the same request.</summary>
+    public IReadOnlyList<string> ListAnswersWrong { get; init; } = [];
+
+    /// <summary>Lists where no query had different true answers in the two tenants.</summary>
+    public IReadOnlyList<string> ListAnswersBlind { get; init; } = [];
+
+    /// <summary>List queries whose answers were judged against the asking tenant's own rows.</summary>
+    public int ListAnswerQueries { get; init; }
+
+    /// <summary>Judged list queries whose true answers differ between the tenants.</summary>
+    public int ListAnswersDiscriminating { get; init; }
+
+    /// <summary>Process-wide state (reachable from singletons and static fields) that changed
+    /// while the tenants used the app.</summary>
+    public IReadOnlyList<string> StateChanges { get; init; } = [];
+
+    /// <summary>Lines of reachable process-wide state fingerprinted before the attack.</summary>
+    public int StateLinesFingerprinted { get; init; }
 
     /// <summary>Requests whose SQL ran under a tenant other than the one they may run under,
     /// judged by the value each statement gave <c>app.tenant_id</c> (<see cref="TenantBindingRules.TenantValueViolations"/>).</summary>

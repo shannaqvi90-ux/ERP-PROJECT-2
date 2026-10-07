@@ -50,6 +50,8 @@ public sealed class SavedViewsTests(ListsFixture fixture) : IClassFixture<ListsF
         Assert.DoesNotContain("contains", columns["lastSignInAt"].GetProperty("operators").EnumerateArray().Select(o => o.GetString()));
         Assert.True(columns["createdAt"].GetProperty("hidden").GetBoolean());
         Assert.Equal(["displayName", "email"], definition.GetProperty("searchFields").EnumerateArray().Select(f => f.GetString()));
+        // A word written in Arabic letters searches the name and the Arabic name (not the address).
+        Assert.Equal(["displayName", "displayNameAr"], definition.GetProperty("arabicSearchFields").EnumerateArray().Select(f => f.GetString()));
         Assert.Contains(definition.GetProperty("presets").EnumerateArray(), p => p.GetProperty("key").GetString() == "active" && p.GetProperty("filter").GetString() == "isActive eq true");
 
         using var viewer = await Env.SignInAsync(Env.Email(Env.TenantA, "viewer"));
