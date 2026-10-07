@@ -295,6 +295,33 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.DoesNotContain("Total", text, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p06 round 2: exports stopped at their row limit without a word (an accountant
+    /// exporting 100,004 users got 20,000 and nothing said so). A file cut at its limit says so in its
+    /// last line, in the document's language, after every row it holds.</summary>
+    [Fact]
+    public void Csv_cut_at_its_row_limit_ends_with_a_line_saying_so()
+    {
+        var cut = Sample("ar", 3, grouped: false) with { Truncated = true, MatchCount = 250_000, RowCountText = "أول ٣ من أصل ٢٥٠٬٠٠٠ صفًا؛ ضيّق المعايير لطباعة الباقي." };
+        var lines = Encoding.UTF8.GetString(Exports.Csv(cut)[3..]).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(5, lines.Length);
+        Assert.Equal(cut.RowCountText, lines[^1]);
+        var whole = Encoding.UTF8.GetString(Exports.Csv(Sample("ar", 3, grouped: false)));
+        Assert.DoesNotContain("ضيّق", whole, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Xlsx_cut_at_its_row_limit_says_so_under_the_table_outside_the_filter()
+    {
+        var cut = Sample("en", 3, grouped: false) with { Truncated = true, MatchCount = 250_000, RowCountText = "The first 3 of 250,000 rows; narrow the parameters to print the rest." };
+        using var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(cut)));
+        var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        // Rows 2-4 hold the data, row 5 the total, row 7 the note (after a blank line).
+        Assert.Contains("<row r=\"7\"><c r=\"A7\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">The first 3 of 250,000 rows; narrow the parameters to print the rest.</t></is></c></row>", sheet, StringComparison.Ordinal);
+        Assert.Contains("<autoFilter ref=\"A1:C4\"/>", sheet, StringComparison.Ordinal);
+        using var whole = new ZipArchive(new MemoryStream(Exports.Xlsx(Sample("en", 3, grouped: false))));
+        Assert.DoesNotContain("narrow the parameters", new StreamReader(whole.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd(), StringComparison.Ordinal);
+    }
+
     /// <summary>A report document as the engine builds one, in either language.</summary>
     internal static ReportDocument Sample(string language, int rows, bool grouped, int columns = 3)
     {

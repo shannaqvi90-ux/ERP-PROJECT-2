@@ -26,8 +26,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     /// <summary>Most rows a document shown, printed or rendered as PDF holds.</summary>
     public const int DocumentRowLimit = 2000;
 
-    /// <summary>Most rows a CSV or XLSX export holds.</summary>
-    public const int ExportRowLimit = 20000;
+    /// <summary>Most rows a CSV or XLSX export holds: twice the owner's main-list volume (100,000),
+    /// so a whole main list exports. A list beyond it exports its first rows, and the file says so in
+    /// its last line (see <see cref="Exports"/>), never silently.</summary>
+    public const int ExportRowLimit = 200_000;
 
     /// <summary>A registered report's document.</summary>
     public async Task<ReportDocument> BuildAsync(ReportDefinition definition, ReportData data, ReportRun run, string? groupBy, ReportOptions options, CancellationToken cancellationToken)
