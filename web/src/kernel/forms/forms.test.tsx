@@ -196,6 +196,47 @@ describe("the record form", () => {
   });
 });
 
+describe("a record just created", () => {
+  function NewThing() {
+    const [id, setId] = useState<string | null>(null);
+    const form = useRecordForm<Thing, Draft>({
+      load: id === null ? undefined : (signal) => api<Thing>("GET", `/api/things/${id}`, undefined, { signal }),
+      initial: (t) => ({ name: t?.name ?? "", amount: t?.amount ?? "" }),
+      canEdit: true,
+      save: (draft) => api<Thing>("POST", "/api/things", draft),
+      onSaved: (saved) => setId(saved.id),
+    }, id);
+    return (
+      <RecordForm form={form} title={form.record?.name ?? "New"} onClose={() => undefined} after={form.record && <input aria-label="Below" defaultValue="Desk - " />}>
+        <FormSection title="Main">
+          <TextField field={form.bind("name")} label="Name" />
+        </FormSection>
+      </RecordForm>
+    );
+  }
+
+  it("is not read again when the screen points the form at its new id: what is below it keeps what was typed (round 7)", async () => {
+    const calls = mockFetch((method, url) => {
+      if (method === "POST" && url === "/api/things") return { status: 201, body: { ...thing, name: "Desk" } };
+      if (method === "GET") return { status: 200, body: { ...thing, name: "Desk" } };
+      return { status: 404, body: {} };
+    });
+    await show(<NewThing />);
+    setInput(input("name"), "Desk");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const below = view!.container.querySelector<HTMLInputElement>('input[aria-label="Below"]')!;
+    expect(below).not.toBeNull();
+    setInput(below, "Desk - Jebel Ali");
+    await settle();
+    await settle();
+    expect(calls.filter((c) => c.method === "GET" && c.url === "/api/things/t1")).toHaveLength(0);
+    expect(view!.container.querySelector('input[aria-label="Below"]')).toBe(below);
+    expect(below.value).toBe("Desk - Jebel Ali");
+    expect(view!.container.textContent).not.toContain("Loading");
+  });
+});
+
 describe("entering a field with the mouse", () => {
   it("selects the whole value on the first click so typing replaces it; a second click places the caret", async () => {
     mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));

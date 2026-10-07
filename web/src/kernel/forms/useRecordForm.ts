@@ -82,9 +82,19 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   const [message, setMessage] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [loads, setLoads] = useState(0);
+  // The id of a record this form has just created. The save's answer is the record; when the
+  // screen then points the form at that id (its key changes from null), reading it again would put
+  // "Loading" in the form's place and mount everything below it afresh, losing what was typed there
+  // meanwhile (a new company's branch line, focused for its first branch, lost the branch name).
+  const created = useRef<unknown>(undefined);
 
   useEffect(() => {
     const load = specRef.current.load;
+    if (created.current !== undefined && Object.is(created.current, key)) {
+      created.current = undefined;
+      return;
+    }
+    created.current = undefined;
     if (!load) return;
     const controller = new AbortController();
     setStatus("loading");
@@ -141,6 +151,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
     setMessage(null);
     try {
       const result = await current.save(draft, record);
+      if (record === null) created.current = (result as { id?: unknown } | null)?.id;
       const next = current.initial(result);
       setRecord(result);
       setBaseline(next);
