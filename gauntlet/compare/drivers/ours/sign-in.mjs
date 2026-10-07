@@ -44,10 +44,10 @@ function variant(returning) {
         // Round 7 (routed from the p04 round 4 critic: this variant once waited 120 s and nothing
         // said where): each wait of the set-up says what it waited for.
         try {
-          await page.getByRole('navigation').first().waitFor({ timeout: 60_000 });
+          await page.getByRole('navigation').first().waitFor();
         } catch (e) {
           const alert = await page.getByRole('alert').first().textContent({ timeout: 1_000 }).catch(() => null);
-          throw new Error(`set-up of the returning browser: the first sign-in did not reach the working screen within 60 s (at ${page.url()}${alert ? `; the screen says "${alert.trim()}"` : ''}): ${e.message.split('\n')[0]}`);
+          throw new Error(`set-up of the returning browser: the first sign-in did not reach the working screen (at ${page.url()}${alert ? `; the screen says "${alert.trim()}"` : ''}): ${e.message.split('\n')[0]}`);
         }
         // Sign the browser's session out (the product keeps what it remembers in the browser), and
         // check that it ended: a session still alive would open the working screen, not the sign-in.

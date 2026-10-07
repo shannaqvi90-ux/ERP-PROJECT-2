@@ -205,6 +205,22 @@ export class Operator {
     return end;
   }
 
+  /**
+   * Round 7: a document still loading when run() returns is the product still answering (a client
+   * that reloads itself after a save, say): the clock runs on until it has loaded. System wait.
+   * Returns the end time for finish(), or null when the document had loaded.
+   */
+  async settleDocument({ timeout = this.defaultTimeout } = {}) {
+    if (!this.measuring) return null;
+    let state;
+    try { state = await this.#page.evaluate(() => document.readyState); } catch { return null; }
+    if (state === 'complete') return null;
+    const t = this.now();
+    await this.#page.waitForLoadState('load', { timeout });
+    this.#waits.push({ label: `the page still loading when run() returned (${state})`, at: round(t), seconds: round(this.now() - t), settle: true });
+    return clockNow();
+  }
+
   /** The address path the measured page shows (KLM: a step after a new screen starts with M). */
   #path() {
     try { return new URL(this.#page.url()).pathname; } catch { return null; }

@@ -159,7 +159,9 @@ right after its last step or wait. Round 5 closes the ways to finish a task afte
   OPTIONS that is not one of the reference's documented read calls) is still under way when `run`
   returns, the clock runs on until it ends: a save is the product's answer to the task (system
   wait "the product still answering when run() returned"). Reads still loading (avatars, a chatter)
-  are not waited for.
+  are not waited for. Round 7: a document still loading when `run` returns (a client that reloads
+  itself after a save) is the product still answering too: the clock runs on until it has loaded
+  (system wait "the page still loading when run() returned").
 - When the clock stops the page's own script is frozen (no timer, scheduled render or animation
   frame of the product runs any more; reading and screenshots still work), then (round 7) whatever
   it is still loading is aborted, because freezing script does not stop the continuation of a

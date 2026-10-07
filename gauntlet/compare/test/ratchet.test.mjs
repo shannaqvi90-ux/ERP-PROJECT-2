@@ -11,7 +11,7 @@ const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'rat
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
-  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks' };
+  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -85,6 +85,20 @@ test('planted uncounted-action drivers never go below their minimum', () => {
   const entries = (table.match(/^ {2}'[^']+': async/gm) || []).length;
   const named = (text.match(/^test\((['"`])plant/gm) || []).length;
   assert.ok(entries + named >= min.guard_plants, `${entries + named} plants < ${min.guard_plants}`);
+});
+
+test('page-function plants never go below their minimum (round 7)', () => {
+  // test/page-script.test.mjs: the functions the source check refuses (REFUSED), the actions the
+  // read world refuses on its own (ACTS) and the plants run end to end (PLANTS), one each.
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'page-script.test.mjs'), 'utf8');
+  const entries = name => {
+    const start = text.indexOf(`const ${name} = {`);
+    assert.ok(start >= 0, `${name} missing from test/page-script.test.mjs`);
+    const table = text.slice(start, text.indexOf('\n};', start));
+    return (table.match(/^ {2}'(?:[^'\\]|\\.)+': /gm) || []).length;
+  };
+  const n = entries('REFUSED') + entries('ACTS') + entries('PLANTS');
+  assert.ok(n >= min.page_function_plants, `${n} page-function plants < ${min.page_function_plants}`);
 });
 
 test('API tasks never go below their minimum', async () => {

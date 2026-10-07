@@ -160,6 +160,9 @@ before(async () => {
     if (u.pathname === '/error') return html(ERROR_PAGE);
     if (u.pathname === '/ticker') return html(TICKER_PAGE);
     if (u.pathname === '/a' || u.pathname === '/base') return html(VARIANT_PAGE);
+    if (u.pathname === '/reloading') return html('<!doctype html><html><body><button id="save" onclick="location.href=\'/reloaded\'">Save</button></body></html>');
+    if (u.pathname === '/reloaded') return html('<!doctype html><html><body><div id="out">loading</div><script src="/slow-client.js"></script></body></html>');
+    if (u.pathname === '/slow-client.js') { setTimeout(() => { res.writeHead(200, { 'Content-Type': 'text/javascript' }); res.end("document.getElementById('out').textContent = 'saved';"); }, 1500); return; }
     html(PAGE);
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -435,6 +438,18 @@ test('control: an honest product with a live ticker on screen still verifies; th
     },
   });
   assert.equal(r.status, 'verified', r.error);
+  assert.equal(r.screen_after_verify?.unchanged, true);
+});
+
+test('a document still loading when run() returns stays on the clock (round 7: the reference\'s client reloading after a save)', async () => {
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/reloading'); },
+    async run(op) { await op.click('#save'); await op.waitFor(() => location.pathname === '/reloaded', { label: 'address changed' }); return {}; },
+    async verify(ctx, outcome) { return { verified: outcome !== undefined && (await ctx.page.locator('#out').textContent()) === 'saved' }; },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  assert.ok(r.counts.machine_seconds >= 1.4, `machine ${r.counts.machine_seconds} s against a 1.5 s client load`);
+  assert.ok(r.waits.some(w => w.settle && /still loading/.test(w.label) && w.seconds >= 1), JSON.stringify(r.waits));
   assert.equal(r.screen_after_verify?.unchanged, true);
 });
 

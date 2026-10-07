@@ -71,16 +71,23 @@ the browser side still open:
    before the abort, because a request's failure handler runs as the request is aborted: if it
    writes the end state (plant T6), that is a change after the clock, and the run is invalid. A
    screen that changed for any other reason (a freeze that failed) is caught the same way.
-6. **A variant's own hooks run.** The driver process describes each variant with the base driver's
+6. **A document still loading when `run()` returns stays on the clock.** Found while re-capturing
+   the baselines: saving a new company makes Odoo reload its whole client, and the Odoo
+   create-company-branch driver ended on the address having the new id, which the reloading
+   document already had while its scripts were still loading. Instrument 5 stopped the reference's
+   clock there (3.1 s, in Odoo's favour); instrument 6's abort left a half-loaded page. The runner
+   now waits for the document's load on the clock (system wait), as it waits for a save, and the
+   Odoo driver waits for the reloaded client to show the saved company (about 5.5 s).
+7. **A variant's own hooks run.** The driver process describes each variant with the base driver's
    hooks and the variant's own over them, and the runner calls those. Before, a variant's `setup`,
    `signIn` and `ready` ran only when the base driver had the same hook, so the ours sign-in
    driver's `returning` variant was never set up and was measured as `new-device`.
-7. **Instrument version 6.** Polling moved from the page to the harness and the end of the clock
+8. **Instrument version 6.** Polling moved from the page to the harness and the end of the clock
    changed, so every Odoo baseline is re-captured with the new instrument (median of three).
 
 ## Self-tests
 
-`test/page-script.test.mjs`: each layer on its own. The source check refuses 40 kinds of acting
+`test/page-script.test.mjs`: each layer on its own. The source check refuses 41 kinds of acting
 function and accepts every driver's. The read world, given sources that skip the source check,
 refuses and logs 26 kinds of action with the product's handlers never running, stays armed after a
 call returns (S1 at its root: the continuation's click is refused and reported to the harness),

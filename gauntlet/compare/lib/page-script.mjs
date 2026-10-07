@@ -480,6 +480,13 @@ export class PageWorld {
   }
 
   /**
+   * Create and arm the world now (the runner does this before the clock starts, so arming the start
+   * document's world, some tens of milliseconds, is never measured). A document opened during the
+   * measured part is armed when a page function first runs in it, in either product alike.
+   */
+  async prepare() { await this.#contextId(); }
+
+  /**
    * Evaluate an expression in the world (retried in the new document after a navigation).
    * `timeoutMs` ends a function that runs too long (a busy loop).
    */

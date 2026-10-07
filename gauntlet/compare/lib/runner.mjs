@@ -495,6 +495,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
 
     await op.shot('start');
+    // The start document's read world is armed before the clock (round 7, lib/page-script.mjs).
+    if (kind !== 'api') await PageWorld.of(page).prepare();
     tracker = kind === 'api' ? null : trackRequests(context);
     session.op = op.driverView();
     op.start();
@@ -503,7 +505,8 @@ export async function execute(task, driver, product, productId, needles, out, op
       outcome = await hook('run', { handles: handles(), page: session.handleOf(guard(page)), startedAt: Date.now() });
       // The product's answer to what the driver did is on the clock (round 5).
       const end = tracker ? await op.settle(tracker, { timeout }) : null;
-      op.finish(end);
+      const loaded = tracker ? await op.settleDocument({ timeout }) : null;
+      op.finish(loaded ?? end);
     } finally {
       op.finish();
       session.op = null;
