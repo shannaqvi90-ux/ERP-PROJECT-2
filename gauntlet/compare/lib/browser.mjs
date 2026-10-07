@@ -31,6 +31,22 @@ export async function launch({ headed = false } = {}) {
   });
 }
 
+// The last console lines and page errors of each context, kept for a run that ends in an error
+// (round 7: a health-check failure in ./erp verify left nothing to look at but a timeout).
+const CONSOLE_KEPT = 40;
+const consoles = new WeakMap();
+
 export async function newContext(browser, extra = {}) {
-  return browser.newContext({ viewport: VIEWPORT, locale: LOCALE, timezoneId: TIMEZONE, deviceScaleFactor: 1, ...extra });
+  const context = await browser.newContext({ viewport: VIEWPORT, locale: LOCALE, timezoneId: TIMEZONE, deviceScaleFactor: 1, ...extra });
+  const lines = [];
+  consoles.set(context, lines);
+  const keep = line => { lines.push(line.slice(0, 500)); if (lines.length > CONSOLE_KEPT) lines.shift(); };
+  context.on('console', m => { try { keep(`${m.type()}: ${m.text()}`); } catch { /* page gone */ } });
+  context.on('weberror', e => { try { keep(`pageerror: ${e.error()?.message ?? e.error()}`); } catch { /* page gone */ } });
+  return context;
+}
+
+/** The console lines and page errors a context created by newContext() has seen (the last 40). */
+export function consoleOf(context) {
+  return [...(consoles.get(context) || [])];
 }

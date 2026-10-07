@@ -242,7 +242,14 @@ metrics (`screenshots_path` in the result), so a reviewer sees the path the coun
 <out>/results/<run-id>.json     one JSON per run: counts, every step with timing, waits, screenshots, verification
 <out>/key.json                  screenshot -> product, task, moment; A/B letters and run order per task
 <out>/comparisons/<task>.json   verdict and per-measure outcome (--product both)
+<out>/failures/failure-<random>.jpg  page at an error before the measured part (not in blind/)
 ```
+
+A run that ends in an error records `failure_capture` in its result: the page's address, its last
+40 console lines and page errors and, for an error before the measured part (no operator, so no
+`error` shot), a screenshot in `<out>/failures/` (never in the reference folder). A failed
+`./erp verify` keeps its whole output folder, the health check's results included, in
+`.verify-failed/<time>-<pid>/` (or `ERP_VERIFY_KEEP_DIR`) instead of deleting it.
 
 Baselines (`--product odoo` without `--out`) are kept one per task in
 `gauntlet/reference/odoo/tasks/<task>.json` with their shots in `gauntlet/reference/odoo/shots/`

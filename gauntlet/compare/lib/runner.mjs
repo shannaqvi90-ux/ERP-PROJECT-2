@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
-import { launch, newContext } from './browser.mjs';
+import { consoleOf, launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
 import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
@@ -167,6 +167,7 @@ export async function runTask(taskId, productId, opts = {}) {
     requests_after_clock: primary.requests_after_clock ?? null,
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
+  if (primary.failure_capture) result.failure_capture = primary.failure_capture;
   if (variants.length > 1) {
     result.screenshots_path = primary.id;
     for (const other of executions.filter(e => e !== primary)) {
@@ -187,7 +188,7 @@ export async function runTask(taskId, productId, opts = {}) {
       }
     }
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
-      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null }));
+      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -365,6 +366,27 @@ export function isLimitedSignIn(limit, response) {
   }
 }
 
+/**
+ * What a run that ended in an error leaves to look at: the page's address, its last console lines
+ * and page errors, and, when the error came before the measured part (no operator, so no 'error'
+ * shot), a plain screenshot in <out>/failures/ under a neutral name. Never in the reference folder
+ * (its shots are the committed baseline) and never in blind/ (the reviewer's folder).
+ */
+async function captureFailure(page, context, out, screenshot) {
+  const capture = { url: null, console: [] };
+  try { capture.url = page?.url() ?? null; } catch { /* page closed */ }
+  try { capture.console = context ? consoleOf(context) : []; } catch { /* context closed */ }
+  if (screenshot && page && out.blindDir) {
+    const file = path.join(out.outDir, 'failures', `failure-${crypto.randomBytes(8).toString('hex')}.jpg`);
+    try {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      await page.screenshot({ path: file, type: 'jpeg', quality: 70, timeout: 10_000 });
+      capture.screenshot = rel(file);
+    } catch (e) { capture.screenshot_error = String(e?.message || e).split('\n')[0]; }
+  }
+  return capture;
+}
+
 /** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
@@ -503,6 +525,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       run.status = 'error';
       run.error = String(err?.stack || err).split('\n').slice(0, 6).join('\n');
       if (op && page) await op.shot('error').catch(() => {});
+      run.failure_capture = await captureFailure(page, context, out, !op);
     }
   } finally {
     op?.finish();

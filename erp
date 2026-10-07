@@ -29,6 +29,9 @@
 #                         Unset: generated demo users.
 #   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
 #                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
+#   ERP_VERIFY_KEEP_DIR   where a failed verify keeps its stage logs, test reports and the comparison
+#                         harness's health-check output (results, screenshots, failure captures)
+#                         (default .verify-failed/ in the repository, one folder per failed run)
 #   ERP_EXTRA_CA_CERTS    PEM file of extra CA certificates the build and test containers must trust
 #                         (networks that inspect TLS). Defaults to NODE_EXTRA_CA_CERTS or SSL_CERT_FILE
 #                         when one of them names a file; unset on an ordinary machine.
@@ -196,6 +199,18 @@ verify_cleanup() {
   compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
   docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
+  # A failed run keeps what it wrote (stage logs, test reports, the harness health check's results,
+  # screenshots and failure captures) before the temporary folder goes.
+  if ((status != 0)) && [[ -d "$VERIFY_OUT" ]]; then
+    local keep
+    keep="${ERP_VERIFY_KEEP_DIR:-$ROOT/.verify-failed}/$(date -u +%Y%m%dT%H%M%SZ)-$$"
+    if mkdir -p "$keep" 2>/dev/null; then
+      cp -r "$VERIFY_OUT"/. "$keep"/ 2>/dev/null \
+        || docker run --rm -v "$VERIFY_OUT":/out:ro -v "$keep":/keep alpine sh -c "cp -r /out/. /keep/ && chown -R $(id -u):$(id -g) /keep" >/dev/null 2>&1 \
+        || true
+      printf 'erp: the failed run'"'"'s logs and reports are kept in %s\n' "$keep" >&2
+    fi
+  fi
   # Files written as root inside the toolbox are removed from inside a container.
   rm -rf "$VERIFY_OUT" 2>/dev/null || docker run --rm -v "$VERIFY_OUT":/out alpine sh -c 'rm -rf /out/* /out/.[!.]*' >/dev/null 2>&1 || true
   rmdir "$VERIFY_OUT" 2>/dev/null || true
