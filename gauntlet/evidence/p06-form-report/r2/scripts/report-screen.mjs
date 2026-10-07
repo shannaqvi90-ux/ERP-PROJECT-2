@@ -1,0 +1,26 @@
+import { chromium } from 'playwright-core';
+const BASE = 'http://localhost:20650', OUT = '/home/shan/evidence-staging/p06-form-report/r2';
+const b = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+page.on('dialog', d => { console.log('[native dialog]', d.type(), d.message()); d.dismiss(); });
+await page.goto(BASE + '/');
+await page.locator('input[name="email"]').fill('admin.ar@alnoor.example');
+await page.locator('input[name="password"]').fill('Demo-Pass-2026');
+await page.keyboard.press('Enter');
+await page.locator('nav[aria-label]').first().waitFor();
+await page.goto(BASE + '/reports/catalog');
+await page.getByText('الأدوار والصلاحيات').first().click();
+await page.waitForTimeout(600);
+console.log('form text', (await page.locator('main').textContent()).slice(0, 500));
+await page.keyboard.press('Control+Enter');
+await page.waitForTimeout(1500);
+console.log('doc', (await page.locator('main').textContent()).slice(0, 900));
+await page.screenshot({ path: `${OUT}/10-report-role-summary-ar.jpg`, type: 'jpeg', quality: 65 });
+// dirty form + nav: native confirm language
+await page.goto(BASE + '/tenancy/companies');
+await page.locator('table[role=grid] tbody tr').first().click();
+await page.locator('[data-field="phone"] input').fill('+971 4 555 0001');
+await page.getByRole('navigation').getByRole('link').filter({ hasText: 'الفروع' }).first().click();
+await page.waitForTimeout(500);
+await b.close();
