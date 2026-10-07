@@ -89,12 +89,20 @@ describe("the record form", () => {
     expect(buttons()).toContain("Discard changes");
     expect(nothingUnsaved()).toBe(false);
 
-    // Leaving the screen asks first; refusing keeps everything where it is.
-    const confirm = vi.fn(() => false);
+    // Leaving the screen asks first, in the form's own dialog (never the browser's); keeping on
+    // editing keeps everything where it is.
+    const confirm = vi.fn(() => true);
     window.confirm = confirm;
     navigate("/elsewhere");
-    expect(confirm).toHaveBeenCalledOnce();
+    await settle();
+    expect(confirm).not.toHaveBeenCalled();
+    const asked = document.querySelector('[role="dialog"]')!;
+    expect(asked.textContent).toContain("This record has changes that are not saved yet.");
+    act(() => [...asked.querySelectorAll("button")].find((b) => b.textContent === "Keep editing")!.click());
+    await settle();
     expect(window.location.pathname).toBe("/things");
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(input("name").value).toBe("Desk (oak)");
 
     press({ ctrlKey: true, key: "s", code: "KeyS" });
     await settle();
@@ -113,6 +121,39 @@ describe("the record form", () => {
     expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
     expect(nothingUnsaved()).toBe(true);
     expect(buttons()).not.toContain("Discard changes");
+  });
+
+  it("asks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves", async () => {
+    const calls = mockFetch((method, url) => {
+      if (method === "GET" && url === "/api/things/t1") return { status: 200, body: thing };
+      if (method === "PUT") return { status: 200, body: { ...thing, name: "Desk (walnut)", version: 4 } };
+      return { status: 404, body: {} };
+    });
+    const confirm = vi.fn(() => true);
+    window.confirm = confirm;
+    await show(<ThingForm />);
+    setInput(input("name"), "Desk (walnut)");
+    navigate("/elsewhere");
+    await settle();
+    let dialog = document.querySelector('[role="dialog"]')!;
+    expect([...dialog.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["Save and close", "Discard changes", "Keep editing"]);
+    act(() => [...dialog.querySelectorAll("button")].find((b) => b.textContent === "Save and close")!.click());
+    await settle();
+    await settle();
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    expect(window.location.pathname).toBe("/elsewhere");
+
+    window.history.replaceState(null, "", "/things");
+    setInput(input("name"), "Desk (pine)");
+    navigate("/elsewhere");
+    await settle();
+    dialog = document.querySelector('[role="dialog"]')!;
+    act(() => [...dialog.querySelectorAll("button")].find((b) => b.textContent === "Discard changes")!.click());
+    await settle();
+    expect(window.location.pathname).toBe("/elsewhere");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    expect(input("name").value).toBe("Desk (walnut)");
+    expect(confirm).not.toHaveBeenCalled();
   });
 
   it("discards with Alt+Z and asks before closing a form with changes: save, discard or keep editing", async () => {

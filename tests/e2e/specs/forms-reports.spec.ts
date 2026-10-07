@@ -26,11 +26,22 @@ test.describe("record forms and printed documents", () => {
 
     await phone.fill(changed);
     await expect(page.locator(".record-header")).toContainText("Unsaved changes");
-    // Leaving asks first: refusing keeps the change on screen.
-    page.once("dialog", (dialog) => void dialog.dismiss());
+    // Leaving by the menu asks first, in the form's own dialog (as Escape does, never the browser's
+    // confirmation): Escape keeps editing, and the change stays on screen.
+    const nativeDialogs: string[] = [];
+    page.on("dialog", (dialog) => {
+      nativeDialogs.push(dialog.message());
+      void dialog.dismiss();
+    });
     await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Branches" }).click();
+    const leaving = page.getByRole("dialog", { name: "Unsaved changes" });
+    await expect(leaving).toBeVisible();
+    await expect(leaving.getByRole("button")).toHaveText(["Save and close", "Discard changes", "Keep editing"]);
+    await page.keyboard.press("Escape");
+    await expect(leaving).toBeHidden();
     await expect(page).toHaveURL(/\/tenancy\/companies/);
     await expect(phone).toHaveValue(changed);
+    expect(nativeDialogs).toEqual([]);
 
     await phone.press("Control+KeyS");
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");

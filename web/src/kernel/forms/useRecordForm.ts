@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ApiError } from "../api";
 import { useI18n } from "../i18n";
 import { addLeaveGuard, hookUnload } from "./leave";
@@ -57,6 +57,9 @@ export type RecordFormState<R, D> = {
   reload: () => void;
   /** Take a newer copy of the record saved by another action (a logo upload), keeping the draft. */
   adopt: (record: R) => void;
+  /** Set by the record form showing this state: asks in its dialog before leaving unsaved changes
+   * (save and leave, discard and leave, keep editing), then calls `proceed`. */
+  leaveAsker: RefObject<((proceed: () => void) => void) | null>;
 };
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -109,13 +112,21 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   }, [key, loads]);
 
   const readOnly = !spec.canEdit;
+  const leaveAsker = useRef<((proceed: () => void) => void) | null>(null);
   const dirty = !readOnly && status === "ready" && !same(draft, baseline);
 
   // Unsaved changes: leaving the screen, opening another record or reloading asks first.
   useEffect(() => {
     if (!dirty) return;
     hookUnload();
-    return addLeaveGuard({ message: () => t("forms.leave.confirm") });
+    return addLeaveGuard({
+      message: () => t("forms.leave.confirm"),
+      ask: (proceed) => {
+        const asker = leaveAsker.current;
+        if (asker) asker(proceed);
+        else if (window.confirm(t("forms.leave.confirm"))) proceed();
+      },
+    });
   }, [dirty, t]);
 
   const update = useCallback((change: (draft: D) => D) => {
@@ -192,7 +203,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   );
 
   return useMemo(
-    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt }),
+    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt, leaveAsker }),
     [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt],
   );
 }
