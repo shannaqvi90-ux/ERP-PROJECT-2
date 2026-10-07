@@ -208,7 +208,6 @@ export function UsersPage() {
           }
           renderCell={{
             displayName: (u) => String((language === "ar" && u.displayNameAr ? u.displayNameAr : u.displayName) ?? ""),
-            email: (u) => <span dir="ltr">{String(u.email ?? "")}</span>,
             roleIds: (u) => (
               <span className="id-ellipsis">
                 {(Array.isArray(u.roleIds) ? (u.roleIds as string[]) : [])

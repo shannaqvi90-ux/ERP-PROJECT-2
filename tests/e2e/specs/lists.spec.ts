@@ -217,8 +217,20 @@ test.describe("list framework", () => {
     await expect(page.getByRole("columnheader", { name: /البريد الإلكتروني/ })).toBeVisible();
     // A Latin e-mail that does not fit is cut at its end (its own direction), so the start that
     // names the person stays visible, and it keeps to the right like the column's other values.
-    const emailCell = dataRows(page).first().locator("td").nth(2);
-    expect(await emailCell.evaluate((c) => [getComputedStyle(c).unicodeBidi, getComputedStyle(c).textAlign])).toEqual(["plaintext", "right"]);
+    const placement = await dataRows(page).evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => {
+        const cell = row.children[2] as HTMLElement;
+        const value = cell.querySelector(".list-text") as HTMLElement | null;
+        if (!value) return [];
+        const c = cell.getBoundingClientRect();
+        const v = value.getBoundingClientRect();
+        const padding = parseFloat(getComputedStyle(cell).paddingInlineStart);
+        // Right edge of the value at the cell's start (its right, less padding); cut at its own end.
+        return [{ atStart: Math.abs(c.right - padding - v.right) <= 1, unicodeBidi: getComputedStyle(value).unicodeBidi, cut: value.scrollWidth > value.clientWidth }];
+      }),
+    );
+    expect(placement.length).toBeGreaterThan(3);
+    expect(placement.every((p) => p.atStart && p.unicodeBidi === "plaintext"), JSON.stringify(placement)).toBe(true);
     await page.keyboard.type("viewer@alnoor");
     await expect(page.getByText("مستخدم واحد", { exact: true })).toBeVisible();
     await page.keyboard.press("Enter");

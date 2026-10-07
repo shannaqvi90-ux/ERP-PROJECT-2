@@ -70,9 +70,14 @@ USD), and that "select all that match" could only copy, never change, the matchi
    plus 3.25rem for the menu and padding, at most 16rem), so at desktop widths labels are not cut.
    The alternative, wrapping header labels onto two lines, was rejected: it makes the header row
    taller than the 28px body rows and costs a row of data on every screen.
-7. **Text cells in a right-to-left list take their own direction** (`unicode-bidi: plaintext`) and
-   stay right-aligned, so a Latin e-mail that does not fit is cut at its end and keeps the part that
-   names the person.
+7. **A text value is a box of its own direction** (`.list-text`: an inline block with
+   `unicode-bidi: plaintext` and its own ellipsis) inside the cell, so a Latin e-mail in an Arabic
+   list, or an Arabic name in an English one, is cut at its own end and keeps the part that names
+   the person, while the box stays at the start of the list's direction. The kernel wraps every
+   text column value that is a plain string, a module's renderer included. Setting `plaintext` on
+   the cell itself was tried first: Chrome then aligns each value by its own direction (Latin
+   e-mails to the left of an Arabic column), and a physical `text-align: right` would break the
+   logical-directions gate.
 8. **The G2 subject-injection control for a "matching rows" action** searches for the caller's own
    e-mail with `expectedCount` 1, so the valid request acts on the caller alone and any change to
    the named victim is the handler honouring a subject field.

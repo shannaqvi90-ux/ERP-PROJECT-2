@@ -723,7 +723,7 @@ export function ListView(props: ListViewProps) {
           </td>
           {visible.map((c) => (
             <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" && !references?.[c.key] ? "ltr" : undefined}>
-              {row ? (props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
+              {row ? textBox(c, props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
             </td>
           ))}
         </tr>,
@@ -1173,6 +1173,11 @@ function RecordPanel({
       </dl>
     </aside>
   );
+}
+
+/** A text value as a box of its own direction (see .list-text): cut at its own end when it does not fit. */
+function textBox(column: ListColumn, content: ReactNode): ReactNode {
+  return column.type === "text" && typeof content === "string" ? <span className="list-text">{content}</span> : content;
 }
 
 /** A column's width in the grid template: a minimum in rem and a share of the rest. */

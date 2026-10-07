@@ -249,12 +249,18 @@
   padding-inline: 8px;
 }
 
-/* Text in a right-to-left list takes its own direction, so a Latin e-mail or name that does not fit
-   is cut at its end, not its beginning (the start of an address names the person), and stays on
-   the right like the rest of the column. */
-[dir="rtl"] .list-row .list-cell.type-text {
+/* A text value takes its own direction, so a Latin e-mail in an Arabic list (or an Arabic name in
+   an English one) that does not fit is cut at its own end, not its beginning (the start of an
+   address names the person). The value is a box of its own inside the cell, so it stays at the
+   start of the list's direction like the rest of the column. */
+.list-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   unicode-bidi: plaintext;
-  text-align: right;
+  vertical-align: top;
 }
 
 .list-cell.type-number,
