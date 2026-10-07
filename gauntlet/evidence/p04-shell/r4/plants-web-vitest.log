@@ -1,0 +1,40 @@
+Received: [31m"[7mSkip to contentERPAl Noor Trading LLCSearch screens, records and actionsCtrlKالعربيةMariam Al MansooriSign outUsersHomeRolesAl Noor Trading LLCRolesRolesThe list could not be loaded: Cannot read properties of undefined (reading 'filter')Printed 7 Oct 2026, 2:47 AMPrinted by Mariam Al MansooriSigned in as Mariam Al Mansoori · workspace alnoorSession valid until 3 Oct 2026, 1:00 PMCtrlK Commands · ? Shortcut[27ms"[39m
+
+[36m [2m❯[22m src/modules/shell/SignInPage.test.tsx:[2m149:40[22m[39m
+    [90m147| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m148| [39m    expect(view.container.querySelector("nav")!.textContent).toBe("Use…
+    [90m149| [39m    [34mexpect[39m(view[33m.[39mcontainer[33m.[39mtextContent)[33m.[39m[34mtoContain[39m([32m"No access"[39m)[33m;[39m
+    [90m   | [39m                                       [31m^[39m
+    [90m150| [39m  })[33m;[39m
+    [90m151| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mtenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[31m[1mAssertionError[22m: after B signed out: expected [ 'gulfsteel', 'Zx81' ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "gulfsteel",[39m
+[31m+   "Zx81",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m337:43[22m[39m
+    [90m335| [39m
+    [90m336| [39m    [90m// The signed-out tab: an empty sign-in, nothing of B stored.[39m
+    [90m337| [39m    [34mexpect[39m([34mleaks[39m()[33m,[39m [32m"after B signed out"[39m)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                          [31m^[39m
+    [90m338| [39m    expect(document.querySelector<HTMLInputElement>('input[name="email…
+    [90m339| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m22 passed[39m[22m[90m (25)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m188 passed[39m[22m[90m (192)[39m
+[2m   Start at [22m 02:47:29
+[2m   Duration [22m 19.84s[2m (transform 36.19s, setup 2.81s, import 58.40s, tests 44.25s, environment 45.20s)[22m
+

@@ -1,0 +1,8 @@
+[31m     [31m×[31m offers only granted screens and refuses an address the roles do not allow[39m[32m 69[2mms[22m[39m
+[31m     [31m×[31m users: without identity.users.read, exactly the toolbar actions needing it are gone[39m[32m 134[2mms[22m[39m
+[31m     [31m×[31m roles: without identity.roles.read, exactly the toolbar actions needing it are gone[39m[32m 157[2mms[22m[39m
+[31m     [31m×[31m tenant A sees, and the tab keeps, nothing of tenant B after B signs out[39m[33m 5920[2mms[22m[39m
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mlist toolbars offer exactly what the user may do[2m > [22musers: without identity.users.read, exactly the toolbar actions needing it are gone
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mlist toolbars offer exactly what the user may do[2m > [22mroles: without identity.roles.read, exactly the toolbar actions needing it are gone
+[41m[1m FAIL [22m[49m src/modules/shell/SignInPage.test.tsx[2m > [22mshell[2m > [22moffers only granted screens and refuses an address the roles do not allow
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mtenant A sees, and the tab keeps, nothing of tenant B after B signs out
