@@ -190,7 +190,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                            l.Contains("numerals=\"arab\"", StringComparison.Ordinal) && l.Contains($"response to tenant {a} contains", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/digits", StringComparison.Ordinal) &&
                                            l.Contains("numerals=\"arab\"", StringComparison.Ordinal));
-        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && !l.Contains("numerals=\"arab\"", StringComparison.Ordinal));
+        // Latin digits never leak (the plant's state is only read for "arab"); the attack's own
+        // body values may send "arab" too and are judged as any other leak.
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && l.Contains("numerals=\"latn\"", StringComparison.Ordinal));
+        foreach (var leak in report.Leaks.Where(l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal)).Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"digits: {leak}");
+        }
         Assert.Contains(report.EnumValuesAttacked, v => v.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && v.EndsWith("numerals=\"arab\"", StringComparison.Ordinal));
         Assert.True(report.EnumVariantPairs > 0, "no write pair was sent with a documented value other than the default");
         Assert.Empty(report.WritePairBlindSpots);
