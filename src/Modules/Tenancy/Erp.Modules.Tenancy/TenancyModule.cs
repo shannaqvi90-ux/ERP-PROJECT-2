@@ -104,9 +104,10 @@ public static class TenantStatus
 /// <summary>
 /// A legal entity within a tenant: its own trade licence, tax registration, base currency and
 /// fiscal year. Its <c>company_id</c> always equals its own id, so the company-scope policy that
-/// guards company data guards the company record itself.
+/// guards company data guards the company record itself. Every branch of the company shares it
+/// (<see cref="ICompanyWide"/>): someone limited to some branches reads it but never changes it.
 /// </summary>
-public sealed class Company : TenantEntity, ICompanyOwned
+public sealed class Company : TenantEntity, ICompanyWide
 {
     public Guid CompanyId { get; set; }
     public string Code { get; set; } = "";
@@ -232,6 +233,56 @@ public sealed class TenancyDbContext : ModuleDbContext
     public Guid[] BranchAllowedIds => branches?.AllowedBranchIds.ToArray() ?? [];
 
     protected override string Schema => SchemaName;
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        GuardBranchLimits();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        GuardBranchLimits();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// The second layer behind the branch endpoints' own checks (the first answers with the reason
+    /// before anything is written): in a company where the user may work in only some branches, a
+    /// branch is never added or deleted, a branch code never changes (codes are unique within the
+    /// company, chosen only by someone who sees every branch), and a branch the user may not work
+    /// in is never written. The company record itself is guarded by the kernel (<see cref="ICompanyWide"/>).
+    /// </summary>
+    private void GuardBranchLimits()
+    {
+        if (BranchFilterOff)
+        {
+            return;
+        }
+        foreach (var entry in ChangeTracker.Entries<Branch>())
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+            {
+                continue;
+            }
+            var company = entry.State == EntityState.Added ? entry.Entity.CompanyId : entry.Property(b => b.CompanyId).OriginalValue;
+            if (!branches!.LimitedCompanyIds.Contains(company) && !branches.LimitedCompanyIds.Contains(entry.Entity.CompanyId))
+            {
+                continue;
+            }
+            if (entry.State != EntityState.Added && !branches.AllowedBranchIds.Contains(entry.Entity.Id))
+            {
+                // Not a branch of theirs: as if it were not there.
+                throw new CrossCompanyWriteException(nameof(Branch));
+            }
+            if (entry.State is EntityState.Added or EntityState.Deleted ||
+                entry.Property(b => b.Code).OriginalValue != entry.Entity.Code ||
+                entry.Property(b => b.CompanyId).OriginalValue != entry.Entity.CompanyId)
+            {
+                throw new CrossBranchWriteException(nameof(Branch), "tenancy.branchNeedsEveryBranch");
+            }
+        }
+    }
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Company> Companies => Set<Company>();

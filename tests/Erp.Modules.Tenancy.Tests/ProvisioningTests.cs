@@ -35,6 +35,23 @@ public sealed class ProvisioningTests(TenancyFixture fixture) : IClassFixture<Te
         }
     }
 
+    /// <summary>The audit trail's correlations of one record's rows, oldest first.</summary>
+    private async Task<List<string>> CorrelationsAsync(string table, Guid id)
+    {
+        await using var db = await Env.OpenAdminAsync();
+        await using var command = new Npgsql.NpgsqlCommand(
+            "SELECT coalesce(correlation_id, '') FROM audit.entries WHERE table_name = @table AND record_id = @id ORDER BY id", db);
+        command.Parameters.AddWithValue("table", table);
+        command.Parameters.AddWithValue("id", id);
+        var rows = new List<string>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            rows.Add(reader.GetString(0));
+        }
+        return rows;
+    }
+
     [Fact]
     public async Task An_operator_provisions_a_workspace_with_its_first_company_branch_and_administrator()
     {
@@ -65,6 +82,14 @@ public sealed class ProvisioningTests(TenancyFixture fixture) : IClassFixture<Te
                 "--admin-email", "x@acme.example", "--admin-name", "X");
             Assert.Equal(2, again);
             Assert.Contains("already exists", message, StringComparison.Ordinal);
+            // A plain answer, no database error or stack trace before it (critic p02 round 4).
+            Assert.Equal("tenant create: a workspace with code 'acme-trading' already exists.", message.Trim());
+
+            // The audit trail names the operator who provisioned the workspace (by default the
+            // account and machine the command ran on).
+            var created = await CorrelationsAsync("tenants", session.GetProperty("tenant").GetProperty("id").GetGuid());
+            Assert.NotEmpty(created);
+            Assert.All(created, c => Assert.Equal($"operator:{Environment.UserName}@{Environment.MachineName}:tenant-create", c));
 
             var (listed, list) = await RunAsync("list");
             Assert.Equal(0, listed);
@@ -82,8 +107,11 @@ public sealed class ProvisioningTests(TenancyFixture fixture) : IClassFixture<Te
         using var viewer = await Env.SignInAsync(Env.Email(Env.TenantB, "viewer"));
         Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/tenancy/tenant")).StatusCode);
 
-        var (suspended, output) = await RunAsync("suspend", "--code", Env.TenantB.Code);
+        var before = (await CorrelationsAsync("tenants", Env.TenantB.Id)).Count;
+        var (suspended, output) = await RunAsync("suspend", "--code", Env.TenantB.Code, "--operator", "ops.sara@platform");
         Assert.True(suspended == 0, output);
+        // Who suspended the workspace is in its audit trail (critic p02 round 4: actor 'system' only).
+        Assert.Equal("operator:ops.sara@platform:tenant-suspend", (await CorrelationsAsync("tenants", Env.TenantB.Id)).Skip(before).Single());
         Assert.Equal(HttpStatusCode.Unauthorized, (await viewer.GetAsync("/api/tenancy/tenant")).StatusCode);
         await Assert.ThrowsAsync<InvalidOperationException>(() => Env.SignInAsync(Env.Email(Env.TenantB, "admin")));
         // The other workspace is untouched.
@@ -92,8 +120,21 @@ public sealed class ProvisioningTests(TenancyFixture fixture) : IClassFixture<Te
             Assert.Equal(HttpStatusCode.OK, (await other.GetAsync("/api/tenancy/tenant")).StatusCode);
         }
 
-        var (activated, _) = await RunAsync("activate", "--code", Env.TenantB.Code);
+        Environment.SetEnvironmentVariable(TenantCommand.OperatorVariable, "ops.omar");
+        int activated;
+        try
+        {
+            (activated, _) = await RunAsync("activate", "--code", Env.TenantB.Code);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(TenantCommand.OperatorVariable, null);
+        }
         Assert.Equal(0, activated);
+        Assert.Equal("operator:ops.omar:tenant-activate", (await CorrelationsAsync("tenants", Env.TenantB.Id)).Last());
+        var (refused, why) = await RunAsync("suspend", "--code", Env.TenantB.Code, "--operator", "two words");
+        Assert.Equal(2, refused);
+        Assert.Contains("--operator", why, StringComparison.Ordinal);
         using var back = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
         Assert.Equal("active", (await back.GetFromJsonAsync<JsonElement>("/api/tenancy/tenant")).GetProperty("status").GetString());
         Assert.Equal(2, (await RunAsync("suspend", "--code", "no-such-workspace")).Code);

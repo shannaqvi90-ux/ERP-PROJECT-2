@@ -1,0 +1,37 @@
+{
+  "task": "create-restricted-user",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 5,
+      "odoo": 10,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 37,
+      "odoo": 46,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.648,
+      "odoo": 7.445,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 20.91,
+      "odoo": 30.05,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 21.226,
+      "odoo": 37.005,
+      "outcome": "win"
+    }
+  },
+  "ties_at_zero": [],
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193134-87ab.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193011-8dd7.json"
+  }
+}

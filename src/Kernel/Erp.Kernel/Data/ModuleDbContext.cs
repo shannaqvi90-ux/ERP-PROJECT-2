@@ -156,6 +156,10 @@ public abstract class ModuleDbContext : DbContext
                             throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
                         }
                     }
+                    if (entry.Entity is ICompanyWide newShared && Companies?.HoldsEveryBranch(newShared.CompanyId) != true)
+                    {
+                        throw new CrossBranchWriteException(entry.Metadata.ClrType.Name);
+                    }
                     if (entry.Entity is TenantEntity added)
                     {
                         added.CreatedAt = now;
@@ -179,6 +183,12 @@ public abstract class ModuleDbContext : DbContext
                             throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
                         }
                     }
+                    if (entry.Entity is ICompanyWide sharedRow &&
+                        (Companies?.HoldsEveryBranch((Guid)entry.Property(nameof(ICompanyOwned.CompanyId)).OriginalValue!) != true ||
+                         Companies.HoldsEveryBranch(sharedRow.CompanyId) != true))
+                    {
+                        throw new CrossBranchWriteException(entry.Metadata.ClrType.Name);
+                    }
                     if (entry.State == EntityState.Modified && entry.Entity is TenantEntity modified)
                     {
                         modified.UpdatedAt = now;
@@ -188,6 +198,20 @@ public abstract class ModuleDbContext : DbContext
             }
         }
     }
+}
+
+/// <summary>
+/// Code tried to write a row the user's branch limits forbid: a record every branch of a company
+/// shares (<see cref="ICompanyWide"/>), by a user who may work in only some branches of it, or a
+/// module's own branch rule. Answered 403 with <see cref="Code"/> (a problem code with an English
+/// and an Arabic message), and logged as an error: the endpoint should have refused first.
+/// </summary>
+public sealed class CrossBranchWriteException(string entity, string code = CrossBranchWriteException.DefaultCode)
+    : InvalidOperationException($"Refused to write a {entity} row that every branch of its company shares, for a user limited to some branches.")
+{
+    public const string DefaultCode = "companyNeedsEveryBranch";
+
+    public string Code { get; } = code;
 }
 
 /// <summary>Code tried to write a row of a company outside the unit of work's company scope.</summary>

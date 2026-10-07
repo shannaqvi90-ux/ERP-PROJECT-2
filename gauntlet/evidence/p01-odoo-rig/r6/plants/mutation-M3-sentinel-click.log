@@ -1,0 +1,538 @@
+TAP version 13
+# Subtest: control: an honest driver verifies; reading and locating are allowed while measured
+ok 1 - control: an honest driver verifies; reading and locating are allowed while measured
+  ---
+  duration_ms: 3695.099032
+  type: 'test'
+  ...
+# Subtest: plant: typing through ctx.page.keyboard -> the run is invalid, never verified
+ok 2 - plant: typing through ctx.page.keyboard -> the run is invalid, never verified
+  ---
+  duration_ms: 1934.343851
+  type: 'test'
+  ...
+# Subtest: plant: pressing a key through op.page.keyboard -> the run is invalid, never verified
+ok 3 - plant: pressing a key through op.page.keyboard -> the run is invalid, never verified
+  ---
+  duration_ms: 1689.675114
+  type: 'test'
+  ...
+# Subtest: plant: clicking a locator directly -> the run is invalid, never verified
+ok 4 - plant: clicking a locator directly -> the run is invalid, never verified
+  ---
+  duration_ms: 1615.215268
+  type: 'test'
+  ...
+# Subtest: plant: filling a field directly -> the run is invalid, never verified
+ok 5 - plant: filling a field directly -> the run is invalid, never verified
+  ---
+  duration_ms: 2439.232837
+  type: 'test'
+  ...
+# Subtest: plant: the mouse -> the run is invalid, never verified
+ok 6 - plant: the mouse -> the run is invalid, never verified
+  ---
+  duration_ms: 1857.198708
+  type: 'test'
+  ...
+# Subtest: plant: a deep link (goto) -> the run is invalid, never verified
+ok 7 - plant: a deep link (goto) -> the run is invalid, never verified
+  ---
+  duration_ms: 1939.240496
+  type: 'test'
+  ...
+# Subtest: plant: a reload -> the run is invalid, never verified
+ok 8 - plant: a reload -> the run is invalid, never verified
+  ---
+  duration_ms: 1721.888334
+  type: 'test'
+  ...
+# Subtest: plant: page script that clicks (evaluate) -> the run is invalid, never verified
+ok 9 - plant: page script that clicks (evaluate) -> the run is invalid, never verified
+  ---
+  duration_ms: 1862.351482
+  type: 'test'
+  ...
+# Subtest: plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified
+ok 10 - plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified
+  ---
+  duration_ms: 1888.6648
+  type: 'test'
+  ...
+# Subtest: plant: a condition that clicks -> the run is invalid, never verified
+ok 11 - plant: a condition that clicks -> the run is invalid, never verified
+  ---
+  duration_ms: 2802.929272
+  type: 'test'
+  ...
+# Subtest: plant: a condition that sets a value -> the run is invalid, never verified
+ok 12 - plant: a condition that sets a value -> the run is invalid, never verified
+  ---
+  duration_ms: 2739.170647
+  type: 'test'
+  ...
+# Subtest: plant: a condition that changes the page -> the run is invalid, never verified
+ok 13 - plant: a condition that changes the page -> the run is invalid, never verified
+  ---
+  duration_ms: 5368.991665
+  type: 'test'
+  ...
+# Subtest: plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified
+ok 14 - plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified
+  ---
+  duration_ms: 4122.557781
+  type: 'test'
+  ...
+# Subtest: plant: an asynchronous condition -> the run is invalid, never verified
+ok 15 - plant: an asynchronous condition -> the run is invalid, never verified
+  ---
+  duration_ms: 3259.675031
+  type: 'test'
+  ...
+# Subtest: plant: a condition that navigates -> the run is invalid, never verified
+ok 16 - plant: a condition that navigates -> the run is invalid, never verified
+  ---
+  duration_ms: 2079.314498
+  type: 'test'
+  ...
+# Subtest: plant: a condition that calls the back end from the page -> the run is invalid, never verified
+ok 17 - plant: a condition that calls the back end from the page -> the run is invalid, never verified
+  ---
+  duration_ms: 2504.253755
+  type: 'test'
+  ...
+# Subtest: plant: a back-end call from the harness (fetch) -> the run is invalid, never verified
+ok 18 - plant: a back-end call from the harness (fetch) -> the run is invalid, never verified
+  ---
+  duration_ms: 2591.060952
+  type: 'test'
+  ...
+# Subtest: plant: a back-end call from the harness (http.request) -> the run is invalid, never verified
+ok 19 - plant: a back-end call from the harness (http.request) -> the run is invalid, never verified
+  ---
+  duration_ms: 2864.907951
+  type: 'test'
+  ...
+# Subtest: plant: a second page in the same context -> the run is invalid, never verified
+ok 20 - plant: a second page in the same context -> the run is invalid, never verified
+  ---
+  duration_ms: 1488.362068
+  type: 'test'
+  ...
+# Subtest: plant: a new browser context -> the run is invalid, never verified
+ok 21 - plant: a new browser context -> the run is invalid, never verified
+  ---
+  duration_ms: 1745.528485
+  type: 'test'
+  ...
+# Subtest: plant: the page request context (page.request) -> the run is invalid, never verified
+ok 22 - plant: the page request context (page.request) -> the run is invalid, never verified
+  ---
+  duration_ms: 2002.039793
+  type: 'test'
+  ...
+# Subtest: plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified
+ok 23 - plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified
+  ---
+  duration_ms: 1523.881188
+  type: 'test'
+  ...
+# Subtest: plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified
+ok 24 - plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified
+  ---
+  duration_ms: 1610.077201
+  type: 'test'
+  ...
+# Subtest: plant: an action whose refusal the driver swallows -> the run is invalid, never verified
+ok 25 - plant: an action whose refusal the driver swallows -> the run is invalid, never verified
+  ---
+  duration_ms: 2388.204302
+  type: 'test'
+  ...
+# Subtest: plant: a keyboard kept from set-up and used while measured is refused
+ok 26 - plant: a keyboard kept from set-up and used while measured is refused
+  ---
+  duration_ms: 2957.497157
+  type: 'test'
+  ...
+# Subtest: plant: an internal channel kept from set-up is refused there too
+ok 27 - plant: an internal channel kept from set-up is refused there too
+  ---
+  duration_ms: 2424.538495
+  type: 'test'
+  ...
+# Subtest: plant: a driver cannot stop the clock, drop steps or reach the raw page
+ok 28 - plant: a driver cannot stop the clock, drop steps or reach the raw page
+  ---
+  duration_ms: 2799.537443
+  type: 'test'
+  ...
+# Subtest: plant: browserKey refuses an action passed by the driver
+ok 29 - plant: browserKey refuses an action passed by the driver
+  ---
+  duration_ms: 2297.209763
+  type: 'test'
+  ...
+# Subtest: plant: the guard controls cannot be claimed by a driver
+ok 30 - plant: the guard controls cannot be claimed by a driver
+  ---
+  duration_ms: 0.942815
+  type: 'test'
+  ...
+# Subtest: set-up may act on the product but never run page script; verify() only reads
+ok 31 - set-up may act on the product but never run page script; verify() only reads
+  ---
+  duration_ms: 2499.819381
+  type: 'test'
+  ...
+# Subtest: plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid
+ok 32 - plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid
+  ---
+  duration_ms: 5632.355866
+  type: 'test'
+  ...
+# Subtest: plant U1b (round 3): a listener installed through a locator in set-up -> invalid
+ok 33 - plant U1b (round 3): a listener installed through a locator in set-up -> invalid
+  ---
+  duration_ms: 1649.292468
+  type: 'test'
+  ...
+# Subtest: plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid
+ok 34 - plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid
+  ---
+  duration_ms: 4646.53093
+  type: 'test'
+  ...
+# Subtest: plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid
+ok 35 - plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid
+  ---
+  duration_ms: 7158.202
+  type: 'test'
+  ...
+# Subtest: plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context
+ok 36 - plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context
+  ---
+  duration_ms: 3735.214028
+  type: 'test'
+  ...
+# Subtest: plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid
+ok 37 - plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid
+  ---
+  duration_ms: 1626.129709
+  type: 'test'
+  ...
+# Subtest: plant H2b (round 3): a start screen that carries state in its address -> invalid
+ok 38 - plant H2b (round 3): a start screen that carries state in its address -> invalid
+  ---
+  duration_ms: 618.823191
+  type: 'test'
+  ...
+# Subtest: plant H2c (round 3): a task already done by set-up before the clock -> invalid
+ok 39 - plant H2c (round 3): a task already done by set-up before the clock -> invalid
+  ---
+  duration_ms: 1378.390742
+  type: 'test'
+  ...
+# Subtest: plant V1 (round 3): verify() that acts on the page -> invalid
+ok 40 - plant V1 (round 3): verify() that acts on the page -> invalid
+  ---
+  duration_ms: 1842.636801
+  type: 'test'
+  ...
+# Subtest: plant V2 (round 3): verify() that changes the product through the back end -> invalid
+ok 41 - plant V2 (round 3): verify() that changes the product through the back end -> invalid
+  ---
+  duration_ms: 1997.533411
+  type: 'test'
+  ...
+# Subtest: plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid
+ok 42 - plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid
+  ---
+  duration_ms: 1594.194744
+  type: 'test'
+  ...
+# Subtest: plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid
+ok 43 - plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid
+  ---
+  duration_ms: 1606.942448
+  type: 'test'
+  ...
+# Subtest: plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared
+ok 44 - plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared
+  ---
+  duration_ms: 5642.306174
+  type: 'test'
+  ...
+# Subtest: the real ours sign-in driver verifies on a stand-in sign-in page
+ok 45 - the real ours sign-in driver verifies on a stand-in sign-in page
+  ---
+  duration_ms: 3846.132671
+  type: 'test'
+  ...
+# Subtest: plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid
+ok 46 - plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid
+  ---
+  duration_ms: 3459.836391
+  type: 'test'
+  ...
+# Subtest: plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid
+ok 47 - plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid
+  ---
+  duration_ms: 2986.872453
+  type: 'test'
+  ...
+# Subtest: the real ours find-user driver verifies on a stand-in users screen
+ok 48 - the real ours find-user driver verifies on a stand-in users screen
+  ---
+  duration_ms: 2365.646032
+  type: 'test'
+  ...
+# Subtest: plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win
+ok 49 - plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win
+  ---
+  duration_ms: 9748.95717
+  type: 'test'
+  ...
+# Subtest: an API task counts each request, and its screenshots show the neutral request transcript
+ok 50 - an API task counts each request, and its screenshots show the neutral request transcript
+  ---
+  duration_ms: 2219.41346
+  type: 'test'
+  ...
+# Subtest: plant: signing in to the API inside the measured part is refused
+ok 51 - plant: signing in to the API inside the measured part is refused
+  ---
+  duration_ms: 1216.574035
+  type: 'test'
+  ...
+# Subtest: plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified
+ok 52 - plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified
+  ---
+  duration_ms: 6252.6116
+  type: 'test'
+  ...
+# Subtest: plant P2 (round 4): launching another browser in set-up -> invalid
+ok 53 - plant P2 (round 4): launching another browser in set-up -> invalid
+  ---
+  duration_ms: 933.789916
+  type: 'test'
+  ...
+# Subtest: plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid
+ok 54 - plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid
+  ---
+  duration_ms: 1524.715869
+  type: 'test'
+  ...
+# Subtest: plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid
+ok 55 - plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid
+  ---
+  duration_ms: 1449.251187
+  type: 'test'
+  ...
+# Subtest: plant L2 (round 4): a list start whose address names the task's data -> invalid
+ok 56 - plant L2 (round 4): a list start whose address names the task's data -> invalid
+  ---
+  duration_ms: 2923.069068
+  type: 'test'
+  ...
+# Subtest: control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies
+ok 57 - control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies
+  ---
+  duration_ms: 2391.704437
+  type: 'test'
+  ...
+# Subtest: plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid
+ok 58 - plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid
+  ---
+  duration_ms: 9237.716604
+  type: 'test'
+  ...
+# Subtest: control (round 4): text copied inside the measured part may be pasted
+ok 59 - control (round 4): text copied inside the measured part may be pasted
+  ---
+  duration_ms: 2326.133633
+  type: 'test'
+  ...
+# Subtest: control (round 5): the honest path on the slow page waits for the 2 s answer
+ok 60 - control (round 5): the honest path on the slow page waits for the 2 s answer
+  ---
+  duration_ms: 3793.576602
+  type: 'test'
+  ...
+# Subtest: plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid
+ok 61 - plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid
+  ---
+  duration_ms: 1907.71763
+  type: 'test'
+  ...
+# Subtest: plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped
+ok 62 - plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped
+  ---
+  duration_ms: 5525.888384
+  type: 'test'
+  ...
+# Subtest: plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock
+ok 63 - plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock
+  ---
+  duration_ms: 3560.59026
+  type: 'test'
+  ...
+# Subtest: control (round 5): images and reads still loading when run() returns are not waited for
+ok 64 - control (round 5): images and reads still loading when run() returns are not waited for
+  ---
+  duration_ms: 1795.09012
+  type: 'test'
+  ...
+# Subtest: plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid
+ok 65 - plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid
+  ---
+  duration_ms: 2257.83507
+  type: 'test'
+  ...
+# Subtest: plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops
+ok 66 - plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops
+  ---
+  duration_ms: 6194.481503
+  type: 'test'
+  ...
+# Subtest: plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly
+ok 67 - plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly
+  ---
+  duration_ms: 2222.798903
+  type: 'test'
+  ...
+# Subtest: plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid
+ok 68 - plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid
+  ---
+  duration_ms: 7414.091937
+  type: 'test'
+  ...
+# Subtest: plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid
+ok 69 - plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid
+  ---
+  duration_ms: 3801.817399
+  type: 'test'
+  ...
+# Subtest: plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid
+ok 70 - plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid
+  ---
+  duration_ms: 1392.723116
+  type: 'test'
+  ...
+# Subtest: plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent
+ok 71 - plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent
+  ---
+  duration_ms: 5446.402571
+  type: 'test'
+  ...
+# Subtest: plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid
+ok 72 - plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid
+  ---
+  duration_ms: 17725.853542
+  type: 'test'
+  ...
+# Subtest: plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness
+ok 73 - plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness
+  ---
+  duration_ms: 3702.531115
+  type: 'test'
+  ...
+# Subtest: plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid
+ok 74 - plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid
+  ---
+  duration_ms: 4961.100081
+  type: 'test'
+  ...
+# Subtest: plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid
+ok 75 - plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid
+  ---
+  duration_ms: 2778.759267
+  type: 'test'
+  ...
+# Subtest: plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid
+ok 76 - plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid
+  ---
+  duration_ms: 3409.803758
+  type: 'test'
+  ...
+# Subtest: plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid
+ok 77 - plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid
+  ---
+  duration_ms: 1769.154461
+  type: 'test'
+  ...
+# Subtest: plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid
+ok 78 - plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid
+  ---
+  duration_ms: 896.380289
+  type: 'test'
+  ...
+# Subtest: plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach
+ok 79 - plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach
+  ---
+  duration_ms: 3975.666571
+  type: 'test'
+  ...
+# Subtest: plant U5f (round 5): a driver object handed straight to execute() is refused, never measured
+ok 80 - plant U5f (round 5): a driver object handed straight to execute() is refused, never measured
+  ---
+  duration_ms: 0.415502
+  type: 'test'
+  ...
+# Subtest: plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent
+ok 81 - plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent
+  ---
+  duration_ms: 2463.764956
+  type: 'test'
+  ...
+# Subtest: plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid
+ok 82 - plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 1594.912122
+  type: 'test'
+  ...
+# Subtest: plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid
+ok 83 - plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 2138.448526
+  type: 'test'
+  ...
+# Subtest: plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid
+ok 84 - plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 1894.902367
+  type: 'test'
+  ...
+# Subtest: plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid
+ok 85 - plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 1592.945784
+  type: 'test'
+  ...
+# Subtest: plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid
+ok 86 - plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 1653.498373
+  type: 'test'
+  ...
+# Subtest: control (round 5): the clipboard is empty at the start, whatever set-up copied
+ok 87 - control (round 5): the clipboard is empty at the start, whatever set-up copied
+  ---
+  duration_ms: 1864.456284
+  type: 'test'
+  ...
+# Subtest: KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step
+ok 88 - KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step
+  ---
+  duration_ms: 2305.381289
+  type: 'test'
+  ...
+1..88
+# tests 88
+# suites 0
+# pass 88
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 273390.347867

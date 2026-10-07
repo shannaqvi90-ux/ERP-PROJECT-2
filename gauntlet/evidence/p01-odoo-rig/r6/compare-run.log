@@ -1,0 +1,83 @@
+built for ours and odoo: api-update-user, arabic-report, create-company-branch, create-restricted-user, edit-and-save, find-user, print-list-arabic, reach-screen-keyboard, sign-in, switch-company, switch-to-arabic
+api-update-user          ours  verified  steps 2  keys 242  machine 0.181s  human 70.86s  human+wait 71.033s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192701-7b0f.json
+api-update-user          ours  verified  steps 2  keys 242  machine 0.051s  human 70.86s  human+wait 70.906s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192705-1e4d.json
+api-update-user          ours  verified  steps 2  keys 242  machine 0.062s  human 70.86s  human+wait 70.919s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192707-497a.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.605s  human 54.62s  human+wait 55.222s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192708-31eb.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.691s  human 54.62s  human+wait 55.309s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192712-a47f.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.547s  human 54.62s  human+wait 55.164s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192714-72b3.json
+api-update-user          verdict loss
+arabic-report            odoo  verified  steps 6  keys 0  machine 7.992s  human 15.9s  human+wait 23.313s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192717-ad2a.json
+arabic-report            odoo  verified  steps 6  keys 0  machine 4.762s  human 15.9s  human+wait 20.194s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192735-2586.json
+arabic-report            odoo  verified  steps 6  keys 0  machine 4.782s  human 15.9s  human+wait 20.172s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192747-b6ec.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.349s  human 5.3s  human+wait 5.556s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192800-2131.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.13s  human 5.3s  human+wait 5.345s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192803-9462.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.143s  human 5.3s  human+wait 5.371s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192806-0a27.json
+arabic-report            verdict loss
+arabic-report            TIE AT ZERO on keystrokes (both products 0; counted as a tie, and a tie is a loss): every other metric is a win, so this loss comes from the tie at zero alone. Owner question pending, gauntlet/needs-human.md.
+create-company-branch    odoo  verified  steps 12  keys 72  machine 4.977s  human 48.53s  human+wait 51.398s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192809-10f4.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 3.081s  human 48.53s  human+wait 50.537s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192831-6925.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 2.872s  human 48.53s  human+wait 50.348s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192849-b762.json
+create-company-branch    ours  verified  steps 6  keys 44  machine 0.862s  human 22.17s  human+wait 22.639s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192907-e460.json
+create-company-branch    ours  verified  steps 6  keys 44  machine 0.647s  human 22.17s  human+wait 22.406s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192914-a4ec.json
+create-company-branch    ours  verified  steps 6  keys 44  machine 0.581s  human 22.17s  human+wait 22.379s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-company-branch-20261007T192920-c46d.json
+create-company-branch    verdict win
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 8.167s  human 30.05s  human+wait 37.692s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T192926-2af2.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 7.445s  human 30.05s  human+wait 37.005s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193011-8dd7.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 7.398s  human 30.05s  human+wait 36.89s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193050-ce75.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.727s  human 20.91s  human+wait 21.226s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193128-24d5.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.648s  human 20.91s  human+wait 21.144s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193134-87ab.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.551s  human 20.91s  human+wait 21.264s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/create-restricted-user-20261007T193140-e990.json
+create-restricted-user   verdict win
+edit-and-save            ours  verified  steps 3  keys 17  machine 0.173s  human 9.72s  human+wait 9.781s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193145-268b.json
+edit-and-save            ours  verified  steps 3  keys 17  machine 0.153s  human 9.72s  human+wait 9.774s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193150-74fc.json
+edit-and-save            ours  verified  steps 3  keys 17  machine 0.201s  human 9.72s  human+wait 9.775s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193154-df1f.json
+edit-and-save            odoo  verified  steps 4  keys 19  machine 0.351s  human 10.28s  human+wait 10.494s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193200-271c.json
+edit-and-save            odoo  verified  steps 4  keys 19  machine 0.421s  human 10.28s  human+wait 10.535s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193212-5ba0.json
+edit-and-save            odoo  verified  steps 4  keys 19  machine 0.385s  human 10.28s  human+wait 10.48s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/edit-and-save-20261007T193225-fbc1.json
+edit-and-save            verdict win
+find-user                odoo  verified  steps 6  keys 21  machine 2.072s  human 14.55s  human+wait 16.24s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193238-e7ee.json
+find-user                odoo  verified  steps 6  keys 21  machine 2.006s  human 14.55s  human+wait 16.168s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193251-3f67.json
+find-user                odoo  verified  steps 6  keys 21  machine 1.411s  human 14.55s  human+wait 15.73s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193304-d8fa.json
+find-user                ours  verified  steps 4  keys 20  machine 0.479s  human 14.35s  human+wait 14.592s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193314-b0f0.json
+find-user                ours  verified  steps 4  keys 20  machine 0.453s  human 14.35s  human+wait 14.591s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193316-858e.json
+find-user                ours  verified  steps 4  keys 20  machine 0.491s  human 14.35s  human+wait 14.6s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/find-user-20261007T193318-0e9f.json
+find-user                verdict win
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.477s  human 11.09s  human+wait 11.369s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193321-d120.json
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.446s  human 11.09s  human+wait 11.338s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193323-51b3.json
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.427s  human 11.09s  human+wait 11.333s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193325-6b40.json
+print-list-arabic        odoo  verified  steps 5  keys 32  machine 5.317s  human 19.06s  human+wait 23.953s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193327-40dc.json
+print-list-arabic        odoo  verified  steps 5  keys 32  machine 5.19s  human 19.06s  human+wait 23.832s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193338-8623.json
+print-list-arabic        odoo  verified  steps 5  keys 32  machine 6.094s  human 19.06s  human+wait 24.638s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/print-list-arabic-20261007T193350-700c.json
+print-list-arabic        verdict win
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.144s  human 3.15s  human+wait 3.226s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193403-141a.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.14s  human 3.15s  human+wait 3.23s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193409-de68.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.141s  human 3.15s  human+wait 3.224s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193413-5702.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.759s  human 3.99s  human+wait 4.678s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193418-1671.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.649s  human 3.99s  human+wait 4.594s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193423-4681.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.637s  human 3.99s  human+wait 4.584s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/reach-screen-keyboard-20261007T193427-2533.json
+reach-screen-keyboard    verdict win
+sign-in                  ours  verified  steps 4  keys 57  machine 0.261s  human 19.06s  human+wait 19.242s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193430-be7f.json
+sign-in                  ours  verified  steps 4  keys 57  machine 0.254s  human 19.06s  human+wait 19.242s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193433-9703.json
+sign-in                  ours  verified  steps 4  keys 57  machine 0.268s  human 19.06s  human+wait 19.243s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193437-d9e4.json
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.548s  human 19.06s  human+wait 20.48s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193440-74b3.json
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.349s  human 19.06s  human+wait 20.324s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193501-af59.json
+sign-in                  odoo  verified  steps 4  keys 57  machine 1.573s  human 19.06s  human+wait 20.497s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/sign-in-20261007T193520-b48f.json
+sign-in                  verdict loss
+switch-company           ours  verified  steps 1  keys 0  machine 0.11s  human 2.65s  human+wait 2.709s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193541-fcbb.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.085s  human 2.65s  human+wait 2.703s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193545-25f7.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.094s  human 2.65s  human+wait 2.703s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193549-5bcc.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.526s  human 5.3s  human+wait 5.717s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193554-0386.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.472s  human 5.3s  human+wait 5.648s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193558-1852.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.543s  human 5.3s  human+wait 5.707s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-company-20261007T193603-7270.json
+switch-company           verdict loss
+switch-company           TIE AT ZERO on keystrokes (both products 0; counted as a tie, and a tie is a loss): every other metric is a win, so this loss comes from the tie at zero alone. Owner question pending, gauntlet/needs-human.md.
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.076s  human 2.65s  human+wait 2.655s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193607-b0ed.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.084s  human 2.65s  human+wait 2.654s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193610-a170.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.082s  human 2.65s  human+wait 2.653s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193613-9ddb.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 1.992s  human 15.28s  human+wait 16.623s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193615-fab0.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.172s  human 15.28s  human+wait 16.653s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193629-208e.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 1.683s  human 15.28s  human+wait 16.321s  -> ../../evidence-staging/p01-odoo-rig/r6/compare/results/switch-to-arabic-20261007T193645-8915.json
+switch-to-arabic         verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r6/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r6/compare
+rc=0

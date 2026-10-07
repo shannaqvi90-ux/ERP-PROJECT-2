@@ -49,5 +49,30 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
         Assert.True(report.Requests >= Ratchet.Min("g1.branchAttackRequests"),
             $"g1.branchAttackRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g1.branchAttackRequests")}");
         Assert.True(report.Markers >= Ratchet.Min("g1.branchMarkers"), $"g1.branchMarkers: {report.Markers}; ratchet minimum {Ratchet.Min("g1.branchMarkers")}");
+
+        // The records every branch of company X shares (critic p02 round 4, plant P7: a one-branch
+        // administrator renamed and deactivated the whole company and every gate passed).
+        var shared = report.Shared!;
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"shared records: {string.Join(", ", shared.Tables)}; {shared.Writes} writes to company X by the branch-limited administrator:\n  " + string.Join("\n  ", shared.Sources));
+        Assert.Contains("tenancy.companies", shared.Tables);
+        Assert.True(shared.Failures.Count == 0, "Writes to company X's shared records by an administrator limited to one of its branches:\n" + string.Join("\n", shared.Failures.Take(40)));
+        Assert.True(shared.ChangedTables.Count == 0, "Company X's shared rows changed (by an administrator limited to one of its branches) in: " + string.Join(", ", shared.ChangedTables));
+        // Renaming, re-registering, deactivating, the logo: each proven valid by the tenant's
+        // administrator and so really attacked.
+        foreach (var source in new[]
+                 {
+                     "PUT /api/tenancy/companies/{id:guid} [legalNameEn]",
+                     "PUT /api/tenancy/companies/{id:guid} [code]",
+                     "PUT /api/tenancy/companies/{id:guid} [isActive]",
+                     "PUT /api/tenancy/companies/{id:guid} [taxRegistrationNumber]",
+                     "PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]",
+                     "PUT /api/tenancy/companies/{id:guid}/logo [-]",
+                     "DELETE /api/tenancy/companies/{id:guid}/logo [-]",
+                 })
+        {
+            Assert.Contains(source, shared.Sources);
+        }
+        Assert.True(shared.Writes >= Ratchet.Min("g1.sharedRecordWrites"), $"g1.sharedRecordWrites: {shared.Writes}; ratchet minimum {Ratchet.Min("g1.sharedRecordWrites")}");
     }
 }

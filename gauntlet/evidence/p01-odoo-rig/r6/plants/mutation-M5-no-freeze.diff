@@ -1,0 +1,13 @@
+diff --git a/gauntlet/compare/lib/runner.mjs b/gauntlet/compare/lib/runner.mjs
+index 690f5e5..4c2c650 100644
+--- a/gauntlet/compare/lib/runner.mjs
++++ b/gauntlet/compare/lib/runner.mjs
+@@ -462,7 +462,7 @@ export async function execute(task, driver, product, productId, needles, out, op
+     // finished off the clock, by the page or by verification waiting for it.
+     if (tracker) {
+       tracker.stop();
+-      thaw = await freezePages(context);
++      thaw = null;
+       await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
+       routed = true;
+     }

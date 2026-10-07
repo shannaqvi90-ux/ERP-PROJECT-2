@@ -32,6 +32,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
     private Guid? _tenantId;
     private CompanyScopeState _companies = CompanyScopeState.Nothing;
     private bool _companiesBound;
+    private IReadOnlySet<Guid> _branchLimitedCompanies = new HashSet<Guid>();
+    private bool _branchLimitsSet;
     private readonly IHttpContextAccessor? _http;
 
     /// <param name="http">The request this unit of work serves, if any: inside a request to a
@@ -147,6 +149,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
         ActorKind = actorKind;
         _companies = actorKind == UserActorKind ? CompanyScopeState.Nothing : CompanyScopeState.Everything;
         _companiesBound = false;
+        _branchLimitedCompanies = new HashSet<Guid>();
+        _branchLimitsSet = false;
     }
 
     /// <summary>Actor kind of a signed-in user; such a unit of work starts with no company.</summary>
@@ -226,6 +230,28 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
     public IReadOnlyList<Guid> BranchIds => HasTenant ? _companies.BranchIds : [];
 
     public bool AllowsCompany(Guid companyId) => HasTenant && (_companies.All || _companies.CompanyIds.Contains(companyId));
+
+    /// <summary>
+    /// Record the companies of the scope where the user may work in only some branches, once, after
+    /// <see cref="BindCompaniesAsync"/>. In those companies the user reads the records every branch
+    /// shares (<see cref="ICompanyWide"/>) but never writes them. A second call throws, so code
+    /// running later in the request cannot lift the limits.
+    /// </summary>
+    public void SetBranchLimits(IEnumerable<Guid> branchLimitedCompanyIds)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_branchLimitsSet)
+        {
+            throw new InvalidOperationException("The branch limits of this unit of work are already set.");
+        }
+        _branchLimitedCompanies = branchLimitedCompanyIds.ToHashSet();
+        _branchLimitsSet = true;
+    }
+
+    public bool HoldsEveryBranch(Guid companyId) => AllowsCompany(companyId) && (_companies.All || !_branchLimitedCompanies.Contains(companyId));
 
     private sealed record CompanyScopeState(bool All, IReadOnlyList<Guid> CompanyIds, Guid? ActiveCompanyId, Guid? ActiveBranchId, IReadOnlyList<Guid> BranchIds)
     {
@@ -336,12 +362,28 @@ public interface ICompanyContext
     IReadOnlyList<Guid> BranchIds { get; }
 
     bool AllowsCompany(Guid companyId);
+
+    /// <summary>True when the company is in the scope and the user may work in every branch of it
+    /// (always, for system work). Records every branch shares (<see cref="ICompanyWide"/>) are
+    /// written only where this holds.</summary>
+    bool HoldsEveryBranch(Guid companyId);
 }
 
 /// <summary>A row that belongs to one company of its tenant (column <c>company_id</c>).</summary>
 public interface ICompanyOwned : ITenantOwned
 {
     Guid CompanyId { get; set; }
+}
+
+/// <summary>
+/// A row every branch of its company shares: the company's own record, and later its settings,
+/// chart of accounts or price lists. A user who may work in only some branches of the company reads
+/// it but never adds, changes or deletes it: <see cref="ModuleDbContext"/> refuses the write
+/// (<see cref="CrossBranchWriteException"/>, answered 403) whatever the endpoint checked, and the
+/// G1 branch attack attacks every table of such rows.
+/// </summary>
+public interface ICompanyWide : ICompanyOwned
+{
 }
 
 public sealed class TenantContextMissingException()
