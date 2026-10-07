@@ -1,0 +1,55 @@
+               tbl               | rls | force | policies 
+---------------------------------+-----+-------+----------
+ tenancy.__ef_migrations_history | f   | f     |        0
+ tenancy.branches                | t   | t     |        2
+ tenancy.companies               | t   | t     |        2
+ tenancy.tenants                 | t   | t     |        1
+ tenancy.user_branch_access      | t   | t     |        2
+ tenancy.user_company_access     | t   | t     |        2
+ tenancy.user_company_totals     | t   | t     |        1
+ tenancy.user_workplaces         | t   | t     |        2
+(8 rows)
+
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ postgres  | t        | t
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(4 rows)
+
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+     table_name      | action | actor_kind | count | with_actor 
+---------------------+--------+------------+-------+------------
+ branches            | insert | seed       |    16 |          0
+ branches            | insert | user       |     9 |          9
+ companies           | insert | seed       |     7 |          0
+ companies           | insert | user       |     9 |          9
+ companies           | update | user       |     7 |          7
+ tenants             | insert | seed       |     3 |          0
+ tenants             | update | system     |     2 |          0
+ user_branch_access  | insert | seed       |     3 |          0
+ user_branch_access  | insert | user       |     2 |          2
+ user_company_access | delete | user       |     2 |          2
+ user_company_access | insert | seed       |    15 |          0
+ user_company_access | insert | user       |    29 |         29
+ user_company_totals | insert | seed       |     7 |          0
+ user_company_totals | insert | user       |     7 |          7
+ user_company_totals | update | seed       |     8 |          0
+ user_company_totals | update | user       |    31 |         31
+ user_workplaces     | delete | user       |     1 |          1
+ user_workplaces     | insert | seed       |     7 |          0
+ user_workplaces     | insert | user       |     1 |          1
+ user_workplaces     | update | user       |    34 |         34
+(20 rows)
+
+          occurred_at          |               actor_id               | action |                                                                        left                                                                         
+-------------------------------+--------------------------------------+--------+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-07 00:50:45.044064+00 | 01a113c7-707e-737f-add9-a1523bf581b3 | update | {"is_active": {"new": false, "old": true}}
+ 2026-10-07 00:49:33.523117+00 | 01a113c7-707e-737f-add9-a1523bf581b3 | update | {"is_active": {"new": false, "old": true}, "legal_name_en": {"new": "Falcon Logistics LLC (retired 1791334173520)", "old": "Falcon Logistics LLC"}}
+ 2026-10-07 00:49:30.940139+00 | 01a113c7-707e-737f-add9-a1523bf581b3 | update | {"is_active": {"new": false, "old": true}, "legal_name_en": {"new": "Falcon Logistics LLC (retired 1791334170938)", "old": "Falcon Logistics LLC"}}
+(3 rows)
+

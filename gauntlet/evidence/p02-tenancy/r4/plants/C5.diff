@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 36617df..4efcd9a 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -121,7 +121,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.AsNoTracking().IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);

@@ -1,0 +1,20 @@
+Test run for /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.33]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.76]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.00]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [50 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [153 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [5 s]
+[xUnit.net 00:00:53.15]   Finished:    Erp.Gates.Tests (ID = '60c42f28d755e2f9035befd67f37f53035d61dba6b48dd59645b0baecd41d570')
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [33 s]
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 53.7322 Seconds
+EXIT 0
