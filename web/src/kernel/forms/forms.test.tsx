@@ -292,10 +292,10 @@ describe("money", () => {
     expect(multiplyDecimal("1e3", "1", 2)).toBeNull();
   });
 
-  function Amount({ initialCurrency }: { initialCurrency: string }) {
+  function Amount({ initialCurrency, baseCurrency = "AED", initialRate = "3.6725" }: { initialCurrency: string; baseCurrency?: string; initialRate?: string }) {
     const [amount, setAmount] = useState("1000");
     const [currency, setCurrency] = useState(initialCurrency);
-    const [rate, setRate] = useState("3.6725");
+    const [rate, setRate] = useState(initialRate);
     const bind = (name: string, value: string, set: (v: string) => void) => ({ name, value, onChange: set, errors: [], readOnly: false });
     return (
       <MoneyField
@@ -303,7 +303,7 @@ describe("money", () => {
         amount={bind("amount", amount, setAmount)}
         currency={bind("currency", currency, setCurrency)}
         rate={bind("rate", rate, setRate)}
-        baseCurrency="AED"
+        baseCurrency={baseCurrency}
       />
     );
   }
@@ -322,5 +322,19 @@ describe("money", () => {
     await show(<Amount initialCurrency="AED" />);
     expect(view!.container.querySelector('input[name="rate"]')).toBeNull();
     expect(view!.container.querySelector("output.money-base")).toBeNull();
+  });
+
+  it("works the base amount out at the base currency's own decimals: three for a dinar, none for the yen", async () => {
+    await show(<Amount initialCurrency="USD" baseCurrency="KWD" initialRate="0.30715" />);
+    // 1000 × 0.30715 = 307.150 KWD (three decimals, not rounded to 307.15).
+    expect(view!.container.querySelector("output.money-base")!.textContent).toContain("307.150");
+    view!.unmount();
+    view = undefined;
+    await show(<Amount initialCurrency="USD" baseCurrency="JPY" initialRate="149.555" />);
+    expect(view!.container.querySelector("output.money-base")!.textContent).toContain("149,555");
+    expect(view!.container.querySelector("output.money-base")!.textContent).not.toContain(".");
+    expect(multiplyDecimal("10.005", "1", 3)).toBe("10.005");
+    expect(multiplyDecimal("0.5", "1", 0)).toBe("1");
+    expect(multiplyDecimal("-0.5", "1", 0)).toBe("-1");
   });
 });
