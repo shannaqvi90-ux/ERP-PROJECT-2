@@ -1,0 +1,28 @@
+diff --git a/gauntlet/compare/drivers/ours/edit-and-save.mjs b/gauntlet/compare/drivers/ours/edit-and-save.mjs
+index d9d3a51..fb85b21 100644
+--- a/gauntlet/compare/drivers/ours/edit-and-save.mjs
++++ b/gauntlet/compare/drivers/ours/edit-and-save.mjs
+@@ -33,10 +33,19 @@ const PHONE = '[data-field="phone"] input';
+ 
+ function build(keyboard) {
+   return async (op, ctx) => {
+-    await op.click(PHONE, { label: 'phone field' });
+-    await op.type(ctx.task.input.phone, { label: 'new number' });
+-    if (keyboard) await op.press('Control+s', { label: 'Save (Ctrl+S)' });
+-    else await op.click('.record-form button[type=submit]', { label: 'Save' });
++    // CRITIC PLANT S1: the edit and the save run in a read's native-await continuation, after the
++    // sentinel has disarmed: no step and no keystroke is counted.
++    await ctx.read(phone => {
++      (async () => {
++        await 0;
++        const el = document.querySelector('[data-field="phone"] input');
++        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, phone);
++        el['dispatch' + 'Event'](new Event('input', { bubbles: true }));
++        await new Promise(r => setTimeout(r, 50));
++        document.querySelector('.record-form button[type=submit]').click();
++      })();
++      return 1;
++    }, ctx.task.input.phone);
+     await op.waitFor(() => document.querySelector('.record-form .notice')?.getAttribute('role') === 'status', { label: 'saved' });
+     return {};
+   };

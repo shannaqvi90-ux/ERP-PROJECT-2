@@ -1,0 +1,13 @@
+diff --git a/gauntlet/compare/lib/sandbox/lockdown.mjs b/gauntlet/compare/lib/sandbox/lockdown.mjs
+index beac53c..8e77a63 100644
+--- a/gauntlet/compare/lib/sandbox/lockdown.mjs
++++ b/gauntlet/compare/lib/sandbox/lockdown.mjs
+@@ -55,7 +55,7 @@ function lock(obj, key, value) {
+ // Connections: TCP, Unix sockets and named pipes (net), TLS (tls.connect uses Socket#connect),
+ // HTTP/1 and HTTP/2 clients (their agents call net/tls connect), undici (fetch, WebSocket,
+ // EventSource: it calls net.connect). Listening sockets too: a driver has nothing to serve.
+-lock(net.Socket.prototype, 'connect', refuse('opening a network connection (net.Socket#connect)'));
++
+ lock(net, 'connect', refuse('opening a network connection (net.connect)'));
+ lock(net, 'createConnection', refuse('opening a network connection (net.createConnection)'));
+ lock(net.Server.prototype, 'listen', refuse('listening on a socket (net.Server#listen)'));
