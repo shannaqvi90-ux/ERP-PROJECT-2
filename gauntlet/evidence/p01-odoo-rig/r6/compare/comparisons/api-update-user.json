@@ -1,0 +1,37 @@
+{
+  "task": "api-update-user",
+  "verdict": "loss",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 2,
+      "outcome": "tie (a tie is a loss)"
+    },
+    "keystrokes": {
+      "ours": 242,
+      "odoo": 184,
+      "outcome": "loss"
+    },
+    "machine_seconds": {
+      "ours": 0.062,
+      "odoo": 0.605,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 70.86,
+      "odoo": 54.62,
+      "outcome": "loss"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 70.919,
+      "odoo": 55.222,
+      "outcome": "loss"
+    }
+  },
+  "ties_at_zero": [],
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192707-497a.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r6/compare/results/api-update-user-20261007T192708-31eb.json"
+  }
+}
