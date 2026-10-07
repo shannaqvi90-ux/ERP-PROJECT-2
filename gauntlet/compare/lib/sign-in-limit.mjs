@@ -5,9 +5,20 @@
 // another process (./erp verify runs the end-to-end suite first, in the same minute), so a sign-in
 // the server still refuses with 429 waits out the window and is tried again. The limit itself is
 // tested by the gate suite; none of this is inside a measured part of a task.
-const budget = 24;
-export const windowMs = 61_000;
+//
+// This module runs in the harness process only (lib/runner.mjs for a driver's browser sign-in,
+// lib/sandbox/bridge.mjs for an API session's), so one budget counts every sign-in of the run.
+let budget = 24;
+export let windowMs = 61_000;
 const recent = [];
+
+/** Tests only: a smaller budget and window. Returns the function that restores the defaults. */
+export function configureSignInLimit(options) {
+  const saved = { budget, windowMs };
+  ({ budget = budget, windowMs = windowMs } = options);
+  recent.length = 0;
+  return () => { ({ budget, windowMs } = saved); recent.length = 0; };
+}
 
 /** Wait, if needed, until one more sign-in fits the budget, then count it. */
 export async function paceSignIn() {

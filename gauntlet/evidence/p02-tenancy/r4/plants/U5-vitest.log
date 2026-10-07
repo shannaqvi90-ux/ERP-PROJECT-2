@@ -1,0 +1,40 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p02-tenancy-r4-plants/web[39m
+
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 147[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 244[2mms[22m[39m
+ [31m❯[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 289[2mms[22m[39m
+     [32m✓[39m says why a stronger user's access is read-only and offers no way to change it[32m 110[2mms[22m[39m
+[31m     [31m×[31m lets a branch-limited manager give only their own branch[39m[32m 69[2mms[22m[39m
+     [32m✓[39m says when another administrator saved first and reloads their change on request[32m 108[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 607[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m55 tests[22m[2m)[22m[33m 4463[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/AccessPage.test.tsx[2m > [22mcompany access screen[2m > [22mlets a branch-limited manager give only their own branch
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/modules/tenancy/AccessPage.test.tsx:[2m81:30[22m[39m
+    [90m 79| [39m    const all = view.container.querySelectorAll<HTMLInputElement>('[da…
+    [90m 80| [39m    [34mexpect[39m(all[[34m0[39m][33m![39m[33m.[39mchecked)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+    [90m 81| [39m    [34mexpect[39m(all[[34m0[39m][33m![39m[33m.[39mdisabled)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                             [31m^[39m
+    [90m 82| [39m    expect(view.container.querySelector('[data-company="AN-DXB"] .acce…
+    [90m 83| [39m    [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m68 passed[39m[22m[90m (69)[39m
+[2m   Start at [22m 04:53:32
+[2m   Duration [22m 5.91s[2m (transform 3.67s, setup 151ms, import 4.87s, tests 5.75s, environment 1.54s)[22m
+
+EXIT 1

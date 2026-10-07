@@ -1,0 +1,49 @@
+== RLS on lists.saved_views
+saved_views|t|t
+tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+== tenants
+0190a000-0000-7000-8000-000000000001|alnoor
+0190a000-0000-7000-8000-000000000002|gulfsteel
+== view counts by tenant (superuser)
+0190a000-0000-7000-8000-000000000002|6|5
+0190a000-0000-7000-8000-000000000001|5|5
+== indexes on identity.users
+pk_users|CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ak_users_tenant_id_id|CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ix_users_email_normalized|CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+ix_users_tenant_id_display_name|CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+ix_users_tenant_id_email_normalized|CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ix_users_display_name_email_normalized|CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+ix_users_tenant_id_created_at_id|CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+ix_users_tenant_id_last_sign_in_at_id|CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+ix_users_display_name_ar|CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+== audit of saved views
+13
+id|bigint||not null|generated always as identity
+tenant_id|uuid||not null|
+occurred_at|timestamp with time zone||not null|now()
+actor_id|uuid|||
+actor_kind|character varying(20)||not null|
+table_schema|character varying(63)||not null|
+table_name|character varying(63)||not null|
+record_id|uuid|||
+action|character varying(10)||not null|
+changes|jsonb||not null|
+transaction_id|bigint||not null|
+correlation_id|character varying(100)|||
+== as erp_app, unbound
+SET
+views|0
+users|0
+== bound to gulfsteel inside a transaction
+BEGIN
+0190a000-0000-7000-8000-000000000002|1791336869.460165
+views gulf|6
+views alnoor rows visible|0
+users alnoor visible|0
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000002|1791336869.461849
+UPDATE 0
+ROLLBACK

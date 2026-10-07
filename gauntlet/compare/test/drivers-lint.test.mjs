@@ -34,6 +34,15 @@ const FORBIDDEN = [
   [/\b(browserType|newBrowserCDPSession|startTracing|connectOverCDP)\b/, 'another browser or a browser-wide session'],
   // Continuation (no M before a step) is derived by the instrument (lib/klm.mjs).
   [/\bchain\s*:/, 'a declared chain'],
+  // Round 5: drivers run in the sandboxed driver process (lib/sandbox/), which refuses these at run
+  // time; the lint refuses them in the source as well, so a plant shows in review.
+  [/\bgetBuiltinModule\b/, 'process.getBuiltinModule'],
+  [/\bprocess\s*\.\s*(binding|_linkedBinding|dlopen|send|kill|chdir)\b|\bprocess\s*\[/, 'a process control'],
+  [/(?<![\w.$])(globalThis\s*\.\s*)?fetch\b(?!\s*\()/, 'a fetch reference kept for later'],
+  [/\b(WebSocket|EventSource|SharedArrayBuffer|Atomics|WebAssembly)\b/, 'a socket, shared memory or WebAssembly'],
+  [/\b(Performance|performance)\s*\.\s*(prototype|now\s*=)|\bDate\s*\.\s*now\s*=/, 'a patched clock'],
+  // A transport is chosen by name from lib/api-transport.mjs, never written in a driver.
+  [/\btransport\s*:\s*(async\s*)?(\(|function|[\w$]+\s*=>)/, 'a transport function'],
 ];
 
 export function driverFiles() {
@@ -85,8 +94,22 @@ test('the driver lint catches planted escapes', () => {
     "const other = await ctx.browser.browserType().launch();",
     "await ctx.browser.newBrowserCDPSession();",
     "await ctx.browser.startTracing();",
+    // Round 5 (the critic's plants U4 and U5, and their neighbours).
+    "const cp = process.getBuiltinModule('node:child_process');",
+    "const fetchAtLoad = globalThis.fetch;",
+    "const f = fetch;",
+    "process.binding('tcp_wrap');",
+    "process['binding']('tcp_wrap');",
+    "new WebSocket('ws://localhost');",
+    "performance.now = () => 0;",
+    "Date.now = () => 0;",
+    "return { baseUrl, transport: (verb, path) => ({ url: path }) };",
+    "import net from 'node:net';",
+    "import { Worker } from 'node:worker_threads';",
+    "import inspector from 'node:inspector';",
   ];
   for (const p of plants) assert.ok(lintDriver(p).length > 0, `not caught: ${p}`);
   assert.deepEqual(lintDriver("import { adminRpc } from './_common.mjs';\nimport path from 'node:path';"), []);
   assert.deepEqual(lintDriver("const v = await ctx.read(() => document.title);\nawait ctx.until(() => true, { page });"), []);
+  assert.deepEqual(lintDriver("const r = await fetch(url, { method: 'GET' });\nreturn { baseUrl, transport: 'odoo-json2', uid };"), []);
 });

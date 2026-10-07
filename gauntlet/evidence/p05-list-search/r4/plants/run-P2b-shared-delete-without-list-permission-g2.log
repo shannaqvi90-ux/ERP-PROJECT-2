@@ -1,0 +1,52 @@
+Test run for /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:25.47]     Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [FAIL]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [3 s]
+  Error Message:
+   DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 204 to a user holding only lists.views.share, not tenancy.companies.read
+tenancy.companies: the workspace's views changed while refused callers tried them:
+before 01a11418-2821-782c-975c-1e6b3ec30f4f:Team tenancy.companies:948:False | 01a11417-fc6f-7d46-ae52-75f667de6093:Team view:760:False | 01a11418-2836-7b5a-b38a-aaf82cd33b85:Mine tenancy.companies:950:False
+after  01a11417-fc6f-7d46-ae52-75f667de6093:Team view:760:False | 01a11418-2836-7b5a-b38a-aaf82cd33b85:Mine tenancy.companies:950:False
+GET /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.companies/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 204 to a user holding only lists.views.share, not tenancy.branches.read
+tenancy.branches: the workspace's views changed while refused callers tried them:
+before 01a11418-2adc-7f73-8c31-207de07f438b:Team tenancy.branches:973:False | 01a11417-fc88-76f4-9336-38b7b8c98cec:Team view:760:False | 01a11418-2ae7-75bd-9c04-e5c4cde3eba2:Mine tenancy.branches:974:False
+after  01a11417-fc88-76f4-9336-38b7b8c98cec:Team view:760:False | 01a11418-2ae7-75bd-9c04-e5c4cde3eba2:Mine tenancy.branches:974:False
+GET /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.branches/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 204 to a user holding only lists.views.share, not tenancy.access.read
+tenancy.access: the workspace's views changed while refused callers tried them:
+before 01a11418-2d03-7a0d-8060-c8492aa0a9f6:Team tenancy.access:995:False | 01a11417-fc8a-7b3d-9a59-c06c18a851a1:Team view:760:False | 01a11418-2d0e-7a86-9704-8ad79f29a49d:Mine tenancy.access:997:False
+after  01a11417-fc8a-7b3d-9a59-c06c18a851a1:Team view:760:False | 01a11418-2d0e-7a86-9704-8ad79f29a49d:Mine tenancy.access:997:False
+GET /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.access/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/identity.users/shared-views/{id:guid} answered 204 to a user holding only lists.views.share, not identity.users.read
+identity.users: the workspace's views changed while refused callers tried them:
+before 01a11418-2f09-7f98-99df-e0311f42f50b:Team identity.users:1016:False | 01a11417-fc8b-7e8b-bc00-6e0f40e53b12:Team view:760:False | 01a11418-2f14-78bd-a168-31edf1e2f3e7:Mine identity.users:1017:False
+after  01a11417-fc8b-7e8b-bc00-6e0f40e53b12:Team view:760:False | 01a11418-2f14-78bd-a168-31edf1e2f3e7:Mine identity.users:1017:False
+GET /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/identity.users/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 204 to a user holding only lists.views.share, not identity.roles.read
+identity.roles: the workspace's views changed while refused callers tried them:
+before 01a11418-3154-7f81-9fe1-23797847e0bb:Team identity.roles:1036:False | 01a11417-fc8b-7f17-af81-3f845fe765e4:Team view:760:False | 01a11418-3164-73a0-a751-54e24d8c85a2:Mine identity.roles:1038:False
+after  01a11417-fc8b-7f17-af81-3f845fe765e4:Team view:760:False | 01a11418-3164-73a0-a751-54e24d8c85a2:Mine identity.roles:1038:False
+GET /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/identity.roles/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing() in /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 700
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5 lists, 80 refusals checked on list endpoints
+
+
+
+Failed!  - Failed:     1, Passed:    26, Skipped:     0, Total:    27, Duration: 47 s - Erp.Gates.Tests.dll (net10.0)

@@ -203,16 +203,18 @@ def users():
                                             'group_ids': [Command.set([env.ref('base.group_user').id])]})
         template.write({k: v for k, v in {'tour_enabled': False, 'odoobot_state': 'disabled'}.items() if k in template._fields})
     commit_template()
-    cr.execute('CREATE TEMP TABLE rig_users (ref text, name text, login text, lang text, n int) ON COMMIT DROP')
+    cr.execute('CREATE TEMP TABLE rig_users (ref text, name text, login text, lang text, n int, active boolean) ON COMMIT DROP')
+    # The dataset says which users are active (all of them today); our product reads the same column.
     execute_values(cr._obj, 'INSERT INTO rig_users VALUES %s', [
-        (r['ref'], r['name'], r['login'], 'ar_001' if r['lang'] == 'ar' else 'en_US', int(r['ref'][1:])) for r in rows], page_size=5000)
+        (r['ref'], r['name'], r['login'], 'ar_001' if r['lang'] == 'ar' else 'en_US', int(r['ref'][1:]), r.get('active', 'true') != 'false')
+        for r in rows], page_size=5000)
     clone_sql('res_partner', template.partner_id.id, {
         'name': 'u.name', 'complete_name': 'u.name', 'ref': 'u.ref', 'email': 'u.login', 'email_normalized': 'u.login',
-        'lang': 'u.lang', 'active': 'true',
+        'lang': 'u.lang', 'active': 'u.active',
     }, 'rig_users u', 'ORDER BY u.n')
     cr.execute("UPDATE res_partner p SET commercial_partner_id = p.id FROM rig_users u WHERE p.ref = u.ref")
     added = clone_sql('res_users', template.id, {
-        'login': 'u.login', 'partner_id': 'p.id', 'active': 'true',
+        'login': 'u.login', 'partner_id': 'p.id', 'active': 'u.active',
         'create_date': "now() - (u.n || ' minutes')::interval", 'write_date': "now() - (u.n || ' minutes')::interval",
     }, 'rig_users u JOIN res_partner p ON p.ref = u.ref', 'ORDER BY u.n')
     cr.execute("""INSERT INTO res_groups_users_rel (gid, uid)
@@ -227,7 +229,6 @@ def users():
     return added
 
 
-@timed('user-channels')
 def user_channels():
     # Odoo makes every user a member of the channels that auto-subscribe one of their groups
     # (General for internal users). Bulk users were cloned in SQL, so add those memberships the
@@ -249,6 +250,12 @@ def user_channels():
                     AND NOT EXISTS (SELECT 1 FROM discuss_channel_member x
                                     WHERE x.channel_id = {int(channel_id)} AND x.partner_id = u.partner_id)) u""")
     return added
+
+
+# Run twice: for the users that exist before set-up, then for the bulk users. Each run is its own
+# step in the log (round 5: the same step name appeared twice).
+user_channels_before = timed('user-channels (users before set-up)')(user_channels)
+user_channels_bulk = timed('user-channels (bulk users)')(user_channels)
 
 
 @timed('rates')
@@ -493,7 +500,7 @@ def volume():
     return out
 
 
-for step in (user_channels, setup, contacts, users, user_channels, rates, audit_messages, audit_realism, attachments, attachment_content, job_runs, purchase_orders, purchase_buyer):
+for step in (user_channels_before, setup, contacts, users, user_channels_bulk, rates, audit_messages, audit_realism, attachments, attachment_content, job_runs, purchase_orders, purchase_buyer):
     step()
 # Planner statistics for the bulk-loaded tables. Without them PostgreSQL plans for empty tables
 # and some Odoo screens (the purchase dashboard) take minutes instead of milliseconds, which

@@ -1,24 +1,24 @@
 {
   "schema": 1,
-  "run_id": "switch-company-20261003T145332-6174",
-  "instrument": 4,
+  "run_id": "switch-company-20261005T071813-43e3",
+  "instrument": 5,
   "task": "switch-company",
   "task_title": "Switch company",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch to working in \"Demo Manufacturing FZE\".",
   "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
-  "started_at": "2026-10-03T14:53:32.563Z",
-  "finished_at": "2026-10-03T14:53:38.478Z",
+  "started_at": "2026-10-05T07:18:13.126Z",
+  "finished_at": "2026-10-05T07:18:21.442Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 3,
+    "dataset": 4,
     "reference_volume": 100000,
-    "node": "v22.22.0"
+    "node": "v22.23.3"
   },
   "counts": {
     "steps": 2,
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 0.185,
-    "system_wait_seconds": 0.054,
+    "machine_seconds": 1.194,
+    "system_wait_seconds": 0.707,
     "human_seconds": 5.3,
-    "human_plus_wait_seconds": 5.354,
+    "human_plus_wait_seconds": 6.007,
     "klm_operator_counts": {
       "K": 0,
       "P": 2,
@@ -57,8 +57,9 @@
       "kind": "click",
       "label": "company switcher",
       "keystrokes": 0,
-      "at": 0,
-      "took": 0.083,
+      "at": 0.006,
+      "took": 0.088,
+      "screen": "/odoo/discuss",
       "chain": false
     },
     {
@@ -66,30 +67,37 @@
       "kind": "click",
       "label": "Demo Manufacturing FZE",
       "keystrokes": 0,
-      "at": 0.083,
-      "took": 0.048,
+      "at": 0.095,
+      "took": 0.391,
+      "screen": "/odoo/discuss",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "working in the other company",
-      "at": 0.131,
-      "seconds": 0.054
+      "at": 0.487,
+      "seconds": 0.683
+    },
+    {
+      "label": "the product still answering when run() returned (2 requests)",
+      "at": 1.17,
+      "seconds": 0.024,
+      "settle": true
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "1d89b342a09879e4.jpg",
+      "file": "dd02007154c1894a.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/1d89b342a09879e4.jpg"
+      "path": "gauntlet/reference/odoo/shots/dd02007154c1894a.jpg"
     },
     {
       "moment": "done",
-      "file": "09d17fa37e8c43d9.jpg",
-      "at": 0.185,
-      "path": "gauntlet/reference/odoo/shots/09d17fa37e8c43d9.jpg"
+      "file": "6c046ce09f3d76ae.jpg",
+      "at": 1.194,
+      "path": "gauntlet/reference/odoo/shots/6c046ce09f3d76ae.jpg"
     }
   ],
   "verification": {
@@ -102,7 +110,7 @@
   "path_notes": "Company switcher in the top bar > the company. (Alt+Shift+U opens the switcher too, but then the company must be typed or arrowed to: more steps and keys.)",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/switch-company.mjs",
-    "sha256": "7f29547b2951f041594a46509d6143127a16d37aeb0aca5097d38cd3b0088b89"
+    "sha256": "2bf49103e7f0ad20456c7a55a21cfc4679e4a80ebf573c6e1a65dc002c7f468d"
   },
   "task_notes": "Both companies exist in each product before the task (fixtures).",
   "error": null,
@@ -116,11 +124,22 @@
     "focused": null,
     "set_up_contexts_closed": 0
   },
+  "verify_passes": [
+    {
+      "seconds": 0.007,
+      "verified": true
+    },
+    {
+      "seconds": 0.005,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 2,
   "result_file": "gauntlet/reference/odoo/tasks/switch-company.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-company-20261003T145326-4f8a.json",
-    "gauntlet/reference/odoo/results/switch-company-20261003T145332-6174.json",
-    "gauntlet/reference/odoo/results/switch-company-20261003T145338-4298.json"
+    "gauntlet/reference/odoo/results/switch-company-20261005T071805-37f4.json",
+    "gauntlet/reference/odoo/results/switch-company-20261005T071813-43e3.json",
+    "gauntlet/reference/odoo/results/switch-company-20261005T071821-dd1a.json"
   ]
 }

@@ -44,11 +44,11 @@ public sealed class PdfFontFace : IDisposable
         {
             z.Write(sfnt);
         }
-        CompressedSfnt = buffer.ToArray();
+        CompressedSfnt = System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsImmutableArray(buffer.ToArray());
     }
 
     /// <summary>The TrueType bytes, zlib-compressed (the PDF font file stream), made once.</summary>
-    public byte[] CompressedSfnt { get; }
+    public System.Collections.Immutable.ImmutableArray<byte> CompressedSfnt { get; }
 
     /// <summary>PostScript-style name, unique among the faces (NotoSansArabic-Bold).</summary>
     public string Name { get; }

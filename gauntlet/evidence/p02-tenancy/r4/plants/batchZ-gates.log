@@ -1,0 +1,124 @@
+Test run for /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.28]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.66]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.90]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:18.81]     Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [FAIL]
+[xUnit.net 00:00:18.81]       System.InvalidOperationException : the administrator could not give plain its access: 403 {"type":"urn:erp:problem:tenancy.userBeyondOwn","title":"This user holds permissions you do not hold. Only someone who holds every one of them may change their company access.","status":403,"code":"tenancy.userBeyondOwn","traceId":"00-c9899fec0b383d3c6b913bcc5137d339-9a46a7211977889d-00"}
+[xUnit.net 00:00:18.81]       Stack Trace:
+[xUnit.net 00:00:18.82]         /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(126,0): at Erp.Gates.Tests.G2.CompanyGrants.<>c__DisplayClass3_3.<<RunAsync>g__UserAsync|14>d.MoveNext()
+[xUnit.net 00:00:18.82]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:18.82]         /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(170,0): at Erp.Gates.Tests.G2.CompanyGrants.RunAsync(ErpTestEnvironment env)
+[xUnit.net 00:00:18.82]         /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(54,0): at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user()
+[xUnit.net 00:00:18.82]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [2 s]
+  Error Message:
+   System.InvalidOperationException : the administrator could not give plain its access: 403 {"type":"urn:erp:problem:tenancy.userBeyondOwn","title":"This user holds permissions you do not hold. Only someone who holds every one of them may change their company access.","status":403,"code":"tenancy.userBeyondOwn","traceId":"00-c9899fec0b383d3c6b913bcc5137d339-9a46a7211977889d-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CompanyGrants.<>c__DisplayClass3_3.<<RunAsync>g__UserAsync|14>d.MoveNext() in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 126
+--- End of stack trace from previous location ---
+   at Erp.Gates.Tests.G2.CompanyGrants.RunAsync(ErpTestEnvironment env) in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 170
+   at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user() in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 54
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:03.81]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:01:03.81]       36 leaks of branch Z:
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?companyId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branchId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branchId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branchId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branchId=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branchId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?company=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?company=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?company=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?company=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?company=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branch=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branch=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branch=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branch=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?branch=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?id=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?id=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?id=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?id=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?id=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?userId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?userId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?userId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?userId=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?userId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?search=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?search=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?search=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?search=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?search=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?q=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?q=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?q=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?q=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       branch-limited administrator → PUT /api/tenancy/workplace?q=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+[xUnit.net 00:01:03.81]       Stack Trace:
+[xUnit.net 00:01:03.81]         /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(40,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:01:03.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:03.81]       Output:
+[xUnit.net 00:01:03.81]         98 endpoints, 11008 requests, 4 branch Z markers, 840 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [44 s]
+  Error Message:
+   36 leaks of branch Z:
+branch-limited administrator → PUT /api/tenancy/workplace?companyId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branchId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branchId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branchId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branchId=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branchId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?company=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?company=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?company=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?company=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?company=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branch=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branch=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branch=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branch=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?branch=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?id=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?id=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?id=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?id=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?id=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?userId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?userId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?userId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?userId=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?userId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?search=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?search=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?search=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?search=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?search=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?q=A1-BR2 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?q=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?q=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?q=Road%2012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+branch-limited administrator → PUT /api/tenancy/workplace?q=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-716c-9688-a87b652d40ff
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 98 endpoints, 11008 requests, 4 branch Z markers, 840 differential checks, 5 write oracle checks
+
+
+[xUnit.net 00:02:34.64]   Finished:    Erp.Gates.Tests (ID = '60c42f28d755e2f9035befd67f37f53035d61dba6b48dd59645b0baecd41d570')
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 13 s]
+
+Test Run Failed.
+Total tests: 3
+     Passed: 1
+     Failed: 2
+ Total time: 2.5875 Minutes
+EXIT 1

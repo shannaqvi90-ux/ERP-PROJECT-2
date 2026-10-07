@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261006T052953-2bdc",
+  "instrument": 5,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-06T05:29:53.817Z",
+  "finished_at": "2026-10-06T05:30:18.971Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 32,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 11.361,
+    "system_wait_seconds": 10.526,
+    "human_seconds": 19.06,
+    "human_plus_wait_seconds": 29.586,
+    "klm_operator_counts": {
+      "K": 32,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "vendor",
+      "keystrokes": 31,
+      "at": 0.049,
+      "took": 0.248,
+      "text": "Zenith General Trading Est.",
+      "same_field": false,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "search orders",
+      "keystrokes": 1,
+      "at": 0.311,
+      "took": 0.016,
+      "chord": "Enter",
+      "screen": "/odoo/purchase",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "select every order",
+      "keystrokes": 0,
+      "at": 2.735,
+      "took": 0.15,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 2.896,
+      "took": 0.057,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Purchase Order",
+      "keystrokes": 0,
+      "at": 2.954,
+      "took": 0.076,
+      "screen": "/odoo/purchase",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "order list, search focused",
+      "at": 0.001,
+      "seconds": 0.046
+    },
+    {
+      "label": "search options",
+      "at": 0.297,
+      "seconds": 0.013
+    },
+    {
+      "label": "the vendor's orders",
+      "at": 0.327,
+      "seconds": 2.127
+    },
+    {
+      "label": "print menu offered",
+      "at": 2.886,
+      "seconds": 0.01
+    },
+    {
+      "label": "file received",
+      "at": 3.03,
+      "seconds": 8.33
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c04a8ec67e6c3f05.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/c04a8ec67e6c3f05.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "cfadc9cda885fc5f.jpg",
+      "at": 2.455,
+      "path": "gauntlet/reference/odoo/shots/cfadc9cda885fc5f.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "f5219f8d265015dd.jpg",
+      "at": 11.361,
+      "path": "gauntlet/reference/odoo/shots/f5219f8d265015dd.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "أمر شراء.pdf",
+      "bytes": 1187498,
+      "orders_printed": 27,
+      "orders_expected": 27,
+      "same_orders": true,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 632,
+      "right_to_left": true,
+      "documents": 27
+    }
+  },
+  "path_notes": "Purchase orders list (search focused) > type the vendor > Enter (Search Order for: the order, the vendor's reference or the vendor and its contacts) > header check box > Print > Purchase Order.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/print-list-arabic.mjs",
+    "sha256": "679eb16a7c5ec19c25a2f6bd82e4ed3ec6b5e00dedb026211806ee0a620e371a"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (23 users in the shared dataset, against the vendor's 27 orders in the reference).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/purchase",
+    "path": "/odoo/purchase",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "بحث...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.794,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.023,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.363,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "result_file": "gauntlet/reference/odoo/tasks/print-list-arabic.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/print-list-arabic-20261006T052904-01a6.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261006T052930-463e.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261006T052953-2bdc.json"
+  ]
+}
