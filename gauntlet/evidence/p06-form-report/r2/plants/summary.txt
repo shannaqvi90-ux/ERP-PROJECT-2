@@ -1,0 +1,9 @@
+Plants in p06's surface, round 2 (patches beside this file; runner scripts/run-gates.sh, web scripts/web-plants.sh and scripts/web-w2-probe.sh)
+L2  printed files kept on disk by download name (round 1's miss)      -> CAUGHT: G1HttpIsolation, 1570 leaks (run-L2.log)
+L3  on-disk output cache keyed by request path+query, no tenant       -> CAUGHT: G1CompanyIsolation, G1BranchScope, G1TenantSource (source review), G2ReportData (run-L3.log); G1HttpIsolation ended in TaskCanceledException in ReportsIsolationProbe at load ~95
+P1+P2 company profile under tenancy.workplace.read; catalogue unfiltered (round 1's misses) -> CAUGHT: G2ReportData x2 (run-P1P2.log)
+P3  /api/reports/print/{key} runs any report under reports.catalog.read -> CAUGHT: reviewed permission map (run-P3.log)
+P4  list print routes with no permission at all                        -> CAUGHT: host refuses to start (run-P4.log)
+P5  column-level report permissions ignored                             -> CAUGHT: G2ReportData (run-P5.log)
+W1  kernel RecordForm editable with Save for read-only users            -> CAUGHT: 13 web unit tests (web-plants.log)
+W2  Ctrl+S saves a read-only record (save shortcut always on, save() ignores canEdit) -> MISSED: 268/268 web unit tests, tenancy (17) and identity (5) screen plant self-tests pass (web-plants.log); e2e never presses Ctrl+S on a read-only form. web-w2-probe.log: with one probe assertion added to forms.test.tsx the plant sends 'PUT /api/things/t1'.
