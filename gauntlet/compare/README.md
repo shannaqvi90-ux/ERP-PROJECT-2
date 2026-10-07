@@ -72,7 +72,7 @@ plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
   (authorization, cookie, `X-Erp-Request`, accept), nothing that changes what a typed request does.
 - A function a driver hands to the page (`ctx.read`, `ctx.until`, `op.waitFor`) arrives as its text.
   The harness parses it (acorn, MIT) and accepts exactly one function expression, so a crafted text
-  cannot close the sentinel's call and run page script outside it.
+  cannot close the harness's call and run page script outside it (and see "Page functions" below).
   A file the harness writes for a driver (a screenshot path, a download folder) must lie in the
   driver process's scratch folder.
 
@@ -88,11 +88,32 @@ plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
   `waitForFunction`, `addInitScript`, `exposeFunction`, `route`, `setExtraHTTPHeaders`, the page
   clock … (round 3: a listener installed during sign-in finished the task inside the measured
   part). Drivers read the page with `ctx.read(fn, arg)` and wait with `ctx.until(fn, { arg })`;
-  both run `fn` inside the sentinel below.
-- The condition of `op.waitFor(fn)` (and of `ctx.read`, `ctx.until`) runs in the page inside a
-  sentinel that refuses clicks, focus, value and scroll setters, form submits, timers, network,
-  storage and history calls, cancels a navigation, and reports any DOM change, event, navigation
-  or focus move it caused.
+  both run `fn` as a page function (below).
+- **Page functions** (round 7, `lib/page-script.mjs`): the condition of `op.waitFor(fn)` and the
+  functions of `ctx.read` and `ctx.until` may only read the page, now and later. Three layers, each
+  plant-tested on its own (`test/page-script.test.mjs`):
+  1. *The source.* One synchronous function expression that reads: no async function, `await`,
+     generator, import, `with`, `this` or `debugger`; no write to any property and no assignment to
+     a name it did not declare; no computed property but a number (no name built at run time); none
+     of `window`, `self`, `globalThis`, `top`, `parent`, `frames`, `document.defaultView`,
+     `contentWindow`, `eval`, `Function`, `Reflect`, `.constructor`, `.prototype`, `.then`,
+     `Object.values` and the other `Object` members that hand out property values; `new` only for
+     plain data (`RegExp`, `Set`, `Map`, `Date`, `URL` …); `location` only as `location.pathname`
+     and its other parts. A `javascript:` address set from any script world runs later in the
+     page's own world and fires no navigate event, so the address object must be out of reach.
+     The driver lint applies the same check to every page function in a driver's source.
+  2. *Its own world.* It runs in an isolated script world of the harness's (through the browser's
+     debugging protocol), never in the page's own: the product's globals, prototypes and handlers
+     are out of reach, so it cannot leave a hook the product calls later. Only the document is
+     shared. Its argument is plain data.
+  3. *Armed for good.* That world is armed when it is created and never disarmed: every method and
+     property setter of the browser's interfaces that acts (clicks, focus, values, DOM changes,
+     timers, promises, observers, listeners, network, storage, history, workers, animations) throws
+     and is logged, and its prototypes are frozen. Whatever a function scheduled anyway would find
+     every action refused when it ran, and the log is read after every call.
+  Around each call any DOM change, event, navigation (cancelled), focus move or change of address
+  it caused is reported. A refusal while measured is an uncounted action; the run is invalid.
+  Conditions are polled every 50 ms from the harness; one that runs over 10 s is ended.
 - While measured, `fetch` and `http(s).request` from the harness are refused, so a task cannot be
   done through the back end and count nothing. API tasks use `op.request`, which counts. The
   guard is installed when the harness loads. An API task's transport (how a request as typed is
@@ -139,10 +160,16 @@ right after its last step or wait. Round 5 closes the ways to finish a task afte
   returns, the clock runs on until it ends: a save is the product's answer to the task (system
   wait "the product still answering when run() returned"). Reads still loading (avatars, a chatter)
   are not waited for.
-- When the clock stops the page's own script is frozen (no timer, network callback or animation
-  frame of the product runs any more; reading and screenshots still work) and its new requests are
-  aborted (`requests_after_clock`), so the screen `verify()` reads is the screen at the end of the
-  measured part. It is thawed for clean-up.
+- When the clock stops the page's own script is frozen (no timer, scheduled render or animation
+  frame of the product runs any more; reading and screenshots still work), then (round 7) whatever
+  it is still loading is aborted, because freezing script does not stop the continuation of a
+  request already under way (critic plant T3: a read answered 2 s later reached the screen
+  `verify()` read). What was under way is recorded (`requests_in_flight_at_clock`) and its new
+  requests are refused (`requests_after_clock`). The screen is fingerprinted (address, elements
+  with their attributes, text, field values, focus) after the freeze and before the abort, and again
+  after `verify()` (`screen_at_clock`, `screen_after_verify`): if it changed, `verify()` may have
+  read an end state the measured part never showed, and the run is invalid (plant T6: a request's
+  failure handler wrote the end state as it was aborted). It is thawed for clean-up.
 - `verify()` reads; it never waits. Every wait is refused there (`Locator.waitFor`, `waitForURL`,
   `waitForTimeout`, `ctx.until` …) and every read times out after 0.5 s. `verify()` runs twice and
   each pass is metered (`verify_passes`): a pass that asked the harness nothing for over 1 s (it
@@ -158,7 +185,7 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 5); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 6); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -206,7 +233,9 @@ wait for the file is system wait.
 keys but save pointing and hand moves), a driver offers `variants` (for example `keyboard` and
 `pointer`). Each runs in full; the result counts, per metric, the best verified variant
 (`best_path_per_metric`) and records every variant's steps; `system_wait_seconds` is the wait inside the variant whose clock is counted. The reference is never measured on a
-path worse than the best one an expert could take for that metric.
+path worse than the best one an expert could take for that metric. A variant may define its own
+`setup`, `signIn`, `ready`, `verify` and `cleanup`; each overrides the base driver's (round 7: they
+ran only when the base driver defined the same hook).
 
 **Baselines stay honest.** Each result records a hash of the driver that produced it.
 `test/baselines.test.mjs` (part of `./erp verify`, no rig needed) fails when a driver changed
@@ -225,8 +254,10 @@ over, so a filled-in field is never singled out. Only the `blind/` folder (its `
 time (2000-01-01), and the products run in a random order per task, so neither file times nor run
 order tell the products apart.
 Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
-box, and so are the demo data's own names (each product's company name and its database or tenant
-code, `identity` in `lib/blind.mjs`); the shot is rendered in greyscale (no signature colours); the
+box, and so are the demo data's own names (company names, database or tenant codes, company and
+branch codes, `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
+names, not only their own: a name masked in one product's shots and showing in the other's told the
+products apart. The shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
@@ -330,7 +361,9 @@ strings, patterns or `ctx.until`), and files may be written only under `os.tmpdi
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
 generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
-(page script inside the sentinel) and `health` (true in a driver health check, below). Use
+(page functions: read-only, see "Page functions") and `health` (true in a driver health check,
+below). A page function reads with `document.querySelector…`, `innerText`, `getComputedStyle`,
+`location.pathname`; index a list with a number or `.item(i)`; pass what it needs as `arg`. Use
 keyboard-first paths where our product offers them: every key is counted, and so is every click.
 
 **Health check.** `./erp verify` runs every built ours driver against its clean stack:

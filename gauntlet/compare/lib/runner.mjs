@@ -173,6 +173,9 @@ export async function runTask(taskId, productId, opts = {}) {
     counts: primary.counts,
     verify_passes: primary.verify_passes ?? null,
     requests_after_clock: primary.requests_after_clock ?? null,
+    requests_in_flight_at_clock: primary.requests_in_flight_at_clock ?? null,
+    screen_at_clock: primary.screen_at_clock ?? null,
+    screen_after_verify: primary.screen_after_verify ?? null,
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
   if (primary.failure_capture) result.failure_capture = primary.failure_capture;
@@ -196,7 +199,8 @@ export async function runTask(taskId, productId, opts = {}) {
       }
     }
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
-      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
+      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
+      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -679,7 +683,11 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
     // The driver may name what its start screen shows once loaded (read-only: a locator or selector).
     const r = driver.ready === 'function' ? session.decode(await hook('ready', { handles: { page: session.handleOf(guard(page)) } })) : driver.ready;
     const loc = typeof r === 'string' ? page.locator(r) : unwrap(r);
-    await loc.first().waitFor({ state: 'visible', timeout });
+    // Round 7: a start that never shows what the driver named says so, with where it stood.
+    await loc.first().waitFor({ state: 'visible', timeout }).catch(async e => {
+      const focused = await page.evaluate(() => { const a = document.activeElement; return a ? `${a.tagName.toLowerCase()}${a.getAttribute('name') ? `[name=${a.getAttribute('name')}]` : ''}` : null; }).catch(() => null);
+      throw new Error(`the start screen (${kind}, ${page.url()}) never showed the driver's ready element (${typeof r === 'string' ? r : String(r)}); focused: ${focused}: ${String(e.message).split('\n')[0]}`);
+    });
   }
   // Quiet: no request in flight for 300 ms (at most 15 s), then nothing more to load.
   const until = Date.now() + 15_000;
