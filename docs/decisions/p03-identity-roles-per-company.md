@@ -97,4 +97,7 @@ Built on p02's company scope as planned, with these differences from the plan ab
   security, so a caller sees the same company roles as on the user's record; a company the
   directory does not name prints as its id rather than empty, so it is never read as "every
   company". The report's own query is three plain queries joined by UNION ALL (EF Core cannot
-  translate a lateral join over a union).
+  translate a lateral join over a union). The "Only in company" column needs the roles' read
+  permission, like the role column beside it (p06 withholds role names from a caller who may read
+  users but not roles): which company a role is held in is part of the holding, and without the
+  role it says nothing. Such a caller gets each user once, with neither column.
