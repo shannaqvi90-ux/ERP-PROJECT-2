@@ -1,0 +1,34 @@
+# p04 — Palette record sources for roles, companies and branches; a failed verify keeps its evidence
+
+Date: 2026-10-07. Piece: p04-shell, round 5. Status: accepted.
+
+## Palette: every record a settings screen lists can be opened by typing
+
+The round-4 critic found that the command palette opened users and offered "work in …", but typing
+a role name or a company or branch code found nothing to open. The piece's scope is "open any
+screen, record or action by typing".
+
+Decision: the identity module's `extensions.ts` adds a `identity.roles` source (English or Arabic
+name, through the roles list's own search), and the tenancy module's `extensions.tsx` adds
+`tenancy.companies` (code, English or Arabic legal name) and `tenancy.branches` (code, English or
+Arabic name). Each source asks the registered list endpoint (`?search=…&take=5`), so it searches
+exactly what the list screen searches, under the same permission and tenant filters. The title is
+the name in the screen's language; the subtitle is the code (or, for roles, the other language's
+name). Choosing a record opens its list narrowed to it with the record open
+(`recordPath(screen, id, q=…)`), as users already did; "Show all matches" opens the list narrowed to
+the query. Each source names its read permission, so the palette never asks it for a user without
+it (tested). The headings reuse the menu's own strings, so no new strings were needed.
+
+## A failed `./erp verify` keeps what it wrote
+
+The round-4 critic's clean-clone verify failed once in the comparison harness's health check
+(sign-in, returning variant, a 120 s locator wait) and passed 12 times afterwards. The cause could
+not be read: `verify_cleanup` deleted the scratch directory with the failing result.
+
+Decision: when verify exits non-zero, `verify_cleanup` first copies the scratch directory (stage
+logs, test results, the health check's result JSON) to `verify-failures/<UTC time>-<project>/` in
+the clone (`ERP_VERIFY_FAILURES` overrides; git ignores the folder), and prints where. The harness
+runner records, for any run that errors, what the page showed (`error_page`: address, focused field,
+whether a navigation was up, busy indicators and every alert or status message), set-up included,
+where no screenshot is taken; the health check prints the whole error and that description on the
+console too, so the verify log alone shows it. No timeout was raised and no retry added.

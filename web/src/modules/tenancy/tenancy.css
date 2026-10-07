@@ -286,11 +286,19 @@
   display: flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;
 }
 
+/* The quick switches give way when the top bar is short of room: they wrap onto a second line the
+   bar does not show, so only whole codes are ever visible (every company stays one Alt+C away). */
 .workplace-quick {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 2px;
+  min-width: 0;
+  height: 30px;
+  overflow: hidden;
 }
 
 .workplace-chip {

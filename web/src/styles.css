@@ -259,6 +259,9 @@ input[aria-invalid="true"] {
   height: 100vh;
   height: 100dvh;
   display: grid;
+  /* One column exactly as wide as the window: no bar's contents may widen the page (critic p04
+     round 5 check: a workspace with several companies pushed the shell to 1310 px at 1280). */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
@@ -273,6 +276,15 @@ input[aria-invalid="true"] {
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
+  /* As wide as the window at every width: the module context shrinks instead (below). */
+  min-width: 0;
+}
+
+/* Top bar labels stay on one line; a long one is cut, never wrapped into a taller bar. */
+.topbar button,
+.topbar a,
+.brand {
+  white-space: nowrap;
 }
 
 .topbar a {
@@ -304,6 +316,14 @@ input[aria-invalid="true"] {
   display: flex;
   align-items: center;
   gap: 6px;
+  /* The module context (the working company, its quick switches) gives way first when the bar is
+     short of room; the controls at the end (language, help, user, sign out) always stay whole. */
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.topbar-end {
+  flex-shrink: 0;
 }
 
 .palette-trigger {
