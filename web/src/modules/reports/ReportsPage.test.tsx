@@ -5,7 +5,7 @@ import { ShortcutProvider } from "../../kernel/shortcuts";
 import { mockFetch, render, settle, submit, type Rendered } from "../../test/render";
 import type { ReportCatalog, ReportDocument } from "./model";
 import { reportUrl } from "./model";
-import { lookupLabel, ReportsPage } from "./ReportsPage";
+import { lookupLabel, ReportsPage, ReportView } from "./ReportsPage";
 
 let view: Rendered | undefined;
 
@@ -131,6 +131,58 @@ describe("reports screen", () => {
     await settle();
     expect(view!.container.querySelector('[data-field="signedInSince"] .field-error')!.textContent).toBe("Enter a date as YYYY-MM-DD.");
     expect(view!.container.querySelector('[data-testid="report-document"]')).toBeNull();
+  });
+});
+
+describe("report totals", () => {
+  it("prints each group's totals under its rows and the grand total at the foot, in their columns, named in the document's language", async () => {
+    const cell = (value: number) => ({ value, text: String(value) });
+    const totalled: ReportDocument = {
+      ...arabicDocument,
+      key: "identity.roleSummary",
+      title: "الأدوار والصلاحيات",
+      parameters: [],
+      columns: [
+        { key: "name", label: "الاسم", type: "text", align: "start", total: false },
+        { key: "users", label: "المستخدمون", type: "number", align: "end", total: true },
+        { key: "permissions", label: "الصلاحيات", type: "number", align: "end", total: true },
+      ],
+      groupBy: "kind",
+      groupLabel: "النوع",
+      groups: [
+        {
+          label: "نظام",
+          count: 2,
+          countText: "سجلان",
+          rows: [
+            { cells: [{ value: "مدير النظام", text: "مدير النظام" }, cell(3), cell(40)] },
+            { cells: [{ value: "مشاهد", text: "مشاهد" }, cell(5), cell(12)] },
+          ],
+          totals: [null, cell(8), cell(52)],
+        },
+        { label: "مخصص", count: 1, countText: "سجل واحد", rows: [{ cells: [{ value: "محاسب", text: "محاسب" }, cell(2), cell(9)] }], totals: [null, cell(2), cell(9)] },
+      ],
+      totals: [null, cell(10), cell(61)],
+      rowCount: 3,
+      matchCount: 3,
+      rowCountText: "3 سجلات",
+    };
+    view = await render(<ReportView document={totalled} />);
+    const doc = view.container.querySelector('[data-testid="report-document"] article')!;
+    const texts = (selector: string) => [...doc.querySelectorAll(selector)].map((row) => [...row.querySelectorAll("td")].map((td) => td.textContent));
+    expect(texts("tr.report-subtotal")).toEqual([
+      ["الإجمالي · نظام", "8", "52"],
+      ["الإجمالي · مخصص", "2", "9"],
+    ]);
+    expect(texts("tfoot tr.report-total")).toEqual([["الإجمالي", "10", "61"]]);
+    // Numbers sit at the end of their column, like the headings above them.
+    expect([...doc.querySelectorAll("tfoot td")].map((td) => td.className)).toEqual(["", "num", "num"]);
+    expect([...doc.querySelectorAll("thead th")].map((th) => th.className)).toEqual(["", "num", "num"]);
+  });
+
+  it("draws no totals row for a report with no totalled column", async () => {
+    view = await render(<ReportView document={arabicDocument} />);
+    expect(view.container.querySelector(".report-subtotal, .report-total")).toBeNull();
   });
 });
 

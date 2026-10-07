@@ -73,6 +73,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/by-header", StringComparison.Ordinal) && l.Contains("[TenantHeaders]", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/tenants/", StringComparison.Ordinal));
+        // Bug 50: a printed file kept by its download name reaches tenant A only once tenant B has
+        // printed it, so the answer-shape phase (tenant B asks for every format and language
+        // first) must find it.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/printed?", StringComparison.Ordinal) && l.Contains("an answer shape tenant B asked for first", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
 
@@ -523,6 +527,23 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
             await owner.OpenAsync();
             await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_unprotected");
         }
+    }
+
+    /// <summary>Bug 51 (critic p06 round 1, plant P1): a report printing the companies' tax
+    /// numbers under a permission that grants no company data must fail the report data check;
+    /// the catalogue check must pass (the planted report is listed exactly to its permission).</summary>
+    [Fact]
+    public async Task The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant()
+    {
+        var result = await G2.ReportDataCheck.RunAsync(fixture.Env, onlyReport: "leaky.taxNumbers");
+        foreach (var problem in result.Problems.Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(result.Problems, p => p.Contains("leaky.taxNumbers", StringComparison.Ordinal) &&
+                                              p.Contains("as a user holding exactly [leaky.data.read]", StringComparison.Ordinal) &&
+                                              p.Contains("which no other endpoint those permissions open shows", StringComparison.Ordinal));
+        Assert.True(result.ValuesJudged > 0);
     }
 }
 

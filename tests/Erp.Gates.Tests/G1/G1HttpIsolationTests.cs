@@ -139,6 +139,9 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
         Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
         CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
+        CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
+        CheckAtLeast(report.ShapeAttacks, "g1.shapeAttacks");
+        CheckAtLeast(report.ShapeVictimRequests, "g1.shapeVictimRequests");
         Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed:\n\n" + string.Join("\n\n", failures));
     }
 }
@@ -146,7 +149,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
 /// <summary>
 /// The G1 HTTP attack, reusable so the gate's self-tests can prove it catches planted leaks.
 /// </summary>
-public static class IsolationAttack
+public static partial class IsolationAttack
 {
     private const int VictimIdsPerTable = 5;
 
@@ -291,6 +294,16 @@ public static class IsolationAttack
         var pairs = await WritePairsPhaseAsync(Env, endpoints, openApi, activity, victim, values);
         Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.VariantPairs} pairs with {pairs.EnumValuesAttacked?.Count ?? 0} documented values, {pairs.AttackerRequests} tenant A requests");
 
+        // Phase 1d: every shape of every answer. A GET whose API document enumerates how it answers
+        // (a format, a language, digits, a disposition, a grouping) may keep each shape apart from
+        // the others: a printed PDF or an exported workbook kept by its download name (critic p06
+        // round 1, plant L2), which no phase above ever fills from tenant B, because tenant B never
+        // asked for a PDF. Tenant B asks for every shape on its own records first; tenant A then asks
+        // for the same shapes on its own records, with and without a query of its own, while tenant
+        // B keeps asking; then tenant B asks once more. Every answer is judged both ways.
+        var shapes = await AnswerShapesPhaseAsync(endpoints, openApi, admin: attackers[0], state, own, victim, activity);
+        Phase($"answer shapes: {shapes.Endpoints} endpoints, {shapes.Shapes} shapes, {shapes.VictimRequests} tenant B and {shapes.AttackerRequests} tenant A requests");
+
         // Exports, imports, jobs and files: every surface kind in use needs a probe, and every
         // probe runs with tenant B's identifiers and values.
         var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -302,8 +315,10 @@ public static class IsolationAttack
             {
                 var probe = (IIsolationProbe)scope.ServiceProvider.GetRequiredService(probeType);
                 probeKinds.Add(probe.Kind);
+                // Tenant B's administrator goes with the probe: it uses the surface on its own
+                // records right before tenant A does (prints and exports every report and list).
                 var result = await probe.RunAsync(new IsolationProbeContext(attackers[0].Client, a.Id, b.Id, victim.AllIds.ToList(),
-                    victim.Markers.Concat(values.Strings).Distinct().ToList()), CancellationToken.None);
+                    victim.Markers.Concat(values.Strings).Distinct().ToList(), activity.AdminClient), CancellationToken.None);
                 state.Requests += result.Attempts;
                 probesRun++;
                 foreach (var raw in result.Observed)
@@ -673,6 +688,9 @@ public static class IsolationAttack
             VictimWriteEndpoints = activity.WriteEndpoints,
             ReverseChecks = activity.ReverseChecks,
             VictimBlindSpots = activity.BlindSpots,
+            ShapeEndpoints = shapes.Endpoints,
+            ShapeAttacks = shapes.AttackerRequests,
+            ShapeVictimRequests = shapes.VictimRequests,
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             ListQueryAttacks = listQueryAttacks,
             ListRefusals = state.ListRefusals,
@@ -1493,6 +1511,15 @@ public sealed record IsolationReport(
 
     /// <summary>Reasons tenant B's activity may have been blind.</summary>
     public IReadOnlyList<string> VictimBlindSpots { get; init; } = [];
+
+    /// <summary>GETs whose enumerated answer shapes (format, language, …) were asked for by both tenants.</summary>
+    public int ShapeEndpoints { get; init; }
+
+    /// <summary>Tenant A's requests for an answer shape tenant B had asked for first.</summary>
+    public int ShapeAttacks { get; init; }
+
+    /// <summary>Tenant B's requests for answer shapes on its own records (before, during and after).</summary>
+    public int ShapeVictimRequests { get; init; }
 
     /// <summary>Tenant B writes on its own records that did not succeed.</summary>
     public IReadOnlyList<string> VictimUnsuccessfulWrites { get; init; } = [];

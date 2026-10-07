@@ -59,6 +59,10 @@ public sealed record ReportDocument
     /// <summary>The parameters the report ran with, as printed under its title.</summary>
     public required IReadOnlyList<ReportDocumentFact> Parameters { get; init; }
 
+    /// <summary>Remarks printed under the parameters: what was left out for this caller (columns
+    /// of another area its roles do not allow it to read).</summary>
+    public IReadOnlyList<string> Notes { get; init; } = [];
+
     /// <summary>A record document's heading facts.</summary>
     public required IReadOnlyList<ReportDocumentFact> Facts { get; init; }
 

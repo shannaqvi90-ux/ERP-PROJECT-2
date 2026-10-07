@@ -98,18 +98,72 @@ test.describe("record forms and printed documents", () => {
     expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
   });
 
+  test("a totalled report: roles and access shows each kind's totals and the grand total, and exports it", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+    await page.goto("/reports/catalog");
+    await page.getByRole("button", { name: /Roles and access/ }).click();
+    await page.keyboard.press("Control+Enter");
+    const doc = page.getByTestId("report-document").locator("article");
+    await expect(doc.locator(".report-group").first()).toBeVisible();
+
+    // The figures the screen must add up: the same report as data.
+    const data = (await (await page.request.get("/api/reports/run/identity.roleSummary?groupBy=kind&format=json&language=en&numerals=latn")).json()) as {
+      columns: { key: string }[];
+      groups: { rows: { cells: { value: unknown }[] }[] }[];
+    };
+    const at = (key: string) => data.columns.findIndex((c) => c.key === key);
+    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) => rows.reduce((total, row) => total + Number(row.cells[at(key)]!.value), 0);
+    const allRows = data.groups.flatMap((g) => g.rows);
+    expect(allRows.length).toBeGreaterThan(0);
+
+    const subtotals = doc.locator("tr.report-subtotal");
+    await expect(subtotals).toHaveCount(data.groups.length);
+    for (const [g, group] of data.groups.entries()) {
+      const cells = subtotals.nth(g).locator("td");
+      await expect(cells.nth(0)).toContainText("Total");
+      await expect(cells.nth(at("users"))).toHaveText(String(sum("users", group.rows)));
+      await expect(cells.nth(at("permissions"))).toHaveText(String(sum("permissions", group.rows)));
+    }
+    const grand = doc.locator("tfoot tr.report-total td");
+    await expect(grand.nth(0)).toHaveText("Total");
+    await expect(grand.nth(at("users"))).toHaveText(String(sum("users", allRows)));
+    await expect(grand.nth(at("permissions"))).toHaveText(String(sum("permissions", allRows)));
+
+    // The export is the same report: the workbook comes from the address the screen offers.
+    const excelHref = await page.getByRole("link", { name: "Excel", exact: true }).getAttribute("href");
+    expect(excelHref).toMatch(/^\/api\/reports\/run\/identity\.roleSummary\?.*format=xlsx/);
+    const workbook = await page.request.get(excelHref!);
+    expect(workbook.status()).toBe(200);
+    expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
+  });
+
   test("a list prints what it shows: the filtered users list as PDF and CSV", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
     await page.goto("/identity/users");
     await expect(listRows(page).first()).toBeVisible();
-    await page.getByRole("button", { name: "Print or export" }).click();
-    const csvHref = await page.getByRole("menuitem", { name: "CSV file" }).getAttribute("href");
+    // Alt+Shift+R opens the menu from the keyboard (Alt+R prints an open record), and says so.
+    const menuButton = page.getByRole("button", { name: "Print or export" });
+    await expect(menuButton).toHaveAttribute("aria-keyshortcuts", "Alt+Shift+R");
+    await page.keyboard.press("Alt+Shift+KeyR");
+    await expect(page.getByRole("menuitem", { name: "PDF in English" })).toBeVisible();
+    const csvHref = await page.getByRole("menuitem", { name: "CSV in English" }).getAttribute("href");
     expect(csvHref).toMatch(/^\/api\/reports\/lists\/identity\.users\?/);
     const csv = await page.request.get(csvHref!);
     expect(csv.status()).toBe(200);
-    expect(await csv.text()).toContain("admin@alnoor.example");
+    const csvText = await csv.text();
+    expect(csvText).toContain("admin@alnoor.example");
+    // Roles by name (the administrator may read roles), sign-ins as the wall clock to the second.
+    expect(csvText).toMatch(/Administrator/);
+    expect(csvText).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d+/);
+    // CSV and Excel come in Arabic too: Arabic column titles.
+    const arabicCsvHref = await page.getByRole("menuitem", { name: "CSV in Arabic" }).getAttribute("href");
+    expect(arabicCsvHref).toContain("language=ar");
+    expect(await (await page.request.get(arabicCsvHref!)).text()).toContain("البريد الإلكتروني");
+    expect(await page.getByRole("menuitem", { name: "Excel in Arabic" }).getAttribute("href")).toContain("format=xlsx&language=ar");
     const pdf = await page.request.get((await page.getByRole("menuitem", { name: "PDF in Arabic" }).getAttribute("href"))!);
     expect(pdf.headers()["content-type"]).toBe("application/pdf");
   });

@@ -31,13 +31,18 @@ public enum ReportParameterType
 /// <param name="Choices">The allowed values of a choice parameter, with their labels.</param>
 /// <param name="Lookup">For a reference parameter: the key of the registered list the value is
 /// chosen from (the screen searches that list; its label column names the chosen record).</param>
+/// <param name="Permission">A permission the caller needs, beyond the report's own, to use this
+/// parameter: one that names records of another area (a role in a users report needs the roles'
+/// read permission, since the document prints the role's name). Others are not offered it and are
+/// refused when they send it.</param>
 public sealed record ReportParameter(
     string Key,
     string LabelKey,
     ReportParameterType Type,
     bool Required = false,
     IReadOnlyList<ListChoice>? Choices = null,
-    string? Lookup = null);
+    string? Lookup = null,
+    string? Permission = null);
 
 /// <summary>A column of a report's table, or a fact of a record document's heading.</summary>
 /// <param name="Key">Key of the value in each row the source returns, lower camel case.</param>
@@ -46,13 +51,19 @@ public sealed record ReportParameter(
 /// <param name="Total">Groups and the whole report carry the column's total (number and money columns).</param>
 /// <param name="Groupable">The report can be grouped by this column.</param>
 /// <param name="Choices">The values of a choice column, with their labels.</param>
+/// <param name="Permission">A permission the caller needs, beyond the report's own, to see this
+/// column or fact: data of another area (a company's branches in its profile need the branches'
+/// read permission). For a caller without it the column is left out of the document (its source
+/// is told, through <see cref="ReportRun.Prints"/>, not to read it), the document says what was
+/// left out, and the report cannot be grouped by it.</param>
 public sealed record ReportColumn(
     string Key,
     string LabelKey,
     ListColumnType Type,
     bool Total = false,
     bool Groupable = false,
-    IReadOnlyList<ListChoice>? Choices = null);
+    IReadOnlyList<ListChoice>? Choices = null,
+    string? Permission = null);
 
 /// <summary>
 /// A report a module contributes from its own folder: its parameters, the columns of its table
@@ -64,7 +75,11 @@ public sealed record ReportColumn(
 /// </summary>
 /// <param name="Key">Unique key starting with the module name, for example <c>tenancy.branchDirectory</c>.</param>
 /// <param name="LabelKey">Web string key of the report's title.</param>
-/// <param name="Permission">Permission needed to run it: the read permission of the data it shows.</param>
+/// <param name="Permission">Permission needed to run it: the read permission of the data it shows.
+/// Data of another area needs that area's read permission as well, declared on the column, fact or
+/// parameter that shows it (<see cref="ReportColumn.Permission"/>, <see cref="ReportParameter.Permission"/>);
+/// the G2 gate prints every report as users holding exactly these permissions and fails it when it
+/// shows a value that no other endpoint those permissions open shows.</param>
 /// <param name="Parameters">Inputs, in the order the screen shows them.</param>
 /// <param name="Columns">Columns of the report's table, in order.</param>
 /// <param name="DescriptionKey">Web string key of a one-line description for the report catalogue.</param>
@@ -124,6 +139,10 @@ public sealed partial record ReportDefinition(
             {
                 yield return $"report '{Key}': parameter '{parameter.Key}': a reference parameter, and only one, names the list it looks up";
             }
+            if (parameter.Permission is { } extra && (!Security.PermissionDefinition.IsValidKey(extra) || extra == Permission))
+            {
+                yield return $"report '{Key}': parameter '{parameter.Key}': permission '{extra}' is not a permission key other than the report's own";
+            }
         }
         foreach (var (kind, columns) in new[] { ("column", Columns), ("fact", Facts ?? []) })
         {
@@ -148,6 +167,10 @@ public sealed partial record ReportDefinition(
                 if (column.Type == ListColumnType.Choice && column.Choices is not { Count: > 0 })
                 {
                     yield return $"report '{Key}': choice {kind} '{column.Key}' lists no choices";
+                }
+                if (column.Permission is { } extra && (!Security.PermissionDefinition.IsValidKey(extra) || extra == Permission))
+                {
+                    yield return $"report '{Key}': {kind} '{column.Key}': permission '{extra}' is not a permission key other than the report's own";
                 }
             }
         }
@@ -204,6 +227,21 @@ public sealed record ReportRun(ReportDefinition Definition, IReadOnlyDictionary<
     public T? Get<T>(string key) where T : struct => Parameters.TryGetValue(key, out var value) && value is T typed ? typed : null;
 
     public string? Text(string key) => Parameters.TryGetValue(key, out var value) ? value as string : null;
+
+    /// <summary>Columns and facts left out for this caller (it lacks their <see cref="ReportColumn.Permission"/>).</summary>
+    public IReadOnlySet<string> Withheld { get; init; } = new HashSet<string>();
+
+    /// <summary>The caller's permissions, for a source that shapes a value by them (a branch
+    /// report prints the company's code to every reader of branches, its legal name only to a
+    /// reader of companies). Nothing by default.</summary>
+    public Func<string, bool> Holds { get; init; } = _ => false;
+
+    /// <summary>The column or fact is printed for this caller: a source need not read it otherwise.</summary>
+    public bool Prints(string key) => !Withheld.Contains(key);
+
+    /// <summary>At least one column of the table is printed for this caller (otherwise the source
+    /// need not read any row).</summary>
+    public bool PrintsRows => Definition.Columns.Any(c => Prints(c.Key));
 }
 
 /// <summary>Produces a report's rows (and a document's facts) inside the caller's unit of work, so

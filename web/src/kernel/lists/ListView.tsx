@@ -4,6 +4,7 @@ import { confirmLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
+import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
 import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
 import {
   byRelevance,
@@ -1227,11 +1228,27 @@ export function listReportUrl(listKey: string, state: ListState, format: "pdf" |
   return `/api/reports/lists/${listKey}?${query}`;
 }
 
-/** Print the list as a report: PDF in English or Arabic, CSV or Excel, with what is on screen. */
+/** Opens the list's Print or export menu (Alt+R prints the open record; with Shift, the list). */
+export const listPrintChord = "Alt+Shift+KeyR";
+
+/** Print the list as a report with what is on screen: PDF, CSV or Excel, each in English or
+ * Arabic (column titles, choices and dates in the document's language), the screen's language
+ * first. Alt+Shift+R opens the menu. */
 function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }) {
-  const { t, numerals } = useI18n();
+  const { t, numerals, language } = useI18n();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  useShortcut({
+    id: "lists.print",
+    chord: listPrintChord,
+    labelKey: "lists.shortcut.print",
+    groupKey: "lists.shortcut.group",
+    run: () => {
+      setOpen(true);
+      buttonRef.current?.focus();
+    },
+  });
   useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
   }, [open]);
@@ -1245,15 +1262,29 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
     event.preventDefault();
     event.stopPropagation();
   };
-  const items: { key: string; format: "pdf" | "csv" | "xlsx"; language: string }[] = [
+  const all: { key: string; format: "pdf" | "csv" | "xlsx"; language: string }[] = [
     { key: "lists.print.pdfEnglish", format: "pdf", language: "en" },
     { key: "lists.print.pdfArabic", format: "pdf", language: "ar" },
-    { key: "lists.print.csv", format: "csv", language: "en" },
-    { key: "lists.print.xlsx", format: "xlsx", language: "en" },
+    { key: "lists.print.csvEnglish", format: "csv", language: "en" },
+    { key: "lists.print.csvArabic", format: "csv", language: "ar" },
+    { key: "lists.print.xlsxEnglish", format: "xlsx", language: "en" },
+    { key: "lists.print.xlsxArabic", format: "xlsx", language: "ar" },
   ];
+  // Each format in the screen's language first.
+  const order = language === "ar" ? ["ar", "en"] : ["en", "ar"];
+  const items = (["pdf", "csv", "xlsx"] as const).flatMap((format) => order.map((lang) => all.find((i) => i.format === format && i.language === lang)!));
   return (
     <div className="list-anchor menu-anchor" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setOpen(false)}>
-      <button type="button" className="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-keyshortcuts={chordForAria(listPrintChord)}
+        title={chordKeys(listPrintChord).join("+")}
+        onClick={() => setOpen(!open)}
+      >
         {t("lists.print.open")}
       </button>
       {open && (

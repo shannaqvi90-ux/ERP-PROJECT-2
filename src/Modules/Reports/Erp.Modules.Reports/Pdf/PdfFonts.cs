@@ -37,7 +37,18 @@ public sealed class PdfFontFace : IDisposable
         var os2 = TryTable("OS/2");
         CapHeight = os2 is { Length: >= 90 } && BinaryPrimitives.ReadUInt16BigEndian(os2) >= 2 ? Scale(ReadInt16(os2, 88)) : Ascent;
         GlyphCount = _face.GlyphCount;
+        // Compressed once here: every PDF embeds the whole font, and deflating it on every print
+        // was most of a document's processor time.
+        using var buffer = new MemoryStream();
+        using (var z = new ZLibStream(buffer, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            z.Write(sfnt);
+        }
+        CompressedSfnt = System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsImmutableArray(buffer.ToArray());
     }
+
+    /// <summary>The TrueType bytes, zlib-compressed (the PDF font file stream), made once.</summary>
+    public System.Collections.Immutable.ImmutableArray<byte> CompressedSfnt { get; }
 
     /// <summary>PostScript-style name, unique among the faces (NotoSansArabic-Bold).</summary>
     public string Name { get; }

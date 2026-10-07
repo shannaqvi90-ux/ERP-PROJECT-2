@@ -39,6 +39,8 @@ export type ReportDocument = {
   direction: "rtl" | "ltr";
   numerals: Numerals;
   parameters: { label: string; text: string }[];
+  /** What was left out for this caller (another area's columns its roles do not allow it to read). */
+  notes?: string[];
   facts: { label: string; text: string }[];
   columns: { key: string; label: string; type: string; align: "start" | "end"; total: boolean }[];
   groupBy: string | null;

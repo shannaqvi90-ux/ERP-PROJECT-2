@@ -6,10 +6,15 @@ namespace Erp.Modules.Reports.Pdf;
 
 /// <summary>
 /// A minimal PDF 1.7 writer for printed documents: pages with Flate-compressed content streams,
-/// embedded TrueType fonts addressed by glyph id (Type0 / CIDFontType2, Identity-H) with only the
-/// widths of the glyphs used, a ToUnicode map so text can be searched and copied, replacement text
-/// (<c>/ActualText</c>) in logical order on right-to-left runs, the document language, and a
-/// right-to-left reading direction for Arabic documents.
+/// embedded TrueType fonts (Type0 / CIDFontType2, Identity-H) with only the widths of the glyphs
+/// used, a ToUnicode map so text can be searched and copied, replacement text (<c>/ActualText</c>)
+/// in logical order on right-to-left runs, the document language, and a right-to-left reading
+/// direction for Arabic documents.
+/// <para>Text is addressed by character id, not glyph id: every distinct pair of a glyph and the
+/// characters it stands for gets its own id, and a <c>/CIDToGIDMap</c> maps ids to glyphs. Arabic
+/// letters share glyphs (س and ش, ر and ز, medial ب and ن differ only by dots drawn as marks), so a
+/// map from glyph to text would give every such letter the text of whichever came first, and copy,
+/// search and screen readers would read الإشم for الاسم (critic p06 round 1).</para>
 /// </summary>
 public sealed class PdfWriter(string title, string language, bool rightToLeft)
 {
@@ -28,33 +33,24 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
     /// <summary>What a glyph that draws no character of its own (a dot, a mark) extracts as.</summary>
     internal const string MarkText = "\u200B";
 
-    internal string FontResource(PdfFontFace face, GlyphRun run)
+    /// <summary>The font resource for a run and, per glyph, the character id that draws it.</summary>
+    internal (string Name, ushort[] Cids) FontResource(PdfFontFace face, GlyphRun run)
     {
         if (!_fonts.TryGetValue(face, out var use))
         {
             use = new FontUse($"F{_fonts.Count + 1}");
             _fonts[face] = use;
         }
+        var cids = new ushort[run.Glyphs.Count];
         for (var i = 0; i < run.Glyphs.Count; i++)
         {
             var glyph = run.Glyphs[i].Glyph;
-            use.Widths[glyph] = face.Width(glyph);
-            if (run.GlyphText[i].Length > 0)
-            {
-                // A letter's glyph maps to its characters (replacing a placeholder given while it was only seen as a mark).
-                if (!use.Text.TryGetValue(glyph, out var known) || known == MarkText)
-                {
-                    use.Text[glyph] = run.GlyphText[i];
-                }
-            }
-            else
-            {
-                // A mark or dot drawn on a letter stands for no character of its own: a zero-width
-                // space for extractors that read glyphs, an artifact for those that read structure.
-                use.Text.TryAdd(glyph, MarkText);
-            }
+            // A mark or dot drawn on a letter stands for no character of its own: a zero-width
+            // space for extractors that read glyphs, an artifact for those that read structure.
+            var text = run.GlyphText[i].Length > 0 ? run.GlyphText[i] : MarkText;
+            cids[i] = use.Cid(glyph, text, face.Width(glyph));
         }
-        return use.Name;
+        return (use.Name, cids);
     }
 
     public byte[] Write(DateTimeOffset createdAt)
@@ -78,16 +74,16 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw(body);
             Raw("\nendobj\n");
         }
-        void Stream(int id, byte[] data, string extra = "")
+        void Stream(int id, byte[] data, string extra = "", System.Collections.Immutable.ImmutableArray<byte>? alreadyCompressed = null)
         {
-            var compressed = Deflate(data);
+            ReadOnlySpan<byte> compressed = alreadyCompressed is { } done ? done.AsSpan() : Deflate(data);
             Begin(id);
             Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
             output.Write(compressed);
             Raw("\nendstream\nendobj\n");
         }
 
-        Raw("%PDF-1.7m\n%\u00E2\u00E3\u00CF\u00D3\n");
+        Raw("%PDF-1.7\n%\u00E2\u00E3\u00CF\u00D3\n");
         var catalog = Reserve();
         var pages = Reserve();
         var info = Reserve();
@@ -109,19 +105,27 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             var descriptor = Reserve();
             var file = Reserve();
             var toUnicode = Reserve();
+            var cidToGid = Reserve();
             var widths = new StringBuilder();
-            foreach (var (glyph, width) in use.Widths.OrderBy(w => w.Key))
+            for (var cid = 1; cid < use.Glyphs.Count; cid++)
             {
-                widths.Append(glyph).Append(" [").Append(width).Append("] ");
+                widths.Append(cid).Append(" [").Append(use.Widths[cid]).Append("] ");
             }
             Object(fontIds[face], $"<< /Type /Font /Subtype /Type0 /BaseFont /{face.Name} /Encoding /Identity-H /DescendantFonts [{descendant} 0 R] /ToUnicode {toUnicode} 0 R >>");
             Object(descendant, $"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{face.Name} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> " +
-                               $"/FontDescriptor {descriptor} 0 R /DW 0 /W [{widths}] /CIDToGIDMap /Identity >>");
+                               $"/FontDescriptor {descriptor} 0 R /DW 0 /W [{widths}] /CIDToGIDMap {cidToGid} 0 R >>");
+            var map = new byte[use.Glyphs.Count * 2];
+            for (var cid = 0; cid < use.Glyphs.Count; cid++)
+            {
+                map[cid * 2] = (byte)(use.Glyphs[cid] >> 8);
+                map[cid * 2 + 1] = (byte)(use.Glyphs[cid] & 0xFF);
+            }
+            Stream(cidToGid, map);
             var box = face.BoundingBox;
             Object(descriptor, $"<< /Type /FontDescriptor /FontName /{face.Name} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
                                $"/Ascent {face.Ascent} /Descent {face.Descent} /CapHeight {face.CapHeight} /StemV {(face.Bold ? 120 : 80)} /FontWeight {(face.Bold ? 700 : 400)} /FontFile2 {file} 0 R >>");
-            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}");
-            Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Text)));
+            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}", face.CompressedSfnt);
+            Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Texts)));
         }
         Object(pages, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
         Object(catalog, $"<< /Type /Catalog /Pages {pages} 0 R /Lang {Text(language)} /ViewerPreferences << /DisplayDocTitle true{(rightToLeft ? " /Direction /R2L" : "")} >> >>");
@@ -154,17 +158,18 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
         return buffer.ToArray();
     }
 
-    private static string ToUnicodeMap(IReadOnlyDictionary<uint, string> text)
+    private static string ToUnicodeMap(IReadOnlyList<string> texts)
     {
+        var text = texts.Select((t, cid) => (Cid: cid, Text: t)).Skip(1).ToList();
         var builder = new StringBuilder("/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n" +
             "/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n" +
             "1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n");
-        foreach (var chunk in text.OrderBy(t => t.Key).Chunk(100))
+        foreach (var chunk in text.Chunk(100))
         {
             builder.Append(chunk.Length).Append(" beginbfchar\n");
-            foreach (var (glyph, chars) in chunk)
+            foreach (var (cid, chars) in chunk)
             {
-                builder.Append('<').Append(glyph.ToString("X4", CultureInfo.InvariantCulture)).Append("> <")
+                builder.Append('<').Append(cid.ToString("X4", CultureInfo.InvariantCulture)).Append("> <")
                     .Append(Convert.ToHexString(Encoding.BigEndianUnicode.GetBytes(chars))).Append(">\n");
             }
             builder.Append("endbfchar\n");
@@ -173,11 +178,33 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
         return builder.ToString();
     }
 
+    /// <summary>A font as one document uses it: character ids handed out in order of first use
+    /// (id 0 is the font's .notdef glyph), each with its glyph, width and text.</summary>
     private sealed class FontUse(string name)
     {
+        private readonly Dictionary<(uint Glyph, string Text), ushort> _ids = [];
+
         public string Name { get; } = name;
-        public SortedDictionary<uint, int> Widths { get; } = [];
-        public Dictionary<uint, string> Text { get; } = [];
+        public List<uint> Glyphs { get; } = [0];
+        public List<int> Widths { get; } = [0];
+        public List<string> Texts { get; } = [""];
+
+        public ushort Cid(uint glyph, string text, int width)
+        {
+            if (!_ids.TryGetValue((glyph, text), out var cid))
+            {
+                if (Glyphs.Count > ushort.MaxValue)
+                {
+                    throw new InvalidOperationException("A document uses more than 65,535 distinct glyph and text pairs of one font.");
+                }
+                cid = (ushort)Glyphs.Count;
+                _ids[(glyph, text)] = cid;
+                Glyphs.Add(glyph);
+                Widths.Add(width);
+                Texts.Add(text);
+            }
+            return cid;
+        }
     }
 }
 
@@ -213,7 +240,7 @@ public sealed class PdfPage
         var pen = x;
         foreach (var run in line.Runs)
         {
-            var font = _writer.FontResource(run.Face, run);
+            var (font, cids) = _writer.FontResource(run.Face, run);
             var scale = line.Size / 1000.0m;
             if (run.RightToLeft)
             {
@@ -238,7 +265,7 @@ public sealed class PdfPage
                 {
                     Flush();
                     Content.Append(mark ? "/Artifact BMC " : "")
-                        .Append($"1 0 0 1 {PdfWriter.N(pen + glyph.OffsetX * scale)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{glyph.Glyph:X4}> Tj")
+                        .Append($"1 0 0 1 {PdfWriter.N(pen + glyph.OffsetX * scale)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{cids[i]:X4}> Tj")
                         .Append(mark ? " EMC\n" : "\n");
                     pen += glyph.Advance * scale;
                     segmentX = pen;
@@ -248,7 +275,7 @@ public sealed class PdfPage
                 {
                     segmentX = pen;
                 }
-                segment.Append('<').Append(glyph.Glyph.ToString("X4", CultureInfo.InvariantCulture)).Append('>');
+                segment.Append('<').Append(cids[i].ToString("X4", CultureInfo.InvariantCulture)).Append('>');
                 var adjust = run.Face.Width(glyph.Glyph) - glyph.Advance;
                 if (adjust != 0)
                 {

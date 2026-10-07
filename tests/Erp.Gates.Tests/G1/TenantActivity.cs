@@ -137,7 +137,8 @@ public sealed class TenantActivity
         !e.Pattern.Contains("{*", StringComparison.Ordinal);
 
     /// <summary>This tenant's administrator, signed in since the activity started (signing in again
-    /// later can meet the sign-in throttle the attack set off with this tenant's e-mail).</summary>
+    /// later can meet the sign-in throttle the attack set off with this tenant's e-mail). Also handed
+    /// to isolation probes so the victim can use a surface (print, export) right before the attacker does.</summary>
     public HttpClient AdminClient => Admin.Client;
 
     /// <summary>
@@ -500,6 +501,31 @@ public sealed class TenantActivity
             await SendAsync(item.Actor, "GET", item.Path, null, $"GET {item.Path} [{phase}]");
             Interlocked.Increment(ref _preTouches);
         });
+    }
+
+    /// <summary>The endpoint's path with this tenant's own ids in its route parameters.</summary>
+    public Task<string> OwnPathForAsync(ApiEndpoint endpoint, TenantSnapshot own) => OwnPathAsync(endpoint, own, forWrite: false);
+
+    /// <summary>One GET of this tenant's own path (with its query) by the administrator, or by
+    /// every actor; each answer is judged for the other tenant's markers like every other answer.
+    /// Returns the administrator's status.</summary>
+    public async Task<int> ReadPathAsync(string path, string phase, bool everyActor = false)
+    {
+        var (status, _, _) = await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+        if (everyActor)
+        {
+            foreach (var actor in _actors.Skip(1))
+            {
+                await SendAsync(actor, "GET", path, null, $"GET {path} [{phase}]");
+            }
+        }
+        return status;
+    }
+
+    /// <summary>Records a reason this tenant's activity may have been blind.</summary>
+    public void NoteBlindSpot(string reason)
+    {
+        lock (_lock) BlindSpots.Add(reason);
     }
 
     /// <summary>A quick round of every GET by the administrator (after tenant A wrote, so a write
