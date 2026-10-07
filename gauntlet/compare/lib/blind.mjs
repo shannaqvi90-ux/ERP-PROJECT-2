@@ -43,17 +43,32 @@ export const BRANDING = Object.freeze({
   ours: {
     selectors: ['[data-brand]', 'img[src*="logo" i]'],
     words: [],
-    identity: ['Al Noor Trading LLC', 'شركة النور للتجارة'],
+    // Round 7: every company of the demo tenants (the shell's company switcher and the companies
+    // list show them all), in English and Arabic.
+    identity: ['Al Noor Trading LLC', 'Al Noor General Trading', 'Al Noor Industries', 'Al Noor Technical Services', 'Gulf Steel Fabrication',
+      'شركة النور للتجارة', 'النور للتجارة العامة', 'مصانع النور', 'النور للخدمات الفنية', 'الخليج لتصنيع الصلب'],
     identityExact: ['alnoor'],
-    identityWords: ['alnoor'],
+    // Round 7: the demo companies' and branches' codes, shown in the top bar ("ALN-DXB · DEIRA-HQ").
+    identityWords: ['alnoor', 'gulfsteel', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ', 'ALN-AUH', 'GSF-SHJ', 'GSF-RAK', 'DEIRA-HQ', 'AQZ-WH', 'DIP-SR', 'JAFZA-WH',
+      'DAFZ-OF', 'SHJ-FAC', 'SAIF-WH', 'AJM-WS', 'MUS-WS', 'AIN-OF', 'RAK-ST', 'FUJ-ST', 'SHJ-PLANT', 'HAMR-YD', 'GHAIL-PL'],
   },
 });
 
+const unionOf = key => [...new Set(Object.values(BRANDING).flatMap(b => b[key] || []))];
+
+/**
+ * What a product's screenshots paint over. Round 7: the demo data's names of every product, not
+ * only the product's own: a name masked in one product's shots and left showing in the other's
+ * (the task's own sign-in "...@demo-trading.example" showed in ours and was masked in the
+ * reference's) told the reviewer which product a shot came from. So each product's shots mask
+ * every product's company names and codes, and every vendor word; the vendor's own selectors stay
+ * with that vendor's screens.
+ */
 export function brandingFor(product, extraWords = []) {
   const b = BRANDING[product];
   if (!b) throw new Error(`unknown product: ${product}`);
-  return { selectors: [...b.selectors], words: [...b.words, ...extraWords], identity: [...(b.identity || [])], identityExact: [...(b.identityExact || [])],
-    identityWords: [...(b.identityWords || [])] };
+  return { selectors: [...b.selectors], words: [...new Set([...unionOf('words'), ...extraWords])], identity: unionOf('identity'),
+    identityExact: unionOf('identityExact'), identityWords: unionOf('identityWords') };
 }
 
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

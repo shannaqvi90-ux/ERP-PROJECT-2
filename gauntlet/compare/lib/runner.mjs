@@ -5,9 +5,10 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { consoleOf, launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
+import { PageWorld, fingerprintDigest, screenChange } from './page-script.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
@@ -46,7 +47,14 @@ export const RESULT_SCHEMA = 1;
  *      start. KLM: no step continues one that began on another screen. API transports are the
  *      harness's own, by name.
  */
-export const INSTRUMENT_VERSION = 5;
+/*   6: page functions (op.waitFor, ctx.until, ctx.read) are checked in source and run in an isolated
+ *      world of the harness's that is armed for good, never in the page's own script world; they are
+ *      polled from the harness every 50 ms. When the clock stops, what the page is still loading is
+ *      aborted as well as its script frozen, and the screen is fingerprinted then and after
+ *      verify(): a screen that changed after the clock makes the run invalid. A variant's own
+ *      set-up, sign-in and ready hooks run (they ran only when the base driver had the same hook).
+ */
+export const INSTRUMENT_VERSION = 6;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');
@@ -248,18 +256,22 @@ export function isDriverSpec(d) {
  */
 function trackRequests(context) {
   const inflight = new Set();
-  const tracker = { inflight, lastEnded: null, afterClock: 0 };
+  // Everything else the page still loads (reads, images ...): not waited for, but aborted and
+  // recorded when the clock stops (round 7).
+  const loading = new Set();
+  const tracker = { inflight, loading, lastEnded: null, afterClock: 0 };
   const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
   const frameOf = r => { try { return r.frame(); } catch { return null; } };
   const postData = r => { try { return r.postData(); } catch { return null; } };
   const on = r => {
     if (background(r)) return;
     if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: postData(r), navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) inflight.add(r);
+    else loading.add(r);
   };
-  const off = r => { if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  const off = r => { loading.delete(r); if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
   // A document that is replaced (a reload, a link) abandons its requests: their answers can no
   // longer reach the screen, and the browser reports no end for some of them.
-  const navigated = f => { for (const r of inflight) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
+  const navigated = f => { for (const r of [...inflight, ...loading]) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
   const pages = new Set();
   const watch = p => { if (!pages.has(p)) { pages.add(p); p.on('framenavigated', navigated); } };
   context.pages().forEach(watch);
@@ -273,12 +285,16 @@ function trackRequests(context) {
 }
 
 /**
- * Freeze the page's own script when the clock stops (round 5): no timer, no network callback, no
- * animation frame of the product runs any more, so the screen verify() reads and the done
- * screenshot show is the screen at the end of the measured part. Reading (locators, ctx.read) and
+ * Freeze the page when the clock stops (round 5): its own script stops (no timer, no animation
+ * frame, no scheduled render of the product runs any more), and, round 7, whatever it is still
+ * loading is aborted: disabling script does not stop the continuation of a request already under
+ * way, and a read answered after the clock would otherwise put a late answer on the screen
+ * verify() reads (critic plant T3). New requests are refused by the runner's route. So the screen
+ * verify() reads and the done screenshot show is the screen at the end of the measured part;
+ * the runner checks that with a fingerprint (lib/page-script.mjs). Reading (locators, ctx.read) and
  * screenshots still work. Returns the function that thaws the pages again (before clean-up).
  */
-async function freezePages(context) {
+export async function freezePages(context, { beforeAbort = null } = {}) {
   const sessions = [];
   for (const p of context.pages()) {
     try {
@@ -287,6 +303,11 @@ async function freezePages(context) {
       sessions.push(cdp);
     } catch { /* a closed page */ }
   }
+  // The screen as the clock left it is read here, before the abort: a request's failure handler
+  // runs as the request is aborted, and what it writes must count as a change after the clock
+  // (plant T6), not as the screen at the clock.
+  if (beforeAbort) await beforeAbort();
+  for (const cdp of sessions) await cdp.send('Page.stopLoading').catch(() => {});
   return async () => {
     for (const cdp of sessions) {
       await cdp.send('Emulation.setScriptExecutionDisabled', { value: false }).catch(() => {});
@@ -398,6 +419,11 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.error = 'refused claim: a driver object handed to the harness process. Drivers run only in the sandboxed driver process: pass the driver module (loadDriver, or describeDriverFile(file)), see lib/sandbox/.';
     return run;
   }
+  // A variant's own hooks (set-up, sign-in, ready, verify ...) count with the base driver's
+  // (round 7: they ran only when the base driver defined the same hook, so the ours sign-in
+  // driver's 'returning' variant was never set up).
+  const own = driver.variant ? driver.variants?.[driver.variant] : null;
+  if (own?.hooks) driver = { ...driver, hooks: own.hooks, ready: own.ready !== undefined ? own.ready : driver.ready };
   const host = DriverHost.forRun();
   const browser = await launch({ headed: opts.headed });
   let op;
@@ -482,12 +508,19 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (missing.length) throw new RefusedClaim(`the task's moments ${missing.map(m => `"${m}"`).join(', ')} were not shot while measuring (every driver shoots every moment the task declares, once)`);
     // After the clock the page reaches the product no more (round 5): the end state cannot be
     // finished off the clock, by the page or by verification waiting for it.
+    let atClock = null;
     if (tracker) {
       tracker.stop();
-      thaw = await freezePages(context);
+      run.requests_in_flight_at_clock = describeRequests(tracker.loading);
+      // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
+      thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
       await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
       routed = true;
+      run.screen_at_clock = fingerprintDigest(atClock);
     }
+    // Anything the read world refused on its own since the driver's last page function (nothing
+    // can be scheduled there, so this stays empty unless something escaped a call).
+    await drainReadWorld(page);
     // The clock stopped at finish(): the done screenshot is taken after it and costs nothing.
     if (kind === 'api') await page.setContent(apiTranscriptHtml(task, op.steps));
     await op.shot('done');
@@ -512,6 +545,16 @@ export async function execute(task, driver, product, productId, needles, out, op
       if (waited) throw new ActionOutsideClock(`${waited} (wait for the end state in run(), on the clock)`, 'verifying');
     } else {
       run.verification = { verified: !!outcome?.verified, details: outcome };
+    }
+    await drainReadWorld(page);
+    // Round 7: verify() read the screen as the clock left it. A screen that changed after the
+    // clock (a late answer, a timer the freeze missed) means verify() may have read an end state the
+    // measured part never showed.
+    if (atClock) {
+      const after = await PageWorld.of(page).fingerprint().catch(() => null);
+      const change = after ? screenChange(atClock, after) : 'the screen could not be read again after verify()';
+      run.screen_after_verify = { ...fingerprintDigest(after), unchanged: !change };
+      if (change) throw new ActionOutsideClock(`the screen changed after the clock stopped: ${change}. The product was still answering when run() returned; wait for the end state in run(), on the clock`, 'verifying');
     }
     run.status = run.verification?.verified ? 'verified' : 'failed';
   } catch (err) {
@@ -556,6 +599,23 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.screenshots = op.shots.map(({ measured, ...s }) => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
   return run;
+}
+
+/** The requests a page still had under way (method, path, kind), for the result. */
+function describeRequests(set) {
+  const out = [];
+  for (const r of set) {
+    try { out.push(`${r.method()} ${new URL(r.url()).pathname} (${r.resourceType()})`); } catch { /* gone */ }
+    if (out.length >= 10) break;
+  }
+  return { count: set.size, first: out };
+}
+
+/** Refusals the page's read world logged on its own: recorded as violations (the run is invalid). */
+async function drainReadWorld(page) {
+  if (!page) return;
+  const late = await PageWorld.of(page).drain().catch(() => []);
+  if (late.length) new UncountedAction(`the read world refused, after a page function had returned: ${[...new Set(late)].join(', ')}`); // eslint-disable-line no-new
 }
 
 /** The product as data for the driver process (functions and patterns stay here). */

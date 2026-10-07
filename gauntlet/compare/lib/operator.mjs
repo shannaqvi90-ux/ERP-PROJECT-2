@@ -16,7 +16,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { continues, keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
 import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskLocators, neutraliseDocument } from './blind.mjs';
-import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
+import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, unwrap } from './guard.mjs';
+import { PageWorld } from './page-script.mjs';
 
 const clock = claimClock();
 // The clock reads the time through a reference taken when the harness loads (round 5: nothing a
@@ -104,6 +105,20 @@ function checkOptions(method, opts) {
     if (!OPTIONS[method].includes(k)) throw new RefusedClaim(`${method}({ ${k} }): not an option of a counted action (allowed: ${OPTIONS[method].join(', ')})`);
   }
   return opts;
+}
+
+/**
+ * The argument of a page function: plain data only (it is written into the read world as JSON; a
+ * page object or a function cannot cross into it).
+ */
+export function plainArg(arg) {
+  if (arg === undefined || arg === null) return arg ?? null;
+  let text;
+  try { text = JSON.stringify(arg); } catch { text = undefined; }
+  if (text === undefined || JSON.stringify(JSON.parse(text)) !== text) throw new TypeError('a page function\'s argument must be plain data (text, numbers, arrays, objects)');
+  const walk = v => { if (v && typeof v === 'object') { if (Object.getPrototypeOf(v) !== Object.prototype && !Array.isArray(v)) throw new TypeError('a page function\'s argument must be plain data (text, numbers, arrays, objects)'); Object.values(v).forEach(walk); } };
+  walk(arg);
+  return arg;
 }
 
 export class NotBuilt extends Error {
@@ -394,14 +409,16 @@ export class Operator {
   }
 
   /**
-   * Wait for the product to respond. Not a step; counted as system wait. A condition function
-   * runs in the page inside the sentinel (lib/guard.mjs): it may read the page, never act on it.
+   * Wait for the product to respond. Not a step; counted as system wait. A condition function is
+   * checked in source and runs in the page's read world (lib/page-script.mjs): it may read the page,
+   * never act on it, now or later. It is polled every 50 ms.
    */
   async waitFor(what, opts) {
     const { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = checkOptions('waitFor', opts);
     const t = this.now();
     if (typeof what === 'function' || what instanceof PageFunction) {
-      await this.#page.waitForFunction(sentinelFunction(what), arg, { timeout, polling: 50 }).catch(rethrowSentinel);
+      const fn = what instanceof PageFunction ? what : new PageFunction(Function.prototype.toString.call(what));
+      await PageWorld.of(this.#page).waitFor(fn.source, plainArg(arg), { timeout: timeout || Infinity, polling: 50 }).catch(rethrowSentinel);
     } else {
       await this.#locate(what).first().waitFor({ state, timeout });
     }
