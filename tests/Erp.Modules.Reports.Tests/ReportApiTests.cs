@@ -340,6 +340,31 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Contains("Total", pdf, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p06 round 2: the printed roles list said Yes or No under "Type" (it means a
+    /// system role) and left its permission counts at the start of their cells. The type prints as
+    /// the screen names it, in the document's language, and counts stand at the end like numbers.</summary>
+    [Fact]
+    public async Task The_printed_roles_list_names_each_roles_type_and_aligns_counts_as_numbers()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var (language, system, custom) in new[] { ("en", "System", "Custom"), ("ar", "نظامي", "مخصص") })
+        {
+            var document = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/lists/identity.roles?language={language}&columns=nameEn,isSystem,userCount,permissions");
+            var columns = document.GetProperty("columns").EnumerateArray().ToList();
+            var kind = columns.FindIndex(c => c.GetProperty("key").GetString() == "isSystem");
+            var texts = document.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+                .Select(r => r.GetProperty("cells")[kind].GetProperty("text").GetString()).ToHashSet();
+            Assert.Contains(system, texts);
+            Assert.Subset(new HashSet<string?> { system, custom }, texts);
+            Assert.Equal("end", columns.Single(c => c.GetProperty("key").GetString() == "permissions").GetProperty("align").GetString());
+            Assert.Equal("end", columns.Single(c => c.GetProperty("key").GetString() == "userCount").GetProperty("align").GetString());
+            Assert.Equal("start", columns.Single(c => c.GetProperty("key").GetString() == "nameEn").GetProperty("align").GetString());
+        }
+        // A filter on the type prints the same name.
+        var filtered = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.roles?language=en&filter=" + Uri.EscapeDataString("isSystem eq true"));
+        Assert.Contains(filtered.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("text").GetString()!.Contains("System", StringComparison.Ordinal));
+    }
+
     /// <summary>Role names come from every page of the roles list: a workspace with more roles than
     /// one page holds still prints every name, and the print ends (no page read twice).</summary>
     [Fact]
