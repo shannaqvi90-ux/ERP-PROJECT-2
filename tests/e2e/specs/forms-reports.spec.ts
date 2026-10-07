@@ -60,6 +60,33 @@ test.describe("record forms and printed documents", () => {
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
   });
 
+  test("a user who may only read a record sees it read-only, and no key of the form sends a change", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    // Every request other than a read that leaves the page (the viewer's own settings excepted).
+    const writes: string[] = [];
+    page.on("request", (request) => {
+      const path = new URL(request.url()).pathname;
+      if (request.method() !== "GET" && !(request.method() === "PUT" && path === "/api/identity/me/preferences")) writes.push(`${request.method()} ${path}`);
+    });
+    await openCompanies(page);
+    await listRows(page).first().click();
+    const phone = page.locator('[data-field="phone"] input');
+    await expect(phone).toBeDisabled();
+    await expect(page.getByTestId("record-read-only")).toBeVisible();
+    await expect(page.locator(".record-form").getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+    // The form's write keys (critic p06 round 2, plant W2), from the form's heading and from the page.
+    for (const onHeading of [true, false]) {
+      if (onHeading) await page.locator(".record-header h2").focus();
+      else await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      for (const key of ["Control+KeyS", "Control+Enter", "Alt+KeyZ", "Alt+KeyN", "Delete"]) await page.keyboard.press(key);
+    }
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page.waitForLoadState("networkidle");
+    expect(writes).toEqual([]);
+    await expect(phone).toBeDisabled();
+  });
+
   test("a record prints as an Arabic PDF from Alt+R, and its document reads right to left", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
