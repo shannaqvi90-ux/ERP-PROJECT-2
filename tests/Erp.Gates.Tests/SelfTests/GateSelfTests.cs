@@ -183,6 +183,16 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/density", StringComparison.Ordinal) &&
                                            l.Contains($"response to tenant {b} contains", StringComparison.Ordinal));
         Assert.True(report.WritePairs > 0, "no write-after-write pair succeeded on both sides");
+        // The Arabic side (critic p04 round 4, plant L1): a write that leaks the previous caller's
+        // e-mail only for Arabic-Indic digits. Both tenants send every documented value back to
+        // back, so the leak shows in both directions, and only with "arab".
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {a} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/digits", StringComparison.Ordinal) &&
+                                           l.Contains("numerals=\"arab\"", StringComparison.Ordinal) && l.Contains($"response to tenant {a} contains", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/digits", StringComparison.Ordinal) &&
+                                           l.Contains("numerals=\"arab\"", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && !l.Contains("numerals=\"arab\"", StringComparison.Ordinal));
+        Assert.Contains(report.EnumValuesAttacked, v => v.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && v.EndsWith("numerals=\"arab\"", StringComparison.Ordinal));
+        Assert.True(report.EnumVariantPairs > 0, "no write pair was sent with a documented value other than the default");
         Assert.Empty(report.WritePairBlindSpots);
         Assert.DoesNotContain(report.AttackerUnsuccessfulWrites, w => w.Contains("/api/leaky/me/", StringComparison.Ordinal));
 

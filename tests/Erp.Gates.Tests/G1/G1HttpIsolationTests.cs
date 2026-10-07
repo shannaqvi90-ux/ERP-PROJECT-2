@@ -127,6 +127,10 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Check(report.WritePairBlindSpots.Count == 0, "The write-after-write phase may have been blind:\n" + string.Join("\n", report.WritePairBlindSpots));
         CheckAtLeast(report.WritePairs, "g1.writePairs");
         CheckAtLeast(report.WritePairEndpoints, "g1.writePairEndpoints");
+        // Every documented value of every enumerated body field (language ar, numerals arab, ...)
+        // was sent by both tenants back to back, not only the first one.
+        CheckAtLeast(report.EnumValuesAttacked.Count, "g1.enumValuesAttacked");
+        CheckAtLeast(report.EnumVariantPairs, "g1.enumVariantWritePairs");
         Check(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
         CheckAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
         Check(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
@@ -285,7 +289,7 @@ public static class IsolationAttack
         // after tenant A's next write. Both tenants' writes must succeed, so every handler runs to
         // the end, and every answer (body and every header) is judged for the other tenant's markers.
         var pairs = await WritePairsPhaseAsync(Env, endpoints, openApi, activity, victim, values);
-        Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.AttackerRequests} tenant A requests");
+        Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.VariantPairs} pairs with {pairs.EnumValuesAttacked?.Count ?? 0} documented values, {pairs.AttackerRequests} tenant A requests");
 
         // Exports, imports, jobs and files: every surface kind in use needs a probe, and every
         // probe runs with tenant B's identifiers and values.
@@ -632,6 +636,8 @@ public static class IsolationAttack
         {
             WritePairs = pairs.Pairs,
             WritePairEndpoints = pairs.Endpoints,
+            EnumVariantPairs = pairs.VariantPairs,
+            EnumValuesAttacked = pairs.EnumValuesAttacked ?? [],
             AttackerUnsuccessfulWrites = pairs.AttackerUnsuccessfulWrites,
             WritePairBlindSpots = pairs.BlindSpots,
             Oracles = state.Oracles,
@@ -685,7 +691,7 @@ public static class IsolationAttack
             .ToDictionary(e => (string)e.Key, e => e.Value as string, StringComparer.Ordinal);
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
-        IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots);
+        IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null);
 
     /// <summary>
     /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
@@ -693,6 +699,11 @@ public static class IsolationAttack
     /// write), tenant B writes again, tenant A reads every GET, tenant A writes once more and tenant
     /// B reads every GET. Tenant A's side is a <see cref="TenantActivity"/> of its own (valid bodies
     /// on its own records) whose answers are judged for tenant B's markers.
+    /// Then the same pairs once per variant of the body (<see cref="TenantActivity.VariantsOf"/>):
+    /// every documented value of every enumerated field, tenant B and tenant A sending the same
+    /// value, so the code behind each value (language ar, numerals arab: critic p04 round 4, plant
+    /// L1) runs for both tenants back to back. Every variant must succeed on both sides at least
+    /// once, or the phase reports itself blind.
     /// </summary>
     private static async Task<WritePairResult> WritePairsPhaseAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi,
         TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values)
@@ -704,6 +715,8 @@ public static class IsolationAttack
         var attacker = await TenantActivity.StartAsync(env, a, endpoints, openApi);
         attacker.Watch(new MarkerSet(victimNow, values));
         var pairs = 0;
+        var variantPairs = 0;
+        var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
         var writes = victimActivity.Writes;
         try
@@ -719,6 +732,38 @@ public static class IsolationAttack
                         pairs++;
                     }
                 }
+                foreach (var variant in victimActivity.VariantsOf(endpoint))
+                {
+                    var succeeded = false;
+                    foreach (var bearer in new[] { false, true })
+                    {
+                        var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write ({variant})", variant: variant);
+                        var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({variant}, {(bearer ? "bearer" : "cookie")})", bearer, variant);
+                        if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                        {
+                            variantPairs++;
+                            succeeded = true;
+                        }
+                    }
+                    // Tenant B writes once more with the same value right after tenant A: judged for A's markers.
+                    await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right after A's write ({variant})", variant: variant);
+                    var key = $"{endpoint.Key}|{variant.Label}";
+                    if (!succeeded || !victimActivity.AppliedVariants.Contains(key) || !attacker.AppliedVariants.Contains(key))
+                    {
+                        blind.Add($"{endpoint.Key} with {variant}: no write pair succeeded on both sides with the value in the body");
+                    }
+                    else if (variant.Leaf is { } leaf)
+                    {
+                        enumValues.Add($"{endpoint.Key} {leaf.Name}={variant.Value!.ToJsonString()}");
+                    }
+                }
+                if (victimActivity.VariantsOf(endpoint).Count > 0)
+                {
+                    // What the variants left in either tenant's records, read by the other.
+                    await attacker.ReadRoundAsync(ownA, $"tenant A reads after B's variants of {endpoint.Key}");
+                    await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's variants of {endpoint.Key}");
+                }
+                // The default body last: it puts both tenants' records back to their first documented values.
                 await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right after A's write");
                 await attacker.ReadRoundAsync(ownA, $"tenant A reads after B's {endpoint.Key}");
                 await attacker.WriteOneAsync(endpoint, ownA, "tenant A writes before B reads");
@@ -734,7 +779,7 @@ public static class IsolationAttack
         {
             blind.Add("no write pair succeeded on both sides");
         }
-        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind);
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList());
     }
 
     /// <summary>Header names never used as a tenant switch probe: they carry the attacker's own
@@ -1464,6 +1509,13 @@ public sealed record IsolationReport(
 
     /// <summary>Endpoints that change data run through the write-after-write phase.</summary>
     public int WritePairEndpoints { get; init; }
+
+    /// <summary>Write pairs (both tenants succeeding) sent with a variant of the body: one
+    /// documented value of an enumerated field, the same in both tenants' bodies.</summary>
+    public int EnumVariantPairs { get; init; }
+
+    /// <summary>Endpoint, field and documented value, for every value both tenants sent back to back.</summary>
+    public IReadOnlyList<string> EnumValuesAttacked { get; init; } = [];
 
     /// <summary>Tenant A's own valid writes in the write-after-write phase that did not succeed.</summary>
     public IReadOnlyList<string> AttackerUnsuccessfulWrites { get; init; } = [];

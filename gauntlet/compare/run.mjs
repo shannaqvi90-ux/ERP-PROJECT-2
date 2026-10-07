@@ -95,7 +95,13 @@ async function main() {
         console.log(`${id.padEnd(24)} ${p.padEnd(5)} ${r.status.padEnd(9)}` +
           (c ? ` steps ${c.steps}  keys ${c.keystrokes}  machine ${c.machine_seconds}s  human ${c.human_seconds}s  human+wait ${c.human_plus_wait_seconds}s` : '') +
           (r.error ? `  (${r.error.split('\n')[0]})` : '') + `  -> ${r.result_file}`);
-        if (['error', 'failed', 'invalid'].includes(r.status) || (args.health && r.status !== 'verified')) failures++;
+        if (['error', 'failed', 'invalid'].includes(r.status) || (args.health && r.status !== 'verified')) {
+          failures++;
+          // The whole error and what the page showed, on the console too: a verify run's output
+          // directory may not outlive it.
+          if (r.error) console.log(r.error.split('\n').map(l => `    ${l}`).join('\n'));
+          if (r.error_page) console.log(`    page: ${JSON.stringify(r.error_page)}`);
+        }
       }
       byProduct[p] = args.repeat > 1 ? medianOf(runs) : runs[0];
       if (baseline && args.repeat > 1) {

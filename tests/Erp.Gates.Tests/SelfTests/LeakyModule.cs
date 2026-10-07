@@ -285,6 +285,54 @@ public sealed class LeakyModule : ErpModule
             group.MapPut("/me/density", (DensityRequest request, ErpDbSession session, ICurrentUser caller) => SaveDensityAsync(request, session, caller, previousSaver))
                 .WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
 
+            // Bug 45 (critic p04 round 4, plant L1): a preferences write that, only for Arabic-Indic
+            // digits, keeps the last such caller's e-mail in a temporary file and appends it to
+            // the next such caller's display name. With Latin digits (the first documented value,
+            // the only one a body built from documented values ever sent) nothing happens, so the
+            // leak hides on the Arabic side. The file is outside every object the process-state
+            // gate walks: only a write pair that sends "arab" from both tenants shows it.
+            group.MapPut("/me/digits", async (DigitsRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (request.Numerals is not ("latn" or "arab"))
+                {
+                    return Results.BadRequest();
+                }
+                var mine = await EmailAsync(session, caller.UserId);
+                var displayName = mine;
+                if (request.Numerals == "arab")
+                {
+                    var previous = File.Exists(DigitsNote) ? await File.ReadAllTextAsync(DigitsNote) : "";
+                    await File.WriteAllTextAsync(DigitsNote, mine);
+                    if (previous.Length > 0)
+                    {
+                        displayName = $"{mine} (also using these digits: {previous})";
+                    }
+                }
+                return Results.Ok(new { displayName, numerals = request.Numerals });
+            }).WithName("leaky.digits").WithSummary("Planted bug: Arabic-Indic digits append the previous such caller's e-mail.").RequirePermission("leaky.data.update");
+
+            // Bug 46 (the same, carrying only a number): for Arabic only, a write answers how far
+            // the caller's directory size (the letters of every address) is from that of the
+            // previous Arabic caller, kept in a temporary file. Nothing of the other tenant's shows,
+            // so only the write comparison of the non-interference check, run with language "ar"
+            // from both tenants, sees it.
+            group.MapPut("/me/script", async (ScriptRequest request, ErpDbSession session) =>
+            {
+                if (request.Language is not ("en" or "ar"))
+                {
+                    return Results.BadRequest();
+                }
+                if (request.Language != "ar")
+                {
+                    return Results.Ok(new { language = request.Language, change = 0L });
+                }
+                await using var command = new NpgsqlCommand("SELECT coalesce(sum(length(email)), 0) FROM identity.users", session.Connection, session.Transaction);
+                var mine = (long)(await command.ExecuteScalarAsync())!;
+                var previous = File.Exists(ScriptNote) && long.TryParse(await File.ReadAllTextAsync(ScriptNote), out var p) ? p : mine;
+                await File.WriteAllTextAsync(ScriptNote, mine.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return Results.Ok(new { language = request.Language, change = mine - previous });
+            }).WithName("leaky.script").WithSummary("Planted bug: Arabic answers the change since the previous Arabic caller's directory size.").RequirePermission("leaky.data.update");
+
             // Bug 43 (critic p04 round 3, plant N1): a "me" endpoint with an optional, documented
             // userId acts on whichever user the body names. The caller holds the endpoint's own
             // permission, so only the object-level check (G2 SubjectInjection) can see it.
@@ -815,7 +863,19 @@ public sealed class LeakyModule : ErpModule
         cachedTenant = null;
         exportedTenant = null;
         PersonCards.Clear();
+        File.Delete(DigitsNote);
+        File.Delete(ScriptNote);
     }
+
+    /// <summary>Planted state outside the process (bugs 45 and 46): temporary files, one per test
+    /// process.</summary>
+    private static readonly string DigitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-digits-{Environment.ProcessId}.txt");
+
+    private static readonly string ScriptNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-script-{Environment.ProcessId}.txt");
+
+    public sealed record DigitsRequest([property: AllowedTextValues("latn", "arab")] string? Numerals);
+
+    public sealed record ScriptRequest([property: AllowedTextValues("en", "ar")] string? Language);
 
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();
