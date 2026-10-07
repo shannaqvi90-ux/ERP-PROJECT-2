@@ -29,10 +29,15 @@ branch alone passed every gate, server and client.
    query parameter). Tenant A attacks with an Arabic administrator and an anonymous Arabic caller:
    every route with B's ids and every tenant-switch variant (phase 1), every GET parameter with a
    cross-section of B's values, each compared with a value that exists nowhere (phase 2), list
-   answers judged both ways in Arabic (phase 2c), and a third writer in every write-after-write
-   pair, default body and every variant (phase 1c). An Arabic session's own writes (its
-   preferences, through the attack's valid bodies or a variant) are undone after each endpoint, as
-   a framed own write so tenant B's change tracking stays exact.
+   answers judged both ways in Arabic (phase 2c), and Arabic write-after-write pairs (phase 1c)
+   with the default body and with every enumerated field at its last documented value (Arabic
+   with Arabic-Indic digits for the shell's preferences; the per-value variants stay with the
+   cookie and bearer writers). The Arabic administrator writes records it created itself, since
+   some (a saved list view) only their owner may see. An Arabic session's own writes (its
+   preferences, through the attack's valid bodies) are undone after each endpoint, as a framed
+   own write so tenant B's change tracking stays exact. The anonymous Arabic caller sends each
+   permissioned endpoint one request (it only reaches the Arabic refusal), and published query
+   values are left out of the Arabic oracle comparison, as in the English attack.
 3. **Non-interference** (`NonInterference`): every read is compared once more between the two
    tenants' Arabic administrators (shared process right after the other tenant's Arabic request,
    against a fresh process only the judged tenant used), and every comparable write once more in
