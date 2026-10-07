@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "see-and-rerun-job-20261007T212936-245e",
+  "run_id": "see-and-rerun-job-20261007T234820-87de",
   "instrument": 6,
   "task": "see-and-rerun-job",
   "task_title": "See a background job and run it again",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
   "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
-  "started_at": "2026-10-07T21:29:36.623Z",
-  "finished_at": "2026-10-07T21:29:44.117Z",
+  "started_at": "2026-10-07T23:48:20.978Z",
+  "finished_at": "2026-10-07T23:48:29.979Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 1,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 4.116,
-    "system_wait_seconds": 1.334,
+    "machine_seconds": 4.667,
+    "system_wait_seconds": 1.536,
     "human_seconds": 34.68,
-    "human_plus_wait_seconds": 36.014,
+    "human_plus_wait_seconds": 36.216,
     "klm_operator_counts": {
       "K": 31,
       "P": 9,
@@ -58,7 +58,7 @@
       "label": "apps menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.045,
+      "took": 0.048,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "Settings app",
       "keystrokes": 0,
-      "at": 0.046,
-      "took": 0.045,
+      "at": 0.05,
+      "took": 0.052,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "scroll",
       "label": "scroll to the bottom of the settings",
       "keystrokes": 0,
-      "at": 0.412,
-      "took": 0.037,
+      "at": 0.537,
+      "took": 0.054,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -87,8 +87,8 @@
       "kind": "click",
       "label": "Activate the developer mode",
       "keystrokes": 0,
-      "at": 0.45,
-      "took": 0.041,
+      "at": 0.592,
+      "took": 0.049,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -97,8 +97,8 @@
       "kind": "click",
       "label": "Technical menu",
       "keystrokes": 0,
-      "at": 0.856,
-      "took": 0.073,
+      "at": 1.099,
+      "took": 0.089,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -107,8 +107,8 @@
       "kind": "scroll",
       "label": "scroll the menu to Scheduled Actions",
       "keystrokes": 0,
-      "at": 1.066,
-      "took": 0.067,
+      "at": 1.219,
+      "took": 0.197,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -117,8 +117,8 @@
       "kind": "click",
       "label": "Scheduled Actions",
       "keystrokes": 0,
-      "at": 1.133,
-      "took": 0.043,
+      "at": 1.416,
+      "took": 0.062,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -127,8 +127,8 @@
       "kind": "type",
       "label": "job name",
       "keystrokes": 30,
-      "at": 3.329,
-      "took": 0.108,
+      "at": 3.702,
+      "took": 0.149,
       "text": "Mail: Email Queue Manager",
       "same_field": false,
       "screen": "/odoo/crons",
@@ -139,8 +139,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 3.439,
-      "took": 0.007,
+      "at": 3.854,
+      "took": 0.013,
       "chord": "Enter",
       "screen": "/odoo/crons",
       "chain": true
@@ -150,8 +150,8 @@
       "kind": "click",
       "label": "open the job",
       "keystrokes": 0,
-      "at": 3.505,
-      "took": 0.05,
+      "at": 3.925,
+      "took": 0.062,
       "screen": "/odoo/crons",
       "chain": false
     },
@@ -160,8 +160,8 @@
       "kind": "click",
       "label": "Run Manually",
       "keystrokes": 0,
-      "at": 3.943,
-      "took": 0.065,
+      "at": 4.475,
+      "took": 0.075,
       "screen": "/odoo/crons/4",
       "chain": false
     }
@@ -169,75 +169,75 @@
   "waits": [
     {
       "label": "Settings loaded",
-      "at": 0.092,
-      "seconds": 0.304
+      "at": 0.103,
+      "seconds": 0.41
     },
     {
       "label": "settings page",
-      "at": 0.398,
-      "seconds": 0.014
+      "at": 0.514,
+      "seconds": 0.022
     },
     {
       "label": "developer mode on",
-      "at": 0.492,
-      "seconds": 0.363
+      "at": 0.645,
+      "seconds": 0.453
     },
     {
       "label": "technical menu open",
-      "at": 0.929,
-      "seconds": 0.125
+      "at": 1.191,
+      "seconds": 0.007
     },
     {
       "label": "scheduled action list loaded, search focused",
-      "at": 1.176,
-      "seconds": 0.151
+      "at": 1.479,
+      "seconds": 0.221
     },
     {
       "label": "job name in the search box",
-      "at": 3.437,
-      "seconds": 0.002
+      "at": 3.851,
+      "seconds": 0.003
     },
     {
       "label": "one job",
-      "at": 3.447,
-      "seconds": 0.057
+      "at": 3.868,
+      "seconds": 0.056
     },
     {
       "label": "job form (last run on screen)",
-      "at": 3.555,
-      "seconds": 0.219
+      "at": 3.987,
+      "seconds": 0.252
     },
     {
       "label": "run finished (no message is shown)",
-      "at": 4.009,
-      "seconds": 0.105
+      "at": 4.552,
+      "seconds": 0.112
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "5be42c37cd051c3d.jpg",
+      "file": "7d1bf1163c3af78b.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/5be42c37cd051c3d.jpg"
+      "path": "gauntlet/reference/odoo/shots/7d1bf1163c3af78b.jpg"
     },
     {
       "moment": "job opened",
-      "file": "69d1b25ed244982e.jpg",
-      "at": 3.775,
-      "path": "gauntlet/reference/odoo/shots/69d1b25ed244982e.jpg"
+      "file": "02e7ee8654eb351d.jpg",
+      "at": 4.24,
+      "path": "gauntlet/reference/odoo/shots/02e7ee8654eb351d.jpg"
     },
     {
       "moment": "done",
-      "file": "ff7d4aada9c6cb18.jpg",
-      "at": 4.116,
-      "path": "gauntlet/reference/odoo/shots/ff7d4aada9c6cb18.jpg"
+      "file": "de3de0171b9c4003.jpg",
+      "at": 4.667,
+      "path": "gauntlet/reference/odoo/shots/de3de0171b9c4003.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "last_run_before": "2026-10-07 21:29:36",
-      "last_run_now": "2026-10-07 21:29:43",
+      "last_run_before": "2026-10-07 23:48:20",
+      "last_run_now": "2026-10-07 23:48:29",
       "last_run_shown_in_interface": false
     }
   },
@@ -264,7 +264,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.01,
+      "seconds": 0.012,
       "verified": true
     },
     {
@@ -272,7 +272,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.009,
+      "seconds": 0.011,
       "verified": true
     }
   ],
@@ -282,19 +282,19 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "0fecbca29bb4cc8e",
+    "sha256": "8d988d6fdd5ad282",
     "elements": 337
   },
   "screen_after_verify": {
-    "sha256": "0fecbca29bb4cc8e",
+    "sha256": "8d988d6fdd5ad282",
     "elements": 337,
     "unchanged": true
   },
   "result_file": "gauntlet/reference/odoo/tasks/see-and-rerun-job.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T212928-9e9b.json",
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T212936-245e.json",
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T212944-8121.json"
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T234811-584e.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T234820-87de.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261007T234829-e5ad.json"
   ]
 }

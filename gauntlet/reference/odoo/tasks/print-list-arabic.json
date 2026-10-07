@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "print-list-arabic-20261007T212901-28a3",
+  "run_id": "print-list-arabic-20261007T234740-5372",
   "instrument": 6,
   "task": "print-list-arabic",
   "task_title": "Print a list report in Arabic",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
   "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
-  "started_at": "2026-10-07T21:29:01.256Z",
-  "finished_at": "2026-10-07T21:29:15.515Z",
+  "started_at": "2026-10-07T23:47:40.778Z",
+  "finished_at": "2026-10-07T23:47:57.445Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 1,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 6.362,
-    "system_wait_seconds": 5.794,
+    "machine_seconds": 7.779,
+    "system_wait_seconds": 7.084,
     "human_seconds": 19.06,
-    "human_plus_wait_seconds": 24.854,
+    "human_plus_wait_seconds": 26.144,
     "klm_operator_counts": {
       "K": 32,
       "P": 3,
@@ -57,8 +57,8 @@
       "kind": "type",
       "label": "vendor",
       "keystrokes": 31,
-      "at": 0.045,
-      "took": 0.193,
+      "at": 0.046,
+      "took": 0.172,
       "text": "Zenith General Trading Est.",
       "same_field": false,
       "screen": "/odoo/purchase",
@@ -69,8 +69,8 @@
       "kind": "key",
       "label": "search orders",
       "keystrokes": 1,
-      "at": 0.243,
-      "took": 0.023,
+      "at": 0.223,
+      "took": 0.021,
       "chord": "Enter",
       "screen": "/odoo/purchase",
       "chain": true
@@ -80,8 +80,8 @@
       "kind": "click",
       "label": "select every order",
       "keystrokes": 0,
-      "at": 0.722,
-      "took": 0.094,
+      "at": 1.923,
+      "took": 0.113,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -90,8 +90,8 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 0.824,
-      "took": 0.055,
+      "at": 2.043,
+      "took": 0.064,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -100,8 +100,8 @@
       "kind": "click",
       "label": "Purchase Order",
       "keystrokes": 0,
-      "at": 0.88,
-      "took": 0.06,
+      "at": 2.108,
+      "took": 0.065,
       "screen": "/odoo/purchase",
       "chain": false
     }
@@ -109,48 +109,48 @@
   "waits": [
     {
       "label": "order list, search focused",
-      "at": 0.002,
-      "seconds": 0.043
+      "at": 0.001,
+      "seconds": 0.042
     },
     {
       "label": "search options",
-      "at": 0.238,
+      "at": 0.219,
       "seconds": 0.004
     },
     {
       "label": "the vendor's orders",
-      "at": 0.269,
-      "seconds": 0.321
+      "at": 0.245,
+      "seconds": 1.429
     },
     {
       "label": "print menu offered",
-      "at": 0.817,
+      "at": 2.036,
       "seconds": 0.006
     },
     {
       "label": "file received",
-      "at": 0.94,
-      "seconds": 5.42
+      "at": 2.173,
+      "seconds": 5.603
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "275ff35f57fea1fe.jpg",
+      "file": "0074c12f3b693d32.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/275ff35f57fea1fe.jpg"
+      "path": "gauntlet/reference/odoo/shots/0074c12f3b693d32.jpg"
     },
     {
       "moment": "list filtered",
-      "file": "4ce5dae2b067d655.jpg",
-      "at": 0.59,
-      "path": "gauntlet/reference/odoo/shots/4ce5dae2b067d655.jpg"
+      "file": "9911809e46f39adc.jpg",
+      "at": 1.675,
+      "path": "gauntlet/reference/odoo/shots/9911809e46f39adc.jpg"
     },
     {
       "moment": "done",
-      "file": "bb23d8a07465988d.jpg",
-      "at": 6.362,
-      "path": "gauntlet/reference/odoo/shots/bb23d8a07465988d.jpg"
+      "file": "63b39759b7132b10.jpg",
+      "at": 7.779,
+      "path": "gauntlet/reference/odoo/shots/63b39759b7132b10.jpg"
     }
   ],
   "verification": {
@@ -195,18 +195,18 @@
   "verify_passes": [
     {
       "requests": 1,
-      "longest_pause_seconds": 0.008,
+      "longest_pause_seconds": 0.007,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.233,
+      "seconds": 0.268,
       "verified": true
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.006,
+      "longest_pause_seconds": 0.009,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.219,
+      "seconds": 0.227,
       "verified": true
     }
   ],
@@ -218,19 +218,19 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "363d58276ce8bbc2",
+    "sha256": "345065560925a6b1",
     "elements": 1172
   },
   "screen_after_verify": {
-    "sha256": "363d58276ce8bbc2",
+    "sha256": "345065560925a6b1",
     "elements": 1172,
     "unchanged": true
   },
   "result_file": "gauntlet/reference/odoo/tasks/print-list-arabic.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/print-list-arabic-20261007T212831-f393.json",
-    "gauntlet/reference/odoo/results/print-list-arabic-20261007T212846-697d.json",
-    "gauntlet/reference/odoo/results/print-list-arabic-20261007T212901-28a3.json"
+    "gauntlet/reference/odoo/results/print-list-arabic-20261007T234707-bb31.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261007T234724-a79b.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261007T234740-5372.json"
   ]
 }

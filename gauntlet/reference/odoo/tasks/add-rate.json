@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "add-rate-20261007T211618-ee77",
+  "run_id": "add-rate-20261007T233417-2253",
   "instrument": 6,
   "task": "add-rate",
   "task_title": "Add an exchange rate",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Record today's rate for the euro: 1 EUR = 4.2875 AED.",
   "done_when": "The rate is saved; the back end holds a EUR rate dated today equal to 4.2875 AED per euro.",
-  "started_at": "2026-10-07T21:16:18.603Z",
-  "finished_at": "2026-10-07T21:16:31.916Z",
+  "started_at": "2026-10-07T23:34:17.947Z",
+  "finished_at": "2026-10-07T23:34:32.070Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 4,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 2.365,
-    "system_wait_seconds": 1.455,
+    "machine_seconds": 2.411,
+    "system_wait_seconds": 1.512,
     "human_seconds": 22.08,
-    "human_plus_wait_seconds": 23.675,
+    "human_plus_wait_seconds": 23.633,
     "klm_operator_counts": {
       "K": 11,
       "P": 6,
@@ -58,7 +58,7 @@
       "label": "apps menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.071,
+      "took": 0.06,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "Invoicing app",
       "keystrokes": 0,
-      "at": 0.074,
-      "took": 0.064,
+      "at": 0.061,
+      "took": 0.055,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "click",
       "label": "Configuration menu",
       "keystrokes": 0,
-      "at": 0.436,
-      "took": 0.066,
+      "at": 0.447,
+      "took": 0.067,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -87,8 +87,8 @@
       "kind": "click",
       "label": "Currencies",
       "keystrokes": 0,
-      "at": 0.503,
-      "took": 0.046,
+      "at": 0.514,
+      "took": 0.036,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -97,8 +97,8 @@
       "kind": "click",
       "label": "open EUR",
       "keystrokes": 0,
-      "at": 0.557,
-      "took": 0.315,
+      "at": 0.558,
+      "took": 0.294,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -107,8 +107,8 @@
       "kind": "click",
       "label": "Add a line (date defaults to today)",
       "keystrokes": 0,
-      "at": 1.002,
-      "took": 0.065,
+      "at": 1.032,
+      "took": 0.066,
       "screen": "/odoo/currencies/126",
       "chain": false
     },
@@ -117,8 +117,8 @@
       "kind": "key",
       "label": "next cell 1",
       "keystrokes": 1,
-      "at": 1.255,
-      "took": 0.009,
+      "at": 1.298,
+      "took": 0.014,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": false
@@ -128,8 +128,8 @@
       "kind": "key",
       "label": "next cell 2",
       "keystrokes": 1,
-      "at": 1.265,
-      "took": 0.014,
+      "at": 1.312,
+      "took": 0.005,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": true
@@ -139,8 +139,8 @@
       "kind": "key",
       "label": "next cell 3",
       "keystrokes": 1,
-      "at": 1.28,
-      "took": 0.005,
+      "at": 1.318,
+      "took": 0.006,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": true
@@ -150,8 +150,8 @@
       "kind": "type",
       "label": "AED per unit",
       "keystrokes": 6,
-      "at": 1.302,
-      "took": 0.028,
+      "at": 1.328,
+      "took": 0.022,
       "text": "4.2875",
       "same_field": false,
       "screen": "/odoo/currencies/126",
@@ -162,8 +162,8 @@
       "kind": "key",
       "label": "Save (hotkey)",
       "keystrokes": 2,
-      "at": 1.467,
-      "took": 0.072,
+      "at": 1.501,
+      "took": 0.07,
       "chord": "Alt+s",
       "screen": "/odoo/currencies/126",
       "chain": false
@@ -172,53 +172,53 @@
   "waits": [
     {
       "label": "Invoicing loaded",
-      "at": 0.139,
-      "seconds": 0.297
+      "at": 0.117,
+      "seconds": 0.33
     },
     {
       "label": "currency list",
-      "at": 0.549,
-      "seconds": 0.007
+      "at": 0.551,
+      "seconds": 0.006
     },
     {
       "label": "currency form with its rates",
-      "at": 0.872,
-      "seconds": 0.126
+      "at": 0.853,
+      "seconds": 0.178
     },
     {
       "label": "new rate row",
-      "at": 1.068,
-      "seconds": 0.186
+      "at": 1.098,
+      "seconds": 0.199
     },
     {
       "label": "AED per unit cell",
-      "at": 1.286,
-      "seconds": 0.015
+      "at": 1.325,
+      "seconds": 0.003
     },
     {
       "label": "saved",
-      "at": 1.54,
-      "seconds": 0.824
+      "at": 1.572,
+      "seconds": 0.837
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "bfa37052c4787b31.jpg",
+      "file": "98e669b30b6e9eb7.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/bfa37052c4787b31.jpg"
+      "path": "gauntlet/reference/odoo/shots/98e669b30b6e9eb7.jpg"
     },
     {
       "moment": "rate entered",
-      "file": "14333a8c29ae987e.jpg",
-      "at": 1.33,
-      "path": "gauntlet/reference/odoo/shots/14333a8c29ae987e.jpg"
+      "file": "2e9a7ecb3e43908a.jpg",
+      "at": 1.352,
+      "path": "gauntlet/reference/odoo/shots/2e9a7ecb3e43908a.jpg"
     },
     {
       "moment": "done",
-      "file": "4c6ace12bcf94e1d.jpg",
-      "at": 2.365,
-      "path": "gauntlet/reference/odoo/shots/4c6ace12bcf94e1d.jpg"
+      "file": "638d41ebf532c30d.jpg",
+      "at": 2.411,
+      "path": "gauntlet/reference/odoo/shots/638d41ebf532c30d.jpg"
     }
   ],
   "verification": {
@@ -227,7 +227,7 @@
       "date": "2026-10-08",
       "rates": [
         {
-          "id": 100017,
+          "id": 100023,
           "inverse_company_rate": 4.2875,
           "company_rate": 0.23323615160349856,
           "company_id": [
@@ -258,10 +258,10 @@
   "verify_passes": [
     {
       "requests": 1,
-      "longest_pause_seconds": 0.012,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.025,
+      "seconds": 0.021,
       "verified": true
     },
     {
@@ -269,7 +269,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.016,
+      "seconds": 0.015,
       "verified": true
     }
   ],
@@ -279,11 +279,11 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "84fe274e5757a217",
+    "sha256": "592f8493bfcdbd8d",
     "elements": 452
   },
   "screen_after_verify": {
-    "sha256": "84fe274e5757a217",
+    "sha256": "592f8493bfcdbd8d",
     "elements": 452,
     "unchanged": true
   },
@@ -310,10 +310,10 @@
         "key_chords": 4,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 2.365,
-        "system_wait_seconds": 1.455,
+        "machine_seconds": 2.411,
+        "system_wait_seconds": 1.553,
         "human_seconds": 22.08,
-        "human_plus_wait_seconds": 23.535,
+        "human_plus_wait_seconds": 23.633,
         "klm_operator_counts": {
           "K": 11,
           "P": 6,
@@ -329,7 +329,7 @@
           "label": "apps menu",
           "keystrokes": 0,
           "at": 0.001,
-          "took": 0.071,
+          "took": 0.06,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -338,8 +338,8 @@
           "kind": "click",
           "label": "Invoicing app",
           "keystrokes": 0,
-          "at": 0.074,
-          "took": 0.064,
+          "at": 0.061,
+          "took": 0.055,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -348,8 +348,8 @@
           "kind": "click",
           "label": "Configuration menu",
           "keystrokes": 0,
-          "at": 0.436,
-          "took": 0.066,
+          "at": 0.447,
+          "took": 0.067,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -358,8 +358,8 @@
           "kind": "click",
           "label": "Currencies",
           "keystrokes": 0,
-          "at": 0.503,
-          "took": 0.046,
+          "at": 0.514,
+          "took": 0.036,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -368,8 +368,8 @@
           "kind": "click",
           "label": "open EUR",
           "keystrokes": 0,
-          "at": 0.557,
-          "took": 0.315,
+          "at": 0.558,
+          "took": 0.294,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -378,8 +378,8 @@
           "kind": "click",
           "label": "Add a line (date defaults to today)",
           "keystrokes": 0,
-          "at": 1.002,
-          "took": 0.065,
+          "at": 1.032,
+          "took": 0.066,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -388,8 +388,8 @@
           "kind": "key",
           "label": "next cell 1",
           "keystrokes": 1,
-          "at": 1.255,
-          "took": 0.009,
+          "at": 1.298,
+          "took": 0.014,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": false
@@ -399,8 +399,8 @@
           "kind": "key",
           "label": "next cell 2",
           "keystrokes": 1,
-          "at": 1.265,
-          "took": 0.014,
+          "at": 1.312,
+          "took": 0.005,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": true
@@ -410,8 +410,8 @@
           "kind": "key",
           "label": "next cell 3",
           "keystrokes": 1,
-          "at": 1.28,
-          "took": 0.005,
+          "at": 1.318,
+          "took": 0.006,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": true
@@ -421,8 +421,8 @@
           "kind": "type",
           "label": "AED per unit",
           "keystrokes": 6,
-          "at": 1.302,
-          "took": 0.028,
+          "at": 1.328,
+          "took": 0.022,
           "text": "4.2875",
           "same_field": false,
           "screen": "/odoo/currencies/126",
@@ -433,8 +433,8 @@
           "kind": "key",
           "label": "Save (hotkey)",
           "keystrokes": 2,
-          "at": 1.467,
-          "took": 0.072,
+          "at": 1.501,
+          "took": 0.07,
           "chord": "Alt+s",
           "screen": "/odoo/currencies/126",
           "chain": false
@@ -443,33 +443,33 @@
       "waits": [
         {
           "label": "Invoicing loaded",
-          "at": 0.139,
-          "seconds": 0.297
+          "at": 0.117,
+          "seconds": 0.33
         },
         {
           "label": "currency list",
-          "at": 0.549,
-          "seconds": 0.007
+          "at": 0.551,
+          "seconds": 0.006
         },
         {
           "label": "currency form with its rates",
-          "at": 0.872,
-          "seconds": 0.126
+          "at": 0.853,
+          "seconds": 0.178
         },
         {
           "label": "new rate row",
-          "at": 1.068,
-          "seconds": 0.186
+          "at": 1.098,
+          "seconds": 0.199
         },
         {
           "label": "AED per unit cell",
-          "at": 1.286,
-          "seconds": 0.015
+          "at": 1.325,
+          "seconds": 0.003
         },
         {
           "label": "saved",
-          "at": 1.54,
-          "seconds": 0.824
+          "at": 1.572,
+          "seconds": 0.837
         }
       ],
       "verification": {
@@ -478,7 +478,7 @@
           "date": "2026-10-08",
           "rates": [
             {
-              "id": 100017,
+              "id": 100023,
               "inverse_company_rate": 4.2875,
               "company_rate": 0.23323615160349856,
               "company_id": [
@@ -502,10 +502,10 @@
       "verify_passes": [
         {
           "requests": 1,
-          "longest_pause_seconds": 0.012,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.025,
+          "seconds": 0.021,
           "verified": true
         },
         {
@@ -513,7 +513,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.016,
+          "seconds": 0.015,
           "verified": true
         }
       ],
@@ -523,11 +523,11 @@
         "first": []
       },
       "screen_at_clock": {
-        "sha256": "84fe274e5757a217",
+        "sha256": "592f8493bfcdbd8d",
         "elements": 452
       },
       "screen_after_verify": {
-        "sha256": "84fe274e5757a217",
+        "sha256": "592f8493bfcdbd8d",
         "elements": 452,
         "unchanged": true
       }
@@ -546,10 +546,10 @@
         "key_chords": 1,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 2.464,
-        "system_wait_seconds": 1.565,
+        "machine_seconds": 2.456,
+        "system_wait_seconds": 1.522,
         "human_seconds": 24.24,
-        "human_plus_wait_seconds": 25.805,
+        "human_plus_wait_seconds": 25.762,
         "klm_operator_counts": {
           "K": 8,
           "P": 8,
@@ -565,7 +565,7 @@
           "label": "apps menu",
           "keystrokes": 0,
           "at": 0.001,
-          "took": 0.07,
+          "took": 0.053,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -574,8 +574,8 @@
           "kind": "click",
           "label": "Invoicing app",
           "keystrokes": 0,
-          "at": 0.071,
-          "took": 0.053,
+          "at": 0.054,
+          "took": 0.063,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -584,8 +584,8 @@
           "kind": "click",
           "label": "Configuration menu",
           "keystrokes": 0,
-          "at": 0.452,
-          "took": 0.075,
+          "at": 0.488,
+          "took": 0.068,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -594,8 +594,8 @@
           "kind": "click",
           "label": "Currencies",
           "keystrokes": 0,
-          "at": 0.527,
-          "took": 0.048,
+          "at": 0.556,
+          "took": 0.054,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -604,8 +604,8 @@
           "kind": "click",
           "label": "open EUR",
           "keystrokes": 0,
-          "at": 0.589,
-          "took": 0.269,
+          "at": 0.616,
+          "took": 0.293,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -614,8 +614,8 @@
           "kind": "click",
           "label": "Add a line (date defaults to today)",
           "keystrokes": 0,
-          "at": 1.067,
-          "took": 0.062,
+          "at": 1.063,
+          "took": 0.06,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -624,8 +624,8 @@
           "kind": "click",
           "label": "AED per unit cell",
           "keystrokes": 0,
-          "at": 1.328,
-          "took": 0.051,
+          "at": 1.316,
+          "took": 0.027,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -634,7 +634,7 @@
           "kind": "key",
           "label": "select the suggested rate",
           "keystrokes": 2,
-          "at": 1.379,
+          "at": 1.347,
           "took": 0.005,
           "chord": "Control+a",
           "screen": "/odoo/currencies/126",
@@ -645,8 +645,8 @@
           "kind": "type",
           "label": "AED per unit",
           "keystrokes": 6,
-          "at": 1.384,
-          "took": 0.031,
+          "at": 1.352,
+          "took": 0.02,
           "text": "4.2875",
           "same_field": false,
           "screen": "/odoo/currencies/126",
@@ -657,8 +657,8 @@
           "kind": "click",
           "label": "Save",
           "keystrokes": 0,
-          "at": 1.542,
-          "took": 0.097,
+          "at": 1.578,
+          "took": 0.069,
           "screen": "/odoo/currencies/126",
           "chain": false
         }
@@ -666,28 +666,28 @@
       "waits": [
         {
           "label": "Invoicing loaded",
-          "at": 0.125,
-          "seconds": 0.326
+          "at": 0.118,
+          "seconds": 0.369
         },
         {
           "label": "currency list",
-          "at": 0.576,
-          "seconds": 0.012
+          "at": 0.611,
+          "seconds": 0.004
         },
         {
           "label": "currency form with its rates",
-          "at": 0.859,
-          "seconds": 0.207
+          "at": 0.91,
+          "seconds": 0.153
         },
         {
           "label": "new rate row",
-          "at": 1.129,
-          "seconds": 0.198
+          "at": 1.124,
+          "seconds": 0.192
         },
         {
           "label": "saved",
-          "at": 1.64,
-          "seconds": 0.822
+          "at": 1.649,
+          "seconds": 0.804
         }
       ],
       "verification": {
@@ -696,7 +696,7 @@
           "date": "2026-10-08",
           "rates": [
             {
-              "id": 100018,
+              "id": 100024,
               "inverse_company_rate": 4.2875,
               "company_rate": 0.23323615160349856,
               "company_id": [
@@ -720,10 +720,10 @@
       "verify_passes": [
         {
           "requests": 1,
-          "longest_pause_seconds": 0.001,
+          "longest_pause_seconds": 0.013,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.018,
+          "seconds": 0.028,
           "verified": true
         },
         {
@@ -731,7 +731,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.018,
+          "seconds": 0.03,
           "verified": true
         }
       ],
@@ -741,12 +741,12 @@
         "first": []
       },
       "screen_at_clock": {
-        "sha256": "ea2516a1019c2c93",
-        "elements": 452
+        "sha256": "782dd714b35e353f",
+        "elements": 455
       },
       "screen_after_verify": {
-        "sha256": "ea2516a1019c2c93",
-        "elements": 452,
+        "sha256": "782dd714b35e353f",
+        "elements": 455,
         "unchanged": true
       }
     }
@@ -754,8 +754,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/add-rate.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/add-rate-20261007T211605-1fe2.json",
-    "gauntlet/reference/odoo/results/add-rate-20261007T211618-ee77.json",
-    "gauntlet/reference/odoo/results/add-rate-20261007T211631-afbc.json"
+    "gauntlet/reference/odoo/results/add-rate-20261007T233403-1692.json",
+    "gauntlet/reference/odoo/results/add-rate-20261007T233417-2253.json",
+    "gauntlet/reference/odoo/results/add-rate-20261007T233432-1304.json"
   ]
 }

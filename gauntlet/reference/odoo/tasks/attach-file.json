@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "attach-file-20261007T211731-40e3",
+  "run_id": "attach-file-20261007T233545-ad75",
   "instrument": 6,
   "task": "attach-file",
   "task_title": "Attach a file to a record",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
   "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
-  "started_at": "2026-10-07T21:17:31.727Z",
-  "finished_at": "2026-10-07T21:17:37.211Z",
+  "started_at": "2026-10-07T23:35:45.634Z",
+  "finished_at": "2026-10-07T23:35:52.434Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 0.21,
-    "system_wait_seconds": 0.065,
+    "machine_seconds": 0.241,
+    "system_wait_seconds": 0.078,
     "human_seconds": 6.8,
-    "human_plus_wait_seconds": 6.865,
+    "human_plus_wait_seconds": 6.878,
     "klm_operator_counts": {
       "K": 0,
       "P": 3,
@@ -58,7 +58,7 @@
       "label": "paperclip (attachment box)",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.083,
+      "took": 0.093,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.09,
-      "took": 0.048,
+      "at": 0.101,
+      "took": 0.051,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "file-pick",
       "label": "trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.138,
-      "took": 0.009,
+      "at": 0.152,
+      "took": 0.012,
       "file": "trade-licence-TL-2026-73519.pdf",
       "screen": "/odoo/contacts/73531",
       "chain": true
@@ -87,27 +87,27 @@
   "waits": [
     {
       "label": "attachment box",
-      "at": 0.084,
+      "at": 0.095,
       "seconds": 0.005
     },
     {
       "label": "file listed on the record",
-      "at": 0.147,
-      "seconds": 0.06
+      "at": 0.165,
+      "seconds": 0.073
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "67ea213f5bf0111b.jpg",
+      "file": "b88c19144b3ba403.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/67ea213f5bf0111b.jpg"
+      "path": "gauntlet/reference/odoo/shots/b88c19144b3ba403.jpg"
     },
     {
       "moment": "done",
-      "file": "ccefff09ed159482.jpg",
-      "at": 0.21,
-      "path": "gauntlet/reference/odoo/shots/ccefff09ed159482.jpg"
+      "file": "f59120ded2d31581.jpg",
+      "at": 0.241,
+      "path": "gauntlet/reference/odoo/shots/f59120ded2d31581.jpg"
     }
   ],
   "verification": {
@@ -115,7 +115,7 @@
     "details": {
       "attachments": [
         {
-          "id": 100789,
+          "id": 101036,
           "file_size": 417
         }
       ]
@@ -223,10 +223,10 @@
   "verify_passes": [
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.012,
+      "seconds": 0.017,
       "verified": true
     },
     {
@@ -234,7 +234,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.013,
+      "seconds": 0.017,
       "verified": true
     }
   ],
@@ -243,23 +243,23 @@
     "count": 2,
     "first": [
       "GET /mail/attachment/pdf_first_page/-1 (fetch)",
-      "GET /mail/attachment/pdf_first_page/100789 (fetch)"
+      "GET /mail/attachment/pdf_first_page/101036 (fetch)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "4404cedbd417fb56",
-    "elements": 1285
+    "sha256": "37ad6b551b0546dd",
+    "elements": 1281
   },
   "screen_after_verify": {
-    "sha256": "4404cedbd417fb56",
-    "elements": 1285,
+    "sha256": "37ad6b551b0546dd",
+    "elements": 1281,
     "unchanged": true
   },
   "result_file": "gauntlet/reference/odoo/tasks/attach-file.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/attach-file-20261007T211724-cdba.json",
-    "gauntlet/reference/odoo/results/attach-file-20261007T211731-40e3.json",
-    "gauntlet/reference/odoo/results/attach-file-20261007T211737-b9a1.json"
+    "gauntlet/reference/odoo/results/attach-file-20261007T233531-0445.json",
+    "gauntlet/reference/odoo/results/attach-file-20261007T233538-d26c.json",
+    "gauntlet/reference/odoo/results/attach-file-20261007T233545-ad75.json"
   ]
 }

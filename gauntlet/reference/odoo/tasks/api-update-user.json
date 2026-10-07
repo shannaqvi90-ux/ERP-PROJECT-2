@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "api-update-user-20261007T211646-7871",
+  "run_id": "api-update-user-20261007T233451-00ee",
   "instrument": 6,
   "task": "api-update-user",
   "task_title": "Do a screen task through the API: find a user and switch their language",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
   "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
-  "started_at": "2026-10-07T21:16:46.882Z",
-  "finished_at": "2026-10-07T21:16:48.786Z",
+  "started_at": "2026-10-07T23:34:51.334Z",
+  "finished_at": "2026-10-07T23:34:53.696Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 2,
-    "machine_seconds": 0.462,
-    "system_wait_seconds": 0.458,
+    "machine_seconds": 0.535,
+    "system_wait_seconds": 0.532,
     "human_seconds": 54.62,
-    "human_plus_wait_seconds": 55.078,
+    "human_plus_wait_seconds": 55.152,
     "klm_operator_counts": {
       "K": 184,
       "P": 0,
@@ -58,7 +58,7 @@
       "label": "find the user by name",
       "keystrokes": 94,
       "at": 0.001,
-      "took": 0.399,
+      "took": 0.459,
       "text": "POST /json/2/res.users/search {\"domain\":[[\"name\",\"=\",\"Majid Anil Pillai\"]]}",
       "status": 200,
       "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": [68318]}",
@@ -69,8 +69,8 @@
       "kind": "request",
       "label": "set the language",
       "keystrokes": 90,
-      "at": 0.401,
-      "took": 0.06,
+      "at": 0.461,
+      "took": 0.073,
       "text": "POST /json/2/res.users/write {\"ids\":[68318],\"vals\":{\"lang\":\"ar_001\"}}",
       "status": 200,
       "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": true}",
@@ -81,26 +81,26 @@
     {
       "label": "response POST /json/2/res.users/search",
       "at": 0.001,
-      "seconds": 0.399
+      "seconds": 0.459
     },
     {
       "label": "response POST /json/2/res.users/write",
-      "at": 0.401,
-      "seconds": 0.06
+      "at": 0.461,
+      "seconds": 0.073
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "bdf73fde3e39bdf6.jpg",
+      "file": "759c61c2ebbd6e7e.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/bdf73fde3e39bdf6.jpg"
+      "path": "gauntlet/reference/odoo/shots/759c61c2ebbd6e7e.jpg"
     },
     {
       "moment": "done",
-      "file": "2def73a618a456a6.jpg",
-      "at": 0.462,
-      "path": "gauntlet/reference/odoo/shots/2def73a618a456a6.jpg"
+      "file": "d561155d6a33252c.jpg",
+      "at": 0.535,
+      "path": "gauntlet/reference/odoo/shots/d561155d6a33252c.jpg"
     }
   ],
   "verification": {
@@ -131,7 +131,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.029,
+      "seconds": 0.034,
       "verified": true
     },
     {
@@ -139,7 +139,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.023,
+      "seconds": 0.016,
       "verified": true
     }
   ],
@@ -150,8 +150,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/api-update-user.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/api-update-user-20261007T211644-2ed1.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261007T211646-7871.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261007T211648-de49.json"
+    "gauntlet/reference/odoo/results/api-update-user-20261007T233446-5648.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261007T233448-9275.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261007T233451-00ee.json"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "import-5000-20261007T212559-45b2",
+  "run_id": "import-5000-20261007T234540-cb90",
   "instrument": 6,
   "task": "import-5000",
   "task_title": "Import 5,000 rows",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.",
   "done_when": "The product reports the import finished; the back end holds the 5,000 new contacts.",
-  "started_at": "2026-10-07T21:25:59.541Z",
-  "finished_at": "2026-10-07T21:27:10.291Z",
+  "started_at": "2026-10-07T23:45:40.594Z",
+  "finished_at": "2026-10-07T23:46:51.910Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 11.49,
-    "system_wait_seconds": 10.474,
+    "machine_seconds": 11.903,
+    "system_wait_seconds": 10.884,
     "human_seconds": 17.4,
-    "human_plus_wait_seconds": 27.874,
+    "human_plus_wait_seconds": 28.284,
     "klm_operator_counts": {
       "K": 0,
       "P": 7,
@@ -57,8 +57,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.002,
-      "took": 0.06,
+      "at": 0.001,
+      "took": 0.051,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "at": 0.063,
-      "took": 0.052,
+      "at": 0.053,
+      "took": 0.061,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "click",
       "label": "actions menu",
       "keystrokes": 0,
-      "at": 0.614,
-      "took": 0.083,
+      "at": 0.602,
+      "took": 0.082,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -87,8 +87,8 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 0.697,
-      "took": 0.099,
+      "at": 0.685,
+      "took": 0.086,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -97,8 +97,8 @@
       "kind": "click",
       "label": "open file dialog: contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 0.882,
-      "took": 0.046,
+      "at": 0.849,
+      "took": 0.041,
       "screen": "/odoo/contacts/import",
       "chain": false
     },
@@ -107,8 +107,8 @@
       "kind": "file-pick",
       "label": "contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 0.929,
-      "took": 0.014,
+      "at": 0.891,
+      "took": 0.02,
       "file": "contacts-import-5000.csv",
       "screen": "/odoo/contacts/import",
       "chain": true
@@ -118,8 +118,8 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 1.317,
-      "took": 0.38,
+      "at": 1.627,
+      "took": 0.145,
       "screen": "/odoo/contacts/import",
       "chain": false
     }
@@ -127,48 +127,48 @@
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.116,
-      "seconds": 0.488
+      "at": 0.115,
+      "seconds": 0.169
     },
     {
       "label": "contact list",
-      "at": 0.606,
-      "seconds": 0.007
+      "at": 0.284,
+      "seconds": 0.317
     },
     {
       "label": "import screen",
-      "at": 0.798,
-      "seconds": 0.084
+      "at": 0.772,
+      "seconds": 0.077
     },
     {
       "label": "column mapping preview",
-      "at": 0.943,
-      "seconds": 0.111
+      "at": 0.912,
+      "seconds": 0.211
     },
     {
       "label": "import finished, imported records listed",
-      "at": 1.699,
-      "seconds": 9.784
+      "at": 1.774,
+      "seconds": 10.11
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "4e560cdb43561f2c.jpg",
+      "file": "0134d48c6738af90.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/4e560cdb43561f2c.jpg"
+      "path": "gauntlet/reference/odoo/shots/0134d48c6738af90.jpg"
     },
     {
       "moment": "columns matched",
-      "file": "2fd737642daf90cf.jpg",
-      "at": 1.055,
-      "path": "gauntlet/reference/odoo/shots/2fd737642daf90cf.jpg"
+      "file": "ca101426fdfabafb.jpg",
+      "at": 1.124,
+      "path": "gauntlet/reference/odoo/shots/ca101426fdfabafb.jpg"
     },
     {
       "moment": "done",
-      "file": "d5d103a482c01acb.jpg",
-      "at": 11.49,
-      "path": "gauntlet/reference/odoo/shots/d5d103a482c01acb.jpg"
+      "file": "3c6c73c7869a7b33.jpg",
+      "at": 11.903,
+      "path": "gauntlet/reference/odoo/shots/3c6c73c7869a7b33.jpg"
     }
   ],
   "verification": {
@@ -202,7 +202,7 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.125,
+      "seconds": 0.114,
       "verified": true
     },
     {
@@ -210,7 +210,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.119,
+      "seconds": 0.108,
       "verified": true
     }
   ],
@@ -218,32 +218,32 @@
   "requests_in_flight_at_clock": {
     "count": 49,
     "first": [
-      "GET /web/image/res.partner/258589/avatar_128 (image)",
-      "GET /web/image/res.partner/259660/avatar_128 (image)",
-      "GET /web/image/res.partner/256449/avatar_128 (image)",
-      "GET /web/image/res.partner/257162/avatar_128 (image)",
-      "GET /web/image/res.partner/259218/avatar_128 (image)",
-      "GET /web/image/res.partner/256021/avatar_128 (image)",
-      "GET /web/image/res.partner/256129/avatar_128 (image)",
-      "GET /web/image/res.partner/259859/avatar_128 (image)",
-      "GET /web/image/res.partner/259685/avatar_128 (image)",
-      "GET /web/image/res.partner/257516/avatar_128 (image)"
+      "GET /web/image/res.partner/278632/avatar_128 (image)",
+      "GET /web/image/res.partner/279703/avatar_128 (image)",
+      "GET /web/image/res.partner/276492/avatar_128 (image)",
+      "GET /web/image/res.partner/277205/avatar_128 (image)",
+      "GET /web/image/res.partner/279261/avatar_128 (image)",
+      "GET /web/image/res.partner/276064/avatar_128 (image)",
+      "GET /web/image/res.partner/276172/avatar_128 (image)",
+      "GET /web/image/res.partner/279902/avatar_128 (image)",
+      "GET /web/image/res.partner/279728/avatar_128 (image)",
+      "GET /web/image/res.partner/277559/avatar_128 (image)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "90faab7714fd5657",
+    "sha256": "2cee7b62ae60ff4f",
     "elements": 2191
   },
   "screen_after_verify": {
-    "sha256": "90faab7714fd5657",
+    "sha256": "2cee7b62ae60ff4f",
     "elements": 2191,
     "unchanged": true
   },
   "result_file": "gauntlet/reference/odoo/tasks/import-5000.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/import-5000-20261007T212448-4999.json",
-    "gauntlet/reference/odoo/results/import-5000-20261007T212559-45b2.json",
-    "gauntlet/reference/odoo/results/import-5000-20261007T212710-f0f4.json"
+    "gauntlet/reference/odoo/results/import-5000-20261007T234315-8b51.json",
+    "gauntlet/reference/odoo/results/import-5000-20261007T234429-8cba.json",
+    "gauntlet/reference/odoo/results/import-5000-20261007T234540-cb90.json"
   ]
 }
