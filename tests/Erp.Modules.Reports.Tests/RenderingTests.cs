@@ -184,6 +184,41 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Equal("+97125557810", string.Concat(digits));
     }
 
+    /// <summary>Critic p06 round 2: Arabic copied or searched from a PDF came out in fragments
+    /// ("ركة ش" for "شركة"), because every letter with dots or a mark was written on its own and a
+    /// reader (pdf.js) took each piece apart. Each run's letters are now one TJ string from one point;
+    /// its dots and marks follow as artifacts with no text; a mark's character goes with its letter;
+    /// and a right-to-left line is written from its right end, in reading order.</summary>
+    [Fact]
+    public void Arabic_runs_are_written_whole_and_in_reading_order_so_a_reader_extracts_words_intact()
+    {
+        var writer = new PdfWriter("t", "ar", true);
+        var page = writer.AddPage(595, 842);
+        page.Text(new TextShaper(fixture.Fonts).Shape("شركة Al Noor طُبع", 10, bold: false, documentRightToLeft: true), 100, 700);
+        var runs = System.Text.RegularExpressions.Regex.Matches(page.Content.ToString(), @"(/Span << /ActualText <FEFF([0-9A-F]+)> >> BDC\n)?BT [^\n]*Tf\n((?:(?!ET\n)[^\n]*\n)*?)ET\n")
+            .Select(m => (Actual: m.Groups[2].Success ? Encoding.BigEndianUnicode.GetString(Convert.FromHexString(m.Groups[2].Value)).Trim() : null, Lines: m.Groups[3].Value.Split('\n', StringSplitOptions.RemoveEmptyEntries)))
+            .ToList();
+        var summary = string.Join(" | ", runs.Select(r => $"{r.Actual} ({string.Join(",", (r.Actual ?? "").Select(c => ((int)c).ToString("X4")))}): {string.Join(" / ", r.Lines)}"));
+        // Reading order: "شركة", read first (at the right), is written first, then the English (and the
+        // spaces around it), then "طُبع".
+        Assert.True(runs.Count >= 3 && runs[0].Actual == "شركة" && runs.Skip(1).SkipLast(1).All(r => string.IsNullOrEmpty(r.Actual)) && runs[^1].Actual == "طُبع", summary);
+        foreach (var (_, lines) in runs)
+        {
+            // One TJ for every letter of the run, written first; then only artifacts (dots and marks).
+            Assert.EndsWith(" TJ", lines[0], StringComparison.Ordinal);
+            Assert.All(lines.Skip(1), l => Assert.StartsWith("/Artifact BMC ", l, StringComparison.Ordinal));
+        }
+        // "طُبع": three letters in its TJ (the damma is drawn apart; its character goes with the ط).
+        Assert.Equal(3, runs[^1].Lines[0].Split('<').Length - 1);
+        // Each run starts left of the one written before it: the line is written from its right end.
+        decimal X(string line) => decimal.Parse(System.Text.RegularExpressions.Regex.Match(line, @"^1 0 0 1 (\S+) ").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.True(runs.Zip(runs.Skip(1)).All(p => X(p.First.Lines[0]) > X(p.Second.Lines[0])), summary);
+        // The letter carries its mark's character, placed so that a reader reversing the run's
+        // characters into reading order gets the letter, then its mark.
+        var glyphs = new TextShaper(fixture.Fonts).Shape("طُبع", 10, false, true).Runs.Single().GlyphText;
+        Assert.Equal(["ع", "", "ب", "", "\u064Fط"], glyphs);
+    }
+
     [Fact]
     public void A_long_report_breaks_into_pages_with_the_header_on_each_and_page_numbers()
     {
@@ -406,7 +441,7 @@ public static class PdfText
     public static string Logical(string visual) =>
         System.Text.RegularExpressions.Regex.Replace(visual, "[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+", m => new string(m.Value.Reverse().ToArray()));
 
-    private static string Inflated(byte[] pdf)
+    internal static string Inflated(byte[] pdf)
     {
         var latin = Encoding.Latin1.GetString(pdf);
         var output = new StringBuilder();

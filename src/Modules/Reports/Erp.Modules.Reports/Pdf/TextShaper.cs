@@ -14,8 +14,9 @@ public sealed record GlyphRun(PdfFontFace Face, IReadOnlyList<ShapedGlyph> Glyph
     public int Advance => Glyphs.Sum(g => g.Advance);
 }
 
-/// <summary>One line of text, shaped and ordered for drawing left to right.</summary>
-public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size)
+/// <summary>One line of text, shaped and ordered for drawing left to right. <paramref name="RightToLeft"/>:
+/// the paragraph reads right to left (its runs are written into the PDF from the right, in reading order).</summary>
+public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size, bool RightToLeft = false)
 {
     /// <summary>Width in points.</summary>
     public decimal Width => Runs.Sum(r => r.Advance) * Size / 1000.0m;
@@ -53,7 +54,7 @@ public sealed class TextShaper(PdfFonts fonts)
                 }
             }
         }
-        return new ShapedLine(runs, size);
+        return new ShapedLine(runs, size, rtl);
     }
 
     /// <summary>The text broken into lines no wider than <paramref name="width"/> points, at spaces
@@ -174,6 +175,35 @@ public sealed class TextShaper(PdfFonts fonts)
             var chars = slice[cluster..next];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
             glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
+        }
+        // A combining mark shaped as a cluster of its own (a damma over a letter) carries no text of
+        // its own: its character goes with the letter it sits on (the nearest earlier cluster that
+        // has text), so a reader's copy keeps the letter and its mark together, in order. (The mark is
+        // drawn off the baseline after the run's letters; text of its own would come out apart.)
+        for (var g = 0; g < glyphs.Count; g++)
+        {
+            if (glyphs[g].Advance != 0 || glyphText[g].Length == 0 || !glyphText[g].All(c => char.GetUnicodeCategory(c) is System.Globalization.UnicodeCategory.NonSpacingMark))
+            {
+                continue;
+            }
+            var cluster = (int)infos[g].Cluster;
+            var baseGlyph = -1;
+            for (var other = 0; other < glyphs.Count; other++)
+            {
+                var at = (int)infos[other].Cluster;
+                if (at < cluster && glyphText[other].Length > 0 && glyphs[other].Advance != 0 && (baseGlyph < 0 || at > (int)infos[baseGlyph].Cluster))
+                {
+                    baseGlyph = other;
+                }
+            }
+            if (baseGlyph >= 0)
+            {
+                // Right to left, the glyphs are written in visual order and a reader reverses the
+                // run's characters back into reading order: the mark goes before its letter so it
+                // comes out after it (the /ActualText of the run carries the exact text as well).
+                glyphText[baseGlyph] = rtl ? glyphText[g] + glyphText[baseGlyph] : glyphText[baseGlyph] + glyphText[g];
+                glyphText[g] = "";
+            }
         }
         return new GlyphRun(face, glyphs, StripControls(slice), rtl, glyphText);
     }

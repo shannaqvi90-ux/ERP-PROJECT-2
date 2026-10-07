@@ -237,9 +237,21 @@ public sealed class PdfPage
     /// <summary>Draws a shaped line with its left edge at <paramref name="x"/> and baseline at <paramref name="y"/>.</summary>
     public void Text(ShapedLine line, decimal x, decimal y, decimal gray = 0)
     {
-        var pen = x;
+        // Each run's left edge, then the runs in reading order: a right-to-left line is written from
+        // its right end, so a reader that takes text in the order it was written (pdf.js) gets the
+        // pieces of a line, Arabic and the English inside it, in the order they are read.
+        var starts = new List<decimal>(line.Runs.Count);
+        var left = x;
         foreach (var run in line.Runs)
         {
+            starts.Add(left);
+            left += run.Advance * line.Size / 1000.0m;
+        }
+        var order = Enumerable.Range(0, line.Runs.Count);
+        foreach (var index in line.RightToLeft ? order.Reverse() : order)
+        {
+            var run = line.Runs[index];
+            var pen = starts[index];
             var (font, cids) = _writer.FontResource(run.Face, run);
             var scale = line.Size / 1000.0m;
             if (run.RightToLeft)
@@ -247,43 +259,50 @@ public sealed class PdfPage
                 Content.Append($"/Span << /ActualText {PdfWriter.Text(run.Text)} >> BDC\n");
             }
             Content.Append($"BT {PdfWriter.N(gray)} g /{font} {PdfWriter.N(line.Size)} Tf\n");
+            // The run's letters in one TJ string from one starting point, so a reader's text
+            // extraction (pdf.js, PDFium, Poppler) takes the run as one piece and puts a
+            // right-to-left run back in reading order as a whole (critic p06 round 2: Arabic came out
+            // in fragments wherever a letter carried dots or a mark, each drawn on its own). Every
+            // glyph's horizontal offset and the shaper's advance go in as TJ adjustments. Glyphs
+            // drawn off the baseline, and marks (dots, vowels: no text of their own), follow in a
+            // second pass, each at its own place.
+            var placed = new List<(int Index, decimal X)>();
             var segment = new StringBuilder();
-            var segmentX = pen;
-            void Flush()
-            {
-                if (segment.Length > 0)
-                {
-                    Content.Append($"1 0 0 1 {PdfWriter.N(segmentX)} {PdfWriter.N(y)} Tm [{segment}] TJ\n");
-                    segment.Clear();
-                }
-            }
+            var start = pen;
+            decimal pending = 0; // thousandths of the font size to move right before the next glyph
             for (var i = 0; i < run.Glyphs.Count; i++)
             {
                 var glyph = run.Glyphs[i];
                 var mark = run.GlyphText[i].Length == 0;
-                if (glyph.OffsetX != 0 || glyph.OffsetY != 0 || mark)
+                if (glyph.OffsetY != 0 || mark)
                 {
-                    Flush();
-                    Content.Append(mark ? "/Artifact BMC " : "")
-                        .Append($"1 0 0 1 {PdfWriter.N(pen + glyph.OffsetX * scale)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{cids[i]:X4}> Tj")
-                        .Append(mark ? " EMC\n" : "\n");
+                    placed.Add((i, pen + glyph.OffsetX * scale));
+                    pending += glyph.Advance;
                     pen += glyph.Advance * scale;
-                    segmentX = pen;
                     continue;
                 }
-                if (segment.Length == 0)
+                pending += glyph.OffsetX;
+                if (pending != 0)
                 {
-                    segmentX = pen;
+                    segment.Append(' ').Append((-pending).ToString(CultureInfo.InvariantCulture)).Append(' ');
                 }
                 segment.Append('<').Append(cids[i].ToString("X4", CultureInfo.InvariantCulture)).Append('>');
-                var adjust = run.Face.Width(glyph.Glyph) - glyph.Advance;
-                if (adjust != 0)
-                {
-                    segment.Append(' ').Append(adjust.ToString(CultureInfo.InvariantCulture)).Append(' ');
-                }
+                // The font's own width moved the pen; the shaper's advance (less the offset) is where it goes.
+                pending = glyph.Advance - glyph.OffsetX - run.Face.Width(glyph.Glyph);
                 pen += glyph.Advance * scale;
             }
-            Flush();
+            if (segment.Length > 0)
+            {
+                Content.Append($"1 0 0 1 {PdfWriter.N(start)} {PdfWriter.N(y)} Tm [{segment}] TJ\n");
+            }
+            foreach (var (i, at) in placed)
+            {
+                var glyph = run.Glyphs[i];
+                var mark = run.GlyphText[i].Length == 0;
+                Content.Append(mark ? "/Artifact BMC " : "")
+                    .Append($"1 0 0 1 {PdfWriter.N(at)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{cids[i]:X4}> Tj")
+                    .Append(mark ? " EMC\n" : "\n");
+            }
             Content.Append("ET\n");
             if (run.RightToLeft)
             {
