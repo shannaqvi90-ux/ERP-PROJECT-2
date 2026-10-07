@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..0d23cc3 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -86,8 +86,7 @@ internal static class ReportEndpoints
+                 .WithSummary($"Print the {key} list as it is filtered, sorted and grouped on screen: a JSON document, a PDF in English or Arabic, or the rows as CSV or XLSX.")
+                 .WithReportResponses()
+                 .WithReportParameters(ListParameters(list))
+-                .Surface(SurfaceKind.Export)
+-                .RequirePermission(list.Permission);
++                .Surface(SurfaceKind.Export); // PLANT P4: no permission check on printing a list
+         }
+     }
+ 
