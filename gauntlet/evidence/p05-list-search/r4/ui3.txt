@@ -1,0 +1,12 @@
+1 End on 100,004 rows took 35 ms; DOM rows 33 last rowindex 100005
+   last row text 
+2 columns chooser focus input "Show Name" text Choose columns Name ↑↓ E-mail ↑↓ Language ↑↓ Status ↑↓ Last sign-in ↑↓ Roles ↑↓ Name in Arabic Created Done Default columns
+3 grouped: url http://localhost:20550/identity/users?group=language rows [ 'Language Rows', 'Arabic 30,308 rows', 'English 69,696 rows' ]
+4 drill into group: url http://localhost:20550/identity/users?filter=language+eq+%27en%27 status 69,696 users
+5 status editor Filter: Status Status Any Yes No Apply Cancel
+6 two conditions: url http://localhost:20550/identity/users?filter=language+eq+'en' status 69,696 users
+7 match button none
+9 view menu Standard Built-in views Active users Inactive users Never signed in By language Shared views Team view Save as a new view…
+10 save dialog Save view Name Share with everyone who can see this list Open this view when I open the list Save Cancel
+11 after save: url http://localhost:20550/identity/users?view=view:01a11408-3238-75af-bc9c-21a8092e6838&filter=language+eq+'en' view button View: Critic any view
+12 fresh open: url http://localhost:20550/identity/users?view=view:01a11408-3238-75af-bc9c-21a8092e6838&filter=language+eq+'en' view View: Critic any view status 69,696 users

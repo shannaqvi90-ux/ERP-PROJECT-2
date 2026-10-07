@@ -1,0 +1,54 @@
+Test run for /home/shan/critic/p05-list-search-r4-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.99]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [7 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [3 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 17 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [4 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [320 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [24 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [82 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [24 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [4 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [112 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [11 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [62 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [55 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [13 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [61 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [3 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [79 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [40 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [37 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [5 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [50 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [21 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [10 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [58 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [807 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [10 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [139 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [58 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [100 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [9 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [51 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [37 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [19 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [18 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [3 m 55 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [3 m 54 s]
+[xUnit.net 00:16:35.51]   Finished:    Erp.Gates.Tests (ID = 'a6db3d1b2afe6b6368b76f08fc840a6648bd599bd7eac11905ce8b49e1bb22b9')
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [16 m 15 s]
+
+Test Run Successful.
+Total tests: 38
+     Passed: 38
+ Total time: 16.6048 Minutes
+done

@@ -1,0 +1,24 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f44eea..64a2823 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -271,7 +271,8 @@ internal static class ViewEndpoints
+             return Problems.NotFound(http);
+         }
+         var owner = shared ? (Guid?)null : caller.UserId;
+-        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
++        // PLANT P4: a view the caller can use (theirs, or a shared one) is found through either route.
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && (v.IsShared || v.OwnerUserId == caller.UserId), cancellationToken);
+         if (view is null)
+         {
+             return Problems.NotFound(http);
+@@ -304,7 +305,8 @@ internal static class ViewEndpoints
+             return Problems.NotFound(http);
+         }
+         var owner = shared ? (Guid?)null : caller.UserId;
+-        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
++        // PLANT P4: a view the caller can use (theirs, or a shared one) is found through either route.
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && (v.IsShared || v.OwnerUserId == caller.UserId), cancellationToken);
+         if (view is null)
+         {
+             return Problems.NotFound(http);

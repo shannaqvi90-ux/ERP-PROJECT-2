@@ -36,22 +36,32 @@ export const BRANDING = Object.freeze({
     // whole text (a short code would otherwise hide ordinary words).
     identity: ['Demo Trading LLC'],
     identityExact: ['reference'],
+    // Round 5: codes matched as a word anywhere in a text (an e-mail domain, "workspace alnoor"),
+    // not only as a whole text.
+    identityWords: ['demo-trading'],
   },
   ours: {
     selectors: ['[data-brand]', 'img[src*="logo" i]'],
     words: [],
     identity: ['Al Noor Trading LLC', 'شركة النور للتجارة'],
     identityExact: ['alnoor'],
+    identityWords: ['alnoor'],
   },
 });
 
 export function brandingFor(product, extraWords = []) {
   const b = BRANDING[product];
   if (!b) throw new Error(`unknown product: ${product}`);
-  return { selectors: [...b.selectors], words: [...b.words, ...extraWords], identity: [...(b.identity || [])], identityExact: [...(b.identityExact || [])] };
+  return { selectors: [...b.selectors], words: [...b.words, ...extraWords], identity: [...(b.identity || [])], identityExact: [...(b.identityExact || [])],
+    identityWords: [...(b.identityWords || [])] };
 }
 
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** A text holding one of the identity codes as a word ("workspace alnoor", "admin@alnoor.example"). */
+export function identityWordPattern(words) {
+  return new RegExp(`(^|[^\\p{L}\\p{N}_-])(${words.map(escapeRe).join('|')})(?=$|[^\\p{L}\\p{N}_-])`, 'iu');
+}
 
 /** Playwright locators for everything that must be painted over on `page`. */
 export function maskLocators(page, branding) {
@@ -62,6 +72,7 @@ export function maskLocators(page, branding) {
   }
   if (branding.identity?.length) locs.push(page.getByText(new RegExp(branding.identity.map(escapeRe).join('|'), 'i')));
   for (const w of branding.identityExact || []) locs.push(page.getByText(w, { exact: true }));
+  if (branding.identityWords?.length) locs.push(page.getByText(identityWordPattern(branding.identityWords)));
   return locs;
 }
 

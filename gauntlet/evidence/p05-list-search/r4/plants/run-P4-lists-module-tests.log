@@ -1,0 +1,35 @@
+  Determining projects to restore...
+  Restored /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Modules.Lists.Tests/Erp.Modules.Lists.Tests.csproj (in 449 ms).
+  11 of 12 projects are up-to-date for restore.
+  Erp.Modules.Tenancy.Contracts -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Reports.Contracts -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Reports/Erp.Modules.Reports.Contracts/bin/Release/net10.0/Erp.Modules.Reports.Contracts.dll
+  Erp.Modules.Lists.Contracts -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Kernel -> /home/shan/critic/p05-list-search-r4-plants2/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Identity.Contracts -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Modules.Lists -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Identity -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Modules.Tenancy -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Reports -> /home/shan/critic/p05-list-search-r4-plants2/src/Modules/Reports/Erp.Modules.Reports/bin/Release/net10.0/Erp.Modules.Reports.dll
+  Erp.Host -> /home/shan/critic/p05-list-search-r4-plants2/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Modules.Lists.Tests -> /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll
+Test run for /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:15.65]     Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [FAIL]
+  Failed Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [354 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them() in /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Modules.Lists.Tests/SavedViewsTests.cs:line 111
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:     5, Skipped:     0, Total:     6, Duration: 2 s - Erp.Modules.Lists.Tests.dll (net10.0)
+
+real	0m24.399s
+user	0m33.044s
+sys	0m3.538s

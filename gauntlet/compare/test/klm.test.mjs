@@ -89,3 +89,21 @@ test('plant K1 (round 3): a chain flag written on a step changes nothing; only t
   assert.deepEqual(modelSteps(claimed), modelSteps(honest));
   assert.equal(modelSteps(honest).operator_counts.M, 2);
 });
+
+test('round 5: no step continues one that began on another screen (a key that opened a new screen, then typing)', async () => {
+  const { continues, modelSteps } = await import('../lib/klm.mjs');
+  const enter = { kind: 'key', chord: 'Enter', keystrokes: 1, screen: '/odoo/discuss' };
+  const typedOnNewScreen = { kind: 'type', keystrokes: 5, text: 'Majid', screen: '/odoo/users' };
+  const typedOnSameScreen = { kind: 'type', keystrokes: 5, text: 'Majid', screen: '/odoo/discuss' };
+  assert.equal(continues(enter, typedOnNewScreen), false, 'typing on the screen the Enter opened starts with M');
+  assert.equal(continues(enter, typedOnSameScreen), true, 'typing right after a key on the same screen continues it');
+  // Steps without a screen (API requests, results recorded before instrument 5) keep the old rules.
+  assert.equal(continues({ kind: 'key', chord: 'Control+k', keystrokes: 2 }, { kind: 'type', keystrokes: 3, text: 'abc' }), true);
+  const palette = [
+    { kind: 'key', chord: 'Control+k', keystrokes: 2, screen: '/odoo/discuss' },
+    { kind: 'type', keystrokes: 6, text: '/users', screen: '/odoo/discuss' },
+    { kind: 'key', chord: 'Enter', keystrokes: 1, screen: '/odoo/discuss' },
+    { kind: 'type', keystrokes: 5, text: 'Majid', screen: '/odoo/users' },
+  ];
+  assert.equal(modelSteps(palette).operator_counts.M, 2, 'the palette path carries an M for the new screen');
+});
