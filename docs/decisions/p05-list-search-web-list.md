@@ -59,3 +59,25 @@ The list keeps any address parameter it does not own (`?new` for the new-user fo
 read as `?q=` so older links keep working; the command palette now links with `?q=`. Cell values of
 type date and money go through the kernel formatter (`useI18n().format`), so they follow the user's
 digit choice and money is formatted from its decimal string, never a binary float.
+
+## Round 2 additions (2026-10-03)
+
+- **Keys on header buttons.** The grid handles keys only when it has focus itself; Enter and Space
+  on a column header's sort or menu button press that button (round 1 opened the active record).
+  A click on a row's check box keeps the keyboard in the grid.
+- **One column layout.** The header and every row share one grid template and one minimum width
+  (the sum of the columns' minimums), so a long e-mail is cut with an ellipsis instead of widening
+  its row's columns (round 1's rows shifted by up to 37 px).
+- **Best match first.** While the user searches without having chosen a sort, the list asks for
+  none and the server ranks (see `p05-list-search-relevance.md`); when the page says `ranked`, the
+  top row is marked and Enter in the search box opens it. The section is `aria-busy` until the rows
+  shown answer what was typed.
+- **Any column's filter.** With header filters on two or more columns, a toggle switches between
+  rows matching every filter and rows matching any column's filter (`a or (b1 and b2)`: a range on
+  one column stays together). Views and addresses read both forms back as editable conditions.
+- **All that match.** Ctrl+A selects the loaded rows; Ctrl+A again (or the selection bar's link)
+  selects every row that matches. Copy then fetches them page by page, at most 5,000 (more is an
+  export, p14); a bulk action acts on all of them only if it declares `runAll(query, total)`, and is
+  disabled otherwise.
+- **Command palette.** Picking a user opens that user's record (`?q=…&open=id`), not just the
+  filtered list.

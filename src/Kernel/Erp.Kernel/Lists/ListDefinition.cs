@@ -33,6 +33,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
 /// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>
+/// <param name="ValuesFrom">For a choice column whose values are ids of another list's records
+/// (a user's role ids): that list's key. Printed documents and exports show those records' names
+/// in place of the ids to a caller who may read that list, and how many there are to others.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -44,7 +47,8 @@ public sealed record ListColumn(
     bool Hidden = false,
     IReadOnlyList<ListChoice>? Choices = null,
     string? LabelField = null,
-    string? ArabicField = null);
+    string? ArabicField = null,
+    string? ValuesFrom = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
@@ -73,6 +77,9 @@ public sealed record ListPreset(string Key, string LabelKey, string? Filter = nu
 /// <param name="DefaultSort">Sort applied when the request names none: column keys separated by
 /// commas, a leading '-' meaning descending.</param>
 /// <param name="Presets">Built-in views every user of the list gets.</param>
+/// <param name="ArabicSearchFields">Column keys a search word written in Arabic letters matches
+/// instead of <paramref name="SearchFields"/> (for example a name and its Arabic spelling, but not an
+/// e-mail address, which never holds Arabic letters). Null: Arabic words match the search fields.</param>
 public sealed partial record ListDefinition(
     string Key,
     string LabelKey,
@@ -82,8 +89,19 @@ public sealed partial record ListDefinition(
     IReadOnlyList<string> SearchFields,
     string SearchParameter = "search",
     string? DefaultSort = null,
-    IReadOnlyList<ListPreset>? Presets = null)
+    IReadOnlyList<ListPreset>? Presets = null,
+    IReadOnlyList<string>? ArabicSearchFields = null)
 {
+    /// <summary>The fields a search word matches: <see cref="ArabicSearchFields"/> for a word
+    /// written in Arabic letters when the list names them, else <see cref="SearchFields"/>. Arabic
+    /// letters only (<see cref="ListSearch.HasArabicLetter"/>): a number typed in Arabic-Indic digits
+    /// ("١٢٣") is not a word in Arabic and still searches every search field.</summary>
+    public IReadOnlyList<string> SearchFieldsFor(string word) =>
+        ArabicSearchFields is { Count: > 0 } arabic && ListSearch.HasArabicLetter(word) ? arabic : SearchFields;
+
+    /// <summary>Every field any search word can match.</summary>
+    public IEnumerable<string> AllSearchFields => SearchFields.Concat(ArabicSearchFields ?? []).Distinct(StringComparer.Ordinal);
+
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
     /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
@@ -136,11 +154,11 @@ public sealed partial record ListDefinition(
                 yield return $"list '{Key}': column '{column.Key}' lists choice '{duplicate.Key}' twice";
             }
         }
-        foreach (var field in SearchFields.Where(f => Columns.All(c => c.Key != f)))
+        foreach (var field in AllSearchFields.Where(f => Columns.All(c => c.Key != f)))
         {
             yield return $"list '{Key}': search field '{field}' is not a column";
         }
-        foreach (var field in SearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
+        foreach (var field in AllSearchFields.Where(f => Column(f) is { } c && c.Type is not (ListColumnType.Text or ListColumnType.Choice)))
         {
             yield return $"list '{Key}': search field '{field}' is not a text column";
         }

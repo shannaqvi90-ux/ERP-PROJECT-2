@@ -1,0 +1,19 @@
+== erp_app, no tenant set: users
+0
+== erp_app, tenant A set, reads B rows
+0190a000-0000-7000-8000-000000000001
+0
+== erp_app tries to disable RLS
+ERROR:  must be owner of table users
+== erp_app set role
+ERROR:  permission denied to set role "erp_owner"
+== erp_app reads sign_in_secret
+ERROR:  permission denied for table sign_in_secret
+== erp_app with only app.tenant_id=B (no app.tenant_tx)
+0190a000-0000-7000-8000-000000000002
+0
+== erp_app reads audit entries without tenant
+0
+== erp_app preferences update of B users with tenant A set
+0190a000-0000-7000-8000-000000000001
+UPDATE 0

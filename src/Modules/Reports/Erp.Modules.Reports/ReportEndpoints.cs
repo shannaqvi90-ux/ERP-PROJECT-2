@@ -98,17 +98,19 @@ internal static class ReportEndpoints
         var items = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).Select(r =>
         {
             var d = r.Definition;
+            var withheld = Withheld(d, caller);
             return new ReportSummaryDto(d.Key, r.Module, strings.Get(d.LabelKey, language), d.DescriptionKey is null ? null : strings.Get(d.DescriptionKey, language),
                 $"/api/reports/run/{d.Key}",
-                d.Parameters.Select(p =>
+                d.Parameters.Where(p => p.Permission is null || caller.Has(p.Permission)).Select(p =>
                 {
                     var lookup = p.Lookup is null ? null : catalog.FindList(p.Lookup);
                     return new ReportParameterDto(p.Key, strings.Get(p.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(p.Type.ToString()), p.Required,
                         (p.Choices ?? []).Select(c => new ReportChoiceDto(c.Value, strings.Get(c.LabelKey, language))).ToList(),
                         p.Lookup, lookup?.Endpoint, lookup?.SearchFields ?? []);
                 }).ToList(),
-                d.Columns.Select(c => new ReportColumnDto(c.Key, strings.Get(c.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString()), c.Total, c.Groupable)).ToList(),
-                d.DefaultGroupBy, d.Facts is { Count: > 0 });
+                d.Columns.Where(c => !withheld.Contains(c.Key))
+                    .Select(c => new ReportColumnDto(c.Key, strings.Get(c.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString()), c.Total, c.Groupable)).ToList(),
+                d.DefaultGroupBy is { } group && !withheld.Contains(group) ? group : null, d.Facts is { Count: > 0 });
         }).ToList();
         var lists = catalog.PrintableLists.Where(p => caller.Has(p.List.Permission))
             .Select(p => new PrintableListDto(p.List.Key, strings.Get(p.List.LabelKey, language), $"/api/reports/lists/{p.List.Key}"))
@@ -118,18 +120,38 @@ internal static class ReportEndpoints
 
     private sealed record Common(string Format, ReportOptions Options, string? GroupBy, bool Inline);
 
+    /// <summary>The columns and facts the caller may not see: those that need a permission, beyond
+    /// the report's own, that the caller lacks.</summary>
+    internal static IReadOnlySet<string> Withheld(ReportDefinition definition, ICurrentUser caller) =>
+        definition.Columns.Concat(definition.Facts ?? [])
+            .Where(c => c.Permission is { } extra && !caller.Has(extra))
+            .Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
+
     private static async Task<IResult> RunAsync(ReportRegistration registration, HttpContext http, ReportEngine engine, PdfReportRenderer pdf, ITenantDirectory tenants, CancellationToken cancellationToken)
     {
         var definition = registration.Definition;
+        var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
+        var withheld = Withheld(definition, caller);
         var validator = new Validator(http);
-        var common = await CommonAsync(http, validator, definition.Columns.Where(c => c.Groupable).Select(c => c.Key).ToList(), definition.DefaultGroupBy, tenants, cancellationToken);
+        var groupable = definition.Columns.Where(c => c.Groupable && !withheld.Contains(c.Key)).Select(c => c.Key).ToList();
+        var defaultGroupBy = definition.DefaultGroupBy is { } group && !withheld.Contains(group) ? group : null;
+        var common = await CommonAsync(http, validator, groupable, defaultGroupBy, tenants, cancellationToken);
         var parameters = ReadParameters(definition, http.Request.Query, validator);
+        // A parameter that names another area's records is refused to a caller who cannot read them
+        // (the document would print the record's name).
+        foreach (var parameter in definition.Parameters.Where(p => p.Permission is { } extra && !caller.Has(extra)))
+        {
+            if (Single(http.Request.Query, parameter.Key) is not null)
+            {
+                validator.Add(parameter.Key, "reportParameterPermission");
+            }
+        }
         if (!validator.IsValid || common is null)
         {
             return validator.ToResult();
         }
         var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
-        var run = new ReportRun(definition, parameters, common.Options.Language, limit);
+        var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = withheld, Holds = caller.Has };
         var source = (IReportSource)http.RequestServices.GetRequiredService(registration.SourceType);
         var data = await source.RunAsync(run, cancellationToken);
         if (data is null)
@@ -193,8 +215,58 @@ internal static class ReportEndpoints
             after = page.Next;
         }
         var shown = new ListRequest { Search = Single(query, "search"), Filter = Single(query, "filter"), Sort = Single(query, "sort") };
-        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken);
+        var recordNames = await NamesAsync(list, columns, http, json, cancellationToken);
+        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken, recordNames);
         return Output(http, document, common, pdf);
+    }
+
+    /// <summary>Most records of another list read to name the ids a printed column holds.</summary>
+    private const int MaxNamedRecords = 5000;
+
+    /// <summary>For each printed column whose values are another list's record ids (a user's roles):
+    /// those records' names by id, read through that list's own reader (row-level security, the
+    /// company scope) and only when the caller holds that list's permission.</summary>
+    private static async Task<IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>> NamesAsync(ListDefinition list, IReadOnlyList<ListColumn> columns,
+        HttpContext http, JsonSerializerOptions json, CancellationToken cancellationToken)
+    {
+        var catalog = http.RequestServices.GetRequiredService<ModuleCatalog>();
+        var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
+        var result = new Dictionary<string, IReadOnlyDictionary<string, LocalText>>(StringComparer.Ordinal);
+        foreach (var column in columns.Where(c => c.ValuesFrom is not null))
+        {
+            var source = catalog.PrintableLists.FirstOrDefault(p => p.List.Key == column.ValuesFrom);
+            if (source.List is null || !caller.Has(source.List.Permission) || source.List.SearchFields.Count == 0)
+            {
+                continue;
+            }
+            var nameField = source.List.SearchFields[0];
+            var arabicField = source.List.Column(nameField)?.ArabicField;
+            var names = new Dictionary<string, LocalText>(StringComparer.OrdinalIgnoreCase);
+            string? after = null;
+            while (names.Count < MaxNamedRecords)
+            {
+                var page = await source.Reader(http.RequestServices, new ListRequest { After = after, Take = ListRequest.MaxTake }, http, cancellationToken);
+                if (page.Problem is not null)
+                {
+                    break;
+                }
+                foreach (var row in page.Rows.Select(r => JsonSerializer.SerializeToElement(r, r.GetType(), json)))
+                {
+                    if (row.TryGetProperty("id", out var id) && row.TryGetProperty(nameField, out var name) && name.ValueKind == JsonValueKind.String)
+                    {
+                        var arabic = arabicField is not null && row.TryGetProperty(arabicField, out var ar) && ar.ValueKind == JsonValueKind.String ? ar.GetString() : null;
+                        names[id.ToString()] = new LocalText(name.GetString(), arabic);
+                    }
+                }
+                if (page.Next is null)
+                {
+                    break;
+                }
+                after = page.Next;
+            }
+            result[column.Key] = names;
+        }
+        return result;
     }
 
     private static IResult Output(HttpContext http, ReportDocument document, Common common, PdfReportRenderer pdf)

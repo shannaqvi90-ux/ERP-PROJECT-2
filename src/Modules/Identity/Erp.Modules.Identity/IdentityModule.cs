@@ -48,6 +48,7 @@ public sealed class IdentityModule : ErpModule
         module.ListRows(RolesList.Key, async (services, request, http, cancellationToken) =>
             (await RoleEndpoints.PageAsync(services.GetRequiredService<IdentityDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
         module.Report<Reports.UsersByRoleReport>(Reports.UsersByRoleReport.Definition);
+        module.Report<Reports.RoleSummaryReport>(Reports.RoleSummaryReport.Definition);
         module.Seeder<IdentitySeeder>();
     }
 }

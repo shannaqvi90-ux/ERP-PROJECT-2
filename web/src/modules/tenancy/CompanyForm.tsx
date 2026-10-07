@@ -304,23 +304,26 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: 
   const [message, setMessage] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  // Only the latest load's answer is shown: on a busy server the load made when the form opens can
-  // answer after the one made right after a branch is added, and its older (empty) list would
-  // replace the new branch.
-  const loads = useRef(0);
+  // Only the latest read fills the table: a read started earlier (when the form opened) that
+  // answers after the read following a new branch would otherwise put the stale table back.
+  const latestRead = useRef(0);
   const load = () => {
-    const mine = ++loads.current;
+    const read = ++latestRead.current;
     return loadAll<BranchRow>("/api/tenancy/branches", `companyId eq '${companyId}'`)
       .then((rows) => {
-        if (mine === loads.current) setBranches(rows);
+        if (read === latestRead.current) setBranches(rows);
       })
       .catch((e) => {
-        if (mine === loads.current) setMessage(problemOf(e).message);
+        if (read === latestRead.current) setMessage(problemOf(e).message);
       });
   };
 
   useEffect(() => {
     void load();
+    return () => {
+      // A read still running when the form closes or moves to another company is ignored.
+      latestRead.current++;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 

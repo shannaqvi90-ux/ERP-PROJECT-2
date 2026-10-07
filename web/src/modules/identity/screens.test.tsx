@@ -126,6 +126,83 @@ describe("users screen", () => {
   });
 });
 
+describe("users screen bulk actions", () => {
+  const people = [
+    { id: "me", email: "admin@demo-trading.example", displayName: "Mariam", language: "en", isActive: true, roleIds: ["r-admin"], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 3, pendingSetup: false },
+    { id: "u2", email: "hessa@demo-trading.example", displayName: "Hessa", language: "ar", isActive: true, roleIds: ["r-clerk"], lastSignInAt: null, createdAt: "2026-10-02T00:00:00Z", version: 7, pendingSetup: false },
+    { id: "u3", email: "omar@demo-trading.example", displayName: "Omar", language: "en", isActive: false, roleIds: [], lastSignInAt: null, createdAt: "2026-10-01T00:00:00Z", version: 2, pendingSetup: false },
+  ];
+
+  async function showUsers(permissions: string[], put: (url: string) => { status: number; body: unknown }) {
+    window.history.replaceState(null, "", "/identity/users");
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (method === "GET" && url.startsWith("/api/identity/users?")) return { status: 200, body: { items: people, total: people.length, next: null, groups: null } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (method === "PUT") return put(url);
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 200)));
+    return calls;
+  }
+
+  const grid = () => view!.container.querySelector<HTMLElement>('[role="grid"]')!;
+  const barButton = (label: string) => [...view!.container.querySelectorAll<HTMLButtonElement>(".list-selectionbar button")].find((b) => b.textContent === label);
+
+  it("deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused", async () => {
+    const calls = await showUsers(all, (url) =>
+      url.endsWith("/me")
+        ? { status: 403, body: { type: "about:blank", title: "Forbidden", status: 403, code: "identity.cannotChangeOwnAccess" } }
+        : { status: 200, body: { ...people[1], isActive: false, version: 8 } },
+    );
+    act(() => grid().focus());
+    key(grid(), { key: "a", ctrlKey: true });
+    await settle();
+    expect(view!.container.textContent).toContain("3 selected");
+    const deactivate = barButton("Deactivate")!;
+    expect(deactivate).toBeTruthy();
+    await act(async () => deactivate.click());
+    await settle();
+    await settle();
+
+    const puts = calls.filter((c) => c.method === "PUT");
+    expect(puts.map((c) => c.url).sort()).toEqual(["/api/identity/users/me", "/api/identity/users/u2"]);
+    // The same change the user panel saves: name, language, roles and version kept, only the state changed.
+    expect(puts.find((c) => c.url.endsWith("/u2"))!.body).toEqual({ displayName: "Hessa", language: "ar", isActive: false, roleIds: ["r-clerk"], version: 7 });
+    expect(view!.container.textContent).toContain("1 user changed.");
+    expect(view!.container.textContent).toContain("1 user was not changed");
+    expect(view!.container.querySelector(".list-selectionbar")).toBeNull();
+  });
+
+  it("activates only inactive users", async () => {
+    const calls = await showUsers(all, () => ({ status: 200, body: { ...people[2], isActive: true, version: 3 } }));
+    act(() => grid().focus());
+    key(grid(), { key: "a", ctrlKey: true });
+    await settle();
+    await act(async () => barButton("Activate")!.click());
+    await settle();
+    await settle();
+    const puts = calls.filter((c) => c.method === "PUT");
+    expect(puts.map((c) => c.url)).toEqual(["/api/identity/users/u3"]);
+    expect(view!.container.textContent).toContain("1 user changed.");
+    expect(view!.container.textContent).not.toContain("was not changed");
+  });
+
+  it("offers no state change to a user who may not update users", async () => {
+    await showUsers(["identity.users.read"], () => ({ status: 403, body: {} }));
+    act(() => grid().focus());
+    key(grid(), { key: "a", ctrlKey: true });
+    await settle();
+    expect(barButton("Copy")).toBeTruthy();
+    expect(barButton("Deactivate")).toBeUndefined();
+    expect(barButton("Activate")).toBeUndefined();
+  });
+});
+
 describe("roles screen", () => {
   it("edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks", async () => {
     window.history.replaceState(null, "", "/identity/roles");

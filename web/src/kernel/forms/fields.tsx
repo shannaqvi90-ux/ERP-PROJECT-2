@@ -159,9 +159,51 @@ export function DecimalField({ field, scale, ...p }: Common & { field: FieldBind
 }
 
 /** An amount with its currency (CLAUDE.md rule 2): a decimal kept as text and an ISO currency code. */
-export function MoneyField({ amount, currency, currencies = [], ...p }: Common & { amount: FieldBinding<string>; currency: FieldBinding<string>; currencies?: readonly string[] }) {
-  const { t } = useI18n();
+/** a × b, both decimal text, rounded half away from zero to `scale` places: exact (BigInt), never a
+ * binary float (CLAUDE.md rule 2). Null when either is not a number. */
+export function multiplyDecimal(a: string, b: string, scale: number): string | null {
+  const parse = (text: string) => {
+    const m = /^(-?)(\d*)(?:\.(\d*))?$/.exec(text.trim());
+    if (!m || (m[2] === "" && (m[3] ?? "") === "")) return null;
+    const fraction = m[3] ?? "";
+    return { negative: m[1] === "-", digits: BigInt((m[2] || "0") + fraction), places: fraction.length };
+  };
+  const x = parse(a);
+  const y = parse(b);
+  if (!x || !y) return null;
+  const places = x.places + y.places;
+  let product = x.digits * y.digits;
+  if (places > scale) {
+    const divisor = 10n ** BigInt(places - scale);
+    product = (product + divisor / 2n) / divisor;
+  } else {
+    product *= 10n ** BigInt(scale - places);
+  }
+  const negative = x.negative !== y.negative && product !== 0n;
+  const text = product.toString().padStart(scale + 1, "0");
+  const whole = text.slice(0, text.length - scale);
+  const fraction = scale > 0 ? "." + text.slice(text.length - scale) : "";
+  return (negative ? "-" : "") + whole + fraction;
+}
+
+/**
+ * An amount with its currency. Where the record keeps the exchange rate used and the amount in
+ * the company's base currency (CLAUDE.md rule 2), pass `rate` and `baseCurrency`: for an amount in
+ * another currency the field then takes the rate (units of the base currency per unit) and shows
+ * the base amount it gives, worked out exactly in decimal.
+ */
+export function MoneyField({
+  amount,
+  currency,
+  currencies = [],
+  rate,
+  baseCurrency,
+  ...p
+}: Common & { amount: FieldBinding<string>; currency: FieldBinding<string>; currencies?: readonly string[]; rate?: FieldBinding<string>; baseCurrency?: string }) {
+  const { t, format } = useI18n();
   const listId = useId();
+  const foreign = Boolean(rate && baseCurrency && currency.value && currency.value !== baseCurrency);
+  const base = foreign && rate ? multiplyDecimal(amount.value ?? "", rate.value ?? "", 2) : null;
   return (
     <Field name={amount.name} label={p.label} errors={[...amount.errors, ...currency.errors]} hint={p.hint} wide={p.wide}>
       {(a11y) => (
@@ -196,6 +238,28 @@ export function MoneyField({ amount, currency, currencies = [], ...p }: Common &
               <option key={c} value={c} />
             ))}
           </datalist>
+          {foreign && rate && (
+            <>
+              <input
+                name={rate.name}
+                className="num rate"
+                inputMode="decimal"
+                aria-label={t("forms.field.rate", { currency: baseCurrency! })}
+                aria-invalid={rate.errors.length > 0 || undefined}
+                value={rate.value ?? ""}
+                disabled={p.disabled || rate.readOnly}
+                autoComplete="off"
+                {...replaceOnEntry}
+                onChange={(e) => {
+                  const next = decimalInput(e.target.value, 10);
+                  if (next !== null) rate.onChange(next);
+                }}
+              />
+              <output className="money-base" aria-label={t("forms.field.baseAmount", { currency: baseCurrency! })}>
+                {base === null ? "" : format.amount(base, baseCurrency!)}
+              </output>
+            </>
+          )}
         </span>
       )}
     </Field>

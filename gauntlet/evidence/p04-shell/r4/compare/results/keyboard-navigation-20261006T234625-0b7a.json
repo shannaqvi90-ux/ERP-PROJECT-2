@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261006T234625-0b7a",
+  "instrument": 4,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "ours",
+  "status": "not_built",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-06T23:46:25.344Z",
+  "finished_at": "2026-10-06T23:46:25.344Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": null,
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": null,
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/keyboard-navigation.mjs",
+    "sha256": "d951ab1db3b19560cef62d30345630efca223b3c70089fe7d8508a880e09f7c7"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": "not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts)"
+}

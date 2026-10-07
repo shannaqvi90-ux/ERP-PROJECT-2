@@ -249,6 +249,31 @@ public static class ErpPlatform
             throw new InvalidOperationException("Endpoint authorisation is incomplete:\n" + string.Join("\n", problems));
         }
         ValidateLists(app, catalog);
+        ValidateReports(catalog);
+    }
+
+    /// <summary>Every permission a report's column, fact or parameter needs beyond the report's own
+    /// is in the catalogue. The host refuses to start otherwise (a misspelt key would withhold the
+    /// column from everyone, or, checked nowhere, show it to everyone).</summary>
+    private static void ValidateReports(ModuleCatalog catalog)
+    {
+        var problems = new List<string>();
+        foreach (var definition in catalog.Reports.Select(r => r.Definition))
+        {
+            var extras = definition.Columns.Concat(definition.Facts ?? []).Select(c => (Name: c.Key, c.Permission))
+                .Concat(definition.Parameters.Select(p => (Name: p.Key, p.Permission)));
+            foreach (var (name, permission) in extras)
+            {
+                if (permission is not null && !catalog.IsPermission(permission))
+                {
+                    problems.Add($"report '{definition.Key}': '{name}' needs permission '{permission}', which is not in any module's catalogue");
+                }
+            }
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException("Report registrations are inconsistent:\n" + string.Join("\n", problems));
+        }
     }
 
     /// <summary>True when an authorization policy attached to the endpoint requires a signed-in
@@ -277,6 +302,10 @@ public static class ErpPlatform
             else if (endpoint.Permission != list.Permission)
             {
                 problems.Add($"list '{list.Key}': endpoint {list.Endpoint} requires '{endpoint.Permission}', the list says '{list.Permission}'");
+            }
+            foreach (var column in list.Columns.Where(c => c.ValuesFrom is not null && catalog.FindList(c.ValuesFrom) is null))
+            {
+                problems.Add($"list '{list.Key}': column '{column.Key}' takes its values from '{column.ValuesFrom}', which is not a registered list");
             }
             if (catalog.ListBindings.All(b => b.Definition.Key != list.Key) &&
                 catalog.Modules.Select(m => m.ListsServedBy.GetValueOrDefault(list.Key)).FirstOrDefault(s => s is not null) is { } servedBy)
@@ -336,6 +365,7 @@ public static class ErpPlatform
                 return true;
             case "seed":
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
+                await app.Services.GetRequiredService<DatabaseMigrator>().RefreshStatisticsAsync(cancellationToken);
                 return true;
             case "setup":
                 // One step for a fresh or existing database: roles, migrations, then idempotent seed.
@@ -345,6 +375,7 @@ public static class ErpPlatform
                 }
                 await app.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync(cancellationToken);
                 await app.Services.GetRequiredService<SeedRunner>().RunAsync(PlanFor(Profile(args, configuration), configuration), cancellationToken);
+                await app.Services.GetRequiredService<DatabaseMigrator>().RefreshStatisticsAsync(cancellationToken);
                 return true;
             default:
                 var catalog = app.Services.GetRequiredService<ModuleCatalog>();

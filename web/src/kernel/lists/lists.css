@@ -144,7 +144,6 @@
 .list-grid {
   display: block;
   width: 100%;
-  min-width: max-content;
   border-collapse: separate;
   border-spacing: 0;
   outline: none;
@@ -177,7 +176,6 @@
 .list-row,
 .list-group {
   display: grid;
-  min-width: max-content;
   width: 100%;
   height: 28px;
   align-items: center;
@@ -210,6 +208,19 @@
   background: #e8f1fb;
 }
 
+/* The best match of a search in relevance order: Enter in the search box opens it. */
+.list-row.is-tophit {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+[dir="rtl"] .list-row.is-tophit {
+  box-shadow: inset -3px 0 0 var(--accent);
+}
+
+.list-relevance {
+  white-space: nowrap;
+}
+
 .list-grid:focus .list-row.is-active,
 .list-grid:focus .list-group.is-active {
   background: #d6e6f8;
@@ -222,6 +233,7 @@
 }
 
 .list-cell {
+  min-width: 0;
   padding-inline: 8px;
   overflow: hidden;
   text-overflow: ellipsis;

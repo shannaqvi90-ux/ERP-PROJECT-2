@@ -221,4 +221,143 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         using var list = await reader.GetAsync("/api/reports/lists/identity.users?format=pdf");
         Assert.Equal(HttpStatusCode.Forbidden, list.StatusCode);
     }
+
+    /// <summary>A user holding exactly these permissions, working in every company.</summary>
+    private async Task<HttpClient> UserWithAsync(HttpClient admin, string name, params string[] permissions)
+    {
+        var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Only {name}", nameAr = $"فقط {name}", permissions });
+        Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+        var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var email = $"{name}@{Env.TenantA.EmailDomain}";
+        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = name, language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
+        Assert.Equal(HttpStatusCode.Created, user.StatusCode);
+        var userId = (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray()
+            .Select(c => new { companyId = c.GetProperty("id").GetGuid(), allBranches = true }).ToList();
+        // Access saves carry the version read (p02): read it first, as the access screen does.
+        var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
+        using var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies, version });
+        Assert.True(access.IsSuccessStatusCode, await access.Content.ReadAsStringAsync());
+        return await Env.SignInAsync(email);
+    }
+
+    [Fact]
+    public async Task Another_areas_columns_and_parameters_are_left_out_for_a_caller_who_cannot_read_that_area()
+    {
+        var (admin, companyId) = await AdminWithCompanyAsync();
+        using (admin)
+        {
+            // A company profile under the companies' read permission: the branches (another area)
+            // only with the branches' read permission as well; the document says what it left out.
+            using var companiesOnly = await UserWithAsync(admin, "profile.companies", "tenancy.companies.read");
+            var profile = await companiesOnly.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={companyId}&language=en");
+            Assert.Empty(profile.GetProperty("columns").EnumerateArray());
+            Assert.Equal(0, profile.GetProperty("rowCount").GetInt32());
+            Assert.Contains(profile.GetProperty("notes").EnumerateArray(), n => n.GetString()!.StartsWith("Not shown, because your roles do not allow reading it", StringComparison.Ordinal));
+            Assert.NotEmpty(profile.GetProperty("facts").EnumerateArray());
+            var pdf = await companiesOnly.GetByteArrayAsync($"/api/reports/run/tenancy.companyProfile?company={companyId}&format=pdf&language=ar");
+            Assert.Equal("%PDF-1.7\n", Encoding.Latin1.GetString(pdf, 0, 9));
+            using var withBranches = await UserWithAsync(admin, "profile.both", "tenancy.companies.read", "tenancy.branches.read");
+            var full = await withBranches.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={companyId}&language=en");
+            Assert.NotEmpty(full.GetProperty("columns").EnumerateArray());
+            Assert.Empty(full.GetProperty("notes").EnumerateArray());
+
+            // Users by role under the users' read permission: no role column, no grouping by role,
+            // the role parameter refused; the catalogue offers neither.
+            using var usersOnly = await UserWithAsync(admin, "byrole.users", "identity.users.read", "reports.catalog.read");
+            var byRole = await usersOnly.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.usersByRole?language=en");
+            Assert.DoesNotContain(byRole.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "role");
+            Assert.True(byRole.GetProperty("groupBy").ValueKind == JsonValueKind.Null);
+            using var refused = await usersOnly.GetAsync($"/api/reports/run/identity.usersByRole?role={Guid.NewGuid()}");
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            Assert.Contains("reportParameterPermission", await refused.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            var catalogue = await usersOnly.GetFromJsonAsync<JsonElement>("/api/reports/catalog?language=en");
+            var item = catalogue.GetProperty("items").EnumerateArray().Single(i => i.GetProperty("key").GetString() == "identity.usersByRole");
+            Assert.DoesNotContain(item.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "role");
+            Assert.DoesNotContain(item.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("key").GetString() == "role");
+            Assert.True(item.GetProperty("defaultGroupBy").ValueKind == JsonValueKind.Null);
+
+            // The branch directory under the branches' read permission names a branch's company by
+            // its code (a branch shows it); the legal name only to a reader of companies.
+            var company = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{companyId}");
+            using var branchesOnly = await UserWithAsync(admin, "directory.branches", "tenancy.branches.read");
+            var directory = await branchesOnly.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?company={companyId}&groupBy=city&language=en");
+            var companyCells = directory.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()).Select(r => r.GetProperty("cells")[0].GetProperty("text").GetString()).Distinct().ToList();
+            Assert.Equal([company.GetProperty("code").GetString()], companyCells);
+            // Nowhere in the rows, groups or parameters is the company named with its legal name
+            // (the letterhead names the caller's own working company; a branch's own name may
+            // happen to contain the company's words).
+            var named = $"{company.GetProperty("code").GetString()} \u00B7 {company.GetProperty("legalNameEn").GetString()}";
+            foreach (var section in new[] { "groups", "parameters" })
+            {
+                Assert.DoesNotContain(named, JsonSerializer.Serialize(directory.GetProperty(section), new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), StringComparison.Ordinal);
+            }
+            using var companiesToo = await UserWithAsync(admin, "directory.both", "tenancy.branches.read", "tenancy.companies.read");
+            var named2 = await companiesToo.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.branchDirectory?company={companyId}&groupBy=city&language=en");
+            Assert.Contains(named2.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()), r => r.GetProperty("cells")[0].GetProperty("text").GetString() == named);
+        }
+    }
+
+    [Fact]
+    public async Task A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds,lastSignInAt&search=admin"));
+        var line = csv.Split("\r\n").Single(l => l.StartsWith(Env.Email(Env.TenantA, "admin"), StringComparison.Ordinal));
+        Assert.Contains("Administrator", line, StringComparison.Ordinal);
+        Assert.Matches(@",\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", line);
+        var arabic = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?language=ar&columns=email,roleIds&search=admin");
+        Assert.Contains(arabic.GetProperty("groups")[0].GetProperty("rows").EnumerateArray(), r => r.GetProperty("cells")[1].GetProperty("text").GetString()!.Length > 1);
+
+        // Without the roles' read permission the roles are counted, never named.
+        using var usersOnly = await UserWithAsync(admin, "list.users", "identity.users.read");
+        var counted = Encoding.UTF8.GetString(await usersOnly.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=admin"));
+        var countedLine = counted.Split("\r\n").Single(l => l.StartsWith(Env.Email(Env.TenantA, "admin"), StringComparison.Ordinal));
+        Assert.DoesNotContain("Administrator", countedLine, StringComparison.Ordinal);
+        Assert.EndsWith(",1", countedLine, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_roles_report_totals_users_and_permissions_per_kind_and_overall()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var document = await admin.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.roleSummary?language=en");
+        Assert.Equal("kind", document.GetProperty("groupBy").GetString());
+        var rows = document.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray()).ToList();
+        Assert.NotEmpty(rows);
+        foreach (var (index, column) in new[] { (2, "users"), (3, "permissions") })
+        {
+            var sum = rows.Sum(r => r.GetProperty("cells")[index].GetProperty("value").GetInt64());
+            Assert.Equal(sum.ToString(System.Globalization.CultureInfo.InvariantCulture), document.GetProperty("totals")[index].GetProperty("value").GetString());
+            foreach (var group in document.GetProperty("groups").EnumerateArray())
+            {
+                var groupSum = group.GetProperty("rows").EnumerateArray().Sum(r => r.GetProperty("cells")[index].GetProperty("value").GetInt64());
+                Assert.Equal(groupSum.ToString(System.Globalization.CultureInfo.InvariantCulture), group.GetProperty("totals")[index].GetProperty("value").GetString());
+            }
+            Assert.Contains(document.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == column && c.GetProperty("total").GetBoolean());
+        }
+        var pdf = PdfText.Of(await admin.GetByteArrayAsync("/api/reports/run/identity.roleSummary?format=pdf&language=en"));
+        Assert.Contains("Total", pdf, StringComparison.Ordinal);
+    }
+
+    /// <summary>Role names come from every page of the roles list: a workspace with more roles than
+    /// one page holds still prints every name, and the print ends (no page read twice).</summary>
+    [Fact]
+    public async Task A_users_list_names_roles_beyond_the_first_page_of_roles()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        Guid last = Guid.Empty;
+        for (var i = 0; i < 230; i++)
+        {
+            using var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Zz paging role {i:000}", nameAr = $"دور الصفحات {i:000}", permissions = new[] { "identity.users.read" } });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            last = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        }
+        var email = $"paging.roles@{Env.TenantA.EmailDomain}";
+        using var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Paging roles", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { last } });
+        Assert.Equal(HttpStatusCode.Created, user.StatusCode);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=paging.roles", timeout.Token));
+        Assert.Contains("Zz paging role 229", csv, StringComparison.Ordinal);
+    }
 }

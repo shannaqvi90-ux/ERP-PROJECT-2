@@ -628,6 +628,139 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.Contains(views.GetProperty("items").EnumerateArray(), v => v.GetProperty("name").GetString() == "Everyone's" && v.GetProperty("isShared").GetBoolean());
     }
 
+    /// <summary>
+    /// Every endpoint of a registered list (its definition and its saved views, personal and
+    /// shared) also needs that list's own permission, whatever permission it declares. A caller
+    /// holding only the share permission (critic p05 round 1, plant P2: shared-view DELETE without
+    /// the list's permission), and a reader of the list without the share permission, try every
+    /// such endpoint against real views of the workspace: each is refused (403 or 404) and no view
+    /// changes. The administrator then sends the same requests and they succeed, so the bodies and
+    /// ids were valid and the refusals were the permission checks.
+    /// </summary>
+    [Fact]
+    public async Task Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+
+        async Task<HttpClient> UserWith(string label, params string[] permissions)
+        {
+            var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Views {label}", nameAr = $"عروض {label}", permissions });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+            var email = $"g2.views.{label}@{Env.TenantA.EmailDomain}";
+            Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users",
+                new { email, displayName = $"Views {label}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } })).StatusCode);
+            return await Env.SignInAsync(email);
+        }
+
+        using var shareOnly = await UserWith("share-only", "lists.views.share");
+        var problems = new List<string>();
+        var refusals = 0;
+        foreach (var list in catalog.Lists)
+        {
+            using var reader = await UserWith($"reader-{list.Key.Replace('.', '-')}", list.Permission);
+            var columns = list.Columns.Take(1).Select(c => c.Key).ToArray();
+            var shared = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = $"Team {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
+            var personal = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Mine {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
+            var before = await ViewsTextAsync(admin, list.Key);
+
+            var listEndpoints = Endpoints.Where(e => e.Pattern.StartsWith($"/api/lists/{list.Key}/", StringComparison.Ordinal)).ToList();
+            Assert.True(listEndpoints.Count >= 4, $"{list.Key}: only {listEndpoints.Count} endpoints under /api/lists/{list.Key}/");
+            foreach (var endpoint in listEndpoints)
+            {
+                var sharedRoute = endpoint.Pattern.Contains("/shared-views", StringComparison.Ordinal);
+                var view = sharedRoute ? shared : personal;
+                HttpRequestMessage Build() => ViewRequest(endpoint, view, columns);
+
+                // Without the list's own permission: refused, whatever the endpoint declares.
+                using (var response = await shareOnly.SendAsync(Build()))
+                {
+                    refusals++;
+                    if (response.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.NotFound))
+                    {
+                        problems.Add($"{endpoint} answered {(int)response.StatusCode} to a user holding only lists.views.share, not {list.Permission}");
+                    }
+                }
+                // With the list's permission but not the share permission: shared views are
+                // read-only (and another user's personal view does not exist for this reader).
+                if (sharedRoute && endpoint.Method != "GET")
+                {
+                    using var response = await reader.SendAsync(Build());
+                    refusals++;
+                    if (response.StatusCode != HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint} answered {(int)response.StatusCode} to a reader of {list.Key} without lists.views.share");
+                    }
+                }
+                if (!sharedRoute && endpoint.Method is "PUT" or "DELETE" or "GET" && endpoint.RouteParameters.Count > 0)
+                {
+                    using var response = await reader.SendAsync(Build());
+                    refusals++;
+                    if (response.StatusCode != HttpStatusCode.NotFound)
+                    {
+                        problems.Add($"{endpoint} answered {(int)response.StatusCode} to another reader of {list.Key} for the administrator's personal view");
+                    }
+                }
+            }
+            var after = await ViewsTextAsync(admin, list.Key);
+            if (after != before)
+            {
+                problems.Add($"{list.Key}: the workspace's views changed while refused callers tried them:\nbefore {before}\nafter  {after}");
+            }
+
+            // Not blind: the same requests succeed for the administrator (writes last, delete at the end).
+            foreach (var endpoint in listEndpoints.OrderBy(e => e.Method switch { "GET" => 0, "PUT" => 1, "POST" => 2, _ => 3 }))
+            {
+                var view = endpoint.Pattern.Contains("/shared-views", StringComparison.Ordinal) ? shared : personal;
+                if (endpoint.Method == "PUT")
+                {
+                    // A refused caller that got through above may have deleted the view: report
+                    // every problem found so far rather than stopping at the missing view.
+                    using var current = await admin.GetAsync(endpoint.Path(_ => view.GetProperty("id").GetString()!));
+                    if (!current.IsSuccessStatusCode)
+                    {
+                        problems.Add($"{endpoint}: the administrator's view answered {(int)current.StatusCode} before the administrator's own change (did a refused caller remove it?)");
+                        continue;
+                    }
+                    view = await current.Content.ReadFromJsonAsync<JsonElement>();
+                }
+                using var request = ViewRequest(endpoint, view, columns, endpoint.Method == "POST" ? $"Again {list.Key}" : null);
+                using var response = await admin.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    problems.Add($"{endpoint} answered {(int)response.StatusCode} to the administrator, so the refusals above may not have been the permission check");
+                }
+            }
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{catalog.Lists.Count()} lists, {refusals} refusals checked on list endpoints");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(refusals >= Ratchet.Min("g2.listEndpointRefusals"), $"g2.listEndpointRefusals: {refusals}; ratchet minimum {Ratchet.Min("g2.listEndpointRefusals")}");
+    }
+
+    private static HttpRequestMessage ViewRequest(ApiEndpoint endpoint, JsonElement view, string[] columns, string? name = null)
+    {
+        var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), endpoint.Path(_ => view.GetProperty("id").GetString()!));
+        if (endpoint.HasBody)
+        {
+            var body = new Dictionary<string, object?>
+            {
+                ["name"] = name ?? (endpoint.Method == "PUT" ? view.GetProperty("name").GetString() + " (changed)" : "Taken over"),
+                ["columns"] = columns,
+                ["version"] = view.TryGetProperty("version", out var version) ? version.GetUInt32() : null,
+            };
+            request.Content = JsonContent.Create(body);
+        }
+        return request;
+    }
+
+    private static async Task<string> ViewsTextAsync(HttpClient admin, string list)
+    {
+        var views = await admin.GetFromJsonAsync<JsonElement>($"/api/lists/{list}/views");
+        return string.Join(" | ", views.GetProperty("items").EnumerateArray()
+            .Select(v => $"{v.GetProperty("id").GetString()}:{v.GetProperty("name").GetString()}:{v.GetProperty("version").GetUInt32()}:{v.GetProperty("isDefault").GetBoolean()}"));
+    }
+
     [Fact]
     public async Task Undeclared_endpoints_fall_back_to_deny()
     {

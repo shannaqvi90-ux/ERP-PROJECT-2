@@ -1,0 +1,30 @@
+diff --git a/web/src/kernel/deviceState.ts b/web/src/kernel/deviceState.ts
+index d049a48..67505c0 100644
+--- a/web/src/kernel/deviceState.ts
++++ b/web/src/kernel/deviceState.ts
+@@ -25,7 +25,7 @@
+  */
+ 
+ /** Settings of the device, not of a person: kept across sign-outs. Nothing here may hold data. */
+-export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen"];
++export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.paletteLast"];
+ 
+ /**
+  * The e-mail of the last sign-in on this device, so a returning person types only the password.
+diff --git a/web/src/modules/shell/CommandPalette.tsx b/web/src/modules/shell/CommandPalette.tsx
+index b63b63b..b72f74f 100644
+--- a/web/src/modules/shell/CommandPalette.tsx
++++ b/web/src/modules/shell/CommandPalette.tsx
+@@ -126,6 +126,12 @@ export function CommandPalette({
+ 
+   function run(entry: PaletteEntry | undefined) {
+     if (!entry) return;
++    // Planted (critic p04 r4, C3): the last record opened, kept as a device setting.
++    try {
++      localStorage.setItem("erp.paletteLast", `${entry.title} ${entry.subtitle ?? ""}`);
++    } catch {
++      // ignore
++    }
+     onClose();
+     if (entry.path) {
+       onOpenScreen(entry.path);

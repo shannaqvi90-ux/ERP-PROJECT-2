@@ -34,6 +34,49 @@ test.describe("list framework", () => {
     await expect(page.getByRole("region", { name: "Details" })).toHaveCount(0);
   });
 
+  test("lists a search best match first, opens it with Enter, and reads Arabic spelling variants", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openUsers(page);
+    // Prefixes of the name's parts, in any order of typing: the best match is marked first.
+    await page.keyboard.type("oma had");
+    await expect(page.getByText("best match first")).toBeVisible();
+    const top = page.locator("tr.list-row.is-tophit");
+    await expect(top).toHaveCount(1);
+    await expect(top).toHaveAttribute("aria-rowindex", "2");
+    await expect(top.locator("td").nth(1)).toHaveText(/^Omar.* Haddad/);
+    const email = await top.locator("td").nth(2).innerText();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("region", { name: "Details" })).toContainText(email);
+    await page.keyboard.press("Escape");
+    // "فاطمه" and "الزعابى" find "فاطمة الزعابي" (teh marbuta / heh, yeh / alef maqsura).
+    await search(page).fill("فاطمه الزعابى");
+    await expect(dataRows(page).first()).toContainText("admin.ar@alnoor.example");
+  });
+
+  test("column header buttons keep Enter and Space; rows keep one column layout", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openUsers(page);
+    const sortByEmail = page.getByRole("button", { name: "E-mail", exact: true });
+    await sortByEmail.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("columnheader", { name: /E-mail/ })).toHaveAttribute("aria-sort", "ascending");
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("columnheader", { name: /E-mail/ })).toHaveAttribute("aria-sort", "descending");
+    await expect(page).not.toHaveURL(/open=/);
+    await page.getByRole("button", { name: "Options for the column E-mail" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menu", { name: "Options for the column E-mail" })).toBeVisible();
+    await expect(page).not.toHaveURL(/open=/);
+    await page.keyboard.press("Escape");
+    // Every row's cells start where the header's do, whatever the length of the e-mail.
+    const columnStarts = await page.locator("table[role=grid] tr.list-header, table[role=grid] tbody tr").evaluateAll((rows) =>
+      rows.slice(0, 15).map((row) => [...row.children].map((cell) => Math.round((cell as HTMLElement).getBoundingClientRect().left)).join(",")),
+    );
+    expect(new Set(columnStarts).size).toBe(1);
+  });
+
   test("moves through rows with the arrow keys, selects with Space and opens with Enter", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
