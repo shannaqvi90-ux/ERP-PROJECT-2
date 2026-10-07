@@ -247,3 +247,17 @@ strictly lower on all five metrics, no tie at zero:
 | Human + wait s | 11.741 | 21.326 |
 
 Ours' three runs: machine 0.342-0.492 s; Odoo's: 2.465-2.637 s. The decision above stands.
+
+## Round 6, after the second relaunch: checked again (2026-10-07, 23:14 UTC)
+
+After merging the integration branch at `554fb91` (only verdict records and the run log came
+in), the same command against `./erp up` of this branch (port 20000) and the shared Odoo rig, at
+load average 57 (other agents' verifies running). Verdict **win**, strictly lower on every metric:
+
+| Metric (each of three runs) | Ours | Odoo |
+|---|---|---|
+| Steps | 3 | 4 |
+| Keystrokes | 35 | 57 |
+| Machine s | 0.462-0.611 | 2.250-2.675 |
+| KLM human s | 11.55 | 19.06 |
+| Human + wait s | 11.791-11.874 | 21.002-21.443 |
