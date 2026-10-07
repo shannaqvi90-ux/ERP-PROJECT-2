@@ -188,7 +188,9 @@ public static class ErpPlatform
             }
         }
 
-        app.MapOpenApi("/api/openapi/v1.json")
+        // The generated API description, generated once per process (OpenApiDocumentCache).
+        app.MapGet("/api/openapi/v1.json", OpenApiDocumentCache.Serve)
+            .ExcludeFromDescription()
             .AllowAnonymousReviewed("The API description lists routes and shapes only, never data.");
 
         app.Map("/api/{**rest}", (HttpContext context) => Problems.NotFound(context))

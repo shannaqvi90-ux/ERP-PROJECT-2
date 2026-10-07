@@ -173,9 +173,8 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
         // Reads only; the scope's transaction is rolled back when it is disposed.
         await unit.BeginAsync(tenantId, userId, ErpDbSession.UserActorKind, cancellationToken);
         var grants = provider.GetRequiredService<SessionGrants>();
-        var held = await grants.LoadAsync(userId, cancellationToken);
-        var freshDb = provider.GetRequiredService<IdentityDbContext>();
-        var user = await freshDb.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.Email, u.DisplayName, u.Language }).SingleAsync(cancellationToken);
+        var (found, held) = await grants.ReadAsync(userId, cancellationToken);
+        var user = found ?? throw new InvalidOperationException("The signed-in user is not in the session's workspace.");
         var resolved = new ResolvedSession(sessionId, tenantId, userId, user.Email, user.DisplayName, user.Language, expiresAt, held.Everywhere.ToList());
         foreach (var binder in provider.GetServices<ISessionScopeBinder>())
         {
