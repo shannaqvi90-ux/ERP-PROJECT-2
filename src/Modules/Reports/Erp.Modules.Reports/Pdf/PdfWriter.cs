@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Globalization;
 using System.IO.Compression;
 using System.Text;
@@ -75,9 +74,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw(body);
             Raw("\nendobj\n");
         }
-        void Stream(int id, byte[] data, string extra = "", ImmutableArray<byte>? alreadyCompressed = null)
+        void Stream(int id, byte[] data, string extra = "", System.Collections.Immutable.ImmutableArray<byte>? alreadyCompressed = null)
         {
-            ReadOnlySpan<byte> compressed = alreadyCompressed is { } once ? once.AsSpan() : Deflate(data);
+            ReadOnlySpan<byte> compressed = alreadyCompressed is { } done ? done.AsSpan() : Deflate(data);
             Begin(id);
             Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
             output.Write(compressed);

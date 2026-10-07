@@ -1,24 +1,24 @@
 {
   "schema": 1,
-  "run_id": "follow-approval-20261003T144539-4fbe",
-  "instrument": 4,
+  "run_id": "follow-approval-20261005T070807-4388",
+  "instrument": 5,
   "task": "follow-approval",
   "task_title": "Follow an approval",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the document that is waiting for your approval and approve it.",
   "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
-  "started_at": "2026-10-03T14:45:39.835Z",
-  "finished_at": "2026-10-03T14:45:57.148Z",
+  "started_at": "2026-10-05T07:08:07.519Z",
+  "finished_at": "2026-10-05T07:08:20.910Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 3,
+    "dataset": 4,
     "reference_volume": 100000,
-    "node": "v22.22.0"
+    "node": "v22.23.3"
   },
   "counts": {
     "steps": 4,
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 4.251,
-    "system_wait_seconds": 3.782,
+    "machine_seconds": 5.667,
+    "system_wait_seconds": 5.021,
     "human_seconds": 10.6,
-    "human_plus_wait_seconds": 14.382,
+    "human_plus_wait_seconds": 15.621,
     "klm_operator_counts": {
       "K": 0,
       "P": 4,
@@ -57,8 +57,9 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0,
-      "took": 0.062,
+      "at": 0.001,
+      "took": 0.066,
+      "screen": "/odoo/discuss",
       "chain": false
     },
     {
@@ -66,8 +67,9 @@
       "kind": "click",
       "label": "Purchase app",
       "keystrokes": 0,
-      "at": 0.063,
-      "took": 0.041,
+      "at": 0.067,
+      "took": 0.062,
+      "screen": "/odoo/discuss",
       "chain": false
     },
     {
@@ -75,8 +77,9 @@
       "kind": "click",
       "label": "open the order waiting for approval",
       "keystrokes": 0,
-      "at": 2.963,
-      "took": 0.117,
+      "at": 3.183,
+      "took": 0.154,
+      "screen": "/odoo/purchase",
       "chain": false
     },
     {
@@ -84,59 +87,60 @@
       "kind": "click",
       "label": "Approve Order",
       "keystrokes": 0,
-      "at": 3.609,
-      "took": 0.086,
+      "at": 4.972,
+      "took": 0.092,
+      "screen": "/odoo/purchase/100006",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "Purchase loaded",
-      "at": 0.103,
-      "seconds": 2.692
+      "at": 0.13,
+      "seconds": 0.316
     },
     {
       "label": "order list",
-      "at": 2.796,
-      "seconds": 0.006
+      "at": 0.446,
+      "seconds": 2.469
     },
     {
       "label": "order form",
-      "at": 3.081,
-      "seconds": 0.529
+      "at": 3.337,
+      "seconds": 1.634
     },
     {
       "label": "order approved",
-      "at": 3.695,
-      "seconds": 0.555
+      "at": 5.064,
+      "seconds": 0.602
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "f9ecd0cbde5f546e.jpg",
+      "file": "7968a924a7db4e45.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/f9ecd0cbde5f546e.jpg"
+      "path": "gauntlet/reference/odoo/shots/7968a924a7db4e45.jpg"
     },
     {
       "moment": "orders waiting for approval",
-      "file": "6e4d68d1bed1a744.jpg",
-      "at": 2.807,
-      "path": "gauntlet/reference/odoo/shots/6e4d68d1bed1a744.jpg"
+      "file": "a880f1232fa9643c.jpg",
+      "at": 2.921,
+      "path": "gauntlet/reference/odoo/shots/a880f1232fa9643c.jpg"
     },
     {
       "moment": "done",
-      "file": "3e139cae05432cc8.jpg",
-      "at": 4.251,
-      "path": "gauntlet/reference/odoo/shots/3e139cae05432cc8.jpg"
+      "file": "00d121551f44786a.jpg",
+      "at": 5.667,
+      "path": "gauntlet/reference/odoo/shots/00d121551f44786a.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "order": "P00021",
+      "order": "P00006",
       "state": "purchase",
-      "date_approve": "2026-10-03 14:45:56",
+      "date_approve": "2026-10-05 07:08:19",
       "approver_messages": 1,
       "first_row_is_the_order": true
     }
@@ -144,7 +148,7 @@
   "path_notes": "Apps menu > Purchase (the newest order, waiting for approval, is the first row) > open it > Approve Order.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/follow-approval.mjs",
-    "sha256": "bdba70c59dbdd5ad3bb2df9c06f6efae5f07687350689987d1622ae0ef955fef"
+    "sha256": "513f9f9fa1a4a1579501ee0fcd314e8ea8fdce401d139ca064b1ec2f420e3dcf"
   },
   "task_notes": "Odoo Community has no generic approvals app (Approvals is Enterprise). Its nearest Community feature is the purchase order two-step approval, so the Odoo driver approves a purchase order. Our product follows its own approval flow (p13) for an equivalent document.",
   "error": null,
@@ -158,11 +162,22 @@
     "focused": null,
     "set_up_contexts_closed": 0
   },
+  "verify_passes": [
+    {
+      "seconds": 0.096,
+      "verified": true
+    },
+    {
+      "seconds": 0.159,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
   "result_file": "gauntlet/reference/odoo/tasks/follow-approval.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/follow-approval-20261003T144539-4fbe.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261003T144557-8d06.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261003T144608-f75f.json"
+    "gauntlet/reference/odoo/results/follow-approval-20261005T070807-4388.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261005T070820-6b4b.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261005T070835-e7f8.json"
   ]
 }

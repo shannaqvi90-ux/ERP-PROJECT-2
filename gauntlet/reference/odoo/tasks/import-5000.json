@@ -1,24 +1,24 @@
 {
   "schema": 1,
-  "run_id": "import-5000-20261003T144753-34c0",
-  "instrument": 4,
+  "run_id": "import-5000-20261005T072522-a405",
+  "instrument": 5,
   "task": "import-5000",
   "task_title": "Import 5,000 rows",
   "product": "odoo",
   "status": "verified",
   "goal": "Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.",
   "done_when": "The product reports the import finished; the back end holds the 5,000 new contacts.",
-  "started_at": "2026-10-03T14:47:53.244Z",
-  "finished_at": "2026-10-03T14:49:23.272Z",
+  "started_at": "2026-10-05T07:25:22.696Z",
+  "finished_at": "2026-10-05T07:27:11.769Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 3,
+    "dataset": 4,
     "reference_volume": 100000,
-    "node": "v22.22.0"
+    "node": "v22.23.3"
   },
   "counts": {
     "steps": 7,
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 27,
-    "system_wait_seconds": 25.655,
+    "machine_seconds": 18.342,
+    "system_wait_seconds": 17.128,
     "human_seconds": 17.4,
-    "human_plus_wait_seconds": 43.055,
+    "human_plus_wait_seconds": 34.528,
     "klm_operator_counts": {
       "K": 0,
       "P": 7,
@@ -57,8 +57,9 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0,
-      "took": 0.062,
+      "at": 0.001,
+      "took": 0.058,
+      "screen": "/odoo/discuss",
       "chain": false
     },
     {
@@ -66,8 +67,9 @@
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "at": 0.062,
-      "took": 0.038,
+      "at": 0.06,
+      "took": 0.062,
+      "screen": "/odoo/discuss",
       "chain": false
     },
     {
@@ -75,8 +77,9 @@
       "kind": "click",
       "label": "actions menu",
       "keystrokes": 0,
-      "at": 0.693,
-      "took": 0.186,
+      "at": 0.782,
+      "took": 0.047,
+      "screen": "/odoo/contacts",
       "chain": false
     },
     {
@@ -84,8 +87,9 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 0.879,
-      "took": 0.128,
+      "at": 0.83,
+      "took": 0.08,
+      "screen": "/odoo/contacts",
       "chain": false
     },
     {
@@ -93,8 +97,9 @@
       "kind": "click",
       "label": "open file dialog: contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 1.12,
-      "took": 0.028,
+      "at": 1.17,
+      "took": 0.043,
+      "screen": "/odoo/contacts/import",
       "chain": false
     },
     {
@@ -102,9 +107,10 @@
       "kind": "file-pick",
       "label": "contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 1.148,
-      "took": 0.013,
+      "at": 1.213,
+      "took": 0.02,
       "file": "contacts-import-5000.csv",
+      "screen": "/odoo/contacts/import",
       "chain": true
     },
     {
@@ -112,56 +118,63 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 1.67,
-      "took": 0.85,
+      "at": 1.723,
+      "took": 0.628,
+      "screen": "/odoo/contacts/import",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.1,
-      "seconds": 0.161
+      "at": 0.122,
+      "seconds": 0.226
     },
     {
       "label": "contact list",
-      "at": 0.261,
-      "seconds": 0.431
+      "at": 0.348,
+      "seconds": 0.433
     },
     {
       "label": "import screen",
-      "at": 1.007,
-      "seconds": 0.113
+      "at": 0.911,
+      "seconds": 0.259
     },
     {
       "label": "column mapping preview",
-      "at": 1.161,
-      "seconds": 0.3
+      "at": 1.233,
+      "seconds": 0.223
     },
     {
       "label": "import finished, imported records listed",
-      "at": 2.52,
-      "seconds": 24.481
+      "at": 2.352,
+      "seconds": 15.333
+    },
+    {
+      "label": "the product still answering when run() returned (49 requests)",
+      "at": 17.688,
+      "seconds": 0.654,
+      "settle": true
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "dd0c81b967fd4722.jpg",
+      "file": "ee861a8c0f2627fa.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/dd0c81b967fd4722.jpg"
+      "path": "gauntlet/reference/odoo/shots/ee861a8c0f2627fa.jpg"
     },
     {
       "moment": "columns matched",
-      "file": "b33676ed4417c94b.jpg",
-      "at": 1.461,
-      "path": "gauntlet/reference/odoo/shots/b33676ed4417c94b.jpg"
+      "file": "c8f6075d4949358e.jpg",
+      "at": 1.457,
+      "path": "gauntlet/reference/odoo/shots/c8f6075d4949358e.jpg"
     },
     {
       "moment": "done",
-      "file": "c486f1a9aece25fc.jpg",
-      "at": 27,
-      "path": "gauntlet/reference/odoo/shots/c486f1a9aece25fc.jpg"
+      "file": "9b2b290abbf8a8e4.jpg",
+      "at": 18.342,
+      "path": "gauntlet/reference/odoo/shots/9b2b290abbf8a8e4.jpg"
     }
   ],
   "verification": {
@@ -175,7 +188,7 @@
   "path_notes": "Apps menu > Contacts > actions menu (⋮) > Import > Upload (choose the file) > Import. Odoo maps the plain column headers (Name, Email, Phone, Street, City, Country) to contact fields by itself.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/import-5000.mjs",
-    "sha256": "bd62d902068f73c2c0cb48925e8d8f35b765d0a0d95a5df597f31ce7c8980225"
+    "sha256": "74a544c9ef129bd6cd94392ab7eb345360d718305e35e9d8ca2c50d5f84d0b4c"
   },
   "task_notes": "The file is generated by data/generate.mjs: plain headers, as a user would bring from another system. Clean-up deletes the imported rows.",
   "error": null,
@@ -189,11 +202,28 @@
     "focused": null,
     "set_up_contexts_closed": 0
   },
+  "verify_passes": [
+    {
+      "seconds": 0.38,
+      "requests": 3,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "verified": true
+    },
+    {
+      "seconds": 0.491,
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
   "result_file": "gauntlet/reference/odoo/tasks/import-5000.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/import-5000-20261003T144621-09d5.json",
-    "gauntlet/reference/odoo/results/import-5000-20261003T144753-34c0.json",
-    "gauntlet/reference/odoo/results/import-5000-20261003T144923-cd1f.json"
+    "gauntlet/reference/odoo/results/import-5000-20261005T072108-fd41.json",
+    "gauntlet/reference/odoo/results/import-5000-20261005T072300-64c2.json",
+    "gauntlet/reference/odoo/results/import-5000-20261005T072522-a405.json"
   ]
 }

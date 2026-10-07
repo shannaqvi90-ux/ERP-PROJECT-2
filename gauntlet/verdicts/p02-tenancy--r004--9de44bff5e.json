@@ -1,0 +1,137 @@
+{
+  "piece": "p02-tenancy",
+  "round": 4,
+  "commit": "9de44bff5ec50d34eb0f319fa9f57dcba2ce8c9f",
+  "judged_at": "2026-10-07T02:05:19Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p02-tenancy round 4",
+  "evidence_staging": "/home/shan/evidence-staging/p02-tenancy/r4",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r4",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: suite and hand attacks",
+      "status": "pass",
+      "evidence": "Every G1 test passed in ./erp verify (verify.log). I ran hand attacks as alnoor's administrator against gulfsteel (attack.log section 1). I tried GET, PUT and DELETE on B's company, logo and branch, a POST of a branch into B, a workplace switch to B's company and to B's branch, grants of B's company and branch, B's admin's access record, filters on B's ids, and tenant and company headers. I also tried B's company profile report (CSV and PDF), the branch directory filtered on B, list exports (CSV and XLSX) and an encoded path traversal on the logo. Every request got 404, 400 or an empty list. B's rows did not change (version 773 before and after). 200 concurrent cross-tenant company reads gave 0 wrong answers. RLS is enabled and forced on all 7 tenancy tables. erp_app is not a superuser and does not bypass RLS (db-inspection.txt). A suspended tenant's existing session gets 401 on the next request, and a new sign-in is refused (tenant-cli.log)."
+    },
+    {
+      "gate": "G1 tenant isolation: planted tenant leak in this piece (T3, a new kind)",
+      "status": "pass",
+      "evidence": "Plant T3 (plants/batchY.diff) caches CompanyDto by company id in a DI singleton (an instance field, not a static), and GET /api/tenancy/companies/{id} serves from it. G1ProcessStateTests caught it: 'singleton Erp.Modules.Tenancy.Companies.CompanyCardCache.Items: a read-only field that holds a mutable ConcurrentDictionary<Guid, CompanyDto>' (plants/batchY-gates.log)."
+    },
+    {
+      "gate": "G1 company and branch layer: round-3 plants (C3, C4) and new variants (C4b, C5, C6, P8)",
+      "status": "pass",
+      "evidence": "Every one was caught. C4, round 3's miss (company create without 'every company'), was caught by G1CompanyIsolationTests: 'POST /api/tenancy/companies [code]: company Y's value answered 409, a value that exists nowhere answered 201' (batchY-gates.log). C3, round 3's miss (branch filter off), was caught by G1BranchScopeAttackTests: '162 leaks of branch Z' (batchY). C4b (a company code change without 'every company') was caught: 'PUT /api/tenancy/companies/{X} [code]: company Y's code answered 409' (batchX-gates.log). C6 (branch create without 'every branch') was caught by the branch write oracle (batchX). C5 (GET one branch ignoring the branch filter) was caught: 'opening branch Z answered 200, expected 404' (C5-gates.log). P8 (a workplace switch to a branch the user may not use) was caught: '36 leaks of branch Z: PUT /api/tenancy/workplace' (batchZ-gates.log). Round 3's misses stay fixed."
+    },
+    {
+      "gate": "G2 permissions: planted grant and permission faults (P3, P3v, P10)",
+      "status": "pass",
+      "evidence": "P3 is round 3's biggest gap: it removes the 'user holds permissions the caller lacks' check. G2CompanyAccessGrantTests now catches it: 'by a user holding only the access permission who works in every company, removing the Administrator from company X: answered 200, expected 403' (batchX-gates.log). P3v (All changed to Any in the same check) fails the same gate (batchZ-gates.log). P10 (branch update guarded by tenancy.branches.create) was caught by the reviewed map: 'PUT /api/tenancy/branches/{id:guid} declares tenancy.branches.create; the reviewed map tenancy.txt says tenancy.branches.update'. It was also caught by the dead-permission check (batchX-gates.log)."
+    },
+    {
+      "gate": "G1/G2 branch scope of company-level actions: planted P7 (one-branch user changes the shared company record)",
+      "status": "fail",
+      "evidence": "P7 (plants/P7.diff) removes the 'needs every branch' refusal from PUT /api/tenancy/companies/{id}. With it, an administrator limited to one branch can rename the legal entity, change its TRN and trade licence, or deactivate the whole company for every branch. Every gate passed with P7 in place: G1BranchScopeAttackTests, G1CompanyScopeTests (2) and G2CompanyAccessGrantTests, 4/4 (plants/P7-gates.log). Only the hand-written module test GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch failed (plants/P7-tenancy-module.log). This is the same pattern that failed round 3 (C3 and P3 caught only by module tests). The branch attack treats only branch Z's rows as the victim, never the company record that every branch shares."
+    },
+    {
+      "gate": "G2 screens hide what the user cannot do (tenancy screens)",
+      "status": "fail",
+      "evidence": "Real fault, not planted. I created a user with the Administrator role limited to ALN-DXB branch AQZ-WH. The company form still offers the branch line with Add branch, the Branches screen offers New, and the branch form's Code field can be edited. The server refuses all three: 'Only someone who works in every branch of the company may create a branch or change a branch code' (ui-branch.log, 07-one-branch-admin-branch-line.jpg). The screen gate (web/src/modules/tenancy/screens.test.tsx) checks branch scope only for the company record and logo, so it passes. Planted U5 (access screen 'all branches' box enabled for a branch-limited caller) was caught by AccessPage.test.tsx (plants/U5-vitest.log). U4 was inert: the settings form is not drawn without tenancy.tenant.update (plants/U4-vitest.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "pass",
+      "evidence": "Fresh clone at 9de44bf. Command: ERP_PROJECT=c-p02-tenancy-r4 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 gauntlet/tools/verify-slot.sh ./erp verify. It took a slot at 01:29:55Z after waiting 3765 s, and 'verify passed in 2077 s'. Results: .NET 380, web unit 249, e2e 62 and compare 146, all passed with 0 skipped. The plant self-tests passed (client 12, identity screens 5, tenancy screens 17), and so did 'Ratchet check passed.' (verify.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command to the running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up with the same overrides served the seeded demo on :20250 in 68 s, image build included (up.log). Ports and the compose project can be overridden from the environment, as the README documents."
+    },
+    {
+      "gate": "Rule gates: licences, decimal money, English/Arabic, audit",
+      "status": "pass",
+      "evidence": "The rule gates pass in the suite. Tenancy has no float or money columns (db-inspection.txt). Every user write to a tenancy table has an audit row with actor_id: companies 9 inserts and 7 updates, branches 9, user_company_access 29 inserts and 2 deletes, user_workplaces 35, and so on. Seed rows are marked 'seed'. The Arabic company form has no English-only labels (ui-walk.log), and dir is rtl."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r4 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 837,
+    "passed": 837,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 2077
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 2077,
+    "evidence": "./erp verify on a fresh clone of 9de44bf passed in 2077 s, timed from the slot taken at 01:29:55Z after a 3765 s wait. The load average reached 72 at the end (verify.log). ./erp up then served the seeded demo in 68 s (up.log)."
+  },
+  "odoo": [
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 44,
+        "seconds": 0.607,
+        "klm_seconds": 19.47
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 3.075,
+        "klm_seconds": 47.18
+      },
+      "notes": "I ran node run.mjs --task switch-company,create-company-branch --product both --repeat 3 against ./erp up on :20250, with the rig on :8069 and branding hidden. The harness verdict is WIN on every metric. In ours, the branch line opens with '<company> - ' already in it and the cursor after it, so only 'Jebel Ali Branch' is typed. Steps 6 vs 12, keys 44 vs 72, machine 0.61 s vs 3.08 s, human 19.5 s vs 47.2 s. Round 3's 72 = 72 keystroke tie is gone. Shots 08 (ours) and 09 (Odoo)."
+    },
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.099,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.474,
+        "klm_seconds": 5.3
+      },
+      "notes": "The harness verdict is LOSS: keystrokes tie at 0, and a tie is a loss. Ours wins steps (1 vs 2), machine seconds (0.10 vs 0.47) and human seconds (2.65 vs 5.3) with one click on the company's chip. My first run failed because the company created during my UI walk made 7 active companies: above 6, the one-click chips disappear and the pointer path no longer exists (compare.log). I deactivated that company and re-ran the task (compare-switch.log). Shots 10 (ours) and 11 (Odoo)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r4/01-company-keyboard-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/02-switcher-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/03-workspace-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/04-company-form-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/05-switcher-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/06-access-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/07-one-branch-admin-branch-line.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/08-compare-create-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/09-compare-create-b.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/10-compare-switch-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r4/11-compare-switch-b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Branch-scope rules on company-wide actions have no gate: a one-branch user who may rename or deactivate the company passes every gate, and the screens offer branch actions the server refuses",
+    "detail": "Round 3's misses are fixed: P3, C3 and C4 are now caught by G1 and G2 gates, as are all six new variants I planted. One part of the branch layer is still guarded only by hand-written tests. The branch attack treats branch Z's own rows as the victim. It never asks whether a user limited to one branch can change something every branch shares. With the 'needs every branch' refusal removed from PUT /api/tenancy/companies/{id} (plant P7), an administrator limited to one warehouse can rename the legal entity, change its TRN and trade licence, or deactivate the whole company, and every gate stays green. Only one module test fails. For a UAE group whose branch managers are given the Administrator role inside their own branch, that means a branch manager could take the Dubai LLC's legal identity offline for everyone. On screen, the tenancy screen gate checks branch scope only on the company record and logo. The real build offers a one-branch administrator the company's Add-branch line, New on the Branches screen and an editable branch Code, and the server refuses all three. The fix: in the branch attack, add the company record (and anything ICompanyOwned that every branch shares) to what a branch-limited attacker must not change, with a valid write to PUT /companies/{X} and the logo endpoints expected to be refused. Also extend screens.test.tsx so that, with everyBranch false, the branch line, New branch and the branch code disappear, and plant-test both.",
+    "evidence": "plants/P7.diff (one line in CompanyEndpoints.Update: the HoldsEveryBranch refusal made unreachable). plants/P7-gates.log: G1BranchScopeAttackTests, G1CompanyScopeTests (2) and G2CompanyAccessGrantTests all Passed. plants/P7-tenancy-module.log: only GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch Failed. To reproduce: python3 plants/apply.py <clone> P7 && dotnet build Erp.slnx -c Release && dotnet test tests/Erp.Gates.Tests --filter FullyQualifiedName~G1BranchScopeAttackTests passes. Screen: ui-branch.log and 07-one-branch-admin-branch-line.jpg. On ./erp up, as admin@alnoor.example, create a user with the Administrator role and PUT /api/tenancy/access/{id} with {companyId: ALN-DXB, allBranches: false, branchIds: [AQZ-WH]}. Sign in as that user and open the ALN-DXB company: 'branch line offered: 1', and Add answers 'Only someone who works in every branch of the company may create a branch or change a branch code.' The Branches screen offers New, and the branch form's Code is editable and refused on save."
+  },
+  "other_findings": [
+    "Plant results this round. Caught: T3 (process state), C3, C4, C4b, C5, C6, P8 (company and branch attacks), P3 and P3v (grant gate), P10 (reviewed map and dead-permission check), U5 (access screen test). Missed by every gate: P7 (module test only). U4 was inert. All round 2 and round 3 gaps I re-planted stay fixed.",
+    "Branch attack weakness in this piece's own gate: with C5 (GET one branch ignoring the branch filter) the generic marker check reported 0 leaks. Only the hand-coded 'opening branch Z' probe caught it. The generic leak judge removes values the attacker sent or stored earlier, which seems to have hidden branch Z's markers in that answer. A later module's branch-owned GET would rely on the generic check alone.",
+    "[route: p01-odoo-rig] switch-company cannot be won under the strict per-metric rule, because keystrokes tie at the floor (0 = 0). Ours wins steps, machine seconds and human seconds by about 50 to 80 percent. Blind shots now mask the demo company name, but list rows in shot 08 look misaligned around the masked row.",
+    "The one-click company chips disappear above six active companies. The fastest path is then Alt+C, part of the name, Enter (8 keys), or two clicks, which ties Odoo. Many UAE groups run more than six entities (mainland LLC, free-zone FZE, branches as separate licences).",
+    "Companies cannot be deleted, only deactivated. The comparison runs left FALCON to FALCON-6 inactive in the tenant. The API list returns inactive companies, and the screen's default view hides them.",
+    "Companies and branches can still be saved without an Arabic name. FALCON from the comparison, and the branch 'Critic Keyboard … - Musaffah Workshop' made by keyboard, have none, so Arabic printed documents fall back to English.",
+    "Fixed since round 3: an English value in an Arabic field is now clipped at its end, not its start (04-company-form-ar.jpg). A company created by one administrator now reaches the other whole-workspace administrators: admin.ar saw CRITIC at once, and the tenant Administrator kept 'every company'.",
+    "Platform operator CLI: tenant create/suspend/activate/list work. Suspension revokes live sessions at once. A duplicate code prints an EF Core stack trace before its plain message (tenant-cli.log). Suspend and activate are audited as actor_kind 'system' with no operator identity.",
+    "The keyboard path works in Chromium: Alt+N on Companies focuses the English name. Ctrl+S saves and moves the focus to the branch line, prefilled with the company name. Enter adds the branch. Alt+C opens the switcher, which filters as you type. Arabic is RTL, with Arabic names in headers and the switcher. The read-only user sees no edit controls, and the switcher is a plain label for them (ui-walk.log).",
+    "Counts went up from round 3: .NET 337 to 380, web 157 to 249, e2e 54 to 62. Compare stays at 146. Every count equals or exceeds the ratchet minimum."
+  ],
+  "human_gates": []
+}

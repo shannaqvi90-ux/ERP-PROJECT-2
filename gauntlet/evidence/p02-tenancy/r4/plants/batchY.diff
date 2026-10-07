@@ -1,0 +1,70 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyCardCache.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyCardCache.cs
+new file mode 100644
+index 0000000..56947c1
+--- /dev/null
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyCardCache.cs
+@@ -0,0 +1,7 @@
++namespace Erp.Modules.Tenancy.Companies;
++
++/// <summary>Company cards, kept for speed.</summary>
++public sealed class CompanyCardCache
++{
++    public System.Collections.Concurrent.ConcurrentDictionary<Guid, CompanyDto> Items { get; } = new();
++}
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 09db38e..f51d179 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -192,12 +192,19 @@ internal static class CompanyEndpoints
+     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
+         CancellationToken cancellationToken)
+     {
++        var cards = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CompanyCardCache>(http.RequestServices);
++        if (cards.Items.TryGetValue(id, out var card))
++        {
++            return TypedResults.Ok(card);
++        }
+         var company = await db.Companies.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
+         if (company is null)
+         {
+             return Problems.NotFound(http);
+         }
+-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
++        var dto = await ToDtoAsync(db, branchScope, company, cancellationToken);
++        cards.Items[id] = dto;
++        return TypedResults.Ok(dto);
+     }
+ 
+     private static async Task<Results<Created<CompanyDto>, ProblemHttpResult>> Create(
+@@ -211,10 +218,6 @@ internal static class CompanyEndpoints
+         }
+         // Company codes are unique across the workspace: only someone who sees every company may
+         // pick one, or a refusal would tell them a company they cannot see uses it.
+-        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+-        {
+-            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+-        }
+         var code = TenancyValidation.NormalizeCode(request.Code);
+         if (string.IsNullOrEmpty(code))
+         {
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index 2474193..ccbfa78 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -36,6 +36,7 @@ public sealed class TenancyModule : ErpModule
+         module.Services.AddScoped<ICompanyDirectory, CompanyDirectory>();
+         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
+         module.Services.AddScoped<TenancyBranchScope>();
++        module.Services.AddSingleton<Erp.Modules.Tenancy.Companies.CompanyCardCache>();
+         module.Endpoints(group =>
+         {
+             TenancyEndpoints.Map(group);
+@@ -222,7 +223,7 @@ public sealed class TenancyDbContext : ModuleDbContext
+     public const string BranchFilterName = "branch";
+ 
+     /// <summary>True when no company of the scope is limited to branches.</summary>
+-    public bool BranchFilterOff => branches is null || branches.LimitedCompanyIds.Count == 0;
++    public bool BranchFilterOff => true;
+ 
+     /// <summary>Companies where the user may work only in some branches.</summary>
+     public Guid[] BranchLimitedCompanyIds => branches?.LimitedCompanyIds.ToArray() ?? [];

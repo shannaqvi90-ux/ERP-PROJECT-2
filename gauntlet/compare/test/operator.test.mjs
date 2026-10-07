@@ -244,3 +244,34 @@ test('a wait condition works on a page whose content security policy forbids eva
   assert.ok(w.seconds >= 0.1, `waited ${w.seconds}s`);
   await context.close();
 });
+
+test('round 5: paste and copy chords are read as the keys they press, whatever their spelling', async () => {
+  const { isPaste, isCopy, parseChord } = await import('../lib/operator.mjs');
+  for (const c of ['Control+v', 'control+V', 'ControlOrMeta+v', 'Meta+v', 'Control+KeyV', 'Shift+Control+v', 'Control+Shift+V', 'Alt+Control+v', 'Shift+Insert', 'Ctrl+v'])
+    assert.ok(isPaste(c), `${c} pastes`);
+  for (const c of ['v', 'Shift+v', 'Alt+v', 'Control+Shift+Insert', 'Insert', 'Control+c']) assert.ok(!isPaste(c), `${c} does not paste`);
+  for (const c of ['Control+c', 'ControlOrMeta+c', 'control+X', 'Meta+c', 'Control+KeyC', 'Control+Insert', 'Shift+Delete']) assert.ok(isCopy(c), `${c} copies`);
+  for (const c of ['c', 'Control+v', 'Delete', 'Shift+Insert']) assert.ok(!isCopy(c), `${c} does not copy`);
+  assert.deepEqual([...parseChord('ControlOrMeta+Shift+KeyV').mods].sort(), [process.platform === 'darwin' ? 'meta' : 'control', 'shift'].sort());
+  assert.equal(parseChord('Control++').key, '+');
+});
+
+test('a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)', async () => {
+  // A second try inside the measured part would charge one product time the other does not pay.
+  const { context, page } = await fresh();
+  let tries = 0;
+  const failing = new Proxy(page, {
+    get(target, key) {
+      if (key === 'screenshot') return async () => { tries++; throw new Error('page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot'); };
+      const v = Reflect.get(target, key, target);
+      return typeof v === 'function' ? v.bind(target) : v;
+    },
+  });
+  const op = new Operator(failing, { shotsDir: path.join(tmp, 'shots-fail'), branding: brandingFor('odoo'), moments: ['result'], shotFormat: 'png' });
+  op.start();
+  await assert.rejects(op.shot('result'), /Unable to capture screenshot/);
+  assert.equal(tries, 1, 'the failed shot was taken again');
+  op.finish();
+  assert.deepEqual(op.shots, [], 'a failed shot is not recorded');
+  await context.close();
+});

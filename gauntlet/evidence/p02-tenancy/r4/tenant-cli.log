@@ -1,0 +1,33 @@
+== list
+ Container c-p02-tenancy-r4-setup-run-3d8c73d9ff7f Creating 
+ Container c-p02-tenancy-r4-setup-run-3d8c73d9ff7f Created 
+code	status	companies	name
+alnoor	active	4	Al Noor Trading LLC
+gulfsteel	active	2	Gulf Steel Fabrication LLC
+== B session before suspend:
+200
+== suspend
+ Container c-p02-tenancy-r4-setup-run-b28a21d4250a Creating 
+ Container c-p02-tenancy-r4-setup-run-b28a21d4250a Created 
+Workspace 'gulfsteel' is now suspended.
+== B existing session after suspend:
+{"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP41AQGV5EM:00000001"} 401
+== B new sign-in after suspend:
+{"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-098bb01ffa3e2a61075989d4e77211e4-1c42f5ce0b2e6321-00"} 401
+== activate
+ Container c-p02-tenancy-r4-setup-run-6d806f971aff Creating 
+ Container c-p02-tenancy-r4-setup-run-6d806f971aff Created 
+Workspace 'gulfsteel' is now active.
+== provision new tenant
+ Container c-p02-tenancy-r4-setup-run-feffe658e156 Creating 
+ Container c-p02-tenancy-r4-setup-run-feffe658e156 Created 
+info: Erp.Kernel.Seeding.SeedRunner[0]
+      Seeded tenant critic-r4 (Provision) in 2213 ms
+Workspace 'critic-r4' created (01a113c9-cc78-7dc5-b009-d98d6938dca6).
+First administrator: owner@critic.example
+== duplicate code
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+tenant create: a workspace with code 'critic-r4' already exists.
+
+== new tenant sign-in + companies
+{"authenticated":true,"user":{"id":"01a113c9-d36c-7217-9b23-fd6e08a8218e","email":"owner@critic.example","displayName":"Owner","language":"en","numerals":"latn","displayNameAr":null},"tenant":{"id":"01a113c9-cc78-7dc5-b009-d98d6938dca6","code":"critic-r4","nameEn":"Critic Trading LLC","nameAr":"شر

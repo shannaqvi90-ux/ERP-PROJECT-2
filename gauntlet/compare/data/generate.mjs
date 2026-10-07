@@ -18,7 +18,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { FIRST, LAST, BIZ_A, BIZ_B, SUFFIX, EMIRATES, COUNTRIES, TAGS, CURRENCIES } from './names.mjs';
 
-export const GENERATOR_VERSION = 3;
+export const GENERATOR_VERSION = 4;
 export const COUNTS = Object.freeze({ contacts: 100_000, import: 5_000, users: 100_000, rates: 100_000 });
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_OUT = path.join(here, 'out');
@@ -143,7 +143,9 @@ function userRows() {
   const rows = [];
   for (let i = 1; i <= COUNTS.users; i++) {
     const n = personName(r);
-    rows.push({ ref: `U${pad(i, 6)}`, name: n.en, name_ar: n.ar, login: `${slug(n.first)}.${slug(n.last)}.${pad(i, 6)}@staff.example`, lang: r.chance(0.3) ? 'ar' : 'en' });
+    // Every dataset user is active in both products (round 5: our loader marked one in 23 inactive
+    // while the reference held all of them active, so the two did not hold the same records).
+    rows.push({ ref: `U${pad(i, 6)}`, name: n.en, name_ar: n.ar, login: `${slug(n.first)}.${slug(n.last)}.${pad(i, 6)}@staff.example`, lang: r.chance(0.3) ? 'ar' : 'en', active: 'true' });
   }
   return rows;
 }

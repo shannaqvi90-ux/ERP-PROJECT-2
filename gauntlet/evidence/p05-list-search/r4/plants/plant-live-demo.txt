@@ -1,0 +1,12 @@
+== P4: a reader without lists.views.share changes and deletes a shared view through the personal route
+viewer permissions include lists.views.share? false
+shared view 01a1141d-579a-77de-a181-d3fac967d5bd Team view version 760
+viewer PUT /shared-views/{id}: 403
+viewer PUT /views/{sharedId}: 200 Renamed by the read-only user
+admin now sees: Renamed by the read-only user
+viewer DELETE /views/{sharedId}: 204
+admin GET shared view after: 404
+== L6: the next page of one tenant carries the other tenant's total
+gulfsteel page 1 total 1004
+alnoor page 1 total 3004
+gulfsteel page 2 total 3004 <- alnoor's count shown to gulfsteel

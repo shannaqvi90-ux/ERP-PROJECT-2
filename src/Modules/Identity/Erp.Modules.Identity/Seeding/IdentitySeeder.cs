@@ -153,7 +153,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             return new object?[]
             {
                 Guid.CreateVersion7(created), tenantId, email, email.ToLowerInvariant(), context.Mark(p.DisplayName),
-                string.IsNullOrWhiteSpace(p.DisplayNameAr) ? null : context.Mark(p.DisplayNameAr), p.Language, i % 23 != 0, created, created,
+                string.IsNullOrWhiteSpace(p.DisplayNameAr) ? null : context.Mark(p.DisplayNameAr), p.Language, p.Active ?? i % 23 != 0, created, created,
             };
         });
         await BulkInsert.InsertAsync(session, IdentityDbContext.SchemaName, "users", columns, rows, cancellationToken);
@@ -175,9 +175,10 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
 
 /// <summary>
 /// The users of the shared comparison dataset (gauntlet/compare/data/generate.mjs, users.csv:
-/// ref, name, name_ar, login, lang), with the name and language the Odoo reference loads for
-/// them. The e-mail is the dataset's login; <see cref="DemoPeople.Person.EmailLocal"/> carries
-/// the whole address.
+/// ref, name, name_ar, login, lang, active), with the name, language and active flag the Odoo
+/// reference loads for them, so both products hold the same records. The e-mail is the dataset's
+/// login; <see cref="DemoPeople.Person.EmailLocal"/> carries the whole address. A file without the
+/// active column (an older dataset) loads every user active, as the reference does.
 /// </summary>
 internal static class SharedDatasetUsers
 {
@@ -192,6 +193,7 @@ internal static class SharedDatasetUsers
         int Column(string name) => Array.IndexOf(header, name) is var i and >= 0 ? i : throw new InvalidDataException($"{path}: no column '{name}'");
         int nameColumn = Column("name"), loginColumn = Column("login"), languageColumn = Column("lang");
         var arabicColumn = Array.IndexOf(header, "name_ar");
+        var activeColumn = Array.IndexOf(header, "active");
         var people = new List<DemoPeople.Person>(Math.Max(0, count));
         while (people.Count < count && reader.ReadLine() is { } line)
         {
@@ -201,7 +203,8 @@ internal static class SharedDatasetUsers
             }
             var cells = Split(line);
             people.Add(new DemoPeople.Person(cells[nameColumn], cells[loginColumn], cells[languageColumn] == "ar" ? "ar" : "en",
-                arabicColumn >= 0 && arabicColumn < cells.Length && cells[arabicColumn].Length > 0 ? cells[arabicColumn] : null));
+                arabicColumn >= 0 && arabicColumn < cells.Length && cells[arabicColumn].Length > 0 ? cells[arabicColumn] : null,
+                Active: activeColumn < 0 || activeColumn >= cells.Length || !string.Equals(cells[activeColumn], "false", StringComparison.OrdinalIgnoreCase)));
         }
         return people;
     }
@@ -262,8 +265,9 @@ internal static class DemoPeople
     ];
 
     /// <summary>A person: the display name (Latin script), the e-mail's local part (or the whole
-    /// address), the interface language and, when known, the name in Arabic script.</summary>
-    public sealed record Person(string DisplayName, string EmailLocal, string Language, string? DisplayNameAr = null);
+    /// address), the interface language, when known the name in Arabic script and, when the source
+    /// says so, whether the user is active (generated demo people leave it to the seeder).</summary>
+    public sealed record Person(string DisplayName, string EmailLocal, string Language, string? DisplayNameAr = null, bool? Active = null);
 
     public static IEnumerable<Person> Generate(string seed, int count)
     {

@@ -1,0 +1,61 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+index 11c19f9..f47bff1 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+@@ -116,10 +116,6 @@ internal static class CompanyAccessRules
+         {
+             return "tenancy.cannotChangeOwnAccess";
+         }
+-        if (!userPermissions.All(callerHas))
+-        {
+-            return "tenancy.userBeyondOwn";
+-        }
+         if (await TotalCompaniesAsync(db, userId, cancellationToken) > visibleCompanies)
+         {
+             return "tenancy.userBeyondOwnCompanies";
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 36617df..605dda0 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -94,7 +94,7 @@ internal static class BranchEndpoints
+             .WithSummary("Change a branch the caller may work in, or deactivate it (isActive false). Changing the code needs every branch of the company.")
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(TenancyPermissions.BranchesUpdate);
++            .RequirePermission(TenancyPermissions.BranchesCreate);
+     }
+ 
+     private static async Task<Results<Ok<ListPage<BranchRow>>, ProblemHttpResult>> List(
+@@ -121,7 +121,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.AsNoTracking().IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);
+@@ -145,10 +145,6 @@ internal static class BranchEndpoints
+         // Branch codes are unique within the company: only someone who sees every branch of it may
+         // pick one (a refusal would name a branch they cannot see), and a new branch is one they
+         // could not otherwise work in.
+-        if (!branchScope.HoldsEveryBranch(company!.Id))
+-        {
+-            return Problems.Forbidden(http, "tenancy.branchNeedsEveryBranch");
+-        }
+         var code = TenancyValidation.NormalizeCode(request.Code);
+         if (string.IsNullOrEmpty(code))
+         {
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 09db38e..bb805c3 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -277,7 +277,7 @@ internal static class CompanyEndpoints
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+         }
+         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
+-        if (code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
++        if (DateTime.UtcNow.Year < 0 && code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+         {
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+         }
