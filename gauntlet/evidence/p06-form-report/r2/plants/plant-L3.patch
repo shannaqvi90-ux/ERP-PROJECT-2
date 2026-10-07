@@ -1,0 +1,30 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..adf1fcb 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -276,6 +276,25 @@ internal static class ReportEndpoints
+         var instant = JsonSerializer.Serialize(document.PrintedAt).Trim('"');
+         http.Response.Headers["X-Erp-Printed-At"] = $"{instant};{Uri.EscapeDataString(document.PrintedAtText)}";
+         var name = FileName(document);
++        // PLANT L3: an on-disk output cache keyed by the request URL (path and query), no tenant in the key.
++        var cacheDir = Path.Combine(Path.GetTempPath(), "erp-report-cache");
++        Directory.CreateDirectory(cacheDir);
++        var cacheKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(http.Request.Path + http.Request.QueryString)));
++        var cacheFile = Path.Combine(cacheDir, cacheKey);
++        var cacheType = common.Format switch { "pdf" => "application/pdf", "csv" => Exports.CsvType + "; charset=utf-8", "xlsx" => Exports.XlsxType, _ => "application/json; charset=utf-8" };
++        if (File.Exists(cacheFile))
++        {
++            var cached = File.ReadAllBytes(cacheFile);
++            return common.Format == "json" ? Results.Bytes(cached, cacheType) : Results.File(cached, cacheType, name + "." + common.Format);
++        }
++        var fresh = common.Format switch
++        {
++            "pdf" => pdf.Render(document),
++            "csv" => Exports.Csv(document),
++            "xlsx" => Exports.Xlsx(document),
++            _ => JsonSerializer.SerializeToUtf8Bytes(document, http.RequestServices.GetRequiredService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>().Value.SerializerOptions),
++        };
++        File.WriteAllBytes(cacheFile, fresh);
+         switch (common.Format)
+         {
+             case "pdf":

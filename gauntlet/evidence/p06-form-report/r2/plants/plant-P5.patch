@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..da5a062 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -151,7 +151,7 @@ internal static class ReportEndpoints
+             return validator.ToResult();
+         }
+         var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+-        var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = withheld, Holds = caller.Has };
++        var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = new HashSet<string>(), Holds = _ => true }; // PLANT P5: columns that need another permission printed to everyone
+         var source = (IReportSource)http.RequestServices.GetRequiredService(registration.SourceType);
+         var data = await source.RunAsync(run, cancellationToken);
+         if (data is null)
