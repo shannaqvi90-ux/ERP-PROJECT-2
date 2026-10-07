@@ -25,6 +25,16 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   button beside the switcher. Switching is then one click, and the branch defaults to the first
   the user may work in. Most UAE SMEs run between one and a handful of legal entities, so this
   is the common case. The list (Alt+C) remains for branches and for larger groups.
+- Above six active companies (groups with a mainland LLC, free-zone entities and separately
+  licensed branches), the buttons show the companies the user switched between most recently,
+  newest first, at most five. Each switch remembers both the company left and the company
+  reached, so going back and forth between two entities stays one click. The recent company ids
+  are kept in the browser under a per-user key (`erp.tenancy.recentCompanies.<user id>`): ids
+  only, never names. `forgetIdentity()` removes them with the rest of the browser's state when
+  the identity ends (reviewed carrier use in `tests/Gates/client-carriers.txt`). The buttons are
+  drawn only from the server's list of companies the user may switch to, so a remembered id the
+  user lost access to is dropped, never shown. (Added 2026-10-07, round 5: the critic found the
+  one-click path disappeared above six companies.)
 
 ## Why
 
