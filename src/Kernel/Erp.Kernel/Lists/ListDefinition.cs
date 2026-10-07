@@ -33,6 +33,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
 /// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>
+/// <param name="ValuesFrom">For a choice column whose values are ids of another list's records
+/// (a user's role ids): that list's key. Printed documents and exports show those records' names
+/// in place of the ids to a caller who may read that list, and how many there are to others.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -44,7 +47,8 @@ public sealed record ListColumn(
     bool Hidden = false,
     IReadOnlyList<ListChoice>? Choices = null,
     string? LabelField = null,
-    string? ArabicField = null);
+    string? ArabicField = null,
+    string? ValuesFrom = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>

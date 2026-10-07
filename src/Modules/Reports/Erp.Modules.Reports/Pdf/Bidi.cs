@@ -14,7 +14,7 @@ public readonly record struct BidiRun(int Start, int Length, bool RightToLeft);
 /// the order a reader expects, as browsers lay it out on screen. Mirroring of brackets in
 /// right-to-left runs is left to the shaper (HarfBuzz mirrors in right-to-left buffers).
 /// </summary>
-public static class Bidi
+public static partial class Bidi
 {
     private enum T : byte { L, R, AL, EN, ES, ET, AN, CS, NSM, BN, B, S, WS, ON }
 
@@ -101,6 +101,19 @@ public static class Bidi
         for (var i = 0; i < n; i++)
         {
             types[i] = TypeOf(text[i]);
+        }
+        // A telephone number ("+971 2 555 7810", "04-555 7810") reads left to right as one unit
+        // in any paragraph, as the screen shows it: the algorithm alone would order its digit
+        // groups right to left in an Arabic line ("7810 555 2 971+").
+        foreach (System.Text.RegularExpressions.Match match in PhoneRegex().Matches(text))
+        {
+            if (match.Value.Count(char.IsDigit) >= 7)
+            {
+                for (var i = match.Index; i < match.Index + match.Length; i++)
+                {
+                    types[i] = T.L;
+                }
+            }
         }
         var original = (T[])types.Clone();
 
@@ -234,6 +247,11 @@ public static class Bidi
         }
         return levels;
     }
+
+    /// <summary>Digit groups joined by spaces, hyphens or brackets, with an optional leading plus:
+    /// not dates (slashes, colons) nor amounts (commas, points).</summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"(?<![\p{L}\p{N}])\+?\(?\d[\d \-()]*[ \-][\d \-()]*\d(?![\p{L}\p{N}])")]
+    private static partial System.Text.RegularExpressions.Regex PhoneRegex();
 
     private static T Strong(T type) => type is T.EN or T.AN ? T.R : type;
 

@@ -25,13 +25,14 @@ internal sealed class UsersByRoleReport(IdentityDbContext db) : IReportSource
     public static readonly ReportDefinition Definition = new(
         Key, "identity.report.usersByRole", IdentityPermissions.UsersRead,
         [
-            new ReportParameter("role", "identity.report.role", ReportParameterType.Reference, Lookup: RolesList.Key),
+            new ReportParameter("role", "identity.report.role", ReportParameterType.Reference, Lookup: RolesList.Key, Permission: IdentityPermissions.RolesRead),
             new ReportParameter("status", "identity.users.status", ReportParameterType.Choice, Choices: Statuses),
             new ReportParameter("userLanguage", "identity.users.language", ReportParameterType.Choice, Choices: LanguageChoices),
             new ReportParameter("signedInSince", "identity.report.signedInSince", ReportParameterType.Date),
         ],
         [
-            new ReportColumn("role", "identity.report.role", ListColumnType.Text, Groupable: true),
+            // Role names are the roles' data: printed only to a caller who may read roles.
+            new ReportColumn("role", "identity.report.role", ListColumnType.Text, Groupable: true, Permission: IdentityPermissions.RolesRead),
             new ReportColumn("name", "identity.users.name", ListColumnType.Text),
             new ReportColumn("email", "identity.users.email", ListColumnType.Text),
             new ReportColumn("language", "identity.users.language", ListColumnType.Choice, Groupable: true, Choices: LanguageChoices),
@@ -59,7 +60,9 @@ internal sealed class UsersByRoleReport(IdentityDbContext db) : IReportSource
             var from = new DateTimeOffset(since.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
             users = users.Where(u => u.LastSignInAt >= from);
         }
-        var rows = roleId is { } id
+        var rows = !run.Prints("role")
+            ? users.Select(u => new { User = u, RoleEn = (string?)null, RoleAr = (string?)null })
+            : roleId is { } id
             ? from u in users
               join ur in db.UserRoles.AsNoTracking() on u.Id equals ur.UserId
               join r in db.Roles.AsNoTracking() on ur.RoleId equals r.Id

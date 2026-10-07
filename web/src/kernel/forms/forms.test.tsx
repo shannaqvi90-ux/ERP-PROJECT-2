@@ -5,7 +5,8 @@ import { I18nProvider } from "../i18n";
 import { navigate } from "../router";
 import { ShortcutProvider } from "../shortcuts";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
-import { DecimalField, decimalInput, TextField } from "./fields";
+import { DecimalField, decimalInput, MoneyField, multiplyDecimal, TextField } from "./fields";
+import { useState } from "react";
 import { clearLeaveGuards, nothingUnsaved } from "./leave";
 import { FormSection, RecordForm } from "./RecordForm";
 import { useRecordForm } from "./useRecordForm";
@@ -231,5 +232,49 @@ describe("decimal input", () => {
     expect(decimalInput("12.505", 2)).toBeNull();
     expect(decimalInput("1e3")).toBeNull();
     expect(decimalInput("1.2.3")).toBeNull();
+  });
+});
+
+describe("money", () => {
+  it("multiplies decimal text exactly, rounding half away from zero", () => {
+    expect(multiplyDecimal("1234.56", "3.6725", 2)).toBe("4533.92");
+    expect(multiplyDecimal("0.1", "0.2", 2)).toBe("0.02");
+    expect(multiplyDecimal("100", "3.6725", 2)).toBe("367.25");
+    expect(multiplyDecimal("-10.005", "1", 2)).toBe("-10.01");
+    expect(multiplyDecimal("99999999999999.99", "3.6725", 2)).toBe("367249999999999.96");
+    expect(multiplyDecimal("", "1", 2)).toBeNull();
+    expect(multiplyDecimal("1e3", "1", 2)).toBeNull();
+  });
+
+  function Amount({ initialCurrency }: { initialCurrency: string }) {
+    const [amount, setAmount] = useState("1000");
+    const [currency, setCurrency] = useState(initialCurrency);
+    const [rate, setRate] = useState("3.6725");
+    const bind = (name: string, value: string, set: (v: string) => void) => ({ name, value, onChange: set, errors: [], readOnly: false });
+    return (
+      <MoneyField
+        label="Amount"
+        amount={bind("amount", amount, setAmount)}
+        currency={bind("currency", currency, setCurrency)}
+        rate={bind("rate", rate, setRate)}
+        baseCurrency="AED"
+      />
+    );
+  }
+
+  it("keeps the rate used and shows the base amount for an amount in another currency (rule 2), and neither for the base currency", async () => {
+    await show(<Amount initialCurrency="USD" />);
+    const rate = view!.container.querySelector<HTMLInputElement>('input[name="rate"]')!;
+    expect(rate.getAttribute("aria-label")).toBe("Exchange rate to AED");
+    const base = view!.container.querySelector("output.money-base")!;
+    expect(base.getAttribute("aria-label")).toBe("Amount in AED");
+    expect(base.textContent).toContain("3,672.50");
+    setInput(rate, "3.67");
+    expect(base.textContent).toContain("3,670.00");
+    view!.unmount();
+    view = undefined;
+    await show(<Amount initialCurrency="AED" />);
+    expect(view!.container.querySelector('input[name="rate"]')).toBeNull();
+    expect(view!.container.querySelector("output.money-base")).toBeNull();
   });
 });

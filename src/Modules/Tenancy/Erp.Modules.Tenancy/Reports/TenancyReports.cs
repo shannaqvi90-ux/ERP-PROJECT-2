@@ -21,13 +21,14 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
     public static readonly ReportDefinition Definition = new(
         Key, "tenancy.report.companyProfile", TenancyPermissions.CompaniesRead,
         [new ReportParameter("company", "tenancy.report.company", ReportParameterType.Reference, Required: true, Lookup: CompaniesList.Key)],
+        // The branches are another area's data: printed only to a caller who may read branches.
         [
-            new ReportColumn("code", "tenancy.branch.code", ListColumnType.Text),
-            new ReportColumn("name", "tenancy.report.branchName", ListColumnType.Text),
-            new ReportColumn("city", "tenancy.address.city", ListColumnType.Text, Groupable: true),
-            new ReportColumn("emirate", "tenancy.address.emirate", ListColumnType.Choice, Groupable: true, Choices: TenancyLists.Emirates),
-            new ReportColumn("phone", "tenancy.address.phone", ListColumnType.Text),
-            new ReportColumn("active", "tenancy.common.active", ListColumnType.Boolean, Groupable: true),
+            new ReportColumn("code", "tenancy.branch.code", ListColumnType.Text, Permission: TenancyPermissions.BranchesRead),
+            new ReportColumn("name", "tenancy.report.branchName", ListColumnType.Text, Permission: TenancyPermissions.BranchesRead),
+            new ReportColumn("city", "tenancy.address.city", ListColumnType.Text, Groupable: true, Permission: TenancyPermissions.BranchesRead),
+            new ReportColumn("emirate", "tenancy.address.emirate", ListColumnType.Choice, Groupable: true, Choices: TenancyLists.Emirates, Permission: TenancyPermissions.BranchesRead),
+            new ReportColumn("phone", "tenancy.address.phone", ListColumnType.Text, Permission: TenancyPermissions.BranchesRead),
+            new ReportColumn("active", "tenancy.common.active", ListColumnType.Boolean, Groupable: true, Permission: TenancyPermissions.BranchesRead),
         ],
         DescriptionKey: "tenancy.report.companyProfileHint",
         Facts:
@@ -66,7 +67,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
         {
             return null;
         }
-        var branches = await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
+        var branches = !run.PrintsRows ? [] : await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
             .ToListAsync(cancellationToken);
         // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a
@@ -149,7 +150,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
             branches = branches.Where(b => b.CompanyId == companyId);
             if (await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Code, c.LegalNameEn, c.LegalNameAr }).SingleOrDefaultAsync(cancellationToken) is { } chosen)
             {
-                texts["company"] = new LocalText($"{chosen.Code} \u00B7 {chosen.LegalNameEn}", $"{chosen.Code} \u00B7 {chosen.LegalNameAr}");
+                texts["company"] = CompanyText(run, chosen.Code, chosen.LegalNameEn, chosen.LegalNameAr);
             }
         }
         if (run.Text("emirate") is { } emirate)
@@ -169,7 +170,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
         {
             Rows = page.Select(r => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>
             {
-                ["company"] = new LocalText($"{r.CompanyCode} \u00B7 {r.LegalNameEn}", $"{r.CompanyCode} \u00B7 {r.LegalNameAr}"),
+                ["company"] = CompanyText(run, r.CompanyCode, r.LegalNameEn, r.LegalNameAr),
                 ["code"] = r.Code,
                 ["name"] = new LocalText(r.NameEn, r.NameAr),
                 ["city"] = r.City,
@@ -182,4 +183,11 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
             ParameterTexts = texts,
         };
     }
+
+    /// <summary>A branch's company as printed: its code to every reader of branches (a branch shows
+    /// it), its code and legal name only to a caller who may also read companies.</summary>
+    private static LocalText CompanyText(ReportRun run, string code, string legalNameEn, string legalNameAr) =>
+        run.Holds(TenancyPermissions.CompaniesRead)
+            ? new LocalText($"{code} \u00B7 {legalNameEn}", $"{code} \u00B7 {legalNameAr}")
+            : new LocalText(code, code);
 }

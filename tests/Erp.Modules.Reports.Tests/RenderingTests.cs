@@ -31,6 +31,13 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
     [InlineData("فاتورة 2026-10 رقم 15", true, "15|رقم|10|-|2026|فاتورة")]
     // Arabic inside an English paragraph is one right-to-left run.
     [InlineData("Branch: الفرع الرئيسي today", false, "Branch:|الفرع الرئيسي|today")]
+    // A telephone number reads left to right as one unit in an Arabic line (critic p06 round 1:
+    // the Arabic PDF printed "7810 555 2 971+"), alone and inside Arabic text.
+    [InlineData("+971 2 555 7810", true, "+971 2 555 7810")]
+    [InlineData("هاتف +971 4 123-4567 فرع", true, "فرع|+971 4 123-4567|هاتف")]
+    [InlineData("04 555 7810", true, "04 555 7810")]
+    // Not telephone numbers: a date with its time, and amounts, keep the algorithm's order.
+    [InlineData("05/10/2026 14:30", true, "14:30|05/10/2026")]
     public void Mixed_text_is_ordered_as_a_reader_expects(string text, bool rightToLeft, string expected)
     {
         var runs = Bidi.VisualRuns(text, rightToLeft);
@@ -131,6 +138,53 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
     }
 
     [Fact]
+    public void A_pdf_starts_with_a_well_formed_header()
+    {
+        var bytes = new PdfReportRenderer(fixture.Fonts).Render(Sample("en", rows: 1, grouped: false));
+        Assert.Equal("%PDF-1.7\n", Encoding.Latin1.GetString(bytes, 0, 9));
+    }
+
+    /// <summary>Letters that share a glyph (س and ش, ر and ز, medial ب and ن: they differ only by
+    /// dots drawn as marks) each extract as themselves: copy, search and screen readers read the
+    /// words printed, not الإشم for الاسم (critic p06 round 1). Judged on the letters a reader
+    /// extracts through the font's ToUnicode map, without the replacement text.</summary>
+    [Fact]
+    public void Arabic_letters_that_share_a_glyph_extract_as_the_letters_printed()
+    {
+        // Pairs in the same joining form: medial س (الاسم) and ش (الشركة), final ر (تقرير) and ز
+        // (الرمز), medial ب (العربية) and ن (العنوان), ا and إ (الإجمالي). The page carries no
+        // other Arabic text, so every Arabic letter extracted comes from these words.
+        const string words = "الاسم الشركة تقرير الرمز العربية العنوان الإجمالي";
+        var document = Sample("ar", rows: 0, grouped: false) with
+        {
+            Title = "Report", Subject = words, Issuer = "Issuer", Parameters = [], Facts = [], Columns = [], Groups = [], Totals = [],
+            Texts = new ReportDocumentTexts("Total", "Printed", "Page {page} of {pages}", "None", "-"),
+            Numerals = "latn",
+        };
+        var bytes = new PdfReportRenderer(fixture.Fonts).Render(document);
+        using var pdf = PdfDocument.Open(bytes);
+        var letters = string.Concat(pdf.GetPage(1).Letters.Select(l => l.Value)).Replace("\u200B", "", StringComparison.Ordinal);
+        var arabic = words.Where(c => Bidi.IsArabicScript(c)).Distinct();
+        foreach (var letter in arabic)
+        {
+            Assert.True(words.Count(c => c == letter) == letters.Count(c => c == letter),
+                $"'{letter}' printed {words.Count(c => c == letter)} times, extracted {letters.Count(c => c == letter)} times (extracted: {letters})");
+        }
+    }
+
+    [Fact]
+    public void A_telephone_number_prints_left_to_right_in_an_arabic_pdf()
+    {
+        var document = Sample("ar", rows: 1, grouped: false) with { Facts = [new ReportDocumentFact("الهاتف", "+971 2 555 7810")] };
+        var bytes = new PdfReportRenderer(fixture.Fonts).Render(document);
+        using var pdf = PdfDocument.Open(bytes);
+        var digits = pdf.GetPage(1).Letters.Where(l => "+0123456789".Contains(l.Value, StringComparison.Ordinal) && l.Value.Length == 1)
+            .Where(l => Math.Abs(l.StartBaseLine.Y - pdf.GetPage(1).Letters.First(x => x.Value == "+").StartBaseLine.Y) < 0.5)
+            .OrderBy(l => l.StartBaseLine.X).Select(l => l.Value);
+        Assert.Equal("+97125557810", string.Concat(digits));
+    }
+
+    [Fact]
     public void A_long_report_breaks_into_pages_with_the_header_on_each_and_page_numbers()
     {
         var document = Sample("en", rows: 150, grouped: false);
@@ -180,6 +234,65 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Contains("Al Noor Trading LLC", sheet, StringComparison.Ordinal);
         Assert.NotNull(zip.GetEntry("xl/styles.xml"));
         Assert.NotNull(zip.GetEntry("[Content_Types].xml"));
+    }
+
+    [Fact]
+    public void Xlsx_ends_with_the_grand_total_as_a_filter_aware_formula_below_the_filtered_rows()
+    {
+        var bytes = Exports.Xlsx(Sample("ar", 3, grouped: true));
+        using var zip = new ZipArchive(new MemoryStream(bytes));
+        var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        var styles = new StreamReader(zip.GetEntry("xl/styles.xml")!.Open()).ReadToEnd();
+        // Rows 2-4 hold the data; row 5 is the total, named in the document's language in the
+        // group column, the amount column (D) summing what the reader's filter leaves visible.
+        Assert.Contains("<row r=\"5\"><c r=\"A5\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">الإجمالي</t></is></c>", sheet, StringComparison.Ordinal);
+        var total = System.Text.RegularExpressions.Regex.Match(sheet, "<c r=\"D5\" s=\"(\\d+)\"><f>SUBTOTAL\\(109,D2:D4\\)</f><v>3703.5</v></c>");
+        Assert.True(total.Success, sheet);
+        // The filter covers the rows, not the total.
+        Assert.Contains("<autoFilter ref=\"A1:D4\"/>", sheet, StringComparison.Ordinal);
+        var workbook = new StreamReader(zip.GetEntry("xl/workbook.xml")!.Open()).ReadToEnd();
+        Assert.Contains("!$A$1:$D$4</definedName>", workbook, StringComparison.Ordinal);
+        // The total is bold, at the amount's two decimals.
+        var xfs = System.Text.RegularExpressions.Regex.Matches(styles, "<xf [^>]*/>").Select(m => m.Value).ToList();
+        var xf = xfs[1 + int.Parse(total.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)]; // the first <xf> is the cell style's
+        Assert.Contains("fontId=\"1\"", xf, StringComparison.Ordinal);
+        var formatId = System.Text.RegularExpressions.Regex.Match(xf, "numFmtId=\"(\\d+)\"").Groups[1].Value;
+        Assert.Contains($"<numFmt numFmtId=\"{formatId}\" formatCode=\"#,##0.00\"/>", styles, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Xlsx_writes_totals_in_more_than_one_currency_as_text_and_adds_no_total_to_a_report_without_one()
+    {
+        var sample = Sample("en", 2, grouped: false);
+        var mixed = new ReportCell(new[] { new { amount = "100.00", currency = "AED" }, new { amount = "20.000", currency = "OMR" } }, "AED 100.00 · OMR 20.000");
+        var bytes = Exports.Xlsx(sample with { Totals = [null, null, mixed] });
+        using (var zip = new ZipArchive(new MemoryStream(bytes)))
+        {
+            var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+            Assert.Contains("<c r=\"A4\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">Total</t></is></c>", sheet, StringComparison.Ordinal);
+            Assert.Contains("<c r=\"C4\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">AED 100.00 · OMR 20.000</t></is></c>", sheet, StringComparison.Ordinal);
+            Assert.DoesNotContain("SUBTOTAL", sheet, StringComparison.Ordinal);
+        }
+        var plain = sample with
+        {
+            Columns = [.. sample.Columns.Select(c => c with { Total = false })],
+            Totals = [null, null, null],
+        };
+        using (var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(plain))))
+        {
+            var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+            Assert.DoesNotContain("<row r=\"4\"", sheet, StringComparison.Ordinal);
+            Assert.DoesNotContain("Total", sheet, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Csv_carries_the_rows_only_so_another_program_reads_every_line_as_data()
+    {
+        var text = Encoding.UTF8.GetString(Exports.Csv(Sample("en", 3, grouped: true)));
+        var lines = text.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(4, lines.Length);
+        Assert.DoesNotContain("Total", text, StringComparison.Ordinal);
     }
 
     /// <summary>A report document as the engine builds one, in either language.</summary>

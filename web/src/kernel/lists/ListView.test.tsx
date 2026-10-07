@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "../i18n";
 import { mockFetch, render, setInput, settle, type Rendered } from "../../test/render";
 import { ListView } from "./ListView";
+import { ShortcutProvider } from "../shortcuts";
 import type { ListDefinition, Row } from "./model";
 
 let view: Rendered | undefined;
@@ -384,5 +385,38 @@ describe("list view", () => {
     const post = calls.find((c) => c.method === "POST")!;
     expect(post.url).toBe("/api/lists/identity.users/views");
     expect(post.body).toMatchObject({ name: "My Arabic users", filter: "language eq 'ar'", sort: "displayName", columns: ["displayName", "email", "language"] });
+  });
+});
+
+describe("printing a list", () => {
+  it("offers PDF, CSV and Excel in both languages, the screen's language first, and opens with Alt+Shift+R", async () => {
+    mockFetch((_method, url) => {
+      const parsed = new URL(url, "http://localhost");
+      if (parsed.pathname.endsWith("/definition")) return { status: 200, body: { ...definition, printable: true } };
+      if (parsed.pathname.endsWith("/views")) return { status: 200, body: { items: [], total: 0 } };
+      if (parsed.pathname === "/api/identity/users") return { status: 200, body: { items: people.slice(0, 5), total: 5, next: null, groups: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(
+      <I18nProvider initial="ar">
+        <ShortcutProvider>
+          <ListView listKey="identity.users" titleKey="identity.users.title" countKey="identity.users.count" searchPlaceholderKey="identity.users.search" />
+        </ShortcutProvider>
+      </I18nProvider>,
+    );
+    await settle();
+    await settle();
+    const button = view.container.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"][aria-keyshortcuts]')!;
+    expect(button.getAttribute("aria-keyshortcuts")).toBe("Alt+Shift+R");
+    await act(async () => {
+      document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "R", code: "KeyR", altKey: true, shiftKey: true, bubbles: true, cancelable: true }));
+    });
+    await settle();
+    const items = [...view.container.querySelectorAll<HTMLAnchorElement>('[role="menu"] [role="menuitem"]')];
+    expect(items.map((a) => `${param(a.getAttribute("href")!, "format")}:${param(a.getAttribute("href")!, "language")}`)).toEqual([
+      "pdf:ar", "pdf:en", "csv:ar", "csv:en", "xlsx:ar", "xlsx:en",
+    ]);
+    expect(items[2]!.textContent).toBe("CSV بالعربية");
+    expect(document.activeElement).toBe(items[0]);
   });
 });
