@@ -54,3 +54,23 @@ was never run by either tenant, so a leak there could not show.
 - *Every combination of every value.* Grows multiplicatively (company and branch bodies carry
   emirates and other choices); one value at a time plus all-at-index-n reaches every value's code
   path with both tenants at a fraction of the cost.
+
+## What the stricter gate found at once
+
+Its first run on the product hung in the reports isolation probe: the variant writes had given
+each tenant's administrator some sixty companies, and `GET /api/reports/lists/tenancy.access` as a
+PDF never finished, in either language, while the server kept two cores busy after the client
+gave up. The access list's companies cell was printed as the raw JSON of the list (one "word" of
+thousands of characters), and the PDF text wrapper re-shaped the whole remainder for every
+character it removed, with a per-glyph linear search inside shaping. Fixed in the report engine
+and the print layout base (`TextShaper.Wrap` cuts by doubling then halving and stops at the lines
+kept; cluster ends are looked up once; a cell is cut to 2,000 characters before layout; a
+character wider than the line still makes progress, which looped before; a list of records in a
+cell prints as their codes or names). Regression tests: `RenderingTests` (a 2,000-item unbroken
+value in both scripts, a 100,000-character cell, a line narrower than one character) and
+`ReportApiTests.A_list_of_records_in_a_cell_prints_as_their_codes`.
+
+After the variants, the write-pairs phase and every warm-up write each enumerated field's first
+value explicitly: an edit and save copies the other fields from the record, so a plain default
+body would have kept the last variant's value (the workspace left in Arabic, say) for the phases
+that follow.
