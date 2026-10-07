@@ -161,14 +161,19 @@ describe("the record form", () => {
     expect(input("name").value).toBe("Desk (changed elsewhere)");
   });
 
-  it("shows a record read-only to a user who may not change it: no save, fields disabled, the reason said", async () => {
-    mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
+  it("shows a record read-only to a user who may not change it: no save, fields disabled, the reason said, and the save keys send nothing", async () => {
+    const calls = mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
     await show(<ThingForm canEdit={false} />);
     expect(buttons()).not.toContain("Save");
     expect(input("name").disabled).toBe(true);
     expect(view!.container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("Read only");
     press({ ctrlKey: true, key: "s", code: "KeyS" });
+    press({ ctrlKey: true, key: "Enter", code: "Enter" });
+    press({ altKey: true, key: "z", code: "KeyZ" });
     await settle();
+    // Critic p06 round 2's probe (plant W2): nothing but reads leaves.
+    expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
+    expect(view!.container.querySelector('.notice[role="status"]')).toBeNull();
   });
 
   it("moves to the next and previous record with Alt+PageDown and Alt+PageUp and the toolbar arrows", async () => {
