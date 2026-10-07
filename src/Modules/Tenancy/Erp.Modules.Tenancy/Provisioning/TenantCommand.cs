@@ -23,15 +23,21 @@ namespace Erp.Modules.Tenancy.Provisioning;
 /// </list>
 /// Finding a workspace by code across tenants needs the operator's database administrator
 /// connection (<c>ConnectionStrings:Admin</c>); the web application never has it.
+/// Every change names the operator who made it in the audit trail's correlation
+/// (<c>operator:&lt;name&gt;:tenant-&lt;action&gt;</c>): <c>--operator &lt;name&gt;</c>, else
+/// <c>ERP_OPERATOR</c>, else the signed-in account and machine (<c>user@host</c>).
 /// </summary>
 internal static partial class TenantCommand
 {
     public const string PasswordVariable = "ERP_TENANT_ADMIN_PASSWORD";
 
+    /// <summary>The operator's name when <c>--operator</c> is not given.</summary>
+    public const string OperatorVariable = "ERP_OPERATOR";
+
     public static readonly ModuleCommand Definition = new(
         "tenant",
-        "tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar] | " +
-        "tenant suspend --code <code> | tenant activate --code <code> | tenant list",
+        "tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar] [--operator <name>] | " +
+        "tenant suspend --code <code> [--operator <name>] | tenant activate --code <code> [--operator <name>] | tenant list",
         RunAsync);
 
     private static async Task<int> RunAsync(IServiceProvider services, IReadOnlyList<string> args, CancellationToken cancellationToken)
@@ -75,6 +81,12 @@ internal static partial class TenantCommand
         if (!Validator.IsEmail(email)) throw new CommandException("--admin-email: not a valid e-mail address.");
         if (adminName.Length > 200) throw new CommandException("--admin-name: at most 200 characters.");
         if (language is not ("en" or "ar")) throw new CommandException("--language: en or ar.");
+        var operatorName = Operator(options);
+        // Answered plainly before anything is written (the unique index still decides a race).
+        if (await FindAsync(services, code, cancellationToken) is not null)
+        {
+            throw new CommandException($"a workspace with code '{code}' already exists.");
+        }
 
         var password = Environment.GetEnvironmentVariable(PasswordVariable);
         var generated = string.IsNullOrEmpty(password);
@@ -92,7 +104,7 @@ internal static partial class TenantCommand
             new SeedAdministrator(email, adminName, language, password));
         try
         {
-            await services.GetRequiredService<SeedRunner>().RunAsync(SeedPlan.Provision(tenant), cancellationToken);
+            await services.GetRequiredService<SeedRunner>().RunAsync(SeedPlan.Provision(tenant), cancellationToken, Correlation(operatorName, "create"));
         }
         catch (Exception error) when (error is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } }
                                           or PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
@@ -111,10 +123,11 @@ internal static partial class TenantCommand
     private static async Task<int> SetStatusAsync(IServiceProvider services, IReadOnlyDictionary<string, string> options, string status, CancellationToken cancellationToken)
     {
         var code = Required(options, "code").Trim().ToLowerInvariant();
+        var operatorName = Operator(options);
         var id = await FindAsync(services, code, cancellationToken) ?? throw new CommandException($"no workspace with code '{code}'.");
         await using var scope = services.CreateAsyncScope();
         var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
-        session.CorrelationId = $"operator:tenant-{status}";
+        session.CorrelationId = Correlation(operatorName, status == TenantStatus.Suspended ? "suspend" : "activate");
         await session.BeginAsync(id, null, "system", cancellationToken);
         var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
         var tenant = await db.Tenants.SingleAsync(cancellationToken);
@@ -160,6 +173,23 @@ internal static partial class TenantCommand
         return connection;
     }
 
+    /// <summary>Who runs the command: <c>--operator</c>, else <c>ERP_OPERATOR</c>, else
+    /// <c>user@host</c>. Letters, digits and <c>. _ @ -</c> only, at most 60 characters.</summary>
+    internal static string Operator(IReadOnlyDictionary<string, string> options)
+    {
+        var name = options.TryGetValue("operator", out var given) ? given.Trim()
+            : Environment.GetEnvironmentVariable(OperatorVariable) is { Length: > 0 } variable ? variable.Trim()
+            : $"{Environment.UserName}@{Environment.MachineName}";
+        if (!OperatorRegex().IsMatch(name))
+        {
+            throw new CommandException($"--operator (or {OperatorVariable}): 1 to 60 letters, digits or . _ @ - (no spaces).");
+        }
+        return name;
+    }
+
+    /// <summary>The audit trail's correlation for an operator's change (at most 100 characters).</summary>
+    private static string Correlation(string operatorName, string action) => $"operator:{operatorName}:tenant-{action}";
+
     private static string Required(IReadOnlyDictionary<string, string> options, string name) =>
         options.TryGetValue(name, out var value) && !string.IsNullOrWhiteSpace(value) ? value : throw new CommandException($"--{name} is required.");
 
@@ -193,6 +223,9 @@ internal static partial class TenantCommand
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{1,39}$")]
     private static partial Regex CodeRegex();
+
+    [GeneratedRegex(@"^[\p{L}\p{Nd}._@-]{1,60}$")]
+    private static partial Regex OperatorRegex();
 
     private sealed class CommandException(string message) : Exception(message);
 }
