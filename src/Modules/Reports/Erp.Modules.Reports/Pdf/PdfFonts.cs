@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Buffers.Binary;
 using System.IO.Compression;
 using HarfBuzzSharp;
@@ -44,11 +45,12 @@ public sealed class PdfFontFace : IDisposable
         {
             z.Write(sfnt);
         }
-        CompressedSfnt = buffer.ToArray();
+        CompressedSfnt = ImmutableArray.Create(buffer.ToArray());
     }
 
-    /// <summary>The TrueType bytes, zlib-compressed (the PDF font file stream), made once.</summary>
-    public byte[] CompressedSfnt { get; }
+    /// <summary>The TrueType bytes, zlib-compressed (the PDF font file stream), made once and
+    /// immutable: the face is shared by every request of every tenant.</summary>
+    public ImmutableArray<byte> CompressedSfnt { get; }
 
     /// <summary>PostScript-style name, unique among the faces (NotoSansArabic-Bold).</summary>
     public string Name { get; }
