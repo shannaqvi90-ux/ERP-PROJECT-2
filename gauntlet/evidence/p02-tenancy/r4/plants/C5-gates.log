@@ -1,0 +1,33 @@
+Test run for /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.50]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.21]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:56.34]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:00:56.34]       opening branch Z answered 200, expected 404
+[xUnit.net 00:00:56.34]       Stack Trace:
+[xUnit.net 00:00:56.35]         /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(44,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:00:56.35]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:56.35]       Output:
+[xUnit.net 00:00:56.35]         98 endpoints, 11008 requests, 4 branch Z markers, 840 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [38 s]
+  Error Message:
+   opening branch Z answered 200, expected 404
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 44
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 98 endpoints, 11008 requests, 4 branch Z markers, 840 differential checks, 5 write oracle checks
+
+
+[xUnit.net 00:00:56.68]   Finished:    Erp.Gates.Tests (ID = '60c42f28d755e2f9035befd67f37f53035d61dba6b48dd59645b0baecd41d570')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 57.3206 Seconds
+EXIT 1

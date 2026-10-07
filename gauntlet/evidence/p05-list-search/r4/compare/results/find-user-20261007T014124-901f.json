@@ -1,0 +1,620 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261007T014124-901f",
+  "instrument": 4,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-07T01:41:24.366Z",
+  "finished_at": "2026-10-07T01:41:47.680Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 20,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.371,
+    "system_wait_seconds": 1.843,
+    "human_seconds": 13.2,
+    "human_plus_wait_seconds": 15.043,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 1,
+      "B": 2,
+      "H": 2,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0,
+      "took": 0.026,
+      "chord": "Control+k",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search /users",
+      "keystrokes": 6,
+      "at": 0.243,
+      "took": 0.07,
+      "text": "/users",
+      "same_field": false,
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Settings / Users & Companies / Users",
+      "keystrokes": 1,
+      "at": 0.399,
+      "took": 0.025,
+      "chord": "Enter",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 20,
+      "at": 0.975,
+      "took": 0.209,
+      "text": "Majid Anil Pillai",
+      "same_field": false,
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 1.184,
+      "took": 0.01,
+      "chord": "Enter",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "at": 2.1,
+      "took": 0.066,
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.026,
+      "seconds": 0.217
+    },
+    {
+      "label": "menu found",
+      "at": 0.313,
+      "seconds": 0.086
+    },
+    {
+      "label": "Settings / Users & Companies / Users loaded",
+      "at": 0.423,
+      "seconds": 0.207
+    },
+    {
+      "label": "user list ready, search focused",
+      "at": 0.631,
+      "seconds": 0.003
+    },
+    {
+      "label": "first page of users",
+      "at": 0.634,
+      "seconds": 0.341
+    },
+    {
+      "label": "one result",
+      "at": 1.194,
+      "seconds": 0.784
+    },
+    {
+      "label": "sign-in shown",
+      "at": 2.167,
+      "seconds": 0.205
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "2afb90c00f633ad7.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/2afb90c00f633ad7.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "1785831173adfebe.jpg",
+      "at": 1.978,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/1785831173adfebe.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "1142584942674965.jpg",
+      "at": 2.371,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/1142584942674965.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/users/68318",
+      "name_shown": true,
+      "login_shown": true
+    }
+  },
+  "path_notes": "menus: Apps menu > Settings > Manage Users (the search box has focus) > type the name > Enter > open the single result. | menus-suggestion: Apps menu > Settings > Manage Users > type the name > click the first search suggestion > open the single result. | palette: Ctrl+K > type \"/users\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-user.mjs",
+    "sha256": "03fc7e4a8933f821055f09fa12e9c1b8c4afade71414ba8c4a7a73c951982d88"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "menus-suggestion",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "variants": [
+    {
+      "id": "menus",
+      "path": "Apps menu > Settings > Manage Users (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 21,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 4.331,
+        "system_wait_seconds": 1.788,
+        "human_seconds": 18.63,
+        "human_plus_wait_seconds": 20.418,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 4,
+          "B": 8,
+          "H": 2,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0,
+          "took": 0.062,
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.062,
+          "took": 0.052,
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.628,
+          "took": 0.073,
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 3.238,
+          "took": 0.14,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 3.378,
+          "took": 0.009,
+          "chord": "Enter",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 4.094,
+          "took": 0.073,
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.115,
+          "seconds": 0.513
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.701,
+          "seconds": 0.214
+        },
+        {
+          "label": "first page of users",
+          "at": 0.915,
+          "seconds": 0.321
+        },
+        {
+          "label": "one result",
+          "at": 3.387,
+          "seconds": 0.576
+        },
+        {
+          "label": "sign-in shown",
+          "at": 4.167,
+          "seconds": 0.164
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/30/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      }
+    },
+    {
+      "id": "menus-suggestion",
+      "path": "Apps menu > Settings > Manage Users > type the name > click the first search suggestion > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 20,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 4.558,
+        "system_wait_seconds": 1.897,
+        "human_seconds": 21,
+        "human_plus_wait_seconds": 22.897,
+        "klm_operator_counts": {
+          "K": 20,
+          "P": 5,
+          "B": 10,
+          "H": 2,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0,
+          "took": 0.091,
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.091,
+          "took": 0.056,
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.627,
+          "took": 0.074,
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 3.28,
+          "took": 0.161,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "search the name",
+          "keystrokes": 0,
+          "at": 3.457,
+          "took": 0.066,
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 4.294,
+          "took": 0.062,
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.147,
+          "seconds": 0.48
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.7,
+          "seconds": 0.328
+        },
+        {
+          "label": "first page of users",
+          "at": 1.028,
+          "seconds": 0.25
+        },
+        {
+          "label": "search suggestions",
+          "at": 3.441,
+          "seconds": 0.016
+        },
+        {
+          "label": "one result",
+          "at": 3.523,
+          "seconds": 0.621
+        },
+        {
+          "label": "sign-in shown",
+          "at": 4.357,
+          "seconds": 0.202
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/31/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type \"/users\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 30,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 2.371,
+        "system_wait_seconds": 1.843,
+        "human_seconds": 13.2,
+        "human_plus_wait_seconds": 15.043,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0,
+          "took": 0.026,
+          "chord": "Control+k",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /users",
+          "keystrokes": 6,
+          "at": 0.243,
+          "took": 0.07,
+          "text": "/users",
+          "same_field": false,
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Settings / Users & Companies / Users",
+          "keystrokes": 1,
+          "at": 0.399,
+          "took": 0.025,
+          "chord": "Enter",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 0.975,
+          "took": 0.209,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "chain": true
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 1.184,
+          "took": 0.01,
+          "chord": "Enter",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 2.1,
+          "took": 0.066,
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.026,
+          "seconds": 0.217
+        },
+        {
+          "label": "menu found",
+          "at": 0.313,
+          "seconds": 0.086
+        },
+        {
+          "label": "Settings / Users & Companies / Users loaded",
+          "at": 0.423,
+          "seconds": 0.207
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.631,
+          "seconds": 0.003
+        },
+        {
+          "label": "first page of users",
+          "at": 0.634,
+          "seconds": 0.341
+        },
+        {
+          "label": "one result",
+          "at": 1.194,
+          "seconds": 0.784
+        },
+        {
+          "label": "sign-in shown",
+          "at": 2.167,
+          "seconds": 0.205
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      }
+    }
+  ]
+}

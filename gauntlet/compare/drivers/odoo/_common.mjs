@@ -118,31 +118,11 @@ export async function technicalMenu(op, item) {
 }
 
 /**
- * API session for an API task, set up outside the measured part. Odoo's current documented API
- * (JSON-2: POST /json/2/<model>/<method> with named arguments) needs an API key, and an API key
- * can only be made after an interactive identity check. The requests are therefore typed and
- * counted in the JSON-2 form (the shorter, current form) and carried by Odoo's documented
- * external JSON-RPC endpoint (/jsonrpc, execute_kw), which runs the same model methods with the
- * same arguments and needs the sign-in in every body. The sign-in is not counted, as in our product.
+ * API session for an API task, set up outside the measured part. The requests are typed and
+ * counted in Odoo's JSON-2 form and carried by its external JSON-RPC endpoint: the harness's
+ * "odoo-json2" transport (lib/api-transport.mjs) re-envelopes each one, with the admin sign-in.
  */
 export async function odooApi(ctx) {
   const rpc = await adminRpc(ctx);
-  const { baseUrl, db, users } = ctx.product;
-  const transport = (verb, urlPath, body = {}) => {
-    const m = /^\/json\/2\/([\w.]+)\/(\w+)$/.exec(urlPath);
-    if (verb !== 'POST' || !m) throw new Error(`not a JSON-2 request: ${verb} ${urlPath}`);
-    const { ids, context, ...kwargs } = body;
-    const args = ids ? [ids] : [];
-    return {
-      url: `${baseUrl}/jsonrpc`,
-      init: {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params: { service: 'object', method: 'execute_kw',
-          args: [db, rpc.uid, users.admin.password, m[1], m[2], args, { ...kwargs, ...(context ? { context } : {}) }] } }),
-      },
-      read: (status, parsed) => (parsed?.error ? { status: 422, body: parsed.error } : { status, body: parsed?.result }),
-    };
-  };
-  return { baseUrl, transport };
+  return { baseUrl: ctx.product.baseUrl, transport: 'odoo-json2', user: 'admin', uid: rpc.uid };
 }

@@ -1,0 +1,18 @@
+count 57 users
+bar 2 selected Copy Deactivate Activate Clear selection
+after deactivate notice [ '2 users changed.' ]
+bar all 57 selected Copy Deactivate Activate Clear selection
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.isDisabled: Error: strict mode violation: locator('.list-selectionbar').getByRole('button', { name: 'Activate' }) resolved to 2 elements:
+    1) <button type="button" class="button">Deactivate</button> aka getByRole('button', { name: 'Deactivate' })
+    2) <button type="button" class="button">Activate</button> aka getByRole('button', { name: 'Activate', exact: true })
+
+Call log:
+[2m  - waiting for locator('.list-selectionbar').getByRole('button', { name: 'Activate' })[22m
+
+    at /home/shan/evidence-staging/p05-list-search/r4/scripts/ui5.mjs:32:53
+
+Node.js v22.23.3
