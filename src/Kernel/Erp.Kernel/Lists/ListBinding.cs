@@ -300,6 +300,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return Sorted(Filtered(source, plan, database), plan, database);
     }
 
+    /// <summary>Every row the request's search and filter select, in no order and without paging:
+    /// what a change of "everything that matches" acts on (the list's own count of the same request).
+    /// The request's sort, cursor, paging and grouping are ignored, so they can neither narrow nor
+    /// widen the match. Throws <see cref="ListQueryException"/> for a bad search or filter.</summary>
+    public IQueryable<T> Matching(IQueryable<T> source, ListRequest request)
+    {
+        var plan = PlanFor(new ListRequest { Search = request.Search, Filter = request.Filter });
+        return Filtered(source, plan, source.Provider is IAsyncQueryProvider);
+    }
+
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>
     public static ProblemHttpResult ToProblem(HttpContext http, ListQueryException error) =>
         new Validator(http).Add(error.Parameter, error.Code, [.. error.Args]).ToResult();

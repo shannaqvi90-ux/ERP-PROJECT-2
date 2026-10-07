@@ -34,6 +34,7 @@ public sealed class IdentityModule : ErpModule
         module.Endpoints(group =>
         {
             UserEndpoints.Map(group);
+            UserBulkEndpoints.Map(group);
             RoleEndpoints.Map(group);
             ProfileEndpoints.Map(group);
         });

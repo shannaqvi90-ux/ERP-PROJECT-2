@@ -37,6 +37,23 @@ export async function setUsersActive(rows: Row[], active: boolean): Promise<{ ch
   return { changed, refused };
 }
 
+export type MatchingUsersActiveResult = { matched: number; changed: number; unchanged: number; refusedSelf: number; refusedBeyondOwn: number };
+
+/**
+ * Sets every user the list's search and filter match active or inactive in one change on the
+ * server, which applies the same rules as one user's edit (never oneself, never someone holding
+ * more than the caller). The count the list showed travels with it: when a different number of
+ * users matches by then, nothing changes and the API answers 409 with the reason.
+ */
+export async function setMatchingUsersActive(query: URLSearchParams, expectedCount: number, active: boolean): Promise<MatchingUsersActiveResult> {
+  return api<MatchingUsersActiveResult>("POST", "/api/identity/users/matching/active", {
+    active,
+    search: query.get("search") ?? "",
+    filter: query.get("filter") ?? "",
+    expectedCount,
+  });
+}
+
 /**
  * Users: the shared list (search as you type, filters, sort, views, keyboard) with the open user
  * in the list's details panel (?open=id) and a new user at ?open=new, as on every list screen.
@@ -103,6 +120,25 @@ export function UsersPage() {
           .filter(Boolean)
           .join(" "),
       );
+    },
+    // "All that match": one set-based change on the server, for exactly the rows the list counted.
+    runAll: async (query, total) => {
+      if (!window.confirm(t(active ? "identity.users.bulk.activateAllConfirm" : "identity.users.bulk.deactivateAllConfirm", { count: total }))) return false;
+      try {
+        const result = await setMatchingUsersActive(query, total, active);
+        const refused = result.refusedSelf + result.refusedBeyondOwn;
+        setMessage(
+          [
+            t("identity.users.bulk.changed", { count: result.changed }),
+            result.unchanged > 0 ? t("identity.users.bulk.unchanged", { count: result.unchanged }) : "",
+            refused > 0 ? t("identity.users.bulk.refused", { count: refused }) : "",
+          ]
+            .filter(Boolean)
+            .join(" "),
+        );
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : String(error));
+      }
     },
   });
 

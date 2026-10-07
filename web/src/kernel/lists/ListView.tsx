@@ -41,8 +41,9 @@ export type BulkAction = {
   permission?: string;
   run: (rows: Row[]) => Promise<void> | void;
   /** Act on every row that matches the list's current search and filter (the user chose "select
-   * all that match"); the query has no paging. Actions without it act on chosen rows only. */
-  runAll?: (query: URLSearchParams, total: number) => Promise<void> | void;
+   * all that match"); the query has no paging. Actions without it act on chosen rows only.
+   * Answering false (the user cancelled) keeps the selection as it was. */
+  runAll?: (query: URLSearchParams, total: number) => Promise<void | boolean> | void | boolean;
 };
 
 /** Most rows one copy of "all that match" puts on the clipboard (larger sets are exported). */
@@ -881,7 +882,8 @@ export function ListView(props: ListViewProps) {
                 disabled={unavailable}
                 title={unavailable ? t("lists.bulk.chosenOnly") : undefined}
                 onClick={() =>
-                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then(() => {
+                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then((done) => {
+                    if (done === false) return;
                     clearSelection();
                     rows.reload();
                   })

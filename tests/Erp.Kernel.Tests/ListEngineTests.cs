@@ -218,6 +218,21 @@ public sealed class ListEngineTests
         Assert.Equal(3, (await Run(new ListRequest { GroupBy = "day" })).Groups!.Count);
     }
 
+    [Fact]
+    public async Task Matching_is_every_row_the_search_and_filter_select_whatever_the_paging_sort_or_grouping()
+    {
+        var request = new ListRequest { Search = "item", Filter = "kind eq 'raw' and quantity ge 2", Sort = "-name", Take = 3, Skip = 2, GroupBy = "kind" };
+        var matching = Binding().Matching(Items.AsQueryable(), request).Select(i => i.Id).Order().ToList();
+        var walked = (await Run(new ListRequest { Search = "item", Filter = "kind eq 'raw' and quantity ge 2", Take = 200 })).Rows.Select(i => i.Id).Order().ToList();
+        Assert.Equal(walked, matching);
+        Assert.Equal(Items.Where(i => i.Kind == "raw" && i.Quantity >= 2).Select(i => i.Id).Order(), matching);
+        Assert.Equal(Items.Count, Binding().Matching(Items.AsQueryable(), new ListRequest()).Count());
+        // A cursor of another query cannot narrow or widen the match, and bad queries still throw.
+        Assert.Equal(matching, Binding().Matching(Items.AsQueryable(), new ListRequest { Search = "item", Filter = "kind eq 'raw' and quantity ge 2", After = "not-a-cursor" }).Select(i => i.Id).Order());
+        var error = Assert.Throws<ListQueryException>(() => Binding().Matching(Items.AsQueryable(), new ListRequest { Filter = "nosuch eq 1" }));
+        Assert.Equal("filter", error.Parameter);
+    }
+
     [Theory]
     [InlineData("sort", "kind", "list.notSortable")]
     [InlineData("sort", "-", "list.sortSyntax")]
