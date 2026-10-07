@@ -246,9 +246,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.list-select {
+.list-select,
+.list-grid .list-select {
   display: flex;
+  align-items: center;
   justify-content: center;
+  padding-inline: 0;
+  text-overflow: clip;
+}
+
+.list-select input[type="checkbox"] {
+  margin: 0;
 }
 
 .list-headcell {

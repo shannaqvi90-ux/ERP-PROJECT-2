@@ -442,6 +442,62 @@ test.describe("app shell", () => {
     expect(latin.every((range) => !/U\+0?0?(00|20)-/i.test(range))).toBe(true);
   });
 
+  test("every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper", async ({ page }) => {
+    // Round-4 critic: rows with an empty cell ("not signed in yet", no roles) looked shifted. The
+    // print layout base gave every table cell in a wrapped screen its own padding and bottom line,
+    // and the field height made checkboxes 30 px tall, so cells overflowed the 28 px row.
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    // Starts in English whatever the administrator's stored language is, and leaves it so.
+    await setPreferences(page, { language: "en" });
+    await page.reload();
+    await expect(navigation(page)).toBeVisible();
+    const problems: string[] = [];
+    try {
+      for (const language of ["en", "ar"] as const) {
+        if (language === "ar") {
+          await page.keyboard.press("Alt+l");
+          await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+        }
+        const nav = navigation(page, language === "ar" ? "التنقل الرئيسي" : "Main navigation");
+        const links = await nav.locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+        let listsChecked = 0;
+        for (const href of links) {
+          await nav.locator(`a[href="${href}"]`).click();
+          await expect(page.locator("main h1")).toBeVisible();
+          if ((await page.locator("main .list-grid").count()) === 0) continue;
+          await expect(page.locator("main .list-row").first()).toBeVisible();
+          for (const media of ["screen", "print"] as const) {
+            await page.emulateMedia({ media });
+            const found = await page.locator("main .list-header, main .list-row").evaluateAll((rows) => {
+              const out: string[] = [];
+              for (const row of rows) {
+                const r = row.getBoundingClientRect();
+                for (const cell of Array.from(row.children)) {
+                  const c = cell.getBoundingClientRect();
+                  const style = getComputedStyle(cell);
+                  const what = `${row.className.split(" ")[0]} "${(row.textContent ?? "").slice(0, 24)}" cell ${(cell as HTMLElement).className}`;
+                  if (c.top < r.top - 0.5 || c.bottom > r.bottom + 0.5) out.push(`${what}: ${c.top.toFixed(1)}-${c.bottom.toFixed(1)} outside the row ${r.top.toFixed(1)}-${r.bottom.toFixed(1)}`);
+                  if (parseFloat(style.borderBlockEndWidth) > 0 || parseFloat(style.borderBlockStartWidth) > 0) out.push(`${what}: a line of its own`);
+                }
+              }
+              return out;
+            });
+            problems.push(...found.slice(0, 5).map((p) => `${href} (${language}, ${media}): ${p}`));
+          }
+          await page.emulateMedia({ media: "screen" });
+          listsChecked++;
+        }
+        expect(listsChecked, `list screens checked (${language})`).toBeGreaterThanOrEqual(5);
+      }
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+      await setPreferences(page, { language: "en" });
+    }
+    expect(problems).toEqual([]);
+  });
+
   for (const language of ["en", "ar"] as const) {
     test(`every shell screen and dialog meets the accessibility basics (${language})`, async ({ page }) => {
       await freshStart(page, language);

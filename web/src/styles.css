@@ -175,6 +175,14 @@ input {
   min-width: 0;
 }
 
+/* Boxes and buttons are their own size: the field height above made a checkbox 30 px tall, taller
+   than a list row. */
+input[type="checkbox"],
+input[type="radio"] {
+  height: auto;
+  padding: 0;
+}
+
 input[aria-invalid="true"] {
   border-color: var(--danger);
 }
@@ -1007,13 +1015,16 @@ input[aria-invalid="true"] {
   margin: 0;
 }
 
-.print-document table {
+/* A document's own tables. A wrapped live screen keeps its tables as the screen draws them, on
+   screen and on paper: the list grid lays its cells out in fixed-height rows with one line under
+   each row, and per-cell padding and lines from here put every empty or taller cell off that line. */
+.print-document:not(.print-document-screen) table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.print-document th,
-.print-document td {
+.print-document:not(.print-document-screen) th,
+.print-document:not(.print-document-screen) td {
   text-align: start;
   padding: 3px 6px;
   border-block-end: 1px solid #d0d7de;
