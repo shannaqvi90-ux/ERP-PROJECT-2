@@ -674,10 +674,10 @@ export function ListView(props: ListViewProps) {
     : [];
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
 
-  const columnsTemplate = `2.25rem ${visible.map((c) => width(c)).join(" ")}`;
+  const columnsTemplate = `2.25rem ${visible.map((c) => width(c, t(c.labelKey))).join(" ")}`;
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
   // so a long value in one row never widens that row's columns: cells cut long text instead.
-  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c), 0)}rem`;
+  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c, t(c.labelKey)), 0)}rem`;
   const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
   const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
   const groups = rows.groups ?? [];
@@ -980,10 +980,10 @@ export function ListView(props: ListViewProps) {
                     <button
                       type="button"
                       className="list-sort"
-                      title={t("lists.sort.hint")}
+                      title={`${label}\n${t("lists.sort.hint")}`}
                       onClick={(e) => update((s) => ({ ...s, sort: toggleSort(byRelevance({ ...s, search: appliedSearch }) ? [] : s.sort, c.key, e.shiftKey), sortChosen: true }))}
                     >
-                      {label}
+                      <span className="list-sort-label">{label}</span>
                       {sortKey && (
                         <span className="list-sort-mark" aria-label={t(sortKey.descending ? "lists.sort.state.descending" : "lists.sort.state.ascending")}>
                           {sortKey.descending ? "▼" : "▲"}
@@ -992,7 +992,7 @@ export function ListView(props: ListViewProps) {
                       )}
                     </button>
                   ) : (
-                    <span className="list-headlabel">{label}</span>
+                    <span className="list-headlabel" title={label}>{label}</span>
                   )}
                   {(c.sortable || c.filterable || c.groupable) && (
                     <span className={`list-anchor${position >= visible.length / 2 ? " end" : ""}`}>
@@ -1192,13 +1192,18 @@ function columnWidth(column: ListColumn): { min: number; share: number } {
   }
 }
 
-function width(column: ListColumn): string {
-  const { min, share } = columnWidth(column);
-  return `minmax(${min}rem, ${share}fr)`;
+/** Room for the header: a little over half a rem a character plus the column menu and padding,
+ * up to 16rem (a longer label is cut with an ellipsis and keeps its full text as the button's title). */
+function headerMinimum(label: string): number {
+  return Math.min(16, Math.round(([...label].length * 0.56 + 3.25) * 100) / 100);
 }
 
-function minimumWidth(column: ListColumn): number {
-  return columnWidth(column).min;
+function minimumWidth(column: ListColumn, label: string): number {
+  return Math.max(columnWidth(column).min, headerMinimum(label));
+}
+
+function width(column: ListColumn, label: string): string {
+  return `minmax(${minimumWidth(column, label)}rem, ${columnWidth(column).share}fr)`;
 }
 
 /** What a view stores; the "modified" mark compares against it. */

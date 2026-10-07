@@ -81,6 +81,17 @@ test.describe("list framework", () => {
       rows.slice(0, 15).flatMap((row) => [...row.children].map((cell) => getComputedStyle(cell).borderBottomWidth)).filter((w) => w !== "0px"),
     );
     expect(cellBorders).toEqual([]);
+    // No cell is taller than its row (the selection box once was, and crossed the separator).
+    const tallCells = await page.locator("table[role=grid] tbody tr.list-row").evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => {
+        const box = row.getBoundingClientRect();
+        return [...row.querySelectorAll("td, td *")]
+          .map((cell) => cell.getBoundingClientRect())
+          .filter((r) => r.height > 0 && (r.top < box.top - 0.5 || r.bottom > box.bottom + 0.5))
+          .map((r) => `${Math.round(r.top)}-${Math.round(r.bottom)} outside ${Math.round(box.top)}-${Math.round(box.bottom)}`);
+      }),
+    );
+    expect(tallCells).toEqual([]);
   });
 
   test("moves through rows with the arrow keys, selects with Space and opens with Enter", async ({ page }) => {
@@ -209,4 +220,33 @@ test.describe("list framework", () => {
     await page.keyboard.press("Enter");
     await expect(page.getByRole("region", { name: "التفاصيل" })).toContainText(users.viewer);
   });
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`every header stays inside its own column, wide and narrow (${language})`, async ({ page }) => {
+      // Critic p06 round 2: on the Arabic companies list the two legal-name headers overlapped
+      // (a long label pushed its column menu into the next header).
+      const spills = async () =>
+        page.locator("table[role=grid] tr.list-header > th").evaluateAll((cells) =>
+          cells.flatMap((cell) => {
+            const box = cell.getBoundingClientRect();
+            return [...cell.querySelectorAll("button, span")]
+              .filter((e) => !e.closest(".list-popover"))
+              .map((e) => e.getBoundingClientRect())
+              .filter((r) => r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5))
+              .map((r) => `${cell.textContent?.trim()}: ${Math.round(r.left)}-${Math.round(r.right)} outside ${Math.round(box.left)}-${Math.round(box.right)}`);
+          }),
+        );
+      await freshStart(page, language);
+      await signIn(page, user);
+      for (const width of [1440, 1024]) {
+        await page.setViewportSize({ width, height: 800 });
+        for (const href of ["/tenancy/companies", "/identity/users"]) {
+          await page.locator(`nav a[href="${href}"]`).first().click();
+          await expect(page).toHaveURL(new RegExp(href));
+          await expect(dataRows(page).first()).toBeVisible();
+          expect(await spills(), `${language} ${width}px ${href}`).toEqual([]);
+        }
+      }
+    });
+  }
 });
