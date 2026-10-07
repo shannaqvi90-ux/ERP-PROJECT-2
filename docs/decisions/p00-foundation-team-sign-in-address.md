@@ -230,3 +230,20 @@ paths. Neither path depends on anything the device remembers.
 
 The earlier note above that the step tie at the floor would go to the owner as a human gate is
 withdrawn: the floor was not where it was thought to be, and no gate is needed for this task.
+
+## Round 6, resumed after the stop: checked again (2026-10-07, 18:21 UTC)
+
+After merging the integration branch at `6a5e371` (no product or harness code changed in that
+merge), `COMPARE_OURS_URL=http://localhost:20000 node run.mjs --task sign-in --product both --repeat 3`
+against `./erp up` of this branch and the shared Odoo rig, load average about 1. Verdict **win**,
+strictly lower on all five metrics, no tie at zero:
+
+| Metric (median run, best verified path per metric) | Ours | Odoo |
+|---|---|---|
+| Steps | 3 | 4 |
+| Keystrokes | 35 | 57 |
+| Machine s | 0.393 | 2.634 |
+| KLM human s | 11.55 | 19.06 |
+| Human + wait s | 11.741 | 21.326 |
+
+Ours' three runs: machine 0.342-0.492 s; Odoo's: 2.465-2.637 s. The decision above stands.
