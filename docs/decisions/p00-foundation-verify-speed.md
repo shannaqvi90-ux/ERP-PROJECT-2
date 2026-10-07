@@ -204,6 +204,7 @@ the start, 60-135 during the run, 16 threads.
 | Run | Commit | Wall time | .NET stage | Result |
 |---|---|---|---|---|
 | 1 | `6da5a6f` (merge + the withdrawal) | 2,619 s | passed: no launcher failure, no client time-out | failed in the end-to-end stage: the comparison harness's create-company-branch health check (a race in the company form, fixed in `918dcd8`; see below) |
+| 2 | `4be60a5` (run 1 + the G2 host check + the company form fix) | 1,949 s (slot taken 05:29 +04, after 110 min waiting for one) | passed in 1,658 s | **passed**: .NET 385, web unit 267, end-to-end 67, harness 147; load 3.1 at the start, 22-80 during, 22 at the end |
 
 The longest work in run 1 was the G1 HTTP isolation test (32 min 7 s, main process) and the
 planted HTTP-attack self-test (33 min 49 s, its own process), side by side; with three verifies
