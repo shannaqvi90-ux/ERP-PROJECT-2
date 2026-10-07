@@ -127,6 +127,9 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
             .Select(a => new { a.CompanyId, a.AllBranches })
             .ToListAsync(cancellationToken);
         await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), cancellationToken);
+        // Records every branch of a company shares are written only by users who hold every branch
+        // of it (the kernel refuses the rest, whatever an endpoint checked).
+        session.SetBranchLimits(access.Where(a => !a.AllBranches).Select(a => a.CompanyId));
         if (access.Count == 0)
         {
             session.SetWorkplace(null, null, []);

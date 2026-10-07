@@ -13,6 +13,8 @@
 #   ./erp tenant suspend|activate --code <code> | ./erp tenant list
 #                               platform operator commands against the running demo's database
 #                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated)
+#                               (the audit trail names the operator: --operator <name>, else
+#                               ERP_OPERATOR, else user@host)
 #
 # Environment (all optional; lets several copies run side by side):
 #   ERP_PROJECT           compose project name                 (default erp)
@@ -313,7 +315,8 @@ cmd_logs() {
 cmd_tenant() {
   require_docker
   compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 run --rm --no-deps -T \
-    -e ERP_TENANT_ADMIN_PASSWORD="${ERP_TENANT_ADMIN_PASSWORD:-}" setup tenant "$@"
+    -e ERP_TENANT_ADMIN_PASSWORD="${ERP_TENANT_ADMIN_PASSWORD:-}" \
+    -e ERP_OPERATOR="${ERP_OPERATOR:-$(id -un)@$(hostname -s 2>/dev/null || hostname)}" setup tenant "$@"
 }
 
 cmd_psql() {

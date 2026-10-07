@@ -11,6 +11,9 @@ export type CompanyRow = {
   branchCount: number;
   isActive: boolean;
   version: number;
+  /** False when the user works in only some of the company's branches: they may not change the
+   * company or add a branch to it. */
+  everyBranch?: boolean;
 };
 
 export type Company = {
@@ -60,6 +63,9 @@ export type BranchRow = {
 };
 
 export type Branch = BranchRow & {
+  /** False when the user works in only some branches of the branch's company: they may change
+   * their own branch, but not its code (codes are chosen by someone who sees every branch). */
+  everyBranch?: boolean;
   addressLine1: string | null;
   addressLine2: string | null;
   poBox: string | null;

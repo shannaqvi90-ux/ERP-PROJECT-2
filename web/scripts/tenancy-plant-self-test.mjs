@@ -7,7 +7,9 @@
 // upload and remove offered without tenancy.companies.update; the branch line and New branch
 // offered without tenancy.branches.create); P3b is critic p06 round 1's (the company form editable
 // for a read-only user, on the shared record form), with the same fault on the branch, access and
-// workspace forms; the others are the same fault on the other actions of these screens.
+// workspace forms; the U-*-some-branches plants are critic p02 round 4's (the branch line, New
+// branch and the branch code offered to someone who works in only some branches of the company);
+// the others are the same fault on the other actions of these screens.
 //
 // Usage: node scripts/tenancy-plant-self-test.mjs   (from web/, after npm ci)
 import { spawnSync } from "node:child_process";
@@ -28,12 +30,12 @@ const plants = [
   {
     id: "U2",
     what: "the company's branch line offered without tenancy.branches.create",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '      {can("tenancy.branches.create") && (', replace: "      {(" }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && (', replace: "{everyBranch && (" }],
   },
   {
     id: "U2-new",
     what: "New branch (button and Alt+N) offered without tenancy.branches.create",
-    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: 'useRecordPanel(can("tenancy.branches.create"))', replace: "useRecordPanel(true)" }],
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: 'useRecordPanel(can("tenancy.branches.create") && creatable.length > 0)', replace: "useRecordPanel(creatable.length > 0)" }],
   },
   {
     id: "U-company-new",
@@ -74,6 +76,21 @@ const plants = [
     id: "U-logo-some-branches",
     what: "the company logo changeable by someone who works in only some of its branches",
     edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt}', replace: 'editable={can("tenancy.companies.update")} onChange={form.adopt}' }],
+  },
+  {
+    id: "U-branchline-some-branches",
+    what: "the company's branch line offered to someone who works in only some of its branches (critic p02 round 4)",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && (', replace: '{can("tenancy.branches.create") && (' }],
+  },
+  {
+    id: "U-newbranch-some-branches",
+    what: "New branch offered to someone who works in only some branches of every company (critic p02 round 4)",
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: "companies.filter((c) => c.isActive && c.everyBranch !== false)", replace: "companies.filter((c) => c.isActive)" }],
+  },
+  {
+    id: "U-branchcode-some-branches",
+    what: "a branch code editable by someone who works in only some branches of its company (critic p02 round 4)",
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: "          disabled={branch?.everyBranch === false}\n", replace: "" }],
   },
   {
     id: "P3b-branch",
