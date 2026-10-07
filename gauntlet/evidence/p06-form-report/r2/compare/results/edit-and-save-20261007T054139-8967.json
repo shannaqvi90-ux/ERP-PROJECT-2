@@ -1,0 +1,744 @@
+{
+  "schema": 1,
+  "run_id": "edit-and-save-20261007T054139-8967",
+  "instrument": 4,
+  "task": "edit-and-save",
+  "task_title": "Edit a record and save it",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
+  "done_when": "The form shows the saved record; the back end holds the new phone number.",
+  "started_at": "2026-10-07T05:41:39.839Z",
+  "finished_at": "2026-10-07T05:41:44.129Z",
+  "environment": {
+    "base_url": "http://localhost:20650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 17,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.185,
+    "system_wait_seconds": 0.054,
+    "human_seconds": 9.72,
+    "human_plus_wait_seconds": 9.774,
+    "klm_operator_counts": {
+      "K": 19,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "phone field",
+      "keystrokes": 0,
+      "at": 0,
+      "took": 0.05,
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "new number",
+      "keystrokes": 17,
+      "at": 0.06,
+      "took": 0.066,
+      "text": "+971 50 555 0199",
+      "same_field": true,
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Save (Ctrl+S)",
+      "keystrokes": 2,
+      "at": 0.125,
+      "took": 0.005,
+      "chord": "Control+s",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "saved",
+      "at": 0.131,
+      "seconds": 0.054
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "f24cc0671b72e9b9.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p06-form-report/r2/compare/blind/shots/f24cc0671b72e9b9.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "255c3a173d07dce1.jpg",
+      "at": 0.185,
+      "path": "../../evidence-staging/p06-form-report/r2/compare/blind/shots/255c3a173d07dce1.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "saved": "+971 50 555 0199",
+      "shown": "+971 50 555 0199",
+      "record": "company ALN-DXB"
+    }
+  },
+  "path_notes": "keyboard: Click the phone field > type the number > Ctrl+S | pointer: Click the phone field > type the number > click Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/edit-and-save.mjs",
+    "sha256": "ec682a9bfeac6c27bc7d6ae714836e1e4efaf9ec063ea447eccdca50b9b216c6"
+  },
+  "task_notes": "Clean-up puts the original number back through the back end.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+    "path": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+    "query": "",
+    "fragment": "",
+    "fields": 22,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameEn",
+        "password": false,
+        "value_length": 19,
+        "value": "Al Noor Trading LLC"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameAr",
+        "password": false,
+        "value_length": 24,
+        "value": "شركة النور للتجارة ذ.م.م"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "ALN-DXB"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceNumber",
+        "password": false,
+        "value_length": 10,
+        "value": "DED-604112"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceAuthority",
+        "password": false,
+        "value_length": 39,
+        "value": "Dubai Department of Economy and Tourism"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "taxRegistrationNumber",
+        "password": false,
+        "value_length": 15,
+        "value": "100123456700003"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "baseCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "fiscalYearStartDay",
+        "password": false,
+        "value_length": 1,
+        "value": "1"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 35,
+        "value": "Office 1204, Al Maktoum Road, Deira"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 5,
+        "value": "Dubai"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "11542"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country",
+        "password": false,
+        "value_length": 2,
+        "value": "AE"
+      },
+      {
+        "tag": "textarea",
+        "type": "textarea",
+        "name": "addressAr",
+        "password": false,
+        "value_length": 35,
+        "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone",
+        "password": false,
+        "value_length": 15,
+        "value": "+971 4 221 5500"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 27,
+        "value": "accounts.aln-dxb@example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "url",
+        "name": "website",
+        "password": false,
+        "value_length": 22,
+        "value": "https://www.example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "branchNameEn",
+        "password": false,
+        "value_length": 22,
+        "value": "Al Noor Trading LLC - "
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Click the phone field > type the number > Ctrl+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 19,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.185,
+        "system_wait_seconds": 0.054,
+        "human_seconds": 9.72,
+        "human_plus_wait_seconds": 9.774,
+        "klm_operator_counts": {
+          "K": 19,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0,
+          "took": 0.05,
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 17,
+          "at": 0.06,
+          "took": 0.066,
+          "text": "+971 50 555 0199",
+          "same_field": true,
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "Save (Ctrl+S)",
+          "keystrokes": 2,
+          "at": 0.125,
+          "took": 0.005,
+          "chord": "Control+s",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.131,
+          "seconds": 0.054
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+        "path": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+        "query": "",
+        "fragment": "",
+        "fields": 22,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country",
+            "password": false,
+            "value_length": 2,
+            "value": "AE"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Click the phone field > type the number > click Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 17,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.207,
+        "system_wait_seconds": 0.056,
+        "human_seconds": 10.86,
+        "human_plus_wait_seconds": 10.916,
+        "klm_operator_counts": {
+          "K": 17,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0,
+          "took": 0.042,
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 17,
+          "at": 0.048,
+          "took": 0.066,
+          "text": "+971 50 555 0199",
+          "same_field": true,
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.114,
+          "took": 0.037,
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.152,
+          "seconds": 0.056
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+        "path": "/tenancy/companies/018dca08-f081-78a8-b1fd-d0e7a7a74f34",
+        "query": "",
+        "fragment": "",
+        "fields": 22,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country",
+            "password": false,
+            "value_length": 2,
+            "value": "AE"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      }
+    }
+  ]
+}

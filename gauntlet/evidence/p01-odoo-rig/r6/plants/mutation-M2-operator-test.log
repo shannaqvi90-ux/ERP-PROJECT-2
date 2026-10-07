@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: steps, keystrokes and waits are counted the same way every time
+ok 1 - steps, keystrokes and waits are counted the same way every time
+  ---
+  duration_ms: 1226.697683
+  type: 'test'
+  ...
+# Subtest: choosing a file counts the dialog click and the pick
+ok 2 - choosing a file counts the dialog click and the pick
+  ---
+  duration_ms: 327.547605
+  type: 'test'
+  ...
+# Subtest: a step before start() is refused
+ok 3 - a step before start() is refused
+  ---
+  duration_ms: 386.857489
+  type: 'test'
+  ...
+# Subtest: blind screenshots paint branding over, go grey, and leave title and favicon neutral
+ok 4 - blind screenshots paint branding over, go grey, and leave title and favicon neutral
+  ---
+  duration_ms: 701.665708
+  type: 'test'
+  ...
+# Subtest: a screenshot after the end of a task never shortens the measured time
+ok 5 - a screenshot after the end of a task never shortens the measured time
+  ---
+  duration_ms: 380.575928
+  type: 'test'
+  ...
+# Subtest: round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)
+ok 6 - round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)
+  ---
+  duration_ms: 448.726138
+  type: 'test'
+  ...
+# Subtest: round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+ok 7 - round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+  ---
+  duration_ms: 785.659046
+  type: 'test'
+  ...
+# Subtest: while measuring, only the moments the task declares are shot, each once; their time stays on the clock
+ok 8 - while measuring, only the moments the task declares are shot, each once; their time stays on the clock
+  ---
+  duration_ms: 607.430933
+  type: 'test'
+  ...
+# Subtest: round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)
+ok 9 - round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)
+  ---
+  duration_ms: 384.744664
+  type: 'test'
+  ...
+# Subtest: round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted
+ok 10 - round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted
+  ---
+  duration_ms: 340.0924
+  type: 'test'
+  ...
+# Subtest: an API request is one step whose keystrokes are the request typed plus Enter
+ok 11 - an API request is one step whose keystrokes are the request typed plus Enter
+  ---
+  duration_ms: 240.899273
+  type: 'test'
+  ...
+# Subtest: a wait condition works on a page whose content security policy forbids eval (our product)
+ok 12 - a wait condition works on a page whose content security policy forbids eval (our product)
+  ---
+  duration_ms: 452.83066
+  type: 'test'
+  ...
+# Subtest: round 5: paste and copy chords are read as the keys they press, whatever their spelling
+ok 13 - round 5: paste and copy chords are read as the keys they press, whatever their spelling
+  ---
+  duration_ms: 1.031824
+  type: 'test'
+  ...
+# Subtest: a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)
+ok 14 - a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)
+  ---
+  duration_ms: 176.315507
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6975.17062

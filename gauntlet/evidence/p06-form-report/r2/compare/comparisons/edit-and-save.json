@@ -1,0 +1,36 @@
+{
+  "task": "edit-and-save",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 4,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 17,
+      "odoo": 19,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.195,
+      "odoo": 0.375,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 9.72,
+      "odoo": 10.28,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 9.774,
+      "odoo": 10.62,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p06-form-report/r2/compare/results/edit-and-save-20261007T054135-3261.json",
+    "odoo": "../../evidence-staging/p06-form-report/r2/compare/results/edit-and-save-20261007T054144-6c3a.json"
+  }
+}
