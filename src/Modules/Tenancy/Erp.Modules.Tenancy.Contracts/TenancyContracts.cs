@@ -63,3 +63,34 @@ public static class TenancyPermissions
         AccessRead, AccessUpdate, WorkplaceRead, WorkplaceSwitch,
     ];
 }
+
+/// <summary>Another user's default (working) company as the caller sees it: the company they
+/// chose or were given (null: none, their first active company by code is used), the companies of
+/// the caller's scope they may work in, whether they also work in companies outside it, and the
+/// version to send back with a change.</summary>
+public sealed record UserWorkplaceInfo(Guid UserId, Guid? CompanyId, IReadOnlyList<CompanyInfo> Companies, bool CompaniesElsewhere, uint Version);
+
+/// <summary>How setting another user's default company went.</summary>
+public enum WorkplaceChange
+{
+    Done,
+
+    /// <summary>The company is not one of the caller's the user may work in (or is inactive).</summary>
+    CompanyNotAllowed,
+
+    /// <summary>The user works in companies outside the caller's scope: their default may be one
+    /// of those, so only someone who works in every one of their companies changes it.</summary>
+    UserBeyondScope,
+
+    /// <summary>The version sent is not the current one: someone changed it since.</summary>
+    Stale,
+}
+
+/// <summary>Another user's default (working) company, for administrators (the user switches their
+/// own in the top bar). Other modules use this instead of the tenancy tables.</summary>
+public interface IUserWorkplaces
+{
+    Task<UserWorkplaceInfo> GetAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task<WorkplaceChange> SetAsync(Guid userId, Guid? companyId, uint version, CancellationToken cancellationToken);
+}

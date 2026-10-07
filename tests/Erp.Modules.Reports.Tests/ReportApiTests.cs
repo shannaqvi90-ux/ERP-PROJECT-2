@@ -262,11 +262,13 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             Assert.NotEmpty(full.GetProperty("columns").EnumerateArray());
             Assert.Empty(full.GetProperty("notes").EnumerateArray());
 
-            // Users by role under the users' read permission: no role column, no grouping by role,
+            // Users by role under the users' read permission: no role or company column, no grouping by role,
             // the role parameter refused; the catalogue offers neither.
             using var usersOnly = await UserWithAsync(admin, "byrole.users", "identity.users.read", "reports.catalog.read");
             var byRole = await usersOnly.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.usersByRole?language=en");
             Assert.DoesNotContain(byRole.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "role");
+            // Nor the company a role is held in (part of the role holding, same permission).
+            Assert.DoesNotContain(byRole.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "company");
             Assert.True(byRole.GetProperty("groupBy").ValueKind == JsonValueKind.Null);
             using var refused = await usersOnly.GetAsync($"/api/reports/run/identity.usersByRole?role={Guid.NewGuid()}");
             Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
@@ -274,6 +276,7 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             var catalogue = await usersOnly.GetFromJsonAsync<JsonElement>("/api/reports/catalog?language=en");
             var item = catalogue.GetProperty("items").EnumerateArray().Single(i => i.GetProperty("key").GetString() == "identity.usersByRole");
             Assert.DoesNotContain(item.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "role");
+            Assert.DoesNotContain(item.GetProperty("columns").EnumerateArray(), c => c.GetProperty("key").GetString() == "company");
             Assert.DoesNotContain(item.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("key").GetString() == "role");
             Assert.True(item.GetProperty("defaultGroupBy").ValueKind == JsonValueKind.Null);
 
