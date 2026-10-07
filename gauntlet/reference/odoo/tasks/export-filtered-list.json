@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "export-filtered-list-20261005T070539-0ea5",
-  "instrument": 5,
+  "run_id": "export-filtered-list-20261007T212230-4526",
+  "instrument": 6,
   "task": "export-filtered-list",
   "task_title": "Export a filtered list",
   "product": "odoo",
   "status": "verified",
   "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
   "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
-  "started_at": "2026-10-05T07:05:39.282Z",
-  "finished_at": "2026-10-05T07:05:53.242Z",
+  "started_at": "2026-10-07T21:22:30.882Z",
+  "finished_at": "2026-10-07T21:22:40.071Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 7.577,
-    "system_wait_seconds": 5.401,
+    "machine_seconds": 4.779,
+    "system_wait_seconds": 3.425,
     "human_seconds": 26.43,
-    "human_plus_wait_seconds": 31.831,
+    "human_plus_wait_seconds": 29.855,
     "klm_operator_counts": {
       "K": 11,
       "P": 8,
@@ -58,7 +58,7 @@
       "label": "apps menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.07,
+      "took": 0.041,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "at": 0.072,
-      "took": 0.054,
+      "at": 0.043,
+      "took": 0.046,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "type",
       "label": "tag",
       "keystrokes": 11,
-      "at": 0.34,
-      "took": 0.075,
+      "at": 0.217,
+      "took": 0.055,
       "text": "Government",
       "same_field": false,
       "screen": "/odoo/contacts",
@@ -89,8 +89,8 @@
       "kind": "click",
       "label": "Search Tag for",
       "keystrokes": 0,
-      "at": 0.434,
-      "took": 0.506,
+      "at": 0.278,
+      "took": 0.379,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -99,8 +99,8 @@
       "kind": "click",
       "label": "select the page",
       "keystrokes": 0,
-      "at": 2.082,
-      "took": 0.239,
+      "at": 1.685,
+      "took": 0.162,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -109,8 +109,8 @@
       "kind": "click",
       "label": "Select all",
       "keystrokes": 0,
-      "at": 2.373,
-      "took": 0.254,
+      "at": 1.861,
+      "took": 0.146,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -119,8 +119,8 @@
       "kind": "click",
       "label": "Actions",
       "keystrokes": 0,
-      "at": 2.627,
-      "took": 0.075,
+      "at": 2.008,
+      "took": 0.118,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -129,8 +129,8 @@
       "kind": "click",
       "label": "Export",
       "keystrokes": 0,
-      "at": 2.703,
-      "took": 0.153,
+      "at": 2.127,
+      "took": 0.1,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -139,8 +139,8 @@
       "kind": "click",
       "label": "Export (download)",
       "keystrokes": 0,
-      "at": 3.605,
-      "took": 0.199,
+      "at": 2.693,
+      "took": 0.152,
       "screen": "/odoo/contacts",
       "chain": false
     }
@@ -148,58 +148,58 @@
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.126,
-      "seconds": 0.189
+      "at": 0.09,
+      "seconds": 0.112
     },
     {
       "label": "contact list, search focused",
-      "at": 0.315,
-      "seconds": 0.007
+      "at": 0.202,
+      "seconds": 0.003
     },
     {
       "label": "search options",
-      "at": 0.416,
-      "seconds": 0.016
+      "at": 0.273,
+      "seconds": 0.005
     },
     {
       "label": "filtered list",
-      "at": 0.94,
-      "seconds": 1.141
+      "at": 0.658,
+      "seconds": 1.027
     },
     {
       "label": "select-all offer",
-      "at": 2.322,
-      "seconds": 0.05
+      "at": 1.848,
+      "seconds": 0.013
     },
     {
       "label": "export dialog",
-      "at": 2.856,
-      "seconds": 0.226
+      "at": 2.228,
+      "seconds": 0.093
     },
     {
       "label": "file received",
-      "at": 3.804,
-      "seconds": 3.772
+      "at": 2.845,
+      "seconds": 1.93
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "1fe80982695c961f.jpg",
+      "file": "7dc2766db1b9931a.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/1fe80982695c961f.jpg"
+      "path": "gauntlet/reference/odoo/shots/7dc2766db1b9931a.jpg"
     },
     {
       "moment": "export options chosen",
-      "file": "d3c9718ebd02d12d.jpg",
-      "at": 3.084,
-      "path": "gauntlet/reference/odoo/shots/d3c9718ebd02d12d.jpg"
+      "file": "86e920a4a2bb9d6c.jpg",
+      "at": 2.321,
+      "path": "gauntlet/reference/odoo/shots/86e920a4a2bb9d6c.jpg"
     },
     {
       "moment": "done",
-      "file": "cd2004b5a2057fcf.jpg",
-      "at": 7.577,
-      "path": "gauntlet/reference/odoo/shots/cd2004b5a2057fcf.jpg"
+      "file": "6883a116490d9a11.jpg",
+      "at": 4.779,
+      "path": "gauntlet/reference/odoo/shots/6883a116490d9a11.jpg"
     }
   ],
   "verification": {
@@ -238,20 +238,41 @@
   },
   "verify_passes": [
     {
-      "seconds": 0.103,
+      "requests": 0,
+      "longest_pause_seconds": 0.065,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.065,
       "verified": true
     },
     {
-      "seconds": 0.121,
+      "requests": 0,
+      "longest_pause_seconds": 0.067,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.067,
       "verified": true
     }
   ],
   "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "199cc62f8ac6e355",
+    "elements": 3219
+  },
+  "screen_after_verify": {
+    "sha256": "199cc62f8ac6e355",
+    "elements": 3219,
+    "unchanged": true
+  },
   "result_file": "gauntlet/reference/odoo/tasks/export-filtered-list.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070525-b8bd.json",
-    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070539-0ea5.json",
-    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070553-694b.json"
+    "gauntlet/reference/odoo/results/export-filtered-list-20261007T212221-d418.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261007T212230-4526.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261007T212240-1f67.json"
   ]
 }

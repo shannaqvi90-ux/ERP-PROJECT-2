@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "arabic-report-20261005T074018-6d44",
-  "instrument": 5,
+  "run_id": "arabic-report-20261007T211713-5e25",
+  "instrument": 6,
   "task": "arabic-report",
   "task_title": "Print a document in Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
   "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
-  "started_at": "2026-10-05T07:40:18.835Z",
-  "finished_at": "2026-10-05T07:40:33.781Z",
+  "started_at": "2026-10-07T21:17:13.694Z",
+  "finished_at": "2026-10-07T21:17:24.889Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 5.391,
-    "system_wait_seconds": 4.875,
+    "machine_seconds": 4.307,
+    "system_wait_seconds": 3.785,
     "human_seconds": 15.9,
-    "human_plus_wait_seconds": 20.775,
+    "human_plus_wait_seconds": 19.685,
     "klm_operator_counts": {
       "K": 0,
       "P": 6,
@@ -58,8 +58,8 @@
       "label": "user menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.055,
-      "screen": "/odoo/purchase/100010",
+      "took": 0.059,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     },
     {
@@ -67,9 +67,9 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.057,
-      "took": 0.069,
-      "screen": "/odoo/purchase/100010",
+      "at": 0.061,
+      "took": 0.048,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     },
     {
@@ -77,9 +77,9 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.355,
-      "took": 0.13,
-      "screen": "/odoo/purchase/100010",
+      "at": 0.323,
+      "took": 0.103,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     },
     {
@@ -87,9 +87,9 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.485,
-      "took": 0.132,
-      "screen": "/odoo/purchase/100010",
+      "at": 0.427,
+      "took": 0.116,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     },
     {
@@ -97,9 +97,9 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.618,
-      "took": 0.045,
-      "screen": "/odoo/purchase/100010",
+      "at": 0.544,
+      "took": 0.097,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     },
     {
@@ -107,53 +107,53 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 2.414,
-      "took": 0.071,
-      "screen": "/odoo/purchase/100010",
+      "at": 1.853,
+      "took": 0.087,
+      "screen": "/odoo/purchase/100028",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.127,
-      "seconds": 0.227
+      "at": 0.109,
+      "seconds": 0.214
     },
     {
       "label": "interface in Arabic",
-      "at": 0.664,
-      "seconds": 0.913
+      "at": 0.642,
+      "seconds": 0.657
     },
     {
       "label": "order form in Arabic",
-      "at": 1.577,
-      "seconds": 0.836
+      "at": 1.299,
+      "seconds": 0.552
     },
     {
       "label": "file received",
-      "at": 2.485,
-      "seconds": 2.905
+      "at": 1.941,
+      "seconds": 2.362
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "6cc0bb46627577e3.jpg",
+      "file": "5588cccdd4f0b1a4.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/6cc0bb46627577e3.jpg"
+      "path": "gauntlet/reference/odoo/shots/5588cccdd4f0b1a4.jpg"
     },
     {
       "moment": "done",
-      "file": "c80251d594410d46.jpg",
-      "at": 5.391,
-      "path": "gauntlet/reference/odoo/shots/c80251d594410d46.jpg"
+      "file": "db509641c9d2e608.jpg",
+      "at": 4.307,
+      "path": "gauntlet/reference/odoo/shots/db509641c9d2e608.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "file": "أمر شراء - P00010.pdf",
-      "bytes": 47317,
+      "file": "أمر شراء - P00028.pdf",
+      "bytes": 47320,
       "print_language": "ar_001",
       "arabic_words_in_document": 25,
       "right_to_left": true
@@ -168,8 +168,8 @@
   "error": null,
   "start_state": {
     "kind": "record",
-    "opened_by_sign_in": "/odoo/purchase/100010",
-    "path": "/odoo/purchase/100010",
+    "opened_by_sign_in": "/odoo/purchase/100028",
+    "path": "/odoo/purchase/100028",
     "query": "",
     "fragment": "",
     "fields": 3,
@@ -179,26 +179,44 @@
   },
   "verify_passes": [
     {
-      "seconds": 0.069,
       "requests": 1,
-      "longest_pause_seconds": 0.002,
+      "longest_pause_seconds": 0.005,
       "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.044,
       "verified": true
     },
     {
-      "seconds": 0.059,
       "requests": 1,
-      "longest_pause_seconds": 0.002,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.046,
       "verified": true
     }
   ],
   "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "POST /web/dataset/call_kw/purchase.order/web_read (xhr)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "ad15d2df7f69d19b",
+    "elements": 468
+  },
+  "screen_after_verify": {
+    "sha256": "ad15d2df7f69d19b",
+    "elements": 468,
+    "unchanged": true
+  },
   "result_file": "gauntlet/reference/odoo/tasks/arabic-report.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/arabic-report-20261005T074003-2f1c.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261005T074018-6d44.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261005T074033-9248.json"
+    "gauntlet/reference/odoo/results/arabic-report-20261007T211650-efea.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261007T211702-baa7.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261007T211713-5e25.json"
   ]
 }

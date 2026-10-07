@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "reach-screen-keyboard-20261005T071522-6989",
-  "instrument": 5,
+  "run_id": "reach-screen-keyboard-20261007T212915-d0c4",
+  "instrument": 6,
   "task": "reach-screen-keyboard",
   "task_title": "Reach a named screen by keyboard only",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
   "done_when": "The users list is on screen with its rows, and no step used the mouse.",
-  "started_at": "2026-10-05T07:15:22.858Z",
-  "finished_at": "2026-10-05T07:15:29.606Z",
+  "started_at": "2026-10-07T21:29:15.607Z",
+  "finished_at": "2026-10-07T21:29:19.887Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 2,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 1.686,
-    "system_wait_seconds": 1.613,
+    "machine_seconds": 0.749,
+    "system_wait_seconds": 0.682,
     "human_seconds": 3.99,
-    "human_plus_wait_seconds": 5.603,
+    "human_plus_wait_seconds": 4.672,
     "klm_operator_counts": {
       "K": 8,
       "P": 0,
@@ -57,8 +57,8 @@
       "kind": "key",
       "label": "command palette",
       "keystrokes": 2,
-      "at": 0.001,
-      "took": 0.035,
+      "at": 0.002,
+      "took": 0.026,
       "chord": "Control+k",
       "screen": "/odoo/discuss",
       "chain": false
@@ -68,8 +68,8 @@
       "kind": "type",
       "label": "menu search",
       "keystrokes": 5,
-      "at": 0.231,
-      "took": 0.037,
+      "at": 0.162,
+      "took": 0.023,
       "text": "/user",
       "same_field": false,
       "screen": "/odoo/discuss",
@@ -80,8 +80,8 @@
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "at": 0.336,
-      "took": 0.008,
+      "at": 0.294,
+      "took": 0.006,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -90,38 +90,32 @@
   "waits": [
     {
       "label": "palette open",
-      "at": 0.036,
-      "seconds": 0.195
+      "at": 0.03,
+      "seconds": 0.131
     },
     {
       "label": "Users menu first",
-      "at": 0.268,
-      "seconds": 0.067
+      "at": 0.186,
+      "seconds": 0.107
     },
     {
       "label": "users list",
-      "at": 0.345,
-      "seconds": 0.702
-    },
-    {
-      "label": "the product still answering when run() returned (49 requests)",
-      "at": 1.048,
-      "seconds": 0.638,
-      "settle": true
+      "at": 0.301,
+      "seconds": 0.444
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "ff2c299f9a94e822.jpg",
+      "file": "981927e6a6d2e487.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/ff2c299f9a94e822.jpg"
+      "path": "gauntlet/reference/odoo/shots/981927e6a6d2e487.jpg"
     },
     {
       "moment": "done",
-      "file": "7102293e4011a33b.jpg",
-      "at": 1.686,
-      "path": "gauntlet/reference/odoo/shots/7102293e4011a33b.jpg"
+      "file": "6c02dec121620b59.jpg",
+      "at": 0.749,
+      "path": "gauntlet/reference/odoo/shots/6c02dec121620b59.jpg"
     }
   ],
   "verification": {
@@ -152,20 +146,52 @@
   },
   "verify_passes": [
     {
-      "seconds": 0.032,
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
       "verified": true
     },
     {
-      "seconds": 0.007,
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
       "verified": true
     }
   ],
-  "requests_after_clock": 0,
+  "requests_after_clock": 2,
+  "requests_in_flight_at_clock": {
+    "count": 49,
+    "first": [
+      "GET /web/image/res.users/1212/avatar_128 (image)",
+      "GET /web/image/res.users/49067/avatar_128 (image)",
+      "GET /web/image/res.users/71953/avatar_128 (image)",
+      "GET /web/image/res.users/13472/avatar_128 (image)",
+      "GET /web/image/res.users/34979/avatar_128 (image)",
+      "GET /web/image/res.users/1681/avatar_128 (image)",
+      "GET /web/image/res.users/33654/avatar_128 (image)",
+      "GET /web/image/res.users/94681/avatar_128 (image)",
+      "GET /web/image/res.users/1209/avatar_128 (image)",
+      "GET /web/image/res.users/81153/avatar_128 (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "c5f57b50b8a2eef5",
+    "elements": 1614
+  },
+  "screen_after_verify": {
+    "sha256": "c5f57b50b8a2eef5",
+    "elements": 1614,
+    "unchanged": true
+  },
   "result_file": "gauntlet/reference/odoo/tasks/reach-screen-keyboard.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071510-cd9b.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071516-5e55.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071522-6989.json"
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261007T212915-d0c4.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261007T212919-287f.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261007T212924-26a9.json"
   ]
 }
