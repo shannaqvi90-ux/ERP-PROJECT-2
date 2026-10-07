@@ -16,11 +16,12 @@
 // (a tie is a loss) and review.html, a blind page that shows the two products as A and B.
 import fs from 'node:fs';
 import path from 'node:path';
-import { BASELINE_DIR, REPO_ROOT } from './lib/config.mjs';
+import { BASELINE_DIR, PRODUCTS, REPO_ROOT } from './lib/config.mjs';
 import { loadDriver, loadTasks, PRODUCT_IDS } from './lib/registry.mjs';
 import { compareRuns, medianOf, promoteBaseline, runTask } from './lib/runner.mjs';
 import { writeReview } from './lib/review.mjs';
 import { productOrder } from './lib/blind.mjs';
+import { checkLiveRig, describeShort, TOP_UP_HINT } from './lib/rig-volume.mjs';
 
 function parse(argv) {
   const a = { task: null, product: 'both', out: null, repeat: 1, headed: false, list: false, health: false };
@@ -76,6 +77,21 @@ async function main() {
   if (args.health && (!args.out || args.repeat > 1 || products.length !== 1)) throw new Error('--health runs one product once into --out <dir>');
   const baseline = !args.out && args.product === 'odoo';
   const outDir = args.out || (baseline ? BASELINE_DIR : path.join(REPO_ROOT, 'gauntlet', 'compare', 'runs', new Date().toISOString().replace(/[:.]/g, '-')));
+
+  // The bar's volume rule holds on the live rig, not only in volume.json (Odoo vacuums job-run rows
+  // older than a week): an Odoo run against a rig short of 100,000 rows in a main list is refused.
+  if (products.includes('odoo') && ids.length) {
+    let rig;
+    try { rig = await checkLiveRig(PRODUCTS.odoo); } catch (e) {
+      console.error(`the Odoo reference rig could not be checked on ${PRODUCTS.odoo.baseUrl}: ${e.message}`);
+      return 2;
+    }
+    if (!rig.ok) {
+      console.error(`the Odoo reference rig is short of the bar: ${describeShort(rig)}; ${TOP_UP_HINT}`);
+      return 2;
+    }
+    console.log(`reference rig: at least ${rig.minimum.toLocaleString('en-US')} rows in each of ${Object.keys(rig.lists).length} main lists (checked live)`);
+  }
 
   let failures = 0;
   const comparisons = [];

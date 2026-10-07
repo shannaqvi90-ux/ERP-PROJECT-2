@@ -25,7 +25,8 @@ an API session's sign-in from the driver process. Pacing never happens inside a 
 paced wait inside `verify()` is reported apart (`paced_seconds`) and not charged to the pass.
 
 Options: `--task <id|id,id|all>`, `--product odoo|ours|both`, `--out <dir>`, `--repeat N`
-(median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid.
+(median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid;
+2 on bad arguments or a reference rig short of the bar.
 With `--product both` the two products run in a random order per task (recorded in `key.json`).
 
 Tests: `npm test` (unit tests; the live rig checks run too when the rig answers),
@@ -33,7 +34,11 @@ Tests: `npm test` (unit tests; the live rig checks run too when the rig answers)
 `./erp verify` runs the unit tests and counts them against `suite.compareTests` in
 `gauntlet/ratchet.json`.
 
-The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README).
+The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README). Before any run
+on Odoo, `run.mjs` checks the live rig for at least 100,000 rows in each of the seven main lists
+(`lib/rig-volume.mjs`, the same check as the live test) and exits with code 2, recording nothing,
+when a list is short or the rig cannot be checked. Odoo vacuums job-run rows older than a week, so
+a rig seeded once falls short after about a week; `up.sh` tops it up.
 
 ## What is measured
 
@@ -259,7 +264,7 @@ removed (plan.md); the ratchet counts them.
 | import-5000 | Apps > Contacts > ⋮ > Import > Upload (file) > Import | headers map automatically |
 | follow-approval | Apps > Purchase > open the order waiting for approval (first row) > Approve Order | Approvals is Enterprise; nearest Community feature is purchase two-step approval (limit AED 5,000) |
 | sign-in (p00) | type the e-mail (focused) > Tab > password > Enter | same user, e-mail and password created in both products; `new-device` and `returning` (the browser signed in and out before; whatever a product remembers is used) variants in both |
-| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name > Enter > open the result | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus and palette variants |
+| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name > Enter (or click the search box's first suggestion) > open the result | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus, palette and menus-suggestion variants (the suggestion click saves the Enter key: 20 keystrokes, found by the p05 round 4 critic) |
 | api-update-user (p15) | POST /json/2/res.users/search > POST /json/2/res.users/write | through the API only: steps are requests, keystrokes the requests as typed; Odoo's JSON-2 needs an API key (an interactive identity check), so the same calls travel by its external JSON-RPC and are counted in the JSON-2 form |
 | create-company-branch (p02) | Settings > Users & Companies > Companies > New > name > Branches > Add a line > branch > Save & Close > Save | keyboard and pointer variants |
 | switch-company (p02) | company switcher > the company | |
