@@ -56,7 +56,9 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
 
     private static async Task GiveAccessAsync(HttpClient admin, Guid user, params Guid[] companies)
     {
-        var response = await admin.PutAsJsonAsync($"/api/tenancy/access/{user}", new { companies = companies.Select(c => new { companyId = c, allBranches = true, branchIds = Array.Empty<Guid>() }) });
+        // The access screen sends back the version it read (409 when stale).
+        var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{user}")).GetProperty("version").GetUInt32();
+        var response = await admin.PutAsJsonAsync($"/api/tenancy/access/{user}", new { companies = companies.Select(c => new { companyId = c, allBranches = true, branchIds = Array.Empty<Guid>() }), version });
         Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
     }
 
