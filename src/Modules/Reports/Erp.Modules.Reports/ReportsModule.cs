@@ -34,9 +34,13 @@ public sealed class ReportsModule : ErpModule
 /// <summary>
 /// Tenant-isolation attack on reports and list printing (an export surface): signed in to tenant
 /// A, every report runs with every tenant B id in every reference parameter, every printable list
-/// prints with tenant B's ids and values in its search and filter, each in every format and both
-/// languages, with tenant switch headers. Every answer goes back to the gate whole; the gate reads
-/// PDFs and workbooks as text and looks for tenant B's ids and canaries.
+/// prints with tenant B's ids and values in its search and filter, and every report and list runs
+/// plain, each in every format and both languages, with and without tenant switch headers. Right
+/// before each of tenant A's requests, tenant B (when the gate hands the probe tenant B's
+/// administrator) prints or exports the very same thing on its own records, so a print store that
+/// keeps documents without the tenant (critic p06 round 1, plant L2: files kept by download name)
+/// holds tenant B's document when tenant A asks. Every answer tenant A gets goes back to the gate
+/// whole; the gate reads PDFs and workbooks as text and looks for tenant B's ids and canaries.
 /// </summary>
 internal sealed class ReportsIsolationProbe(Erp.Kernel.Modules.ModuleCatalog catalog) : IIsolationProbe
 {
@@ -89,22 +93,41 @@ internal sealed class ReportsIsolationProbe(Erp.Kernel.Modules.ModuleCatalog cat
                 }
             }
         }
-        foreach (var path in paths)
+        var shapes = ReportEndpoints.Formats.SelectMany(format => Erp.Kernel.Localization.Languages.All.Select(language => (Format: format, Language: language))).ToList();
+        var work = paths.SelectMany(path => shapes.Select(shape => $"{path}format={shape.Format}&language={shape.Language}")).ToList();
+        var results = new (int Attempts, List<string> Observed)[work.Count];
+        await Parallel.ForEachAsync(Enumerable.Range(0, work.Count), new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = cancellationToken }, async (i, ct) =>
         {
-            foreach (var (format, language) in new[] { ("json", "en"), ("pdf", "ar"), ("pdf", "en"), ("csv", "en"), ("xlsx", "ar") })
+            var uri = work[i];
+            var seen = new List<string>();
+            var tries = 0;
+            if (context.Victim is { } victim)
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, $"{path}format={format}&language={language}");
-                if (attempts % 2 == 1)
+                // Tenant B first, on its own records (its ids are its own): its answer is not observed.
+                using var own = await victim.GetAsync(uri, ct);
+                await own.Content.ReadAsByteArrayAsync(ct);
+                tries++;
+            }
+            foreach (var withHeaders in new[] { false, true })
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                if (withHeaders)
                 {
                     request.Headers.TryAddWithoutValidation("X-Tenant-Id", context.VictimTenantId.ToString());
-                    request.Headers.TryAddWithoutValidation("X-Company-Id", ids[attempts % ids.Count].ToString());
+                    request.Headers.TryAddWithoutValidation("X-Company-Id", ids[i % ids.Count].ToString());
                 }
-                using var response = await context.Attacker.SendAsync(request, cancellationToken);
-                attempts++;
-                var body = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-                observed.Add(IsolationProbeResult.Body(response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream", body));
-                observed.Add(string.Join("\n", response.Headers.Concat(response.Content.Headers).Select(h => $"{h.Key}: {string.Join(", ", h.Value)}")));
+                using var response = await context.Attacker.SendAsync(request, ct);
+                tries++;
+                var body = await response.Content.ReadAsByteArrayAsync(ct);
+                seen.Add(IsolationProbeResult.Body(response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream", body));
+                seen.Add(string.Join("\n", response.Headers.Concat(response.Content.Headers).Select(h => $"{h.Key}: {string.Join(", ", h.Value)}")));
             }
+            results[i] = (tries, seen);
+        });
+        foreach (var (tries, seen) in results)
+        {
+            attempts += tries;
+            observed.AddRange(seen);
         }
         return new IsolationProbeResult(attempts, observed);
     }

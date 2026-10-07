@@ -140,6 +140,12 @@ case "$stage" in
     # built (round 3: a list change broke a driver and nothing noticed). A health check: the
     # drivers' set-up creates the dataset records the clean stack lacks; counts are not compared.
     step "Comparison harness: built ours drivers against ${ERP_BASE_URL} (health check)"
+    # The end-to-end suite's sign-ins of the last minute still count against the product's sign-in
+    # limit, and the harness's budget cannot see them (gauntlet/compare/lib/sign-in-limit.mjs). A
+    # sign-in inside a measured part cannot wait out a 429 (on a quiet machine the sign-in task's
+    # 'returning' variant was refused and timed out), so the window is waited out first.
+    echo "waiting 61 s for the end-to-end suite's sign-ins to leave the sign-in limit's window"
+    sleep 61
     cd /work/gauntlet/compare
     npm_install
     COMPARE_OURS_URL="$ERP_BASE_URL" node run.mjs --task built --product ours --health --out "$out/ours-health"

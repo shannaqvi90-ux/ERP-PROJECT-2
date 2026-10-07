@@ -54,3 +54,22 @@ order, page counts, headers repeated and landscape choice.
   prints as the font's missing glyph; adding a script means adding its Noto font and listing it.
 - Bidi is a subset: explicit embedding controls (LRE, RLO …) are not interpreted. Business text
   rarely carries them; the full algorithm can replace `Bidi.cs` behind the same call.
+
+## Round 2 (2026-10-06): text a reader extracts, telephone numbers, the header
+
+- **Character ids, not glyph ids.** Arabic letters share glyphs: س and ش, ر and ز, medial ب and
+  ن are one base glyph with different dots, the dots drawn as marks; ا and إ likewise. A ToUnicode
+  map keyed by glyph gives each shared glyph the text of whichever letter came first, so copy,
+  search and screen readers read الإشم for الاسم (critic round 1). The writer now hands out one
+  character id per distinct pair of glyph and text, maps ids to glyphs with a `/CIDToGIDMap`
+  stream, and keys widths and the ToUnicode map by id. A rendering test prints the critic's words
+  on a page with no other Arabic and requires every Arabic letter to extract exactly as often as
+  it was printed (the old writer fails it).
+- **Telephone numbers read left to right.** Under the algorithm alone, digit groups separated by
+  spaces are separate runs, so an Arabic line orders them right to left ("7810 555 2 971+"),
+  while the screen shows the number as typed. The bidi pass treats a telephone-like span (an
+  optional plus, then digit groups joined by spaces, hyphens or brackets, at least seven digits)
+  as one left-to-right unit. Dates with times (slashes, colons) and amounts (commas, points) do not
+  match and keep the algorithm's order.
+- **Header.** `%PDF-1.7` (round 1 wrote `%PDF-1.7m`, which pdf.js warns about and strict
+  validators refuse).

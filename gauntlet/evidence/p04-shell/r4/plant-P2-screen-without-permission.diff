@@ -1,0 +1,14 @@
+diff --git a/web/src/modules/shell/AppShell.tsx b/web/src/modules/shell/AppShell.tsx
+index 77af5ef..77ccdb4 100644
+--- a/web/src/modules/shell/AppShell.tsx
++++ b/web/src/modules/shell/AppShell.tsx
+@@ -86,7 +86,8 @@ export function AppShell({ session }: { session: Session }) {
+   }, []);
+   const entry = entryFor(session.menu, path);
+ 
+-  const allowedRoute = route && (!route.permission || can(route.permission));
++  // Planted (critic p04 r4, P2): every screen opens, whatever the roles grant.
++  const allowedRoute = route;
+   const Screen = allowedRoute ? route.component : null;
+   const titleKey = route ? route.titleKey : "shell.notFound.title";
+ 

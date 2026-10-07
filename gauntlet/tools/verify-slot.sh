@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Runs a command (normally `./erp verify`) while holding one of a few machine-wide slots, so parallel
 # agents do not run more full verifies at once than the machine can carry. Waits for a free slot.
-#   ERP_VERIFY_SLOTS  number of slots (default 3)
+#   ERP_VERIFY_SLOTS  number of slots (default 2; the owner's PC ran out of memory with three)
 #   ERP_SLOT_DIR      folder of the slot lock files (default ~/.verify-slots)
 # The slot is held by an open file descriptor and freed when the command exits, however it exits.
 set -u
-slots="${ERP_VERIFY_SLOTS:-3}"
+slots="${ERP_VERIFY_SLOTS:-2}"
 dir="${ERP_SLOT_DIR:-$HOME/.verify-slots}"
 mkdir -p "$dir"
 waited=0

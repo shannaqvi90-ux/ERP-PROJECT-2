@@ -29,14 +29,16 @@ internal sealed class UsersByRoleReport(IdentityDbContext db, ICompanyDirectory 
     public static readonly ReportDefinition Definition = new(
         Key, "identity.report.usersByRole", IdentityPermissions.UsersRead,
         [
-            new ReportParameter("role", "identity.report.role", ReportParameterType.Reference, Lookup: RolesList.Key),
+            new ReportParameter("role", "identity.report.role", ReportParameterType.Reference, Lookup: RolesList.Key, Permission: IdentityPermissions.RolesRead),
             new ReportParameter("status", "identity.users.status", ReportParameterType.Choice, Choices: Statuses),
             new ReportParameter("userLanguage", "identity.users.language", ReportParameterType.Choice, Choices: LanguageChoices),
             new ReportParameter("signedInSince", "identity.report.signedInSince", ReportParameterType.Date),
         ],
         [
-            new ReportColumn("role", "identity.report.role", ListColumnType.Text, Groupable: true),
-            new ReportColumn("company", "identity.report.onlyInCompany", ListColumnType.Text, Groupable: true),
+            // Role names, and the company a role is held in, are the roles' data: printed only to a
+            // caller who may read roles.
+            new ReportColumn("role", "identity.report.role", ListColumnType.Text, Groupable: true, Permission: IdentityPermissions.RolesRead),
+            new ReportColumn("company", "identity.report.onlyInCompany", ListColumnType.Text, Groupable: true, Permission: IdentityPermissions.RolesRead),
             new ReportColumn("name", "identity.users.name", ListColumnType.Text),
             new ReportColumn("email", "identity.users.email", ListColumnType.Text),
             new ReportColumn("language", "identity.users.language", ListColumnType.Choice, Groupable: true, Choices: LanguageChoices),
@@ -64,26 +66,35 @@ internal sealed class UsersByRoleReport(IdentityDbContext db, ICompanyDirectory 
             var from = new DateTimeOffset(since.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
             users = users.Where(u => u.LastSignInAt >= from);
         }
-        // Every holding: roles in every company (no company), roles in one company, and (without a
-        // chosen role) people holding no role at all, each as one row of the same shape.
-        var everywhere = from u in users
-                         join h in db.UserRoles.AsNoTracking() on u.Id equals h.UserId
-                         join r in db.Roles.AsNoTracking() on h.RoleId equals r.Id
-                         select new HoldingRow { UserId = u.Id, RoleId = (Guid?)r.Id, RoleEn = r.NameEn, RoleAr = r.NameAr, CompanyId = null };
-        var inOneCompany = from u in users
-                           join h in db.UserCompanyRoles.AsNoTracking() on u.Id equals h.UserId
-                           join r in db.Roles.AsNoTracking() on h.RoleId equals r.Id
-                           select new HoldingRow { UserId = u.Id, RoleId = (Guid?)r.Id, RoleEn = r.NameEn, RoleAr = r.NameAr, CompanyId = (Guid?)h.CompanyId };
-        var holdings = everywhere.Concat(inOneCompany);
-        if (roleId is { } id)
+        IQueryable<HoldingRow> holdings;
+        if (!run.Prints("role"))
         {
-            holdings = holdings.Where(h => h.RoleId == id);
+            // A caller who may not read roles gets each user once, with no role and no company.
+            holdings = users.Select(u => new HoldingRow { UserId = u.Id, RoleId = null, RoleEn = null, RoleAr = null, CompanyId = null });
         }
         else
         {
-            holdings = holdings.Concat(users
-                .Where(u => !db.UserRoles.Any(h => h.UserId == u.Id) && !db.UserCompanyRoles.Any(h => h.UserId == u.Id))
-                .Select(u => new HoldingRow { UserId = u.Id, RoleId = null, RoleEn = null, RoleAr = null, CompanyId = null }));
+            // Every holding: roles in every company (no company), roles in one company, and (without a
+            // chosen role) people holding no role at all, each as one row of the same shape.
+            var everywhere = from u in users
+                             join h in db.UserRoles.AsNoTracking() on u.Id equals h.UserId
+                             join r in db.Roles.AsNoTracking() on h.RoleId equals r.Id
+                             select new HoldingRow { UserId = u.Id, RoleId = (Guid?)r.Id, RoleEn = r.NameEn, RoleAr = r.NameAr, CompanyId = null };
+            var inOneCompany = from u in users
+                               join h in db.UserCompanyRoles.AsNoTracking() on u.Id equals h.UserId
+                               join r in db.Roles.AsNoTracking() on h.RoleId equals r.Id
+                               select new HoldingRow { UserId = u.Id, RoleId = (Guid?)r.Id, RoleEn = r.NameEn, RoleAr = r.NameAr, CompanyId = (Guid?)h.CompanyId };
+            holdings = everywhere.Concat(inOneCompany);
+            if (roleId is { } id)
+            {
+                holdings = holdings.Where(h => h.RoleId == id);
+            }
+            else
+            {
+                holdings = holdings.Concat(users
+                    .Where(u => !db.UserRoles.Any(h => h.UserId == u.Id) && !db.UserCompanyRoles.Any(h => h.UserId == u.Id))
+                    .Select(u => new HoldingRow { UserId = u.Id, RoleId = null, RoleEn = null, RoleAr = null, CompanyId = null }));
+            }
         }
         var rows = from h in holdings
                    join u in db.Users.AsNoTracking() on h.UserId equals u.Id

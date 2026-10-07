@@ -42,28 +42,7 @@ public static class EndpointClosures
         var findings = new List<ProcessStateFinding>();
         foreach (var closure in walker.Closures.Select(c => c.GetType()).Distinct())
         {
-            var written = WrittenInsideLambdas(closure);
-            var outer = Outermost(closure);
-            var enclosing = EnclosingMethod(closure);
-            foreach (var field in closure.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-            {
-                if (field.Name.StartsWith('<'))
-                {
-                    // <>4__this and CS$<>8__locals: links to the enclosing object or closure, walked
-                    // and judged as objects of their own.
-                    continue;
-                }
-                var key = $"closure {Name(outer)}.{enclosing}.{field.Name}";
-                if (written.Contains((field.Module, field.MetadataToken)))
-                {
-                    findings.Add(new ProcessStateFinding(key,
-                        $"a variable captured by an endpoint lambda and written inside it ({Describe(field.FieldType)}): one copy shared by every request of every tenant"));
-                }
-                else if (!IsService(field.FieldType, serviceTypes) && !ProcessState.IsImmutableType(field.FieldType))
-                {
-                    findings.Add(new ProcessStateFinding(key, $"a captured mutable {Describe(field.FieldType)} shared by every request of every tenant"));
-                }
-            }
+            findings.AddRange(JudgeClosure(closure, serviceTypes, "closure", "shared by every request of every tenant"));
         }
         foreach (var held in walker.ProductObjects.Select(o => o.GetType()).Distinct())
         {
@@ -80,6 +59,37 @@ public static class EndpointClosures
         }
         return new Result(findings.DistinctBy(f => f.Key).ToList(), endpoints, walker.Closures.Count, walker.Visited);
     }
+
+    /// <summary>The captured variables of a closure that are written inside its lambdas, or that
+    /// hold a mutable object: one copy lives as long as whatever holds the closure.</summary>
+    internal static IEnumerable<ProcessStateFinding> JudgeClosure(Type closure, IReadOnlySet<Type> serviceTypes, string prefix, string sharedBy)
+    {
+        var written = WrittenInsideLambdas(closure);
+        var outer = Outermost(closure);
+        var enclosing = EnclosingMethod(closure);
+        foreach (var field in closure.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+        {
+            if (field.Name.StartsWith('<'))
+            {
+                // <>4__this and CS$<>8__locals: links to the enclosing object or closure, walked
+                // and judged as objects of their own.
+                continue;
+            }
+            var key = $"{prefix} {Name(outer)}.{enclosing}.{field.Name}";
+            if (written.Contains((field.Module, field.MetadataToken)))
+            {
+                yield return new ProcessStateFinding(key,
+                    $"a captured variable written inside its lambda ({Describe(field.FieldType)}): one copy {sharedBy}");
+            }
+            else if (!IsService(field.FieldType, serviceTypes) && !ProcessState.IsImmutableType(field.FieldType))
+            {
+                yield return new ProcessStateFinding(key, $"a captured mutable {Describe(field.FieldType)} {sharedBy}");
+            }
+        }
+    }
+
+    /// <summary>A compiler-generated class holding captured variables (a display class).</summary>
+    internal static bool IsClosureType(Type type) => IsClosure(type);
 
     private static bool IsService(Type type, IReadOnlySet<Type> serviceTypes) =>
         serviceTypes.Contains(type) || type == typeof(IServiceProvider) || (type.IsGenericType && serviceTypes.Contains(type.GetGenericTypeDefinition()));

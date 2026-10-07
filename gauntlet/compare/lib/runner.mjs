@@ -271,6 +271,9 @@ export async function execute(task, driver, product, productId, needles, out, op
         ctx.page = guard(page);
       });
     }
+    // A task that starts signed out signs in inside the measured part, where a 429 cannot be waited
+    // out. That sign-in is counted in the budget here, before the start, like every other one.
+    if (productId === 'ours' && kind === 'sign-in') await paceSignIn();
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');

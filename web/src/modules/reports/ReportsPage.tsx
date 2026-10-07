@@ -296,8 +296,15 @@ export function ReportView({ document: doc }: { document: ReportDocument }) {
             ))}
           </dl>
         )}
-        <p className="report-count">{doc.rowCountText}</p>
-        {doc.rowCount === 0 ? (
+        {(doc.notes ?? []).map((note) => (
+          <p key={note} className="report-note" role="note">
+            {note}
+          </p>
+        ))}
+        {doc.columns.length === 0 ? null : (
+          <p className="report-count">{doc.rowCountText}</p>
+        )}
+        {doc.columns.length === 0 ? null : doc.rowCount === 0 ? (
           <p className="muted">{doc.texts.empty}</p>
         ) : (
           <table className="report-table">

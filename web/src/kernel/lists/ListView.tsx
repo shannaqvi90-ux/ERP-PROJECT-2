@@ -4,8 +4,11 @@ import { confirmLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
+import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
 import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
 import {
+  byRelevance,
+  canMatchAny,
   defaultColumns,
   initialState,
   queryKey,
@@ -37,7 +40,13 @@ export type BulkAction = {
   /** Shown only to users holding it (the API enforces it anyway). */
   permission?: string;
   run: (rows: Row[]) => Promise<void> | void;
+  /** Act on every row that matches the list's current search and filter (the user chose "select
+   * all that match"); the query has no paging. Actions without it act on chosen rows only. */
+  runAll?: (query: URLSearchParams, total: number) => Promise<void> | void;
 };
+
+/** Most rows one copy of "all that match" puts on the clipboard (larger sets are exported). */
+export const copyLimit = 5000;
 
 /** What a screen knows about the records a reference column points to: their labels (cells,
  * groups, filter chips) and, for a short set, the choices the column's filter offers. */
@@ -130,6 +139,8 @@ export function ListView(props: ListViewProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const [active, setActive] = useState(0);
   const [selected, setSelected] = useState<Map<string, Row>>(new Map());
+  /** Every row that matches the query is selected, not only the loaded ones. */
+  const [allMatching, setAllMatching] = useState(false);
   const [anchor, setAnchor] = useState<number | null>(null);
   const [menu, setMenu] = useState<null | { kind: "column"; column: string } | { kind: "filter"; column: string } | { kind: "columns" } | { kind: "views" } | { kind: "save" }>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -191,6 +202,9 @@ export function ListView(props: ListViewProps) {
   const expectedKey = definition && query ? `${definition.endpoint}?${query.toString()}|${current?.groupBy ?? ""}` : null;
   const total = rows.total ?? 0;
   const grouped = Boolean(current?.groupBy);
+  /** Best match first: a search without a sort the user chose. Enter in the search box opens the
+   * top row, which is marked. */
+  const relevance = current ? byRelevance(current) && !current.groupBy && rows.ranked && rows.loadedKey === expectedKey : false;
 
   // Keep the address in step with the state, keeping parameters the screen owns.
   useEffect(() => {
@@ -220,7 +234,13 @@ export function ListView(props: ListViewProps) {
   // Grouping shows groups, not rows: nothing stays selected.
   useEffect(() => {
     setSelected(new Map());
+    setAllMatching(false);
   }, [current?.groupBy]);
+
+  // "All that match" belongs to one query.
+  useEffect(() => {
+    setAllMatching(false);
+  }, [currentKey]);
 
   // A new query starts at the top.
   useEffect(() => {
@@ -387,10 +407,11 @@ export function ListView(props: ListViewProps) {
   }
 
   function afterSearchEnter() {
-    if (!grouped && rows.total === 1) {
-      const only = rows.rowAt(0);
-      if (only) {
-        open(only);
+    // The single result, or the best match of a search in relevance order, opens at once.
+    if (!grouped && (rows.total === 1 || (relevance && (rows.total ?? 0) > 0))) {
+      const top = rows.rowAt(0);
+      if (top) {
+        open(top);
         return;
       }
     }
@@ -434,7 +455,29 @@ export function ListView(props: ListViewProps) {
     }
   }
 
+  function clearSelection() {
+    setSelected(new Map());
+    setAllMatching(false);
+  }
+
+  /** Every row of the current query, page by page (at most limit rows). */
+  async function matchingRows(limit: number): Promise<Row[]> {
+    if (!definition || !query) return [];
+    const found: Row[] = [];
+    let after: string | null = null;
+    do {
+      const params = new URLSearchParams(query);
+      params.set("take", String(Math.min(definition.maxTake, limit - found.length)));
+      if (after) params.set("after", after);
+      const page: { items: Row[]; next: string | null } = await api("GET", `${definition.endpoint}?${params}`);
+      found.push(...page.items);
+      after = page.next;
+    } while (after && found.length < limit);
+    return found;
+  }
+
   function toggleSelected(row: Row) {
+    setAllMatching(false);
     const map = new Map(selected);
     if (map.has(row.id)) map.delete(row.id);
     else map.set(row.id, row);
@@ -449,6 +492,9 @@ export function ListView(props: ListViewProps) {
   }
 
   function onGridKey(event: KeyboardEvent<HTMLTableElement>) {
+    // Keys pressed on a control inside the grid (a column header's sort or menu button, a filter
+    // editor) belong to that control: Enter and Space press it, arrows move within it.
+    if (event.target !== event.currentTarget) return;
     const page = Math.max(1, Math.floor(viewport / rowHeight) - 1);
     const count = grouped ? (rows.groups?.length ?? 0) : total;
     switch (event.key) {
@@ -491,14 +537,18 @@ export function ListView(props: ListViewProps) {
       }
       case "Escape":
         if (recordOpen) closeRecord();
-        else if (selected.size > 0) setSelected(new Map());
+        else if (selected.size > 0) clearSelection();
         else searchRef.current?.focus();
         break;
       case "a":
-      case "A":
+      case "A": {
         if (!(event.ctrlKey || event.metaKey) || grouped) return;
-        setSelected(new Map(rows.loadedRows().map((r) => [r.id, r])));
+        // Ctrl+A selects the loaded rows; again, every row that matches.
+        const loaded = rows.loadedRows();
+        if (selected.size >= loaded.length && loaded.length > 0 && total > loaded.length) setAllMatching(true);
+        else setSelected(new Map(loaded.map((r) => [r.id, r])));
         break;
+      }
       case "/":
         searchRef.current?.focus();
         searchRef.current?.select();
@@ -533,7 +583,15 @@ export function ListView(props: ListViewProps) {
 
   async function copySelected() {
     if (!definition) return;
-    const list = [...selected.values()];
+    let list = [...selected.values()];
+    if (allMatching) {
+      try {
+        list = await matchingRows(copyLimit);
+      } catch (e) {
+        setNotice((e as Error).message);
+        return;
+      }
+    }
     const keys = visible.map((c) => c.key);
     const text = rowsToText(list, keys, visible.map((c) => t(c.labelKey)), (row, key) => cellText(definition, row, key, formatters));
     try {
@@ -541,7 +599,7 @@ export function ListView(props: ListViewProps) {
     } catch {
       // Clipboard refused (insecure context): nothing else to do; the rows stay selected.
     }
-    setNotice(t("lists.bulk.copied", { count: list.length }));
+    setNotice(allMatching && total > list.length ? t("lists.bulk.copiedSome", { count: list.length, total }) : t("lists.bulk.copied", { count: list.length }));
   }
 
   async function saveView(name: string, shared: boolean, isDefault: boolean) {
@@ -616,7 +674,11 @@ export function ListView(props: ListViewProps) {
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
 
   const columnsTemplate = `2.25rem ${visible.map((c) => width(c)).join(" ")}`;
+  // Every row and the header share one width (the columns' minimums, or the grid's when wider),
+  // so a long value in one row never widens that row's columns: cells cut long text instead.
+  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c), 0)}rem`;
   const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
+  const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
   const groups = rows.groups ?? [];
   const totalsColumns = (definition?.columns ?? []).filter((c) => c.aggregate);
   const activeRowId = grouped ? `${id}-group-${active}` : `${id}-row-${active}`;
@@ -634,8 +696,8 @@ export function ListView(props: ListViewProps) {
           role="row"
           aria-rowindex={index + 2}
           aria-selected={isSelected}
-          className={`list-row${index === active ? " is-active" : ""}${isSelected ? " is-selected" : ""}`}
-          style={{ transform: `translateY(${index * rowHeight}px)`, gridTemplateColumns: columnsTemplate }}
+          className={`list-row${index === active ? " is-active" : ""}${isSelected ? " is-selected" : ""}${relevance && index === 0 ? " is-tophit" : ""}`}
+          style={{ transform: `translateY(${index * rowHeight}px)`, gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth }}
           onMouseDown={() => setActive(index)}
           onClick={(e) => {
             if (props.openOnClick && row && !(e.target instanceof HTMLInputElement)) open(row);
@@ -649,6 +711,11 @@ export function ListView(props: ListViewProps) {
                 tabIndex={-1}
                 aria-label={t("lists.selection.row")}
                 checked={isSelected}
+                onMouseDown={(e) => {
+                  // The grid keeps the keyboard: clicking a box does not move focus into it.
+                  e.preventDefault();
+                  tableRef.current?.focus();
+                }}
                 onChange={() => toggleSelected(row)}
               />
             )}
@@ -664,7 +731,7 @@ export function ListView(props: ListViewProps) {
   }
 
   return (
-    <section className="list-screen" aria-busy={rows.loading}>
+    <section className="list-screen" aria-busy={rows.loading || rows.loadedKey !== expectedKey || searchText !== appliedSearch}>
       <div className="list-toolbar screen-header">
         <h1>{t(titleKey)}</h1>
         <div className="list-search">
@@ -689,6 +756,7 @@ export function ListView(props: ListViewProps) {
         <span className="muted list-count" aria-live="polite">
           {rows.total !== null && t(countKey, { count: rows.total })}
         </span>
+        {relevance && rows.total !== null && rows.total > 0 && <span className="muted list-relevance">{t("lists.sort.relevance")}</span>}
         <div className="list-toolbar-end">
           <div className="list-anchor">
             <button type="button" className="button" aria-haspopup="menu" aria-expanded={menu?.kind === "views"} onClick={() => setMenu(menu?.kind === "views" ? null : { kind: "views" })}>
@@ -769,9 +837,22 @@ export function ListView(props: ListViewProps) {
               </button>
             </li>
           )}
+          {canMatchAny(current.conditions) && (
+            <li>
+              <button
+                type="button"
+                className="button link list-match"
+                aria-pressed={current.match === "any"}
+                title={t("lists.filter.matchHint")}
+                onClick={() => update((s) => ({ ...s, match: s.match === "any" ? "all" : "any" }))}
+              >
+                {t(current.match === "any" ? "lists.filter.matchAny" : "lists.filter.matchAll")}
+              </button>
+            </li>
+          )}
           {(current.conditions.length > 0 || current.baseFilter) && (
             <li>
-              <button type="button" className="button link" onClick={() => update((s) => ({ ...s, conditions: [], baseFilter: null }))}>
+              <button type="button" className="button link" onClick={() => update((s) => ({ ...s, conditions: [], baseFilter: null, match: "all" }))}>
                 {t("lists.filter.clearAll")}
               </button>
             </li>
@@ -779,18 +860,38 @@ export function ListView(props: ListViewProps) {
         </ul>
       )}
 
-      {selected.size > 0 && (
-        <div className="list-selectionbar" role="region" aria-label={t("lists.selection.count", { count: selected.size })}>
-          <span>{t("lists.selection.count", { count: selected.size })}</span>
+      {(selected.size > 0 || allMatching) && (
+        <div className="list-selectionbar" role="region" aria-label={selectionLabel}>
+          <span aria-live="polite">{selectionLabel}</span>
+          {!allMatching && !grouped && selected.size >= rows.loadedRows().length && total > selected.size && (
+            <button type="button" className="button link" aria-keyshortcuts="Control+A" onClick={() => setAllMatching(true)}>
+              {t("lists.selection.allMatching", { count: total })}
+            </button>
+          )}
           <button type="button" className="button" onClick={() => void copySelected()}>
             {t("lists.bulk.copy")}
           </button>
-          {allowedBulk.map((action) => (
-            <button key={action.key} type="button" className="button" onClick={() => void Promise.resolve(action.run([...selected.values()])).then(() => rows.reload())}>
-              {t(action.labelKey)}
-            </button>
-          ))}
-          <button type="button" className="button link" onClick={() => setSelected(new Map())}>
+          {allowedBulk.map((action) => {
+            const unavailable = allMatching && !action.runAll;
+            return (
+              <button
+                key={action.key}
+                type="button"
+                className="button"
+                disabled={unavailable}
+                title={unavailable ? t("lists.bulk.chosenOnly") : undefined}
+                onClick={() =>
+                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then(() => {
+                    clearSelection();
+                    rows.reload();
+                  })
+                }
+              >
+                {t(action.labelKey)}
+              </button>
+            );
+          })}
+          <button type="button" className="button link" onClick={clearSelection}>
             {t("lists.selection.clear")}
           </button>
         </div>
@@ -823,6 +924,7 @@ export function ListView(props: ListViewProps) {
           ref={tableRef}
           id={`${id}-grid`}
           className="list-grid"
+          style={{ minWidth: rowMinWidth }}
           role="grid"
           tabIndex={0}
           aria-label={t("lists.grid", { list: listName, count: grouped ? groups.length : total })}
@@ -848,7 +950,7 @@ export function ListView(props: ListViewProps) {
               ))}
             </tr>
           ) : (
-          <tr role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate }}>
+          <tr role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth }}>
             <th role="columnheader" className="list-cell list-select">
               {!grouped && (
                 <input
@@ -856,12 +958,12 @@ export function ListView(props: ListViewProps) {
                   tabIndex={-1}
                   aria-label={t("lists.selection.all")}
                   checked={selected.size > 0 && selected.size >= rows.loadedRows().length}
-                  onChange={(e) => setSelected(e.target.checked ? new Map(rows.loadedRows().map((r) => [r.id, r])) : new Map())}
+                  onChange={(e) => (e.target.checked ? setSelected(new Map(rows.loadedRows().map((r) => [r.id, r]))) : clearSelection())}
                 />
               )}
             </th>
             {visible.map((c, position) => {
-              const sortIndex = current?.sort.findIndex((k) => k.column === c.key) ?? -1;
+              const sortIndex = relevance ? -1 : (current?.sort.findIndex((k) => k.column === c.key) ?? -1);
               const sortKey = sortIndex >= 0 ? current!.sort[sortIndex] : undefined;
               const filtered = current?.conditions.some((x) => x.column === c.key);
               const label = t(c.labelKey);
@@ -877,7 +979,7 @@ export function ListView(props: ListViewProps) {
                       type="button"
                       className="list-sort"
                       title={t("lists.sort.hint")}
-                      onClick={(e) => update((s) => ({ ...s, sort: toggleSort(s.sort, c.key, e.shiftKey) }))}
+                      onClick={(e) => update((s) => ({ ...s, sort: toggleSort(byRelevance({ ...s, search: appliedSearch }) ? [] : s.sort, c.key, e.shiftKey), sortChosen: true }))}
                     >
                       {label}
                       {sortKey && (
@@ -906,10 +1008,10 @@ export function ListView(props: ListViewProps) {
                         <Popover label={t("lists.columnMenu", { column: label })} role="menu" onClose={() => setMenu(null)} className="list-colpopover">
                           {c.sortable && (
                             <>
-                              <button type="button" role="menuitem" className="list-menuitem" onClick={() => { update((s) => ({ ...s, sort: [{ column: c.key, descending: false }] })); setMenu(null); }}>
+                              <button type="button" role="menuitem" className="list-menuitem" onClick={() => { update((s) => ({ ...s, sort: [{ column: c.key, descending: false }], sortChosen: true })); setMenu(null); }}>
                                 {t("lists.sort.ascending")}
                               </button>
-                              <button type="button" role="menuitem" className="list-menuitem" onClick={() => { update((s) => ({ ...s, sort: [{ column: c.key, descending: true }] })); setMenu(null); }}>
+                              <button type="button" role="menuitem" className="list-menuitem" onClick={() => { update((s) => ({ ...s, sort: [{ column: c.key, descending: true }], sortChosen: true })); setMenu(null); }}>
                                 {t("lists.sort.descending")}
                               </button>
                             </>
@@ -1071,20 +1173,30 @@ function RecordPanel({
   );
 }
 
-function width(column: ListColumn): string {
+/** A column's width in the grid template: a minimum in rem and a share of the rest. */
+function columnWidth(column: ListColumn): { min: number; share: number } {
   switch (column.type) {
     case "boolean":
-      return "minmax(5.5rem, 0.6fr)";
+      return { min: 5.5, share: 0.6 };
     case "choice":
     case "number":
     case "money":
-      return "minmax(6.5rem, 0.7fr)";
+      return { min: 6.5, share: 0.7 };
     case "date":
     case "dateTime":
-      return "minmax(9rem, 0.9fr)";
+      return { min: 9, share: 0.9 };
     default:
-      return "minmax(10rem, 1.4fr)";
+      return { min: 10, share: 1.4 };
   }
+}
+
+function width(column: ListColumn): string {
+  const { min, share } = columnWidth(column);
+  return `minmax(${min}rem, ${share}fr)`;
+}
+
+function minimumWidth(column: ListColumn): number {
+  return columnWidth(column).min;
 }
 
 /** What a view stores; the "modified" mark compares against it. */
@@ -1116,11 +1228,27 @@ export function listReportUrl(listKey: string, state: ListState, format: "pdf" |
   return `/api/reports/lists/${listKey}?${query}`;
 }
 
-/** Print the list as a report: PDF in English or Arabic, CSV or Excel, with what is on screen. */
+/** Opens the list's Print or export menu (Alt+R prints the open record; with Shift, the list). */
+export const listPrintChord = "Alt+Shift+KeyR";
+
+/** Print the list as a report with what is on screen: PDF, CSV or Excel, each in English or
+ * Arabic (column titles, choices and dates in the document's language), the screen's language
+ * first. Alt+Shift+R opens the menu. */
 function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }) {
-  const { t, numerals } = useI18n();
+  const { t, numerals, language } = useI18n();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  useShortcut({
+    id: "lists.print",
+    chord: listPrintChord,
+    labelKey: "lists.shortcut.print",
+    groupKey: "lists.shortcut.group",
+    run: () => {
+      setOpen(true);
+      buttonRef.current?.focus();
+    },
+  });
   useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
   }, [open]);
@@ -1134,15 +1262,29 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
     event.preventDefault();
     event.stopPropagation();
   };
-  const items: { key: string; format: "pdf" | "csv" | "xlsx"; language: string }[] = [
+  const all: { key: string; format: "pdf" | "csv" | "xlsx"; language: string }[] = [
     { key: "lists.print.pdfEnglish", format: "pdf", language: "en" },
     { key: "lists.print.pdfArabic", format: "pdf", language: "ar" },
-    { key: "lists.print.csv", format: "csv", language: "en" },
-    { key: "lists.print.xlsx", format: "xlsx", language: "en" },
+    { key: "lists.print.csvEnglish", format: "csv", language: "en" },
+    { key: "lists.print.csvArabic", format: "csv", language: "ar" },
+    { key: "lists.print.xlsxEnglish", format: "xlsx", language: "en" },
+    { key: "lists.print.xlsxArabic", format: "xlsx", language: "ar" },
   ];
+  // Each format in the screen's language first.
+  const order = language === "ar" ? ["ar", "en"] : ["en", "ar"];
+  const items = (["pdf", "csv", "xlsx"] as const).flatMap((format) => order.map((lang) => all.find((i) => i.format === format && i.language === lang)!));
   return (
     <div className="list-anchor menu-anchor" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setOpen(false)}>
-      <button type="button" className="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-keyshortcuts={chordForAria(listPrintChord)}
+        title={chordKeys(listPrintChord).join("+")}
+        onClick={() => setOpen(!open)}
+      >
         {t("lists.print.open")}
       </button>
       {open && (

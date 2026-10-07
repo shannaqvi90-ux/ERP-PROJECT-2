@@ -125,6 +125,29 @@ public sealed class DatabaseMigrator(ModuleCatalog catalog, IConfiguration confi
         }
     }
 
+    /// <summary>
+    /// After seeding: VACUUM (ANALYZE) every table the owner role owns. A bulk seed (100,000 users)
+    /// leaves the planner without statistics and the trigram indexes with a long pending list until
+    /// autovacuum wakes up a minute later; until then a search the indexes answer in tens of
+    /// milliseconds takes seconds. Doing it at the end of the seed step means the demo is fast from
+    /// its first request. Skipped when no owner connection is configured.
+    /// </summary>
+    public async Task RefreshStatisticsAsync(CancellationToken cancellationToken = default)
+    {
+        if (configuration.GetConnectionString(ConnectionNames.Owner) is not { } owner)
+        {
+            return;
+        }
+        var builder = new NpgsqlConnectionStringBuilder(owner);
+        builder.CommandTimeout = Math.Max(builder.CommandTimeout, ErpDataSources.BulkCommandTimeoutSeconds(configuration));
+        await using var connection = new NpgsqlConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        await using var command = new NpgsqlCommand("VACUUM (ANALYZE, SKIP_LOCKED)", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        logger.LogInformation("Refreshed statistics and index lists in {Elapsed} ms", started.ElapsedMilliseconds);
+    }
+
     internal static DbContext CreateOwnerContext(Type contextType, string connectionString, string schema)
     {
         var builderType = typeof(DbContextOptionsBuilder<>).MakeGenericType(contextType);

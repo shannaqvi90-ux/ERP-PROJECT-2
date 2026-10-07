@@ -137,6 +137,11 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
             {
                 Facts(_doc.Parameters, 8);
             }
+            foreach (var note in _doc.Notes)
+            {
+                _y -= 2;
+                Paragraph(note, 8, bold: false, gray: 0.35m);
+            }
             if (_doc.Columns.Count > 0)
             {
                 Paragraph(_doc.RowCountText, 8, bold: false, gray: 0.35m);

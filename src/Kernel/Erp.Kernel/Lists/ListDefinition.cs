@@ -33,6 +33,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
 /// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>
+/// <param name="ValuesFrom">For a choice column whose values are ids of another list's records
+/// (a user's role ids): that list's key. Printed documents and exports show those records' names
+/// in place of the ids to a caller who may read that list, and how many there are to others.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -44,7 +47,8 @@ public sealed record ListColumn(
     bool Hidden = false,
     IReadOnlyList<ListChoice>? Choices = null,
     string? LabelField = null,
-    string? ArabicField = null);
+    string? ArabicField = null,
+    string? ValuesFrom = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
@@ -89,15 +93,14 @@ public sealed partial record ListDefinition(
     IReadOnlyList<string>? ArabicSearchFields = null)
 {
     /// <summary>The fields a search word matches: <see cref="ArabicSearchFields"/> for a word
-    /// written in Arabic letters when the list names them, else <see cref="SearchFields"/>.</summary>
+    /// written in Arabic letters when the list names them, else <see cref="SearchFields"/>. Arabic
+    /// letters only (<see cref="ListSearch.HasArabicLetter"/>): a number typed in Arabic-Indic digits
+    /// ("١٢٣") is not a word in Arabic and still searches every search field.</summary>
     public IReadOnlyList<string> SearchFieldsFor(string word) =>
-        ArabicSearchFields is { Count: > 0 } arabic && word.Any(IsArabicLetter) ? arabic : SearchFields;
+        ArabicSearchFields is { Count: > 0 } arabic && ListSearch.HasArabicLetter(word) ? arabic : SearchFields;
 
     /// <summary>Every field any search word can match.</summary>
     public IEnumerable<string> AllSearchFields => SearchFields.Concat(ArabicSearchFields ?? []).Distinct(StringComparer.Ordinal);
-
-    private static bool IsArabicLetter(char c) =>
-        c is >= '\u0600' and <= '\u06FF' or >= '\u0750' and <= '\u077F' or >= '\u08A0' and <= '\u08FF' or >= '\uFB50' and <= '\uFDFF' or >= '\uFE70' and <= '\uFEFF';
 
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 

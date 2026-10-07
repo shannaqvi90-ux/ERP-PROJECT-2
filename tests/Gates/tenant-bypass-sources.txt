@@ -14,7 +14,7 @@ unbound src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 1  # Defines OpenUnboundAsync
 data-source src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 2  # The unit of work takes its connection from the application role's data source: the request pool by default, the bulk pool when seeding chooses it (UseBulkConnectionAsync, before the connection is used).
 tenant-setting src/Kernel/Erp.Kernel/Data/KernelSql.cs 6  # Migration SQL: erp.current_tenant_id() reads the transaction-local tenant for row-level security.
 sql-set src/Kernel/Erp.Kernel/Data/KernelSql.cs 1  # Migration SQL: functions pin their search_path (SET search_path in CREATE FUNCTION).
-connection-string src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs 11  # Bootstrap and migrations (operator commands, not the web app's requests) connect as the administrator and owner roles.
+connection-string src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs 13  # Bootstrap and migrations (operator commands, not the web app's requests) connect as the administrator and owner roles; after seeding, RefreshStatisticsAsync connects as the owner to run VACUUM (ANALYZE) only (no tenant data read or written).
 data-source src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs 1  # Registers the application role's data source (refusing any other user) and the anonymous health check's SELECT 1.
 connection-string src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs 2  # Reads ConnectionStrings:App for that data source, and Admin to decide whether migrate also bootstraps (operator command).
 bind src/Kernel/Erp.Kernel/Seeding/SeedRunner.cs 1  # Seeding binds each seed tenant in turn (operator command, no request).

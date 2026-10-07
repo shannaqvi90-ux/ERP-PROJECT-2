@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Linq.Expressions;
 using System.Reflection;
 using Erp.Kernel.Http;
@@ -43,8 +44,9 @@ public interface IListBinding
 /// <summary>The result of one list query: the page's rows, or the problem the caller must fix.</summary>
 public sealed class ListResult<T>
 {
-    private ListResult(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, ProblemHttpResult? problem)
+    private ListResult(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, ProblemHttpResult? problem, bool ranked = false)
     {
+        Ranked = ranked;
         Rows = rows;
         Total = total;
         Next = next;
@@ -60,17 +62,21 @@ public sealed class ListResult<T>
     /// <summary>A 400 validation problem naming the query parameter to correct, or null.</summary>
     public ProblemHttpResult? Problem { get; }
 
-    internal static ListResult<T> Valid(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups) => new(rows, total, next, groups, null);
+    /// <summary>The rows are in relevance order (best match first).</summary>
+    public bool Ranked { get; }
+
+    internal static ListResult<T> Valid(IReadOnlyList<T> rows, int total, string? next, IReadOnlyList<ListGroup>? groups, bool ranked = false) =>
+        new(rows, total, next, groups, null, ranked);
 
     internal static ListResult<T> Invalid(ProblemHttpResult problem) => new([], 0, null, null, problem);
 
     /// <summary>The page in the shape every list endpoint returns.</summary>
-    public ListPage<TItem> ToPage<TItem>(Func<T, TItem> map) => new(Rows.Select(map).ToList(), Total, Next, Groups);
+    public ListPage<TItem> ToPage<TItem>(Func<T, TItem> map) => new(Rows.Select(map).ToList(), Total, Next, Groups, Ranked);
 
     /// <summary>The same result over other row objects (for example a module's public summary of
     /// its own rows, handed to another module through a contract); a problem stays the problem.</summary>
     public ListResult<TOut> Map<TOut>(Func<T, TOut> map) =>
-        Problem is { } problem ? ListResult<TOut>.Invalid(problem) : ListResult<TOut>.Valid(Rows.Select(map).ToList(), Total, Next, Groups);
+        Problem is { } problem ? ListResult<TOut>.Invalid(problem) : ListResult<TOut>.Valid(Rows.Select(map).ToList(), Total, Next, Groups, Ranked);
 }
 
 /// <summary>
@@ -88,31 +94,38 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public const int MaxGroups = 1000;
     private const int MaxTotals = 8;
 
-    private readonly Dictionary<string, Bound> _columns = new(StringComparer.Ordinal);
+    private readonly FrozenDictionary<string, Bound> _columns;
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
 
-    private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id)
+    // A binding never changes once built: Column and InMemory return a new binding, so a
+    // registered binding (shared by every request of every tenant) holds no state of its own.
+    private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason)
     {
         Definition = definition;
         _id = id;
-        _idOf = id.Compile();
+        _idOf = idOf;
+        _columns = columns;
+        InMemoryReason = inMemoryReason;
     }
 
     public ListDefinition Definition { get; }
 
     public Type RowType => typeof(T);
 
-    public string? InMemoryReason { get; private set; }
+    public string? InMemoryReason { get; }
 
     public IReadOnlyList<ListBoundColumn> Columns =>
-        _columns.Values.Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
+        _columns.Values.OrderBy(b => b.Order).Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
 
     /// <summary>Start a binding for the list over rows of <typeparamref name="T"/>, whose unique
     /// id breaks ties in every sort.</summary>
-    public static ListBinding<T> For(ListDefinition definition, Expression<Func<T, Guid>> id) => new(definition, id);
+    public static ListBinding<T> For(ListDefinition definition, Expression<Func<T, Guid>> id) =>
+        new(definition, id, id.Compile(), FrozenDictionary<string, Bound>.Empty, null);
 
-    /// <summary>Bind a column to a value of the row.</summary>
+    /// <summary>A binding with one more column bound to a value of the row (the binding itself
+    /// does not change).</summary>
     public ListBinding<T> Column<TValue>(string key, Expression<Func<T, TValue>> value)
     {
         if (_columns.ContainsKey(key))
@@ -120,34 +133,36 @@ public sealed class ListBinding<T> : IListBinding where T : class
             throw new InvalidOperationException($"list '{Definition.Key}': column '{key}' is bound twice");
         }
         var member = value.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == value.Parameters[0] ? property.Name : null;
-        _columns[key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value));
-        return this;
+        var columns = new Dictionary<string, Bound>(_columns, StringComparer.Ordinal)
+        {
+            [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count),
+        };
+        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
     }
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
     {
-        var served = new ListBinding<T>(definition, _id) { InMemoryReason = InMemoryReason };
+        var columns = new Dictionary<string, Bound>(StringComparer.Ordinal);
         foreach (var column in definition.Columns)
         {
             if (_columns.TryGetValue(column.Key, out var bound))
             {
-                served._columns[column.Key] = bound;
+                columns[column.Key] = bound;
             }
         }
-        return served;
+        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
     }
 
-    /// <summary>Query this list in memory (LINQ to objects over rows already loaded) because it
-    /// is small and bounded; the reason is reviewed by the index gate.</summary>
+    /// <summary>A binding that queries this list in memory (LINQ to objects over rows already
+    /// loaded) because it is small and bounded; the reason is reviewed by the index gate.</summary>
     public ListBinding<T> InMemory(string reason)
     {
         if (string.IsNullOrWhiteSpace(reason))
         {
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
-        InMemoryReason = reason;
-        return this;
+        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
     }
 
     public IEnumerable<string> Problems()
@@ -216,27 +231,51 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
         var groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+        if (plan.Relevance && plan.After is null && total > ListSearch.MaxRankedRows)
+        {
+            // A search this broad (a letter or two) is listed in the default order: ranking every
+            // row would cost more than it tells. A cursor keeps the order its first page had.
+            plan = plan with { Relevance = false, Sort = plan.Sort.Skip(1).ToList() };
+        }
 
         var page = filtered;
         if (plan.After is { } after)
         {
-            page = page.Where(Keyset(plan.Sort, after.Values, after.Id, database));
+            page = page.Where(Keyset(plan, after.Values, after.Id, database));
         }
-        page = Sorted(page, plan.Sort);
+        page = Sorted(page, plan, database);
         if (plan.Skip > 0)
         {
             page = page.Skip(plan.Skip);
         }
         page = page.Take(plan.Take + 1);
-        var rows = database ? await page.ToListAsync(cancellationToken) : page.ToList();
+        List<T> rows;
+        List<int>? ranks = null;
+        if (plan.Relevance)
+        {
+            // The relevance of each row comes from the same query that ordered it, so the cursor
+            // carries exactly the value the store compared (never one recomputed here).
+            var row = Expression.Parameter(typeof(T), "row");
+            var ranked = page.Select(Expression.Lambda<Func<T, RankedRow<T>>>(
+                Expression.New(typeof(RankedRow<T>).GetConstructors()[0], row, Rank(plan, row, database)), row));
+            var found = database ? await ranked.ToListAsync(cancellationToken) : ranked.ToList();
+            rows = found.Select(r => r.Row).ToList();
+            ranks = found.Select(r => r.Rank).ToList();
+        }
+        else
+        {
+            rows = database ? await page.ToListAsync(cancellationToken) : page.ToList();
+        }
         string? next = null;
         if (rows.Count > plan.Take)
         {
             rows.RemoveAt(rows.Count - 1);
             var last = rows[^1];
-            next = ListCursor.Encode(ListSortKey.Format(plan.Sort), plan.Sort.Select(k => _columns[k.Column].Getter(last)).ToList(), _idOf(last));
+            var lastRank = ranks?[rows.Count - 1];
+            next = ListCursor.Encode(ListSortKey.Format(plan.Sort),
+                plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
         }
-        return ListResult<T>.Valid(rows, total, next, groups);
+        return ListResult<T>.Valid(rows, total, next, groups, plan.Relevance);
     }
 
     /// <summary>The rows the request selects, in its order, without paging (exports, bulk
@@ -244,21 +283,26 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public IQueryable<T> Apply(IQueryable<T> source, ListRequest request)
     {
         var plan = PlanFor(request);
-        return Sorted(Filtered(source, plan, source.Provider is IAsyncQueryProvider), plan.Sort);
+        var database = source.Provider is IAsyncQueryProvider;
+        return Sorted(Filtered(source, plan, database), plan, database);
     }
 
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>
     public static ProblemHttpResult ToProblem(HttpContext http, ListQueryException error) =>
         new Validator(http).Add(error.Parameter, error.Code, [.. error.Args]).ToResult();
 
+    /// <param name="Words">The search words (lower case), each with the spellings it matches.</param>
+    /// <param name="Relevance">Ordered by relevance to the search (a search without a sort): the
+    /// first sort key is <see cref="ListSearch.RelevanceKey"/>.</param>
     private sealed record Plan(
-        IReadOnlyList<string> Words,
+        IReadOnlyList<(string Word, IReadOnlyList<string> Spellings)> Words,
         FilterNode? Filter,
         IReadOnlyList<ListSortKey> Sort,
         (IReadOnlyList<object?> Values, Guid Id)? After,
         int Skip,
         int Take,
-        string? GroupBy);
+        string? GroupBy,
+        bool Relevance);
 
     private Plan PlanFor(ListRequest request)
     {
@@ -288,6 +332,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         var sortText = string.IsNullOrWhiteSpace(request.Sort) ? Definition.DefaultSort : request.Sort;
         var sort = sortText is null ? [] : ListSortKey.Parse(sortText, Definition);
+        // A search without a sort of its own: best matches first, then the list's default order.
+        var relevance = words.Count > 0 && string.IsNullOrWhiteSpace(request.Sort);
+        if (relevance && !string.IsNullOrEmpty(request.After) && ListCursor.SortOf(request.After) == ListSortKey.Format(sort))
+        {
+            // The cursor of a search too broad to rank (see QueryAsync) continues in the default order.
+            relevance = false;
+        }
+        if (relevance)
+        {
+            sort = [new ListSortKey(ListSearch.RelevanceKey, true), .. sort];
+        }
         string? groupBy = null;
         if (!string.IsNullOrWhiteSpace(request.GroupBy))
         {
@@ -308,23 +363,34 @@ public sealed class ListBinding<T> : IListBinding where T : class
             {
                 throw new ListQueryException("after", "list.afterWithSkip");
             }
-            after = ListCursor.Decode(request.After, ListSortKey.Format(sort), sort.Select(k => _columns[k.Column].ValueType).ToList());
+            after = ListCursor.Decode(request.After, ListSortKey.Format(sort),
+                sort.Select(k => k.Column == ListSearch.RelevanceKey ? typeof(int) : _columns[k.Column].ValueType).ToList());
         }
         var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, ListRequest.MaxTake);
         var skip = Math.Max(0, request.Skip ?? 0);
-        return new Plan(words, filter, sort, after, skip, take, groupBy);
+        return new Plan(words.Select(w => (w, ListSearch.Spellings(w))).ToList(), filter, sort, after, skip, take, groupBy, relevance);
     }
 
     private IQueryable<T> Filtered(IQueryable<T> source, Plan plan, bool database)
     {
         var row = Expression.Parameter(typeof(T), "row");
         var conditions = new List<Expression>();
-        foreach (var word in plan.Words)
+        foreach (var (word, spellings) in plan.Words)
         {
-            var pattern = "%" + EscapeLike(word) + "%";
-            conditions.Add(Definition.SearchFieldsFor(word)
-                .Select(field => Like(Value(field, row), pattern, database))
-                .Aggregate(Expression.OrElse));
+            var fields = SearchFieldsFor([word]);
+            if (database && spellings.Count > 1)
+            {
+                // A word with several spellings (Arabic) is first tested with one case-insensitive
+                // regular expression per field, which accepts every spelling (letter classes, marks
+                // after any letter): a row that cannot match is then refused after a few tests
+                // instead of one LIKE per spelling and field (measured: half the time of a two-word
+                // Arabic search over 100,000 users). The LIKE patterns stay, so the trigram indexes
+                // still find the rows and the result is exactly theirs (each pattern implies the
+                // expression).
+                conditions.Add(fields.Select(field => RegexMatch(Value(field, row), ListSearch.Pattern(word), database))
+                    .DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse));
+            }
+            conditions.Add(AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database));
         }
         if (plan.Filter is { } filter)
         {
@@ -336,6 +402,86 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         return source.Where(Expression.Lambda<Func<T, bool>>(conditions.Aggregate(Expression.AndAlso), row));
     }
+
+    /// <summary>The search fields quick search tries for all of the words: the fields each word
+    /// matches (<see cref="ListDefinition.SearchFieldsFor"/>: the Arabic search fields for a word
+    /// written in Arabic letters), kept only when every word matches them.</summary>
+    private IReadOnlyList<string> SearchFieldsFor(IReadOnlyList<string> words) =>
+        words.Select(Definition.SearchFieldsFor)
+            .Aggregate((IEnumerable<string>)Definition.AllSearchFields.ToList(), (fields, wordFields) => fields.Where(wordFields.Contains))
+            .ToList();
+
+    /// <summary>Some of the fields matches one of the patterns (false when no field can).</summary>
+    private Expression AnyField(ParameterExpression row, IReadOnlyList<string> fields, IEnumerable<string> patterns, bool database)
+    {
+        var list = patterns.ToList();
+        return fields
+            .SelectMany(field => list.Select(pattern => Like(Value(field, row), pattern, database)))
+            .DefaultIfEmpty(Expression.Constant(false))
+            .Aggregate(Expression.OrElse);
+    }
+
+    /// <summary>
+    /// How well a row matches the search, as one whole number (higher is better). Each word scores
+    /// when a search field starts with it, less when a word inside a field does (a last name, the
+    /// part of an e-mail after a dot); the whole search scores more when a field equals it or
+    /// starts with it. Equal scores prefer the shorter value of the first search field (closer to
+    /// what was typed). Computed by the store in the same query that orders and pages the rows.
+    /// </summary>
+    private Expression Rank(Plan plan, ParameterExpression row, bool database)
+    {
+        // Regular expressions (case-insensitive), one per field and test: much cheaper per row
+        // than one LIKE per spelling, and a letter class covers every Arabic spelling at once.
+        Expression Score(Expression condition, int score) => Expression.Condition(condition, Expression.Constant(score), Expression.Constant(0));
+        // Each test looks only at the fields the words can occur in (see SearchFieldsFor).
+        Expression Any(IReadOnlyList<string> fields, string pattern) =>
+            fields.Select(field => RegexMatch(Value(field, row), pattern, database)).DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse);
+        var words = plan.Words.Select(w => ListSearch.Pattern(w.Word)).ToList();
+        var separators = "[" + string.Concat(ListSearch.WordSeparators) + "]";
+        var parts = new List<Expression>();
+        foreach (var (typed, _) in plan.Words)
+        {
+            var word = ListSearch.Pattern(typed);
+            var fields = SearchFieldsFor([typed]);
+            parts.Add(Expression.Condition(Any(fields, "^" + word), Expression.Constant(ListSearch.FieldStartScore), Score(Any(fields, separators + word), ListSearch.WordStartScore)));
+        }
+        // The whole search equal to a field, at its start, or its words in the typed order (the
+        // first at the start, each next one at the start of a later word: "yous wang" for
+        // "Yousef Wang", not "Wang Yousef"), in the fields every word can occur in.
+        var whole = SearchFieldsFor(plan.Words.Select(w => w.Word).ToList());
+        parts.Add(Score(Any(whole, "^" + string.Join(" ", words) + "$"), ListSearch.ExactScore));
+        if (words.Count > 1)
+        {
+            parts.Add(Score(Any(whole, "^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
+            parts.Add(Score(Any(whole, "^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
+        }
+        var score = parts.Aggregate(Expression.Add);
+        var first = Value(Definition.SearchFields[0], row);
+        var cap = Expression.Constant(ListSearch.LengthSlots - 1);
+        Expression length = Expression.Call(typeof(Math).GetMethod(nameof(Math.Min), [typeof(int), typeof(int)])!,
+            Expression.Property(first, nameof(string.Length)), cap);
+        length = Expression.Condition(Expression.Equal(first, Expression.Constant(null, typeof(string))), cap, length);
+        return Expression.Subtract(Expression.Multiply(score, Expression.Constant(ListSearch.LengthSlots)), length);
+    }
+
+    private static readonly MethodInfo RegexIsMatch = typeof(System.Text.RegularExpressions.Regex).GetMethod(
+        nameof(System.Text.RegularExpressions.Regex.IsMatch), [typeof(string), typeof(string), typeof(System.Text.RegularExpressions.RegexOptions)])!;
+
+    private static readonly MethodInfo MatchesPattern = typeof(ListBinding<T>).GetMethod(nameof(MatchesRegex), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    /// <summary>A case-insensitive regular expression match: <c>~*</c> in PostgreSQL, .NET's
+    /// regular expressions in memory (the patterns use only what both read alike).</summary>
+    private static Expression RegexMatch(Expression value, string pattern, bool database) => database
+        ? Expression.Call(RegexIsMatch, value, Box(pattern, typeof(string)), Expression.Constant(System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        : Expression.Call(MatchesPattern, value, Expression.Constant(pattern));
+
+    private static bool MatchesRegex(string? value, string pattern) =>
+        value is not null && System.Text.RegularExpressions.Regex.IsMatch(value, pattern,
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
+    /// <summary>The value a sort key orders by: a column's bound value, or the row's relevance.</summary>
+    private Expression SortValue(ListSortKey key, Plan plan, ParameterExpression row, bool database) =>
+        key.Column == ListSearch.RelevanceKey ? Rank(plan, row, database) : Value(key.Column, row);
 
     private Expression Value(string column, ParameterExpression row)
     {
@@ -487,14 +633,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return Expression.Property(Expression.Constant(box), nameof(ValueBox<object>.Value));
     }
 
-    private IQueryable<T> Sorted(IQueryable<T> source, IReadOnlyList<ListSortKey> sort)
+    private IQueryable<T> Sorted(IQueryable<T> source, Plan plan, bool database)
     {
+        var sort = plan.Sort;
         var row = Expression.Parameter(typeof(T), "row");
         var ordered = source.Expression;
         var first = true;
         foreach (var key in sort)
         {
-            ordered = OrderCall(ordered, Value(key.Column, row), row, key.Descending, first);
+            ordered = OrderCall(ordered, SortValue(key, plan, row, database), row, key.Descending, first);
             first = false;
         }
         var idDescending = sort.Count > 0 && sort[0].Descending;
@@ -520,11 +667,12 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// ascending and first descending in PostgreSQL, first ascending in memory; "after" follows
     /// the store's order. A redundant range on the first non-nullable key lets an index seek.
     /// </summary>
-    private Expression<Func<T, bool>> Keyset(IReadOnlyList<ListSortKey> sort, IReadOnlyList<object?> values, Guid id, bool database)
+    private Expression<Func<T, bool>> Keyset(Plan plan, IReadOnlyList<object?> values, Guid id, bool database)
     {
+        var sort = plan.Sort;
         var row = Expression.Parameter(typeof(T), "row");
         var idDescending = sort.Count > 0 && sort[0].Descending;
-        var members = sort.Select(k => Value(k.Column, row)).ToList();
+        var members = sort.Select(k => SortValue(k, plan, row, database)).ToList();
         var terms = new List<Expression>();
         Expression? equalSoFar = null;
         for (var i = 0; i < sort.Count; i++)
@@ -649,13 +797,20 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return row => compiled(row);
     }
 
-    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter);
+    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter, int Order);
 
     /// <summary>Replaces a lambda's parameter with another, to combine column expressions.</summary>
     private sealed class Rebind(ParameterExpression from, ParameterExpression to) : ExpressionVisitor
     {
         protected override Expression VisitParameter(ParameterExpression node) => node == from ? to : base.VisitParameter(node);
     }
+}
+
+/// <summary>A row with its relevance to the search, as the store computed it.</summary>
+internal sealed class RankedRow<TRow>(TRow row, int rank)
+{
+    public TRow Row { get; } = row;
+    public int Rank { get; } = rank;
 }
 
 /// <summary>Holds one request value so EF Core sends it as a parameter.</summary>

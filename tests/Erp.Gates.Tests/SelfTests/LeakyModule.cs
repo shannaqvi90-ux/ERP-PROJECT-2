@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Erp.Kernel.Data;
 using Erp.Kernel.Http;
+using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
@@ -22,9 +24,43 @@ public sealed class LeakyModule : ErpModule
     {
         module.Permissions("leaky.data.read", "leaky.data.update", "leaky.data.delete");
         module.Services.AddSingleton<LastListHolder>();
+
+        // Bug 27 (critic p05 round 1, plant L3): a registered list whose answers reuse the total of
+        // the first caller that sent the same search, filter and grouping, whatever its tenant.
+        // Every row stays the caller's own; only the numbers leak.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                PeopleList, "leaky.people.title", "leaky.data.read", "/api/leaky/people",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("language", "leaky.people.language", ListColumnType.Choice, Filterable: true, Groupable: true,
+                        Choices: [new ListChoice("en", "leaky.people.en"), new ListChoice("ar", "leaky.people.ar")]),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .Column("language", p => p.Language)
+            .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<CountCache>();
+        // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
+        // registration numbers under the planted module's own read permission, which grants no
+        // company data anywhere else.
+        module.Report<TaxNumbersReport>(TaxNumbersReport.Definition);
         module.Endpoints(group =>
         {
+            group.MapGet("/people", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(PeopleList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                var total = _totals.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Total);
+                var groups = result.Groups is null ? null : _groups.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Groups);
+                return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
+            }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
+
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
             group.MapGet("/cached-tenant", async (ErpDbSession session) =>
@@ -53,6 +89,51 @@ public sealed class LeakyModule : ErpModule
                 return Results.File(PlantedExports.Xlsx(exportedTenant ?? ""), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "leaky.xlsx");
             }).WithName("leaky.exportXlsx").WithSummary("Planted bug: a workbook export of a workspace name cached in a static field.")
               .Surface(SurfaceKind.Export).RequirePermission("leaky.data.read");
+
+            // Bug 50 (critic p06 round 1, plant L2): printed files kept on disk by their download
+            // name, which carries no tenant, and served again to whoever prints the same name. A
+            // JSON answer is never kept, so only a gate in which tenant B prints a PDF or exports a
+            // CSV before tenant A does catches it.
+            group.MapGet("/printed", async (HttpContext http, ErpDbSession session) =>
+            {
+                var format = http.Request.Query["format"].ToString() is { Length: > 0 } f ? f : "json";
+                var language = http.Request.Query["language"].ToString() is { Length: > 0 } l ? l : "en";
+                if (format is not ("json" or "pdf" or "csv") || language is not ("en" or "ar"))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["format"] = ["json, pdf or csv; en or ar"] });
+                }
+                var name = await FirstTenantNameAsync(session) ?? "";
+                if (format == "json")
+                {
+                    return Results.Ok(new { title = "People", language });
+                }
+                var file = Path.Combine(PrintedDirectory, $"People.{language}.{format}");
+                if (!File.Exists(file))
+                {
+                    Directory.CreateDirectory(PrintedDirectory);
+                    await File.WriteAllBytesAsync(file, format == "pdf" ? PlantedExports.Pdf($"People {name}") : System.Text.Encoding.UTF8.GetBytes($"title,workspace\nPeople,{name}\n"));
+                }
+                return Results.File(await File.ReadAllBytesAsync(file), format == "pdf" ? "application/pdf" : "text/csv", $"People.{format}");
+            }).WithName("leaky.printed").WithSummary("Planted bug: printed files kept on disk by their download name, without the tenant.")
+              .AddOpenApiOperationTransformer((operation, _, _) =>
+              {
+                  operation.Parameters ??= [];
+                  foreach (var (parameterName, values) in new[] { ("format", new[] { "json", "pdf", "csv" }), ("language", new[] { "en", "ar" }) })
+                  {
+                      operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                      {
+                          Name = parameterName,
+                          In = Microsoft.OpenApi.ParameterLocation.Query,
+                          Schema = new Microsoft.OpenApi.OpenApiSchema
+                          {
+                              Type = Microsoft.OpenApi.JsonSchemaType.String,
+                              Enum = values.Select(v => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(v)).ToList(),
+                          },
+                      });
+                  }
+                  return Task.CompletedTask;
+              })
+              .RequirePermission("leaky.data.read");
 
             // Bug 10: a singleton that hands each caller the list the previous caller read.
             group.MapGet("/recent", async (ErpDbSession session, LastListHolder holder) =>
@@ -941,6 +1022,26 @@ public sealed class LeakyModule : ErpModule
         return (string?)await command.ExecuteScalarAsync();
     }
 
+    public const string PeopleList = "leaky.people";
+
+    // Bug 27's memory, on the module instance: reachable from the module catalogue.
+    private readonly ConcurrentDictionary<string, int> _totals = new();
+    private readonly ConcurrentDictionary<string, IReadOnlyList<ListGroup>> _groups = new();
+
+    public sealed record Person(Guid Id, string DisplayName, string Language);
+
+    private static async Task<List<Person>> PeopleAsync(ErpDbSession session)
+    {
+        await using var command = new NpgsqlCommand("SELECT id, display_name, language FROM identity.users", session.Connection, session.Transaction);
+        await using var reader = await command.ExecuteReaderAsync();
+        var people = new List<Person>();
+        while (await reader.ReadAsync())
+        {
+            people.Add(new Person(reader.GetGuid(0), reader.GetString(1), reader.GetString(2)));
+        }
+        return people;
+    }
+
     /// <summary>Empties the planted process-wide state. It is static, so it outlives any one test
     /// environment: a self-test that relies on which tenant fills it first starts from empty.</summary>
     internal static void ResetProcessState()
@@ -948,7 +1049,39 @@ public sealed class LeakyModule : ErpModule
         cachedTenant = null;
         exportedTenant = null;
         PersonCards.Clear();
+        if (Directory.Exists(PrintedDirectory))
+        {
+            Directory.Delete(PrintedDirectory, recursive: true);
+        }
     }
+
+    /// <summary>Bug 51: the companies' tax numbers under a permission that does not grant them.</summary>
+    public sealed class TaxNumbersReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource
+    {
+        public static readonly Erp.Kernel.Reports.ReportDefinition Definition = new(
+            "leaky.taxNumbers", "tenancy.report.companyProfile", "leaky.data.read", [],
+            [
+                new Erp.Kernel.Reports.ReportColumn("code", "tenancy.company.code", Erp.Kernel.Lists.ListColumnType.Text),
+                new Erp.Kernel.Reports.ReportColumn("taxNumber", "tenancy.company.taxRegistrationNumber", Erp.Kernel.Lists.ListColumnType.Text),
+            ]);
+
+        public async Task<Erp.Kernel.Reports.ReportData?> RunAsync(Erp.Kernel.Reports.ReportRun run, CancellationToken cancellationToken)
+        {
+            await using var command = new NpgsqlCommand("SELECT code, tax_registration_number FROM tenancy.companies WHERE tax_registration_number IS NOT NULL ORDER BY code",
+                session.Connection, session.Transaction);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            var rows = new List<IReadOnlyDictionary<string, object?>>();
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                rows.Add(new Dictionary<string, object?> { ["code"] = reader.GetString(0), ["taxNumber"] = reader.GetString(1) });
+            }
+            return new Erp.Kernel.Reports.ReportData { Rows = rows };
+        }
+    }
+
+    /// <summary>Where bug 50 keeps printed files: one directory per test process, so self-tests
+    /// running side by side in separate processes never read each other's files.</summary>
+    private static string PrintedDirectory => Path.Combine(Path.GetTempPath(), $"erp-leaky-printed-{Environment.ProcessId}");
 
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();

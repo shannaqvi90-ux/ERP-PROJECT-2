@@ -35,7 +35,8 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
 
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{inventory.TypesInspected} types, {inventory.FieldsInspected} fields, {inventory.SingletonsInspected} singleton services inspected, " +
-            $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; {inventory.Findings.Count} reviewed findings");
+            $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; " +
+            $"{inventory.ReachableRoots} roots walked to {inventory.ReachableObjectsWalked} objects, {inventory.ReachableTypesJudged} product types judged field by field; {inventory.Findings.Count} reviewed findings");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(inventory.FieldsInspected >= Ratchet.Min("g1.processStateFieldsInspected"),
             $"g1.processStateFieldsInspected: {inventory.FieldsInspected}; ratchet minimum {Ratchet.Min("g1.processStateFieldsInspected")}");
@@ -45,6 +46,10 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
             $"g1.endpointDelegatesWalked: {inventory.EndpointsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegatesWalked")}");
         Assert.True(inventory.ClosuresInspected >= Ratchet.Min("g1.endpointClosuresInspected"),
             $"g1.endpointClosuresInspected: {inventory.ClosuresInspected}; ratchet minimum {Ratchet.Min("g1.endpointClosuresInspected")}");
+        Assert.True(inventory.ReachableObjectsWalked >= Ratchet.Min("g1.reachableObjectsWalked"),
+            $"g1.reachableObjectsWalked: {inventory.ReachableObjectsWalked}; ratchet minimum {Ratchet.Min("g1.reachableObjectsWalked")}");
+        Assert.True(inventory.ReachableTypesJudged >= Ratchet.Min("g1.reachableTypesJudged"),
+            $"g1.reachableTypesJudged: {inventory.ReachableTypesJudged}; ratchet minimum {Ratchet.Min("g1.reachableTypesJudged")}");
         Assert.True(inventory.DelegateObjectsWalked >= Ratchet.Min("g1.endpointDelegateObjectsWalked"),
             $"g1.endpointDelegateObjectsWalked: {inventory.DelegateObjectsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegateObjectsWalked")}");
     }
@@ -63,6 +68,15 @@ public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Fi
 
     /// <summary>Objects visited while walking endpoint delegates (a walk that reaches nothing is blind).</summary>
     public int DelegateObjectsWalked { get; init; }
+
+    /// <summary>Singleton instances and static fields whose object graphs were walked.</summary>
+    public int ReachableRoots { get; init; }
+
+    /// <summary>Objects reached from those roots (registrations, bindings, collections, closures).</summary>
+    public int ReachableObjectsWalked { get; init; }
+
+    /// <summary>Product types reached from those roots whose fields were judged one by one.</summary>
+    public int ReachableTypesJudged { get; init; }
 }
 
 /// <summary>Finds process-wide state by reflection over the product's assemblies and the app's
@@ -79,7 +93,10 @@ public static class ProcessState
         "Microsoft.AspNetCore.ResponseCaching.IResponseCachingPolicyProvider",
     ];
 
-    public static ProcessStateInventory Inspect(ErpAppFactory factory)
+    /// <summary>The product's assemblies, the app's service types and its product singleton types.</summary>
+    public sealed record ProductContext(IReadOnlyList<Assembly> Assemblies, IReadOnlyList<ServiceDescriptor> Descriptors, IReadOnlySet<Type> ServiceTypes, IReadOnlyList<Type> Singletons);
+
+    public static ProductContext ContextOf(ErpAppFactory factory)
     {
         // The host's assemblies and those of every module the running app loaded.
         var modules = factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>().Modules.Select(m => m.Assembly);
@@ -99,8 +116,35 @@ public static class ProcessState
                 singletons.Add(type);
             }
         }
-        var inventory = InspectTypes(assemblies.SelectMany(LoadableTypes), singletons.Distinct(), serviceTypes);
+        return new ProductContext(assemblies, descriptors, serviceTypes, singletons.Distinct().ToList());
+    }
+
+    /// <summary>Every live root of process-wide state in the running app (product singleton
+    /// instances and static field values) with the product's assemblies.</summary>
+    public static (IReadOnlyList<(string Name, object? Value)> Roots, IReadOnlyList<Assembly> Assemblies) LiveRoots(ErpAppFactory factory)
+    {
+        var context = ContextOf(factory);
+        // The gate's own instruments (the SQL trace, the attack's bookkeeping) change while they
+        // measure; when the gate assembly is loaded as a module (the self-tests' planted modules)
+        // only its planted code is the app's.
+        static bool Instrument(Type type) =>
+            type.Namespace?.StartsWith("Erp.Gates.Tests", StringComparison.Ordinal) == true &&
+            type.Namespace?.StartsWith("Erp.Gates.Tests.SelfTests", StringComparison.Ordinal) != true;
+        var types = context.Assemblies.SelectMany(LoadableTypes).Where(t => !Instrument(t));
+        return (Roots(factory, context.Descriptors, context.Singletons, types).ToList(), context.Assemblies);
+    }
+
+    public static ProcessStateInventory Inspect(ErpAppFactory factory)
+    {
+        var (assemblies, descriptors, serviceTypes, singletons) = ContextOf(factory);
+        var productTypes = assemblies.SelectMany(LoadableTypes).ToList();
+        var inventory = InspectTypes(productTypes, singletons, serviceTypes);
         var findings = inventory.Findings.ToList();
+        // Everything those singletons and static fields hold, judged field by field: a reviewed
+        // root is never trusted for what hangs off it (list bindings, menus, module instances).
+        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes), assemblies, serviceTypes, singletons.ToHashSet());
+        findings.AddRange(reachable.Findings);
+        inventory = inventory with { ReachableRoots = reachable.Roots, ReachableObjectsWalked = reachable.ObjectsWalked, ReachableTypesJudged = reachable.TypesJudged };
         // Variables captured by endpoint lambdas live as long as the endpoint: walk every endpoint's
         // delegate to the product closures and objects it holds.
         var closures = EndpointClosures.Inspect(factory.Services, assemblies, serviceTypes);
@@ -114,6 +158,49 @@ public static class ProcessState
             }
         }
         return inventory with { Findings = findings.OrderBy(f => f.Key, StringComparer.Ordinal).ToList() };
+    }
+
+    /// <summary>The live roots of process-wide state: every product singleton instance the app
+    /// holds and the value of every static field of the product's types.</summary>
+    private static IEnumerable<(string Name, object? Value)> Roots(ErpAppFactory factory, IReadOnlyList<ServiceDescriptor> descriptors,
+        IReadOnlyCollection<Type> singletons, IEnumerable<Type> productTypes)
+    {
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        foreach (var descriptor in descriptors.Where(d => d.Lifetime == ServiceLifetime.Singleton && !d.IsKeyedService && !d.ServiceType.ContainsGenericParameters))
+        {
+            object?[] candidates;
+            try
+            {
+                candidates = descriptor.ImplementationInstance is { } instance ? [instance] : factory.Services.GetServices(descriptor.ServiceType).ToArray();
+            }
+            catch (InvalidOperationException)
+            {
+                continue;
+            }
+            foreach (var candidate in candidates)
+            {
+                if (candidate is not null && singletons.Contains(candidate.GetType()) && seen.Add(candidate))
+                {
+                    yield return ($"singleton {Name(candidate.GetType())}", candidate);
+                }
+            }
+        }
+        foreach (var type in productTypes.Where(t => !t.ContainsGenericParameters && !IsGenerated(t)))
+        {
+            foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(f => !f.IsLiteral))
+            {
+                object? value;
+                try
+                {
+                    value = field.GetValue(null);
+                }
+                catch (Exception e) when (e is TypeInitializationException or TargetInvocationException or NotSupportedException or FieldAccessException)
+                {
+                    continue;
+                }
+                yield return ($"static {Name(type)}.{FieldName(field)}", value);
+            }
+        }
     }
 
     /// <summary>Static fields of every type, and instance fields of the singleton types, that can
@@ -224,7 +311,10 @@ public static class ProcessState
             type == typeof(TimeOnly) || type == typeof(Type) || type == typeof(object) || type == typeof(Lock) ||
             type == typeof(System.Text.RegularExpressions.Regex) || type == typeof(System.Text.CompositeFormat) ||
             type == typeof(StringComparer) || type == typeof(System.Globalization.CultureInfo) || type == typeof(System.Text.Encoding) ||
-            typeof(MemberInfo).IsAssignableFrom(type) || typeof(Delegate).IsAssignableFrom(type))
+            typeof(MemberInfo).IsAssignableFrom(type) || typeof(Delegate).IsAssignableFrom(type) ||
+            // Expression trees cannot change once built; the constants they hold are walked by
+            // ReachableState like any other object.
+            typeof(System.Linq.Expressions.Expression).IsAssignableFrom(type))
         {
             return true;
         }

@@ -19,7 +19,7 @@ public sealed class ListRequest
     public const int MaxSearchWords = 8;
 
     [FromQuery(Name = "search")]
-    [Description("Free text. Every word must occur (anywhere, any case) in at least one of the list's search fields.")]
+    [Description("Free text. Every word must occur (anywhere, any case) in at least one of the list's search fields; Arabic words also match the letter variants people type for one another (ا أ إ آ, ي ى, ه ة, و ؤ). Without a sort, rows come best match first (when at most 10,000 rows match; the page says ranked): words at the start of a field or of a word in it, the whole search equal to or starting a field, the words in the typed order; then shorter values, then the list's default sort.")]
     public string? Search { get; init; }
 
     [FromQuery(Name = "filter")]
@@ -27,7 +27,7 @@ public sealed class ListRequest
     public string? Filter { get; init; }
 
     [FromQuery(Name = "sort")]
-    [Description("Sortable column keys separated by commas; a leading '-' sorts descending. Defaults to the list's default sort.")]
+    [Description("Sortable column keys separated by commas; a leading '-' sorts descending. Defaults to best match first when there is a search, else the list's default sort.")]
     public string? Sort { get; init; }
 
     [FromQuery(Name = "after")]
@@ -52,7 +52,9 @@ public sealed class ListRequest
 /// <param name="Total">Rows matching the search and filter (all pages).</param>
 /// <param name="Next">Pass as <c>after</c> to read the following page; null on the last page.</param>
 /// <param name="Groups">With <c>groupBy</c>: every group of the matching rows, ordered by key.</param>
-public sealed record ListPage<T>(IReadOnlyList<T> Items, int Total, string? Next = null, IReadOnlyList<ListGroup>? Groups = null);
+/// <param name="Ranked">The rows are in relevance order, best match first (a search without a
+/// sort, matching at most <see cref="ListSearch.MaxRankedRows"/> rows).</param>
+public sealed record ListPage<T>(IReadOnlyList<T> Items, int Total, string? Next = null, IReadOnlyList<ListGroup>? Groups = null, bool Ranked = false);
 
 /// <summary>A group of rows sharing one value of the grouped column.</summary>
 /// <param name="Key">The value (null for rows without one).</param>
@@ -142,6 +144,28 @@ internal static class ListCursor
             writer.WriteEndObject();
         }
         return System.Convert.ToBase64String(buffer.ToArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    }
+
+    /// <summary>The sort a cursor belongs to, or null when it does not decode.</summary>
+    public static string? SortOf(string cursor)
+    {
+        if (cursor.Length > MaxLength)
+        {
+            return null;
+        }
+        try
+        {
+            var base64 = cursor.Replace('-', '+').Replace('_', '/');
+            base64 += new string('=', (4 - base64.Length % 4) % 4);
+            using var document = JsonDocument.Parse(System.Convert.FromBase64String(base64));
+            return document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("s", out var s) && s.ValueKind == JsonValueKind.String
+                ? s.GetString()
+                : null;
+        }
+        catch (Exception e) when (e is FormatException or JsonException)
+        {
+            return null;
+        }
     }
 
     /// <summary>The cursor's values converted to the sort keys' types, and its id.</summary>

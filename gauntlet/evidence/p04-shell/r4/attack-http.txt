@@ -1,0 +1,21 @@
+== A reads B user by id
+404
+== A preferences naming B user
+{"id":"01a1138b-d8ac-7026-9ed7-551eb1adad16","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"مريم المنصوري"} 200
+== B user language after
+en gulfsteel
+== A workplace to B company
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-c453ce9a7241555157583e2eaa2d91a2-e8106d3b6ef08dc3-00","errors":{"companyId":[{
+== A company report for B company
+404
+== A users export searching gulfsteel
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+
+== A users list with tenant headers
+{"items":[],"total":0,"next":null,"groups":null}
+== A session with workspace query
+alnoor
+== A list definition / saved views
+{"items":[{"id":"01a1138c-eaab-7275-972d-69c45cd8ec15","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,"columns":["displayName","email","language","isAct
+== A sign-in with B email and workspace alnoor
+{"authenticated":true,"user":{"id":"01a1138c-eeb7-76a3-b2a6-923b5fdb0e50","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"مري

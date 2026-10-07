@@ -21,12 +21,18 @@ public interface IIsolationProbe
 /// <param name="VictimTenantId">Tenant B.</param>
 /// <param name="VictimIds">Every primary key that belongs to tenant B.</param>
 /// <param name="VictimStrings">Canary strings that only tenant B's data contains.</param>
+/// <param name="Victim">HTTP client signed in as a tenant B administrator, when the gate provides
+/// one: the probe uses the surface on tenant B's own records (prints, exports, uploads) right
+/// before the attacker does, so whatever the surface keeps between requests (a file kept by its
+/// name, a cache) holds tenant B's data when the attacker arrives. Its answers are tenant B's own
+/// and are not handed back as observed.</param>
 public sealed record IsolationProbeContext(
     HttpClient Attacker,
     Guid AttackerTenantId,
     Guid VictimTenantId,
     IReadOnlyCollection<Guid> VictimIds,
-    IReadOnlyCollection<string> VictimStrings);
+    IReadOnlyCollection<string> VictimStrings,
+    HttpClient? Victim = null);
 
 /// <param name="Attempts">Number of attempts made.</param>
 /// <param name="Observed">Everything the probe saw (response bodies, file contents, job output);

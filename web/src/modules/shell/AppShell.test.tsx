@@ -107,6 +107,9 @@ describe("command palette", () => {
     expect(address.get("q")).toBe("omar@alnoor.example");
     expect(address.get("open")).toBe("u2");
     expect(document.querySelector<HTMLInputElement>('input[type="search"]')!.value).toBe("omar@alnoor.example");
+    // The picked user's record is open (one Enter from the palette).
+    await settle();
+    expect(document.querySelector(".list-record")?.textContent).toContain("omar@alnoor.example");
   });
 
   it("ends a source's records with 'show all matches', which opens the list narrowed to the query", async () => {

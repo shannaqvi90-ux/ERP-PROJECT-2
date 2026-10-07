@@ -1,0 +1,36 @@
+{
+  "task": "open-third-user-keyboard",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 6,
+      "odoo": 8,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 7,
+      "odoo": 13,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.212,
+      "odoo": 1.29,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 6.41,
+      "odoo": 6.74,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 6.505,
+      "odoo": 7.88,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p04-shell/r4/compare/results/open-third-user-keyboard-20261006T234603-2c70.json",
+    "odoo": "../../evidence-staging/p04-shell/r4/compare/results/open-third-user-keyboard-20261006T234615-ee9f.json"
+  }
+}

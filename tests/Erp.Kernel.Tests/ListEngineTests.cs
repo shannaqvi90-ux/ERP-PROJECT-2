@@ -233,6 +233,153 @@ public sealed class ListEngineTests
         }
     }
 
+    [Theory]
+    [InlineData("item 3")]
+    [InlineData("c-0")]
+    [InlineData("3")]
+    [InlineData("item")]
+    public async Task Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(string search)
+    {
+        var whole = await Run(new ListRequest { Search = search, Take = 200 });
+        Assert.Null(whole.Next);
+        var walked = new List<Guid>();
+        string? next = null;
+        do
+        {
+            var page = await Run(new ListRequest { Search = search, Take = 2, After = next });
+            Assert.Null(page.Problem);
+            walked.AddRange(page.Rows.Select(r => r.Id));
+            next = page.Next;
+        }
+        while (next is not null);
+        Assert.Equal(whole.Total, walked.Count);
+        Assert.Equal(whole.Rows.Select(r => r.Id), walked);
+        // A cursor of the relevance order is refused for an explicit sort.
+        var first = await Run(new ListRequest { Search = search, Take = 1 });
+        if (first.Next is not null)
+        {
+            Assert.NotNull((await Run(new ListRequest { Search = search, Sort = "name", Take = 1, After = first.Next })).Problem);
+        }
+    }
+
+    public sealed record Person(Guid Id, string Name, string? Email);
+
+    private static readonly ListDefinition People = new(
+        "crm.people", "crm.people.title", "crm.people.read", "/api/crm/people",
+        [
+            new ListColumn("name", "crm.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+            new ListColumn("email", "crm.people.email", ListColumnType.Text, Filterable: true),
+        ],
+        SearchFields: ["name", "email"],
+        DefaultSort: "name");
+
+    private static async Task<IReadOnlyList<string>> Find(IEnumerable<string> names, string search, string? sort = null)
+    {
+        var rows = names.Select(n => new Person(Guid.CreateVersion7(), n, $"{n.Replace(' ', '.').ToLowerInvariant()}@example.test")).ToList();
+        var binding = ListBinding<Person>.For(People, p => p.Id).Column("name", p => p.Name).Column("email", p => p.Email).InMemory("test rows");
+        var result = await binding.QueryAsync(rows.AsQueryable(), new ListRequest { Search = search, Sort = sort, Take = 200 }, Http(), CancellationToken.None);
+        Assert.Null(result.Problem);
+        return result.Rows.Select(r => r.Name).ToList();
+    }
+
+    [Fact]
+    public async Task A_search_without_a_sort_puts_the_best_match_first()
+    {
+        string[] names = ["Aisha Wang", "Wang Yousef", "Yousef Wangari", "Ali Yousefi", "Yousef Wang", "Mariam Yousef Wanless", "Yousef Al Wan"];
+        // Both words at the start of name parts, and the whole search at the start of the name;
+        // among equals the shorter (closer) name first.
+        Assert.Equal(["Yousef Wang", "Yousef Wangari", "Yousef Al Wan", "Wang Yousef", "Mariam Yousef Wanless"], await Find(names, "yousef wan"));
+        // The exact name beats every longer one.
+        Assert.Equal("Yousef Wang", (await Find(names, "Yousef Wang"))[0]);
+        // A prefix of a name part is enough.
+        Assert.Equal("Yousef Wang", (await Find(names, "yous wang"))[0]);
+        // An explicit sort is kept as asked.
+        Assert.Equal(["Mariam Yousef Wanless", "Wang Yousef", "Yousef Al Wan", "Yousef Wang", "Yousef Wangari"], await Find(names, "yousef wan", "name"));
+    }
+
+    [Fact]
+    public async Task A_search_too_broad_to_rank_keeps_the_default_order_on_every_page()
+    {
+        var rows = Enumerable.Range(0, ListSearch.MaxRankedRows + 50)
+            .Select(i => new Person(Guid.CreateVersion7(), $"Person {i:D5}", $"p{i}@example.test")).ToList();
+        var binding = ListBinding<Person>.For(People, p => p.Id).Column("name", p => p.Name).Column("email", p => p.Email).InMemory("test rows");
+        async Task<ListResult<Person>> Run(ListRequest request) => await binding.QueryAsync(rows.AsQueryable(), request, Http(), CancellationToken.None);
+
+        var broad = await Run(new ListRequest { Search = "person", Take = 200 });
+        Assert.False(broad.Ranked);
+        Assert.Equal(rows.Count, broad.Total);
+        Assert.Equal(broad.Rows.Select(r => r.Name).Order(StringComparer.Ordinal), broad.Rows.Select(r => r.Name));
+        // Its cursor continues in the same order.
+        var second = await Run(new ListRequest { Search = "person", Take = 200, After = broad.Next });
+        Assert.Null(second.Problem);
+        Assert.False(second.Ranked);
+        Assert.True(string.CompareOrdinal(broad.Rows[^1].Name, second.Rows[0].Name) < 0);
+
+        var narrow = await Run(new ListRequest { Search = "person 00012", Take = 200 });
+        Assert.True(narrow.Ranked);
+        Assert.Equal("Person 00012", narrow.Rows[0].Name);
+        Assert.False((await Run(new ListRequest { Search = "person 00012", Sort = "name" })).Ranked);
+    }
+
+    [Fact]
+    public async Task Arabic_search_matches_the_spellings_people_type_for_one_another()
+    {
+        string[] names = ["فاطمة الزعابي", "أحمد المنصوري", "إبراهيم الكعبي", "مُحَمَّد علي", "ليلى الهاشمي"];
+        Assert.Equal(["فاطمة الزعابي"], await Find(names, "فاطمه"));
+        Assert.Equal(["فاطمة الزعابي"], await Find(names, "الزعابى"));
+        Assert.Equal(["أحمد المنصوري"], await Find(names, "احمد"));
+        Assert.Equal(["إبراهيم الكعبي"], await Find(names, "ابراهيم"));
+        Assert.Equal(["ليلى الهاشمي"], await Find(names, "ليلي"));
+        // Short vowels typed in the search are ignored (stored ones still have to be typed).
+        Assert.Equal(["أحمد المنصوري"], await Find(names, "أَحْمَد"));
+        // A name stored with short vowels and shadda is found by typing it as it is written, and
+        // ranks as the exact match ahead of a longer name without them.
+        Assert.Equal(["مُحَمَّد علي"], await Find(names, "مُحَمَّد"));
+        // A name stored with a shadda is found by typing it without one, in any letter spelling.
+        string[] stored = ["شمّة المنصوري", "محمّد علي", "عليّ حسن", "شمسة الكعبي"];
+        Assert.Equal(["شمّة المنصوري"], await Find(stored, "شمة"));
+        Assert.Equal(["شمّة المنصوري"], await Find(stored, "شمه المنصورى"));
+        Assert.Equal(["محمّد علي"], await Find(stored, "محمد"));
+        Assert.Equal(["عليّ حسن", "محمّد علي"], (await Find(stored, "علي")).Order(StringComparer.Ordinal));
+        Assert.Equal("محمّد علي", (await Find(stored, "محمد علي"))[0]);
+        Assert.Equal("مُحَمَّد علي", (await Find([.. names, "مُحَمَّد علي الكبير"], "مُحَمَّد علي"))[0]);
+        // The whole name in other spellings is still the exact match, ahead of longer names.
+        Assert.Equal("فاطمة الزعابي", (await Find([.. names, "فاطمة الزعابي الكبيرة"], "فاطمه الزعابى"))[0]);
+        // "احمد" never matches "محمد": only the letter variants are interchangeable.
+        Assert.DoesNotContain("مُحَمَّد علي", await Find(names, "احمد"));
+    }
+
+    [Fact]
+    public void A_search_word_expands_to_a_bounded_set_of_spellings()
+    {
+        Assert.Equal(["wang"], ListSearch.Spellings("wang"));
+        var fatima = ListSearch.Spellings("فاطمه");
+        Assert.Equal("فاطمه", fatima[0]);
+        Assert.Contains("فاطمة", fatima);
+        Assert.Contains("فأطمة", fatima);
+        // Every letter variant (10) and, filling the bound, the likeliest of them with a shadda
+        // after one letter (one change before two).
+        string[] letterVariants = ["فاطمه", "فاطمة", "فأطمه", "فأطمة", "فإطمه", "فإطمة", "فآطمه", "فآطمة", "فٱطمه", "فٱطمة"];
+        Assert.All(letterVariants, v => Assert.Contains(v, fatima));
+        Assert.Equal(letterVariants.Length, fatima.Count(s => !s.Contains('\u0651')));
+        Assert.Contains("فاطمّة", fatima);
+        Assert.Contains("فاطمّه", fatima);
+        Assert.Equal(ListSearch.MaxSpellings, fatima.Count);
+        // One letter changed before two.
+        Assert.True(fatima.ToList().IndexOf("فاطمة") < fatima.ToList().IndexOf("فأطمة"));
+        var many = ListSearch.Spellings("ااااااااا");
+        Assert.InRange(many.Count, 2, ListSearch.MaxSpellings);
+        Assert.Equal("ااااااااا", many[0]);
+        // A word with marks is tried as typed first, then without them, still within the bound.
+        var marked = ListSearch.Spellings("مُحَمَّد");
+        Assert.Equal(["مُحَمَّد", "محمد"], marked.Take(2));
+        Assert.Contains("محمّد", marked);
+        // A Latin word gets no shadda.
+        Assert.Equal(["wang"], ListSearch.Spellings("wang"));
+        Assert.InRange(ListSearch.Spellings("أَاااااااا").Count, 2, ListSearch.MaxSpellings);
+        Assert.Equal("أَاااااااا", ListSearch.Spellings("أَاااااااا")[0]);
+    }
+
     [Fact]
     public async Task A_cursor_belongs_to_one_sort()
     {
