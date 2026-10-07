@@ -234,7 +234,9 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         var userId = (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
         var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray()
             .Select(c => new { companyId = c.GetProperty("id").GetGuid(), allBranches = true }).ToList();
-        using var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies });
+        // Access saves carry the version read (p02): read it first, as the access screen does.
+        var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
+        using var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies, version });
         Assert.True(access.IsSuccessStatusCode, await access.Content.ReadAsStringAsync());
         return await Env.SignInAsync(email);
     }
