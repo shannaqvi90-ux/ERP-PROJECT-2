@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: the driver process starts under the permission model with the network lockdown preloaded
+ok 1 - the driver process starts under the permission model with the network lockdown preloaded
+  ---
+  duration_ms: 6.276435
+  type: 'test'
+  ...
+# Subtest: inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket
+ok 2 - inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket
+  ---
+  duration_ms: 1839.028005
+  type: 'test'
+  ...
+# Subtest: the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready
+ok 3 - the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready
+  ---
+  duration_ms: 2102.544176
+  type: 'test'
+  ...
+# Subtest: the harness reads drivers and tasks through the driver process and never imports them
+ok 4 - the harness reads drivers and tasks through the driver process and never imports them
+  ---
+  duration_ms: 2.843158
+  type: 'test'
+  ...
+# Subtest: a driver process that stops answering is stopped, and the next run gets a new one
+ok 5 - a driver process that stops answering is stopped, and the next run gets a new one
+  ---
+  duration_ms: 6398.896137
+  type: 'test'
+  ...
+# Subtest: plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product's included)
+ok 6 - plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product's included)
+  ---
+  duration_ms: 34128.538009
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50097.296337

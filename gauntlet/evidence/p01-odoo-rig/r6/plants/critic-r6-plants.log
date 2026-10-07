@@ -1,0 +1,82 @@
+TAP version 13
+# RESULT control: status=verified steps=3 keys=10 machine=0.4 wait=0.306 human=8.9 error=
+# Subtest: control: honest path (fill, Go, wait for the saved answer)
+ok 1 - control: honest path (fill, Go, wait for the saved answer)
+  ---
+  duration_ms: 1411.384693
+  type: 'test'
+  ...
+# RESULT S1: status=verified steps=0 keys=0 machine=0.313 wait=0.305 human=0 error=
+# Subtest: plant S1 (uncounted action): a ctx.read whose native-await continuation fills and clicks after the sentinel disarms
+not ok 2 - plant S1 (uncounted action): a ctx.read whose native-await continuation fills and clicks after the sentinel disarms
+  ---
+  duration_ms: 1218.570438
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:60:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED: the task was done with 0 steps and 0 keys'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:74:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT S2: status=verified steps=0 keys=0 machine=0.359 wait=0.357 human=0 error=
+# Subtest: plant S2 (uncounted action): op.waitFor condition schedules the action through an animation finish callback
+not ok 3 - plant S2 (uncounted action): op.waitFor condition schedules the action through an animation finish callback
+  ---
+  duration_ms: 1254.847122
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:77:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED: the task was done with 0 steps and 0 keys'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:90:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT S3: status=error steps=1 keys=0 machine=4.044 wait=0 human=2.65 error=TimeoutError: page.waitForFunction: Timeout 4000ms exceeded.
+# Subtest: plant S3 (uncounted action): a MutationObserver callback registered by a read acts on the next DOM change
+ok 4 - plant S3 (uncounted action): a MutationObserver callback registered by a read acts on the next DOM change
+  ---
+  duration_ms: 4988.413465
+  type: 'test'
+  ...
+# RESULT T3: status=verified steps=3 keys=10 machine=0.103 wait=0 human=8.9 error=
+# T3 passes [{"requests":8,"longest_pause_seconds":0.301,"repeated_reads":[],"paced_seconds":0,"seconds":2.121,"verified":true},{"requests":1,"longest_pause_seconds":0,"repeated_reads":[],"paced_seconds":0,"seconds":0.002,"verified":true}] after_clock 0
+# Subtest: plant T3 (wrong timer): run() returns after Look (a slow read); verify() polls the frozen page in short reads
+not ok 5 - plant T3 (wrong timer): run() returns after Look (a slow read); verify() polls the frozen page in short reads
+  ---
+  duration_ms: 3206.612984
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:112:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED: verified with machine 0.103s although the product took 2 s to answer'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6.test.mjs:124:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 2
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17237.827177
