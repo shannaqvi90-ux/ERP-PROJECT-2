@@ -147,6 +147,56 @@ describe("companies screen", () => {
     expect(posts.map((p) => (p.body as { nameEn: string }).nameEn)).toEqual(["Al Noor Ajman LLC - Jebel Ali Branch", "Al Noor Ajman LLC"]);
   });
 
+  it("keeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check)", async () => {
+    // A read of the company right after its creation used to swap the form for "Loading" and back:
+    // the branch line was dropped and drawn again with only the company's name in it, so a quick
+    // typist's branch name was lost and Enter added a branch named after the company. Here that
+    // read would never answer.
+    const companyReads: string[] = [];
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
+      if (url === "/api/tenancy/companies/c9") {
+        companyReads.push(method);
+        return new Promise(() => {});
+      }
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: { id: "b9" } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+
+    press({ altKey: true, code: "KeyN", key: "n" });
+    await settle();
+    setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const line = view.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]');
+    expect(new URLSearchParams(window.location.search).get("open")).toBe("c9");
+    expect(view.container.querySelector(".record-form[aria-busy]")).toBeNull();
+    expect(line).not.toBeNull();
+    expect(document.activeElement).toBe(line);
+    setInput(line!, "Al Noor Ajman LLC - Head office");
+    await settle();
+    await settle();
+    expect(companyReads).toEqual([]);
+    // The same line, still focused, still holding what was typed.
+    expect(view.container.querySelector('input[name="branchNameEn"]')).toBe(line);
+    expect(line!.isConnected).toBe(true);
+    expect(document.activeElement).toBe(line);
+    expect(line!.value).toBe("Al Noor Ajman LLC - Head office");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
+    expect(branch.body).toMatchObject({ companyId: "c9", nameEn: "Al Noor Ajman LLC - Head office" });
+  });
+
   it("shows a branch added from the keyboard in the company's branch table, even when the first read of the table answers last (lead, p06 round 2)", async () => {
     // The first read of the branch table (made when the form opens) answers only after the read
     // that follows the new branch: an answer arriving last must not put the stale, empty table back.
