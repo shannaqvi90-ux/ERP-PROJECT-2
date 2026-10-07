@@ -1,0 +1,13 @@
+diff --git a/gauntlet/compare/lib/guard.mjs b/gauntlet/compare/lib/guard.mjs
+index 447c550..a1b9091 100644
+--- a/gauntlet/compare/lib/guard.mjs
++++ b/gauntlet/compare/lib/guard.mjs
+@@ -288,7 +288,7 @@ function sentinelFactory() {
+   if (g.navigation?.addEventListener) g.navigation.addEventListener('navigate', e => { if (state.active) { hit('a navigation'); if (e.cancelable) e.preventDefault(); } });
+   const refuse = label => function refused() { state.hits.push(label); throw new Error(`HARNESS-UNCOUNTED: ${label}`); };
+   const methods = [
+-    [HTMLElement.prototype, ['click', 'focus', 'blur', 'showPopover', 'hidePopover', 'togglePopover']],
++    [HTMLElement.prototype, ['focus', 'blur', 'showPopover', 'hidePopover', 'togglePopover']],
+     [Element.prototype, ['scrollIntoView', 'scroll', 'scrollTo', 'scrollBy', 'requestFullscreen', 'requestPointerLock', 'setPointerCapture']],
+     [EventTarget.prototype, ['dispatchEvent', 'addEventListener']],
+     [HTMLFormElement.prototype, ['submit', 'requestSubmit', 'reset']],

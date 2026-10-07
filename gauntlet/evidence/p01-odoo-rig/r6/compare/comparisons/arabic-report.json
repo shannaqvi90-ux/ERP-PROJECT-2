@@ -1,0 +1,42 @@
+{
+  "task": "arabic-report",
+  "verdict": "loss",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 6,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 0,
+      "outcome": "tie at zero (a tie is a loss)",
+      "tie_at_zero": true
+    },
+    "machine_seconds": {
+      "ours": 0.143,
+      "odoo": 4.782,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 5.3,
+      "odoo": 15.9,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 5.371,
+      "odoo": 20.194,
+      "outcome": "win"
+    }
+  },
+  "ties_at_zero": [
+    "keystrokes"
+  ],
+  "tie_at_zero_note": "keystrokes: both products score 0, which no path can beat. Every other metric is a win: this loss comes from the tie at zero alone. Should a metric on which both products score 0 count toward the tie rule? Under the rule as written it is a tie, and a tie is a loss, so the task cannot be won on that metric whatever ours does. Applied as written until the owner decides.",
+  "loss_only_from_ties_at_zero": true,
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192806-0a27.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r6/compare/results/arabic-report-20261007T192747-b6ec.json"
+  }
+}
