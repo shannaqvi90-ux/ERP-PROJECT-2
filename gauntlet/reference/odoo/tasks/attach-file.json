@@ -1,24 +1,24 @@
 {
   "schema": 1,
-  "run_id": "attach-file-20261003T143508-ea5c",
-  "instrument": 4,
+  "run_id": "attach-file-20261005T074107-855f",
+  "instrument": 5,
   "task": "attach-file",
   "task_title": "Attach a file to a record",
   "product": "odoo",
   "status": "verified",
   "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
   "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
-  "started_at": "2026-10-03T14:35:08.724Z",
-  "finished_at": "2026-10-03T14:35:18.915Z",
+  "started_at": "2026-10-05T07:41:07.253Z",
+  "finished_at": "2026-10-05T07:41:15.281Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
     },
-    "dataset": 3,
+    "dataset": 4,
     "reference_volume": 100000,
-    "node": "v22.22.0"
+    "node": "v22.23.3"
   },
   "counts": {
     "steps": 3,
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 1,
     "requests": 0,
-    "machine_seconds": 0.499,
-    "system_wait_seconds": 0.188,
+    "machine_seconds": 0.273,
+    "system_wait_seconds": 0.09,
     "human_seconds": 6.8,
-    "human_plus_wait_seconds": 6.988,
+    "human_plus_wait_seconds": 6.89,
     "klm_operator_counts": {
       "K": 0,
       "P": 3,
@@ -57,8 +57,9 @@
       "kind": "click",
       "label": "paperclip (attachment box)",
       "keystrokes": 0,
-      "at": 0,
-      "took": 0.247,
+      "at": 0.004,
+      "took": 0.099,
+      "screen": "/odoo/contacts/73531",
       "chain": false
     },
     {
@@ -66,8 +67,9 @@
       "kind": "click",
       "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.253,
-      "took": 0.053,
+      "at": 0.117,
+      "took": 0.06,
+      "screen": "/odoo/contacts/73531",
       "chain": false
     },
     {
@@ -75,36 +77,37 @@
       "kind": "file-pick",
       "label": "trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.307,
-      "took": 0.014,
+      "at": 0.177,
+      "took": 0.016,
       "file": "trade-licence-TL-2026-73519.pdf",
+      "screen": "/odoo/contacts/73531",
       "chain": true
     }
   ],
   "waits": [
     {
       "label": "attachment box",
-      "at": 0.247,
-      "seconds": 0.006
+      "at": 0.104,
+      "seconds": 0.012
     },
     {
       "label": "file listed on the record",
-      "at": 0.32,
-      "seconds": 0.178
+      "at": 0.194,
+      "seconds": 0.078
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "29156ed776e27e09.jpg",
+      "file": "b231c5fd9be074fa.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/29156ed776e27e09.jpg"
+      "path": "gauntlet/reference/odoo/shots/b231c5fd9be074fa.jpg"
     },
     {
       "moment": "done",
-      "file": "c57375c304ce9205.jpg",
-      "at": 0.499,
-      "path": "gauntlet/reference/odoo/shots/c57375c304ce9205.jpg"
+      "file": "e375ba412d3cca90.jpg",
+      "at": 0.273,
+      "path": "gauntlet/reference/odoo/shots/e375ba412d3cca90.jpg"
     }
   ],
   "verification": {
@@ -112,7 +115,7 @@
     "details": {
       "attachments": [
         {
-          "id": 100598,
+          "id": 100280,
           "file_size": 417
         }
       ]
@@ -121,7 +124,7 @@
   "path_notes": "Paperclip on the record (it already holds a file, so the attachment box opens) > Attach files > choose the file in the file dialog.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/attach-file.mjs",
-    "sha256": "d4b1544f8a141756612382d295962ff00dd6cd3256f6d7309864fae2bbdd3aab"
+    "sha256": "bd3bbb53beb8d07db2187590ffeec620aad6a9f9208f2661863b29a8d270b1c4"
   },
   "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
   "error": null,
@@ -217,11 +220,28 @@
     "focused": null,
     "set_up_contexts_closed": 0
   },
+  "verify_passes": [
+    {
+      "seconds": 0.023,
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "verified": true
+    },
+    {
+      "seconds": 0.019,
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
   "result_file": "gauntlet/reference/odoo/tasks/attach-file.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/attach-file-20261003T143459-0002.json",
-    "gauntlet/reference/odoo/results/attach-file-20261003T143508-ea5c.json",
-    "gauntlet/reference/odoo/results/attach-file-20261003T143518-2570.json"
+    "gauntlet/reference/odoo/results/attach-file-20261005T074049-2f57.json",
+    "gauntlet/reference/odoo/results/attach-file-20261005T074058-63db.json",
+    "gauntlet/reference/odoo/results/attach-file-20261005T074107-855f.json"
   ]
 }

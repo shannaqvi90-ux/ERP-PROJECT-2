@@ -7,6 +7,7 @@ import { PRODUCT_IDS, describe, driverPath, loadDriver, loadTasks } from '../lib
 import { runTask } from '../lib/runner.mjs';
 import { START_KINDS } from '../lib/start.mjs';
 import { loadNeedles } from '../data/generate.mjs';
+import { HARNESS_DIR } from '../lib/config.mjs';
 
 // The six tasks the owner's bar names. Tasks are never removed (plan.md).
 export const NAMED = ['find-record', 'create-restricted-user', 'custom-field-filter', 'switch-to-arabic', 'import-5000', 'follow-approval'];
@@ -52,11 +53,12 @@ test('every task has a driver for each product', async () => {
   for (const t of await loadTasks()) {
     for (const p of PRODUCT_IDS) {
       assert.ok(fs.existsSync(driverPath(p, t.id)), `${p} driver for ${t.id}`);
+      // Described by the driver process (lib/sandbox/): the harness never imports a driver.
       const d = await loadDriver(p, t.id);
-      assert.equal(typeof d.run, 'function');
+      assert.equal(d.hooks.run, true, `${p}/${t.id}: run(op, ctx) must be a function`);
       if (d.built !== false) assert.ok(d.path, `${p}/${t.id}: describe the expert path in "path"`);
       for (const [id, v] of Object.entries(d.variants || {})) {
-        assert.equal(typeof v.run, 'function', `${p}/${t.id} variant ${id}: run(op, ctx)`);
+        assert.equal(v.run, true, `${p}/${t.id} variant ${id}: run(op, ctx)`);
         assert.ok(v.path, `${p}/${t.id} variant ${id}: describe the expert path in "path"`);
       }
     }
@@ -84,4 +86,24 @@ test('an unbuilt driver reports "not built" without touching a browser', async (
     assert.ok(fs.existsSync(file));
     assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).status, 'not_built');
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});
+
+test('print-list-arabic (routed from p06): the ours driver takes its menu words from the product\'s own strings, which hold them in both languages', async () => {
+  const task = (await loadTasks()).find(t => t.id === 'print-list-arabic');
+  assert.ok(task, 'the task exists');
+  assert.equal(task.startAt, 'list');
+  assert.deepEqual(task.moments, ['list filtered']);
+  const source = fs.readFileSync(path.join(HARNESS_DIR, 'drivers', 'ours', 'print-list-arabic.mjs'), 'utf8');
+  // No Arabic word is written into the driver: a renamed or retranslated menu fails here, not in a run.
+  assert.doesNotMatch(source, /[؀-ۿ]/, 'the driver repeats an Arabic word instead of reading it from the product');
+  const keys = [...source.matchAll(/STRINGS\['([^']+)'\]/g)].map(m => m[1]);
+  assert.deepEqual([...new Set(keys)].sort(), ['lists.print.open', 'lists.print.pdfArabic']);
+  const strings = lang => JSON.parse(fs.readFileSync(path.join(HARNESS_DIR, '..', '..', 'web', 'src', 'modules', 'lists', 'i18n', `${lang}.json`), 'utf8'));
+  const ar = strings('ar');
+  const en = strings('en');
+  for (const k of keys) {
+    assert.match(ar[k] ?? '', /[؀-ۿ]/, `${k} has no Arabic text in the product's Arabic strings`);
+    assert.ok((en[k] ?? '').trim(), `${k} has no English text in the product's English strings`);
+    assert.notEqual(ar[k], en[k], `${k} is not translated`);
+  }
 });

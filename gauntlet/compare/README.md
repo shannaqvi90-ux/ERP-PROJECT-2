@@ -8,7 +8,7 @@ code, views or text; drivers operate its screens as a user would.
 ## One command
 
 ```bash
-cd gauntlet/compare && npm ci                    # once (playwright-core only; uses the preinstalled Chromium)
+cd gauntlet/compare && npm ci                    # once (playwright-core and acorn; uses the preinstalled Chromium; Node 22.13+)
 
 node run.mjs --list                              # the tasks
 node run.mjs --task find-record --product odoo   # Odoo baseline -> gauntlet/reference/odoo/
@@ -16,6 +16,13 @@ node run.mjs --task all --product odoo --repeat 3   # refresh every baseline (me
 node run.mjs --task find-record --product both --out ../evidence/p05/r1/compare   # side by side
 node run.mjs --task find-record --product ours --out /tmp/x                         # ours only
 ```
+
+Our product allows 30 sign-ins a minute per client. The harness keeps every sign-in it makes under one
+budget of 24 a minute and waits out a 429 (`lib/sign-in-limit.mjs`, `signInLimit` in `lib/config.mjs`):
+the runner paces a driver's browser sign-in (on a 429 it closes the context, waits for the abandoned
+attempt to end, waits out the window and signs in again in a fresh context), and the fetch bridge paces
+an API session's sign-in from the driver process. Pacing never happens inside a measured part, and a
+paced wait inside `verify()` is reported apart (`paced_seconds`) and not charged to the pass.
 
 Options: `--task <id|id,id|all>`, `--product odoo|ours|both`, `--out <dir>`, `--repeat N`
 (median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid.
@@ -31,8 +38,38 @@ The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README
 ## What is measured
 
 Every driver acts only through the instrumented operator (`lib/operator.mjs`), so both products
-are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-tested in
-`test/guard.test.mjs`, linted in `test/drivers-lint.test.mjs`):
+are counted the same way. This is enforced, not trusted (`lib/sandbox/`, `lib/guard.mjs`,
+plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
+`test/drivers-lint.test.mjs`):
+
+- **Drivers never run in the harness process** (round 5), and **every run has a driver process of its own** (round 6):
+  a driver that patched its process's globals (timers, promises, a shared helper) would otherwise slow or steer the next run
+  in it, the other product's driver included (`--product both`); plant X1 in `test/sandbox.test.mjs`. Every harness process starts one driver
+  process (`lib/sandbox/host.mjs`) under Node's permission model (`--permission`: no child process,
+  no worker thread, no native addon, no WASI, no inspector, no `process.binding`; files may be read,
+  and written only in the driver process's own scratch folder, which is its `TMPDIR`), with
+  `lib/sandbox/lockdown.mjs` preloaded before any driver code: no socket of any kind (no
+  connection, no listening, no UDP, no `WebSocket`), no loader hooks, no V8 flags. The driver
+  process holds no Playwright object, no clock and no network. `ctx.page`, `op`, `fetch` and the
+  rest are stand-ins there: every call travels over the IPC channel to the harness, which performs
+  it through the guards below, judged by the phase at the moment it arrives
+  (`lib/sandbox/bridge.mjs`). A fetch captured at load, a child process reached through
+  `process.getBuiltinModule`, a timer left by set-up or a patched clock can therefore only ever
+  produce such a request, or nothing. A refusal inside the driver process is reported to the
+  harness, so a driver that swallows it still has its run marked invalid. The harness reads
+  drivers and task definitions through the driver process too; it never imports one.
+  `execute()` refuses a driver object handed to it directly (that would run in the harness).
+- Set-up and verification reach the product through the harness's fetch: only the product's own
+  address, reads only in `verify()`, nothing while the start is prepared or the task is measured.
+  Playwright's own HTTP client (`page.request`) is refused in every phase (a request it left running
+  in set-up would land inside the measured part); calls set-up leaves running through fetch are
+  waited for before the start. An API session carries only the headers a signed-in client sends
+  (authorization, cookie, `X-Erp-Request`, accept), nothing that changes what a typed request does.
+- A function a driver hands to the page (`ctx.read`, `ctx.until`, `op.waitFor`) arrives as its text.
+  The harness parses it (acorn, MIT) and accepts exactly one function expression, so a crafted text
+  cannot close the sentinel's call and run page script outside it.
+  A file the harness writes for a driver (a screenshot path, a download folder) must lie in the
+  driver process's scratch folder.
 
 - `run(op, ctx)` gets a view of the operator with the counted actions only: no clock, no
   `start`/`finish`, read-only copies of the steps.
@@ -52,14 +89,21 @@ are counted the same way. This is enforced, not trusted (`lib/guard.mjs`, plant-
   storage and history calls, cancels a navigation, and reports any DOM change, event, navigation
   or focus move it caused.
 - While measured, `fetch` and `http(s).request` from the harness are refused, so a task cannot be
-  done through the back end and count nothing. API tasks use `op.request`, which counts.
+  done through the back end and count nothing. API tasks use `op.request`, which counts. The
+  guard is installed when the harness loads. An API task's transport (how a request as typed is
+  carried, for Odoo's JSON-2 form over JSON-RPC) is one of the harness's own (`lib/api-transport.mjs`),
+  named in `ctx.useApi({ transport: 'odoo-json2' })`; a driver cannot pass its own, which could send
+  more than it typed.
 - Drivers may import only `./_common.mjs`, `lib/ours-api.mjs`, `lib/odoo-rpc.mjs`, `lib/xlsx.mjs`
   and Node's file helpers; no Playwright, no network module, no `eval` or dynamic import, no page
   script, no `chain` (lint, `test/drivers-lint.test.mjs`).
 - `op.type` takes printable text only: a control character (`\n`, `\t` …) would press Enter or Tab
   inside one field entry, uncounted, so it is refused (press those keys with `op.press`).
-  A paste chord (Ctrl/Cmd+V, Shift+Insert) is refused unless a copy or cut chord was pressed
-  earlier in the measured part: the browser's clipboard outlives set-up. Counted
+  A paste chord is refused unless text was selected and copied (or cut) earlier in the measured
+  part: the browser's clipboard outlives set-up. Chords are read as the keys they press, whatever
+  their spelling (`ControlOrMeta+v`, `Control+KeyV`, `control+V`, modifiers in any order); a copy
+  counts only when the operator finds a selection as the copy key is pressed (an empty copy leaves
+  the clipboard as set-up filled it); and the runner empties the clipboard before the start. Counted
   actions take only `label` (and `waitFor` its timing options); any other option, `chain` among
   them, is refused.
 
@@ -83,13 +127,33 @@ and from the back end only reads go through (GET, a fixture sign-in, Odoo read m
 may act again.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
-right after its last step or wait. Everything in between counts, screenshots included (round 3:
+right after its last step or wait. Round 5 closes the ways to finish a task after that:
+
+- If a request that changes the product (a document load, or any method but GET, HEAD and
+  OPTIONS that is not one of the reference's documented read calls) is still under way when `run`
+  returns, the clock runs on until it ends: a save is the product's answer to the task (system
+  wait "the product still answering when run() returned"). Reads still loading (avatars, a chatter)
+  are not waited for.
+- When the clock stops the page's own script is frozen (no timer, network callback or animation
+  frame of the product runs any more; reading and screenshots still work) and its new requests are
+  aborted (`requests_after_clock`), so the screen `verify()` reads is the screen at the end of the
+  measured part. It is thawed for clean-up.
+- `verify()` reads; it never waits. Every wait is refused there (`Locator.waitFor`, `waitForURL`,
+  `waitForTimeout`, `ctx.until` …) and every read times out after 0.5 s. `verify()` runs twice and
+  each pass is metered (`verify_passes`): a pass that asked the harness nothing for over 1 s (it
+  slept or spun), sent over 100 requests or the same back-end read twice (it polled), or a first
+  pass over 3 s and three times slower than the second, waited for the end state, and the run is
+  invalid.
+- Back-end calls set-up left running are waited for before the start, so they land before the
+  clock (where "already done before the clock" sees them), never inside it.
+
+Everything inside the clock counts, screenshots included (round 3:
 taking screenshot time out let a driver hide the product's latency behind screenshots). So that
 both products pay for the same shots, each task declares its `moments`; while measured a driver
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 4); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 5); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -110,7 +174,10 @@ M 1.35 s. One M before every step except a continuation, which the instrument de
 recorded steps (a driver cannot declare it): typing right after a click on the field it types
 into, or right after a key step; Enter right after typing or an arrow key; the same navigation key
 again; Ctrl+A right after a click or Tab; the file choice after the click that opened the dialog.
-One H whenever the hand moves between mouse and keyboard. Details and the exact rules:
+No step continues one that began on another screen (round 5): each step records the address path
+it began on (`screen`), and a step after one that opened a new screen starts with M (reading the
+new screen is a mental step), so typing a name right after the Enter that opened a list carries an
+M in both products. One H whenever the hand moves between mouse and keyboard. Details and the exact rules:
 `lib/klm.mjs`.
 
 Start state, for both products: the task's `startAt`, opened by the runner (see Phases above);
@@ -119,6 +186,12 @@ usually signed in, on the screen the product shows right after sign-in. End stat
 
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
+A metric on which both products score 0 (no keystrokes on a pointer-only path, for example) is a
+tie under that rule, so the task cannot be won on it whatever ours does. The harness applies the
+rule unchanged and reports such a metric plainly: its outcome reads `tie at zero (a tie is a loss)`,
+the comparison lists it in `ties_at_zero` with a `tie_at_zero_note`, says whether the loss comes from
+ties at zero alone (`loss_only_from_ties_at_zero`), and `run.mjs` prints `TIE AT ZERO`. Whether such
+a metric should count toward the tie rule is the owner's question (gauntlet/needs-human.md).
 
 A scroll (`op.scrollTo`) is a step modelled like a click (P + BB), so a path that needs one never
 looks free. A click that makes the product send a file (`op.clickForDownload`) is one step; the
@@ -199,16 +272,18 @@ removed (plan.md); the ratchet counts them.
 | attach-file (p11) | paperclip > Attach files > choose the file | |
 | see-and-rerun-job (p12) | Settings > scroll > developer mode > Technical > Scheduled Actions > search > open > Run Manually | Odoo shows no last-run time and no message after the run |
 | export-filtered-list (p14) | Contacts > tag > Search Tag for > select page > Select all > Actions > Export > Export | the verification reads the workbook |
+| print-list-arabic (p06) | (working in Arabic) Purchase orders list > type the vendor > Enter > header check box > Print > Purchase Order | the list report named in p06's spec; Community has no printed table of a list, its nearest feature prints the selected orders' own document in one PDF; the vendor's partners get Arabic in set-up (restored in clean-up); our product's stand-in list is the users list until purchase orders exist |
 
 Every task names the piece (`piece`) whose critic fills in its `ours` driver. Built `ours` drivers:
 sign-in, find-user, create-restricted-user, api-update-user, switch-to-arabic and
 reach-screen-keyboard (p04), create-company-branch and switch-company (p02), edit-and-save and
 arabic-report (p06; until contacts and purchase orders exist they use a company and its printed
-company profile as the stand-in record and document). Drivers find things by role and label, not layout.
+company profile as the stand-in record and document), print-list-arabic (the users list, printed as a
+PDF report in Arabic, stands in for the vendor's purchase orders). Drivers find things by role and label, not layout.
 The others report "not built yet" with what they wait for.
 
 An API task (`channel: 'api'` in its definition) has no screens: the driver's `signIn` calls
-`ctx.useApi({ baseUrl, headers, transport? })` outside the measurement and `run` sends each request
+`ctx.useApi({ baseUrl, headers, transport? })` (`transport` names a harness transport) outside the measurement and `run` sends each request
 with `op.request(method, path, body)`. Its start and done screenshots show a neutral HTTP-client
 transcript of the requests, rendered the same way for both products.
 
@@ -236,6 +311,10 @@ export default {
 };
 ```
 
+Drivers run in the driver process (see "What is measured"): `fetch` there goes through the harness
+(the product's own address only), Node-side predicates cannot be passed to Playwright methods (use
+strings, patterns or `ctx.until`), and files may be written only under `os.tmpdir()`.
+
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
 generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
@@ -248,6 +327,21 @@ dataset, so with `ctx.health` a driver's set-up creates the one dataset record i
 A built driver that no longer verifies fails `./erp verify` (round 3: a list change broke
 switch-to-arabic and nothing noticed). Its counts are not a comparison.
 
+## Planting a fault (for critics)
+
+Plant tests run drivers the way the runner does: as module files in the driver process. Write the
+driver as a module (or transform a real one) and hand its description to `execute()`:
+
+```js
+import { execute, layout } from '../lib/runner.mjs';
+import { describeDriverFile } from '../lib/registry.mjs';
+const r = await execute(task, await describeDriverFile('/tmp/plant.mjs'), product, 'ours', needles, layout('/tmp/out'), { timeout: 10_000 });
+```
+
+`test/helpers/driver-module.mjs` writes an inline driver object as such a module (`sandboxed`), a
+module from source text (`sandboxedSource`), or a planted copy of a real driver (`plantedFile`).
+A driver object handed to `execute()` directly is refused (`invalid`): it would run in the harness.
+
 ## Shared dataset
 
 `data/generate.mjs` writes the same 100,000 contacts, 100,000 users, 100,000 exchange rates and
@@ -258,5 +352,6 @@ regenerates them when missing. `needles.json` names the record "find one among 1
 
 Loading it into our product: `ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up`
 (on a fresh database: `./erp down --volumes` first) makes the demo tenant's bulk users exactly the
-dataset's users, with the names, sign-ins and languages the Odoo rig holds. Contacts and rates
+dataset's users, with the names, sign-ins, languages and active flags the Odoo rig holds
+(`users.csv` has an `active` column; every dataset user is active in both products). Contacts and rates
 follow the same pattern when their pieces exist (p16, p08).

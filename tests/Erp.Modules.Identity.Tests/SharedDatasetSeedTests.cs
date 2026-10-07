@@ -1,4 +1,5 @@
 using Erp.Kernel.Seeding;
+using Erp.Modules.Identity.Seeding;
 using Erp.Testing;
 using Npgsql;
 
@@ -51,10 +52,48 @@ public sealed class SharedDatasetSeedTests
                 ("rahul.menon.000003@staff.example", "Rahul Menon", "en"),
             ], main);
             Assert.Empty(await UsersOf(env.Plan.Tenants[1].Id, "%@staff.example"));
+
+            // Every dataset user is active, as in the Odoo reference (round 5 parity finding: one in
+            // 23 used to be loaded inactive, the first one among them).
+            await using (var inactive = new NpgsqlCommand(
+                "SELECT count(*) FROM identity.users WHERE tenant_id = @t AND email LIKE '%@staff.example' AND NOT is_active", admin))
+            {
+                inactive.Parameters.AddWithValue("t", env.Plan.Tenants[0].Id);
+                Assert.Equal(0L, (long)(await inactive.ExecuteScalarAsync())!);
+            }
             Assert.NotEmpty(await UsersOf(env.Plan.Tenants[1].Id, $"%.%@{env.Plan.Tenants[1].EmailDomain}"));
 
             // A dataset user signs in with the demo password.
             using var client = await env.SignInAsync("rahul.menon.000003@staff.example");
+        }
+        finally
+        {
+            File.Delete(csv);
+        }
+    }
+
+    [Fact]
+    public void The_dataset_says_which_users_are_active_and_a_file_without_the_column_loads_all_active()
+    {
+        var csv = Path.Combine(Path.GetTempPath(), $"users-{Guid.NewGuid():N}.csv");
+        try
+        {
+            File.WriteAllLines(csv,
+            [
+                "ref,name,name_ar,login,lang,active",
+                "U000001,Mariam Hassan Khoury,مريم حسن خوري,mariam.khoury.000001@staff.example,en,true",
+                "U000002,Rahul Menon,راهول مينون,rahul.menon.000002@staff.example,en,false",
+                "U000003,Noura Al Ketbi,نورة الكتبي,noura.al.ketbi.000003@staff.example,ar,TRUE",
+            ]);
+            Assert.Equal(new bool?[] { true, false, true }, SharedDatasetUsers.Read(csv, 10).Select(p => p.Active).ToArray());
+
+            File.WriteAllLines(csv,
+            [
+                "ref,name,name_ar,login,lang",
+                "U000001,Mariam Hassan Khoury,مريم حسن خوري,mariam.khoury.000001@staff.example,en",
+                "U000002,Rahul Menon,راهول مينون,rahul.menon.000002@staff.example,en",
+            ]);
+            Assert.All(SharedDatasetUsers.Read(csv, 10), p => Assert.True(p.Active));
         }
         finally
         {

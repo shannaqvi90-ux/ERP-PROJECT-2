@@ -108,3 +108,23 @@ test('side by side, the products run in a random order per task', async () => {
   assert.equal(seen.size, 2, 'both orders occur');
   assert.deepEqual(productOrder(['odoo']), ['odoo']);
 });
+
+test('identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding)', async () => {
+  const { launch, newContext } = await import('../lib/browser.mjs');
+  const { maskLocators, identityWordPattern } = await import('../lib/blind.mjs');
+  assert.ok(brandingFor('ours').identityWords.includes('alnoor'));
+  assert.ok(brandingFor('odoo').identityWords.includes('demo-trading'));
+  const re = identityWordPattern(['alnoor']);
+  for (const t of ['workspace alnoor', 'admin@alnoor.example', 'مساحة العمل alnoor', 'ALNOOR']) assert.ok(re.test(t), t);
+  for (const t of ['alnoorish', 'xalnoor', 'mariam.khoury.000001@staff.example']) assert.ok(!re.test(t), t);
+  const browser = await launch();
+  try {
+    const page = await (await newContext(browser)).newPage();
+    await page.setContent(`<header><span id="ws">workspace alnoor</span></header><table><tr><td id="a">admin@alnoor.example</td><td id="b">mariam.khoury.000001@staff.example</td></tr></table>
+      <p id="c">مساحة العمل alnoor</p>`);
+    const masked = new Set();
+    for (const loc of maskLocators(page, brandingFor('ours'))) for (const id of await loc.evaluateAll(els => els.map(e => e.id))) masked.add(id);
+    assert.ok(masked.has('ws') && masked.has('a') && masked.has('c'), `masked: ${[...masked].join(', ')}`);
+    assert.ok(!masked.has('b'), 'a dataset e-mail is not branding');
+  } finally { await browser.close(); }
+});
