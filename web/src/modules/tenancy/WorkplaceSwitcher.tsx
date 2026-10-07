@@ -6,8 +6,32 @@ import { useShortcut } from "../../kernel/shortcuts";
 import { companiesChanged, workplaceChanged, type Workplace } from "./types";
 import { problemOf, useLocalName } from "./ui";
 
-/** Up to this many companies, every other company has its own one-click button. */
+/** Up to this many companies, every other company has its own one-click button; with more, the
+ * companies the user worked in most recently do (up to one fewer than this). */
 const quickCompanies = 6;
+
+/** The companies this user switched between most recently, newest first (ids only), on this
+ * device under a per-user key; the forgetter (kernel/deviceState) removes it when the identity ends. */
+const recentKey = (userId: string) => `erp.tenancy.recentCompanies.${userId}`;
+
+function readRecent(userId: string): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(recentKey(userId)) ?? "[]") as unknown;
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string").slice(0, quickCompanies) : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberRecent(userId: string, ids: (string | null | undefined)[]): string[] {
+  const next = [...new Set([...ids.filter((id): id is string => !!id), ...readRecent(userId)])].slice(0, quickCompanies);
+  try {
+    localStorage.setItem(recentKey(userId), JSON.stringify(next));
+  } catch {
+    // Storage unavailable: the chips of this document still follow the switches made in it.
+  }
+  return next;
+}
 
 type Choice = { companyId: string; branchId: string | null; label: string; detail: string; search: string };
 
@@ -18,9 +42,11 @@ type Choice = { companyId: string; branchId: string | null; label: string; detai
  */
 export function WorkplaceSwitcher() {
   const { t } = useI18n();
-  const { can } = useSession();
+  const { can, state } = useSession();
+  const userId = state.status === "signedIn" ? state.session.user.id : "";
   const name = useLocalName();
   const [workplace, setWorkplace] = useState<Workplace | null>(null);
+  const [recent, setRecent] = useState<string[]>(() => (userId ? readRecent(userId) : []));
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [active, setActive] = useState(0);
@@ -111,7 +137,10 @@ export function WorkplaceSwitcher() {
 
   const choose = async (choice: Choice) => {
     try {
+      const previous = workplace?.companyId;
       const result = await api<Workplace>("PUT", "/api/tenancy/workplace", { companyId: choice.companyId, branchId: choice.branchId });
+      // The company left and the one reached are each one click away afterwards.
+      if (userId) setRecent(rememberRecent(userId, [result.companyId, previous]));
       setWorkplace(result);
       setOpen(false);
       buttonRef.current?.focus();
@@ -135,8 +164,16 @@ export function WorkplaceSwitcher() {
     );
   }
 
-  // With a handful of companies, the others are one click away beside the switcher.
-  const others = workplace.companies.length <= quickCompanies ? workplace.companies.filter((c) => c.id !== workplace.companyId) : [];
+  // With a handful of companies, the others are one click away beside the switcher; with more
+  // (groups with many licensed entities), the ones the user switched between most recently are.
+  const others =
+    workplace.companies.length <= quickCompanies
+      ? workplace.companies.filter((c) => c.id !== workplace.companyId)
+      : recent
+          .filter((id) => id !== workplace.companyId)
+          .map((id) => workplace.companies.find((c) => c.id === id))
+          .filter((c): c is Workplace["companies"][number] => c !== undefined)
+          .slice(0, quickCompanies - 1);
 
   return (
     <div className="workplace-switcher">
