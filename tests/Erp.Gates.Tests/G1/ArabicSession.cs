@@ -14,7 +14,7 @@ namespace Erp.Gates.Tests.G1;
 /// the seeded Arabic-speaking administrator of the tenant (<see cref="Local"/>), its digits
 /// preference set to <c>arab</c>, and Accept-Language <c>ar-AE</c> on every request as well.
 /// </summary>
-public static class ArabicSession
+public static partial class ArabicSession
 {
     /// <summary>Local part of the e-mail of every tenant's Arabic-speaking administrator.</summary>
     public const string Local = "admin.ar";
@@ -75,6 +75,11 @@ public static class ArabicSession
         text.Contains("\"numerals\":\"arab\"", StringComparison.Ordinal);
 
     /// <summary>Letters of the Arabic script in a text (an answer in Arabic has more of them than
-    /// the same answer in English).</summary>
-    public static int ArabicLetters(string text) => text.Count(c => c is >= '؀' and <= 'ۿ');
+    /// the same answer in English), written as they are or as JSON escapes (<c>\u0627</c>), which
+    /// is how the API and the gates' normalised answers carry them.</summary>
+    public static int ArabicLetters(string text) =>
+        text.Count(c => c is >= '\u0600' and <= '\u06FF') + EscapedArabic().Count(text);
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\\u06[0-9A-Fa-f]{2}")]
+    private static partial System.Text.RegularExpressions.Regex EscapedArabic();
 }

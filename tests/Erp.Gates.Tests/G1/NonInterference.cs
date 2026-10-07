@@ -216,8 +216,8 @@ public static partial class NonInterference
             };
             var arabicSides = new[]
             {
-                new WriteSide("tenant A in Arabic", activityA, ownA, arabicA, freshArabicA),
-                new WriteSide("tenant B in Arabic", activityB, ownB, arabicB, freshArabicB),
+                new WriteSide("tenant A in Arabic", activityA, ownA, arabicA, freshArabicA, ArabicSession.Local),
+                new WriteSide("tenant B in Arabic", activityB, ownB, arabicB, freshArabicB, ArabicSession.Local),
             };
             foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
             {
@@ -258,7 +258,7 @@ public static partial class NonInterference
         }
     }
 
-    private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh);
+    private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh, string Owner = "admin");
 
     /// <summary>Writes whose true answer is the same each time the same caller makes them: every
     /// write on an existing record (creates and deletes answer a new record each time).</summary>
@@ -272,7 +272,7 @@ public static partial class NonInterference
         {
             state.Requests++;
             var (status, text) = await side.Activity.WriteThroughAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
-                endpoint, side.Own, $"write comparison, {label}", variant);
+                endpoint, side.Own, $"write comparison, {label}", variant, side.Owner);
             return $"{status} {NormalizeWrite(text)}";
         }
 

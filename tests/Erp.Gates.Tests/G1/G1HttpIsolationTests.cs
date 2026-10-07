@@ -284,6 +284,12 @@ public static partial class IsolationAttack
                 {
                     foreach (var attacker in attackers)
                     {
+                        // The anonymous Arabic caller reaches a permissioned handler's Arabic
+                        // refusal only, which is the same for every value: sent once per endpoint.
+                        if (attacker == arabicAnonymous && !endpoint.IsAnonymous && (variant != Variant.Plain || path != paths[0]))
+                        {
+                            continue;
+                        }
                         batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
@@ -419,7 +425,7 @@ public static partial class IsolationAttack
                         work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n)));
                     }
                 }
-                foreach (var value in TenantActivity.ArabicValuesFor(parameter, values))
+                foreach (var value in TenantActivity.ArabicValuesFor(parameter, values, published: false))
                 {
                     foreach (var attacker in arabicReachable)
                     {
@@ -828,21 +834,29 @@ public static partial class IsolationAttack
                         }
                     }
                 }
+                // In Arabic once more, every enumerated field at its last documented value (for the
+                // shell's own preferences: Arabic with Arabic-Indic digits).
+                if (victimActivity.LastValues(endpoint) is { } last)
+                {
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write ({last}, in Arabic)", variant: last, arabic: true);
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({last}, {WriterName(false, true)})", variant: last, arabic: true);
+                    if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                    {
+                        pairs++;
+                        arabicPairs++;
+                    }
+                }
                 foreach (var variant in victimActivity.VariantsOf(endpoint))
                 {
                     var succeeded = false;
-                    foreach (var (bearer, arabic) in Writers)
+                    foreach (var bearer in new[] { false, true })
                     {
-                        var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write ({variant}{(arabic ? ", in Arabic" : "")})", variant: variant, arabic: arabic);
-                        var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({variant}, {WriterName(bearer, arabic)})", bearer, variant, arabic);
+                        var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write ({variant})", variant: variant);
+                        var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({variant}, {(bearer ? "bearer" : "cookie")})", bearer, variant);
                         if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
                         {
                             variantPairs++;
                             succeeded = true;
-                            if (arabic)
-                            {
-                                arabicPairs++;
-                            }
                         }
                     }
                     // Tenant B writes once more with the same value right after tenant A: judged for A's markers.
