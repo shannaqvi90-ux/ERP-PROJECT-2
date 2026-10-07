@@ -259,7 +259,8 @@ Logos, product names, vendor links and the vendor's bot avatar are painted over 
 box, and so are the demo data's own names (company names, database or tenant codes, company and
 branch codes, `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
 names, not only their own: a name masked in one product's shots and showing in the other's told the
-products apart. The shot is rendered in greyscale (no signature colours); the
+products apart. A name inside a cell that hides its overflow (a list cell with an ellipsis) is
+painted over by the whole cell, so the paint lines up with the columns (`maskTargets`). The shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
