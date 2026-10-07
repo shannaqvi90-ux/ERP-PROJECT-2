@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 using Erp.Modules.Tenancy.Access;
 
@@ -53,7 +54,8 @@ public sealed record CompanyDto(
     uint Version,
     bool EveryBranch = true);
 
-/// <summary>A row of the companies list.</summary>
+/// <summary>A row of the companies list. <c>everyBranch</c> is false where the caller works in only
+/// some of the company's branches: they may not change the company or add a branch to it.</summary>
 public sealed record CompanyRow(
     Guid Id,
     string Code,
@@ -64,7 +66,8 @@ public sealed record CompanyRow(
     Emirate? Emirate,
     int BranchCount,
     bool IsActive,
-    uint Version);
+    uint Version,
+    bool EveryBranch = true);
 
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
 /// name); a legal name in English or Arabic is required (both are recommended). On change,
@@ -167,8 +170,9 @@ internal static class CompanyEndpoints
         var branches = await db.Branches.AsNoTracking().Where(b => ids.Contains(b.CompanyId))
             .GroupBy(b => b.CompanyId).Select(g => new { CompanyId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.CompanyId, g => g.Count, cancellationToken);
+        var branchScope = http.RequestServices.GetRequiredService<TenancyBranchScope>();
         return result.Map(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
-            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version));
+            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version, branchScope.HoldsEveryBranch(c.Id)));
     }
 
     /// <summary>The columns a list row needs, never the logo bytes (up to 512 KB a company): a
