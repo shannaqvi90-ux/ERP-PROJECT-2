@@ -168,8 +168,9 @@ public static partial class NonInterference
             };
             foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
             {
-                // Every variant first, the default body last (it puts both tenants' records back).
-                foreach (var variant in activityA.VariantsOf(endpoint).Append(null))
+                // Every variant first, every enumerated field at its first value last (it puts both
+                // tenants' records back; without enumerated fields, the default body).
+                foreach (var variant in activityA.VariantsOf(endpoint).Append(activityA.FirstValues(endpoint)))
                 {
                     foreach (var (judged, other) in new[] { (sides[0], sides[1]), (sides[1], sides[0]) })
                     {

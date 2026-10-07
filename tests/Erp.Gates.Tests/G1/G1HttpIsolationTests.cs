@@ -763,10 +763,11 @@ public static class IsolationAttack
                     await attacker.ReadRoundAsync(ownA, $"tenant A reads after B's variants of {endpoint.Key}");
                     await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's variants of {endpoint.Key}");
                 }
-                // The default body last: it puts both tenants' records back to their first documented values.
-                await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right after A's write");
+                // Every enumerated field at its first value last: both tenants' records go back to
+                // their first documented values (an edit and save copies the rest from the record).
+                await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right after A's write", variant: victimActivity.FirstValues(endpoint));
                 await attacker.ReadRoundAsync(ownA, $"tenant A reads after B's {endpoint.Key}");
-                await attacker.WriteOneAsync(endpoint, ownA, "tenant A writes before B reads");
+                await attacker.WriteOneAsync(endpoint, ownA, "tenant A writes before B reads", variant: attacker.FirstValues(endpoint));
                 await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's {endpoint.Key}");
             }
         }

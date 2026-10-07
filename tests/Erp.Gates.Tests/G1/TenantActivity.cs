@@ -153,12 +153,12 @@ public sealed class TenantActivity
         foreach (var endpoint in writes.Where(e => e.Method == "POST"))
         {
             await WriteVariantsAsync(endpoint, own, "own create");
-            await WriteOneAsync(endpoint, own, "own create");
+            await WriteOneAsync(endpoint, own, "own create", variant: FirstValues(endpoint));
         }
         foreach (var endpoint in writes.Where(e => e.Method is "PUT" or "PATCH"))
         {
             await WriteVariantsAsync(endpoint, own, "own save");
-            await WriteOneAsync(endpoint, own, "own save");
+            await WriteOneAsync(endpoint, own, "own save", variant: FirstValues(endpoint));
         }
         foreach (var endpoint in writes.Where(e => e.Method == "DELETE"))
         {
@@ -168,8 +168,8 @@ public sealed class TenantActivity
 
     /// <summary>The write once with every variant of its body (<see cref="VariantsOf"/>), so
     /// whatever the code behind each documented value leaves in process-wide state is this
-    /// tenant's. The default body (every enumerated field at its first value) is written after
-    /// by the caller, which puts the record back as it was.</summary>
+    /// tenant's. The caller writes <see cref="FirstValues"/> after, which puts every enumerated
+    /// field back to its first value.</summary>
     private async Task WriteVariantsAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase)
     {
         foreach (var variant in VariantsOf(endpoint))
@@ -210,6 +210,23 @@ public sealed class TenantActivity
             }
         }
         return variants;
+    }
+
+    /// <summary>
+    /// The variant with every enumerated field at its first documented value (null when the body
+    /// has none): the default body, and also what an edit and save must send to put a record back
+    /// after the variants, since its other fields are copied from the record as the variants left it.
+    /// </summary>
+    public WriteVariant? FirstValues(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return null;
+        }
+        var leaves = _openApi.EnumLeaves(schema);
+        return leaves.Count == 0
+            ? null
+            : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[0].ToJsonString()}")), leaves.Select(l => (l, l.Values[0])).ToList(), null, null);
     }
 
     /// <summary>Variants (endpoint key and label) whose settings a body held when it was sent.</summary>
