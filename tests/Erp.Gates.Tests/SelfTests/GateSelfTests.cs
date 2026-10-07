@@ -282,6 +282,16 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(report.Escalations);
         Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
+        // Critic p02 round 4, plant C5: a read by id that ignores the branch limits answers for
+        // branch Z's id and not for an id that exists nowhere (whether or not its texts count as markers).
+        Assert.Contains(report.Oracles, o => o.Contains("GET /api/leaky/branch-by-id/", StringComparison.Ordinal) && o.StartsWith("branch-limited administrator", StringComparison.Ordinal));
+        // Critic p02 round 4, plant P7: a one-branch administrator renames the company every branch
+        // shares; the write is refused nowhere and company X's own record changes.
+        var shared = report.Shared!;
+        Assert.Contains("PUT /api/leaky/company-profile/{id:guid} [legalNameEn]", shared.Sources);
+        Assert.Contains(shared.Failures, f => f.Contains("PUT /api/leaky/company-profile/{id:guid} [legalNameEn]", StringComparison.Ordinal) && f.Contains("answered 200", StringComparison.Ordinal));
+        Assert.Contains("tenancy.companies", shared.ChangedTables);
+        Assert.DoesNotContain(shared.Failures, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -13,7 +13,8 @@ Needs only Docker (with Compose v2), bash and git.
 ./erp verify --clean-clone   # G3: the same from a fresh clone of HEAD, then ./erp up there
 ./erp down      # stop the demo (--volumes also deletes its data)
 ./erp tenant create --code acme --name-en "Acme LLC" --name-ar "أكمي ذ.م.م" --admin-email owner@acme.example --admin-name "Owner"
-                # platform operator: provision a workspace (also: tenant suspend|activate --code …, tenant list)
+                # platform operator: provision a workspace (also: tenant suspend|activate --code …, tenant list;
+                # the audit trail names the operator: --operator <name>, else ERP_OPERATOR, else user@host)
 ```
 
 Ports and the compose project come from the environment, so copies run side by side:

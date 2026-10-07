@@ -1,0 +1,40 @@
+TAP version 13
+# RESULT variant hooks: status=verified start path=/a marks=["/mark/signin-a"]
+# Subtest: a variant's own setup and signIn run before its measured part
+not ok 1 - a variant's own setup and signIn run before its measured part
+  ---
+  duration_ms: 1345.943749
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6-variant.test.mjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    the variant's setup and signIn were not called
+    + actual - expected
+    
+      [
+    -   '/mark/setup-a',
+        '/mark/signin-a'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: '/mark/setup-a'
+    1: '/mark/signin-a'
+  actual:
+    0: '/mark/signin-a'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/zz-critic-r6-variant.test.mjs:36:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6522.288646

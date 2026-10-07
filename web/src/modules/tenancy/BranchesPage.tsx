@@ -21,7 +21,10 @@ export function BranchesPage() {
   const { can } = useSession();
   const name = useLocalName();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
-  const panel = useRecordPanel(can("tenancy.branches.create"));
+  // A branch is added to an active company the user works in every branch of (the server answers
+  // 403 tenancy.branchNeedsEveryBranch otherwise): New is offered only when there is one.
+  const creatable = useMemo(() => companies.filter((c) => c.isActive && c.everyBranch !== false), [companies]);
+  const panel = useRecordPanel(can("tenancy.branches.create") && creatable.length > 0);
   useScreenKeys({ onNew: panel.startNew, search: listSearch });
 
   useEffect(() => {
@@ -70,8 +73,8 @@ export function BranchesPage() {
             key={panel.formKey}
             nav={nav}
             id={id === newRecord ? null : id}
-            companies={id === newRecord ? companies.filter((c) => c.isActive) : companies}
-            defaultCompanyId={companies.find((c) => c.isActive)?.id ?? ""}
+            companies={id === newRecord ? creatable : companies}
+            defaultCompanyId={creatable[0]?.id ?? ""}
             onSaved={panel.saved}
             onClose={close}
           />
@@ -201,7 +204,11 @@ function BranchForm({
         />
         <TextField field={bind("nameEn")} label={t("tenancy.branch.nameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
         <TextField field={bind("nameAr")} label={t("tenancy.branch.nameAr")} dir="rtl" maxLength={200} />
-        <TextField field={bind("code")} label={t("tenancy.branch.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
+        {/* Branch codes are unique within the company and chosen by someone who works in every
+            branch of it: the server refuses a code change from anyone else. */}
+        <TextField field={bind("code")} label={t("tenancy.branch.code")} dir="ltr" maxLength={20} upper
+          disabled={branch?.everyBranch === false}
+          hint={branch?.everyBranch === false ? t("tenancy.branch.codeNeedsEveryBranch") : t("tenancy.company.codeHint")} />
         <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
       </FormSection>
       <AddressFields form={form} />

@@ -1,0 +1,908 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261007T193050-ce75",
+  "instrument": 5,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-07T19:30:50.386Z",
+  "finished_at": "2026-10-07T19:31:28.850Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 46,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 5,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 7.398,
+    "system_wait_seconds": 6.84,
+    "human_seconds": 30.05,
+    "human_plus_wait_seconds": 36.89,
+    "klm_operator_counts": {
+      "K": 60,
+      "P": 2,
+      "B": 4,
+      "H": 3,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.004,
+      "took": 0.013,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search /users",
+      "keystrokes": 6,
+      "at": 0.15,
+      "took": 0.03,
+      "text": "/users",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Settings / Users & Companies / Users",
+      "keystrokes": 1,
+      "at": 0.255,
+      "took": 0.009,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "New (hotkey)",
+      "keystrokes": 2,
+      "at": 0.708,
+      "took": 0.032,
+      "chord": "Alt+c",
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "at": 1.07,
+      "took": 0.058,
+      "text": "Hessa Clerk",
+      "same_field": false,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "next field (login)",
+      "keystrokes": 1,
+      "at": 1.128,
+      "took": 0.012,
+      "chord": "Tab",
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "type",
+      "label": "login",
+      "keystrokes": 33,
+      "at": 1.16,
+      "took": 0.093,
+      "text": "hessa.clerk@demo-trading.example",
+      "same_field": false,
+      "screen": "/odoo/users/new",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Contact privilege",
+      "keystrokes": 0,
+      "at": 1.257,
+      "took": 0.082,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Creation",
+      "keystrokes": 0,
+      "at": 1.34,
+      "took": 0.051,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 10,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 1.528,
+      "took": 0.011,
+      "chord": "Alt+s",
+      "screen": "/odoo/users/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.018,
+      "seconds": 0.131
+    },
+    {
+      "label": "menu found",
+      "at": 0.181,
+      "seconds": 0.073
+    },
+    {
+      "label": "Settings / Users & Companies / Users loaded",
+      "at": 0.265,
+      "seconds": 0.142
+    },
+    {
+      "label": "user list",
+      "at": 0.408,
+      "seconds": 0.297
+    },
+    {
+      "label": "new user form, name focused",
+      "at": 0.74,
+      "seconds": 0.328
+    },
+    {
+      "label": "login focused",
+      "at": 1.142,
+      "seconds": 0.012
+    },
+    {
+      "label": "saved",
+      "at": 1.539,
+      "seconds": 5.853
+    },
+    {
+      "label": "record has an id",
+      "at": 7.393,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "60f16f31e0037618.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/compare/blind/shots/60f16f31e0037618.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "b0deafc02a55f4a3.jpg",
+      "at": 1.391,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/compare/blind/shots/b0deafc02a55f4a3.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "36cf04036f212057.jpg",
+      "at": 7.398,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/compare/blind/shots/36cf04036f212057.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/users/100038",
+      "role": "regular_user",
+      "missing": [],
+      "unexpected": []
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save) | pointer: Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save | palette: Ctrl+K > \"/users\" > Enter > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-restricted-user.mjs",
+    "sha256": "0d793537195e963fca24bfba36f7c00f57cf8ec583abf0675772cf87e8b88b27"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 9,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.114,
+      "verified": true
+    },
+    {
+      "requests": 9,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.084,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 51,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 7.648,
+        "system_wait_seconds": 7.023,
+        "human_seconds": 34.13,
+        "human_plus_wait_seconds": 41.153,
+        "klm_operator_counts": {
+          "K": 51,
+          "P": 5,
+          "B": 10,
+          "H": 3,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.003,
+          "took": 0.059,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.063,
+          "took": 0.04,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.454,
+          "took": 0.06,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.889,
+          "took": 0.036,
+          "chord": "Alt+c",
+          "screen": "/odoo/settings/46/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 1.378,
+          "took": 0.039,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/settings/46/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (login)",
+          "keystrokes": 1,
+          "at": 1.417,
+          "took": 0.013,
+          "chord": "Tab",
+          "screen": "/odoo/settings/46/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 1.434,
+          "took": 0.086,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/odoo/settings/46/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 1.524,
+          "took": 0.08,
+          "screen": "/odoo/settings/46/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 1.604,
+          "took": 0.063,
+          "screen": "/odoo/settings/46/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 1.783,
+          "took": 0.017,
+          "chord": "Alt+s",
+          "screen": "/odoo/settings/46/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.104,
+          "seconds": 0.347
+        },
+        {
+          "label": "user list",
+          "at": 0.515,
+          "seconds": 0.374
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 0.926,
+          "seconds": 0.452
+        },
+        {
+          "label": "login focused",
+          "at": 1.43,
+          "seconds": 0.003
+        },
+        {
+          "label": "saved",
+          "at": 1.8,
+          "seconds": 5.838
+        },
+        {
+          "label": "record has an id",
+          "at": 7.639,
+          "seconds": 0.009
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/46/users/100036",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.088,
+          "verified": true
+        },
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.093,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 46,
+        "clicks": 8,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 9.656,
+        "system_wait_seconds": 6.901,
+        "human_seconds": 37.03,
+        "human_plus_wait_seconds": 43.931,
+        "klm_operator_counts": {
+          "K": 46,
+          "P": 8,
+          "B": 16,
+          "H": 4,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.046,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.048,
+          "took": 0.048,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.437,
+          "took": 0.069,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.916,
+          "took": 0.116,
+          "screen": "/odoo/settings/47/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 3.338,
+          "took": 0.024,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "focus login",
+          "keystrokes": 0,
+          "at": 3.362,
+          "took": 0.062,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 3.43,
+          "took": 0.084,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": true,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 3.525,
+          "took": 0.063,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 3.589,
+          "took": 0.053,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 3.751,
+          "took": 0.053,
+          "screen": "/odoo/settings/47/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.097,
+          "seconds": 0.34
+        },
+        {
+          "label": "user list",
+          "at": 0.506,
+          "seconds": 0.409
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 1.033,
+          "seconds": 0.302
+        },
+        {
+          "label": "saved",
+          "at": 3.804,
+          "seconds": 5.846
+        },
+        {
+          "label": "record has an id",
+          "at": 9.651,
+          "seconds": 0.004
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/47/users/100037",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.095,
+          "verified": true
+        },
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.083,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"/users\" > Enter > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 60,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 5,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 7.398,
+        "system_wait_seconds": 6.84,
+        "human_seconds": 30.05,
+        "human_plus_wait_seconds": 36.89,
+        "klm_operator_counts": {
+          "K": 60,
+          "P": 2,
+          "B": 4,
+          "H": 3,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.004,
+          "took": 0.013,
+          "chord": "Control+k",
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /users",
+          "keystrokes": 6,
+          "at": 0.15,
+          "took": 0.03,
+          "text": "/users",
+          "same_field": false,
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Settings / Users & Companies / Users",
+          "keystrokes": 1,
+          "at": 0.255,
+          "took": 0.009,
+          "chord": "Enter",
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.708,
+          "took": 0.032,
+          "chord": "Alt+c",
+          "screen": "/odoo/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 1.07,
+          "took": 0.058,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (login)",
+          "keystrokes": 1,
+          "at": 1.128,
+          "took": 0.012,
+          "chord": "Tab",
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 1.16,
+          "took": 0.093,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/odoo/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 1.257,
+          "took": 0.082,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 1.34,
+          "took": 0.051,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 1.528,
+          "took": 0.011,
+          "chord": "Alt+s",
+          "screen": "/odoo/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.018,
+          "seconds": 0.131
+        },
+        {
+          "label": "menu found",
+          "at": 0.181,
+          "seconds": 0.073
+        },
+        {
+          "label": "Settings / Users & Companies / Users loaded",
+          "at": 0.265,
+          "seconds": 0.142
+        },
+        {
+          "label": "user list",
+          "at": 0.408,
+          "seconds": 0.297
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 0.74,
+          "seconds": 0.328
+        },
+        {
+          "label": "login focused",
+          "at": 1.142,
+          "seconds": 0.012
+        },
+        {
+          "label": "saved",
+          "at": 1.539,
+          "seconds": 5.853
+        },
+        {
+          "label": "record has an id",
+          "at": 7.393,
+          "seconds": 0.004
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/users/100038",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.005,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.114,
+          "verified": true
+        },
+        {
+          "requests": 9,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.084,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0
+    }
+  ]
+}
