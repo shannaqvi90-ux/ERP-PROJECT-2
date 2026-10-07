@@ -1,0 +1,13 @@
+== probe on the unplanted product
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+== probe with plant W2
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/kernel/forms/forms.test.tsx[2m > [22mthe record form[2m > [22mshows a record read-only to a user who may not change it: no save, fields disabled, the reason said
+[31m[1mAssertionError[22m: expected [ 'PUT /api/things/t1' ] to deeply equal [][39m
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- [][39m
+[31m+ [[39m
+[31m+   "PUT /api/things/t1",[39m
+[31m+ ][39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (11)[39m

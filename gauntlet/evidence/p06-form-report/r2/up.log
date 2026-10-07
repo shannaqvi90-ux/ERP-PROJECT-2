@@ -1,0 +1,179 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p06-form-report-r2 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 670B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB 0.0s done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 1.1s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 DONE 0.3s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 ...
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#7 DONE 0.3s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.9s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.0s
+
+#9 [internal] load build context
+#9 DONE 0.0s
+
+#10 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#10 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#10 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.1s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#11 DONE 0.1s
+
+#12 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+#12 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.1s done
+#12 DONE 0.1s
+
+#9 [internal] load build context
+#9 transferring context: 22.77kB 0.1s done
+#9 DONE 0.1s
+
+#13 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#13 CACHED
+
+#14 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#14 CACHED
+
+#15 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#15 CACHED
+
+#16 [web 2/6] WORKDIR /web
+#16 CACHED
+
+#17 [web 3/6] COPY web/package.json web/package-lock.json ./
+#17 CACHED
+
+#18 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#18 CACHED
+
+#19 [build 2/7] WORKDIR /src
+#19 CACHED
+
+#20 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#20 CACHED
+
+#21 [strings 2/3] COPY web/src/modules/ /modules/
+#21 CACHED
+
+#22 [web 6/6] RUN npm run check && npm run build
+#22 CACHED
+
+#23 [stage-3 3/4] COPY --from=build /app ./
+#23 CACHED
+
+#24 [web 5/6] COPY web/ ./
+#24 CACHED
+
+#25 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#25 CACHED
+
+#26 [build 4/7] COPY src/ src/
+#26 CACHED
+
+#27 [stage-3 2/4] WORKDIR /app
+#27 CACHED
+
+#28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#28 CACHED
+
+#29 exporting to image
+#29 exporting layers done
+#29 exporting manifest sha256:1f79441d6a03b5364ae87e8f74f92f94e7ef069bf3cf8856d7d4c59644a13fe1 0.0s done
+#29 exporting config sha256:0c28501aeedfc1c70e8ad874cc6f98debd1724aa7ed580f222c576f5a5f9d5a3 0.0s done
+#29 exporting attestation manifest sha256:b7f851a7f42aea74f25e46f36310dc084db4683df6eb749276da18a7e858db13
+#29 exporting attestation manifest sha256:b7f851a7f42aea74f25e46f36310dc084db4683df6eb749276da18a7e858db13 0.1s done
+#29 exporting manifest list sha256:aa357f26f424a5ca1ac097fa657c8dbe8ce2097761ab94f87cc33763407c66e4 0.0s done
+#29 naming to docker.io/library/erp-app:c-p06-form-report-r2 done
+#29 unpacking to docker.io/library/erp-app:c-p06-form-report-r2 0.0s done
+#29 DONE 0.3s
+
+#30 resolving provenance for metadata file
+#30 DONE 0.0s
+ Image erp-app:c-p06-form-report-r2 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p06-form-report-r2_default Creating 
+ Network c-p06-form-report-r2_default Created 
+ Volume c-p06-form-report-r2_db-data Creating 
+ Volume c-p06-form-report-r2_db-data Created 
+ Container c-p06-form-report-r2-db-1 Creating 
+ Container c-p06-form-report-r2-db-1 Created 
+ Container c-p06-form-report-r2-db-1 Starting 
+ Container c-p06-form-report-r2-db-1 Started 
+ Container c-p06-form-report-r2-db-1 Waiting 
+ Container c-p06-form-report-r2-db-1 Healthy 
+ Container c-p06-form-report-r2-db-1 Running 
+ Container c-p06-form-report-r2-setup-1 Creating 
+ Container c-p06-form-report-r2-setup-1 Created 
+Attaching to setup-1
+ Container c-p06-form-report-r2-db-1 Waiting 
+ Container c-p06-form-report-r2-db-1 Healthy 
+ Container c-p06-form-report-r2-setup-1 Starting 
+ Container c-p06-form-report-r2-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 6 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 39474 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 613 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 1095 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p06-form-report-r2-setup-1 Stopping 
+ Container c-p06-form-report-r2-setup-1 Stopped 
+ Container c-p06-form-report-r2-db-1 Running 
+ Container c-p06-form-report-r2-app-1 Creating 
+ Container c-p06-form-report-r2-app-1 Created 
+ Container c-p06-form-report-r2-db-1 Waiting 
+ Container c-p06-form-report-r2-db-1 Healthy 
+ Container c-p06-form-report-r2-setup-1 Starting 
+ Container c-p06-form-report-r2-setup-1 Started 
+ Container c-p06-form-report-r2-setup-1 Waiting 
+ Container c-p06-form-report-r2-setup-1 Exited 
+ Container c-p06-form-report-r2-app-1 Starting 
+ Container c-p06-form-report-r2-app-1 Started 
+
+[1mThe demo is running (64 s): http://localhost:20650[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  API description: http://localhost:20650/api/openapi/v1.json
+  Database:        localhost:20651 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+exit 0 wall 65 s

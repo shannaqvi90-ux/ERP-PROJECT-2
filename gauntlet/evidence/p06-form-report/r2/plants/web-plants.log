@@ -1,0 +1,40 @@
+== baseline
+[2m Test Files [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m      Tests [22m [1m[32m268 passed[39m[22m[90m (268)[39m
+P3b-tenant: caught (the workspace settings form shown and editable for everyone (P3b on the workspace screen))
+tenancy screens permission gate self-test: 17 plants, all caught
+U-copy: caught (Copy role offered for a role granting more than the user holds)
+identity screens permission gate self-test: 5 plants, all caught
+== W1
+src/kernel/forms/RecordForm.tsx:84:  const editable = true; // PLANT W1
+src/kernel/forms/RecordForm.tsx:249:        <FormContext.Provider value={{ readOnly: false }}>{/* PLANT W1 */}
+src/kernel/forms/RecordForm.tsx:293:    <fieldset className="form-section" disabled={false}>{/* PLANT W1 */}
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 13 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/kernel/forms/forms.test.tsx[2m > [22mthe record form[2m > [22mshows a record read-only to a user who may not change it: no save, fields disabled, the reason said
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22musers screen[2m > [22mhides creation and account actions from a read-only user
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mroles screen[2m > [22mshows the Administrator system role read-only, with copy offered
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting a permission the user lacks is shown read-only, with no copy or delete
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: without identity.users.update there is no "Save"
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: nothing acts on someone whose roles grant more than the user holds, and nobody who signed in can be deleted
+[41m[1m FAIL [22m[49m src/modules/tenancy/AccessPage.test.tsx[2m > [22mcompany access screen[2m > [22msays why a stronger user's access is read-only and offers no way to change it
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: without tenancy.companies.update, exactly the actions that need it disappear
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mbranches: without tenancy.branches.update, exactly the actions that need it disappear
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22maccess: without tenancy.access.update, exactly the actions that need it disappear
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: a company where the user works in only some branches offers no change to the company itself, and says why
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22maccess: a user the server marks read-only for the caller offers no change, even with every permission
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m22 passed[39m[22m[90m (26)[39m
+
+
+
+
+== W2
+src/kernel/forms/RecordForm.tsx:107:  useShortcut({ id: "forms.save", chord: formChords.save, labelKey: "forms.shortcut.save", groupKey: group, enabled: true /* PLANT W2 */, run: () => void save() });
+src/kernel/forms/useRecordForm.ts:133:    if (busy) return null; // PLANT W2
+[2m Test Files [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m      Tests [22m [1m[32m268 passed[39m[22m[90m (268)[39m
+P3b-tenant: caught (the workspace settings form shown and editable for everyone (P3b on the workspace screen))
+tenancy screens permission gate self-test: 17 plants, all caught
+U-copy: caught (Copy role offered for a role granting more than the user holds)
+identity screens permission gate self-test: 5 plants, all caught
+exit 0
