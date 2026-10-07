@@ -32,3 +32,17 @@ runner records, for any run that errors, what the page showed (`error_page`: add
 whether a navigation was up, busy indicators and every alert or status message), set-up included,
 where no screenshot is taken; the health check prints the whole error and that description on the
 console too, so the verify log alone shows it. No timeout was raised and no retry added.
+
+## The top bar never widens the page
+
+Found while checking this round: a user who may work in several companies has the working company
+and one quick-switch button per other company in the top bar. Nothing in the bar could shrink
+above the phone breakpoint, and labels wrapped, so at 1280 px the shell was 1310 px wide (1359 px
+in English), the page scrolled sideways and the navigation pane and Sign out were cut.
+
+Decision: the app grid is one column exactly as wide as the window (`minmax(0, 1fr)`); the top bar
+has `min-width: 0`; its buttons, links and the product name never wrap; the module context area
+shrinks first while the controls at the end keep their size; the quick switches wrap onto a hidden
+second line, so only whole codes show (every company stays one Alt+C away). An e2e test checks
+1024, 1280 and 1366 px in English and Arabic (no sideways scroll, a one-line bar, every end
+control whole and in view); it fails on the previous build.
