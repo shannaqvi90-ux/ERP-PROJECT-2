@@ -92,6 +92,45 @@ export function maskLocators(page, branding) {
 }
 
 /**
+ * For each element (in the page), how many levels up stands the box that clips it: the nearest
+ * ancestor that hides its overflow, when that ancestor is no taller than two of the element's
+ * lines (a list cell, not a scrolling list or a bar). 0 when there is none.
+ */
+function clipDepths(els) {
+  return els.map(el => {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return 0;
+    let depth = 0;
+    for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+      depth++;
+      const cs = getComputedStyle(a);
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+      const ar = a.getBoundingClientRect();
+      return ar.height <= 2 * r.height + 1 ? depth : 0;
+    }
+    return 0;
+  });
+}
+
+/**
+ * What a screenshot paints over, aligned to the columns. Round 7 (p02 critic, round 4: list rows
+ * looked misaligned around a masked company name): a name cut short by its list cell (an
+ * ellipsis) has a box wider than the cell, and painting that box covered part of the next column,
+ * while a short name left part of its cell showing. A name in a cell that clips it is painted over
+ * by the cell's box instead: every masked cell is painted edge to edge, whatever the name's length
+ * (which says nothing either).
+ */
+export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
+  const out = [];
+  for (const loc of maskLocators(page, branding)) {
+    const depths = await loc.evaluateAll(clipDepths).catch(() => null);
+    if (!depths || !depths.some(d => d > 0) || depths.length > perLocator) { out.push(loc); continue; }
+    depths.forEach((d, i) => out.push(d > 0 ? loc.nth(i).locator(`xpath=ancestor::*[${d}]`) : loc.nth(i)));
+  }
+  return out;
+}
+
+/**
  * Neutral title, no favicon, and no brand word in a visible hint (placeholder, tooltip, image or
  * accessible label): such a hint is emptied rather than painted over, so the field and its value
  * look like any other field.

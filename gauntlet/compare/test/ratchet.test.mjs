@@ -6,12 +6,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BASELINE_DIR, HARNESS_DIR, REPO_ROOT } from '../lib/config.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
+import { MUTATIONS } from '../scripts/mutations.mjs';
 
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
-  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants' };
+  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
+  instrument_mutations: 'compare.instrumentMutations' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -104,4 +106,17 @@ test('page-function plants never go below their minimum (round 7)', () => {
 test('API tasks never go below their minimum', async () => {
   const n = (await loadTasks()).filter(t => t.channel === 'api').length;
   assert.ok(n >= min.api_tasks, `${n} API tasks < ${min.api_tasks}`);
+});
+
+// The instrument's mutation check (scripts/mutations.mjs) runs in ./erp verify: every mutation
+// must fail a self-test. Here: never fewer mutations than the minimum, and each still finds the
+// text it mutates (a defence rewritten without updating its mutation would otherwise pass unseen).
+test('instrument mutations never go below their minimum, and each still finds what it mutates', () => {
+  assert.ok(MUTATIONS.length >= min.instrument_mutations, `${MUTATIONS.length} instrument mutations < ${min.instrument_mutations}`);
+  assert.equal(new Set(MUTATIONS.map(m => m[0])).size, MUTATIONS.length, 'mutation ids are unique');
+  for (const [id, , file, text, replacement, testFile] of MUTATIONS) {
+    assert.notEqual(text, replacement, `${id}: changes nothing`);
+    assert.ok(fs.readFileSync(path.join(HARNESS_DIR, file), 'utf8').includes(text), `${id}: ${file} no longer holds the text it mutates`);
+    assert.ok(fs.existsSync(path.join(HARNESS_DIR, testFile)), `${id}: ${testFile} missing`);
+  }
 });

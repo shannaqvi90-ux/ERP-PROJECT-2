@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HARNESS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = path.resolve(HARNESS, '..', '..');
@@ -36,6 +36,7 @@ export const MUTATIONS = [
   ['M13', 'no document settle', 'lib/runner.mjs', '      const loaded = tracker ? await op.settleDocument({ timeout }) : null;', '      const loaded = null;', 'test/page-script.test.mjs', 'still loading when run'],
   ['M14', "a product's shots mask only its own names", 'lib/blind.mjs', "identity: unionOf('identity'),", 'identity: [...(b.identity || [])],', 'test/blind.test.mjs', 'every product'],
   ['M15', 'the lint ignores page functions', 'test/drivers-lint.test.mjs', '  problems.push(...lintParsed(src));', '', 'test/drivers-lint.test.mjs', 'catches planted escapes'],
+  ['M16', "a name cut short by its cell painted with its whole box", 'lib/blind.mjs', '      return ar.height <= 2 * r.height + 1 ? depth : 0;', '      return 0;', 'test/blind.test.mjs', 'cut short by its list cell'],
 ];
 
 function copyHarness() {
@@ -51,28 +52,38 @@ function copyHarness() {
   return { root, dest };
 }
 
-const only = process.argv.slice(2);
-const { root, dest } = copyHarness();
-let missed = 0;
-try {
-  for (const [id, what, file, text, replacement, testFile, pattern] of MUTATIONS) {
-    if (only.length && !only.includes(id)) continue;
-    const p = path.join(dest, file);
-    const original = fs.readFileSync(p, 'utf8');
-    if (!original.includes(text)) { console.log(`${id} ${what}: the text to mutate is gone (update scripts/mutations.mjs)`); missed++; continue; }
-    fs.writeFileSync(p, original.replace(text, replacement));
-    try {
-      const args = ['--test', '--test-concurrency=1', ...(pattern ? [`--test-name-pattern=${pattern}`] : []), testFile];
-      const r = spawnSync(process.execPath, args, { cwd: dest, encoding: 'utf8', timeout: 20 * 60_000 });
-      const failing = (r.stdout.match(/^not ok/gm) || []).length;
-      const passing = (r.stdout.match(/^ok/gm) || []).length;
-      if (!failing) missed++;
-      console.log(`${id} ${what}: ${failing ? 'caught' : 'MISSED'} (${failing} failing, ${passing} passing)`);
-    } finally {
-      fs.writeFileSync(p, original);
+/** Runs the mutations named in `only` (all when empty); returns how many the self-tests missed. */
+export function runMutations(only = [], log = console.log) {
+  const { root, dest } = copyHarness();
+  let missed = 0;
+  try {
+    for (const [id, what, file, text, replacement, testFile, pattern] of MUTATIONS) {
+      if (only.length && !only.includes(id)) continue;
+      const p = path.join(dest, file);
+      const original = fs.readFileSync(p, 'utf8');
+      if (!original.includes(text)) { log(`${id} ${what}: the text to mutate is gone (update scripts/mutations.mjs)`); missed++; continue; }
+      fs.writeFileSync(p, original.replace(text, replacement));
+      try {
+        const args = ['--test', '--test-concurrency=1', ...(pattern ? [`--test-name-pattern=${pattern}`] : []), testFile];
+        const r = spawnSync(process.execPath, args, { cwd: dest, encoding: 'utf8', timeout: 20 * 60_000 });
+        const failing = (r.stdout.match(/^not ok/gm) || []).length;
+        const passing = (r.stdout.match(/^ok/gm) || []).length;
+        if (!failing) missed++;
+        log(`${id} ${what}: ${failing ? 'caught' : 'MISSED'} (${failing} failing, ${passing} passing)`);
+      } finally {
+        fs.writeFileSync(p, original);
+      }
     }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
-} finally {
-  fs.rmSync(root, { recursive: true, force: true });
+  return missed;
 }
-process.exit(missed ? 1 : 0);
+
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const only = process.argv.slice(2);
+  const missed = runMutations(only);
+  const ran = only.length ? MUTATIONS.filter(m => only.includes(m[0])).length : MUTATIONS.length;
+  console.log(missed ? `${missed} of ${ran} mutation(s) of the instrument MISSED by its self-tests` : `${ran} of ${MUTATIONS.length} mutations of the instrument run, every one caught`);
+  process.exit(missed ? 1 : 0);
+}

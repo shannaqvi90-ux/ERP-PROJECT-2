@@ -381,7 +381,10 @@ turn, in a scratch copy of the harness, and runs the self-tests that must catch 
 operator, greyscale, the read world's click refusal and its arming, the source check, the driver
 lint's page-function check, the network locks, the script freeze, the abort at the clock, the
 screen check after `verify()`, the document settle, a variant's own hooks and the masks. It exits 1
-when a mutation is missed. Add a line there for every new defence.
+when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
+web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above
+`compare.instrumentMutations` and checks that each still finds the text it mutates. Add a line
+there for every new defence.
 
 Plant tests run drivers the way the runner does: as module files in the driver process. Write the
 driver as a module (or transform a real one) and hand its description to `execute()`:

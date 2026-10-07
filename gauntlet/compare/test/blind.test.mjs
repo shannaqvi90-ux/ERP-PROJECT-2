@@ -151,3 +151,34 @@ test('every product\'s shots mask every product\'s demo names and codes (round 7
     }
   } finally { await browser.close(); }
 });
+
+test('a name cut short by its list cell is painted over within the cell, not across the next column, and every masked cell edge to edge (round 7, p02 critic: rows looked misaligned around a masked name)', async () => {
+  const { launch, newContext } = await import('../lib/browser.mjs');
+  const { maskTargets, MASK_COLOR } = await import('../lib/blind.mjs');
+  const browser = await launch();
+  try {
+    const page = await (await newContext(browser)).newPage();
+    await page.setContent(`<style>body{margin:0;font:14px sans-serif;background:#fff}.row{display:flex;height:28px;align-items:center}
+      .c{width:140px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.n{width:200px}</style>
+      <div style="height:400px;overflow:auto"><div class="row"><div class="c" id="cell"><span id="name">Al Noor Technical Services LLC and more words</span></div><div class="n" id="next">AED</div></div>
+      <div class="row"><div class="c"><span id="short">Al Noor Industries</span></div><div class="n">AED</div></div>
+      <div class="row"><div class="c"><span>Falcon Logistics LLC</span></div><div class="n">AED</div></div></div>`);
+    const shot = await page.screenshot({ type: 'png', mask: await maskTargets(page, brandingFor('ours')), maskColor: MASK_COLOR });
+    const probe = await page.context().newPage();
+    const px = await probe.evaluate(async src => {
+      const img = new Image(); img.src = src; await img.decode();
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+      const at = (x, y) => Array.from(g.getImageData(x, y, 1, 1).data.slice(0, 3));
+      // In the long name's cell; just right of it (the next column, before its text); the short name; a plain row.
+      return { inCell: at(70, 14), nextColumn: at(170, 14), farNext: at(250, 14), short: at(30, 42), shortCellEnd: at(135, 42), plain: at(30, 70) };
+    }, `data:image/png;base64,${shot.toString('base64')}`);
+    const mask = [1, 3, 5].map(i => parseInt(MASK_COLOR.slice(i, i + 2), 16));
+    const near = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 6);
+    assert.ok(near(px.inCell, mask), `the long name is painted over: ${px.inCell}`);
+    assert.ok(near(px.short, mask), `the short name is painted over: ${px.short}`);
+    assert.ok(near(px.shortCellEnd, mask), `a short name's cell is painted edge to edge, as a long one's: ${px.shortCellEnd}`);
+    assert.ok(!near(px.nextColumn, mask) && !near(px.farNext, mask), `the paint stops at the cell's edge: ${px.nextColumn} ${px.farNext}`);
+    assert.ok(!near(px.plain, mask), 'a row with no demo name is not painted');
+  } finally { await browser.close(); }
+});
