@@ -393,3 +393,27 @@
 .id-status .id-badge {
   margin-inline-start: 0;
 }
+
+/* Roles in one company: a dense table and an add line that wraps on narrow panels. */
+.id-company-roles {
+  border: 0;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.id-company-roles-table td,
+.id-company-roles-table th {
+  padding-block: 0.15rem;
+}
+
+.id-company-roles-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.id-company-roles-add .field {
+  flex: 1 1 10rem;
+  min-width: 0;
+}

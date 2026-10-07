@@ -36,7 +36,7 @@ const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
   </script></body></html>`;
 const HOME = '<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav><main><h1>Home</h1></main></body></html>';
 const usersPage = users => `<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav>
-  <main><input type="search" aria-label="Search users" id="s"><table><tbody id="rows"></tbody></table><aside id="panel" hidden></aside></main>
+  <main><input type="search" aria-label="Search users" id="s" autofocus><table><tbody id="rows"></tbody></table><aside id="panel" hidden></aside></main>
   <script>
     const users = ${JSON.stringify(users)};
     const rows = document.getElementById('rows');
@@ -551,7 +551,8 @@ const runFindUser = driver => execute(FIND_USER_TASK, driver, findUserProduct(),
 test('the real ours find-user driver verifies on a stand-in users screen', async () => {
   const r = await runFindUser(await loadFindUser(s => s));
   assert.equal(r.status, 'verified', r.error);
-  assert.equal(r.counts.steps, 4, 'Users, the search box, the name, the row');
+  // The users screen, like the product's, arrives with the cursor in its search box: no click on it.
+  assert.equal(r.counts.steps, 3, 'Users, the name, the row');
   assert.equal(r.start_state.kind, 'home');
   assert.equal(r.start_state.path, '/');
 });
@@ -563,9 +564,9 @@ test('plant H2 (round 3, the real driver): ours find-user signs in, opens Users 
     await usersLink(page).click();
     await searchBox(page).fill(ctx.needles.user.name);
     await page.getByRole('row').filter({ hasText: ctx.needles.user.name }).first().waitFor();
-  },`).replace(/\n    await op\.click\(usersLink\(op\.page\)[^\n]*\n    await op\.waitFor\(searchBox[^\n]*\n    await op\.fill\(searchBox[^\n]*/, '');
+  },`).replace(/\n    await op\.click\(usersLink\(op\.page\)[^\n]*\n    await op\.waitFor\(searchBox[^\n]*(\n    \/\/[^\n]*)*\n    await op\.waitFor\('input\[type="search"\]:focus'[^\n]*\n    await op\.type\(name[^\n]*/, '');
     assert.equal((planted.match(/searchBox\(page\)\.fill/g) || []).length, 1, 'the plant must move the search into sign-in');
-    assert.doesNotMatch(planted, /op\.fill\(searchBox/, 'the plant must take the search out of the measured part');
+    assert.doesNotMatch(planted, /op\.(fill|type)\((searchBox|name)/, 'the plant must take the search out of the measured part');
     return planted;
   });
   const r = await runFindUser(driver);

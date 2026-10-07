@@ -222,14 +222,25 @@ afterEach(() => {
   removeGuard = undefined;
 });
 
+/**
+ * Waits (up to 2 s) until `ready` holds. Reading a mocked answer's body takes several turns of the
+ * event loop, and on a loaded machine one zero-delay turn is not always enough for the sign-in
+ * screen or the workspace to appear; the assertions after the wait are unchanged.
+ */
+async function until(ready: () => boolean) {
+  for (let i = 0; i < 100 && !ready(); i++) await wait(20);
+}
+
 async function signInAs(tenant: Tenant) {
   const container = view!.container;
+  await until(() => container.querySelector('input[name="email"]') !== null);
   const email = container.querySelector<HTMLInputElement>('input[name="email"]')!;
   const password = container.querySelector<HTMLInputElement>('input[name="password"]')!;
   setInput(email, tenant.admin.email);
   setInput(password, "Demo-Pass-2026");
   await submit(container);
   await settle();
+  await until(() => document.querySelector(".workspace-name") !== null);
   expect(document.querySelector(".workspace-name")?.textContent).toBe(tenant.nameEn);
 }
 

@@ -47,6 +47,13 @@ export const identityOf = (session: Session) => `${session.tenant.id}/${session.
  */
 export const sessionMarkKey = "erp.session";
 
+/**
+ * Dispatched on window when the session's scope changes without a new sign-in: the working
+ * company (the tenancy module's switcher sends it). Roles can be held in one company, so the
+ * session's permissions and menu are read again.
+ */
+export const sessionScopeChangedEvent = "erp:workplace-changed";
+
 type SessionApi = {
   state: SessionState;
   /** With `newPassword`, the password is changed as part of signing in (one-time set-up codes). */
@@ -133,6 +140,15 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     };
     window.addEventListener(sessionEndedEvent, check);
     return () => window.removeEventListener(sessionEndedEvent, check);
+  }, [refresh]);
+
+  // The working company changed: what the user may do there can differ (roles held in one company).
+  useEffect(() => {
+    const rescope = () => {
+      if (held.current !== null) void refresh();
+    };
+    window.addEventListener(sessionScopeChangedEvent, rescope);
+    return () => window.removeEventListener(sessionScopeChangedEvent, rescope);
   }, [refresh]);
 
   useEffect(() => {

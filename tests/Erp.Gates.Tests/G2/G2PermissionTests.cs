@@ -492,6 +492,8 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
         Assert.True(result.Checked.Count >= Ratchet.Min("g2.grantEndpointsChecked"),
             $"{result.Checked.Count} grant endpoints checked ({string.Join(", ", result.Checked)}); ratchet minimum {Ratchet.Min("g2.grantEndpointsChecked")}");
+        Assert.True(result.PartialTargets >= Ratchet.Min("g2.grantEscalationPartialTargets"),
+            $"{result.PartialTargets} requests asking for grants the caller lacks; ratchet minimum {Ratchet.Min("g2.grantEscalationPartialTargets")}");
     }
 
     [Fact]
