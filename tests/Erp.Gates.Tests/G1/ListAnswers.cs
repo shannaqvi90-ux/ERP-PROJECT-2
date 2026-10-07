@@ -251,24 +251,24 @@ public static class ListAnswers
         {
             var key = group.TryGetProperty("key", out var k) ? k.GetRawText() : "null";
             var mine = expected.GetValueOrDefault(key) ?? [];
-            foreach (var column in money)
+            foreach (var moneyColumn in money)
             {
                 var stated = new Dictionary<string, decimal>(StringComparer.Ordinal);
                 if (group.TryGetProperty("moneyTotals", out var moneyTotals) && moneyTotals.ValueKind == JsonValueKind.Object &&
-                    moneyTotals.TryGetProperty(column.Key, out var lines) && lines.ValueKind == JsonValueKind.Array)
+                    moneyTotals.TryGetProperty(moneyColumn.Key, out var lines) && lines.ValueKind == JsonValueKind.Array)
                 {
                     foreach (var line in lines.EnumerateArray())
                     {
                         stated[line.TryGetProperty("currency", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString()! : ""] = Number(line, "amount");
                     }
                 }
-                var walkedSums = mine.GroupBy(r => r.TryGetProperty(column.CurrencyField!, out var c) && c.ValueKind == JsonValueKind.String ? c.GetString()! : "", StringComparer.Ordinal)
-                    .ToDictionary(g => g.Key, g => g.Sum(r => Number(r, column.Key)), StringComparer.Ordinal);
+                var walkedSums = mine.GroupBy(r => r.TryGetProperty(moneyColumn.CurrencyField!, out var c) && c.ValueKind == JsonValueKind.String ? c.GetString()! : "", StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Sum(r => Number(r, moneyColumn.Key)), StringComparer.Ordinal);
                 foreach (var currency in stated.Keys.Union(walkedSums.Keys))
                 {
                     if (stated.GetValueOrDefault(currency) != walkedSums.GetValueOrDefault(currency) || stated.ContainsKey(currency) != walkedSums.ContainsKey(currency))
                     {
-                        yield return $"group {key} totals {column.Key} in '{currency}' = {stated.GetValueOrDefault(currency).ToString(CultureInfo.InvariantCulture)}, " +
+                        yield return $"group {key} totals {moneyColumn.Key} in '{currency}' = {stated.GetValueOrDefault(currency).ToString(CultureInfo.InvariantCulture)}, " +
                                      $"but the walked rows in that currency add up to {walkedSums.GetValueOrDefault(currency).ToString(CultureInfo.InvariantCulture)}";
                     }
                 }
