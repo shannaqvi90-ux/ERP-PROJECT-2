@@ -116,7 +116,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         if (!string.IsNullOrWhiteSpace(request.Sort))
         {
             var keys = ListSortKey.Parse(request.Sort, list);
-            var text = string.Join(f.Arabic ? "\u060C " : ", ", keys.Select(k => $"{strings.Get(list.Column(k.Column)!.LabelKey, f.Language)} {(k.Descending ? "\u2193" : "\u2191")}"));
+            // In words, not arrows: "Type, descending; Role, ascending" (the embedded fonts have no
+            // arrows, and words read the same aloud and in a copied text).
+            var text = string.Join(f.Arabic ? "\u061B " : "; ", keys.Select(k => strings.Get(k.Descending ? "reports.sort.descending" : "reports.sort.ascending", f.Language,
+                new Dictionary<string, object?> { ["column"] = strings.Get(list.Column(k.Column)!.LabelKey, f.Language) })));
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.sort", f.Language), text, request.Sort));
         }
         if (groupBy is not null)
