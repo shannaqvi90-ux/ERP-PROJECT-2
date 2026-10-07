@@ -13,7 +13,7 @@ namespace Erp.Kernel.Tests;
 /// contract over rows in memory (sort with nulls and ties, keyset paging, grouping, errors).</summary>
 public sealed class ListEngineTests
 {
-    public sealed record Item(Guid Id, string Name, string? Code, int Quantity, decimal Amount, bool Active, DateTimeOffset? Seen, DateOnly Day, string Kind);
+    public sealed record Item(Guid Id, string Name, string? Code, int Quantity, decimal Amount, bool Active, DateTimeOffset? Seen, DateOnly Day, string Kind, string Currency = "AED");
 
     private static readonly ListDefinition Definition = new(
         "stock.items", "stock.items.title", "stock.items.read", "/api/stock/items",
@@ -21,7 +21,8 @@ public sealed class ListEngineTests
             new ListColumn("name", "stock.items.name", ListColumnType.Text, Sortable: true, Filterable: true),
             new ListColumn("code", "stock.items.code", ListColumnType.Text, Sortable: true, Filterable: true),
             new ListColumn("quantity", "stock.items.quantity", ListColumnType.Number, Sortable: true, Filterable: true, Aggregate: true),
-            new ListColumn("amount", "stock.items.amount", ListColumnType.Money, Filterable: true, Aggregate: true),
+            new ListColumn("amount", "stock.items.amount", ListColumnType.Money, Filterable: true, Aggregate: true, CurrencyField: "currency"),
+            new ListColumn("currency", "stock.items.currency", ListColumnType.Text, Filterable: true),
             new ListColumn("active", "stock.items.active", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true),
             new ListColumn("seen", "stock.items.seen", ListColumnType.DateTime, Sortable: true, Filterable: true),
             new ListColumn("day", "stock.items.day", ListColumnType.Date, Filterable: true, Groupable: true),
@@ -41,6 +42,7 @@ public sealed class ListEngineTests
         .Column("seen", i => i.Seen)
         .Column("day", i => i.Day)
         .Column("kind", i => i.Kind)
+        .Column("currency", i => i.Currency)
         .InMemory("test rows");
 
     private static readonly List<Item> Items = Enumerable.Range(0, 40).Select(i => new Item(
@@ -52,7 +54,8 @@ public sealed class ListEngineTests
         i % 3 != 0,
         i % 4 == 0 ? null : new DateTimeOffset(2026, 9, 1 + (i % 6), 8, 0, 0, TimeSpan.Zero),
         new DateOnly(2026, 1, 1 + (i % 3)),
-        i % 2 == 0 ? "raw" : "finished")).ToList();
+        i % 2 == 0 ? "raw" : "finished",
+        i % 3 == 0 ? "USD" : "AED")).ToList();
 
     private static HttpContext Http()
     {
@@ -142,6 +145,8 @@ public sealed class ListEngineTests
         Assert.Contains(bindingProblems, p => p.Contains("column 'name' (Text) is bound to a Int32", StringComparison.Ordinal));
         Assert.Contains(bindingProblems, p => p.Contains("column 'code' is sortable, filterable, groupable, totalled or searched but not bound", StringComparison.Ordinal));
         Assert.Contains(bindingProblems, p => p.Contains("'ghost' is bound but is not a column", StringComparison.Ordinal));
+        var amountWithoutCurrency = ListBinding<Item>.For(Definition, i => i.Id).Column("amount", i => i.Amount).Problems().ToList();
+        Assert.Contains(amountWithoutCurrency, p => p.Contains("money column 'amount' is totalled per currency, but its currency column 'currency' is not bound to text", StringComparison.Ordinal));
         var host = Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder();
         host.Configuration["ConnectionStrings:App"] = "Host=localhost;Username=erp_app;Password=x;Database=erp";
         var refused = Assert.Throws<InvalidOperationException>(() => host.AddErpPlatform([new StockModule(binding)]));
@@ -200,7 +205,15 @@ public sealed class ListEngineTests
         var groups = grouped.Groups!;
         Assert.Equal(["finished", "raw"], groups.Select(g => (string)g.Key!));
         Assert.Equal(Items.Count, groups.Sum(g => g.Count));
-        Assert.Equal(Items.Sum(i => i.Amount), groups.Sum(g => g.Totals!["amount"]));
+        // Money is totalled per currency, never across currencies (CLAUDE.md rule 2).
+        Assert.DoesNotContain(groups, g => g.Totals!.ContainsKey("amount"));
+        foreach (var group in groups)
+        {
+            var rows = Items.Where(i => i.Kind == (string)group.Key!).ToList();
+            var expectedLines = rows.GroupBy(i => i.Currency).OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => new ListMoneyTotal(g.Key, g.Sum(i => i.Amount))).ToList();
+            Assert.Equal(expectedLines, group.MoneyTotals!["amount"]);
+        }
+        Assert.Equal(Items.Sum(i => i.Amount), groups.Sum(g => g.MoneyTotals!["amount"].Sum(l => l.Amount)));
         Assert.Equal(Items.Sum(i => (decimal)i.Quantity), groups.Sum(g => g.Totals!["quantity"]));
         Assert.Equal(3, (await Run(new ListRequest { GroupBy = "day" })).Groups!.Count);
     }

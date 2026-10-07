@@ -59,8 +59,16 @@ public sealed record ListPage<T>(IReadOnlyList<T> Items, int Total, string? Next
 /// <summary>A group of rows sharing one value of the grouped column.</summary>
 /// <param name="Key">The value (null for rows without one).</param>
 /// <param name="Count">Rows in the group.</param>
-/// <param name="Totals">Sum of each total-carrying column over the group (decimal strings).</param>
-public sealed record ListGroup(object? Key, int Count, IReadOnlyDictionary<string, decimal>? Totals = null);
+/// <param name="Totals">Sum of each total-carrying number column over the group (decimal strings).</param>
+/// <param name="MoneyTotals">Sum of each total-carrying money column over the group, one line per
+/// currency (amounts in different currencies are never added together; CLAUDE.md rule 2).</param>
+public sealed record ListGroup(object? Key, int Count, IReadOnlyDictionary<string, decimal>? Totals = null,
+    IReadOnlyDictionary<string, IReadOnlyList<ListMoneyTotal>>? MoneyTotals = null);
+
+/// <summary>The total of a money column over a group's rows in one currency.</summary>
+/// <param name="Currency">ISO 4217 code of the amounts (null for rows without one).</param>
+/// <param name="Amount">Their sum (a decimal string).</param>
+public sealed record ListMoneyTotal(string? Currency, decimal Amount);
 
 /// <summary>One sort key: a sortable column and its direction.</summary>
 public sealed record ListSortKey(string Column, bool Descending)

@@ -5,7 +5,7 @@ import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
-import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
+import { cellText, columnLabel, conditionLabel, formatValue, groupTotal, type Formatters } from "./format";
 import {
   byRelevance,
   canMatchAny,
@@ -1076,7 +1076,7 @@ export function ListView(props: ListViewProps) {
                     </td>
                     {totalsColumns.map((c) => (
                       <td key={c.key} role="gridcell" className="list-cell type-number">
-                        {formatValue(c, group.totals?.[c.key] ?? "0", formatters)}
+                        {groupTotal(c, group, formatters)}
                       </td>
                     ))}
                   </tr>
