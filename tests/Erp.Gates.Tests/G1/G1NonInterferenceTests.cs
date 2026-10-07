@@ -33,7 +33,8 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         var result = await NonInterference.RunAsync(Env);
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), " +
-            $"{result.WriteComparisons} write comparisons over {result.WriteEndpoints} endpoints and {result.WriteVariants} body variants, {result.Requests} requests, {result.Unstable.Count} unstable");
+            $"{result.WriteComparisons} write comparisons over {result.WriteEndpoints} endpoints and {result.WriteVariants} body variants, {result.Requests} requests, {result.Unstable.Count} unstable; " +
+            $"in Arabic: {result.ArabicComparisons} comparisons ({result.ArabicAnswers} answered in Arabic), {result.ArabicWriteComparisons} write comparisons");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -46,6 +47,10 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         AssertAtLeast(result.WriteComparisons, "g1.writeNonInterferenceComparisons");
         AssertAtLeast(result.WriteEndpoints, "g1.writeNonInterferenceEndpoints");
         AssertAtLeast(result.WriteVariants, "g1.writeNonInterferenceVariants");
+        // The Arabic side of every session (critic p04 round 4).
+        AssertAtLeast(result.ArabicComparisons, "g1.nonInterferenceArabicComparisons");
+        AssertAtLeast(result.ArabicAnswers, "g1.nonInterferenceArabicAnswers");
+        AssertAtLeast(result.ArabicWriteComparisons, "g1.writeNonInterferenceArabicComparisons");
     }
 
     private static void AssertAtLeast(int value, string key) =>

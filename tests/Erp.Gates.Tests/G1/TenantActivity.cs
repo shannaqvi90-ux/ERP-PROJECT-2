@@ -119,6 +119,10 @@ public sealed class TenantActivity
         activity._actors.Add(new Actor($"tenant {tenant.Code} administrator (cookie)", await env.SignInAsync(env.Email(tenant, "admin"))));
         activity._actors.Add(new Actor($"tenant {tenant.Code} administrator (bearer)", await env.SignInWithTokenAsync(env.Email(tenant, "admin"))));
         activity._actors.Add(new Actor($"tenant {tenant.Code} read-only user (cookie)", await env.SignInAsync(env.Email(tenant, "viewer"))));
+        // The Arabic side (critic p04 round 4): an administrator whose every request runs in
+        // Arabic with Arabic-Indic digits, so whatever the Arabic branch of a handler keeps is
+        // this tenant's too when the other tenant's Arabic session comes.
+        activity._actors.Add(new Actor($"tenant {tenant.Code} administrator in Arabic (cookie)", await ArabicSession.SignInAsync(env, tenant)));
         return activity;
     }
 
@@ -126,6 +130,50 @@ public sealed class TenantActivity
     public void Watch(MarkerSet other) => _forbidden = other;
 
     private Actor Admin => _actors[0];
+
+    private Actor Viewer => _actors[2];
+
+    private Actor Arabic => _actors[3];
+
+    /// <summary>This tenant's administrator in Arabic with Arabic-Indic digits (<see cref="ArabicSession"/>).</summary>
+    public HttpClient ArabicClient => Arabic.Client;
+
+    /// <summary>Requests this tenant's Arabic session sent.</summary>
+    public int ArabicRequests => _arabicRequests;
+
+    private int _arabicRequests;
+
+    /// <summary>Puts the Arabic session back to Arabic with Arabic-Indic digits: a write of its own
+    /// preferences (a body variant) may have changed them. Counted as a blind spot when the
+    /// session is no longer signed in.</summary>
+    public async Task EnsureArabicAsync(string phase)
+    {
+        if (_baseline is null)
+        {
+            await ArabicSession.PrepareAsync(Arabic.Client);
+        }
+        else
+        {
+            // A write of this tenant's own: framed like every other own write, so it never counts
+            // as a change someone else made.
+            await _tracking.WaitAsync();
+            try
+            {
+                _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, await SnapshotAsync()));
+                await ArabicSession.PrepareAsync(Arabic.Client);
+                _baseline = await SnapshotAsync();
+            }
+            finally
+            {
+                _tracking.Release();
+            }
+        }
+        Interlocked.Increment(ref _requests);
+        if (!await ArabicSession.IsArabicAsync(Arabic.Client))
+        {
+            lock (_lock) BlindSpots.Add($"{phase}: {Arabic.Name} no longer answers in Arabic with Arabic-Indic digits");
+        }
+    }
 
     /// <summary>Endpoints that change data and that the activity calls: every write except signing
     /// in and out (the actors stay signed in for the whole attack) and catch-all routes (they only
@@ -230,6 +278,21 @@ public sealed class TenantActivity
             : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[0].ToJsonString()}")), leaves.Select(l => (l, l.Values[0])).ToList(), null, null);
     }
 
+    /// <summary>The variant with every enumerated field at its last documented value (null when the
+    /// body has none). For the shell's own preferences that is Arabic with Arabic-Indic digits, so
+    /// an Arabic session that writes it stays Arabic.</summary>
+    public WriteVariant? LastValues(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return null;
+        }
+        var leaves = _openApi.EnumLeaves(schema);
+        return leaves.Count == 0
+            ? null
+            : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[^1].ToJsonString()}")), leaves.Select(l => (l, l.Values[^1])).ToList(), null, null);
+    }
+
     /// <summary>Variants (endpoint key and label) whose settings a body held when it was sent.</summary>
     public IReadOnlySet<string> AppliedVariants
     {
@@ -248,11 +311,12 @@ public sealed class TenantActivity
     /// can be repeated as often as the attack needs). Returns the status; a write that does not
     /// succeed is recorded in <see cref="UnsuccessfulWrites"/>.
     /// </summary>
-    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null)
+    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null, bool arabic = false)
     {
+        var via = arabic ? Arabic : null;
         if (_baseline is null)
         {
-            return (await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null)).Status;
+            return (await WriteCoreAsync(endpoint, own, phase, bearer, variant, via)).Status;
         }
         // Changes since this tenant's last own write were made by someone else.
         await _tracking.WaitAsync();
@@ -260,7 +324,7 @@ public sealed class TenantActivity
         {
             var before = await SnapshotAsync();
             _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, before));
-            var (status, _) = await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null);
+            var (status, _) = await WriteCoreAsync(endpoint, own, phase, bearer, variant, via);
             _baseline = await SnapshotAsync();
             return status;
         }
@@ -424,7 +488,7 @@ public sealed class TenantActivity
         }
         if (values is not null)
         {
-            var work = new List<(string Path, string Label)>();
+            var work = new List<(Actor Actor, string Path, string Label)>();
             foreach (var endpoint in reads.Where(e => !e.Pattern.Contains("{*", StringComparison.Ordinal)))
             {
                 var basePath = await OwnPathAsync(endpoint, own, forWrite: false);
@@ -439,12 +503,19 @@ public sealed class TenantActivity
                     foreach (var value in parameterValues)
                     {
                         var uri = basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(value);
-                        work.Add((uri, $"GET {basePath} [{phase}, own value in query {parameter.Name}]"));
+                        work.Add((Admin, uri, $"GET {basePath} [{phase}, own value in query {parameter.Name}]"));
+                    }
+                    // The Arabic session sends the values the attack's Arabic session sends
+                    // (ArabicValuesFor), so what the Arabic branch keeps per value is this tenant's.
+                    foreach (var value in ArabicValuesFor(parameter, values))
+                    {
+                        var uri = basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(value);
+                        work.Add((Arabic, uri, $"GET {basePath} [{phase}, in Arabic, own value in query {parameter.Name}]"));
                     }
                 }
             }
             await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests },
-                async (item, _) => await SendAsync(Admin, "GET", item.Path, null, item.Label));
+                async (item, _) => await SendAsync(item.Actor, "GET", item.Path, null, item.Label));
         }
         if (_successfulReads == successBefore)
         {
@@ -457,8 +528,24 @@ public sealed class TenantActivity
             {
                 lock (_lock) BlindSpots.Add($"{phase}: {actor.Name} is no longer signed in ({status})");
             }
+            else if (actor == Arabic && !ArabicSession.IsArabicSessionText(text))
+            {
+                lock (_lock) BlindSpots.Add($"{phase}: {actor.Name} no longer answers in Arabic with Arabic-Indic digits");
+            }
         }
     }
+
+    /// <summary>Values an Arabic session sends in one query parameter: sampled ids for a uuid, the
+    /// small cross-section (<see cref="VictimValues.Probe"/>) for text, and every published value.
+    /// The English sessions send every value; the Arabic ones a cross-section of them, which
+    /// reaches every Arabic branch of every handler with the tenant's values at a fraction of the
+    /// cost.</summary>
+    public static IEnumerable<string> ArabicValuesFor(ApiParameter parameter, VictimValues values) => (parameter switch
+    {
+        { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
+        { Type: "string" } => values.Probe,
+        _ => [],
+    }).Concat(parameter.Enum ?? []).Distinct(StringComparer.Ordinal);
 
     /// <summary>The administrator uses the endpoint on this tenant's own records right before or
     /// after tenant A attacks it: a read for a GET, a valid write for an endpoint that changes data
@@ -469,6 +556,7 @@ public sealed class TenantActivity
         {
             var path = await OwnPathAsync(endpoint, own, forWrite: false);
             await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+            await SendAsync(Arabic, "GET", path, null, $"GET {path} [{phase}, in Arabic]");
         }
         else if (IsActivityWrite(endpoint))
         {
@@ -493,8 +581,9 @@ public sealed class TenantActivity
         foreach (var value in values.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var path = endpoint.Path(_ => value);
-            work.Add((_actors[0], path));
-            work.Add((_actors[^1], path));
+            work.Add((Admin, path));
+            work.Add((Viewer, path));
+            work.Add((Arabic, path));
         }
         await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
         {
@@ -536,6 +625,7 @@ public sealed class TenantActivity
         {
             var path = await OwnPathAsync(endpoint, own, forWrite: false);
             await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+            await SendAsync(Arabic, "GET", path, null, $"GET {path} [{phase}, in Arabic]");
         }
     }
 
@@ -578,6 +668,10 @@ public sealed class TenantActivity
         var location = response.Headers.Location?.ToString() ?? "";
         var headers = ResponseHeaders.Text(response);
         Interlocked.Increment(ref _requests);
+        if (actor == Arabic)
+        {
+            Interlocked.Increment(ref _arabicRequests);
+        }
         if (method == "GET" && status is >= 200 and < 300)
         {
             Interlocked.Increment(ref _successfulReads);
@@ -670,7 +764,7 @@ public sealed class TenantActivity
         await using var admin = await _env.OpenAdminAsync();
         _actorUserIds = (await DbCatalog.ReadAsync(admin,
                 "SELECT id FROM identity.users WHERE tenant_id = @t AND lower(email) = ANY(@e)", r => r.GetGuid(0),
-                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer"), _env.Email(_tenant, "noaccess") })))
+                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer"), _env.Email(_tenant, "noaccess"), _env.Email(_tenant, ArabicSession.Local) })))
             .Select(i => i.ToString()).ToList();
         return _actorUserIds;
     }

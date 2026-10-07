@@ -79,6 +79,25 @@ const bravoMarkers = [
   ...bravo.users.map((u) => u.id),
 ];
 
+/**
+ * The same markers with Arabic-Indic digits: a screen in Arabic with those digits may show B's
+ * "Zx81" as "Zx٨١", which a judge looking only for Latin digits would miss.
+ */
+const arabicIndic = "٠١٢٣٤٥٦٧٨٩";
+const shapedDigits = (text: string) => text.replace(/[0-9]/g, (d) => arabicIndic[Number(d)]!);
+const judgedBravoMarkers = [...new Set([...bravoMarkers, ...bravoMarkers.map(shapedDigits)])];
+
+/**
+ * The language and digits of both tenants' sessions. Each side of the shell is judged: English
+ * with Latin digits, and Arabic (right to left) with Arabic-Indic digits, where every screen,
+ * the palette and the formatters take their Arabic branch (critic p04 round 4: a leak kept only
+ * on the Arabic side passed every gate).
+ */
+type SessionLanguage = { language: "en" | "ar"; numerals: "latn" | "arab" };
+const english: SessionLanguage = { language: "en", numerals: "latn" };
+const arabic: SessionLanguage = { language: "ar", numerals: "arab" };
+let sessionLanguage: SessionLanguage = english;
+
 const permissions = [
   "identity.profile.update",
   "identity.roles.read",
@@ -97,7 +116,7 @@ const menu = [
 function sessionOf(tenant: Tenant) {
   return {
     authenticated: true,
-    user: { ...tenant.admin, language: "en", numerals: "latn" },
+    user: { ...tenant.admin, ...sessionLanguage },
     tenant: { id: tenant.id, code: tenant.code, nameEn: tenant.nameEn, nameAr: tenant.nameAr },
     permissions,
     menu,
@@ -180,7 +199,7 @@ function visibleState(): string {
 
 function leaks(): string[] {
   const state = visibleState();
-  return bravoMarkers.filter((marker) => state.includes(marker));
+  return judgedBravoMarkers.filter((marker) => state.includes(marker));
 }
 
 let view: Rendered | undefined;
@@ -206,6 +225,7 @@ function expireAllCookies() {
 }
 
 beforeEach(() => {
+  sessionLanguage = english;
   localStorage.clear();
   sessionStorage.clear();
   expireAllCookies();
@@ -230,7 +250,8 @@ async function signInAs(tenant: Tenant) {
   setInput(password, "Demo-Pass-2026");
   await submit(container);
   await settle();
-  expect(document.querySelector(".workspace-name")?.textContent).toBe(tenant.nameEn);
+  expect(document.querySelector(".workspace-name")?.textContent).toBe(sessionLanguage.language === "ar" ? tenant.nameAr : tenant.nameEn);
+  expect(document.documentElement.dir).toBe(sessionLanguage.language === "ar" ? "rtl" : "ltr");
 }
 
 /**
@@ -297,7 +318,7 @@ async function journey(tenant: Tenant, judge: (step: string) => void): Promise<n
 }
 
 async function signOut() {
-  const button = document.querySelector<HTMLButtonElement>('button[aria-label="Sign out"]')!;
+  const button = document.querySelector<HTMLButtonElement>('button[aria-label="Sign out"], button[aria-label="تسجيل الخروج"]')!;
   await act(async () => button.click());
   await wait(50);
   expect(window.location.replace).toHaveBeenCalledWith("/");
@@ -306,72 +327,86 @@ async function signOut() {
   await newDocumentAt("navigate", "/", null);
 }
 
+/**
+ * Tenant B works in the tab and signs out; tenant A signs in and works in the same tab, then goes
+ * Back, Forward and reloads into each of B's history entries. Nothing of B may reach A.
+ */
+async function bThenAInOneTab() {
+  serveTwoTenants();
+  view = await render(<App language="en" />);
+  await settle();
+
+  // B works, and its markers are on screen while it does (the journey really touched B's data).
+  // Every address B's journey leaves in the tab's history is kept, with its state.
+  await signInAs(bravo);
+  const seenByB = new Set<string>();
+  const bEntries = new Map<string, unknown>();
+  const bSteps = await journey(bravo, () => {
+    judgedBravoMarkers.forEach((m) => visibleState().includes(m) && seenByB.add(m));
+    const now = entry();
+    bEntries.set(now.url, now.state);
+  });
+  expect(seenByB.has("Zx81") || seenByB.has(shapedDigits("Zx81"))).toBe(true);
+  expect(seenByB.has("Bravocanary")).toBe(true);
+  expect(seenByB.has(sessionLanguage.language === "ar" ? "الخليج لتصنيع" : "Gulf Steel")).toBe(true);
+  // B's own addresses carry B's search text and record ids: the history test below has teeth.
+  const bAddresses = [...bEntries.keys()].join("\n");
+  expect(judgedBravoMarkers.filter((m) => decodeURIComponent(bAddresses).includes(m)).length, `B's addresses: ${bAddresses}`).toBeGreaterThan(0);
+  await signOut();
+
+  // The signed-out tab: an empty sign-in, nothing of B stored.
+  expect(leaks(), "after B signed out").toEqual([]);
+  expect(document.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("");
+
+  // A works in the same tab: after every step, nothing of B anywhere.
+  await signInAs(alpha);
+  const found: string[] = [];
+  const aSteps = await journey(alpha, (name) => {
+    for (const marker of leaks()) found.push(`${name}: ${marker}`);
+  });
+  expect(aSteps).toBe(bSteps);
+  expect(found).toEqual([]);
+
+  // A presses Back (or Forward, or reloads) into each of B's entries, which the tab still holds.
+  for (const [url, state] of bEntries) {
+    for (const kind of ["back_forward", "reload"] as const) {
+      await newDocumentAt(kind, url, state);
+      await wait(300);
+      for (const marker of leaks()) found.push(`${kind} to B's ${url}: ${marker}`);
+      expect(document.querySelector(".workspace-name")?.textContent, "A is still signed in").toBe(sessionLanguage.language === "ar" ? alpha.nameAr : alpha.nameEn);
+    }
+    // Inside A's document: the browser restores B's entry and fires popstate.
+    History.prototype.replaceState.call(window.history, state, "", url);
+    act(() => {
+      window.dispatchEvent(new PopStateEvent("popstate", { state }));
+    });
+    await wait(300);
+    for (const marker of leaks()) found.push(`popstate to B's ${url}: ${marker}`);
+  }
+  expect(found).toEqual([]);
+
+  // A's own entries still work: Back to A's own search keeps it (the guard is not a blunt wipe).
+  act(() => navigate(`/identity/users?q=${encodeURIComponent(alpha.searchWord)}`));
+  await wait(300);
+  const own = entry();
+  await newDocumentAt("back_forward", own.url, own.state);
+  await wait(300);
+  expect(window.location.search).toBe(`?q=${alpha.searchWord}`);
+  expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
+}
+
 /** The tab's current history entry, as the browser would keep it for Back. */
 const entry = () => ({ url: window.location.pathname + window.location.search + window.location.hash, state: window.history.state as unknown });
 
 describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000 }, () => {
   it("tenant A sees, and the tab keeps, nothing of tenant B after B signs out", async () => {
-    serveTwoTenants();
-    view = await render(<App language="en" />);
-    await settle();
+    await bThenAInOneTab();
+  });
 
-    // B works, and its markers are on screen while it does (the journey really touched B's data).
-    // Every address B's journey leaves in the tab's history is kept, with its state.
-    await signInAs(bravo);
-    const seenByB = new Set<string>();
-    const bEntries = new Map<string, unknown>();
-    const bSteps = await journey(bravo, () => {
-      bravoMarkers.forEach((m) => visibleState().includes(m) && seenByB.add(m));
-      const now = entry();
-      bEntries.set(now.url, now.state);
-    });
-    expect(seenByB.has("Zx81")).toBe(true);
-    expect(seenByB.has("Bravocanary")).toBe(true);
-    expect(seenByB.has("Gulf Steel")).toBe(true);
-    // B's own addresses carry B's search text and record ids: the history test below has teeth.
-    const bAddresses = [...bEntries.keys()].join("\n");
-    expect(bravoMarkers.filter((m) => decodeURIComponent(bAddresses).includes(m)).length, `B's addresses: ${bAddresses}`).toBeGreaterThan(0);
-    await signOut();
-
-    // The signed-out tab: an empty sign-in, nothing of B stored.
-    expect(leaks(), "after B signed out").toEqual([]);
-    expect(document.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("");
-
-    // A works in the same tab: after every step, nothing of B anywhere.
-    await signInAs(alpha);
-    const found: string[] = [];
-    const aSteps = await journey(alpha, (name) => {
-      for (const marker of leaks()) found.push(`${name}: ${marker}`);
-    });
-    expect(aSteps).toBe(bSteps);
-    expect(found).toEqual([]);
-
-    // A presses Back (or Forward, or reloads) into each of B's entries, which the tab still holds.
-    for (const [url, state] of bEntries) {
-      for (const kind of ["back_forward", "reload"] as const) {
-        await newDocumentAt(kind, url, state);
-        await wait(300);
-        for (const marker of leaks()) found.push(`${kind} to B's ${url}: ${marker}`);
-        expect(document.querySelector(".workspace-name")?.textContent, "A is still signed in").toBe(alpha.nameEn);
-      }
-      // Inside A's document: the browser restores B's entry and fires popstate.
-      History.prototype.replaceState.call(window.history, state, "", url);
-      act(() => {
-        window.dispatchEvent(new PopStateEvent("popstate", { state }));
-      });
-      await wait(300);
-      for (const marker of leaks()) found.push(`popstate to B's ${url}: ${marker}`);
-    }
-    expect(found).toEqual([]);
-
-    // A's own entries still work: Back to A's own search keeps it (the guard is not a blunt wipe).
-    act(() => navigate(`/identity/users?q=${encodeURIComponent(alpha.searchWord)}`));
-    await wait(300);
-    const own = entry();
-    await newDocumentAt("back_forward", own.url, own.state);
-    await wait(300);
-    expect(window.location.search).toBe(`?q=${alpha.searchWord}`);
-    expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
+  it("in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out", async () => {
+    sessionLanguage = arabic;
+    await bThenAInOneTab();
+    expect(document.documentElement.lang).toBe("ar");
   });
 
   it("an address someone types or follows is kept, and stamped for the person in the tab", async () => {
