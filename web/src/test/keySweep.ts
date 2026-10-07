@@ -10,6 +10,10 @@ import { settle } from "./render";
 // and reports every request other than a read that left meanwhile. It does not need to know which
 // shortcuts exist: a shortcut added later is pressed too.
 
+/** A sweep presses some thousands of keys and activates every control: its time limit is its own,
+ * not the 5 s default meant for one interaction (about 2 to 6 s each on a quiet machine). */
+export const sweepTimeLimit = 60_000;
+
 export type Call = { method: string; url: string };
 export type Write = Call & { key: string };
 
@@ -87,6 +91,17 @@ export function readerMayWrite({ method, url }: Call): boolean {
   return false;
 }
 
+/** Lets the screen settle until no request has left for two turns of the event loop and `ready`
+ * holds (at most `max` turns): a screen fetches in steps (definition, rows, record). */
+export async function settleUntilQuiet(calls: () => readonly Call[], ready: () => boolean = () => true, max = 40): Promise<void> {
+  let quiet = 0;
+  for (let turn = 0; turn < max && (quiet < 2 || !ready()); turn++) {
+    const before = calls().length;
+    await settle();
+    quiet = calls().length === before ? quiet + 1 : 0;
+  }
+}
+
 const writes = (calls: readonly Call[], from: number) => calls.slice(from).filter((c) => c.method !== "GET" && c.method !== "HEAD");
 
 function press(target: EventTarget, init: KeyboardEventInit) {
@@ -123,6 +138,11 @@ async function acceptChoices() {
   }
 }
 
+/** A state of the screen the sweep presses every key in, besides the screen as shown: rows chosen on
+ * a list, say, where the bulk actions appear. `enter` puts the screen in that state from wherever it
+ * is (it is called again before every key, as a key may have left the state). */
+export type SweepState = { name: string; enter: () => Promise<void> | void };
+
 export type SweepOptions = {
   /** The fetch log of the screen under test (from mockFetch). */
   calls: readonly Call[];
@@ -134,6 +154,14 @@ export type SweepOptions = {
   targets: (() => HTMLElement | null)[];
   /** Writes this user may make anyway (default: readerMayWrite). */
   allowed?: (call: Call) => boolean;
+  /** States to sweep in besides the screen as shown (default: none). */
+  states?: SweepState[];
+  /** Something on screen the user may not do though no request left (a new-record form opened for a
+   * user who may not create one, say): its description, or null. Reported with method "OFFERED". */
+  forbidden?: () => string | null;
+  /** Sweep everything even when ERP_SWEEP_FIRST_FIND=1 (the plant self-test's setting, under which a
+   * sweep stops at its first find): for the controls, which must find every write they expect. */
+  exhaustive?: boolean;
 };
 
 /**
@@ -148,44 +176,115 @@ export async function sweepKeys(options: SweepOptions): Promise<Write[]> {
   const found: Write[] = [];
   const record = (from: number, key: string) => {
     for (const w of writes(calls, from)) if (!allowed(w)) found.push({ key, method: w.method, url: w.url });
+    const offered = options.forbidden?.();
+    if (offered && !found.some((f) => f.method === "OFFERED" && f.url === offered && f.key === key)) found.push({ key, method: "OFFERED", url: offered });
   };
   const ensureShown = async () => {
     if (!options.shown()) {
       calls = await options.reopen();
     }
   };
-  for (const [t, target] of options.targets.entries()) {
-    for (const chord of everyChord()) {
+  const states: SweepState[] = [{ name: "", enter: () => undefined }, ...(options.states ?? [])];
+  // Controls already activated in an earlier state are not activated again in a later one.
+  const known = new Set<string>();
+  // A plant self-test only needs to know that something was found: it may stop at the first find.
+  const firstOnly = !options.exhaustive && typeof process !== "undefined" && process.env.ERP_SWEEP_FIRST_FIND === "1";
+  const done = () => firstOnly && found.length > 0;
+  for (const state of states) {
+    const where = (focus: string) => `(${state.name ? `${state.name}, ` : ""}focus ${focus})`;
+    const enter = async () => {
       await ensureShown();
-      const el = target();
-      el?.focus();
-      const from = calls.length;
-      press(el ?? document.activeElement ?? document.body, chord.init);
-      await settle();
-      await acceptChoices();
-      record(from, `${chord.name} (focus ${t + 1}: ${el ? describe(el) : "page"})`);
+      if (state.name) {
+        await state.enter();
+        await settle();
+      }
+    };
+    for (const [t, target] of options.targets.entries()) {
+      for (const chord of everyChord()) {
+        if (done()) return found;
+        await enter();
+        const el = target();
+        el?.focus();
+        const from = calls.length;
+        press(el ?? document.activeElement ?? document.body, chord.init);
+        await settle();
+        const offered = options.forbidden?.();
+        if (offered) found.push({ key: `${chord.name} ${where(`${t + 1}: ${el ? describe(el) : "page"}`)}`, method: "OFFERED", url: offered });
+        await acceptChoices();
+        record(from, `${chord.name} ${where(`${t + 1}: ${el ? describe(el) : "page"}`)}`);
+      }
     }
-  }
-  // Every control the keyboard can reach on the screen: Enter and Space on it, as a browser turns
-  // them into a click on a button.
-  await ensureShown();
-  const reachable = () =>
-    [...document.querySelectorAll<HTMLElement>("main button:not([disabled]), main [tabindex]:not([tabindex='-1'])")].filter(
-      (el) => !el.closest("fieldset:disabled"),
-    );
-  const names = reachable().map(describe);
-  for (const name of names) {
-    await ensureShown();
-    const el = reachable().find((e) => describe(e) === name);
-    if (!el) continue;
-    const from = calls.length;
-    el.focus();
-    press(el, { key: "Enter", code: "Enter" });
-    press(el, { key: " ", code: "Space" });
-    if (el instanceof HTMLButtonElement) act(() => el.click());
-    await settle();
-    await acceptChoices();
-    record(from, `Enter on ${name}`);
+    // Every control the keyboard can reach on the screen in this state, and every control that one
+    // reveals (a tab's page, a menu's items, an expanded section): Enter and Space on it, as a
+    // browser turns them into a click on a button. Controls are told apart by their name and, among
+    // controls of the same name, their place.
+    const fresh = async () => {
+      calls = await options.reopen();
+      if (state.name) {
+        await state.enter();
+        await settle();
+      }
+    };
+    const reachable = () => {
+      const seen = new Map<string, number>();
+      return [...document.querySelectorAll<HTMLElement>("main button:not([disabled]), main [tabindex]:not([tabindex='-1'])")]
+        .filter((el) => !el.closest("fieldset:disabled"))
+        .map((el) => {
+          const name = describe(el);
+          const n = seen.get(name) ?? 0;
+          seen.set(name, n + 1);
+          return { el, id: n === 0 ? name : `${name} #${n + 1}` };
+        });
+    };
+    const activate = (el: HTMLElement) => {
+      el.focus();
+      press(el, { key: "Enter", code: "Enter" });
+      press(el, { key: " ", code: "Space" });
+      if (el instanceof HTMLButtonElement && el.isConnected && !el.disabled) act(() => el.click());
+    };
+    /** Activates the controls of `path` in turn (each revealed by the one before); the last one's
+     * element, or null when one of them is not on screen. */
+    const reach = async (path: string[]) => {
+      let el: HTMLElement | undefined;
+      for (const [i, id] of path.entries()) {
+        el = reachable().find((c) => c.id === id)?.el;
+        if (!el) return null;
+        if (i < path.length - 1) {
+          activate(el);
+          await settle();
+        }
+      }
+      return el ?? null;
+    };
+    await fresh();
+    const queue: string[][] = [];
+    for (const { id } of reachable()) {
+      if (known.has(id)) continue;
+      known.add(id);
+      queue.push([id]);
+    }
+    while (queue.length > 0 && !done()) {
+      const path = queue.shift()!;
+      await enter();
+      const from = calls.length;
+      let el = await reach(path);
+      if (!el) {
+        await fresh();
+        el = await reach(path);
+      }
+      if (!el) continue;
+      activate(el);
+      await settle();
+      if (path.length === 1) {
+        for (const { id } of reachable()) {
+          if (known.has(id)) continue;
+          known.add(id);
+          queue.push([...path, id]);
+        }
+      }
+      await acceptChoices();
+      record(from, `Enter on ${path.join(" > ")}${state.name ? ` (${state.name})` : ""}`);
+    }
   }
   return found;
 }

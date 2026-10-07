@@ -4,7 +4,7 @@ import { api } from "../api";
 import { I18nProvider } from "../i18n";
 import { ShortcutProvider, useShortcutList, type ShortcutDef } from "../shortcuts";
 import { mockFetch, render, settle, type Rendered } from "../../test/render";
-import { everyChord, sweepKeys } from "../../test/keySweep";
+import { everyChord, sweepKeys, sweepTimeLimit } from "../../test/keySweep";
 import { DateField, DecimalField, MoneyField, SelectField, TextField } from "./fields";
 import { clearLeaveGuards } from "./leave";
 import { FormSection, FormTabs, RecordForm } from "./RecordForm";
@@ -112,10 +112,11 @@ async function showForm(canEdit: boolean, isNew = false) {
   return { calls, closed: () => closed };
 }
 
-async function sweep(canEdit: boolean, isNew = false) {
+async function sweep(canEdit: boolean, isNew = false, exhaustive = false) {
   let shownNow = await showForm(canEdit, isNew);
   const container = () => view!.container;
   return sweepKeys({
+    exhaustive,
     calls: shownNow.calls,
     shown: () => !shownNow.closed() && container().querySelector("form.record-form") !== null,
     reopen: async () => {
@@ -144,11 +145,11 @@ describe("the record form by keyboard, for a user who may not change the record"
 
   it("an existing record: no key sends anything but reads", async () => {
     expect(await sweep(false)).toEqual([]);
-  });
+  }, sweepTimeLimit);
 
   it("a new record the user may not create: no key sends anything", async () => {
     expect(await sweep(false, true)).toEqual([]);
-  });
+  }, sweepTimeLimit);
 
   it("offers none of the form's write keys in the shortcut sheet, while an editable form offers them all", async () => {
     await showForm(false);
@@ -159,9 +160,9 @@ describe("the record form by keyboard, for a user who may not change the record"
   });
 
   it("the control: the same sweep on an editable form finds the save keys' writes", async () => {
-    const found = await sweep(true);
+    const found = await sweep(true, false, true);
     const keys = new Set(found.filter((w) => w.method === "PUT" && w.url === "/api/things/t1").map((w) => w.key.split(" ")[0]));
     expect(keys).toContain("Ctrl+KeyS");
     expect(keys).toContain("Ctrl+Enter");
-  });
+  }, sweepTimeLimit);
 });

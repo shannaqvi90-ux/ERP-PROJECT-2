@@ -1,15 +1,18 @@
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mockFetch, render, settle, type Rendered } from "../../test/render";
-import { sweepKeys, type Call } from "../../test/keySweep";
+import { recordInAddress } from "../../kernel/router";
+import { mockFetch, render, type Rendered } from "../../test/render";
+import { type Call, settleUntilQuiet, sweepKeys, sweepTimeLimit } from "../../test/keySweep";
 import { App } from "../shell/App";
 
 // G2 on screen for the tenancy screens, by keyboard (critic p06 round 2, plant W2: a read-only
 // user's Ctrl+S sent a write while every screen gate passed, because the gates only looked at the
 // controls drawn). The whole app is shown to a user who may read every tenancy screen and change
-// nothing; on each screen, with a record open and on the list alone, every key a keyboard has is
-// pressed alone and with every modifier, whatever a key opens is accepted, and every control the
-// keyboard reaches is activated: no request other than a read leaves (the user's own settings and
-// list views excepted). scripts/forms-plant-self-test.mjs plants faults that this file must catch.
+// nothing; on each screen, with a record open and on the list alone, and again with every row of the
+// list chosen, every key a keyboard has is pressed alone and with every modifier, whatever a key
+// opens is accepted, and every control the keyboard reaches is activated: no request other than a
+// read leaves (the user's own settings and list views excepted), and no key opens a new company or
+// branch. scripts/forms-plant-self-test.mjs plants faults that this file must catch.
 
 let view: Rendered | undefined;
 let calls: Call[] = [];
@@ -92,29 +95,57 @@ async function open(path: string, permissions: string[]): Promise<Call[]> {
     return { status: 404, body: {} };
   });
   view = await render(<App language="en" />);
-  await settle();
-  await settle();
-  await settle();
+  await settleUntilQuiet(() => calls, () => view?.container.querySelector("main h1, main h2, main [role=grid]") != null);
   return calls;
 }
 
 const here = () => window.location.pathname + window.location.search;
 
-async function sweep(path: string) {
-  await open(path, reads);
+const grid = () => view?.container.querySelector<HTMLElement>("main [role=grid]") ?? null;
+
+/** Every row of the list chosen, as Ctrl+A on the list does. */
+const allRowsChosen = {
+  name: "every row chosen",
+  enter: () => {
+    const g = grid();
+    if (!g || view!.container.querySelector(".list-selectionbar")) return;
+    g.focus();
+    act(() => {
+      g.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ctrlKey: true, key: "a", code: "KeyA" }));
+    });
+  },
+};
+
+async function sweep(path: string, permissions = reads, exhaustive = false) {
+  await open(path, permissions);
   expect(view!.container.querySelector("main"), `${path} shows its screen`).not.toBeNull();
+  const list = !path.includes("open=") && grid() !== null;
   return sweepKeys({
+    exhaustive,
     calls,
     shown: () => here() === path && view?.container.querySelector("main") !== null,
-    reopen: () => open(path, reads),
+    reopen: () => open(path, permissions),
     targets: [() => view!.container.querySelector<HTMLElement>("main h2[tabindex], main h1, main [role=grid], main table") ?? null],
+    states: list ? [allRowsChosen] : [],
+    forbidden: () => (recordInAddress() === "new" ? "a new record offered to a user who may not create one" : null),
   });
 }
 
 describe("tenancy screens by keyboard, for a user who may read them and change nothing", () => {
   for (const path of ["/tenancy/companies?open=c9", "/tenancy/branches?open=b1", "/tenancy/access?open=u2", "/tenancy/tenant", "/tenancy/companies", "/tenancy/branches"]) {
-    it(`${path}: no key, and no control the keyboard reaches, sends anything but reads`, async () => {
+    it(`${path}: no key, and no control the keyboard reaches, sends anything but reads or opens a new record`, async () => {
       expect(await sweep(path)).toEqual([]);
-    });
+    }, sweepTimeLimit);
   }
+
+  it("the control: the same sweep for a user who may change companies finds the save keys' writes", async () => {
+    const found = await sweep("/tenancy/companies?open=c9", [...reads, "tenancy.companies.update"], true);
+    const keys = new Set(found.filter((w) => w.method === "PUT" && w.url === "/api/tenancy/companies/c9").map((w) => w.key.split(" ")[0]));
+    expect(keys).toContain("Ctrl+KeyS");
+    expect(keys).toContain("Ctrl+Enter");
+  }, sweepTimeLimit);
+
+  it("/tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes", async () => {
+    expect(await sweep("/tenancy/access?open=u2", [...reads, "tenancy.access.update"])).toEqual([]);
+  }, sweepTimeLimit);
 });

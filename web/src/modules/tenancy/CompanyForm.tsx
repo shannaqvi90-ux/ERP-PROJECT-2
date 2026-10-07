@@ -235,8 +235,14 @@ function CompanyLogo({ company, editable, onChange }: { company: Company; editab
     }
   };
   const remove = async () => {
-    await api<void>("DELETE", `/api/tenancy/companies/${company.id}/logo`);
-    onChange({ ...company, hasLogo: false, logoHash: null });
+    setMessage(null);
+    try {
+      await api<void>("DELETE", `/api/tenancy/companies/${company.id}/logo`);
+      onChange({ ...company, hasLogo: false, logoHash: null });
+    } catch (error) {
+      // A refusal (no longer allowed, the company changed elsewhere) is said, not lost.
+      setMessage(problemOf(error).message);
+    }
   };
   return (
     <section className="record-section" aria-label={t("tenancy.company.logo")}>
