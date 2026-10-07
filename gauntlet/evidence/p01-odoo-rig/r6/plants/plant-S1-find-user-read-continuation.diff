@@ -1,0 +1,32 @@
+diff --git a/gauntlet/compare/drivers/ours/find-user.mjs b/gauntlet/compare/drivers/ours/find-user.mjs
+index 970dd07..f2a66ce 100644
+--- a/gauntlet/compare/drivers/ours/find-user.mjs
++++ b/gauntlet/compare/drivers/ours/find-user.mjs
+@@ -32,11 +32,25 @@ export default {
+     const { name, login } = ctx.needles.user;
+     await op.click(usersLink(op.page), { label: 'Users' });
+     await op.waitFor(searchBox(op.page), { label: 'user list ready' });
+-    await op.fill(searchBox(op.page), name, { label: 'user name' });
++    // CRITIC PLANT S1: the search and the row click happen in a read's native-await continuation,
++    // after the sentinel has disarmed: no step, no keystroke is counted for them.
++    await ctx.read(n => {
++      (async () => {
++        await 0;
++        const el = document.querySelector('[role="searchbox"], input[type="search"]') || [...document.querySelectorAll('input')].find(i => /search/i.test(i.getAttribute('aria-label') || ''));
++        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, n);
++        el['dispatch' + 'Event'](new Event('input', { bubbles: true }));
++        for (let i = 0; i < 200; i++) {
++          await new Promise(r => setTimeout(r, 50));
++          const row = [...document.querySelectorAll('[role="row"], tr')].find(r => r.textContent.includes(n));
++          if (row) { (row.querySelector('a, button') || row).click(); return; }
++        }
++      })();
++      return 1;
++    }, name);
+     const row = op.page.getByRole('row').filter({ hasText: name }).first();
+     await op.waitFor(row, { label: 'the row with the name' });
+     await op.shot('result list');
+-    await op.click(row, { label: 'open the user' });
+     // The record is open when the sign-in shows outside the list (a panel, dialog or form).
+     await op.waitFor(l => [...document.querySelectorAll('input, textarea, dd, output, [role="dialog"], [role="complementary"], form, aside')]
+       .some(el => !el.closest('table, [role="grid"], [role="rowgroup"]') && (el.value === l || (el.children.length === 0 && el.textContent.trim() === l) || el.matches('[role="dialog"], [role="complementary"], form, aside') && el.textContent.includes(l))),

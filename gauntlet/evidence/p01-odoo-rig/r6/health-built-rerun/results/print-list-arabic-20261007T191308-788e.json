@@ -1,0 +1,189 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261007T191308-788e",
+  "instrument": 5,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-07T19:13:08.295Z",
+  "finished_at": "2026-10-07T19:13:12.032Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 13,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.606,
+    "system_wait_seconds": 0.326,
+    "human_seconds": 11.09,
+    "human_plus_wait_seconds": 11.416,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 2,
+      "B": 4,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "at": 0.017,
+      "took": 0.086,
+      "text": "Anil Pillai",
+      "same_field": false,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Print or export",
+      "keystrokes": 0,
+      "at": 0.424,
+      "took": 0.06,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "PDF in Arabic",
+      "keystrokes": 0,
+      "at": 0.496,
+      "took": 0.023,
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list, search focused",
+      "at": 0.001,
+      "seconds": 0.015
+    },
+    {
+      "label": "the narrowed list",
+      "at": 0.104,
+      "seconds": 0.217
+    },
+    {
+      "label": "print menu",
+      "at": 0.484,
+      "seconds": 0.007
+    },
+    {
+      "label": "file received",
+      "at": 0.519,
+      "seconds": 0.087
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "29005667ca2d61a3.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/health-built-rerun/blind/shots/29005667ca2d61a3.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "547ae8aff0743d0d.jpg",
+      "at": 0.322,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/health-built-rerun/blind/shots/547ae8aff0743d0d.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "39fa00e1ba3073e1.jpg",
+      "at": 0.606,
+      "path": "../../evidence-staging/p01-odoo-rig/r6/health-built-rerun/blind/shots/39fa00e1ba3073e1.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "المستخدمون 2026-10-07.pdf",
+      "bytes": 219352,
+      "print_language": "ar",
+      "right_to_left": true,
+      "rows_printed": 1,
+      "rows_expected": 1,
+      "search": "Anil Pillai",
+      "arabic_words_in_report": 17,
+      "document": "users list (stand-in for purchase orders)"
+    }
+  },
+  "path_notes": "Users list (search focused) > type the name > Print or export > PDF in Arabic. Stand-in list: users (purchase orders arrive with a later piece).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/print-list-arabic.mjs",
+    "sha256": "460b13c93e2ba469e748323d90cea0e0d2d113fb74b578758d934f238d6539c5"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (the product's search matches each word in the name or e-mail: 53 users of the shared dataset, against the vendor's 27 orders in the reference).",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/identity/users",
+    "path": "/identity/users",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "search",
+      "name": "ابحث بالاسم أو البريد الإلكتروني",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.029,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.051,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0
+}

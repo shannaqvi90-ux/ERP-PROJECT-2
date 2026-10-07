@@ -1,0 +1,565 @@
+TAP version 13
+# Subtest: add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 1 - add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 15.04045
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    add-rate keyboard: human_seconds 22.08 but its steps give 21.2
+    
+    22.08 !== 21.2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 21.2
+  actual: 22.08
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 2 - api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 162.112211
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    api-update-user : human_seconds 54.62 but its steps give 39.9
+    
+    54.62 !== 39.9
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 39.9
+  actual: 54.62
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 3 - arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 72.474995
+  type: 'test'
+  ...
+# Subtest: attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 4 - attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 5.298183
+  type: 'test'
+  ...
+# Subtest: configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 5 - configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 8.107942
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    configure-sequence keyboard: human_seconds 40.72 but its steps give 38
+    
+    40.72 !== 38
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 38
+  actual: 40.72
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 6 - create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 4.167502
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    create-company-branch keyboard: human_seconds 48.53 but its steps give 42.45
+    
+    48.53 !== 42.45
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 42.45
+  actual: 48.53
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 7 - create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 8.245363
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    create-restricted-user keyboard: human_seconds 34.13 but its steps give 30.05
+    
+    34.13 !== 30.05
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 30.05
+  actual: 34.13
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 8 - custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 87.070644
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    custom-field-filter : human_seconds 53.48 but its steps give 48.6
+    
+    53.48 !== 48.6
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 48.6
+  actual: 53.48
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 9 - edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 8.928328
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    edit-and-save keyboard: human_seconds 10.28 but its steps give 8.6
+    
+    10.28 !== 8.6
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 8.6
+  actual: 10.28
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 10 - export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 7.895577
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    export-filtered-list : human_seconds 26.43 but its steps give 25.55
+    
+    26.43 !== 25.55
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 25.55
+  actual: 26.43
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 11 - find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 8.92027
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    find-record menus: human_seconds 18.5 but its steps give 16.1
+    
+    18.5 !== 16.1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 16.1
+  actual: 18.5
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 12 - find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 3.643894
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    find-user menus: human_seconds 18.63 but its steps give 16.95
+    
+    18.63 !== 16.95
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 16.95
+  actual: 18.63
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 13 - follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 3.623421
+  type: 'test'
+  ...
+# Subtest: import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 14 - import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 2.686901
+  type: 'test'
+  ...
+# Subtest: keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 15 - keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 3.781345
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    keyboard-navigation : human_seconds 7.25 but its steps give 6.45
+    
+    7.25 !== 6.45
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 6.45
+  actual: 7.25
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: print-list-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 16 - print-list-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 3.496058
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    print-list-arabic : human_seconds 19.06 but its steps give 16.5
+    
+    19.06 !== 16.5
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 16.5
+  actual: 19.06
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 17 - reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 6.25728
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    reach-screen-keyboard : human_seconds 3.99 but its steps give 3.35
+    
+    3.99 !== 3.35
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 3.35
+  actual: 3.99
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 18 - see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 5.133122
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    see-and-rerun-job : human_seconds 34.68 but its steps give 32.2
+    
+    34.68 !== 32.2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 32.2
+  actual: 34.68
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 19 - sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 24.330031
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    sign-in new-device: human_seconds 19.06 but its steps give 14.5
+    
+    19.06 !== 14.5
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 14.5
+  actual: 19.06
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps
+ok 20 - switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 3.146162
+  type: 'test'
+  ...
+# Subtest: switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 21 - switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 10.056217
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    switch-to-arabic : human_seconds 15.28 but its steps give 15.2
+    
+    15.28 !== 15.2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 15.2
+  actual: 15.28
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps
+not ok 22 - who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps
+  ---
+  duration_ms: 4.72239
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:30:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    who-changed-field : human_seconds 18.5 but its steps give 16.1
+    
+    18.5 !== 16.1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 16.1
+  actual: 18.5
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/baselines.test.mjs:48:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operator times are the published Card, Moran and Newell averages
+not ok 23 - operator times are the published Card, Moran and Newell averages
+  ---
+  duration_ms: 5.82993
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/klm.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+        B: 0.1,
+        H: 0.4,
+    +   K: 0.2,
+    -   K: 0.28,
+        M: 1.35,
+        P: 1.1
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    K: 0.28
+    P: 1.1
+    B: 0.1
+    H: 0.4
+    M: 1.35
+  actual:
+    K: 0.2
+    P: 1.1
+    B: 0.1
+    H: 0.4
+    M: 1.35
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/klm.test.mjs:6:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: typing counts one key per character plus Shift for capitals and symbols
+ok 24 - typing counts one key per character plus Shift for capitals and symbols
+  ---
+  duration_ms: 0.44956
+  type: 'test'
+  ...
+# Subtest: a chord counts each key in it
+ok 25 - a chord counts each key in it
+  ---
+  duration_ms: 0.234867
+  type: 'test'
+  ...
+# Subtest: a click is M + P + BB, with homing when the hand comes from the keyboard
+ok 26 - a click is M + P + BB, with homing when the hand comes from the keyboard
+  ---
+  duration_ms: 0.356454
+  type: 'test'
+  ...
+# Subtest: a chained step has no mental preparation
+ok 27 - a chained step has no mental preparation
+  ---
+  duration_ms: 0.164077
+  type: 'test'
+  ...
+# Subtest: the operator starts with the hand on the mouse
+ok 28 - the operator starts with the hand on the mouse
+  ---
+  duration_ms: 0.136839
+  type: 'test'
+  ...
+# Subtest: file picks are modelled as a double click
+ok 29 - file picks are modelled as a double click
+  ---
+  duration_ms: 0.220647
+  type: 'test'
+  ...
+# Subtest: totals for a short path add up
+not ok 30 - totals for a short path add up
+  ---
+  duration_ms: 0.634582
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/klm.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    12.3 !== 13.18
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 13.18
+  actual: 12.3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r6-plants/gauntlet/compare/test/klm.test.mjs:53:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unknown step kinds are rejected
+ok 31 - unknown step kinds are rejected
+  ---
+  duration_ms: 0.652116
+  type: 'test'
+  ...
+# Subtest: a scroll is a mouse step modelled like a click
+ok 32 - a scroll is a mouse step modelled like a click
+  ---
+  duration_ms: 0.405638
+  type: 'test'
+  ...
+# Subtest: continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow
+ok 33 - continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow
+  ---
+  duration_ms: 0.431352
+  type: 'test'
+  ...
+# Subtest: plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts
+ok 34 - plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts
+  ---
+  duration_ms: 0.57739
+  type: 'test'
+  ...
+# Subtest: round 5: no step continues one that began on another screen (a key that opened a new screen, then typing)
+ok 35 - round 5: no step continues one that began on another screen (a key that opened a new screen, then typing)
+  ---
+  duration_ms: 0.346433
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 16
+# fail 19
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1207.696878

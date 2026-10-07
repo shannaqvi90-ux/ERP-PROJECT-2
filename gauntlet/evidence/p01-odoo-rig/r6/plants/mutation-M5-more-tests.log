@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: --list prints every task
+ok 1 - --list prints every task
+  ---
+  duration_ms: 483.006533
+  type: 'test'
+  ...
+# Subtest: bad arguments fail with usage
+ok 2 - bad arguments fail with usage
+  ---
+  duration_ms: 811.685716
+  type: 'test'
+  ...
+# Subtest: one command runs a task on our product and writes a result JSON
+ok 3 - one command runs a task on our product and writes a result JSON
+  ---
+  duration_ms: 679.795265
+  type: 'test'
+  ...
+# Subtest: the blind review page shows A and B only and keeps the mapping in key.json
+ok 4 - the blind review page shows A and B only and keeps the mapping in key.json
+  ---
+  duration_ms: 9.517283
+  type: 'test'
+  ...
+# Subtest: ours wins only when strictly lower on every metric
+ok 5 - ours wins only when strictly lower on every metric
+  ---
+  duration_ms: 3.688104
+  type: 'test'
+  ...
+# Subtest: a tie is a loss
+ok 6 - a tie is a loss
+  ---
+  duration_ms: 0.283764
+  type: 'test'
+  ...
+# Subtest: a tie at zero is still a tie and a loss, and is reported plainly (owner question pending)
+ok 7 - a tie at zero is still a tie and a loss, and is reported plainly (owner question pending)
+  ---
+  duration_ms: 0.88401
+  type: 'test'
+  ...
+# Subtest: an unbuilt or failed product is never a win
+ok 8 - an unbuilt or failed product is never a win
+  ---
+  duration_ms: 0.138757
+  type: 'test'
+  ...
+# Subtest: median of repeated runs uses the median machine seconds
+ok 9 - median of repeated runs uses the median machine seconds
+  ---
+  duration_ms: 4.771228
+  type: 'test'
+  ...
+# Subtest: steps, keystrokes and waits are counted the same way every time
+ok 10 - steps, keystrokes and waits are counted the same way every time
+  ---
+  duration_ms: 1203.800298
+  type: 'test'
+  ...
+# Subtest: choosing a file counts the dialog click and the pick
+ok 11 - choosing a file counts the dialog click and the pick
+  ---
+  duration_ms: 355.883884
+  type: 'test'
+  ...
+# Subtest: a step before start() is refused
+ok 12 - a step before start() is refused
+  ---
+  duration_ms: 177.168933
+  type: 'test'
+  ...
+# Subtest: blind screenshots paint branding over, go grey, and leave title and favicon neutral
+ok 13 - blind screenshots paint branding over, go grey, and leave title and favicon neutral
+  ---
+  duration_ms: 581.518076
+  type: 'test'
+  ...
+# Subtest: a screenshot after the end of a task never shortens the measured time
+ok 14 - a screenshot after the end of a task never shortens the measured time
+  ---
+  duration_ms: 429.055646
+  type: 'test'
+  ...
+# Subtest: round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)
+ok 15 - round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)
+  ---
+  duration_ms: 608.302519
+  type: 'test'
+  ...
+# Subtest: round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+ok 16 - round 2 fault: the done screenshot after finish() leaves machine seconds unchanged
+  ---
+  duration_ms: 917.237044
+  type: 'test'
+  ...
+# Subtest: while measuring, only the moments the task declares are shot, each once; their time stays on the clock
+ok 17 - while measuring, only the moments the task declares are shot, each once; their time stays on the clock
+  ---
+  duration_ms: 647.332381
+  type: 'test'
+  ...
+# Subtest: round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)
+ok 18 - round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)
+  ---
+  duration_ms: 440.047094
+  type: 'test'
+  ...
+# Subtest: round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted
+ok 19 - round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted
+  ---
+  duration_ms: 457.237578
+  type: 'test'
+  ...
+# Subtest: an API request is one step whose keystrokes are the request typed plus Enter
+ok 20 - an API request is one step whose keystrokes are the request typed plus Enter
+  ---
+  duration_ms: 193.183374
+  type: 'test'
+  ...
+# Subtest: a wait condition works on a page whose content security policy forbids eval (our product)
+ok 21 - a wait condition works on a page whose content security policy forbids eval (our product)
+  ---
+  duration_ms: 485.569844
+  type: 'test'
+  ...
+# Subtest: round 5: paste and copy chords are read as the keys they press, whatever their spelling
+ok 22 - round 5: paste and copy chords are read as the keys they press, whatever their spelling
+  ---
+  duration_ms: 4.260759
+  type: 'test'
+  ...
+# Subtest: a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)
+ok 23 - a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)
+  ---
+  duration_ms: 264.419764
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10215.443175

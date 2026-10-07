@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: screenshot names are random and never name a product
+ok 1 - screenshot names are random and never name a product
+  ---
+  duration_ms: 5.832381
+  type: 'test'
+  ...
+# Subtest: revealsProduct catches product names in any case
+ok 2 - revealsProduct catches product names in any case
+  ---
+  duration_ms: 0.361755
+  type: 'test'
+  ...
+# Subtest: both products have a branding profile; extra brand words are added
+ok 3 - both products have a branding profile; extra brand words are added
+  ---
+  duration_ms: 0.429058
+  type: 'test'
+  ...
+# Subtest: the demo data's company names and codes are masked in both products (round 3 blindness finding)
+ok 4 - the demo data's company names and codes are masked in both products (round 3 blindness finding)
+  ---
+  duration_ms: 0.155348
+  type: 'test'
+  ...
+# Subtest: letters A and B are assigned at random
+ok 5 - letters A and B are assigned at random
+  ---
+  duration_ms: 5.030086
+  type: 'test'
+  ...
+# Subtest: committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+ok 6 - committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+  ---
+  duration_ms: 1.019635
+  type: 'test'
+  ...
+# Subtest: the blind review page shows neutral captions, never the moments a driver named
+ok 7 - the blind review page shows neutral captions, never the moments a driver named
+  ---
+  duration_ms: 9.024531
+  type: 'test'
+  ...
+# Subtest: a placeholder naming the vendor is cleared, not painted over
+ok 8 - a placeholder naming the vendor is cleared, not painted over
+  ---
+  duration_ms: 0.169609
+  type: 'test'
+  ...
+# Subtest: a side-by-side folder keeps the blind part (shots, review page) apart from the key and results
+ok 9 - a side-by-side folder keeps the blind part (shots, review page) apart from the key and results
+  ---
+  duration_ms: 528.375341
+  type: 'test'
+  ...
+# Subtest: side by side, the products run in a random order per task
+ok 10 - side by side, the products run in a random order per task
+  ---
+  duration_ms: 1.593118
+  type: 'test'
+  ...
+# Subtest: identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding)
+ok 11 - identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding)
+  ---
+  duration_ms: 1120.363716
+  type: 'test'
+  ...
+# Subtest: ours wins only when strictly lower on every metric
+ok 12 - ours wins only when strictly lower on every metric
+  ---
+  duration_ms: 2.167066
+  type: 'test'
+  ...
+# Subtest: a tie is a loss
+ok 13 - a tie is a loss
+  ---
+  duration_ms: 0.401513
+  type: 'test'
+  ...
+# Subtest: a tie at zero is still a tie and a loss, and is reported plainly (owner question pending)
+ok 14 - a tie at zero is still a tie and a loss, and is reported plainly (owner question pending)
+  ---
+  duration_ms: 1.144212
+  type: 'test'
+  ...
+# Subtest: an unbuilt or failed product is never a win
+ok 15 - an unbuilt or failed product is never a win
+  ---
+  duration_ms: 0.291969
+  type: 'test'
+  ...
+# Subtest: median of repeated runs uses the median machine seconds
+ok 16 - median of repeated runs uses the median machine seconds
+  ---
+  duration_ms: 0.475457
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2401.981914
