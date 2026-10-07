@@ -1,0 +1,111 @@
+{
+  "piece": "p05-list-search",
+  "round": 4,
+  "commit": "fdd08eeabb223e0c5824a86da276ad4f1f0e1707",
+  "judged_at": "2026-10-07T03:22:12Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p05-list-search round 4",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Gate suite green inside verify. My own attacks as admin@gulfsteel against alnoor (100,004 users from the shared dataset), in attack-api.txt, found 0 leaks: name, e-mail and filter searches for alnoor's needle, an OR-true filter, quote injection, % and _ wildcards, X-Tenant/X-Tenant-Id headers, tenant/tenantId query parameters, groupBy, alnoor's keyset cursor replayed, skip=99000, GET/PUT/DELETE on alnoor's shared and personal view ids (all 404, and both views were unchanged afterwards), and CSV/XLSX/PDF list exports. Database (db-inspect.txt): lists.saved_views has RLS enabled and forced with the standard policy, and erp_app has no BYPASSRLS. Unbound, erp_app sees 0 views and 0 users. Bound to gulfsteel it sees 0 alnoor rows, an INSERT for alnoor is refused by RLS, and an UPDATE of alnoor's rows touches 0 rows."
+    },
+    {
+      "gate": "G1 catches tenant leaks planted in p05's surface",
+      "status": "fail",
+      "evidence": "Plant L6 (plants/L6-static-memo-next-page-total.patch) adds to ListBinding<T> a static readonly Func memo, a closure over a ConcurrentDictionary keyed by list|search|filter with no tenant. Continuation pages (after=) reuse the total that the last first page counted. All 38 G1 tests PASSED with it (plants/run-L6-g1.log, 16.6 min), process-state included (run-L6-processstate.log). Live on a plant stack (plants/plant-live-demo.txt): gulfsteel page 1 of search 'a' has total 1004, alnoor page 1 has total 3004, and gulfsteel page 2 then shows total 3004, which is alnoor's count. Two blind spots: (1) the process-state roots skip static fields of generic types (t.ContainsGenericParameters), and a delegate-typed field is judged immutable, so the captured dictionary is never reached; (2) ListAnswers judges only the first page's total and groups, never the totals of the keyset pages it walks. Gates that held: L7 (the same memo used for first-page totals) was caught by the list-answer check, with 102 wrong answers (run-L7-http.log), so r1's L3 gap stays fixed. L8 (a permissive SELECT policy on lists.saved_views) was caught by G1DatabaseIsolation (run-L8-db.log)."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Gate suite green. Live: the viewer gets list read access, no share checkbox and only Copy among the bulk actions. noaccess gets 'No access' on the screen and 403 from the API."
+    },
+    {
+      "gate": "G2 catches unpermissioned actions planted in p05's surface",
+      "status": "fail",
+      "evidence": "Plant P4 (plants/P4-personal-route-writes-shared-views.patch): the personal routes PUT/DELETE /api/lists/{key}/views/{id} find a view when it is shared OR the caller's own. All 27 G2 tests PASSED (plants/run-P4-g2.log). Live (plant-live-demo.txt): viewer@alnoor does not hold lists.views.share and gets 403 on PUT /shared-views/{id}. The same user gets 200 on PUT /views/{sharedId}, which renames the workspace's Team view, and 204 on DELETE /views/{sharedId}, which deletes it. Only Erp.Modules.Lists.Tests caught it (1 failure, run-P4-lists-module-tests.log), not the gate. The G2 list test sends only the administrator's personal-view id to personal routes and never a shared-view id. Gates that held: P2b (shared DELETE with the list-permission filter and handler check removed) and P3 (personal PUT/DELETE matched by id alone) were each caught by G2 (run-P2b…, run-P3…), so r1's P2 gap and p03's P3 route stay fixed."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "Fresh clone at fdd08ee. ERP_PROJECT=c-p05-list-search-r4 ERP_HTTP_PORT=20550 ERP_DB_PORT=20551 ERP_VERIFY_HTTP_PORT=20560 ERP_VERIFY_DB_PORT=20561 run through verify-slot.sh ./erp verify passed in 1669 s, timed from 'slot taken' after a 5025 s wait for a slot. The ratchet check passed. ./erp up with ERP_SEED_USERS_CSV gave a running demo with 100,004 users in 93 s. The port and project overrides worked."
+    },
+    {
+      "gate": "Rule gates (licence, money, strings, audit, list index)",
+      "status": "pass",
+      "evidence": "These pass inside verify. Saved-view insert and delete, and the user bulk deactivation, write audit.entries rows with the actor and old/new values (checked in the database). Trigram GIN indexes exist on display_name/email_normalized and display_name_ar, plus (tenant_id, column, id) btrees."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p05-list-search-r4 ERP_HTTP_PORT=20550 ERP_DB_PORT=20551 ERP_VERIFY_HTTP_PORT=20560 ERP_VERIFY_DB_PORT=20561 /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 889,
+    "passed": 889,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 1669
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 1669,
+    "evidence": "./erp verify on the fresh clone passed: 417 .NET, 262 web unit, 64 e2e and 146 compare tests, and the ratchet passed (verify.log). The run took 1669 s from 'slot taken'. ./erp up served the seeded demo with the shared dataset in 93 s (up.log)."
+  },
+  "odoo": [
+    {
+      "task": "find-user (find one user among 100,000; p16 contacts not built, so the largest list, the dataset's 100,000 users)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 15,
+        "seconds": 0.513,
+        "klm_seconds": 8.6
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 20,
+        "seconds": 2.371,
+        "klm_seconds": 13.2
+      },
+      "notes": "Medians of 3 verified runs per product, branding hidden (compare/). The committed ours driver is not the shortest path: it clicks into a search box that already has the focus, and it loses on human seconds (14.35 vs 13.2; compare-committed-driver/). I wrote critic drivers (scripts/find-user.ours.critic.mjs and find-user.odoo.critic.mjs). Ours has variants enter, row, prefixes and palette. 'prefixes' types the first three letters of each word ('Maj Ani Pil') and Enter opens the best-ranked match, which is verified to be the user. Odoo gained a 'menus-suggestion' variant, which clicks the search suggestion instead of pressing Enter: 20 keys, down from its baseline 21. With the full name typed in both products, keystrokes tie at 20 and ours loses. Ours wins only through word-prefix relevance ranking, a real product capability."
+    },
+    {
+      "task": "find-record (find one contact among 100,000)",
+      "winner": "not-compared",
+      "notes": "The ours driver is still a stub because p16 Contacts does not exist at this commit."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p05-list-search/r4/01-users-list-en.jpg",
+    "gauntlet/evidence/p05-list-search/r4/02-record-open-from-keyboard.jpg",
+    "gauntlet/evidence/p05-list-search/r4/03-select-all-matching-bulk.jpg",
+    "gauntlet/evidence/p05-list-search/r4/04-header-filter-editor.jpg",
+    "gauntlet/evidence/p05-list-search/r4/05-end-of-100k-rows.jpg",
+    "gauntlet/evidence/p05-list-search/r4/06-column-chooser.jpg",
+    "gauntlet/evidence/p05-list-search/r4/07-grouped-by-language.jpg",
+    "gauntlet/evidence/p05-list-search/r4/09-users-list-ar.jpg",
+    "gauntlet/evidence/p05-list-search/r4/10-arabic-variant-search.jpg",
+    "gauntlet/evidence/p05-list-search/r4/11-bulk-all-matching.jpg",
+    "gauntlet/evidence/p05-list-search/r4/compare/blind/shots/1785831173adfebe.jpg",
+    "gauntlet/evidence/p05-list-search/r4/compare/blind/shots/3a956715c5173da6.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The gates miss a tenant-count leak and a shared-view takeover planted in the list framework",
+    "detail": "Every later module will register its lists with p05 and rely on G1 and G2 to attack them automatically. Two faults planted in p05's own code get past every gate. (1) G1: a process-wide memo kept in a static delegate field of ListBinding<T> passes both the process-state gate and the list-answer gate. The process-state gate skips statics of generic types as roots and counts Func fields as immutable. The list-answer gate never judges the total (or groups) on keyset continuation pages. The result is that one tenant scrolling to page 2 sees the other tenant's row count. (2) G2: a personal-route PUT/DELETE that also matches shared views lets a read-only user rename or delete the workspace's shared views without lists.views.share, and all 27 G2 tests pass. The G2 list test never sends a shared view's id to the personal routes, or a personal view's id to the shared routes. Fixes: (a) walk static fields of closed generic instantiations of product types, or reject delegate and closure fields unless reviewed, and walk delegate targets as ReachableState does elsewhere; (b) in ListAnswers, judge total and groups on every walked page, after the other tenant has walked the same query; (c) in G2, cross the ids: a reader sends the shared view's id to every personal route, and a sharer sends another user's personal view id to every shared route, and the workspace's views must stay unchanged.",
+    "evidence": "Apply gauntlet/evidence/p05-list-search/r4/plants/L6-static-memo-next-page-total.patch and run `dotnet test tests/Erp.Gates.Tests -c Release --filter FullyQualifiedName~Erp.Gates.Tests.G1`: 38/38 pass (plants/run-L6-g1.log). Apply plants/P4-personal-route-writes-shared-views.patch and run the G2 filter: 27/27 pass (plants/run-P4-g2.log). Live on a stack with both plants (plants/plant-live-demo.txt, script scripts/plant-live.mjs): gulfsteel page 1 total 1004, alnoor page 1 total 3004, gulfsteel page 2 total 3004. viewer@alnoor gets PUT /api/lists/identity.users/views/{TeamViewId} 200 (renamed), then DELETE 204, while PUT /shared-views/{id} correctly gives 403."
+  },
+  "other_findings": [
+    "Money in the list framework has no currency. ListColumnType.Money is a bare decimal with no currency, rate or base-amount link (ListColumn has no currency field). GroupsAsync sums aggregate Money columns across rows whatever their currency, so the first multi-currency list (invoices in AED and USD) will show group totals that add different currencies (ListBinding.cs ~line 764-790). Rule 2 needs a money column bound to amount plus currency, with totals per currency or in base currency.",
+    "Bulk actions that change data only work on chosen rows. With 'All 3,265 matching rows selected', Activate/Deactivate are disabled ('Acts on chosen rows only'); only Copy works on everything that matches (11-bulk-all-matching.jpg, ui5b.txt). Odoo can archive every matching record after 'select all'.",
+    "Fixed since r1, and must stay fixed: header sort and column menus work by keyboard (Enter/Space sort, the menu opens with arrows; ui2.txt). Columns line up at 1440 px (identical cell x on every row). An OR filter can be built ('match any'). Arabic spelling variants match ('ماجد انيل بيلاى' finds 'ماجد أنيل بيلاي'). Relevance ranking works and Enter opens the best match. Ctrl+A twice selects all that match. The users bulk actions Activate/Deactivate exist and are audited.",
+    "Cosmetic: in rows with an empty Roles cell, the row separator in the Roles column sits a few pixels off the rest of the row (01-users-list-en.jpg).",
+    "Performance over 100,004 users (5-run medians, round trip): exact name 28 ms, 'pillai' 28 ms, Arabic two words 144 ms, search 'a' 107 ms, filter 40 ms, groupBy 69 ms, skip 50,000 105 ms. A three-word search ran 124-317 ms. End on 100,004 rows fills the last row in 114 ms; 50 PageUps settle in under 1 s. Only 33 DOM rows are rendered.",
+    "Keyboard and screens: the search box has the focus on arrival; ArrowDown enters the grid; Enter opens the record panel; Esc returns; Space and Shift+Arrow select. Saved views (personal, shared, default) persist and open by default. The viewer gets no share option. Arabic is RTL with Arabic chrome and plural counts ('100,004 مستخدمين', 'مستخدم واحد').",
+    "[route: p03-identity] The committed ours driver for find-user clicks into the already-focused search box (an extra step and hand move) and does not use Enter-opens-best-match. As committed, it loses human seconds to Odoo (14.35 vs 13.2). It should adopt the shorter variants (scripts/find-user.ours.critic.mjs).",
+    "[route: p01-odoo-rig] The Odoo find-user baseline misses a shorter keystroke path: clicking the search suggestion instead of pressing Enter verifies with 20 keystrokes, against the baseline's 21 (scripts/find-user.odoo.critic.mjs, 'menus-suggestion').",
+    "[route: p00-foundation] The process-state inspector (G1ProcessStateTests.Roots) skips every type with ContainsGenericParameters and treats every Delegate-typed field as immutable, so any generic product class can hold cross-tenant state in a static Func/closure without being seen. This weakness applies beyond lists.",
+    "The verify slot script defaults to 2 slots (ERP_VERIFY_SLOTS); this critic waited 5025 s for one."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p05-list-search/r4",
+  "evidence_dir": "gauntlet/evidence/p05-list-search/r4"
+}

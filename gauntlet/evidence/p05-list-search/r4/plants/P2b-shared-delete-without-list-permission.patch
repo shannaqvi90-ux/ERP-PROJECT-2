@@ -1,0 +1,22 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f44eea..d66762f 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -127,7 +127,6 @@ internal static class ViewEndpoints
+             routes.MapDelete("/shared-views/{id:guid}", (Guid id, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
+                     Delete(c.FindList(key)!, id, shared: true, db, caller, http, ct))
+                 .WithName($"{name}.sharedViews.delete")
+-                .AddEndpointFilter(AlsoRequires(list.Permission))
+                 .WithSummary($"Delete a shared view of the {key} list (also needs the list's read permission).")
+                 .RequirePermission(ListsPermissions.ViewsShare);
+         }
+@@ -299,7 +298,8 @@ internal static class ViewEndpoints
+     private static async Task<Results<NoContent, ProblemHttpResult>> Delete(
+         ListDefinition list, Guid id, bool shared, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (!caller.Has(list.Permission))
++        // PLANT P2b: deleting a shared view no longer needs the list's own permission.
++        if (!shared && !caller.Has(list.Permission))
+         {
+             return Problems.NotFound(http);
+         }

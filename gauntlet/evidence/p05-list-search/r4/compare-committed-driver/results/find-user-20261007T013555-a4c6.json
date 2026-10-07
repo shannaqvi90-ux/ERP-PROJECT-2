@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261007T013555-a4c6",
+  "instrument": 4,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-07T01:35:55.719Z",
+  "finished_at": "2026-10-07T01:35:58.761Z",
+  "environment": {
+    "base_url": "http://localhost:20550",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 20,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.795,
+    "system_wait_seconds": 0.363,
+    "human_seconds": 14.35,
+    "human_plus_wait_seconds": 14.713,
+    "klm_operator_counts": {
+      "K": 20,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users",
+      "keystrokes": 0,
+      "at": 0,
+      "took": 0.069,
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "focus user name",
+      "keystrokes": 0,
+      "at": 0.075,
+      "took": 0.049,
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 20,
+      "at": 0.13,
+      "took": 0.139,
+      "text": "Majid Anil Pillai",
+      "same_field": true,
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "open the user",
+      "keystrokes": 0,
+      "at": 0.676,
+      "took": 0.065,
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "user list ready",
+      "at": 0.069,
+      "seconds": 0.005
+    },
+    {
+      "label": "the row with the name",
+      "at": 0.269,
+      "seconds": 0.304
+    },
+    {
+      "label": "the user's record with the sign-in",
+      "at": 0.741,
+      "seconds": 0.054
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "94c94d89ef30a13d.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/94c94d89ef30a13d.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "414458cf682faaf9.jpg",
+      "at": 0.573,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/414458cf682faaf9.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "0a78777242a5299d.jpg",
+      "at": 0.795,
+      "path": "../../evidence-staging/p05-list-search/r4/compare/blind/shots/0a78777242a5299d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "record_shows_name": true,
+      "record_shows_login": true,
+      "url": "http://localhost:20550/identity/users/019371ad-40c0-7a02-ba6d-38ad9d33d2df?q=Majid+Anil+Pillai"
+    }
+  },
+  "path_notes": "Users (navigation) > search box > type the name > the row with the name > open it: the user's record shows the sign-in.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-user.mjs",
+    "sha256": "80051ccf02011bb3cd4f97121aef20e2bbea4568e02b0e81d5826c9c1527cb48"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  }
+}

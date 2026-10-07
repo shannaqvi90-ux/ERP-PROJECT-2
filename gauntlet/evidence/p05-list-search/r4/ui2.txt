@@ -1,0 +1,33 @@
+1 arrival focus input "Search by name or e-mail" status 100,004 users DOM rows 33
+2 typed pillai, no Enter: status 1,651 users after 607 ms; url http://localhost:20550/identity/users?q=pillai
+3 ArrowDown from search -> focus table[role=grid] "Users: 1,651 rows"
+4 active row after 2 downs undefined
+5 Enter -> url http://localhost:20550/identity/users/0196093a-0700-7938-95c8-e55ad353f378?q=pillai dialog? 1
+6 Esc -> url http://localhost:20550/identity/users?q=pillai focus table[role=grid] "Users: 1,651 rows"
+7 selection bar 3 selected
+Copy
+Deactivate
+Activate
+Clear selection
+8 Ctrl+A 100 selected
+Select all 1,651 rows that match
+Copy
+Deactivate
+Activate
+Clear selection
+9 Ctrl+A again All 1,651 matching rows selected
+Copy
+Deactivate
+Activate
+Clear selection
+10 bulk buttons [ 'Copy', 'Deactivate', 'Activate', 'Clear selection' ]
+11 Esc clears selection 0
+12 Tab order from search ["button \"View: Standard\"","button \"Columns\"","button \"Print or export\"","button \"New user\"","table[role=grid] \"Users: 100,004 rows\"","button \"Name\"","button \"Options for the column Name\"","button \"E-mail\"","button \"Options for the column E-mail\"","button \"Options for the column Language\"","button \"Options for the column Status\"","button \"Last sign-in\"","button \"Options for the column Last sign-in\"","body \"Skip to contentERPAl Noor Trading LLCALN-DXB · DEIRA-HQALN-A\""]
+13 focused button "E-mail"
+14 Enter on E-mail header -> url http://localhost:20550/identity/users?sort=email changed true first row Abdullah Nasser Al Ameri abdullah.al.ameri.000943@staff.example English Active N
+15 Space on E-mail header -> url http://localhost:20550/identity/users?sort=-email first row Zayed Aisha Yassin zayed.yassin.096441@staff.example Arabic Active Never
+16 column menu button for Language exists 1 Options for the column Language
+17 menu open focus button[role=menuitem] "Filter…" items [ 'Filter…', 'Group by this column', 'Hide this column' ]
+18 focus before Enter button[role=menuitem] "Filter…"
+19 filter editor focus input ""
+20 editor text "Filter: Language\nis one of\nEnglish\nArabic\nApply\nCancel"

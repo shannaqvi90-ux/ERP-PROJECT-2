@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/Migrations/20261003024740_Initial.cs b/src/Modules/Lists/Erp.Modules.Lists/Migrations/20261003024740_Initial.cs
+index a40dc5a..5b918e4 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/Migrations/20261003024740_Initial.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/Migrations/20261003024740_Initial.cs
+@@ -66,6 +66,8 @@ namespace Erp.Modules.Lists.Migrations
+ 
+             migrationBuilder.GrantSchemaUsage("lists");
+             migrationBuilder.ProtectTenantTable("lists", "saved_views");
++            // PLANT L8: shared views are readable by everyone (a second, permissive read policy).
++            migrationBuilder.Sql("CREATE POLICY shared_views_readable ON lists.saved_views FOR SELECT USING (is_shared);");
+         }
+ 
+         /// <inheritdoc />

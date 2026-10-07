@@ -1,0 +1,25 @@
+Test run for /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:18.65]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:19.28]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [99 ms]
+  Error Message:
+   lists.saved_views: unreviewed policy 'lists.saved_views shared_views_readable r public' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+lists.saved_views: extra policy shared_views_readable may only grant SELECT to erp_auth
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [464 ms]
+  Error Message:
+   lists.saved_views: 10 rows visible without a tenant
+lists.saved_views: tenant A sees 10 rows, owns 5
+lists.saved_views: tenant A sees 5 rows of other tenants
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 353
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p05-list-search-r4-plants2/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 354
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     8, Skipped:     0, Total:    10, Duration: 858 ms - Erp.Gates.Tests.dll (net10.0)
