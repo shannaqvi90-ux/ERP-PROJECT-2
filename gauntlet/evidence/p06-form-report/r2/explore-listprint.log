@@ -1,0 +1,9 @@
+list print menu (Alt+Shift+R) ["PDF بالعربية","PDF بالإنجليزية","CSV بالعربية","CSV بالإنجليزية","Excel بالعربية","Excel بالإنجليزية"] focused A menuitem PDF بالعربية field=
+list print hrefs ["/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=pdf&language=ar&numerals=latn","/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=pdf&language=en&numerals=latn","/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=csv&language=ar&numerals=latn","/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=csv&language=en&numerals=latn","/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=xlsx&language=ar&numerals=latn","/api/reports/lists/identity.roles?sort=-isSystem%2CnameEn&columns=nameEn%2CisSystem%2CuserCount%2Cpermissions&format=xlsx&language=en&numerals=latn"]
+  shot 07-list-print-menu-ar
+saved roles-list-ar.pdf 200 application/pdf
+saved roles-list-en.pdf 200 application/pdf
+saved roles-list-ar.csv 200 text/csv; charset=utf-8
+saved roles-list-en.csv 200 text/csv; charset=utf-8
+saved roles-list-ar.xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+saved roles-list-en.xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
