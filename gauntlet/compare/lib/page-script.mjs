@@ -276,15 +276,21 @@ function installReadWorld(token) {
     'DOMPointReadOnly', 'DOMMatrix', 'DOMMatrixReadOnly', 'DOMQuad']);
   const READ_FUNCTIONS = new SetCtor(['getComputedStyle', 'getSelection', 'matchMedia', 'atob', 'btoa']);
   // Methods that only read. "get…" methods that act, ask for something or call back later are not among them.
-  const READ_METHOD = /^(?:get(?!Context$|UserMedia$|DisplayMedia$|CurrentPosition$|AsString$|AsFile$|AsFileSystemHandle$|Reader$|Writer$|Directory$|FileHandle$|DirectoryHandle$|Registration$|Registrations$|SVGDocument$|Installed\w*$|Gamepads$|Battery$|Screen\w*$)[A-Z]\w*|has[A-Z]?\w*|query(?:Selector|SelectorAll|CommandEnabled|CommandIndeterm|CommandState|CommandSupported|CommandValue)|item|namedItem|matches|webkitMatchesSelector|closest|contains|compareDocumentPosition|compareBoundaryPoints|comparePoint|isPointInRange|intersectsNode|isEqualNode|isSameNode|isDefaultNamespace|lookupNamespaceURI|lookupPrefix|entries|keys|values|forEach|toString|toJSON|checkVisibility|elementFromPoint|elementsFromPoint|caretPositionFromPoint|caretRangeFromPoint|createTreeWalker|createNodeIterator|createRange|cloneRange|cloneContents|nextNode|previousNode|parentNode|firstChild|lastChild|nextSibling|previousSibling|computedStyleMap|supports|valueOf|escape)$/;
+  const READ_METHOD = /^(?:get(?!Context$|UserMedia$|DisplayMedia$|CurrentPosition$|AsString$|AsFile$|AsFileSystemHandle$|Reader$|Writer$|Directory$|FileHandle$|DirectoryHandle$|Registration$|Registrations$|SVGDocument$|Installed\w*$|Gamepads$|Battery$|Screen\w*$)[A-Z]\w*|has[A-Z]?\w*|query(?:Selector|SelectorAll|CommandEnabled|CommandIndeterm|CommandState|CommandSupported|CommandValue)|item|namedItem|matches|webkitMatchesSelector|closest|contains|compareDocumentPosition|compareBoundaryPoints|comparePoint|isPointInRange|intersectsNode|isEqualNode|isSameNode|isDefaultNamespace|lookupNamespaceURI|lookupPrefix|entries|keys|values|forEach|toString|toJSON|checkVisibility|elementFromPoint|elementsFromPoint|caretPositionFromPoint|caretRangeFromPoint|createTreeWalker|createNodeIterator|createRange|cloneRange|cloneContents|nextNode|previousNode|parentNode|firstChild|lastChild|nextSibling|previousSibling|computedStyleMap|supports|valueOf|escape|evaluate|iterateNext|snapshotItem|createExpression|decode|encode)$/;
   // Getters that hand out another window or document's script world.
   const OTHER_WORLDS = new SetCtor(['contentWindow', 'contentDocument', 'defaultView', 'opener', 'frames', 'parent', 'top', 'self', 'window']);
+  // A range is the function's own until it is put into the selection (which stays refused): placing
+  // it changes nothing on the page.
+  const RANGE = typeof Range === 'function' ? Range.prototype : null;
+  const RANGE_PLACING = new SetCtor(['setStart', 'setEnd', 'setStartBefore', 'setStartAfter', 'setEndBefore', 'setEndAfter', 'selectNode',
+    'selectNodeContents', 'collapse', 'detach']);
   const swept = new SetCtor();
   const sweepObject = (obj, label) => {
     if (!obj || (typeof obj !== 'object' && typeof obj !== 'function') || setHas(swept, obj)) return;
     setAdd(swept, obj);
     for (const key of ownKeys(obj)) {
       if (typeof key !== 'string' || key === 'constructor' || key === KEY) continue;
+      if (obj === RANGE && setHas(RANGE_PLACING, key)) continue;
       const d = getOwn(obj, key);
       if (!d || !d.configurable) continue;
       if (d.get || d.set) {

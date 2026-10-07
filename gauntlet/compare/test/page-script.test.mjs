@@ -260,6 +260,21 @@ test('the read world cannot be re-armed or patched: its prototypes are frozen', 
   await context.close();
 });
 
+test('the read world lets every kind of read through: queries, XPath, walkers, styles, ranges, text', async () => {
+  const { context, world } = await worldPage();
+  const r = await world.run(`() => {
+    const x = document.evaluate('//button', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT); let n = 0; while (w.nextNode()) n += 1;
+    const range = document.createRange(); range.selectNodeContents(document.body);
+    return { xpath: x.snapshotLength, walked: n > 3, style: getComputedStyle(document.body).display, rect: document.body.getBoundingClientRect().width > 0,
+      text: new TextDecoder().decode(new TextEncoder().encode('ok')), url: new URL(location.href).pathname, focus: document.activeElement?.tagName,
+      visible: document.getElementById('go').checkVisibility(), classes: document.body.classList.contains('x'), ranged: range.toString().length > 0,
+      selected: String(getSelection()), at: [...document.querySelectorAll('button')].map(b => b.textContent).join(), dir: document.documentElement.getAttribute('dir') };
+  }`, null);
+  assert.deepEqual(r.value, { xpath: 2, walked: true, style: 'block', rect: true, text: 'ok', url: '/plant', focus: 'BODY', visible: true, classes: false, ranged: true, selected: '', at: 'Go,Look', dir: null });
+  await context.close();
+});
+
 test('the read world reports a change it cannot refuse (a data attribute) as a change to the page', async () => {
   const { context, world } = await worldPage();
   await assert.rejects(world.run('() => { document.getElementById("out").dataset.x = "1"; return 1; }', null), e => e.name === 'PageScriptAction' && /DOM mutation/.test(e.message));

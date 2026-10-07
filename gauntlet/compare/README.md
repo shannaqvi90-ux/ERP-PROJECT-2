@@ -376,6 +376,13 @@ switch-to-arabic and nothing noticed). Its counts are not a comparison.
 
 ## Planting a fault (for critics)
 
+`npm run mutations` (`scripts/mutations.mjs`) removes or weakens each defence of the instrument in
+turn, in a scratch copy of the harness, and runs the self-tests that must catch it: the keystroke
+operator, greyscale, the read world's click refusal and its arming, the source check, the driver
+lint's page-function check, the network locks, the script freeze, the abort at the clock, the
+screen check after `verify()`, the document settle, a variant's own hooks and the masks. It exits 1
+when a mutation is missed. Add a line there for every new defence.
+
 Plant tests run drivers the way the runner does: as module files in the driver process. Write the
 driver as a module (or transform a real one) and hand its description to `execute()`:
 
