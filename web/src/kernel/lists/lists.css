@@ -249,6 +249,14 @@
   padding-inline: 8px;
 }
 
+/* Text in a right-to-left list takes its own direction, so a Latin e-mail or name that does not fit
+   is cut at its end, not its beginning (the start of an address names the person), and stays on
+   the right like the rest of the column. */
+[dir="rtl"] .list-row .list-cell.type-text {
+  unicode-bidi: plaintext;
+  text-align: right;
+}
+
 .list-cell.type-number,
 .list-cell.type-money {
   text-align: end;

@@ -215,6 +215,10 @@ test.describe("list framework", () => {
     await openUsers(page);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("columnheader", { name: /البريد الإلكتروني/ })).toBeVisible();
+    // A Latin e-mail that does not fit is cut at its end (its own direction), so the start that
+    // names the person stays visible, and it keeps to the right like the column's other values.
+    const emailCell = dataRows(page).first().locator("td").nth(2);
+    expect(await emailCell.evaluate((c) => [getComputedStyle(c).unicodeBidi, getComputedStyle(c).textAlign])).toEqual(["plaintext", "right"]);
     await page.keyboard.type("viewer@alnoor");
     await expect(page.getByText("مستخدم واحد", { exact: true })).toBeVisible();
     await page.keyboard.press("Enter");
