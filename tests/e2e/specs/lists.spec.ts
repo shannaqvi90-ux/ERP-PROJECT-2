@@ -265,4 +265,42 @@ test.describe("list framework", () => {
       }
     });
   }
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`a list screen is never wider than a desktop window, whatever the top bar holds (${language})`, async ({ page }) => {
+      // Round 5: the shell's grid column was as wide as the top bar's contents, so a workspace
+      // with several companies (one chip each) pushed every screen past the window's edge: the
+      // list's last column, its New button and the sign-out button were cut off.
+      const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      const outside = () =>
+        page.evaluate(() =>
+          // A wide list scrolls sideways inside its own frame, so its cells are not judged here.
+          [...document.querySelectorAll(".topbar button, main button")]
+            .filter((e) => !e.closest("table"))
+            .map((e) => ({ e, r: e.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && (r.left < -0.5 || r.right > document.documentElement.clientWidth + 0.5))
+            .map(({ e, r }) => `${e.textContent?.trim() || e.getAttribute("aria-label")}: ${Math.round(r.left)}-${Math.round(r.right)}`),
+        );
+      await freshStart(page, language);
+      await signIn(page, user);
+      for (const width of [1440, 1280, 1024]) {
+        await page.setViewportSize({ width, height: 800 });
+        for (const href of ["/identity/users", "/tenancy/companies"]) {
+          await page.locator(`nav a[href="${href}"]`).first().click();
+          await expect(page).toHaveURL(new RegExp(href));
+          await expect(dataRows(page).first()).toBeVisible();
+          expect(await overflow(), `${language} ${width}px ${href} scrolls sideways`).toBeLessThanOrEqual(0);
+          expect(await outside(), `${language} ${width}px ${href}`).toEqual([]);
+        }
+      }
+      // Every company stays one keystroke away: the switcher's list opens inside the window.
+      await page.keyboard.press("Alt+KeyC");
+      const popover = page.locator(".workplace-popover");
+      await expect(popover.locator("input")).toBeFocused();
+      const box = (await popover.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+      await page.keyboard.press("Escape");
+    });
+  }
 });

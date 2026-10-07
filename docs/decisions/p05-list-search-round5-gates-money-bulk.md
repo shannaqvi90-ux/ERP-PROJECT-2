@@ -81,3 +81,17 @@ USD), and that "select all that match" could only copy, never change, the matchi
 8. **The G2 subject-injection control for a "matching rows" action** searches for the caller's own
    e-mail with `expectedCount` 1, so the valid request acts on the caller alone and any change to
    the named victim is the handler honouring a subject field.
+
+## Addendum: the shell is as wide as the window (round 5)
+
+9. **The shell's one grid column is `minmax(0, 1fr)`**, and the top bar's module context may
+   shrink to nothing. Before, the column took the top bar's contents' width: a workspace with five
+   or six companies (one quick-switch chip each) made every screen 30 to 500 px wider than a
+   1024-1440 px window, cutting off the list's last column, its New button and Sign out. The quick
+   company chips now take the room that is left: a chip that does not fit wraps onto a line the
+   bar's height clips (`overflow: clip`, so focus never scrolls it into view), so a chip shows
+   whole or not at all. Every company stays in the switcher's list (Alt+C), which opens inside the
+   window. Rejected: hiding the chips below a fixed width (the right width depends on the number
+   of companies and the language) and letting the top bar scroll sideways (a scrolling bar hides
+   the sign-out and user controls). This is a shared shell change kept to three CSS rules; p02
+   and p04 own the switcher and the bar.

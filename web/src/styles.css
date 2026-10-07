@@ -259,6 +259,9 @@ input[aria-invalid="true"] {
   height: 100vh;
   height: 100dvh;
   display: grid;
+  /* One column exactly as wide as the window: without it the column is as wide as the top bar's
+     contents, and a workspace with many companies made every screen wider than the window. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
@@ -268,6 +271,7 @@ input[aria-invalid="true"] {
   gap: 10px;
   padding-inline: 6px 12px;
   height: 44px;
+  min-width: 0;
   background: var(--topbar);
   color: var(--topbar-text);
   position: sticky;
@@ -289,6 +293,7 @@ input[aria-invalid="true"] {
 
 .brand {
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .workspace-name {
@@ -304,6 +309,11 @@ input[aria-invalid="true"] {
   display: flex;
   align-items: center;
   gap: 6px;
+  /* The module context (the working company and its one-click chips) gives up room before the
+     search, language, help and user controls do; it never widens the bar. It does not clip
+     itself: a module's pop-up list opens from it. */
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .palette-trigger {
