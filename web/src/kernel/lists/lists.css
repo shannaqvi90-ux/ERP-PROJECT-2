@@ -240,6 +240,15 @@
   white-space: nowrap;
 }
 
+/* The row draws the separator, never a cell: inside a printable document the document's table
+   rule would give every cell its own border and padding, and a cell with nothing in it (a user with
+   no roles) is shorter than its row, so its border crossed the row's middle (critic p05 round 4). */
+.list-grid .list-cell {
+  border-block-end: 0;
+  padding-block: 0;
+  padding-inline: 8px;
+}
+
 .list-cell.type-number,
 .list-cell.type-money {
   text-align: end;

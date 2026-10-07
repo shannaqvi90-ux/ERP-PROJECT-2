@@ -75,6 +75,12 @@ test.describe("list framework", () => {
       rows.slice(0, 15).map((row) => [...row.children].map((cell) => Math.round((cell as HTMLElement).getBoundingClientRect().left)).join(",")),
     );
     expect(new Set(columnStarts).size).toBe(1);
+    // The row draws the separator, never a cell: an empty cell (a user with no roles) once drew its
+    // own border across the middle of its row (critic p05 round 4).
+    const cellBorders = await page.locator("table[role=grid] tbody tr.list-row").evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => [...row.children].map((cell) => getComputedStyle(cell).borderBottomWidth)).filter((w) => w !== "0px"),
+    );
+    expect(cellBorders).toEqual([]);
   });
 
   test("moves through rows with the arrow keys, selects with Space and opens with Enter", async ({ page }) => {
