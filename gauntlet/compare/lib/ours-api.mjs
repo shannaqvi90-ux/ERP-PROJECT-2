@@ -1,5 +1,3 @@
-import { paceSignIn, signInAttempts, waitOutSignInLimit } from './sign-in-limit.mjs';
-
 // Minimal client for our product's documented API (OpenAPI at /api/openapi/v1.json). Used only
 // outside the measured part of a task: fixtures before it, back-end verification and clean-up.
 export class OursApi {
@@ -20,17 +18,10 @@ export class OursApi {
   }
 
   async signIn({ login, password }) {
-    let body;
-    for (let attempt = 1; ; attempt++) {
-      await paceSignIn();
-      const res = await this.#send('POST', '/api/auth/sign-in', { email: login, password, issueToken: true }, { anonymous: true });
-      if (res.status !== 429 || attempt === signInAttempts) {
-        body = await this.#read(res, 'POST', '/api/auth/sign-in');
-        break;
-      }
-      await res.body?.cancel();
-      await waitOutSignInLimit();
-    }
+    // Drivers run in the sandboxed driver process, where this fetch travels to the harness. The
+    // harness paces sign-ins under the product's limit and waits out a 429 (lib/sign-in-limit.mjs,
+    // lib/sandbox/bridge.mjs), so one budget covers every sign-in the harness makes.
+    const body = await this.request('POST', '/api/auth/sign-in', { email: login, password, issueToken: true }, { anonymous: true });
     if (!body?.token) throw new Error(`sign-in to our product failed for ${login}`);
     this.token = body.token;
     this.credentials = { login, password };

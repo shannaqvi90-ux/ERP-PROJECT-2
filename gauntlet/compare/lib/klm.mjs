@@ -24,6 +24,13 @@
 //        c. the same navigation key again (ArrowDown, ArrowDown ...: one unit of moving);
 //        d. Ctrl+A right after a click or Tab into a field (select its content to type over it);
 //        e. the file choice right after the click that opened the file dialog.
+//      No step continues one that began on another screen (round 5): when the address path the
+//      operator recorded at the start of a step differs from the step before's, that step (or the
+//      product's answer to it) opened a new screen, and reading a new screen before acting on it
+//      is a mental step (the paper's rule 0 places an M before each new unit of action; rule 1
+//      removes it only for operators fully anticipated in the one before, which a screen not yet
+//      shown cannot be). Typing a name right after the Enter that opened a list therefore starts
+//      with M, in both products alike.
 //      Card, Moran & Newell's heuristic rules 1 and 2 (an anticipated operator, a cognitive unit)
 //      are the basis; the derivation is deliberately simple so it is the same for both products.
 //   2. A click is P + BB. A double click is P + BBBB. Choosing a file in the file dialog is
@@ -98,6 +105,7 @@ const isClick = s => s?.kind === 'click' || s?.kind === 'double-click';
 /** Whether `step` continues `prev` (no M before it): rule 1 above, from the steps alone. */
 export function continues(prev, step) {
   if (!prev) return false;
+  if (prev.screen != null && step.screen != null && prev.screen !== step.screen) return false;
   switch (step.kind) {
     case 'type': return prev.kind === 'key' || (isClick(prev) && step.same_field === true);
     case 'key':
