@@ -61,3 +61,18 @@ USD), and that "select all that match" could only copy, never change, the matchi
   `identity.users.update`, the same permission as one user's edit.
 - The list-answer phase sends more requests (several pages per query and tenant). That is the
   cost of judging every page.
+
+## Addendum: list headers and cells (round 5, after the relaunch)
+
+6. **A header never leaves its column.** The header cell is a flex row: the label shrinks to an
+   ellipsis, and the sort mark and column menu keep their size. The full label is the sort
+   button's title. A column's minimum width also fits its header label (about 0.56rem a character
+   plus 3.25rem for the menu and padding, at most 16rem), so at desktop widths labels are not cut.
+   The alternative, wrapping header labels onto two lines, was rejected: it makes the header row
+   taller than the 28px body rows and costs a row of data on every screen.
+7. **Text cells in a right-to-left list take their own direction** (`unicode-bidi: plaintext`) and
+   stay right-aligned, so a Latin e-mail that does not fit is cut at its end and keeps the part that
+   names the person.
+8. **The G2 subject-injection control for a "matching rows" action** searches for the caller's own
+   e-mail with `expectedCount` 1, so the valid request acts on the caller alone and any change to
+   the named victim is the handler honouring a subject field.
