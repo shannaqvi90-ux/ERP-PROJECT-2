@@ -6,8 +6,8 @@ namespace Erp.Modules.Reports.Pdf;
 
 /// <summary>
 /// A minimal PDF 1.7 writer for printed documents: pages with Flate-compressed content streams,
-/// embedded TrueType fonts (Type0 / CIDFontType2, Identity-H) with only the widths of the glyphs
-/// used, a ToUnicode map so text can be searched and copied, replacement text (<c>/ActualText</c>)
+/// embedded TrueType fonts (Type0 / CIDFontType2, Identity-H) cut down to the glyphs used, with
+/// only their widths, a ToUnicode map so text can be searched and copied, replacement text (<c>/ActualText</c>)
 /// in logical order on right-to-left runs, the document language, and a right-to-left reading
 /// direction for Arabic documents.
 /// <para>Text is addressed by character id, not glyph id: every distinct pair of a glyph and the
@@ -74,9 +74,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw(body);
             Raw("\nendobj\n");
         }
-        void Stream(int id, byte[] data, string extra = "", System.Collections.Immutable.ImmutableArray<byte>? alreadyCompressed = null)
+        void Stream(int id, byte[] data, string extra = "")
         {
-            ReadOnlySpan<byte> compressed = alreadyCompressed is { } done ? done.AsSpan() : Deflate(data);
+            var compressed = Deflate(data);
             Begin(id);
             Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
             output.Write(compressed);
@@ -111,8 +111,11 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             {
                 widths.Append(cid).Append(" [").Append(use.Widths[cid]).Append("] ");
             }
-            Object(fontIds[face], $"<< /Type /Font /Subtype /Type0 /BaseFont /{face.Name} /Encoding /Identity-H /DescendantFonts [{descendant} 0 R] /ToUnicode {toUnicode} 0 R >>");
-            Object(descendant, $"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{face.Name} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> " +
+            // Only the glyphs this document draws are embedded (a subset, named with its tag).
+            var subset = FontSubset.Of(face.Sfnt, use.Glyphs);
+            var baseFont = $"{FontSubset.Tag(face.Name, use.Glyphs)}+{face.Name}";
+            Object(fontIds[face], $"<< /Type /Font /Subtype /Type0 /BaseFont /{baseFont} /Encoding /Identity-H /DescendantFonts [{descendant} 0 R] /ToUnicode {toUnicode} 0 R >>");
+            Object(descendant, $"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{baseFont} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> " +
                                $"/FontDescriptor {descriptor} 0 R /DW 0 /W [{widths}] /CIDToGIDMap {cidToGid} 0 R >>");
             var map = new byte[use.Glyphs.Count * 2];
             for (var cid = 0; cid < use.Glyphs.Count; cid++)
@@ -122,9 +125,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             }
             Stream(cidToGid, map);
             var box = face.BoundingBox;
-            Object(descriptor, $"<< /Type /FontDescriptor /FontName /{face.Name} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
+            Object(descriptor, $"<< /Type /FontDescriptor /FontName /{baseFont} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
                                $"/Ascent {face.Ascent} /Descent {face.Descent} /CapHeight {face.CapHeight} /StemV {(face.Bold ? 120 : 80)} /FontWeight {(face.Bold ? 700 : 400)} /FontFile2 {file} 0 R >>");
-            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}", face.CompressedSfnt);
+            Stream(file, subset, $" /Length1 {subset.Length}");
             Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Texts)));
         }
         Object(pages, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
@@ -237,9 +240,21 @@ public sealed class PdfPage
     /// <summary>Draws a shaped line with its left edge at <paramref name="x"/> and baseline at <paramref name="y"/>.</summary>
     public void Text(ShapedLine line, decimal x, decimal y, decimal gray = 0)
     {
-        var pen = x;
+        // Each run's left edge, then the runs in reading order: a right-to-left line is written from
+        // its right end, so a reader that takes text in the order it was written (pdf.js) gets the
+        // pieces of a line, Arabic and the English inside it, in the order they are read.
+        var starts = new List<decimal>(line.Runs.Count);
+        var left = x;
         foreach (var run in line.Runs)
         {
+            starts.Add(left);
+            left += run.Advance * line.Size / 1000.0m;
+        }
+        var order = Enumerable.Range(0, line.Runs.Count);
+        foreach (var index in line.RightToLeft ? order.Reverse() : order)
+        {
+            var run = line.Runs[index];
+            var pen = starts[index];
             var (font, cids) = _writer.FontResource(run.Face, run);
             var scale = line.Size / 1000.0m;
             if (run.RightToLeft)
@@ -247,43 +262,50 @@ public sealed class PdfPage
                 Content.Append($"/Span << /ActualText {PdfWriter.Text(run.Text)} >> BDC\n");
             }
             Content.Append($"BT {PdfWriter.N(gray)} g /{font} {PdfWriter.N(line.Size)} Tf\n");
+            // The run's letters in one TJ string from one starting point, so a reader's text
+            // extraction (pdf.js, PDFium, Poppler) takes the run as one piece and puts a
+            // right-to-left run back in reading order as a whole (critic p06 round 2: Arabic came out
+            // in fragments wherever a letter carried dots or a mark, each drawn on its own). Every
+            // glyph's horizontal offset and the shaper's advance go in as TJ adjustments. Glyphs
+            // drawn off the baseline, and marks (dots, vowels: no text of their own), follow in a
+            // second pass, each at its own place.
+            var placed = new List<(int Index, decimal X)>();
             var segment = new StringBuilder();
-            var segmentX = pen;
-            void Flush()
-            {
-                if (segment.Length > 0)
-                {
-                    Content.Append($"1 0 0 1 {PdfWriter.N(segmentX)} {PdfWriter.N(y)} Tm [{segment}] TJ\n");
-                    segment.Clear();
-                }
-            }
+            var start = pen;
+            decimal pending = 0; // thousandths of the font size to move right before the next glyph
             for (var i = 0; i < run.Glyphs.Count; i++)
             {
                 var glyph = run.Glyphs[i];
                 var mark = run.GlyphText[i].Length == 0;
-                if (glyph.OffsetX != 0 || glyph.OffsetY != 0 || mark)
+                if (glyph.OffsetY != 0 || mark)
                 {
-                    Flush();
-                    Content.Append(mark ? "/Artifact BMC " : "")
-                        .Append($"1 0 0 1 {PdfWriter.N(pen + glyph.OffsetX * scale)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{cids[i]:X4}> Tj")
-                        .Append(mark ? " EMC\n" : "\n");
+                    placed.Add((i, pen + glyph.OffsetX * scale));
+                    pending += glyph.Advance;
                     pen += glyph.Advance * scale;
-                    segmentX = pen;
                     continue;
                 }
-                if (segment.Length == 0)
+                pending += glyph.OffsetX;
+                if (pending != 0)
                 {
-                    segmentX = pen;
+                    segment.Append(' ').Append((-pending).ToString(CultureInfo.InvariantCulture)).Append(' ');
                 }
                 segment.Append('<').Append(cids[i].ToString("X4", CultureInfo.InvariantCulture)).Append('>');
-                var adjust = run.Face.Width(glyph.Glyph) - glyph.Advance;
-                if (adjust != 0)
-                {
-                    segment.Append(' ').Append(adjust.ToString(CultureInfo.InvariantCulture)).Append(' ');
-                }
+                // The font's own width moved the pen; the shaper's advance (less the offset) is where it goes.
+                pending = glyph.Advance - glyph.OffsetX - run.Face.Width(glyph.Glyph);
                 pen += glyph.Advance * scale;
             }
-            Flush();
+            if (segment.Length > 0)
+            {
+                Content.Append($"1 0 0 1 {PdfWriter.N(start)} {PdfWriter.N(y)} Tm [{segment}] TJ\n");
+            }
+            foreach (var (i, at) in placed)
+            {
+                var glyph = run.Glyphs[i];
+                var mark = run.GlyphText[i].Length == 0;
+                Content.Append(mark ? "/Artifact BMC " : "")
+                    .Append($"1 0 0 1 {PdfWriter.N(at)} {PdfWriter.N(y + glyph.OffsetY * scale)} Tm <{cids[i]:X4}> Tj")
+                    .Append(mark ? " EMC\n" : "\n");
+            }
             Content.Append("ET\n");
             if (run.RightToLeft)
             {

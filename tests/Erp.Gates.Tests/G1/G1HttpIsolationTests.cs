@@ -324,6 +324,12 @@ public static partial class IsolationAttack
                     victim.Markers.Concat(values.Strings).Distinct().ToList(), activity.AdminClient), CancellationToken.None);
                 state.Requests += result.Attempts;
                 probesRun++;
+                // Attempts the probe could not make or that got no answer fail the gate (as server
+                // errors do), and what it did observe is still judged below.
+                foreach (var failure in result.Failures)
+                {
+                    state.ServerErrors.Add($"probe {probe.Name}: no answer: {failure}");
+                }
                 foreach (var raw in result.Observed)
                 {
                     // A probe may hand over a whole body as "body:<media type>;base64,<data>"; it is

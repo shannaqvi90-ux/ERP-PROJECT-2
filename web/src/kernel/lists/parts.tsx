@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useI18n } from "../i18n";
-import { localDayStart, nextDay } from "./format";
+import { flagLabel, localDayStart, nextDay } from "./format";
 import type { Condition, ListColumn, ListDefinition, Operator, SavedView } from "./model";
 
 /** A small dialog or menu anchored in the list toolbar: Escape and a click outside close it and
@@ -211,7 +211,7 @@ export function FilterEditor({
           {(["any", "true", "false"] as const).map((value) => (
             <label key={value} className="list-check">
               <input type="radio" name={`${id}-flag`} checked={flag === value} onChange={() => setFlag(value)} />
-              {t(value === "any" ? "lists.filter.any" : value === "true" ? "lists.filter.yes" : "lists.filter.no")}
+              {value === "any" ? t("lists.filter.any") : column.choices.some((c) => c.value === value) ? flagLabel(column, value === "true", t) : t(value === "true" ? "lists.filter.yes" : "lists.filter.no")}
             </label>
           ))}
         </fieldset>

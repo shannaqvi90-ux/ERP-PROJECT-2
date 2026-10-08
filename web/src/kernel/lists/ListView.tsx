@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
-import { confirmLeave } from "../forms/leave";
+import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
@@ -356,22 +356,28 @@ export function ListView(props: ListViewProps) {
   const recordOpen = props.renderRecord ? Boolean(openId) : Boolean(openRow);
 
   function open(row: Row) {
+    const go = () => {
+      if (props.onOpen) {
+        props.onOpen(row);
+        return;
+      }
+      setOpenRow(row);
+      setOpenId(row.id);
+    };
     // Another record replaces the open one only once its unsaved changes are saved or given up.
-    if (openId && row.id !== openId && !confirmLeave()) return;
-    if (props.onOpen) {
-      props.onOpen(row);
-      return;
-    }
-    setOpenRow(row);
-    setOpenId(row.id);
+    if (openId && row.id !== openId) requestLeave(go);
+    else go();
   }
 
   /** Close the open record. `asked`: its form already dealt with unsaved changes. */
   function closeRecord(asked = false) {
-    if (!asked && !confirmLeave()) return;
-    setOpenId(null);
-    setOpenRow(null);
-    tableRef.current?.focus();
+    const go = () => {
+      setOpenId(null);
+      setOpenRow(null);
+      tableRef.current?.focus();
+    };
+    if (asked) go();
+    else requestLeave(go);
   }
 
   closeRef.current = closeRecord;
@@ -384,14 +390,17 @@ export function ListView(props: ListViewProps) {
       rows.ensure(index, index + 1);
       return;
     }
-    if (openId && row.id !== openId && !confirmLeave()) return;
-    setActive(index);
-    scrollToRow(index);
-    if (props.onOpen) props.onOpen(row);
-    else {
-      setOpenRow(row);
-      setOpenId(row.id);
-    }
+    const go = () => {
+      setActive(index);
+      scrollToRow(index);
+      if (props.onOpen) props.onOpen(row);
+      else {
+        setOpenRow(row);
+        setOpenId(row.id);
+      }
+    };
+    if (openId && row.id !== openId) requestLeave(go);
+    else go();
   }
 
   /** Where the open record sits in the list, for its form's previous and next. */

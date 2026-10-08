@@ -42,4 +42,9 @@ public sealed record IsolationProbeResult(int Attempts, IReadOnlyList<string> Ob
     /// <summary>A whole response body handed to the gate to decode as a reader would (a PDF's
     /// text, a spreadsheet's cells) rather than search as bytes.</summary>
     public static string Body(string mediaType, byte[] bytes) => $"body:{mediaType};base64,{Convert.ToBase64String(bytes)}";
+
+    /// <summary>Attempts that could not be made or got no answer (a request that failed or timed
+    /// out), each with what was asked. The gate fails on any of them, after judging everything the
+    /// probe did observe: a surface the probe could not reach is not a surface shown to be safe.</summary>
+    public IReadOnlyList<string> Failures { get; init; } = [];
 }

@@ -107,6 +107,10 @@ describe("reports screen", () => {
     await settle();
     expect(window.location.search).toBe("?report=identity.usersByRole&status=active&language=ar");
 
+    // The grouping select shows the report's own grouping, the one the document is built with.
+    const groupBy = view!.container.querySelector<HTMLSelectElement>('[data-field="groupBy"] select')!;
+    expect(groupBy.value).toBe("role");
+    expect(groupBy.selectedOptions[0]!.textContent).toBe("Role");
     const pdf = [...view!.container.querySelectorAll<HTMLAnchorElement>("a.button")].find((a) => a.textContent === "PDF")!;
     expect(pdf.getAttribute("href")).toBe("/api/reports/run/identity.usersByRole?status=active&groupBy=role&format=pdf&language=ar&numerals=latn");
 
