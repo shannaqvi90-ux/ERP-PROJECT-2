@@ -39,7 +39,10 @@ caller sent and differed from caller to caller.
 The G1 HTTP isolation test alone, run locally with the verify's runtime settings: 2,647 processor
 seconds before (36 min 58 s, load about 50; that run also carried a five-minute stack-sampling
 trace) and 2,291 after (30 min 30 s, load 12 to 30). The other attacks (the HTTP self-test on the
-planted module, the company and branch attacks, non-interference) send the endpoint too.
+planted module, the company and branch attacks, non-interference) send the endpoint too. The whole
+verify through the slot (2026-10-08, merged with the integration branch, 454 .NET tests): 8,490
+processor seconds (.NET stage 7,465), against 9,520 and then 9,091 for this branch's two previous
+runs without the change (.NET stage 8,574 and 8,099).
 
 ## Alternatives considered
 
