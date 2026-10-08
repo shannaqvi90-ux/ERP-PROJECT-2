@@ -104,10 +104,10 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/lists/tenancy.branches/definition") return { status: 200, body: definition("tenancy.branches", "/api/tenancy/branches", "code") };
     if (path === "/api/lists/tenancy.access/definition") return { status: 200, body: definition("tenancy.access", "/api/tenancy/access", "displayName") };
     if (path.endsWith("/views")) return { status: 200, body: { items: [] } };
-    if (path === "/api/tenancy/companies") return { status: 200, body: { items: [company], total: 1, next: null } };
+    if (path === "/api/tenancy/companies") return { status: 200, body: { items: [{ ...company, everyBranch: options.everyBranch ?? true }], total: 1, next: null } };
     if (path === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
-    if (path === "/api/tenancy/branches/b1") return { status: 200, body: branch };
+    if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
     if (path === "/api/tenancy/access/u2") return { status: 200, body: access(options.canEdit ?? true) };
     if (path === "/api/tenancy/tenant") return { status: 200, body: tenant };
@@ -170,6 +170,8 @@ const needs: Record<Screen, Record<string, (c: string) => boolean>> = {
   branches: {
     // New branch (plant U2).
     "tenancy.branches.create": (c) => c === "button:New",
+    // A new branch is added to a company the user picks from the companies they may read.
+    "tenancy.companies.read": (c) => c === "button:New",
     "tenancy.branches.update": (c) => c === "button:Save" || c.startsWith("field:"),
   },
   access: {
@@ -232,10 +234,44 @@ describe("tenancy screens offer exactly what the user may do", () => {
     }
   });
 
-  it("companies: a company where the user works in only some branches offers no change to the company itself, and says why", async () => {
-    const offered = await open("companies", all, { everyBranch: false });
-    expect(offered.filter((c) => c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || (c.startsWith("field:") && !c.startsWith("field:branch")))).toEqual([]);
+  // Critic p02 round 4: a user given the Administrator role inside one branch of the company was
+  // offered the company's branch line, New on the Branches screen and an editable branch code, and
+  // the server refused all three (tenancy.branchNeedsEveryBranch). Records every branch of the
+  // company shares (the company itself, its logo, its set of branches and their codes) are offered
+  // only to someone who works in every branch of it; their own branch stays theirs to change.
+  const someBranches: Record<"companies" | "branches", (c: string) => boolean> = {
+    companies: (c) =>
+      c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || c.startsWith("field:") ||
+      c === "form:Add branch" || c === "button:Add branch",
+    branches: (c) => c === "button:New" || c === "field:code",
+  };
+  for (const screen of ["companies", "branches"] as const) {
+    it(`${screen}: where the user works in only some branches of the company, exactly what every branch shares disappears`, async () => {
+      const full = await open(screen, all);
+      expect(full.filter(someBranches[screen]).length, `${screen} with every branch offers what every branch shares`).toBeGreaterThan(screen === "companies" ? 4 : 1);
+      closeView();
+      const limited = await open(screen, all, { everyBranch: false });
+      expect(limited, `${screen} for a user who works in only some branches`).toEqual(full.filter((c) => !someBranches[screen](c)));
+    });
+  }
+
+  it("companies: a company where the user works in only some branches says why it cannot be changed", async () => {
+    await open("companies", all, { everyBranch: false });
     expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("only some branches of this company");
+  });
+
+  it("branches: Alt+N opens nothing when the user works in only some branches of every company", async () => {
+    await open("branches", all, { everyBranch: false, path: "/tenancy/branches" });
+    act(() => {
+      (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
+    });
+    await settle();
+    expect(shown().container.querySelector(".record-form"), "Alt+N with only some branches").toBeNull();
+  });
+
+  it("branches: a branch code the user may not change says why", async () => {
+    await open("branches", all, { everyBranch: false });
+    expect(shown().container.querySelector("main")!.textContent).toContain("may change a branch code");
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {

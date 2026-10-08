@@ -129,6 +129,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         if (access.Count == 0)
         {
             await session.BindCompaniesAsync([], cancellationToken);
+            session.SetBranchLimits([]);
             session.SetWorkplace(null, null, []);
             return true;
         }
@@ -160,6 +161,9 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
                 }
             }
         }, cancellationToken);
+        // Records every branch of a company shares are written only by users who hold every branch
+        // of it (the kernel refuses the rest, whatever an endpoint checked).
+        session.SetBranchLimits(access.Where(a => !a.AllBranches).Select(a => a.CompanyId));
         var activeCompanies = companies.OrderBy(c => c.Code, StringComparer.Ordinal).Select(c => c.Id).ToList();
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
         // Branch limits hold for the rest of the request: only the branches the user may work in

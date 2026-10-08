@@ -83,7 +83,19 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   const [conflict, setConflict] = useState(false);
   const [loads, setLoads] = useState(0);
 
+  // A record this form has just created: the screen then points the form at the new record's id
+  // (the key changes in the same render as the save). The save's answer is that record, so the
+  // form keeps it instead of reading it again: a re-read would swap the whole form for "Loading"
+  // and back, losing the focus and anything typed meanwhile (a new company's first branch line).
+  const justCreated = useRef(false);
+  const seenLoads = useRef(loads);
   useEffect(() => {
+    const keyChangeOnly = seenLoads.current === loads;
+    seenLoads.current = loads;
+    if (justCreated.current && keyChangeOnly) {
+      justCreated.current = false;
+      return;
+    }
     const load = specRef.current.load;
     if (!load) return;
     const controller = new AbortController();
@@ -107,6 +119,11 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       });
     return () => controller.abort();
   }, [key, loads]);
+  // The created mark holds for the render that follows the save only (declared after the load
+  // effect, so it runs after it in that render).
+  useEffect(() => {
+    justCreated.current = false;
+  });
 
   const readOnly = !spec.canEdit;
   const dirty = !readOnly && status === "ready" && !same(draft, baseline);
@@ -148,6 +165,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       setErrors({});
       setConflict(false);
       setSaved(true);
+      justCreated.current = record === null;
       current.onSaved?.(result, record === null);
       return result;
     } catch (error) {
