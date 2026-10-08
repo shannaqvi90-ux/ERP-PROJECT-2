@@ -263,6 +263,18 @@
   vertical-align: top;
 }
 
+/* A screen's own value with an explicit direction (a code, an English or Arabic name rendered as
+   <span dir="…">) is a box of that direction too, so it is cut at its own end: an English company
+   name in the Arabic companies list keeps its beginning ("Al Noor Technical Serv…"). */
+.list-cell > span[dir] {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
 .list-cell.type-number,
 .list-cell.type-money {
   text-align: end;
@@ -512,4 +524,44 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+}
+
+/* The app's own confirmation dialog (ConfirmDialog): modal over the screen, in the page's
+   direction and language. */
+.list-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block-start: 15vh;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.list-confirm {
+  min-width: 280px;
+  max-width: min(440px, calc(100vw - 32px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
+  padding: 12px 14px;
+}
+
+.list-confirm-message {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.list-confirm .button.danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+@media print {
+  .list-confirm-backdrop {
+    display: none;
+  }
 }

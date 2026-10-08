@@ -7,6 +7,7 @@ using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Npgsql;
 
 namespace Erp.Gates.Tests.SelfTests;
@@ -55,6 +56,22 @@ public sealed class LeakyModule : ErpModule
                 p => p.Id)
             .Column("displayName", p => p.DisplayName)
             .InMemory("Planted list of the gate self-tests."));
+        // Bug 53 (critic p05 round 5, plant L10): a registered list whose offset pages (skip, a jump
+        // into the list) reuse the total the last first page counted, whatever its tenant, kept in a
+        // pooled scratch object: an ObjectPool<JumpScratch> singleton whose implementation is the
+        // framework's DefaultObjectPool<T>, never cleared, keyed without the tenant. Every first page
+        // and every keyset page stays the caller's own; only an offset page's total leaks.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                JumpList, "leaky.jump.title", "leaky.data.read", "/api/leaky/jump",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .InMemory("Planted list of the gate self-tests."));
+        module.Services.AddSingleton<ObjectPool<JumpScratch>>(_ => ObjectPool.Create<JumpScratch>());
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
@@ -85,6 +102,37 @@ public sealed class LeakyModule : ErpModule
                 }
                 return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
             }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
+
+            group.MapGet("/jump", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, ObjectPool<JumpScratch> pool,
+                HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(JumpList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                var scratch = pool.Get();
+                try
+                {
+                    var key = $"{request.Search}|{request.Filter}";
+                    int total;
+                    if (request.Skip is > 0 && scratch.Totals.TryGetValue(key, out var known))
+                    {
+                        total = known;
+                    }
+                    else
+                    {
+                        total = result.Total;
+                        scratch.Totals[key] = total;
+                    }
+                    return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, result.Groups));
+                }
+                finally
+                {
+                    pool.Return(scratch);
+                }
+            }).WithName("leaky.jump").WithSummary("Planted bug: offset pages reuse the last first page's total, any tenant's, from a pooled scratch object.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -1132,6 +1180,13 @@ public sealed class LeakyModule : ErpModule
 
     public const string PeopleList = "leaky.people";
     public const string ScrollList = "leaky.scroll";
+    public const string JumpList = "leaky.jump";
+
+    /// <summary>Bug 53's per-query scratch space, pooled and never cleared.</summary>
+    public sealed class JumpScratch
+    {
+        public Dictionary<string, int> Totals { get; } = new(StringComparer.Ordinal);
+    }
 
     /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
     /// value until a closed instantiation (<c>ScrollTotals&lt;Person&gt;</c>) is used.</summary>
