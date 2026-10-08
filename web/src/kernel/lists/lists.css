@@ -130,6 +130,13 @@
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
 }
 
+/* A screen's own record form (renderRecord: a role's permission matrix, a company's form) grows
+   with the screen: about half the list's width, never under 380px. A fixed 340px panel cut the
+   matrix headers to "Creat" and "Delet" at every screen width (critic p03 round 5). */
+.list-body.has-record.has-form {
+  grid-template-columns: minmax(0, 1fr) minmax(min(380px, 50%), 48%);
+}
+
 .list-scroll {
   position: relative;
   height: calc(100vh - 256px);
