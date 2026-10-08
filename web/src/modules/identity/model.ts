@@ -204,6 +204,33 @@ export const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valu
 /** The role name in the screen's language. */
 export const roleName = (role: { nameEn: string; nameAr: string }, language: string) => (language === "ar" ? role.nameAr : role.nameEn);
 
+/**
+ * What a user holds, for the users list's Roles cell: roles in every company by name, then roles in
+ * one company as "name (company code)", then a note when the user also holds roles in companies the
+ * reader does not work in (critic p03 round 5: a user whose roles were all per company showed an
+ * empty cell, so the list misstated who can do what). Roles the reader cannot name are left out.
+ */
+export function rolesSummary(
+  user: Record<string, unknown>,
+  roleNames: ReadonlyMap<string, string>,
+  companyCodes: ReadonlyMap<string, string>,
+  elsewhere: string,
+  separator: string,
+): string {
+  const everywhere = (Array.isArray(user.roleIds) ? (user.roleIds as string[]) : []).map((id) => roleNames.get(id)).filter((n): n is string => !!n);
+  const inOne = (Array.isArray(user.companyRoles) ? (user.companyRoles as CompanyRole[]) : [])
+    .map((c) => {
+      const name = roleNames.get(c.roleId);
+      if (!name) return null;
+      const code = companyCodes.get(c.companyId);
+      return code ? `${name} (${code})` : name;
+    })
+    .filter((n): n is string => !!n);
+  const parts = [...everywhere, ...inOne];
+  if (user.rolesElsewhere === true) parts.push(elsewhere);
+  return parts.join(separator);
+}
+
 /** True when the key event should not be taken as a screen shortcut (the user is typing). */
 export function isTyping(event: KeyboardEvent | { target: EventTarget | null }): boolean {
   const target = event.target as HTMLElement | null;

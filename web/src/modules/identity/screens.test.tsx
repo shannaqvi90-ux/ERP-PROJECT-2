@@ -102,6 +102,34 @@ describe("users screen", () => {
     expect(window.location.search).toBe("?open=u-new");
   });
 
+  it("names in the Roles column the roles held in every company, those held in one company with its code, and roles elsewhere", async () => {
+    // Critic p03 round 5: a user whose roles were all per company showed an empty Roles cell.
+    window.history.replaceState(null, "", "/identity/users");
+    const row = (id: string, displayName: string, extra: Record<string, unknown>) => ({
+      id, email: `${id}@demo-trading.example`, displayName, language: "en", isActive: true, roleIds: [], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, ...extra,
+    });
+    const items = [
+      row("u-mgr", "Dubai Manager", { companyRoles: [{ roleId: "r-admin", companyId: "c-dxb" }] }),
+      row("u-acc", "Accountant", { roleIds: ["r-clerk"], companyRoles: [{ roleId: "r-admin", companyId: "c-fze" }], rolesElsewhere: true }),
+    ];
+    mockFetch((m, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      const list = listReply(m, url);
+      if (list) return list;
+      if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items, total: items.length } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/companies")
+        return { status: 200, body: [{ id: "c-dxb", code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور" }, { id: "c-fze", code: "ALN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور" }] };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const text = (name: string) => [...view!.container.querySelectorAll("tbody tr")].find((r) => r.textContent?.includes(name))!.textContent;
+    expect(text("Dubai Manager")).toContain("Administrator (ALN-DXB)");
+    expect(text("Accountant")).toContain("Contacts clerk, Administrator (ALN-FZE), roles in other companies");
+  });
+
   it("hides creation and account actions from a read-only user", async () => {
     window.history.replaceState(null, "", "/identity/users?open=u1");
     mockFetch((_m, url) => {
