@@ -14,8 +14,9 @@ public sealed record GlyphRun(PdfFontFace Face, IReadOnlyList<ShapedGlyph> Glyph
     public int Advance => Glyphs.Sum(g => g.Advance);
 }
 
-/// <summary>One line of text, shaped and ordered for drawing left to right.</summary>
-public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size)
+/// <summary>One line of text, shaped and ordered for drawing left to right. <paramref name="RightToLeft"/>:
+/// the paragraph reads right to left (its runs are written into the PDF from the right, in reading order).</summary>
+public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size, bool RightToLeft = false)
 {
     /// <summary>Width in points.</summary>
     public decimal Width => Runs.Sum(r => r.Advance) * Size / 1000.0m;
@@ -29,10 +30,26 @@ public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size)
 /// kerning), and line breaking at spaces within a width. A paragraph's direction is that of its
 /// first strong character (an English name stays left to right inside an Arabic document), else
 /// the document's.
+/// One shaper lays out one document (it is not shared between requests or threads): a line it
+/// has shaped once is kept for the rest of that document, since line breaking asks for the same
+/// text many times (decision p03-identity-gate-processor-time).
 /// </summary>
 public sealed class TextShaper(PdfFonts fonts)
 {
+    private readonly Dictionary<(string Text, decimal Size, int Scale, bool Bold, bool Rtl), ShapedLine> _shaped = new();
+
     public ShapedLine Shape(string text, decimal size, bool bold, bool documentRightToLeft)
+    {
+        var key = (text, size, size.Scale, bold, documentRightToLeft);
+        if (!_shaped.TryGetValue(key, out var line))
+        {
+            line = ShapeUncached(text, size, bold, documentRightToLeft);
+            _shaped[key] = line;
+        }
+        return line;
+    }
+
+    private ShapedLine ShapeUncached(string text, decimal size, bool bold, bool documentRightToLeft)
     {
         text = Clean(text);
         var rtl = Bidi.FirstStrongIsRightToLeft(text) ?? documentRightToLeft;
@@ -53,20 +70,30 @@ public sealed class TextShaper(PdfFonts fonts)
                 }
             }
         }
-        return new ShapedLine(runs, size);
+        return new ShapedLine(runs, size, rtl);
     }
 
     /// <summary>The text broken into lines no wider than <paramref name="width"/> points, at spaces
-    /// (inside a word only when the word alone is wider). Explicit line breaks are kept.</summary>
+    /// (inside a word only when the word alone is wider). Explicit line breaks are kept. At most
+    /// <paramref name="maxLines"/> lines: the rest of the text is not laid out at all, so the work
+    /// is bounded by the lines kept, whatever the text's length (a cell holding thousands of
+    /// characters without a space once kept a report request busy for good).</summary>
     public IReadOnlyList<ShapedLine> Wrap(string text, decimal size, bool bold, bool documentRightToLeft, decimal width, int maxLines = 50)
     {
         var lines = new List<ShapedLine>();
         foreach (var paragraph in (text ?? "").Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
         {
-            var words = paragraph.Split(' ');
-            var current = "";
-            foreach (var word in words)
+            if (lines.Count >= maxLines)
             {
+                break;
+            }
+            var current = "";
+            foreach (var word in paragraph.Split(' '))
+            {
+                if (lines.Count >= maxLines)
+                {
+                    break;
+                }
                 var candidate = current.Length == 0 ? word : current + " " + word;
                 if (Shape(candidate, size, bold, documentRightToLeft).Width <= width || current.Length == 0 && Fits(word, size, bold, documentRightToLeft, width))
                 {
@@ -80,25 +107,61 @@ public sealed class TextShaper(PdfFonts fonts)
                 }
                 // A word wider than the line is cut where it no longer fits.
                 var rest = word;
-                while (rest.Length > 0 && !Fits(rest, size, bold, documentRightToLeft, width))
+                while (rest.Length > 0 && lines.Count < maxLines)
                 {
-                    var cut = rest.Length - 1;
-                    while (cut > 1 && !Fits(rest[..cut], size, bold, documentRightToLeft, width))
+                    var cut = FittingPrefix(rest, size, bold, documentRightToLeft, width);
+                    if (cut == rest.Length)
                     {
-                        cut--;
+                        break;
                     }
                     lines.Add(Shape(rest[..cut], size, bold, documentRightToLeft));
                     rest = rest[cut..];
                 }
                 current = rest;
             }
-            lines.Add(Shape(current, size, bold, documentRightToLeft));
-        }
-        if (lines.Count > maxLines)
-        {
-            lines = lines.Take(maxLines).ToList();
+            if (lines.Count < maxLines)
+            {
+                lines.Add(Shape(current, size, bold, documentRightToLeft));
+            }
         }
         return lines;
+    }
+
+    /// <summary>The length of the longest start of <paramref name="text"/> that fits the width (the
+    /// whole text when it fits): doubling the length until it no longer fits, then halving between,
+    /// so only starts about a line long are ever shaped, however long the text. At least one
+    /// character (a character wider than the line still makes progress), never half of a
+    /// surrogate pair.</summary>
+    private int FittingPrefix(string text, decimal size, bool bold, bool rtl, decimal width)
+    {
+        var probe = 1;
+        while (probe < text.Length && Fits(text[..probe], size, bold, rtl, width))
+        {
+            probe *= 2;
+        }
+        if (probe >= text.Length && Fits(text, size, bold, rtl, width))
+        {
+            return text.Length;
+        }
+        int low = Math.Max(1, probe / 2), high = Math.Min(probe, text.Length) - 1, best = 1;
+        while (low <= high)
+        {
+            var middle = low + (high - low) / 2;
+            if (Fits(text[..middle], size, bold, rtl, width))
+            {
+                best = middle;
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle - 1;
+            }
+        }
+        if (best < text.Length && char.IsHighSurrogate(text[best - 1]))
+        {
+            best = best > 1 ? best - 1 : best + 1;
+        }
+        return Math.Min(best, text.Length);
     }
 
     private bool Fits(string text, decimal size, bool bold, bool rtl, decimal width) => Shape(text, size, bold, rtl).Width <= width;
@@ -146,7 +209,7 @@ public sealed class TextShaper(PdfFonts fonts)
         using var buffer = new Buffer();
         buffer.AddUtf16(slice);
         buffer.Direction = rtl ? Direction.RightToLeft : Direction.LeftToRight;
-        buffer.Script = Bidi.IsArabicScript(slice.FirstOrDefault(c => Bidi.IsArabicScript(c))) ? Script.Arabic : Script.Latin;
+        buffer.Script = HasArabicScript(slice) ? Script.Arabic : Script.Latin;
         buffer.Language = new Language(rtl ? "ar" : "en");
         buffer.ClusterLevel = ClusterLevel.MonotoneCharacters;
         face.Font.Shape(buffer);
@@ -156,6 +219,12 @@ public sealed class TextShaper(PdfFonts fonts)
         var glyphText = new List<string>(infos.Length);
         // Clusters in glyph (visual) order; each cluster's characters span to the next cluster start.
         var clusterStarts = infos.Select(i => (int)i.Cluster).Distinct().Order().ToList();
+        // Each cluster's end, looked up once (searching the list per glyph made a long run quadratic).
+        var clusterEnd = new Dictionary<int, int>(clusterStarts.Count);
+        for (var c = 0; c < clusterStarts.Count; c++)
+        {
+            clusterEnd[clusterStarts[c]] = c + 1 < clusterStarts.Count ? clusterStarts[c + 1] : slice.Length;
+        }
         // The characters of a cluster belong to its widest glyph (the letter); the other glyphs of
         // the cluster are marks and dots drawn on it (Noto Sans Arabic draws dots as separate glyphs).
         var owner = new Dictionary<int, int>();
@@ -170,12 +239,52 @@ public sealed class TextShaper(PdfFonts fonts)
         for (var g = 0; g < infos.Length; g++)
         {
             var cluster = (int)infos[g].Cluster;
-            var next = clusterStarts.FirstOrDefault(c => c > cluster, slice.Length);
-            var chars = slice[cluster..next];
+            var chars = slice[cluster..clusterEnd[cluster]];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
             glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
         }
+        // A combining mark shaped as a cluster of its own (a damma over a letter) carries no text of
+        // its own: its character goes with the letter it sits on (the nearest earlier cluster that
+        // has text), so a reader's copy keeps the letter and its mark together, in order. (The mark is
+        // drawn off the baseline after the run's letters; text of its own would come out apart.)
+        for (var g = 0; g < glyphs.Count; g++)
+        {
+            if (glyphs[g].Advance != 0 || glyphText[g].Length == 0 || !glyphText[g].All(c => char.GetUnicodeCategory(c) is System.Globalization.UnicodeCategory.NonSpacingMark))
+            {
+                continue;
+            }
+            var cluster = (int)infos[g].Cluster;
+            var baseGlyph = -1;
+            for (var other = 0; other < glyphs.Count; other++)
+            {
+                var at = (int)infos[other].Cluster;
+                if (at < cluster && glyphText[other].Length > 0 && glyphs[other].Advance != 0 && (baseGlyph < 0 || at > (int)infos[baseGlyph].Cluster))
+                {
+                    baseGlyph = other;
+                }
+            }
+            if (baseGlyph >= 0)
+            {
+                // Right to left, the glyphs are written in visual order and a reader reverses the
+                // run's characters back into reading order: the mark goes before its letter so it
+                // comes out after it (the /ActualText of the run carries the exact text as well).
+                glyphText[baseGlyph] = rtl ? glyphText[g] + glyphText[baseGlyph] : glyphText[baseGlyph] + glyphText[g];
+                glyphText[g] = "";
+            }
+        }
         return new GlyphRun(face, glyphs, StripControls(slice), rtl, glyphText);
+    }
+
+    private static bool HasArabicScript(string text)
+    {
+        foreach (var c in text)
+        {
+            if (Bidi.IsArabicScript(c))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static string StripControls(string text)
@@ -198,7 +307,14 @@ public sealed class TextShaper(PdfFonts fonts)
         var builder = new StringBuilder(text.Length);
         foreach (var c in text)
         {
-            builder.Append(c == '\t' ? ' ' : char.IsControl(c) ? "" : c.ToString());
+            if (c == '\t')
+            {
+                builder.Append(' ');
+            }
+            else if (!char.IsControl(c))
+            {
+                builder.Append(c);
+            }
         }
         return builder.ToString();
     }

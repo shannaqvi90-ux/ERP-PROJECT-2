@@ -41,8 +41,14 @@ export function scaleOf(value: string): number {
   return dot < 0 ? 0 : value.length - dot - 1;
 }
 
-/** Currency minor units (ISO 4217) for the currencies this market uses most; others use Intl's. */
-const minorUnits: Record<string, number> = { AED: 2, USD: 2, EUR: 2, GBP: 2, SAR: 2, INR: 2, OMR: 3, KWD: 3, BHD: 3, JPY: 0 };
+/** Currency minor units (ISO 4217) for the currencies this market uses most, and every currency the
+ * server lists with other than two (Erp.Kernel.Money.CurrencyCode.MinorUnits; CLDR differs from ISO
+ * for some, IQD among them, so they are not left to Intl); others use Intl's. */
+const minorUnits: Record<string, number> = {
+  AED: 2, USD: 2, EUR: 2, GBP: 2, SAR: 2, INR: 2,
+  BHD: 3, IQD: 3, JOD: 3, KWD: 3, LYD: 3, OMR: 3, TND: 3,
+  CLP: 0, ISK: 0, JPY: 0, KRW: 0, UGX: 0, VND: 0, XAF: 0, XOF: 0,
+};
 
 export function minorUnitsOf(currency: string): number {
   const known = minorUnits[currency.toUpperCase()];

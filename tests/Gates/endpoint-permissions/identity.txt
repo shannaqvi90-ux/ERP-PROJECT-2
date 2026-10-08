@@ -18,10 +18,14 @@ GET /api/identity/users/{id:guid}/access identity.users.read # what a user can d
 GET /api/identity/users/{id:guid}/sign-ins identity.signIns.read # sign-in history (addresses, devices, failures) is more sensitive than the record
 POST /api/identity/users identity.users.create # creating an account
 PUT /api/identity/users/{id:guid} identity.users.update # editing name, address, language, status and roles (grants checked in the handler)
+POST /api/identity/users/matching/active identity.users.update # the list's "all that match": the same state change as one user's edit, for each matching user (self and stronger users refused in the handler)
 POST /api/identity/users/{id:guid}/password identity.users.resetPassword # resetting another user's password is its own permission
 POST /api/identity/users/{id:guid}/unblock identity.users.update # clearing a sign-in pause changes the account, not just reads its history
 POST /api/identity/users/{id:guid}/sessions/revoke identity.users.update # ending another user's sessions changes the account
 DELETE /api/identity/users/{id:guid} identity.users.delete # removing an account that never signed in
+GET /api/identity/users/{id:guid}/default-company identity.users.read # which company a user starts in, among companies a users reader already sees
+PUT /api/identity/users/{id:guid}/default-company identity.users.update # choosing another user's starting company changes the account (access checked in the handler)
+GET /api/identity/companies identity.users.read # the caller's own companies, offered where roles are assigned per company
 PUT /api/identity/me/preferences identity.profile.update # the caller's own language, theme and density
 
 GET /api/identity/roles identity.roles.read # the roles list

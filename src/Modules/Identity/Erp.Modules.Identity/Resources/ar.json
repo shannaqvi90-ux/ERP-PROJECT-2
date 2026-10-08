@@ -29,5 +29,8 @@
   "validation.passwordTooSimple": "استخدم كلمة مرور تحتوي على أحرف مختلفة أكثر.",
   "validation.passwordUnchanged": "اختر كلمة مرور مختلفة عن الحالية.",
   "permission.identity.users.delete": "حذف المستخدمين الذين لم يسجلوا الدخول قط",
-  "problem.identity.userHasSignedIn": "سجّل هذا المستخدم الدخول أو جرت محاولة لذلك، لذا يبقى سجله لأغراض التدقيق. أوقف المستخدم بدلاً من حذفه."
+  "problem.identity.userHasSignedIn": "سجّل هذا المستخدم الدخول أو جرت محاولة لذلك، لذا يبقى سجله لأغراض التدقيق. أوقف المستخدم بدلاً من حذفه.",
+  "problem.identity.userBeyondOwnCompanies": "لدى هذا المستخدم أيضًا أدوار في شركات لا تعمل فيها، ولا يغيّر حسابه إلا من يعمل فيها جميعًا.",
+  "validation.identityNotTheirCompany": "لا يعمل هذا المستخدم في تلك الشركة.",
+  "validation.identityTooManyCompanyRoles": "{0, plural, zero {لا تمنح أي دور حسب الشركة.} one {امنح دورًا واحدًا على الأكثر حسب الشركة.} two {امنح دورين على الأكثر حسب الشركة.} few {امنح # أدوار على الأكثر حسب الشركة.} many {امنح # دورًا على الأكثر حسب الشركة.} other {امنح # دور على الأكثر حسب الشركة.}}"
 }

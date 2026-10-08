@@ -38,3 +38,13 @@ The session's user carries `displayNameAr` too (an optional, additive field of `
 the shell greets, labels the user menu, the status bar and printed documents with the Arabic name
 on Arabic screens (`sessionUserName` in `web/src/kernel/session.tsx`), and My account shows both
 names.
+
+## Round 4: Arabic names are searchable (2026-10-05)
+
+Critic p03 round 3: searching a colleague's name as written in Arabic found nobody. The list
+definition gains `ArabicSearchFields` (additive, kernel): a search word written in Arabic letters
+matches those fields instead of the search fields. The users list names `displayName` and
+`displayNameAr` there; an Arabic word never matches an e-mail address, so every word still ORs two
+fields and the search over 100,000 users stays inside the same budget
+(`UsersListVolumeTests.One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second`).
+Mixed queries ("romaithi الرميثي") work word by word.

@@ -274,7 +274,10 @@ public static class SqlTrace
             {
                 if (inRequest.App is { } observedApp)
                 {
-                    ObservedByApp.AddOrUpdate(observedApp, 1, (_, n) => n + 1);
+                    // Statements, not round trips: a batch (the session's read-only mode and tenant
+                    // settings, the company settings and the query after them) is several.
+                    var statements = captured.Commands.Count;
+                    ObservedByApp.AddOrUpdate(observedApp, statements, (_, n) => n + statements);
                 }
                 foreach (var command in captured.Commands.Where(c => StatementCapture.NamesSettings(c.Text)))
                 {
@@ -295,10 +298,10 @@ public static class SqlTrace
                 Unobserved.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 160 ? text : text[..160] + "…", inRequest.App));
             }
         }
-        var lower = text.ToLowerInvariant();
+        // No lower-case copy of every statement (millions over an attack): the names are ASCII.
         foreach (var (function, name) in Functions.Value)
         {
-            if (!lower.Contains(name, StringComparison.Ordinal))
+            if (!text.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }

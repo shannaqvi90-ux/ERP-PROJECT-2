@@ -1,0 +1,109 @@
+{
+  "piece": "p00-foundation",
+  "round": 7,
+  "commit": "bb96d2203dc7355eb1060aaabfd11a768ea28a25",
+  "judged_at": "2026-10-08T08:21:04Z",
+  "verdict": "WIN",
+  "critic": "fresh critic, p00-foundation round 7",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "pass",
+      "evidence": "Fresh clone of bb96d22 in /home/shan/critic/p00-foundation-r7. Command: ERP_PROJECT=c-p00-foundation-r7 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 verify-slot.sh ./erp verify. The slot was taken at 07:22:10Z and the run ended with 'verify passed in 2522 s' and 'Ratchet check passed' (load 10 to 46 on 16 CPUs). Results: dotnet 453/0 failed, web unit 299/0, e2e 74/0, compare 194/0. Log: verify-critic-p00-r7.log."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r7 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up finished in 66 s wall time and served http://localhost:20050. It seeded alnoor (100,000 users in 42 s) and gulfsteel, and printed the demo sign-ins. Port and project overrides from the environment worked. Log: erp-up.log."
+    },
+    {
+      "gate": "G1 tenant isolation: critic's live attack (API, exports, files, DB role)",
+      "status": "pass",
+      "evidence": "attack/attack.mjs ran as alnoor admin (A) against gulfsteel (B). First B created a canary user, 10 saved and shared views and a company logo. Then A called all 98 non-auth operations with B's ids in path, query and body (98 requests), sent 435 tenant-switch header, query and cookie requests, 100 export requests (csv/xlsx/pdf/json/html, en and ar, with company=B) and 35 filter-language and keyset-cursor requests. Result: 0 responses contained a B canary or any of 208 B-only ids, and 0 got a 2xx on a B id. No audit rows exist in B written by any A user. In the DB, erp_app is NOSUPERUSER, NOBYPASSRLS and NOINHERIT, owns no table and is a member of no role. All 14 tenant tables have tenant_id with RLS enabled and forced. The only non-tenant table, identity.sign_in_secret, is not granted to erp_app. Files: attack/attack-result.txt, db-roles-rls.txt."
+    },
+    {
+      "gate": "G1 gate catches leaks planted in p00's kernel surface",
+      "status": "pass",
+      "evidence": "Plants are in plants/plants.diff, gated by CRITIC_PLANT, built once and run with plants/run-plants.sh. T1, a 30 s process-wide GET micro-cache in Erp.Kernel UnitOfWorkFilter: caught by G1ProcessStateTests (static MicroCache flagged), by G1HttpIsolationTests (5108 leaks, e.g. GET /api/identity/roles answered with a tenant B marker) and by G1NonInterference. T2, a support-workspace cookie erp_ws that runs set_config('app.tenant_id') in UnitOfWorkFilter: caught by G1TenantSettingCodeTests and G1TenantSourceTests, and at runtime by G1HttpIsolationTests (the attack sent cookie erp_ws=<tenant>; the trace reported 'Session settings changed by code other than the kernel's session'). T3, DatabaseSetup granting erp_auth to erp_app with INHERIT: caught by 3 G1DatabaseIsolationTests ('erp_app must not be a member of any role'; it saw other tenants' rows). Logs: plants/plant-T1.log, plant-T2.log, plant-T3.log."
+    },
+    {
+      "gate": "G2 permissions: deny by default, and the gate catches a planted unchecked action",
+      "status": "pass",
+      "evidence": "Plant P1 in Erp.Kernel PermissionAuthorizationHandler let any permission in the same module through. G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it failed on it, e.g. 'identity.profile.update: GET /api/identity/users answered 200 (expected 403)' and 'DELETE /api/identity/roles/{id} answered 404 (expected 403)'. Live check: noaccess@alnoor.example signs in to a shell that shows 'No areas are open to you yet'. Log: plants/plant-P1.log."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string parity, audit coverage) and the ratchet",
+      "status": "pass",
+      "evidence": "These run inside ./erp verify and passed with 'Ratchet check passed'. The DB has no real, double or money columns. Every business table except sign_in_attempts (a log) has an audit_capture trigger. Audit rows carry actor, field-level new and old values and correlation id. erp_app has only SELECT and INSERT on audit.entries. Compared with the r5 commit eab97e5, gauntlet/ratchet.json lowered no minimum, raised no maximum and lost no key."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r7 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1020,
+    "passed": 1020,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 2522
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 2522,
+    "evidence": "Fresh git clone of bb96d22. ./erp verify passed in 2522 s, timed from the slot taken at 07:22:10Z under load 10 to 46. ./erp up served the seeded demo in 66 s on ports 20050/20051 under project c-p00-foundation-r7."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 56,
+        "seconds": 0.406,
+        "klm_seconds": 18.78
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 57,
+        "seconds": 1.932,
+        "klm_seconds": 19.06
+      },
+      "notes": "Command: node run.mjs --task sign-in --product both --repeat 3, against ours on :20050 and the odoo-reference rig on :8069. All runs verified. Ours numbers are one complete path, the 'new-device-whole-e-mail' variant: the whole e-mail is typed, the screen moves on to the password once the address is whole in the team's domain, then password and Enter. That path is strictly better than Odoo's best path (e-mail, Tab, password, Enter) on every compared metric: steps 3<4, keystrokes 56<57, KLM 18.78<19.06 s, human+wait 18.98<20.80 s, machine 0.41<1.93 s. The harness headline 'ours 3 steps / 35 keys / 11.55 s' takes the best of each metric from different variants; no single path reaches it. The new-device variant alone is 4 steps / 35 keys / 11.55 s, which ties Odoo on steps. No count metric was 0 in both products, so needs-human #11 was not applied. Screenshots (blind): compare/blind/shots, 4 files."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r7/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r7/02-sign-in-error-en.jpg",
+    "gauntlet/evidence/p00-foundation/r7/03-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r7/04-empty-workspace-first-sign-in.jpg",
+    "gauntlet/evidence/p00-foundation/r7/05-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r7/06-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r7/07-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r7/compare/blind/shots/f6939dae457637e8.jpg",
+    "gauntlet/evidence/p00-foundation/r7/compare/blind/shots/0e647ba863510cb2.jpg",
+    "gauntlet/evidence/p00-foundation/r7/compare/blind/shots/bd734017f29fc0f1.jpg",
+    "gauntlet/evidence/p00-foundation/r7/compare/blind/shots/cfccdb37faea9f6d.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The sign-in win exists only on the team sign-in address; from a plain or per-user bookmark ours ties Odoo",
+    "detail": "Ours beats Odoo on sign-in only when the user starts from the team address /?domain=<team domain>. There the screen moves to the password by itself once a whole e-mail in that domain is typed, which saves one step and one key (3/56/18.78 s against 4/57/19.06 s), a thin margin of 0.28 modelled seconds. From the plain address '/', a typed whole e-mail does not move on: the user presses Enter, giving 4 steps / 57 keys, the same as Odoo's e-mail, Tab, password, Enter. A personal bookmark carrying the e-mail is a tie as well: ours /?email=<e-mail> and Odoo /web/login?db=..&login=<e-mail> both pre-fill the e-mail and focus the password, so each takes password then Enter (2 steps, 21 keystrokes). In every start except the team address, ours wins only on machine seconds. To win on every start, the plain sign-in screen needs a path Odoo lacks. Options: move on to the password when the typed e-mail matches a known workspace domain, offer passkey or one-tap sign-in as the first path, or remember the last e-mail on the device even after an explicit sign-out (as a choice the user makes).",
+    "evidence": "compare/results/*.json: in variant 'new-device-whole-e-mail' (start ?domain=demo-trading.example) ours scored 3 steps / 56 keys. attack/ours-email.mjs shows that after typing viewer@alnoor.example on plain '/', focus stays on the e-mail field ('ours plain / after whole e-mail focused: email'), and that ours /?email=viewer%40alnoor.example pre-fills the e-mail and focuses the password. attack/odoo-login.mjs shows Odoo /web/login?db=reference&login=signin.tester%40demo-trading.example does the same ('focused: password'). Both outputs are in browser-notes.txt. To reproduce, run COMPARE_OURS_URL=http://localhost:<port> node gauntlet/compare/run.mjs --task sign-in --product both."
+  },
+  "other_findings": [
+    "[route: p01-odoo-rig] The harness's comparisons/sign-in.json headline takes the best of each metric from different variants of ours: steps 3 come from 'new-device-whole-e-mail' and keystrokes 35 and human 11.55 s from 'new-device'. No single path achieves 3/35/11.55, so the headline overstates ours. The verdict should compare whole paths: choose one variant per product, or require one path to be strictly better on every metric. Here the whole-e-mail path alone still wins strictly.",
+    "The harness only allows a sign-in start address that names the team's domain (ours) or the database (Odoo), never the user. That rule decides this task. Under per-user bookmarks both products are 2 steps / 21 keystrokes. The owner may want to confirm that the 'team address' start is the intended comparison.",
+    "The gate machinery is strong. All four faults the critic planted in the kernel (response cache, cookie tenant switch, app-role membership in erp_auth, module-wide permission grant) were caught, several by more than one test. The HTTP attack even sent the planted cookie name erp_ws. Under T3 the G1 HTTP test passed because the EF tenant filter (the second layer) hid the DB leak; the DB gate caught it. This is the intended layering.",
+    "The G1 HTTP isolation test took 16 to 30 minutes per run under load 30 to 46, and the whole verify took 2522 s (dotnet stage 2089 s). The 3600 s wall-time maximum was not judged because the machine was busy. The critic's plant runs used targeted gate-test filters in the toolbox, one process at a time, outside the verify slots.",
+    "Sign-in lockout works: after 7 failures the right password is refused for that account from the same client address, and X-Forwarded-For is not trusted. The user still sees only the generic 'Sign-in failed' message, with no hint that the client is paused or for how long.",
+    "Keyboard: in the shell, Tab after the last navigation link goes to the document body before reaching 'Skip to content', which is a dead stop. Sign-in by keyboard (e-mail, Enter, password, Enter) works in English and Arabic. The Arabic shell is RTL with lang=ar. The only Latin text in it is company codes, 'Ctrl' keycaps, the 'English' language switch and the workspace code.",
+    "An empty workspace provisioned with ./erp tenant create (emptyco, Arabic) signs in by keyboard in 0.78 s to an RTL home screen that lists its sections (screenshot 04).",
+    "OpenAPI at /api/openapi/v1.json lists 101 operations (ratchet minimum 89).",
+    "There are no money columns in the schema yet (multi-currency is p08). The kernel Money type holds decimal amount, currency, rate, base amount and base currency, stored as numeric. docs/compliance/ does not exist; nothing statutory is implemented yet."
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax/statutory rule (CLAUDE.md human gate, rule 8): needs-human #4",
+      "what": "Still open. The kernel Money type rounds the base-currency amount half away from zero, an engineering default with no FTA source. A senior accountant must sign off the rounding rule, with its source recorded in docs/compliance/, before VAT or ledger postings build on it."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r7",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r7"
+}

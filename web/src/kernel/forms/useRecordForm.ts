@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ApiError } from "../api";
 import { useI18n } from "../i18n";
 import { addLeaveGuard, hookUnload } from "./leave";
@@ -57,6 +57,9 @@ export type RecordFormState<R, D> = {
   reload: () => void;
   /** Take a newer copy of the record saved by another action (a logo upload), keeping the draft. */
   adopt: (record: R) => void;
+  /** Set by the record form showing this state: asks in its dialog before leaving unsaved changes
+   * (save and leave, discard and leave, keep editing), then calls `proceed`. */
+  leaveAsker: RefObject<((proceed: () => void) => void) | null>;
 };
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -82,19 +85,21 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   const [message, setMessage] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [loads, setLoads] = useState(0);
-  // The id of a record this form has just created. The save's answer is the record; when the
-  // screen then points the form at that id (its key changes from null), reading it again would put
-  // "Loading" in the form's place and mount everything below it afresh, losing what was typed there
-  // meanwhile (a new company's branch line, focused for its first branch, lost the branch name).
-  const created = useRef<unknown>(undefined);
 
+  // A record this form has just created: the screen then points the form at the new record's id
+  // (the key changes in the same render as the save). The save's answer is that record, so the
+  // form keeps it instead of reading it again: a re-read would swap the whole form for "Loading"
+  // and back, losing the focus and anything typed meanwhile (a new company's first branch line).
+  const justCreated = useRef(false);
+  const seenLoads = useRef(loads);
   useEffect(() => {
-    const load = specRef.current.load;
-    if (created.current !== undefined && Object.is(created.current, key)) {
-      created.current = undefined;
+    const keyChangeOnly = seenLoads.current === loads;
+    seenLoads.current = loads;
+    if (justCreated.current && keyChangeOnly) {
+      justCreated.current = false;
       return;
     }
-    created.current = undefined;
+    const load = specRef.current.load;
     if (!load) return;
     const controller = new AbortController();
     setStatus("loading");
@@ -117,15 +122,28 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       });
     return () => controller.abort();
   }, [key, loads]);
+  // The created mark holds for the render that follows the save only (declared after the load
+  // effect, so it runs after it in that render).
+  useEffect(() => {
+    justCreated.current = false;
+  });
 
   const readOnly = !spec.canEdit;
+  const leaveAsker = useRef<((proceed: () => void) => void) | null>(null);
   const dirty = !readOnly && status === "ready" && !same(draft, baseline);
 
   // Unsaved changes: leaving the screen, opening another record or reloading asks first.
   useEffect(() => {
     if (!dirty) return;
     hookUnload();
-    return addLeaveGuard({ message: () => t("forms.leave.confirm") });
+    return addLeaveGuard({
+      message: () => t("forms.leave.confirm"),
+      ask: (proceed) => {
+        const asker = leaveAsker.current;
+        if (asker) asker(proceed);
+        else if (window.confirm(t("forms.leave.confirm"))) proceed();
+      },
+    });
   }, [dirty, t]);
 
   const update = useCallback((change: (draft: D) => D) => {
@@ -151,7 +169,6 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
     setMessage(null);
     try {
       const result = await current.save(draft, record);
-      if (record === null) created.current = (result as { id?: unknown } | null)?.id;
       const next = current.initial(result);
       setRecord(result);
       setBaseline(next);
@@ -159,6 +176,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       setErrors({});
       setConflict(false);
       setSaved(true);
+      justCreated.current = record === null;
       current.onSaved?.(result, record === null);
       return result;
     } catch (error) {
@@ -203,7 +221,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   );
 
   return useMemo(
-    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt }),
+    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt, leaveAsker }),
     [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt],
   );
 }

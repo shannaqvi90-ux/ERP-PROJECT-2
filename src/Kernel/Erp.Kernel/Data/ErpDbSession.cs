@@ -32,6 +32,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
     private Guid? _tenantId;
     private CompanyScopeState _companies = CompanyScopeState.Nothing;
     private bool _companiesBound;
+    private IReadOnlySet<Guid> _branchLimitedCompanies = new HashSet<Guid>();
+    private bool _branchLimitsSet;
     private readonly IHttpContextAccessor? _http;
 
     /// <param name="http">The request this unit of work serves, if any: inside a request to a
@@ -98,7 +100,7 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
     /// sets the transaction-local tenant and actor settings. Binding twice to the same tenant is a
     /// no-op; binding to a different tenant throws. The company scope starts as every company of the
     /// tenant for system work (seed, job, system) and as no company for a signed-in user, until
-    /// <see cref="BindCompaniesAsync"/> narrows or sets it.</summary>
+    /// <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/> narrows or sets it.</summary>
     public async Task BeginAsync(Guid tenantId, Guid? actorId, string actorKind, CancellationToken cancellationToken = default)
     {
         if (tenantId == Guid.Empty)
@@ -120,33 +122,39 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
             await _connection.OpenAsync(cancellationToken);
         }
         Transaction = await _connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        if (_http?.HttpContext is { } request && Http.ReadOnlyRequests.Applies(request))
+        // A request that only reads (GET, HEAD, ReadOnlyOperation): PostgreSQL refuses every write
+        // in this transaction, so a read permission can never change data. The read-only mode and
+        // the tenant settings go to the server in one round trip (a batch runs its statements in
+        // order, so the transaction is read-only before anything else runs in it).
+        var readOnly = _http?.HttpContext is { } request && Http.ReadOnlyRequests.Applies(request);
+        using var readOnlyActivity = readOnly ? TenantBinding.StartReadOnly() : null;
+        await using (var batch = new NpgsqlBatch(_connection, Transaction))
         {
-            // A request that only reads (GET, HEAD, ReadOnlyOperation): PostgreSQL refuses every
-            // write in this transaction, so a read permission can never change data.
-            await MakeReadOnlyAsync(cancellationToken);
-        }
-
-        await using (var command = new NpgsqlCommand(
-            "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
-            "set_config('app.actor_id', @actor, true), " +
-            "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true), " +
-            "set_config('app.company_scope', @scope, true), set_config('app.company_ids', '', true), " +
-            "set_config('app.company_tx', extract(epoch from now())::text, true)",
-            _connection, Transaction))
-        {
-            command.Parameters.AddWithValue("tenant", tenantId.ToString());
-            command.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
-            command.Parameters.AddWithValue("kind", actorKind);
-            command.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
-            command.Parameters.AddWithValue("scope", actorKind == UserActorKind ? "none" : "all");
-            await command.ExecuteNonQueryAsync(cancellationToken);
+            if (readOnly)
+            {
+                batch.BatchCommands.Add(ReadOnlyCommand());
+            }
+            var bind = new NpgsqlBatchCommand(
+                "SELECT set_config('app.tenant_id', @tenant, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
+                "set_config('app.actor_id', @actor, true), " +
+                "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true), " +
+                "set_config('app.company_scope', @scope, true), set_config('app.company_ids', '', true), " +
+                "set_config('app.company_tx', extract(epoch from now())::text, true)");
+            bind.Parameters.AddWithValue("tenant", tenantId.ToString());
+            bind.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
+            bind.Parameters.AddWithValue("kind", actorKind);
+            bind.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
+            bind.Parameters.AddWithValue("scope", actorKind == UserActorKind ? "none" : "all");
+            batch.BatchCommands.Add(bind);
+            await batch.ExecuteNonQueryAsync(cancellationToken);
         }
         _tenantId = tenantId;
         ActorId = actorId;
         ActorKind = actorKind;
         _companies = actorKind == UserActorKind ? CompanyScopeState.Nothing : CompanyScopeState.Everything;
         _companiesBound = false;
+        _branchLimitedCompanies = new HashSet<Guid>();
+        _branchLimitsSet = false;
     }
 
     /// <summary>Actor kind of a signed-in user; such a unit of work starts with no company.</summary>
@@ -174,9 +182,45 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
         _companiesBound = true;
     }
 
+    /// <summary>
+    /// <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/>, then one
+    /// query inside the new company scope, in the same round trip: the settings statement runs
+    /// first, so the query already sees only the bound companies. <paramref name="read"/> reads
+    /// the query's rows.
+    /// </summary>
+    public async Task BindCompaniesAsync(IReadOnlyCollection<Guid> companyIds, NpgsqlBatchCommand then,
+        Func<NpgsqlDataReader, CancellationToken, Task> read, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(then);
+        ArgumentNullException.ThrowIfNull(read);
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_companiesBound)
+        {
+            throw new InvalidOperationException("The company scope of this unit of work is already bound.");
+        }
+        var ids = companyIds.Distinct().ToArray();
+        await using (var batch = new NpgsqlBatch(_connection, Transaction))
+        {
+            batch.BatchCommands.Add(CompanySettings(ids));
+            batch.BatchCommands.Add(then);
+            await using var reader = await batch.ExecuteReaderAsync(cancellationToken);
+            // The settings statement's own row, then the query's.
+            if (!await reader.NextResultAsync(cancellationToken))
+            {
+                throw new InvalidOperationException("The query after the company binding returned no result.");
+            }
+            await read(reader, cancellationToken);
+        }
+        _companies = new CompanyScopeState(false, ids, null, null, []);
+        _companiesBound = true;
+    }
+
     /// <summary>Record the company and branch the user is working in, and the branches they may
     /// work in (all within the bound companies). Informational for modules: the default company
-    /// of new records and lists. Security comes from <see cref="BindCompaniesAsync"/>.</summary>
+    /// of new records and lists. Security comes from <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/>.</summary>
     public void SetWorkplace(Guid? activeCompanyId, Guid? activeBranchId, IReadOnlyCollection<Guid> branchIds)
     {
         if (activeCompanyId is { } active && !AllowsCompany(active))
@@ -208,11 +252,18 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
 
     private async Task SetCompanySettingsAsync(Guid[] ids, CancellationToken cancellationToken)
     {
-        await using var command = new NpgsqlCommand(
+        await using var batch = new NpgsqlBatch(Connection, Transaction);
+        batch.BatchCommands.Add(CompanySettings(ids));
+        await batch.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static NpgsqlBatchCommand CompanySettings(Guid[] ids)
+    {
+        var command = new NpgsqlBatchCommand(
             "SELECT set_config('app.company_scope', 'list', true), set_config('app.company_ids', @ids, true), " +
-            "set_config('app.company_tx', extract(epoch from now())::text, true)", Connection, Transaction);
+            "set_config('app.company_tx', extract(epoch from now())::text, true)");
         command.Parameters.AddWithValue("ids", string.Join(',', ids));
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        return command;
     }
 
     public bool AllCompanies => HasTenant && _companies.All;
@@ -226,6 +277,28 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
     public IReadOnlyList<Guid> BranchIds => HasTenant ? _companies.BranchIds : [];
 
     public bool AllowsCompany(Guid companyId) => HasTenant && (_companies.All || _companies.CompanyIds.Contains(companyId));
+
+    /// <summary>
+    /// Record the companies of the scope where the user may work in only some branches, once, after
+    /// <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/>. In those companies the user reads the records every branch
+    /// shares (<see cref="ICompanyWide"/>) but never writes them. A second call throws, so code
+    /// running later in the request cannot lift the limits.
+    /// </summary>
+    public void SetBranchLimits(IEnumerable<Guid> branchLimitedCompanyIds)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_branchLimitsSet)
+        {
+            throw new InvalidOperationException("The branch limits of this unit of work are already set.");
+        }
+        _branchLimitedCompanies = branchLimitedCompanyIds.ToHashSet();
+        _branchLimitsSet = true;
+    }
+
+    public bool HoldsEveryBranch(Guid companyId) => AllowsCompany(companyId) && (_companies.All || !_branchLimitedCompanies.Contains(companyId));
 
     private sealed record CompanyScopeState(bool All, IReadOnlyList<Guid> CompanyIds, Guid? ActiveCompanyId, Guid? ActiveBranchId, IReadOnlyList<Guid> BranchIds)
     {
@@ -260,9 +333,12 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
             return;
         }
         using var activity = TenantBinding.StartReadOnly();
-        await using var command = new NpgsqlCommand("SET TRANSACTION READ ONLY", _connection, Transaction);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        await using var batch = new NpgsqlBatch(_connection, Transaction);
+        batch.BatchCommands.Add(ReadOnlyCommand());
+        await batch.ExecuteNonQueryAsync(cancellationToken);
     }
+
+    private static NpgsqlBatchCommand ReadOnlyCommand() => new("SET TRANSACTION READ ONLY");
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
@@ -336,12 +412,28 @@ public interface ICompanyContext
     IReadOnlyList<Guid> BranchIds { get; }
 
     bool AllowsCompany(Guid companyId);
+
+    /// <summary>True when the company is in the scope and the user may work in every branch of it
+    /// (always, for system work). Records every branch shares (<see cref="ICompanyWide"/>) are
+    /// written only where this holds.</summary>
+    bool HoldsEveryBranch(Guid companyId);
 }
 
 /// <summary>A row that belongs to one company of its tenant (column <c>company_id</c>).</summary>
 public interface ICompanyOwned : ITenantOwned
 {
     Guid CompanyId { get; set; }
+}
+
+/// <summary>
+/// A row every branch of its company shares: the company's own record, and later its settings,
+/// chart of accounts or price lists. A user who may work in only some branches of the company reads
+/// it but never adds, changes or deletes it: <see cref="ModuleDbContext"/> refuses the write
+/// (<see cref="CrossBranchWriteException"/>, answered 403) whatever the endpoint checked, and the
+/// G1 branch attack attacks every table of such rows.
+/// </summary>
+public interface ICompanyWide : ICompanyOwned
+{
 }
 
 public sealed class TenantContextMissingException()

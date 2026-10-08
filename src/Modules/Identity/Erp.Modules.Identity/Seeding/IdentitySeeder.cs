@@ -74,7 +74,16 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             Permissions = all.Where(p => p.EndsWith(".read", StringComparison.Ordinal) && p != IdentityPermissions.SignInsRead)
                 .Append(IdentityPermissions.ProfileUpdate).Order(StringComparer.Ordinal).ToList(),
         };
-        db.Roles.AddRange(administrator, readOnly);
+        // What everyone who works in companies needs wherever they are: switching the working
+        // company and keeping their own profile.
+        var staff = new Role
+        {
+            NameEn = context.Mark("Staff"),
+            NameAr = context.Mark("الموظفون"),
+            Permissions = new[] { "tenancy.workplace.read", "tenancy.workplace.switch", IdentityPermissions.ProfileUpdate }
+                .Where(catalog.IsPermission).Order(StringComparer.Ordinal).ToList(),
+        };
+        db.Roles.AddRange(administrator, readOnly, staff);
 
         var hash = PasswordHasher.Hash(context.Plan.DemoPassword);
         var now = DateTimeOffset.UtcNow;
@@ -85,6 +94,9 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
             ("admin.ar", "Fatima Al Zaabi", "فاطمة الزعابي", "ar", administrator),
             ("viewer", "Omar Haddad", "عمر حداد", "en", readOnly),
             ("noaccess", "Layla Nasser", "ليلى ناصر", "en", null),
+            // Holds roles per company (IdentityCompanyRoleSeeder): manages the first company, only
+            // reads the second; in every company she may switch company and keep her profile.
+            ("accountant", "Hessa Al Suwaidi", "حصة السويدي", "en", staff),
         };
         foreach (var (local, name, nameAr, language, role) in people)
         {

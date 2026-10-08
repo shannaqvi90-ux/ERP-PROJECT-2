@@ -38,6 +38,7 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
             $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; " +
             $"{inventory.ReachableRoots} roots walked to {inventory.ReachableObjectsWalked} objects, {inventory.ReachableTypesJudged} product types judged field by field; {inventory.Findings.Count} reviewed findings");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.False(inventory.ReachableWalkCut, $"the reachable-state walk stopped at its object budget after {inventory.ReachableObjectsWalked} objects; what it did not reach was not judged");
         Assert.True(inventory.FieldsInspected >= Ratchet.Min("g1.processStateFieldsInspected"),
             $"g1.processStateFieldsInspected: {inventory.FieldsInspected}; ratchet minimum {Ratchet.Min("g1.processStateFieldsInspected")}");
         Assert.True(inventory.SingletonsInspected >= Ratchet.Min("g1.singletonsInspected"),
@@ -77,6 +78,10 @@ public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Fi
 
     /// <summary>Product types reached from those roots whose fields were judged one by one.</summary>
     public int ReachableTypesJudged { get; init; }
+
+    /// <summary>True when the walk stopped at its object budget, so some roots or objects were not
+    /// judged (the gate fails: a walk that stops early is blind to what it did not reach).</summary>
+    public bool ReachableWalkCut { get; init; }
 }
 
 /// <summary>Finds process-wide state by reflection over the product's assemblies and the app's
@@ -124,15 +129,19 @@ public static class ProcessState
     public static (IReadOnlyList<(string Name, object? Value)> Roots, IReadOnlyList<Assembly> Assemblies) LiveRoots(ErpAppFactory factory)
     {
         var context = ContextOf(factory);
-        // The gate's own instruments (the SQL trace, the attack's bookkeeping) change while they
-        // measure; when the gate assembly is loaded as a module (the self-tests' planted modules)
-        // only its planted code is the app's.
-        static bool Instrument(Type type) =>
-            type.Namespace?.StartsWith("Erp.Gates.Tests", StringComparison.Ordinal) == true &&
-            type.Namespace?.StartsWith("Erp.Gates.Tests.SelfTests", StringComparison.Ordinal) != true;
         var types = context.Assemblies.SelectMany(LoadableTypes).Where(t => !Instrument(t));
         return (Roots(factory, context.Descriptors, context.Singletons, types).ToList(), context.Assemblies);
     }
+
+    /// <summary>
+    /// The gate's own instruments (the SQL trace, the attack's bookkeeping) change while they
+    /// measure; when the gate assembly is loaded as a module (the self-tests' planted modules)
+    /// only its planted code is the app's. In the product's own environment the gate assembly is
+    /// not a product assembly at all, so this changes nothing there.
+    /// </summary>
+    private static bool Instrument(Type type) =>
+        type.Namespace?.StartsWith("Erp.Gates.Tests", StringComparison.Ordinal) == true &&
+        type.Namespace?.StartsWith("Erp.Gates.Tests.SelfTests", StringComparison.Ordinal) != true;
 
     public static ProcessStateInventory Inspect(ErpAppFactory factory)
     {
@@ -142,9 +151,13 @@ public static class ProcessState
         var findings = inventory.Findings.ToList();
         // Everything those singletons and static fields hold, judged field by field: a reviewed
         // root is never trusted for what hangs off it (list bindings, menus, module instances).
-        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes), assemblies, serviceTypes, singletons.ToHashSet());
+        // The roots are the app's (as for the fingerprint, LiveRoots): the gate's own instruments
+        // are not walked as roots. The SQL trace holds every call of every test in the process, so
+        // in a full run it could fill the walk's object budget before the app's last roots (the
+        // statics of generic instantiations) were reached, and a planted memo went unjudged.
+        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes.Where(t => !Instrument(t))), assemblies, serviceTypes, singletons.ToHashSet());
         findings.AddRange(reachable.Findings);
-        inventory = inventory with { ReachableRoots = reachable.Roots, ReachableObjectsWalked = reachable.ObjectsWalked, ReachableTypesJudged = reachable.TypesJudged };
+        inventory = inventory with { ReachableRoots = reachable.Roots, ReachableObjectsWalked = reachable.ObjectsWalked, ReachableTypesJudged = reachable.TypesJudged, ReachableWalkCut = reachable.Cut };
         // Variables captured by endpoint lambdas live as long as the endpoint: walk every endpoint's
         // delegate to the product closures and objects it holds.
         var closures = EndpointClosures.Inspect(factory.Services, assemblies, serviceTypes);
@@ -185,7 +198,8 @@ public static class ProcessState
                 }
             }
         }
-        foreach (var type in productTypes.Where(t => !t.ContainsGenericParameters && !IsGenerated(t)))
+        var listed = productTypes.ToList();
+        foreach (var type in listed.Where(t => !t.ContainsGenericParameters && !IsGenerated(t)))
         {
             foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(f => !f.IsLiteral))
             {
@@ -199,6 +213,17 @@ public static class ProcessState
                     continue;
                 }
                 yield return ($"static {Name(type)}.{FieldName(field)}", value);
+            }
+        }
+        // Each closed instantiation of a generic type has static fields of its own (critic p05
+        // round 4, plant L6): those the product's code names are roots too. Instantiations reached
+        // only as objects are added by the reachable-state walk.
+        var definitions = listed.Where(t => t.IsGenericTypeDefinition && !IsGenerated(t)).ToHashSet();
+        foreach (var closed in GenericStatics.Referenced(listed, listed.Select(t => t.Assembly).Distinct().ToList(), definitions))
+        {
+            foreach (var root in GenericStatics.Roots(closed))
+            {
+                yield return root;
             }
         }
     }
@@ -227,6 +252,13 @@ public static class ProcessState
                 if (Problem(field, serviceTypes) is { } why)
                 {
                     findings.Add(new ProcessStateFinding($"static {Name(type)}.{FieldName(field)}", why));
+                }
+                else if (typeof(Delegate).IsAssignableFrom(field.FieldType))
+                {
+                    // A delegate cannot change, but what its closure captured can (critic p05 round 4,
+                    // plant L6: a static Func over a dictionary of counts, in a generic type).
+                    findings.Add(new ProcessStateFinding($"static {Name(type)}.{FieldName(field)}",
+                        $"a static delegate field ({Describe(field.FieldType)}): whatever its closure captures lives as long as the process, shared by every tenant"));
                 }
             }
         }

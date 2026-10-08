@@ -75,6 +75,23 @@ test.describe("list framework", () => {
       rows.slice(0, 15).map((row) => [...row.children].map((cell) => Math.round((cell as HTMLElement).getBoundingClientRect().left)).join(",")),
     );
     expect(new Set(columnStarts).size).toBe(1);
+    // The row draws the separator, never a cell: an empty cell (a user with no roles) once drew its
+    // own border across the middle of its row (critic p05 round 4).
+    const cellBorders = await page.locator("table[role=grid] tbody tr.list-row").evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => [...row.children].map((cell) => getComputedStyle(cell).borderBottomWidth)).filter((w) => w !== "0px"),
+    );
+    expect(cellBorders).toEqual([]);
+    // No cell is taller than its row (the selection box once was, and crossed the separator).
+    const tallCells = await page.locator("table[role=grid] tbody tr.list-row").evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => {
+        const box = row.getBoundingClientRect();
+        return [...row.querySelectorAll("td, td *")]
+          .map((cell) => cell.getBoundingClientRect())
+          .filter((r) => r.height > 0 && (r.top < box.top - 0.5 || r.bottom > box.bottom + 0.5))
+          .map((r) => `${Math.round(r.top)}-${Math.round(r.bottom)} outside ${Math.round(box.top)}-${Math.round(box.bottom)}`);
+      }),
+    );
+    expect(tallCells).toEqual([]);
   });
 
   test("moves through rows with the arrow keys, selects with Space and opens with Enter", async ({ page }) => {
@@ -198,9 +215,92 @@ test.describe("list framework", () => {
     await openUsers(page);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("columnheader", { name: /البريد الإلكتروني/ })).toBeVisible();
+    // A Latin e-mail that does not fit is cut at its end (its own direction), so the start that
+    // names the person stays visible, and it keeps to the right like the column's other values.
+    const placement = await dataRows(page).evaluateAll((rows) =>
+      rows.slice(0, 15).flatMap((row) => {
+        const cell = row.children[2] as HTMLElement;
+        const value = cell.querySelector(".list-text") as HTMLElement | null;
+        if (!value) return [];
+        const c = cell.getBoundingClientRect();
+        const v = value.getBoundingClientRect();
+        const padding = parseFloat(getComputedStyle(cell).paddingInlineStart);
+        // Right edge of the value at the cell's start (its right, less padding); cut at its own end.
+        return [{ atStart: Math.abs(c.right - padding - v.right) <= 1, unicodeBidi: getComputedStyle(value).unicodeBidi, cut: value.scrollWidth > value.clientWidth }];
+      }),
+    );
+    expect(placement.length).toBeGreaterThan(3);
+    expect(placement.every((p) => p.atStart && p.unicodeBidi === "plaintext"), JSON.stringify(placement)).toBe(true);
     await page.keyboard.type("viewer@alnoor");
     await expect(page.getByText("مستخدم واحد", { exact: true })).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("region", { name: "التفاصيل" })).toContainText(users.viewer);
   });
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`every header stays inside its own column, wide and narrow (${language})`, async ({ page }) => {
+      // Critic p06 round 2: on the Arabic companies list the two legal-name headers overlapped
+      // (a long label pushed its column menu into the next header).
+      const spills = async () =>
+        page.locator("table[role=grid] tr.list-header > th").evaluateAll((cells) =>
+          cells.flatMap((cell) => {
+            const box = cell.getBoundingClientRect();
+            return [...cell.querySelectorAll("button, span")]
+              .filter((e) => !e.closest(".list-popover"))
+              .map((e) => e.getBoundingClientRect())
+              .filter((r) => r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5))
+              .map((r) => `${cell.textContent?.trim()}: ${Math.round(r.left)}-${Math.round(r.right)} outside ${Math.round(box.left)}-${Math.round(box.right)}`);
+          }),
+        );
+      await freshStart(page, language);
+      await signIn(page, user);
+      for (const width of [1440, 1024]) {
+        await page.setViewportSize({ width, height: 800 });
+        for (const href of ["/tenancy/companies", "/identity/users"]) {
+          await page.locator(`nav a[href="${href}"]`).first().click();
+          await expect(page).toHaveURL(new RegExp(href));
+          await expect(dataRows(page).first()).toBeVisible();
+          expect(await spills(), `${language} ${width}px ${href}`).toEqual([]);
+        }
+      }
+    });
+  }
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`a list screen is never wider than a desktop window, whatever the top bar holds (${language})`, async ({ page }) => {
+      // Round 5: the shell's grid column was as wide as the top bar's contents, so a workspace
+      // with several companies (one chip each) pushed every screen past the window's edge: the
+      // list's last column, its New button and the sign-out button were cut off.
+      const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      const outside = () =>
+        page.evaluate(() =>
+          // A wide list scrolls sideways inside its own frame, so its cells are not judged here.
+          [...document.querySelectorAll(".topbar button, main button")]
+            .filter((e) => !e.closest("table"))
+            .map((e) => ({ e, r: e.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && (r.left < -0.5 || r.right > document.documentElement.clientWidth + 0.5))
+            .map(({ e, r }) => `${e.textContent?.trim() || e.getAttribute("aria-label")}: ${Math.round(r.left)}-${Math.round(r.right)}`),
+        );
+      await freshStart(page, language);
+      await signIn(page, user);
+      for (const width of [1440, 1280, 1024]) {
+        await page.setViewportSize({ width, height: 800 });
+        for (const href of ["/identity/users", "/tenancy/companies"]) {
+          await page.locator(`nav a[href="${href}"]`).first().click();
+          await expect(page).toHaveURL(new RegExp(href));
+          await expect(dataRows(page).first()).toBeVisible();
+          expect(await overflow(), `${language} ${width}px ${href} scrolls sideways`).toBeLessThanOrEqual(0);
+          expect(await outside(), `${language} ${width}px ${href}`).toEqual([]);
+        }
+      }
+      // Every company stays one keystroke away: the switcher's list opens inside the window.
+      await page.keyboard.press("Alt+KeyC");
+      const popover = page.locator(".workplace-popover");
+      await expect(popover.locator("input")).toBeFocused();
+      const box = (await popover.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+      await page.keyboard.press("Escape");
+    });
+  }
 });

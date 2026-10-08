@@ -1,0 +1,9 @@
+viewer@alnoor.example | main: Home Settings Users Users Every word must match 100,004 users View: Standard Columns Print or export Name ▾ E-mail ▾ Language ▾ Status ▾ Last sign-in ▾ Roles Om
+   buttons View: Standard | Columns | Print or export | Name | ▾ | E-mail | ▾ | ▾ | ▾ | Last sign-in | ▾
+   bulk buttons after select-all Copy | Clear selection
+   view menu Standard Built-in views Active users Inactive users Never signed in By language Shared views Team view Save as a new view…
+   save dialog Save view Name Open this view when I open the list Save Cancel
+   API users/definition/shared-view POST/matching POST/export: 200 200 403 403 200
+noaccess@alnoor.example | main: Home Users No access Your roles do not allow this screen. Ask an administrator if you need it.
+   buttons 
+   API users/definition/shared-view POST/matching POST/export: 403 403 403 403 403

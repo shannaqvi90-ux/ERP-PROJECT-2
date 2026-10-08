@@ -32,7 +32,8 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
     {
         var result = await NonInterference.RunAsync(Env);
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), {result.Requests} requests, {result.Unstable.Count} unstable");
+            $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), " +
+            $"{result.WriteComparisons} write comparisons over {result.WriteEndpoints} endpoints and {result.WriteVariants} body variants, {result.Requests} requests, {result.Unstable.Count} unstable");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -42,6 +43,9 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         AssertAtLeast(result.Comparisons, "g1.nonInterferenceComparisons");
         AssertAtLeast(result.Endpoints, "g1.nonInterferenceEndpoints");
         AssertAtLeast(result.Discriminating, "g1.nonInterferenceDiscriminating");
+        AssertAtLeast(result.WriteComparisons, "g1.writeNonInterferenceComparisons");
+        AssertAtLeast(result.WriteEndpoints, "g1.writeNonInterferenceEndpoints");
+        AssertAtLeast(result.WriteVariants, "g1.writeNonInterferenceVariants");
     }
 
     private static void AssertAtLeast(int value, string key) =>

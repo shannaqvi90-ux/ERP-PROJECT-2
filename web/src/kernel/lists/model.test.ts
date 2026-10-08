@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ListColumn } from "./model";
 import {
   byRelevance,
   canMatchAny,
@@ -18,7 +19,7 @@ import {
   visibleRange,
   type ListDefinition,
 } from "./model";
-import { localDayStart, nextDay } from "./format";
+import { formatValue, localDayStart, nextDay } from "./format";
 
 const definition: ListDefinition = {
   key: "identity.users",
@@ -199,5 +200,19 @@ describe("list state", () => {
   it("turns calendar days into instants in the browser's time zone", () => {
     expect(localDayStart("2026-10-03")).toMatch(/^2026-10-03T00:00:00[+-]\d\d:\d\d$/);
     expect(nextDay("2026-12-31")).toBe("2027-01-01");
+  });
+});
+
+describe("flag columns that name their values", () => {
+  const t = (key: string) => ({ "lists.yes": "Yes", "lists.no": "No", "roles.system": "System", "roles.custom": "Custom" })[key] ?? key;
+  const f = { t, formatDateTime: String, formatDate: String, formatNumber: String, formatDecimal: String };
+  const flag: ListColumn = { key: "isSystem", labelKey: "kind", type: "boolean", sortable: true, filterable: true, groupable: true, aggregate: false, hidden: false, choices: [], operators: ["eq"] };
+
+  it("shows the column's own names for true and false (a role's type), and Yes or No for a flag that names none", () => {
+    const named = { ...flag, choices: [{ value: "true", labelKey: "roles.system" }, { value: "false", labelKey: "roles.custom" }] };
+    expect(formatValue(named, true, f)).toBe("System");
+    expect(formatValue(named, false, f)).toBe("Custom");
+    expect(formatValue({ ...flag, choices: [] }, true, f)).toBe("Yes");
+    expect(formatValue({ ...flag, choices: [] }, false, f)).toBe("No");
   });
 });

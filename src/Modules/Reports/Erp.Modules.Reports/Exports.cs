@@ -20,28 +20,41 @@ public static class Exports
 
     public static byte[] Csv(ReportDocument document)
     {
-        var builder = new StringBuilder();
+        using var buffer = new MemoryStream();
+        WriteCsv(document, buffer);
+        return buffer.ToArray();
+    }
+
+    /// <summary>Writes the CSV to <paramref name="output"/> line by line (a 100,000-row list never
+    /// sits in memory as one text). A document cut at its row limit ends with a line saying so.</summary>
+    public static void WriteCsv(ReportDocument document, Stream output)
+    {
+        using var writer = new StreamWriter(output, new UTF8Encoding(true), 1 << 16, leaveOpen: true);
         var header = new List<string>();
         if (document.GroupLabel is { } groupLabel)
         {
             header.Add(groupLabel);
         }
         header.AddRange(document.Columns.Select(c => c.Label));
-        Line(builder, header);
+        Line(writer, header);
+        var cells = new List<string>(header.Count);
         foreach (var group in document.Groups)
         {
             foreach (var row in group.Rows)
             {
-                var cells = new List<string>();
+                cells.Clear();
                 if (document.GroupLabel is not null)
                 {
                     cells.Add(group.Label ?? "");
                 }
                 cells.AddRange(row.Cells.Select((cell, i) => CsvValue(cell, document.Columns[i])));
-                Line(builder, cells);
+                Line(writer, cells);
             }
         }
-        return [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(builder.ToString())];
+        if (document.Truncated)
+        {
+            Line(writer, [document.RowCountText]);
+        }
     }
 
     private static string CsvValue(ReportCell cell, ReportDocumentColumn column) => cell.Value switch
@@ -56,9 +69,10 @@ public static class Exports
         _ => cell.Text,
     };
 
-    private static void Line(StringBuilder builder, IEnumerable<string> cells)
+    private static void Line(TextWriter writer, IEnumerable<string> cells)
     {
-        builder.Append(string.Join(",", cells.Select(Quote))).Append("\r\n");
+        writer.Write(string.Join(",", cells.Select(Quote)));
+        writer.Write("\r\n");
     }
 
     /// <summary>Quotes a field when it needs it; a field starting with a formula character is
@@ -74,88 +88,103 @@ public static class Exports
 
     public static byte[] Xlsx(ReportDocument document)
     {
+        using var buffer = new MemoryStream();
+        WriteXlsx(document, buffer);
+        return buffer.ToArray();
+    }
+
+    /// <summary>Writes the workbook to <paramref name="output"/>, the sheet's rows straight into the
+    /// compressed part (a 100,000-row list never sits in memory as one text). A document cut at its
+    /// row limit says so in a line under the table, outside the filtered range.</summary>
+    public static void WriteXlsx(ReportDocument document, Stream output)
+    {
         var styles = new XlsxStyles();
-        var sheet = new StringBuilder();
         var columnCount = document.Columns.Count + (document.GroupLabel is null ? 0 : 1);
-        sheet.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
-            .Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">")
-            .Append("<sheetViews><sheetView workbookViewId=\"0\"").Append(document.RightToLeft ? " rightToLeft=\"1\"" : "")
-            .Append("><pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>")
-            .Append("<cols>");
-        for (var i = 1; i <= columnCount; i++)
+        var lastDataRow = 1 + document.Groups.Sum(g => g.Rows.Count);
+        var sheetName = SheetName(document.Title);
+        using var zip = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true);
+        Entry(zip, "[Content_Types].xml",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
+            "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
+            "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
+            "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
+            "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/></Types>");
+        Entry(zip, "_rels/.rels",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+            "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>");
+        Entry(zip, "xl/workbook.xml",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+            $"<sheets><sheet name=\"{SecurityElement.Escape(sheetName)}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+            (lastDataRow > 1 ? $"<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"0\" hidden=\"1\">'{SecurityElement.Escape(sheetName).Replace("'", "''", StringComparison.Ordinal)}'!$A$1:${Column(columnCount - 1)}${lastDataRow}</definedName></definedNames>" : "") +
+            "</workbook>");
+        Entry(zip, "xl/_rels/workbook.xml.rels",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+            "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
+            "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/></Relationships>");
+        using (var sheet = EntryWriter(zip, "xl/worksheets/sheet1.xml"))
         {
-            sheet.Append($"<col min=\"{i}\" max=\"{i}\" width=\"22\" customWidth=\"1\"/>");
-        }
-        sheet.Append("</cols><sheetData>");
-        var r = 1;
-        var header = new List<string>();
-        if (document.GroupLabel is { } groupLabel)
-        {
-            header.Add(groupLabel);
-        }
-        header.AddRange(document.Columns.Select(c => c.Label));
-        sheet.Append($"<row r=\"{r}\">");
-        for (var c = 0; c < header.Count; c++)
-        {
-            sheet.Append(TextCell(Reference(c, r), header[c], XlsxStyles.Header));
-        }
-        sheet.Append("</row>");
-        foreach (var group in document.Groups)
-        {
-            foreach (var row in group.Rows)
+            sheet.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+            sheet.Write("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
+            sheet.Write("<sheetViews><sheetView workbookViewId=\"0\"");
+            sheet.Write(document.RightToLeft ? " rightToLeft=\"1\"" : "");
+            sheet.Write("><pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>");
+            sheet.Write("<cols>");
+            for (var i = 1; i <= columnCount; i++)
+            {
+                sheet.Write($"<col min=\"{i}\" max=\"{i}\" width=\"22\" customWidth=\"1\"/>");
+            }
+            sheet.Write("</cols><sheetData>");
+            var r = 1;
+            var header = new List<string>();
+            if (document.GroupLabel is { } groupLabel)
+            {
+                header.Add(groupLabel);
+            }
+            header.AddRange(document.Columns.Select(c => c.Label));
+            sheet.Write($"<row r=\"{r}\">");
+            for (var c = 0; c < header.Count; c++)
+            {
+                sheet.Write(TextCell(Reference(c, r), header[c], XlsxStyles.Header));
+            }
+            sheet.Write("</row>");
+            foreach (var group in document.Groups)
+            {
+                foreach (var row in group.Rows)
+                {
+                    r++;
+                    sheet.Write($"<row r=\"{r}\">");
+                    var c = 0;
+                    if (document.GroupLabel is not null)
+                    {
+                        sheet.Write(TextCell(Reference(c++, r), group.Label ?? "", 0));
+                    }
+                    for (var i = 0; i < row.Cells.Count; i++, c++)
+                    {
+                        sheet.Write(ValueCell(Reference(c, r), row.Cells[i], document.Columns[i], styles));
+                    }
+                    sheet.Write("</row>");
+                }
+            }
+            if (lastDataRow > 1 && document.Columns.Any(c => c.Total))
             {
                 r++;
-                sheet.Append($"<row r=\"{r}\">");
-                var c = 0;
-                if (document.GroupLabel is not null)
-                {
-                    sheet.Append(TextCell(Reference(c++, r), group.Label ?? "", 0));
-                }
-                for (var i = 0; i < row.Cells.Count; i++, c++)
-                {
-                    sheet.Append(ValueCell(Reference(c, r), row.Cells[i], document.Columns[i], styles));
-                }
-                sheet.Append("</row>");
+                sheet.Write(TotalRow(document, r, lastDataRow, styles));
             }
+            if (document.Truncated)
+            {
+                // A blank line, then what the file holds: outside the filter and the totals' range.
+                r += 2;
+                sheet.Write($"<row r=\"{r}\">{TextCell(Reference(0, r), document.RowCountText, XlsxStyles.Header)}</row>");
+            }
+            sheet.Write("</sheetData>");
+            if (lastDataRow > 1)
+            {
+                sheet.Write($"<autoFilter ref=\"A1:{Reference(columnCount - 1, lastDataRow)}\"/>");
+            }
+            sheet.Write("</worksheet>");
         }
-        var lastDataRow = r;
-        if (lastDataRow > 1 && document.Columns.Any(c => c.Total))
-        {
-            r++;
-            sheet.Append(TotalRow(document, r, lastDataRow, styles));
-        }
-        sheet.Append("</sheetData>");
-        if (lastDataRow > 1)
-        {
-            sheet.Append($"<autoFilter ref=\"A1:{Reference(columnCount - 1, lastDataRow)}\"/>");
-        }
-        sheet.Append("</worksheet>");
-
-        using var buffer = new MemoryStream();
-        using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
-        {
-            Entry(zip, "[Content_Types].xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
-                "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
-                "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
-                "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
-                "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/></Types>");
-            Entry(zip, "_rels/.rels",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
-                "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/></Relationships>");
-            Entry(zip, "xl/workbook.xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
-                $"<sheets><sheet name=\"{SecurityElement.Escape(SheetName(document.Title))}\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
-                (lastDataRow > 1 ? $"<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"0\" hidden=\"1\">'{SecurityElement.Escape(SheetName(document.Title)).Replace("'", "''", StringComparison.Ordinal)}'!$A$1:${Column(columnCount - 1)}${lastDataRow}</definedName></definedNames>" : "") +
-                "</workbook>");
-            Entry(zip, "xl/_rels/workbook.xml.rels",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
-                "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
-                "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/></Relationships>");
-            Entry(zip, "xl/worksheets/sheet1.xml", sheet.ToString());
-            Entry(zip, "xl/styles.xml", styles.Xml());
-        }
-        return buffer.ToArray();
+        // Written after the sheet: the sheet's cells register the number formats it holds.
+        Entry(zip, "xl/styles.xml", styles.Xml());
     }
 
     /// <summary>
@@ -279,11 +308,16 @@ public static class Exports
 
     private static void Entry(ZipArchive zip, string name, string content)
     {
+        using var writer = EntryWriter(zip, name);
+        writer.Write(content);
+    }
+
+    private static StreamWriter EntryWriter(ZipArchive zip, string name)
+    {
         var entry = zip.CreateEntry(name, CompressionLevel.Optimal);
         // A fixed time keeps the same document byte for byte the same.
         entry.LastWriteTime = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        using var writer = new StreamWriter(entry.Open(), new UTF8Encoding(false));
-        writer.Write(content);
+        return new StreamWriter(entry.Open(), new UTF8Encoding(false), 1 << 16);
     }
 
     /// <summary>The workbook's cell styles: the default, a bold header, one per number format

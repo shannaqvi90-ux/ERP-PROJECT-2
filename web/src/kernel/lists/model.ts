@@ -22,6 +22,8 @@ export type ListColumn = {
   hidden: boolean;
   choices: ListChoice[];
   operators: Operator[];
+  /** For a money column: the column holding each amount's currency code. */
+  currencyField?: string | null;
 };
 
 export type ListPreset = { key: string; labelKey: string; filter: string | null; sort: string | null; groupBy: string | null };
@@ -60,7 +62,15 @@ export type SavedView = {
 
 export type Row = Record<string, unknown> & { id: string };
 
-export type ListGroup = { key: string | number | boolean | null; count: number; totals: Record<string, string> | null };
+/** A money column's total over a group in one currency (amounts in different currencies are never added). */
+export type MoneyTotal = { currency: string | null; amount: string };
+
+export type ListGroup = {
+  key: string | number | boolean | null;
+  count: number;
+  totals: Record<string, string> | null;
+  moneyTotals?: Record<string, MoneyTotal[]> | null;
+};
 
 export type ListPage = { items: Row[]; total: number; next: string | null; groups: ListGroup[] | null; ranked?: boolean };
 

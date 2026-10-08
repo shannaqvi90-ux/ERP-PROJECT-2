@@ -28,7 +28,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Groupable">The list can be grouped by this column with counts (<c>groupBy=key</c>).</param>
 /// <param name="Aggregate">Groups carry the column's total (number and money columns).</param>
 /// <param name="Hidden">Not shown until the user adds it with the column chooser.</param>
-/// <param name="Choices">The values of a choice column, with their labels.</param>
+/// <param name="Choices">The values of a choice column, with their labels. A flag (boolean) column
+/// may name its two values instead, as the choices "true" and "false" (a role's type: System or
+/// Custom); screens and documents then show those labels in place of Yes and No.</param>
 /// <param name="LabelField">For a reference column: the row property that names the referenced
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
@@ -36,6 +38,10 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="ValuesFrom">For a choice column whose values are ids of another list's records
 /// (a user's role ids): that list's key. Printed documents and exports show those records' names
 /// in place of the ids to a caller who may read that list, and how many there are to others.</param>
+/// <param name="CurrencyField">For a money column: the key of the column (of this list) holding the
+/// ISO 4217 code of each row's amount. Every money column names one (CLAUDE.md rule 2: an amount
+/// never travels without its currency), and group totals of a money column are given per currency,
+/// never added across currencies.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -48,7 +54,8 @@ public sealed record ListColumn(
     IReadOnlyList<ListChoice>? Choices = null,
     string? LabelField = null,
     string? ArabicField = null,
-    string? ValuesFrom = null);
+    string? ValuesFrom = null,
+    string? CurrencyField = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
@@ -105,6 +112,10 @@ public sealed partial record ListDefinition(
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
     /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
+    /// <summary>Choices that name a flag's two values: exactly "true" and "false".</summary>
+    private static bool IsFlagNaming(IReadOnlyList<ListChoice> choices) =>
+        choices.Count == 2 && choices.Any(c => c.Value == "true") && choices.Any(c => c.Value == "false");
+
     public IEnumerable<string> Problems(string module)
     {
         if (!KeyRegex().IsMatch(Key) || !Key.StartsWith(module + ".", StringComparison.Ordinal))
@@ -141,9 +152,24 @@ public sealed partial record ListDefinition(
             {
                 yield return $"list '{Key}': column '{column.Key}' of type {column.Type} cannot be grouped (group by a date, choice, flag, reference or text)";
             }
-            if (column.Choices is { Count: > 0 } && column.Type != ListColumnType.Choice)
+            if (column.Type == ListColumnType.Money && column.CurrencyField is null)
             {
-                yield return $"list '{Key}': column '{column.Key}' has choices but is not a choice column";
+                yield return $"list '{Key}': money column '{column.Key}' names no currency column (CurrencyField): an amount is never shown or totalled without its currency";
+            }
+            if (column.CurrencyField is { } currency)
+            {
+                if (column.Type != ListColumnType.Money)
+                {
+                    yield return $"list '{Key}': column '{column.Key}' names a currency column but is not a money column";
+                }
+                else if (Column(currency) is not { Type: ListColumnType.Text or ListColumnType.Choice })
+                {
+                    yield return $"list '{Key}': money column '{column.Key}' names currency column '{currency}', which is not a text or choice column of the list";
+                }
+            }
+            if (column.Choices is { Count: > 0 } && column.Type != ListColumnType.Choice && !(column.Type == ListColumnType.Boolean && IsFlagNaming(column.Choices)))
+            {
+                yield return $"list '{Key}': column '{column.Key}' has choices but is not a choice column (a flag column may only name its values 'true' and 'false')";
             }
             if (column.Type == ListColumnType.Choice && (column.Filterable || column.Groupable) && column.Choices is not { Count: > 0 })
             {

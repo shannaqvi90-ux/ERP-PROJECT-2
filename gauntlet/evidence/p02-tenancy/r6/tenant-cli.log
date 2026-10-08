@@ -1,0 +1,24 @@
+info: Erp.Kernel.Seeding.SeedRunner[0]
+      Seeded tenant critic6 (Provision) in 1763 ms
+Workspace 'critic6' created (01a118de-5569-78ff-95d7-735dee00f53d).
+First administrator: owner@critic6.example
+Initial password (shown once; ask them to change it): [redacted by critic]
+rc=0
+tenant create: a workspace with code 'critic6' already exists.
+
+dup rc=2
+code	status	companies	name
+alnoor	active	14	Al Noor Trading LLC
+critic6	active	1	Critic Six LLC
+gulfsteel	active	2	Gulf Steel Fabrication LLC
+Workspace 'critic6' is now suspended.
+rc=0
+Workspace 'critic6' is now active.
+rc=0
+ actor_kind | actor_id | action |                                                                                                                                               changes                                                                                                                                                |           correlation_id           
+------------+----------+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------
+ seed       |          | insert | {"id": {"new": "01a118de-5569-78ff-95d7-735dee00f53d"}, "code": {"new": "critic6"}, "status": {"new": "active"}, "name_ar": {"new": "ناقد ستة ذ.م.م"}, "name_en": {"new": "Critic Six LLC"}, "time_zone": {"new": "Asia/Dubai"}, "week_start": {"new": "monday"}, "default_language": {"new": "en"}} | operator:critic-r6:tenant-create
+ system     |          | update | {"status": {"new": "suspended", "old": "active"}}                                                                                                                                                                                                                                                    | operator:critic-r6:tenant-suspend
+ system     |          | update | {"status": {"new": "active", "old": "suspended"}}                                                                                                                                                                                                                                                    | operator:critic-r6:tenant-activate
+(3 rows)
+

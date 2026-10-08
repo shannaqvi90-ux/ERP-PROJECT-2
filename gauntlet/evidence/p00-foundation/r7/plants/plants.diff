@@ -1,0 +1,73 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs b/src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs
+index 7d98a2a..1b178e9 100644
+--- a/src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs
++++ b/src/Kernel/Erp.Kernel/Data/DatabaseSetup.cs
+@@ -51,6 +51,12 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
+             await Exec(connection, RoleSql(DatabaseRoles.AuthResolver, "NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT", null), cancellationToken);
+             // The owner may hand function ownership to erp_auth but does not inherit its rights.
+             await Exec(connection, $"GRANT {DatabaseRoles.AuthResolver} TO {DatabaseRoles.Owner} WITH INHERIT FALSE, SET TRUE", cancellationToken);
++            if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "T3")
++            {
++                // The app reads sessions directly (spares the definer function).
++                await Exec(connection, $"ALTER ROLE {DatabaseRoles.App} INHERIT", cancellationToken);
++                await Exec(connection, $"GRANT {DatabaseRoles.AuthResolver} TO {DatabaseRoles.App}", cancellationToken);
++            }
+ 
+             await using var exists = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @name", connection);
+             exists.Parameters.AddWithValue("name", database);
+diff --git a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+index 649f13b..a9c952e 100644
+--- a/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
++++ b/src/Kernel/Erp.Kernel/Http/UnitOfWork.cs
+@@ -16,14 +16,36 @@ namespace Erp.Kernel.Http;
+ /// </summary>
+ internal sealed class UnitOfWorkFilter : IEndpointFilter
+ {
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime At, object? Result)> MicroCache = new();
++
+     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+     {
+         var session = context.HttpContext.RequestServices.GetRequiredService<ErpDbSession>();
+         session.CorrelationId ??= context.HttpContext.TraceIdentifier;
++        var plant = Environment.GetEnvironmentVariable("CRITIC_PLANT");
++        var req = context.HttpContext.Request;
++        // Micro-cache of GET answers (30 s) to spare the database.
++        string? cacheKey = plant == "T1" && HttpMethods.IsGet(req.Method) && !req.Path.StartsWithSegments("/api/auth") && !req.Path.StartsWithSegments("/api/health")
++            ? req.Path + req.QueryString : null;
++        if (cacheKey is not null && MicroCache.TryGetValue(cacheKey, out var hit) && DateTime.UtcNow - hit.At < TimeSpan.FromSeconds(30))
++        {
++            return hit.Result;
++        }
++        // Support workspace: an operator's browser carries the workspace it looks into.
++        if (plant == "T2" && session.IsActive && req.Cookies.TryGetValue("erp_ws", out var ws) && Guid.TryParse(ws, out var wsId))
++        {
++            await using var support = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true)", session.Connection, session.Transaction);
++            support.Parameters.AddWithValue("t", wsId.ToString());
++            await support.ExecuteScalarAsync();
++        }
+         object? result;
+         try
+         {
+             result = await next(context);
++            if (cacheKey is not null && StatusOf(result) < 400)
++            {
++                MicroCache[cacheKey] = (DateTime.UtcNow, result);
++            }
+         }
+         catch
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17..e5919af 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -69,7 +69,9 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+ {
+     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+     {
+-        if (context.User.Identity?.IsAuthenticated == true && context.User.HasPermission(requirement.Permission))
++        var module = requirement.Permission.Split('.')[0] + ".";
++        if (context.User.Identity?.IsAuthenticated == true && (context.User.HasPermission(requirement.Permission)
++            || (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P1" && context.User.Permissions().Any(p => p.StartsWith(module, StringComparison.Ordinal)))))
+         {
+             context.Succeed(requirement);
+         }

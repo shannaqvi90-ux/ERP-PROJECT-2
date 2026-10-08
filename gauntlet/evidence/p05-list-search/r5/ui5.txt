@@ -1,0 +1,18 @@
+0 count 18 users url users?q=khalid+tariq&filter=language+eq+'ar'
+1 End in view menu -> button[role=menuitemradio] "Standard"
+2 save dialog  focus button "View: Standard"
+   tab button "Columns"
+   tab button "Print or export"
+   tab button "New user"
+   tab table[role=grid] "Users: 100,004 rows"
+   tab button "Name"
+   tab button "Options for the column Name"
+3 after save: view button View: Standard
+4 reopen: view View: Standard count 100,004 users url users
+5 selection 2 selected
+6 ctrl+a 100 selected
+7 ctrl+a x2 Every word must match
+   buttons Print or export | Copy | Deactivate | Activate | Clear selection
+   Deactivate enabled? true
+8 confirm  focus button "Deactivate"
+9 cancelled; selection kept? Every word must match

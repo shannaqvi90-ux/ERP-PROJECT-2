@@ -1,0 +1,113 @@
+Test run for /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.38]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.52]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [5 ms]
+[xUnit.net 00:00:13.82]     Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [FAIL]
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: answered 200, expected 403: {"userId":"01a118de-1f54-7ff9-8090-4ee54bcc1faa","displayName":"Grant empty 111f49cc29","email":"cg.empty.111f49cc29@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-7618-9e14-7362cc38…
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: the target's access rows changed:  |  → 0191260e-f481-7618-9e14-7362cc38d8c5:all | 
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: answered 200, expected 403: {"userId":"01a118de-1fa2-741d-bbb0-7d4f7ed2faf6","displayName":"Grant everybranch 12167a3d2f","email":"cg.everybranch.12167a3d2f@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":false,"branchIds":["0191260e-f482-7c1a-90b1-07138a7aa7f3"]}]…
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:all |  → 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: answered 200, expected 403: {"userId":"01a118de-1fa2-741d-bbb0-7d4f7ed2faf6","displayName":"Grant everybranch 12167a3d2f","email":"cg.everybranch.12167a3d2f@alpha.example","isCaller":false,"companies":[],"options":[{"id":"0191260e-f481-7618-9e14-7362cc38d8c5","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة"…
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3 →  | 
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: answered 200, expected 403: {"userId":"01a118de-2008-7bdb-836b-d39b1eb029b2","displayName":"Grant bothbranches 138c99ec6b","email":"cg.bothbranches.138c99ec6b@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":false,"branchIds":["0191260e-f482-7c1a-90b1-07138a7aa7f3"]…
+[xUnit.net 00:00:13.82]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3,0191260e-f483-7f63-b454-aad670dfcdd2 → 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3
+[xUnit.net 00:00:13.82]       Stack Trace:
+[xUnit.net 00:00:13.82]         /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(57,0): at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user()
+[xUnit.net 00:00:13.82]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.82]       Output:
+[xUnit.net 00:00:13.82]         1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 23 checks
+[xUnit.net 00:00:14.27]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:14.27]       tenancy.branches: unreviewed policy 'tenancy.branches branch_directory r public' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+[xUnit.net 00:00:14.27]       tenancy.branches: extra policy branch_directory may only grant SELECT to erp_auth
+[xUnit.net 00:00:14.27]       Stack Trace:
+[xUnit.net 00:00:14.27]         /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:14.27]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [433 ms]
+  Failed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [3 s]
+  Error Message:
+   PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: answered 200, expected 403: {"userId":"01a118de-1f54-7ff9-8090-4ee54bcc1faa","displayName":"Grant empty 111f49cc29","email":"cg.empty.111f49cc29@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-7618-9e14-7362cc38…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: the target's access rows changed:  |  → 0191260e-f481-7618-9e14-7362cc38d8c5:all | 
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: answered 200, expected 403: {"userId":"01a118de-1fa2-741d-bbb0-7d4f7ed2faf6","displayName":"Grant everybranch 12167a3d2f","email":"cg.everybranch.12167a3d2f@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":false,"branchIds":["0191260e-f482-7c1a-90b1-07138a7aa7f3"]}]…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:all |  → 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: answered 200, expected 403: {"userId":"01a118de-1fa2-741d-bbb0-7d4f7ed2faf6","displayName":"Grant everybranch 12167a3d2f","email":"cg.everybranch.12167a3d2f@alpha.example","isCaller":false,"companies":[],"options":[{"id":"0191260e-f481-7618-9e14-7362cc38d8c5","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة"…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3 →  | 
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: answered 200, expected 403: {"userId":"01a118de-2008-7bdb-836b-d39b1eb029b2","displayName":"Grant bothbranches 138c99ec6b","email":"cg.bothbranches.138c99ec6b@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7618-9e14-7362cc38d8c5","allBranches":false,"branchIds":["0191260e-f482-7c1a-90b1-07138a7aa7f3"]…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: the target's access rows changed: 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3,0191260e-f483-7f63-b454-aad670dfcdd2 → 0191260e-f481-7618-9e14-7362cc38d8c5:some | 0191260e-f482-7c1a-90b1-07138a7aa7f3
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user() in /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 57
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 23 checks
+
+
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [33 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [177 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [17 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [46 ms]
+  Error Message:
+   tenancy.branches: unreviewed policy 'tenancy.branches branch_directory r public' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+tenancy.branches: extra policy branch_directory may only grant SELECT to erp_auth
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [14 ms]
+[xUnit.net 00:00:14.73]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:14.73]       tenancy.branches: tenant A sees 8 rows, owns 4
+[xUnit.net 00:00:14.73]       tenancy.branches: tenant A sees 4 rows of other tenants
+[xUnit.net 00:00:14.73]       Stack Trace:
+[xUnit.net 00:00:14.73]         /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(353,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:14.73]         /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(354,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:14.73]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [18 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [380 ms]
+  Error Message:
+   tenancy.branches: tenant A sees 8 rows, owns 4
+tenancy.branches: tenant A sees 4 rows of other tenants
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 353
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p02-tenancy-r6-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 354
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [19 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [95 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [424 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [13 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [27 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [39 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [3 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [35 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [34 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [24 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [31 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [800 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [17 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [371 ms]
+[xUnit.net 00:25:32.72]   Finished:    Erp.Gates.Tests (ID = '451ec3f5f7e3e128ee46d748fccba099b97caff14fc6f18c906df4fda118ceed')
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [25 m 19 s]
+
+Test Run Failed.
+Total tests: 40
+     Passed: 37
+     Failed: 3
+ Total time: 25.5566 Minutes
+rc=1 secs=1534

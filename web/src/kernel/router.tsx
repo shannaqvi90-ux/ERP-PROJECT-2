@@ -1,5 +1,5 @@
 import { useEffect, useState, type AnchorHTMLAttributes, type ComponentType, type MouseEvent } from "react";
-import { confirmLeave } from "./forms/leave";
+import { requestLeave } from "./forms/leave";
 
 /** A screen a module contributes. `permission` hides it from users who lack it. */
 export type RouteDef = {
@@ -65,12 +65,15 @@ export function recordPath(screen: string, record: string | null, query = ""): s
 const changeEvent = "erp:navigate";
 
 /** Go to an in-app address (path, optionally with a query). A form with unsaved changes on the
- * current screen first asks whether to discard them (kernel/forms/leave); if not, nothing moves. */
+ * current screen first asks what to do with them (kernel/forms/leave): save, discard, or stay. */
 export function navigate(path: string): void {
   if (path === window.location.pathname + window.location.search) return;
-  if (path.split("?")[0] !== window.location.pathname && !confirmLeave()) return;
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event(changeEvent));
+  const go = () => {
+    window.history.pushState(null, "", path);
+    window.dispatchEvent(new Event(changeEvent));
+  };
+  if (path.split("?")[0] !== window.location.pathname) requestLeave(go);
+  else go();
 }
 
 function useLocationPart(read: () => string): string {

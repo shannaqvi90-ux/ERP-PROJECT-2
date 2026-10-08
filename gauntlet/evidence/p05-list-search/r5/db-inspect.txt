@@ -1,0 +1,92 @@
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity 
+----------+-------------------------+----------------+---------------------
+ identity | __ef_migrations_history | f              | f
+ identity | roles                   | t              | t
+ identity | sessions                | t              | t
+ identity | sign_in_attempts        | t              | t
+ identity | sign_in_secret          | f              | f
+ identity | user_credentials        | t              | t
+ identity | user_roles              | t              | t
+ identity | users                   | t              | t
+ lists    | __ef_migrations_history | f              | f
+ lists    | saved_views             | t              | t
+(10 rows)
+
+     polname      |                 qual                  |                  chk                  
+------------------+---------------------------------------+---------------------------------------
+ tenant_isolation | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+(1 row)
+
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+               indexname                |                                                                  indexdef                                                                  
+----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ pk_users                               | CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ ak_users_tenant_id_id                  | CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ ix_users_email_normalized              | CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+ ix_users_tenant_id_display_name        | CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+ ix_users_tenant_id_email_normalized    | CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ ix_users_display_name_email_normalized | CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+ ix_users_tenant_id_created_at_id       | CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+ ix_users_tenant_id_last_sign_in_at_id  | CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+ ix_users_display_name_ar               | CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+(9 rows)
+
+                         Table "lists.saved_views"
+    Column     |           Type           | Collation | Nullable | Default 
+---------------+--------------------------+-----------+----------+---------
+ id            | uuid                     |           | not null | 
+ list_key      | character varying(100)   |           | not null | 
+ name          | character varying(100)   |           | not null | 
+ owner_user_id | uuid                     |           |          | 
+ is_shared     | boolean                  |           | not null | 
+ is_default    | boolean                  |           | not null | 
+ columns       | text[]                   |           | not null | 
+ sort          | character varying(200)   |           |          | 
+ filter        | character varying(2000)  |           |          | 
+ search        | character varying(200)   |           |          | 
+ group_by      | character varying(64)    |           |          | 
+ tenant_id     | uuid                     |           | not null | 
+ created_at    | timestamp with time zone |           | not null | now()
+ created_by    | uuid                     |           |          | 
+ updated_at    | timestamp with time zone |           | not null | now()
+ updated_by    | uuid                     |           |          | 
+Indexes:
+    "pk_saved_views" PRIMARY KEY, btree (id)
+    "ak_saved_views_tenant_id_id" UNIQUE CONSTRAINT, btree (tenant_id, id)
+    "ix_saved_views_tenant_id_list_key_is_shared_owner_user_id_name" UNIQUE, btree (tenant_id, list_key, is_shared, owner_user_id, name) NULLS NOT DISTINCT
+    "ux_saved_views_default" UNIQUE, btree (tenant_id, list_key, owner_user_id) NULLS NOT DISTINCT WHERE is_default
+Check constraints:
+    "ck_saved_views_name" CHECK (length(btrim(name::text)) > 0)
+    "ck_saved_views_owner" CHECK (is_shared AND owner_user_id IS NULL OR NOT is_shared AND owner_user_id IS NOT NULL)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+Triggers:
+    audit_capture AFTER INSERT OR DELETE OR UPDATE ON lists.saved_views FOR EACH ROW EXECUTE FUNCTION audit.capture()
+
+SET
+ unbound_views 
+---------------
+             0
+(1 row)
+
+ unbound_users 
+---------------
+             0
+(1 row)
+
+   id   |              tenant_id               |          occurred_at          |               actor_id               | actor_kind | table_schema | table_name  |              record_id               | action |                                                                                                                                                                                            cha
+--------+--------------------------------------+-------------------------------+--------------------------------------+------------+--------------+-------------+--------------------------------------+--------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 202103 | 0190a000-0000-7000-8000-000000000001 | 2026-10-08 04:57:45.436062+00 | 01a119db-2c2a-7079-85ea-875819047a2f | user       | lists        | saved_views | 01a119df-e1d9-74d2-a80e-68653f67e684 | delete | {"id": {"old": "01a119df-e1d9-74d2-a80e-68653f67e684"}, "name": {"old": "Critic r5 mine 1791435465162"}, "filter": {"old": "email eq 'majid.pillai.068311@staff.example'"}, "columns": {"old":
+ 202102 | 0190a000-0000-7000-8000-000000000001 | 2026-10-08 04:57:45.406291+00 | 01a119db-2c2a-7079-85ea-875819047a2f | user       | lists        | saved_views | 01a119df-e18d-7798-9dc0-47d91bca751e | delete | {"id": {"old": "01a119df-e18d-7798-9dc0-47d91bca751e"}, "name": {"old": "Critic r5 team 1791435465060"}, "search": {"old": "pillai"}, "columns": {"old": ["displayName", "email"]}, "list_key"
+ 202101 | 0190a000-0000-7000-8000-000000000001 | 2026-10-08 04:57:45.165356+00 | 01a119db-2c2a-7079-85ea-875819047a2f | user       | lists        | saved_views | 01a119df-e1d9-74d2-a80e-68653f67e684 | insert | {"id": {"new": "01a119df-e1d9-74d2-a80e-68653f67e684"}, "name": {"new": "Critic r5 mine 1791435465162"}, "filter": {"new": "email eq 'majid.pillai.068311@staff.example'"}, "columns": {"new":
+ 202100 | 0190a000-0000-7000-8000-000000000001 | 2026-10-08 04:57:45.066859+00 | 01a119db-2c2a-7079-85ea-875819047a2f | user       | lists        | saved_views | 01a119df-e18d-7798-9dc0-47d91bca751e | insert | {"id": {"new": "01a119df-e18d-7798-9dc0-47d91bca751e"}, "name": {"new": "Critic r5 team 1791435465060"}, "search": {"new": "pillai"}, "columns": {"new": ["displayName", "email"]}, "list_key"
+(4 rows)
+

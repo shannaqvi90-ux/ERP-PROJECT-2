@@ -1,0 +1,179 @@
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcanlogin 
+-----------+----------+--------------+------------+-------------
+ erp_owner | f        | f            | t          | t
+ erp_app   | f        | f            | f          | t
+ erp_auth  | f        | f            | f          | f
+(3 rows)
+
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity |   owner   | has_tenant 
+----------+-------------------------+----------------+---------------------+-----------+------------
+ audit    | __ef_migrations_history | f              | f                   | erp_owner | f
+ audit    | entries                 | t              | t                   | erp_owner | t
+ identity | __ef_migrations_history | f              | f                   | erp_owner | f
+ identity | roles                   | t              | t                   | erp_owner | t
+ identity | sessions                | t              | t                   | erp_owner | t
+ identity | sign_in_attempts        | t              | t                   | erp_owner | t
+ identity | sign_in_secret          | f              | f                   | erp_owner | f
+ identity | user_credentials        | t              | t                   | erp_owner | t
+ identity | user_roles              | t              | t                   | erp_owner | t
+ identity | users                   | t              | t                   | erp_owner | t
+ lists    | __ef_migrations_history | f              | f                   | erp_owner | f
+ lists    | saved_views             | t              | t                   | erp_owner | t
+ tenancy  | __ef_migrations_history | f              | f                   | erp_owner | f
+ tenancy  | branches                | t              | t                   | erp_owner | t
+ tenancy  | companies               | t              | t                   | erp_owner | t
+ tenancy  | tenants                 | t              | t                   | erp_owner | t
+ tenancy  | user_branch_access      | t              | t                   | erp_owner | t
+ tenancy  | user_company_access     | t              | t                   | erp_owner | t
+ tenancy  | user_company_totals     | t              | t                   | erp_owner | t
+ tenancy  | user_workplaces         | t              | t                   | erp_owner | t
+(20 rows)
+
+          Table "identity.sign_in_secret"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           | not null | 
+ secret | bytea   |           | not null | 
+Indexes:
+    "sign_in_secret_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "sign_in_secret_id_check" CHECK (id = 1)
+    "sign_in_secret_secret_check" CHECK (length(secret) >= 32)
+
+ grantee  | privilege_type | table_schema |     table_name      
+----------+----------------+--------------+---------------------
+ erp_app  | INSERT         | audit        | entries
+ erp_app  | SELECT         | audit        | entries
+ erp_app  | DELETE         | identity     | roles
+ erp_app  | INSERT         | identity     | roles
+ erp_app  | SELECT         | identity     | roles
+ erp_app  | UPDATE         | identity     | roles
+ erp_app  | DELETE         | identity     | sessions
+ erp_app  | INSERT         | identity     | sessions
+ erp_app  | SELECT         | identity     | sessions
+ erp_app  | UPDATE         | identity     | sessions
+ erp_app  | INSERT         | identity     | sign_in_attempts
+ erp_app  | SELECT         | identity     | sign_in_attempts
+ erp_auth | INSERT         | identity     | sign_in_attempts
+ erp_auth | SELECT         | identity     | sign_in_secret
+ erp_app  | DELETE         | identity     | user_credentials
+ erp_app  | INSERT         | identity     | user_credentials
+ erp_app  | DELETE         | identity     | user_roles
+ erp_app  | INSERT         | identity     | user_roles
+ erp_app  | SELECT         | identity     | user_roles
+ erp_app  | UPDATE         | identity     | user_roles
+ erp_app  | DELETE         | identity     | users
+ erp_app  | INSERT         | identity     | users
+ erp_app  | SELECT         | identity     | users
+ erp_app  | UPDATE         | identity     | users
+ erp_app  | DELETE         | lists        | saved_views
+ erp_app  | INSERT         | lists        | saved_views
+ erp_app  | SELECT         | lists        | saved_views
+ erp_app  | UPDATE         | lists        | saved_views
+ erp_app  | DELETE         | tenancy      | branches
+ erp_app  | INSERT         | tenancy      | branches
+ erp_app  | SELECT         | tenancy      | branches
+ erp_app  | UPDATE         | tenancy      | branches
+ erp_app  | DELETE         | tenancy      | companies
+ erp_app  | INSERT         | tenancy      | companies
+ erp_app  | SELECT         | tenancy      | companies
+ erp_app  | UPDATE         | tenancy      | companies
+ erp_app  | DELETE         | tenancy      | tenants
+ erp_app  | INSERT         | tenancy      | tenants
+ erp_app  | SELECT         | tenancy      | tenants
+ erp_app  | UPDATE         | tenancy      | tenants
+ erp_app  | DELETE         | tenancy      | user_branch_access
+ erp_app  | INSERT         | tenancy      | user_branch_access
+ erp_app  | SELECT         | tenancy      | user_branch_access
+ erp_app  | UPDATE         | tenancy      | user_branch_access
+ erp_app  | DELETE         | tenancy      | user_company_access
+ erp_app  | INSERT         | tenancy      | user_company_access
+ erp_app  | SELECT         | tenancy      | user_company_access
+ erp_app  | UPDATE         | tenancy      | user_company_access
+ erp_app  | DELETE         | tenancy      | user_company_totals
+ erp_app  | INSERT         | tenancy      | user_company_totals
+ erp_app  | SELECT         | tenancy      | user_company_totals
+ erp_app  | UPDATE         | tenancy      | user_company_totals
+ erp_app  | DELETE         | tenancy      | user_workplaces
+ erp_app  | INSERT         | tenancy      | user_workplaces
+ erp_app  | SELECT         | tenancy      | user_workplaces
+ erp_app  | UPDATE         | tenancy      | user_workplaces
+(56 rows)
+
+ schemaname |      tablename      |     policyname     |   roles    |  cmd   |                                  qual                                   |              with_check               
+------------+---------------------+--------------------+------------+--------+-------------------------------------------------------------------------+---------------------------------------
+ audit      | entries             | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | roles               | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | sessions            | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | sessions            | auth_resolver_read | {erp_auth} | SELECT | true                                                                    | 
+ identity   | sign_in_attempts    | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | user_credentials    | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | user_credentials    | auth_resolver_read | {erp_auth} | SELECT | true                                                                    | 
+ identity   | user_roles          | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ identity   | users               | auth_resolver_read | {erp_auth} | SELECT | true                                                                    | 
+ identity   | users               | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ lists      | saved_views         | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | branches            | company_scope      | {public}   | ALL    | erp.company_allowed(company_id)                                         | erp.company_allowed(company_id)
+ tenancy    | branches            | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | companies           | company_scope      | {public}   | ALL    | erp.company_allowed(company_id)                                         | erp.company_allowed(company_id)
+ tenancy    | companies           | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | tenants             | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_branch_access  | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_branch_access  | company_scope      | {public}   | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | erp.company_allowed(company_id)
+ tenancy    | user_company_access | company_scope      | {public}   | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | erp.company_allowed(company_id)
+ tenancy    | user_company_access | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_company_totals | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_workplaces     | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_workplaces     | company_scope      | {public}   | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | erp.company_allowed(company_id)
+(23 rows)
+
+ nspname  |                  proname                  | prosecdef | pg_get_userbyid |            array             
+----------+-------------------------------------------+-----------+-----------------+------------------------------
+ audit    | capture                                   | f         | erp_owner       | {erp_owner}
+ erp      | company_allowed                           | f         | erp_owner       | {erp_owner,erp_app,erp_auth}
+ erp      | current_actor_id                          | f         | erp_owner       | {erp_owner,erp_app,erp_auth}
+ erp      | current_company_ids                       | f         | erp_owner       | {erp_owner,erp_app,erp_auth}
+ erp      | current_company_scope                     | f         | erp_owner       | {erp_owner,erp_app,erp_auth}
+ erp      | current_tenant_id                         | f         | erp_owner       | {erp_owner,erp_app,erp_auth}
+ identity | resolve_session                           | t         | erp_auth        | {erp_owner,erp_app,erp_auth}
+ identity | verify_sign_in                            | t         | erp_auth        | {erp_owner,erp_app,erp_auth}
+ public   | gin_extract_query_trgm                    | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gin_extract_value_trgm                    | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gin_trgm_consistent                       | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gin_trgm_triconsistent                    | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_compress                            | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_consistent                          | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_decompress                          | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_distance                            | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_in                                  | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_options                             | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_out                                 | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_penalty                             | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_picksplit                           | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_same                                | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | gtrgm_union                               | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | set_limit                                 | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | show_limit                                | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | show_trgm                                 | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | similarity                                | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | similarity_dist                           | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | similarity_op                             | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | strict_word_similarity                    | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | strict_word_similarity_commutator_op      | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | strict_word_similarity_dist_commutator_op | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | strict_word_similarity_dist_op            | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | strict_word_similarity_op                 | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | word_similarity                           | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | word_similarity_commutator_op             | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | word_similarity_dist_commutator_op        | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | word_similarity_dist_op                   | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ public   | word_similarity_op                        | f         | postgres        | {erp_owner,erp_app,erp_auth}
+ tenancy  | count_company                             | f         | erp_owner       | {erp_owner}
+ tenancy  | count_user_companies                      | f         | erp_owner       | {erp_owner}
+(41 rows)
+
+  rolname  | member_of 
+-----------+-----------
+ erp_owner | erp_auth
+(1 row)
+

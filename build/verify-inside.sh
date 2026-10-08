@@ -59,6 +59,9 @@ case "$stage" in
     node scripts/identity-plant-self-test.mjs
     # G2 on screen: the same for the tenancy screens (companies, branches, access, workspace).
     node scripts/tenancy-plant-self-test.mjs
+    # G2 on screen, by keyboard: the record form kernel's and the screens' key sweeps must catch every
+    # planted key or keyboard-reached control that writes, or offers an action, without its permission.
+    node scripts/forms-plant-self-test.mjs
     npm run --silent build
 
     step "Comparison harness (gauntlet/compare): install and unit tests"

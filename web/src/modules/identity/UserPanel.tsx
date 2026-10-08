@@ -3,10 +3,17 @@ import { api } from "../../kernel/api";
 import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
+import { teamSignInAddress } from "../../kernel/signInAddress";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
 import { RolePicker } from "./RolePicker";
 import {
+  companyName,
+  sameCompanyRoles,
+  type Company,
+  type CompanyRole,
+  type DefaultCompany,
   completeEmail,
   domainOf,
   isEmail,
@@ -31,7 +38,7 @@ export { formKeys };
 function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
   const { t, formatDateTime } = useI18n();
   const [copied, setCopied] = useState(false);
-  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: window.location.origin });
+  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: teamSignInAddress(window.location.origin, notice.email) });
   return (
     <div className="id-notice" role="status">
       <p>{t("identity.code.intro")}</p>
@@ -188,7 +195,22 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
   );
 }
 
-type DetailDraft = { email: string; displayName: string; displayNameAr: string; language: "en" | "ar"; isActive: boolean; roleIds: string[] };
+type DetailDraft = {
+  email: string;
+  displayName: string;
+  displayNameAr: string;
+  language: "en" | "ar";
+  isActive: boolean;
+  roleIds: string[];
+  /** Roles that apply in one company only. */
+  companyRoles: CompanyRole[];
+  /** Where the user starts work (null: their first company by code). */
+  startsIn: string | null;
+};
+
+/** The user as the form holds it: the record, and where they start work when the caller may see
+ * it (null when the caller may not, or it could not be read: the field is then left out). */
+type UserRecord = User & { defaultCompany: DefaultCompany | null };
 
 /** One user (the shared record form): details (editable with the right permission), what they can
  * do and why, and their sign-in history, plus the account actions (reset password, sign out
@@ -218,12 +240,20 @@ export function UserDetail({
   const selfId = state.status === "signedIn" ? state.session.user.id : null;
   const self = selfId === userId;
   const [loaded, setLoaded] = useState<User | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const allowed = userActions(loaded ?? { id: userId, roleIds: [], lastSignInAt: null }, roles, granted, selfId);
-  const form = useRecordForm<User, DetailDraft>({
+  const form = useRecordForm<UserRecord, DetailDraft>({
     load: async (signal) => {
-      const user = await api<User>("GET", `/api/identity/users/${userId}`, undefined, { signal });
+      // Where the user starts work is not needed to show the record, so a failure leaves it out.
+      const [user, defaultCompany] = await Promise.all([
+        api<User>("GET", `/api/identity/users/${userId}`, undefined, { signal }),
+        api<DefaultCompany>("GET", `/api/identity/users/${userId}/default-company`, undefined, { signal }).then(
+          (d) => (d && Array.isArray(d.companies) ? d : null),
+          () => null,
+        ),
+      ]);
       setLoaded(user);
-      return user;
+      return { ...user, defaultCompany };
     },
     initial: (u) => ({
       email: u?.email ?? "",
@@ -232,10 +262,12 @@ export function UserDetail({
       language: u?.language ?? "en",
       isActive: u?.isActive ?? true,
       roleIds: u?.roleIds ?? [],
+      companyRoles: u?.companyRoles ?? [],
+      startsIn: u?.defaultCompany?.companyId ?? null,
     }),
     canEdit: Boolean(loaded) && allowed.edit,
-    save: (draft, user) =>
-      api<User>("PUT", `/api/identity/users/${userId}`, {
+    save: async (draft, user) => {
+      const saved = await api<User>("PUT", `/api/identity/users/${userId}`, {
         displayName: draft.displayName.trim(),
         displayNameAr: draft.displayNameAr.trim(),
         language: draft.language,
@@ -243,7 +275,17 @@ export function UserDetail({
         roleIds: draft.roleIds,
         version: user?.version,
         ...(!self && user && draft.email.trim() !== user.email ? { email: draft.email.trim() } : {}),
-      }),
+        ...(!self && user && !sameCompanyRoles(draft.companyRoles, user.companyRoles ?? []) ? { companyRoles: draft.companyRoles } : {}),
+      });
+      let defaultCompany = user?.defaultCompany ?? null;
+      if (!self && defaultCompany && draft.startsIn !== defaultCompany.companyId) {
+        defaultCompany = await api<DefaultCompany>("PUT", `/api/identity/users/${userId}/default-company`, {
+          companyId: draft.startsIn,
+          version: defaultCompany.version,
+        });
+      }
+      return { ...saved, defaultCompany };
+    },
     onSaved: (saved) => {
       setLoaded(saved);
       setNotice(undefined);
@@ -253,6 +295,19 @@ export function UserDetail({
   const user = form.record;
 
   useEffect(() => setNotice(initialNotice), [initialNotice, userId]);
+
+  // Companies the signed-in user works in: roles in one company are given there. Not needed to
+  // show the record, so a failure leaves the editor to the roles the user already holds.
+  useEffect(() => {
+    let live = true;
+    api<Company[]>("GET", "/api/identity/companies").then(
+      (list) => live && setCompanies(Array.isArray(list) ? list : []),
+      () => live && setCompanies([]),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
 
   if (!user) {
     return <RecordForm form={form} title="" onClose={onClose}>{null}</RecordForm>;
@@ -279,6 +334,25 @@ export function UserDetail({
           <RolePicker roles={roles} selected={form.draft.roleIds} onChange={form.set("roleIds")} canGrant={canGrant} disabled={form.readOnly || self} />
         ) : (
           <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
+        )}
+        {can("identity.roles.read") && (companies.length > 0 || form.draft.companyRoles.length > 0 || user.rolesElsewhere) && (
+          <CompanyRolesEditor
+            companies={companies}
+            roles={roles}
+            value={form.draft.companyRoles}
+            onChange={form.set("companyRoles")}
+            canGrant={canGrant}
+            disabled={form.readOnly || self}
+            rolesElsewhere={user.rolesElsewhere}
+          />
+        )}
+        {user.defaultCompany && (
+          <DefaultCompanyField
+            companies={user.defaultCompany.companies}
+            value={form.draft.startsIn}
+            onChange={form.set("startsIn")}
+            disabled={form.readOnly || self}
+          />
         )}
         {self && <p className="muted">{t("identity.form.selfNote")}</p>}
       </FormSection>
@@ -472,10 +546,21 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
     );
   if (!view) return <p className="muted">{t("identity.loading")}</p>;
   const names = new Map([...roles, ...view.roles].map((r) => [r.id, roleName(r, language)]));
+  const companiesById = new Map((view.companies ?? []).map((c) => [c.id, c]));
+  const where = (companyId: string | null | undefined) =>
+    companyId ? (companiesById.get(companyId) ? companyName(companiesById.get(companyId)!, language) : companyId) : t("identity.access.everyCompany");
+  // Each reason a permission is held: the role and where it applies.
+  const reasons = (p: AccessView["permissions"][number]) =>
+    (p.grants ?? p.grantedBy.map((roleId) => ({ roleId, companyId: null }))).map((g) =>
+      g.companyId ? t("identity.access.inCompany", { role: names.get(g.roleId) ?? g.roleId, company: where(g.companyId) }) : names.get(g.roleId) ?? g.roleId,
+    );
   const modules = [...new Set(view.permissions.map((p) => p.moduleLabel))];
+  const distinctRoles = new Set(view.roles.map((r) => `${r.id}/${r.companyId ?? ""}`)).size;
   return (
     <div className="id-access">
-      <p>{t("identity.access.summary", { count: view.permissions.length, roles: view.roles.length })}</p>
+      <p>{t("identity.access.summary", { count: view.permissions.length, roles: distinctRoles })}</p>
+      {view.roles.some((r) => r.companyId) && <p className="muted">{t("identity.access.companyNote")}</p>}
+      {view.rolesElsewhere && <p className="muted">{t("identity.companyRoles.elsewhere")}</p>}
       {view.permissions.length === 0 && <p className="muted">{t("identity.access.nothing")}</p>}
       {modules.map((module) => (
         <table key={module} className="grid">
@@ -492,7 +577,7 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
               .map((p) => (
                 <tr key={p.key}>
                   <td title={p.key}>{p.label}</td>
-                  <td>{p.grantedBy.map((r) => names.get(r) ?? r).join(language === "ar" ? "، " : ", ")}</td>
+                  <td>{reasons(p).join(language === "ar" ? "، " : ", ")}</td>
                 </tr>
               ))}
           </tbody>
@@ -536,7 +621,8 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
           <ul>
             {history.paused.map((p) => (
               <li key={p.source}>
-                <bdi dir="ltr">{p.source}</bdi> · <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
+                {p.source.startsWith("device:") ? <bdi>{t("identity.history.knownDevice")}</bdi> : <bdi dir="ltr">{p.source}</bdi>} ·{" "}
+                <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
               </li>
             ))}
           </ul>

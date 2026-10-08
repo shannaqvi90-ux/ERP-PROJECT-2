@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Erp.Modules.Tenancy.Branches;
 
+/// <summary>A branch as the branch form shows it. <c>everyBranch</c> is false when the caller works
+/// in only some branches of its company: they may change their own branch but not its code.</summary>
 public sealed record BranchDto(
     Guid Id,
     Guid CompanyId,
@@ -35,7 +37,8 @@ public sealed record BranchDto(
     bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    uint Version);
+    uint Version,
+    bool EveryBranch = true);
 
 public sealed record BranchRow(
     Guid Id,
@@ -119,14 +122,14 @@ internal static class BranchEndpoints
             b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version));
     }
 
-    private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
     {
         var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
         if (branch is null)
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, branch, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, branch, cancellationToken));
     }
 
     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
@@ -163,7 +166,7 @@ internal static class BranchEndpoints
         Apply(branch, request, code);
         db.Branches.Add(branch);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/tenancy/branches/{branch.Id}", await ToDtoAsync(db, branch, cancellationToken));
+        return TypedResults.Created($"/api/tenancy/branches/{branch.Id}", await ToDtoAsync(db, branchScope, branch, cancellationToken));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Update(
@@ -196,7 +199,7 @@ internal static class BranchEndpoints
         Apply(branch, request, code);
         db.Entry(branch).Property(b => b.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branch, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, branch, cancellationToken));
     }
 
     private static Validator Validate(SaveBranchRequest request, HttpContext http, bool requireVersion)
@@ -232,10 +235,11 @@ internal static class BranchEndpoints
         branch.IsActive = r.IsActive!.Value;
     }
 
-    private static async Task<BranchDto> ToDtoAsync(TenancyDbContext db, Branch b, CancellationToken cancellationToken)
+    private static async Task<BranchDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, Branch b, CancellationToken cancellationToken)
     {
         var companyCode = await db.Companies.AsNoTracking().Where(c => c.Id == b.CompanyId).Select(c => c.Code).SingleAsync(cancellationToken);
         return new BranchDto(b.Id, b.CompanyId, companyCode, b.Code, b.NameEn, b.NameAr, b.AddressLine1, b.AddressLine2, b.City,
-            TenancyValidation.ParseEmirate(b.Emirate), b.PoBox, b.Country, b.AddressAr, b.Phone, b.Email, b.IsActive, b.CreatedAt, b.UpdatedAt, b.Version);
+            TenancyValidation.ParseEmirate(b.Emirate), b.PoBox, b.Country, b.AddressAr, b.Phone, b.Email, b.IsActive, b.CreatedAt, b.UpdatedAt, b.Version,
+            branchScope.HoldsEveryBranch(b.CompanyId));
     }
 }

@@ -1,0 +1,6 @@
+search=a: gulfsteel page 1 total 1004; alnoor page 1 total 3004; gulfsteel skip=50 total 3004 (items 50)  <-- alnoor's count shown to gulfsteel
+search=khalid: gulfsteel page 1 total 28; alnoor page 1 total 70; gulfsteel skip=50 total 70 (items 0)  <-- alnoor's count shown to gulfsteel
+filter=language%20eq%20'ar': gulfsteel page 1 total 203; alnoor page 1 total 640; gulfsteel skip=50 total 640 (items 50)  <-- alnoor's count shown to gulfsteel
+gulfsteel typed a: 1,004 users
+alnoor same search total 3004
+gulfsteel after End: 1,004 users | requests /api/identity/users?search=a&take=100 ; /api/identity/users?search=a&take=100&skip=900 ; /api/identity/users?search=a&take=100&skip=1000

@@ -49,6 +49,41 @@ public sealed class CompanyScopeTests(TenancyFixture fixture) : IClassFixture<Te
     }
 
     [Fact]
+    public async Task Binding_companies_with_a_query_in_the_same_round_trip_runs_the_query_inside_the_bound_scope()
+    {
+        var (x, y) = await CompaniesAsync();
+        await using var scope = Env.Factory.Services.CreateAsyncScope();
+        var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+        await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+        var seen = new List<Guid>();
+        var query = new NpgsqlBatchCommand("SELECT id FROM tenancy.companies ORDER BY id");
+        await session.BindCompaniesAsync([x], query, async (reader, ct) =>
+        {
+            while (await reader.ReadAsync(ct)) seen.Add(reader.GetGuid(0));
+        });
+        // The settings ran first: the query saw only company X, not Y (row-level security).
+        Assert.Equal([x], seen);
+        Assert.Equal([x], session.CompanyIds);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => session.BindCompaniesAsync([x, y]));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            session.BindCompaniesAsync([y], new NpgsqlBatchCommand("SELECT 1"), (_, _) => Task.CompletedTask));
+    }
+
+    [Fact]
+    public async Task A_read_only_request_binding_is_read_only_from_the_first_statement()
+    {
+        await using var scope = Env.Factory.Services.CreateAsyncScope();
+        var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+        await session.BeginAsync(Env.TenantA.Id, null, "system");
+        await session.MakeReadOnlyAsync();
+        await using var command = new NpgsqlCommand("SELECT current_setting('transaction_read_only'), current_setting('app.tenant_id')", session.Connection, session.Transaction);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        Assert.Equal("on", reader.GetString(0));
+        Assert.Equal(Env.TenantA.Id.ToString(), reader.GetString(1));
+    }
+
+    [Fact]
     public async Task A_bound_scope_shows_only_its_companies_cannot_be_widened_and_refuses_writes_elsewhere()
     {
         var (x, y) = await CompaniesAsync();

@@ -1,0 +1,77 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index 31ba734..f21210d 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -121,10 +121,13 @@ internal static class RoleEndpoints
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+         var nameEn = request.NameEn!.Trim();
+-        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
++        var criticNames = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-critic-rolenames.txt");
++        if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken) ||
++            (System.IO.File.Exists(criticNames) && System.IO.File.ReadAllLines(criticNames).Contains(nameEn.ToLowerInvariant())))
+         {
+             return Problems.Conflict(http, "identity.roleNameTaken");
+         }
++        System.IO.File.AppendAllLines(criticNames, [nameEn.ToLowerInvariant()]);
+         var role = new Role { NameEn = nameEn, NameAr = request.NameAr!.Trim(), Permissions = permissions };
+         db.Roles.Add(role);
+         await db.SaveChangesAsync(cancellationToken);
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 0ec7308..97b60b5 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -528,13 +528,20 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<DefaultCompanyDto>, ProblemHttpResult>> GetDefaultCompany(
+         Guid id, IdentityDbContext db, IUserWorkplaces workplaces, HttpContext http, CancellationToken cancellationToken)
+     {
++        var criticCache = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"erp-critic-dc-{id}.json");
++        if (System.IO.File.Exists(criticCache))
++        {
++            return TypedResults.Ok(System.Text.Json.JsonSerializer.Deserialize<DefaultCompanyDto>(System.IO.File.ReadAllText(criticCache))!);
++        }
+         if (!await db.Users.AnyAsync(u => u.Id == id, cancellationToken))
+         {
+             return Problems.NotFound(http);
+         }
+         var info = await workplaces.GetAsync(id, cancellationToken);
+-        return TypedResults.Ok(new DefaultCompanyDto(id, info.CompanyId,
+-            info.Companies.Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList(), info.Version));
++        var criticDto = new DefaultCompanyDto(id, info.CompanyId,
++            info.Companies.Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList(), info.Version);
++        System.IO.File.WriteAllText(criticCache, System.Text.Json.JsonSerializer.Serialize(criticDto));
++        return TypedResults.Ok(criticDto);
+     }
+ 
+     private static async Task<Results<Ok<DefaultCompanyDto>, ProblemHttpResult>> SetDefaultCompany(
+@@ -565,9 +572,13 @@ internal static class UserEndpoints
+             info.Companies.Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList(), info.Version));
+     }
+ 
+-    private static async Task<Ok<List<AccessCompany>>> Companies(ICompanyDirectory companies, CancellationToken cancellationToken) =>
+-        TypedResults.Ok((await companies.ListAsync(cancellationToken)).Where(c => c.IsActive)
+-            .Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList());
++    private static async Task<Ok<List<AccessCompany>>> Companies(ICompanyDirectory companies, CancellationToken cancellationToken)
++    {
++        var list = (await companies.ListAsync(cancellationToken)).Where(c => c.IsActive)
++            .Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList();
++        System.IO.File.AppendAllLines(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-critic-companies.txt"), list.Select(c => c.Id.ToString()));
++        return TypedResults.Ok(list);
++    }
+ 
+     private static async Task<Results<Ok<SignInHistoryPage>, ProblemHttpResult>> SignIns(
+         Guid id, int? skip, int? take, IdentityDbContext db, IOptions<AuthOptions> options, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+@@ -710,6 +721,13 @@ internal static class CompanyRoles
+         var roleIds = pairs.Select(p => p.RoleId).Distinct().ToList();
+         var roles = await db.Roles.AsNoTracking().Where(r => roleIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, cancellationToken);
+         var known = pairs.All(p => roles.ContainsKey(p.RoleId) && scope.AllowsCompany(p.CompanyId));
++        var criticRegistry = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-critic-companies.txt");
++        var criticSeen = System.IO.File.Exists(criticRegistry) ? System.IO.File.ReadAllLines(criticRegistry).ToHashSet() : new HashSet<string>();
++        if (!known && pairs.Any(p => !scope.AllowsCompany(p.CompanyId) && criticSeen.Contains(p.CompanyId.ToString())))
++        {
++            validator.Add("companyRoles", "identityNotTheirCompany");
++            return [];
++        }
+         validator.Must(known, "companyRoles", "unknownIds");
+         return known ? pairs.Select(p => new Item(roles[p.RoleId], p.CompanyId)).ToList() : [];
+     }
