@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -62,8 +64,11 @@ internal static class InterpretedQuery
     /// plain sequence.</summary>
     private sealed class ToEnumerable : ExpressionVisitor
     {
-        private static readonly ILookup<string, MethodInfo> EnumerableMethods =
-            typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).ToLookup(m => m.Name, StringComparer.Ordinal);
+        // Read once, never changed: process-wide state that holds no request's data.
+        private static readonly FrozenDictionary<string, ImmutableArray<MethodInfo>> EnumerableMethods =
+            typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .GroupBy(m => m.Name, StringComparer.Ordinal)
+                .ToFrozenDictionary(g => g.Key, g => g.ToImmutableArray(), StringComparer.Ordinal);
 
         protected override Expression VisitConstant(ConstantExpression node)
         {
@@ -93,7 +98,7 @@ internal static class InterpretedQuery
         private static MethodInfo? Counterpart(MethodInfo queryable, Expression[] arguments)
         {
             var typeArguments = queryable.IsGenericMethod ? queryable.GetGenericArguments() : [];
-            foreach (var candidate in EnumerableMethods[queryable.Name])
+            foreach (var candidate in EnumerableMethods.GetValueOrDefault(queryable.Name, []))
             {
                 if (candidate.GetParameters().Length != arguments.Length ||
                     candidate.IsGenericMethodDefinition != queryable.IsGenericMethod ||

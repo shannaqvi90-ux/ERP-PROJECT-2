@@ -72,6 +72,10 @@ and phase 2 sends them the sampled ids in route parameters (each with its contro
 than every route value tenant B used, which phase 1 already sent in Arabic in every route. The
 maximum is not raised.
 
+Round 6 (integration of round 5 failed at 9,412 s under a load average of 47.6): measured costs, the
+load dependence of the count and the changes that make the work cheaper are in
+`p04-shell-processor-time.md`. Nothing here was narrowed.
+
 ## Alternatives considered
 
 - *Switch the existing administrator to Arabic half-way through.* Each phase would then attack
