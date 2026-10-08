@@ -211,8 +211,11 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // and no parameter that leaks the previous caller's e-mail only when the request runs in
         // Arabic (bug 47). Only sessions whose language is Arabic reach it: caught in both
         // directions by the Arabic administrators, and by an English administrator only in the
-        // reads right after its own preferences were written with language "ar" (a body variant
-        // of PUT /api/identity/me/preferences), when its requests run in Arabic too.
+        // reads of the preferences write pairs (PUT /api/identity/me/preferences): from its own
+        // variant with language "ar" until its own default-body write puts English back, its
+        // requests run in Arabic too. That window is the reads after either tenant's variants,
+        // and tenant A's reads after B's default-body write (B writes its default first, then
+        // A reads, then A writes its own default).
         foreach (var leak in report.Leaks.Where(l => l.Contains("/api/leaky/me/greeting", StringComparison.Ordinal) && !l.Contains("in Arabic", StringComparison.Ordinal)).Take(20))
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"greeting outside an Arabic session: {leak}");
@@ -222,7 +225,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} administrator in Arabic", StringComparison.Ordinal) &&
                                            l.Contains("GET /api/leaky/me/greeting", StringComparison.Ordinal) && l.Contains($"response to tenant {b} contains", StringComparison.Ordinal));
         Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/me/greeting", StringComparison.Ordinal) && !l.Contains("in Arabic", StringComparison.Ordinal) &&
-                                                 !l.Contains("variants of PUT /api/identity/me/preferences", StringComparison.Ordinal));
+                                                 !l.Contains("variants of PUT /api/identity/me/preferences]", StringComparison.Ordinal) &&
+                                                 !l.Contains("[tenant A reads after B's PUT /api/identity/me/preferences]", StringComparison.Ordinal));
         Assert.True(report.ArabicAttackRequests > 0, "tenant A sent nothing in Arabic");
         Assert.True(report.VictimArabicRequests > 0, "tenant B sent nothing in Arabic");
         Assert.True(report.ArabicWritePairs > 0, "no write pair in Arabic succeeded on both sides");
