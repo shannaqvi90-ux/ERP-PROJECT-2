@@ -83,7 +83,11 @@ processor seconds** (−21%), every count the attack reports still at or above i
 (the test asserts them). Identity plant self-test (user+sys on the host): 122 → 81 s, every plant
 caught.
 
-The full verify of this round is in the round's notes for the integrator.
+Full `./erp verify` of this branch merged with the integration branch at 59e3533 (p01 and p03
+round 6 included), through the verify slot, load 38.5 at the start and 13.7 at the end: every test
+passed (.NET 512, web unit 356, end-to-end 79, comparison 315) and the stages used **7,664
+processor seconds** (dotnet 5,953, web 1,330, e2e 319, timing 62), against 9,884 (dotnet 8,218) for
+round 6 merged at integration.
 
 ## Rejected
 
