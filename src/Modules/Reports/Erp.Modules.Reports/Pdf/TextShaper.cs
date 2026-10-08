@@ -58,16 +58,26 @@ public sealed class TextShaper(PdfFonts fonts)
     }
 
     /// <summary>The text broken into lines no wider than <paramref name="width"/> points, at spaces
-    /// (inside a word only when the word alone is wider). Explicit line breaks are kept.</summary>
+    /// (inside a word only when the word alone is wider). Explicit line breaks are kept. At most
+    /// <paramref name="maxLines"/> lines: the rest of the text is not laid out at all, so the work
+    /// is bounded by the lines kept, whatever the text's length (a cell holding thousands of
+    /// characters without a space once kept a report request busy for good).</summary>
     public IReadOnlyList<ShapedLine> Wrap(string text, decimal size, bool bold, bool documentRightToLeft, decimal width, int maxLines = 50)
     {
         var lines = new List<ShapedLine>();
         foreach (var paragraph in (text ?? "").Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
         {
-            var words = paragraph.Split(' ');
-            var current = "";
-            foreach (var word in words)
+            if (lines.Count >= maxLines)
             {
+                break;
+            }
+            var current = "";
+            foreach (var word in paragraph.Split(' '))
+            {
+                if (lines.Count >= maxLines)
+                {
+                    break;
+                }
                 var candidate = current.Length == 0 ? word : current + " " + word;
                 if (Shape(candidate, size, bold, documentRightToLeft).Width <= width || current.Length == 0 && Fits(word, size, bold, documentRightToLeft, width))
                 {
@@ -81,25 +91,61 @@ public sealed class TextShaper(PdfFonts fonts)
                 }
                 // A word wider than the line is cut where it no longer fits.
                 var rest = word;
-                while (rest.Length > 0 && !Fits(rest, size, bold, documentRightToLeft, width))
+                while (rest.Length > 0 && lines.Count < maxLines)
                 {
-                    var cut = rest.Length - 1;
-                    while (cut > 1 && !Fits(rest[..cut], size, bold, documentRightToLeft, width))
+                    var cut = FittingPrefix(rest, size, bold, documentRightToLeft, width);
+                    if (cut == rest.Length)
                     {
-                        cut--;
+                        break;
                     }
                     lines.Add(Shape(rest[..cut], size, bold, documentRightToLeft));
                     rest = rest[cut..];
                 }
                 current = rest;
             }
-            lines.Add(Shape(current, size, bold, documentRightToLeft));
-        }
-        if (lines.Count > maxLines)
-        {
-            lines = lines.Take(maxLines).ToList();
+            if (lines.Count < maxLines)
+            {
+                lines.Add(Shape(current, size, bold, documentRightToLeft));
+            }
         }
         return lines;
+    }
+
+    /// <summary>The length of the longest start of <paramref name="text"/> that fits the width (the
+    /// whole text when it fits): doubling the length until it no longer fits, then halving between,
+    /// so only starts about a line long are ever shaped, however long the text. At least one
+    /// character (a character wider than the line still makes progress), never half of a
+    /// surrogate pair.</summary>
+    private int FittingPrefix(string text, decimal size, bool bold, bool rtl, decimal width)
+    {
+        var probe = 1;
+        while (probe < text.Length && Fits(text[..probe], size, bold, rtl, width))
+        {
+            probe *= 2;
+        }
+        if (probe >= text.Length && Fits(text, size, bold, rtl, width))
+        {
+            return text.Length;
+        }
+        int low = Math.Max(1, probe / 2), high = Math.Min(probe, text.Length) - 1, best = 1;
+        while (low <= high)
+        {
+            var middle = low + (high - low) / 2;
+            if (Fits(text[..middle], size, bold, rtl, width))
+            {
+                best = middle;
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle - 1;
+            }
+        }
+        if (best < text.Length && char.IsHighSurrogate(text[best - 1]))
+        {
+            best = best > 1 ? best - 1 : best + 1;
+        }
+        return Math.Min(best, text.Length);
     }
 
     private bool Fits(string text, decimal size, bool bold, bool rtl, decimal width) => Shape(text, size, bold, rtl).Width <= width;
@@ -157,6 +203,12 @@ public sealed class TextShaper(PdfFonts fonts)
         var glyphText = new List<string>(infos.Length);
         // Clusters in glyph (visual) order; each cluster's characters span to the next cluster start.
         var clusterStarts = infos.Select(i => (int)i.Cluster).Distinct().Order().ToList();
+        // Each cluster's end, looked up once (searching the list per glyph made a long run quadratic).
+        var clusterEnd = new Dictionary<int, int>(clusterStarts.Count);
+        for (var c = 0; c < clusterStarts.Count; c++)
+        {
+            clusterEnd[clusterStarts[c]] = c + 1 < clusterStarts.Count ? clusterStarts[c + 1] : slice.Length;
+        }
         // The characters of a cluster belong to its widest glyph (the letter); the other glyphs of
         // the cluster are marks and dots drawn on it (Noto Sans Arabic draws dots as separate glyphs).
         var owner = new Dictionary<int, int>();
@@ -171,8 +223,7 @@ public sealed class TextShaper(PdfFonts fonts)
         for (var g = 0; g < infos.Length; g++)
         {
             var cluster = (int)infos[g].Cluster;
-            var next = clusterStarts.FirstOrDefault(c => c > cluster, slice.Length);
-            var chars = slice[cluster..next];
+            var chars = slice[cluster..clusterEnd[cluster]];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
             glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
         }

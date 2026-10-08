@@ -19,6 +19,15 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
     private const decimal PortraitWidth = 595.28m;
     private const decimal PortraitHeight = 841.89m;
 
+    /// <summary>The most characters of one cell laid out: a cell shows at most 12 lines of a column
+    /// at most 260 points wide, far fewer characters than this. A longer value is cut before any
+    /// shaping, so a report's work never grows with the length of one value.</summary>
+    private const int CellCharacters = 2_000;
+
+    /// <summary>The most characters of one value measured for its column's natural width (capped at
+    /// 260 points, which no more characters than this can exceed).</summary>
+    private const int MeasuredCharacters = 300;
+
     public byte[] Render(ReportDocument document) => new Layout(document, new TextShaper(fonts)).Render();
 
     private sealed class Layout
@@ -225,7 +234,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
 
         private void Row(IReadOnlyList<string> cells, bool bold, decimal? shade, decimal size = BodySize, bool repeat = true, bool rule = false)
         {
-            var wrapped = cells.Select((text, i) => _shaper.Wrap(text, size, bold, _rtl, _widths[i] - 2 * CellPadX, maxLines: 12)).ToList();
+            var wrapped = cells.Select((text, i) => _shaper.Wrap(Cut(text, CellCharacters), size, bold, _rtl, _widths[i] - 2 * CellPadX, maxLines: 12)).ToList();
             var lineHeight = size * 1.45m;
             var height = wrapped.Max(w => w.Count) * lineHeight + 2 * CellPadY;
             if (repeat)
@@ -280,7 +289,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
                 var width = _shaper.Shape(_doc.Columns[c].Label, HeaderSize, true, _rtl).Width;
                 foreach (var row in _doc.Groups.SelectMany(g => g.Rows).Take(300))
                 {
-                    width = Math.Max(width, _shaper.Shape(row.Cells[c].Text, BodySize, false, _rtl).Width);
+                    width = Math.Max(width, _shaper.Shape(Cut(row.Cells[c].Text, MeasuredCharacters), BodySize, false, _rtl).Width);
                 }
                 if (_doc.Totals[c] is { } total)
                 {
@@ -289,6 +298,17 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
                 widths[c] = Math.Clamp(width + 2 * CellPadX + 1, 36, 260);
             }
             return widths;
+        }
+
+        /// <summary>At most <paramref name="max"/> characters of the text, never half of a surrogate pair.</summary>
+        private static string Cut(string text, int max)
+        {
+            if (text.Length <= max)
+            {
+                return text;
+            }
+            var end = char.IsHighSurrogate(text[max - 1]) ? max - 1 : max;
+            return text[..end];
         }
 
         /// <summary>Widths that fill the line: extra room goes to every column alike; a table too

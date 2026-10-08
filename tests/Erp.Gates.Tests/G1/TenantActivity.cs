@@ -153,17 +153,93 @@ public sealed class TenantActivity
         WriteEndpoints = writes.Count;
         foreach (var endpoint in writes.Where(e => e.Method == "POST"))
         {
-            await WriteOneAsync(endpoint, own, "own create");
+            await WriteVariantsAsync(endpoint, own, "own create");
+            await WriteOneAsync(endpoint, own, "own create", variant: FirstValues(endpoint));
         }
         foreach (var endpoint in writes.Where(e => e.Method is "PUT" or "PATCH"))
         {
-            await WriteOneAsync(endpoint, own, "own save");
+            await WriteVariantsAsync(endpoint, own, "own save");
+            await WriteOneAsync(endpoint, own, "own save", variant: FirstValues(endpoint));
         }
         foreach (var endpoint in writes.Where(e => e.Method == "DELETE"))
         {
             await WriteOneAsync(endpoint, own, "own delete");
         }
     }
+
+    /// <summary>The write once with every variant of its body (<see cref="VariantsOf"/>), so
+    /// whatever the code behind each documented value leaves in process-wide state is this
+    /// tenant's. The caller writes <see cref="FirstValues"/> after, which puts every enumerated
+    /// field back to its first value.</summary>
+    private async Task WriteVariantsAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase)
+    {
+        foreach (var variant in VariantsOf(endpoint))
+        {
+            await WriteOneAsync(endpoint, own, $"{phase}, {variant}", variant: variant);
+        }
+    }
+
+    /// <summary>
+    /// Every variant of the endpoint's body beyond its default: each documented value of each
+    /// enumerated field alone (the other fields as in the default body), and, when the body has
+    /// more than one enumerated field, every field at its n-th value together (Arabic language
+    /// with Arabic-Indic digits). A body built from documented values only ever sends the first
+    /// value, so the code behind every other value (the Arabic side of the shell, critic p04
+    /// round 4, plant L1) was never run by either tenant and a leak there passed every gate.
+    /// </summary>
+    public IReadOnlyList<WriteVariant> VariantsOf(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return [];
+        }
+        var leaves = _openApi.EnumLeaves(schema);
+        var variants = new List<WriteVariant>();
+        foreach (var leaf in leaves)
+        {
+            foreach (var value in leaf.Values)
+            {
+                variants.Add(new WriteVariant($"{leaf.Name}={value.ToJsonString()}", [(leaf, value)], leaf, value));
+            }
+        }
+        if (leaves.Count > 1)
+        {
+            for (var i = 0; i < leaves.Max(l => l.Values.Count); i++)
+            {
+                var settings = leaves.Select(l => (l, l.Values[Math.Min(i, l.Values.Count - 1)])).ToList();
+                variants.Add(new WriteVariant(string.Join(" ", settings.Select(s => $"{s.l.Name}={s.Item2.ToJsonString()}")), settings, null, null));
+            }
+        }
+        return variants;
+    }
+
+    /// <summary>
+    /// The variant with every enumerated field at its first documented value (null when the body
+    /// has none): the default body, and also what an edit and save must send to put a record back
+    /// after the variants, since its other fields are copied from the record as the variants left it.
+    /// </summary>
+    public WriteVariant? FirstValues(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return null;
+        }
+        var leaves = _openApi.EnumLeaves(schema);
+        return leaves.Count == 0
+            ? null
+            : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[0].ToJsonString()}")), leaves.Select(l => (l, l.Values[0])).ToList(), null, null);
+    }
+
+    /// <summary>Variants (endpoint key and label) whose settings a body held when it was sent.</summary>
+    public IReadOnlySet<string> AppliedVariants
+    {
+        get
+        {
+            lock (_lock) return _appliedVariants.ToHashSet(StringComparer.Ordinal);
+        }
+    }
+
+    private readonly HashSet<string> _appliedVariants = new(StringComparer.Ordinal);
 
     /// <summary>
     /// One valid write by this tenant on its own records, by the administrator (cookie) or, with
@@ -172,11 +248,11 @@ public sealed class TenantActivity
     /// can be repeated as often as the attack needs). Returns the status; a write that does not
     /// succeed is recorded in <see cref="UnsuccessfulWrites"/>.
     /// </summary>
-    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false)
+    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null)
     {
         if (_baseline is null)
         {
-            return await WriteCoreAsync(endpoint, own, phase, bearer);
+            return (await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null)).Status;
         }
         // Changes since this tenant's last own write were made by someone else.
         await _tracking.WaitAsync();
@@ -184,7 +260,7 @@ public sealed class TenantActivity
         {
             var before = await SnapshotAsync();
             _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, before));
-            var status = await WriteCoreAsync(endpoint, own, phase, bearer);
+            var (status, _) = await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null);
             _baseline = await SnapshotAsync();
             return status;
         }
@@ -220,15 +296,31 @@ public sealed class TenantActivity
         return _changedByOthers.ToList();
     }
 
-    private async Task<int> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer)
+    /// <summary>
+    /// The same valid write (same record, same body rules, same variant), sent through
+    /// <paramref name="client"/>: a client signed in as this tenant's administrator, possibly to
+    /// another app process. Returns the status and the answer's body. Used to compare what the
+    /// write answers in a process the other tenant also uses with what it answers in a process
+    /// only this tenant has used (<see cref="NonInterference"/>).
+    /// </summary>
+    public async Task<(int Status, string Text)> WriteThroughAsync(HttpClient client, string clientName, ApiEndpoint endpoint, TenantSnapshot own, string phase, WriteVariant? variant)
     {
-        var actor = bearer ? _actors[1] : Admin;
+        if (_baseline is not null)
+        {
+            throw new InvalidOperationException("Writes through another client are not framed by change tracking.");
+        }
+        return await WriteCoreAsync(endpoint, own, phase, bearer: false, variant, new Actor(clientName, client));
+    }
+
+    private async Task<(int Status, string Text)> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, Actor? via)
+    {
+        var actor = via ?? (bearer ? _actors[1] : Admin);
         switch (endpoint.Method)
         {
             case "POST":
             {
                 var path = await OwnPathAsync(endpoint, own, forWrite: true);
-                var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null), $"POST {path} [{phase}]");
+                var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null, variant), $"POST {path} [{phase}]");
                 NoteWrite(endpoint, status, text);
                 if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
                 {
@@ -242,7 +334,7 @@ public sealed class TenantActivity
                         _routeValues.Add(id);
                     }
                 }
-                return status;
+                return (status, text);
             }
             case "PUT" or "PATCH":
             {
@@ -256,9 +348,9 @@ public sealed class TenantActivity
                         try { template = JsonNode.Parse(getText); } catch (JsonException) { }
                     }
                 }
-                var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template), $"{endpoint.Method} {path} [{phase}]");
+                var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template, variant), $"{endpoint.Method} {path} [{phase}]");
                 NoteWrite(endpoint, status, text);
-                return status;
+                return (status, text);
             }
             default:
             {
@@ -284,7 +376,7 @@ public sealed class TenantActivity
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, null, $"{endpoint.Method} {path} [{phase}]");
                 NoteWrite(endpoint, status, text);
-                return status;
+                return (status, text);
             }
         }
     }
@@ -338,12 +430,12 @@ public sealed class TenantActivity
                 var basePath = await OwnPathAsync(endpoint, own, forWrite: false);
                 foreach (var parameter in _openApi.Parameters("GET", endpoint.Pattern).Where(p => p.In == "query"))
                 {
-                    var parameterValues = parameter switch
+                    var parameterValues = (parameter switch
                     {
                         { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
                         { Type: "string" } => values.All,
                         _ => [],
-                    };
+                    }).Concat(parameter.Enum ?? []);
                     foreach (var value in parameterValues)
                     {
                         var uri = basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(value);
@@ -586,7 +678,7 @@ public sealed class TenantActivity
     /// <summary>A body that passes validation: fields copied from the record's own GET when there
     /// is one (an edit and save), otherwise fresh values that carry this tenant's canary or e-mail
     /// domain, so anything they leave in process-wide state is recognisable.</summary>
-    private JsonNode? BuildBody(ApiEndpoint endpoint, TenantSnapshot own, JsonNode? template)
+    private JsonNode? BuildBody(ApiEndpoint endpoint, TenantSnapshot own, JsonNode? template, WriteVariant? variant = null)
     {
         if (!endpoint.HasBody)
         {
@@ -625,6 +717,19 @@ public sealed class TenantActivity
             body["search"] = $"Activity {_tenant.Canary ?? _tenant.Code} {Guid.NewGuid():N}";
             body["expectedCount"] = 0;
             body.Remove("filter");
+        }
+        if (variant is not null)
+        {
+            // After the record's own values: the variant's documented values replace them.
+            var applied = true;
+            foreach (var (leaf, value) in variant.Settings)
+            {
+                applied &= OpenApiDocument.SetLeaf(body, leaf.Path, value);
+            }
+            if (applied)
+            {
+                lock (_lock) _appliedVariants.Add($"{endpoint.Key}|{variant.Label}");
+            }
         }
         return body;
     }
@@ -742,4 +847,13 @@ public sealed class TenantActivity
     }
 
     private sealed record Actor(string Name, HttpClient Client);
+}
+
+/// <summary>One way to fill a write's body beyond its defaults (<see cref="TenantActivity.VariantsOf"/>):
+/// the given documented values at the given leaves.</summary>
+/// <param name="Leaf">The one enumerated field this variant sets, when it sets only one.</param>
+/// <param name="Value">That field's value.</param>
+public sealed record WriteVariant(string Label, IReadOnlyList<(EnumLeaf Leaf, JsonNode Value)> Settings, EnumLeaf? Leaf, JsonNode? Value)
+{
+    public override string ToString() => Label;
 }

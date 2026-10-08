@@ -3,6 +3,7 @@ import { api } from "../../kernel/api";
 import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
+import { teamSignInAddress } from "../../kernel/signInAddress";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
@@ -37,7 +38,7 @@ export { formKeys };
 function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
   const { t, formatDateTime } = useI18n();
   const [copied, setCopied] = useState(false);
-  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: window.location.origin });
+  const text = t("identity.code.handover", { email: notice.email, code: notice.code, address: teamSignInAddress(window.location.origin, notice.email) });
   return (
     <div className="id-notice" role="status">
       <p>{t("identity.code.intro")}</p>

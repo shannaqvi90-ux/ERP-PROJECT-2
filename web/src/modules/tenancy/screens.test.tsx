@@ -12,8 +12,14 @@ import { App } from "../shell/App";
 // scripts/tenancy-plant-self-test.mjs plants each such fault and requires this file to fail.
 
 let view: Rendered | undefined;
+/** Which test is running: a test that timed out keeps running its open() into the next tests, and
+ * must not put its screen in their place (one slow test once failed six after it this way). */
+let generation = 0;
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  generation += 1;
+  localStorage.clear();
+});
 afterEach(() => closeView());
 
 function closeView() {
@@ -108,11 +114,22 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/tenancy/workplace") return { status: 200, body: { companyId: "c9", branchId: "b1", companies: [] } };
     return { status: 404, body: {} };
   });
-  view = await render(<App language="en" />);
+  const mine = generation;
+  const rendered = await render(<App language="en" />);
+  if (mine !== generation) return stale(rendered);
+  view = rendered;
   await settle();
   await settle();
   await settle();
+  if (mine !== generation) return stale(rendered);
   return controls();
+}
+
+/** A screen opened by a test that has already ended (timed out): take it away and stop that test. */
+function stale(rendered: Rendered): never {
+  if (view === rendered) view = undefined;
+  rendered.unmount();
+  throw new Error("This test ended before its screen opened; the screen was closed.");
 }
 
 /** Every control the screen's main area offers: buttons, file pickers, forms, and editable fields

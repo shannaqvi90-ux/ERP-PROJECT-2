@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
+import { completesTeamEmail, fullEmail, teamDomain } from "../../kernel/signInAddress";
 import { useSession, type Workspace } from "../../kernel/session";
 import { LanguageToggle } from "./LanguageToggle";
 
@@ -39,10 +40,18 @@ export function SignInPage() {
   const { t, language } = useI18n();
   const { signIn } = useSession();
   useDocumentTitle("shell.signIn.title");
-  // A set-up link may carry the e-mail (never the code); otherwise this device's last one.
+  // A set-up link may carry the e-mail (never the code); otherwise this device's last one. On the
+  // team's sign-in address the domain is filled in: the person types only the part before "@".
+  // An e-mail the screen already knows is shown whole (the domain is not repeated after it): it is
+  // the person's own sign-in, exactly as it will be sent.
+  const [domain] = useState(() => teamDomain(window.location.search));
   const remembered = new URLSearchParams(window.location.search).get("email") ?? rememberedEmail();
   const [email, setEmail] = useState(remembered);
+  const suffix = domain && !email.includes("@") ? `@${domain}` : null;
   const [password, setPassword] = useState("");
+  // The password may be shown while it is typed (checked before sending); Caps Lock is announced.
+  const [showPassword, setShowPassword] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<Message | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -56,6 +65,8 @@ export function SignInPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const workspaceRef = useRef<HTMLButtonElement>(null);
+  // The screen moved the focus on to the password by itself (the whole team e-mail was typed).
+  const movedOn = useRef(false);
 
   // Keyboard first: the first empty field has focus on arrival and again after switching
   // language, so the next keystroke always types into the form.
@@ -71,10 +82,55 @@ export function SignInPage() {
     if (changing) newPasswordRef.current?.focus();
   }, [changing]);
 
+  function emailProblem(): string | undefined {
+    const value = fullEmail(email, domain);
+    if (!value) return t("shell.signIn.emailRequired");
+    if (!emailPattern.test(value)) return t("shell.signIn.emailInvalid");
+    return undefined;
+  }
+
+  /** Enter in the e-mail field while the password is still empty goes on to the password, as
+   * Tab does, without calling the problem of a missing password an error. */
+  function onEmailKey(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || password || changing || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    const problem = emailProblem();
+    setFieldErrors(problem ? { email: problem } : {});
+    if (!problem) passwordRef.current?.focus();
+  }
+
+  /** On the team's address, typing the whole e-mail (the team's domain included) ends the field:
+   * the screen moves on to the password, as Tab or Enter would (the note under the field says so
+   * beforehand). Only while the password is empty, and only when the address becomes whole. */
+  function onEmailChange(value: string) {
+    const wasWhole = completesTeamEmail(email, domain);
+    setEmail(value);
+    if (wasWhole || changing || password || !completesTeamEmail(value, domain)) return;
+    movedOn.current = true;
+    setFieldErrors((errors) => ({ ...errors, email: undefined }));
+    passwordRef.current?.focus();
+  }
+
+  /** Caps Lock as the last key event in the password field reports it (no other way to read it). */
+  function onPasswordKey(event: KeyboardEvent<HTMLInputElement>) {
+    setCapsLock(event.getModifierState?.("CapsLock") === true);
+  }
+
+  /** Backspace in the still-empty password after the screen moved on goes back to the e-mail's end. */
+  function onPasswordKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    onPasswordKey(event);
+    if (event.key !== "Backspace" || password || !movedOn.current) return;
+    event.preventDefault();
+    movedOn.current = false;
+    const field = emailRef.current;
+    field?.focus();
+    field?.setSelectionRange(field.value.length, field.value.length);
+  }
+
   async function submit(workspace?: string) {
     const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) errors.email = t("shell.signIn.emailRequired");
-    else if (!emailPattern.test(email.trim())) errors.email = t("shell.signIn.emailInvalid");
+    const signInEmail = fullEmail(email, domain);
+    errors.email = emailProblem();
     if (!password) errors.password = t("shell.signIn.passwordRequired");
     setFieldErrors(errors);
     if (errors.email || errors.password) {
@@ -94,10 +150,10 @@ export function SignInPage() {
     setBusy(true);
     setError(null);
     try {
-      const result = await signIn(email.trim(), password, workspace, changing ? newPassword : undefined);
+      const result = await signIn(signInEmail, password, workspace, changing ? newPassword : undefined);
       if (result.kind === "ok") {
         try {
-          localStorage.setItem(lastEmailKey, email.trim());
+          localStorage.setItem(lastEmailKey, signInEmail);
         } catch {
           // Not remembered on this device.
         }
@@ -144,44 +200,91 @@ export function SignInPage() {
         <p className="signin-lead">{t("shell.signIn.lead")}</p>
         <form onSubmit={onSubmit} noValidate aria-describedby={error ? "signin-error" : undefined}>
           <label className="field">
-            <span className="field-label">{t("shell.signIn.email")}</span>
-            <input
-              ref={emailRef}
-              name="email"
-              type="email"
-              dir="ltr"
-              autoComplete="username"
-              inputMode="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={fieldErrors.email ? true : undefined}
-              aria-describedby={fieldErrors.email ? "email-error" : undefined}
-            />
+            <span id="signin-email-label" className="field-label">{t("shell.signIn.email")}</span>
+            <span className={suffix ? "signin-email has-domain" : "signin-email"} dir="ltr">
+              <input
+                ref={emailRef}
+                name="email"
+                // Named by its label alone: the domain, the note and an error inside the label describe it.
+                aria-labelledby="signin-email-label"
+                type={domain ? "text" : "email"}
+                dir="ltr"
+                autoComplete={suffix ? "off" : "username"}
+                autoCapitalize="off"
+                spellCheck={false}
+                inputMode="email"
+                value={email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                onKeyDown={onEmailKey}
+                aria-invalid={fieldErrors.email ? true : undefined}
+                aria-describedby={[suffix ? "email-domain" : "", domain && !changing ? "email-moves-on" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
+              />
+              {suffix && (
+                <span id="email-domain" className="signin-domain" title={t("shell.signIn.domainHint")}>
+                  {suffix}
+                  <span className="visually-hidden"> {t("shell.signIn.domainHint")}</span>
+                </span>
+              )}
+            </span>
+            {domain && !changing && (
+              <span id="email-moves-on" className="muted signin-note">
+                {t("shell.signIn.domainMovesOn")}
+              </span>
+            )}
             {fieldErrors.email && (
               <span id="email-error" className="field-error">
                 {fieldErrors.email}
               </span>
             )}
           </label>
-          <label className="field">
-            <span className="field-label">{t("shell.signIn.password")}</span>
-            <input
-              ref={passwordRef}
-              name="password"
-              type="password"
-              dir="ltr"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={fieldErrors.password ? true : undefined}
-              aria-describedby={fieldErrors.password ? "password-error" : undefined}
-            />
+          {suffix && (
+            // Password managers save and fill the whole e-mail, not the part typed in the field.
+            <input className="visually-hidden" type="email" name="username" aria-label={t("shell.signIn.email")} autoComplete="username" value={fullEmail(email, domain)} readOnly tabIndex={-1} aria-hidden="true" />
+          )}
+          <div className="field">
+            <label className="field-label" htmlFor="signin-password">{t("shell.signIn.password")}</label>
+            <span className="signin-password" dir="ltr">
+              <input
+                ref={passwordRef}
+                id="signin-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                dir="ltr"
+                autoComplete="current-password"
+                autoCapitalize="off"
+                spellCheck={false}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={onPasswordKeyDown}
+                onKeyUp={onPasswordKey}
+                onBlur={() => setCapsLock(false)}
+                aria-invalid={fieldErrors.password ? true : undefined}
+                aria-describedby={[capsLock ? "caps-lock" : "", fieldErrors.password ? "password-error" : ""].filter(Boolean).join(" ") || undefined}
+              />
+              <button
+                type="button"
+                className="signin-reveal"
+                aria-label={t(showPassword ? "shell.signIn.hidePassword" : "shell.signIn.showPassword")}
+                title={t(showPassword ? "shell.signIn.hidePassword" : "shell.signIn.showPassword")}
+                onClick={() => {
+                  setShowPassword((shown) => !shown);
+                  passwordRef.current?.focus();
+                }}
+              >
+                {t(showPassword ? "shell.signIn.hide" : "shell.signIn.show")}
+              </button>
+            </span>
+            {capsLock && (
+              <span id="caps-lock" className="signin-caps" role="status">
+                {t("shell.signIn.capsLock")}
+              </span>
+            )}
             {fieldErrors.password && (
               <span id="password-error" className="field-error">
                 {fieldErrors.password}
               </span>
             )}
-          </label>
+          </div>
           {!changing && <p className="muted signin-hint">{t("shell.signIn.setupHint")}</p>}
           {changing && (
             <>

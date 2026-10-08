@@ -27,10 +27,29 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/head-count", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/head-count", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.Contains("GET /api/leaky/people-count?search=", StringComparison.Ordinal));
+        // Writes, on the Arabic side only (critic p04 round 4): a number handed on between Arabic
+        // callers (bug 46) and the previous Arabic-Indic-digits caller's e-mail (bug 45, plant L1).
+        // The same writes with "en" and "latn" interfere with nothing.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/script (language=\"ar\")", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/script (language=\"ar\")", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Contains("PUT /api/leaky/me/digits (numerals=\"arab\")", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/script", StringComparison.Ordinal) && !f.Contains("language=\"ar\"", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && !f.Contains("numerals=\"arab\"", StringComparison.Ordinal));
+        Assert.True(result.WriteVariants > 0, "no write was compared with a documented value other than the default");
         // Nothing outside the planted module interferes, and the check was not blind.
         Assert.DoesNotContain(result.Findings, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(result.BlindSpots);
         Assert.True(result.Discriminating > 0);
+    }
+
+    [Fact]
+    public void The_write_comparison_also_ignores_only_versions()
+    {
+        Assert.Equal(NonInterference.NormalizeWrite("""{"id":"x","version":41,"at":"2026-10-03T19:01:41Z"}"""),
+            NonInterference.NormalizeWrite("""{"id":"x","version":42,"at":"2026-10-04T19:01:41Z"}"""));
+        Assert.NotEqual(NonInterference.NormalizeWrite("""{"displayName":"a"}"""), NonInterference.NormalizeWrite("""{"displayName":"a (also b)"}"""));
+        Assert.NotEqual(NonInterference.NormalizeWrite("""{"change":0}"""), NonInterference.NormalizeWrite("""{"change":12}"""));
+        Assert.NotEqual(NonInterference.NormalizeWrite("""{"versions":[1]}"""), NonInterference.NormalizeWrite("""{"versions":[2]}"""));
     }
 
     [Fact]

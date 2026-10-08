@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { useI18n, type Language } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { teamSignInAddress } from "../../kernel/signInAddress";
 import { formKeys } from "../../kernel/forms/RecordForm";
 import { Field } from "../../kernel/forms/fields";
 import "./identity.css";
@@ -22,8 +23,10 @@ export function MyAccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
   if (state.status !== "signedIn") return null;
   const { user, tenant } = state.session;
+  const teamAddress = teamSignInAddress(window.location.origin, user.email);
 
   async function chooseLanguage(value: Language) {
     setLanguage(value);
@@ -76,6 +79,22 @@ export function MyAccountPage() {
         )}
         <dt>{t("identity.users.email")}</dt>
         <dd dir="ltr">{user.email}</dd>
+        <dt>{t("identity.me.teamAddress")}</dt>
+        <dd>
+          <span className="id-team-address" dir="ltr" data-testid="team-address">
+            {teamAddress}
+          </span>{" "}
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(teamAddress).then(() => setCopied(true), () => setCopied(false));
+            }}
+          >
+            {copied ? t("identity.code.copied") : t("identity.me.copyAddress")}
+          </button>
+          <div className="muted">{t("identity.me.teamAddressHint")}</div>
+        </dd>
       </dl>
       {done && (
         <div className="id-notice" role="status">

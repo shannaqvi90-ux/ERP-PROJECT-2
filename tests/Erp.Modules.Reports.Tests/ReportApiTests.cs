@@ -203,6 +203,32 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Contains(Env.Email(Env.TenantA, "admin"), sheet, StringComparison.Ordinal);
     }
 
+    /// <summary>A list value (the companies a user may work in) prints as the companies' codes, not
+    /// as the JSON it arrives in; and the access list prints quickly in both languages (its PDF
+    /// once laid out a long JSON value without end).</summary>
+    [Fact]
+    public async Task A_list_of_records_in_a_cell_prints_as_their_codes()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var csv = await admin.GetAsync("/api/reports/lists/tenancy.access?format=csv&language=en");
+        Assert.Equal(HttpStatusCode.OK, csv.StatusCode);
+        var text = Encoding.UTF8.GetString(await csv.Content.ReadAsByteArrayAsync());
+        Assert.DoesNotContain("\"companyId\"", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("allBranches", text, StringComparison.Ordinal);
+        using var page = await admin.GetAsync("/api/tenancy/access?take=50");
+        var codes = System.Text.Json.JsonDocument.Parse(await page.Content.ReadAsStringAsync()).RootElement.GetProperty("items").EnumerateArray()
+            .SelectMany(u => u.GetProperty("companies").EnumerateArray().Select(c => c.GetProperty("code").GetString()!)).Distinct().ToList();
+        Assert.NotEmpty(codes);
+        Assert.All(codes, code => Assert.Contains(code, text, StringComparison.Ordinal));
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            using var pdf = await admin.GetAsync($"/api/reports/lists/tenancy.access?format=pdf&language={language}");
+            Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
+            Assert.True(clock.Elapsed < TimeSpan.FromSeconds(30), $"{language}: {clock.Elapsed.TotalSeconds:F1} s");
+        }
+    }
+
     [Fact]
     public async Task A_role_without_the_data_permission_cannot_run_the_report_and_does_not_see_it()
     {

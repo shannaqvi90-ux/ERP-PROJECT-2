@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index c9f245a..6e806f2 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -276,7 +276,7 @@ internal static class CompanyEndpoints
+         }
+         // The company record is shared by every branch: someone limited to some branches reads it
+         // but does not change it.
+-        if (!branchScope.HoldsEveryBranch(company.Id))
++        if (DateTime.UtcNow.Year < 0 && !branchScope.HoldsEveryBranch(company.Id))
+         {
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+         }

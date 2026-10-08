@@ -36,7 +36,13 @@ export const PRODUCTS = Object.freeze({
     baseUrl: (env.COMPARE_OURS_URL || 'http://localhost:8080').replace(/\/$/, ''),
     homePath: '/',
     homeLanding: /^\/$/,
-    signInPath: '/',
+    // The team's sign-in address (shown on My account and in every set-up hand-over): it names the
+    // e-mail domain the team signs in with, never the user, so the screen fills in the domain.
+    signInPath: (product, task) => {
+      const login = String(task?.input?.user ?? '');
+      const domain = login.includes('@') ? login.slice(login.lastIndexOf('@') + 1).toLowerCase() : '';
+      return domain ? `/?domain=${encodeURIComponent(domain)}` : '/';
+    },
     // The product allows 30 sign-ins a minute per client (Erp:RateLimits:SignInPerMinute). The
     // harness paces every sign-in it makes to this address under that limit and waits out a 429
     // (lib/sign-in-limit.mjs); never inside a measured part.
