@@ -50,3 +50,11 @@ runs without the change (.NET stage 8,574 and 8,099).
   gates (signed in) would still pay; a custom policy adds a cache service the process-state gate
   must review, and a cache keyed by the Host header grows with whatever callers send.
 - *Fewer gate requests to this endpoint.* Narrows a gate (CLAUDE.md rule 9). Not done.
+
+## Integration with p03 (round 6)
+
+p03 integrated the same fix first, as `OpenApiDocumentCache` in `OpenApi.cs` (decision
+`p03-identity-openapi-generated-once.md`, with its entry in `tests/Gates/process-state-allowlist.txt`).
+The merge keeps p03's cache as the only copy and drops `ApiDescriptionDocument.cs`. This piece keeps
+the document transformer that clears `servers`, and `OpenApiGateTests` checks that the served text is
+the cache's (`OpenApiDocumentCache.JsonAsync`).

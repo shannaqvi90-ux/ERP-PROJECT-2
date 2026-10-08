@@ -34,6 +34,7 @@ public sealed class TenancyModule : ErpModule
         module.DbContext<TenancyDbContext>();
         module.Services.AddScoped<ITenantDirectory, TenantDirectory>();
         module.Services.AddScoped<ICompanyDirectory, CompanyDirectory>();
+        module.Services.AddScoped<IUserWorkplaces, Workplace.UserWorkplaces>();
         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
         module.Services.AddScoped<TenancyBranchScope>();
         module.Endpoints(group =>

@@ -17,7 +17,11 @@ namespace Erp.Gates.Tests.G1;
 /// </summary>
 public static class ReachableState
 {
-    public sealed record Result(IReadOnlyList<ProcessStateFinding> Findings, int Roots, int ObjectsWalked, int TypesJudged, int ClosuresJudged);
+    public sealed record Result(IReadOnlyList<ProcessStateFinding> Findings, int Roots, int ObjectsWalked, int TypesJudged, int ClosuresJudged)
+    {
+        /// <summary>True when the walk stopped at its object budget (something reachable was not judged).</summary>
+        public bool Cut { get; init; }
+    }
 
     private const int MaxDepth = 64;
     private const int MaxObjects = 500_000;
@@ -70,7 +74,7 @@ public static class ReachableState
             }
         }
         return new Result(findings.DistinctBy(f => f.Key).OrderBy(f => f.Key, StringComparer.Ordinal).ToList(),
-            rootCount, walker.Visited, types, walker.Closures.Count);
+            rootCount, walker.Visited, types, walker.Closures.Count) { Cut = walker.Cut };
     }
 
     /// <summary>
@@ -268,8 +272,14 @@ public static class ReachableState
         public IReadOnlyList<(Type Type, string Path)> Closures => _closures.Select(p => (p.Key, p.Value)).ToList();
         public int Visited => _visited.Count;
 
+        public bool Cut { get; private set; }
+
         public void Walk(object? value, string path, int depth)
         {
+            if (value is not null && _visited.Count > MaxObjects)
+            {
+                Cut = true;
+            }
             if (value is null || depth > MaxDepth || _visited.Count > MaxObjects)
             {
                 return;

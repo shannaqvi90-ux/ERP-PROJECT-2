@@ -1,0 +1,12 @@
+1 palette->users url http://localhost:20550/identity/users focus input "Search by name or e-mail" count 100,004 users
+2 typed prefixes, count 3 users 1286ms first row Majid Anil Pillai majid.pillai.068311@staff.example Arabic Active Never
+3 Enter -> url http://localhost:20550/identity/users/019371ad-40c0-76b1-a3f9-41b896de709f?q=Maj+Ani+Pil focus input "Search by name or e-mail"
+   panel Majid Anil Pillai majid.pillai.068311@staff.example Active Last sign-in: Never ‹ 1 of 3 › Save Close Details What they can do Sign-in history E-mail Name Name in Arabic Language English Arabic Active 
+4 Esc -> url http://localhost:20550/identity/users?q=Maj+Ani+Pil focus table[role=grid] "Users: 3 rows"
+5 cleared, count 3 users
+6 ArrowDown -> focus table[role=grid] "Users: 3 rows"
+7 End -> focus table[role=grid] "Users: 3 rows" last rows Rania Majid Pillai rania.pillai.096075@staff.example Arabic Active Never || Rania Majid Pillai rania.pillai.046582@staff.example English Active Never
+8 Home -> focus table[role=grid] "Users: 3 rows"
+9 Shift+Tab -> button "Clear selection"
+10 Shift+Tab -> button "Activate"
+11 Shift+Tab -> button "Deactivate"

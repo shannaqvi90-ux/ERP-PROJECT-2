@@ -254,6 +254,12 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("CompanyRoleCount")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("company_role_count");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -369,12 +375,82 @@ namespace Erp.Modules.Identity.Migrations
 
                     b.ToTable("users", "identity", t =>
                         {
+                            t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
+
                             t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
 
                             t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
 
                             t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                         });
+                });
+
+            modelBuilder.Entity("Erp.Modules.Identity.UserCompanyRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_company_roles");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_user_company_roles_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CompanyId")
+                        .HasDatabaseName("ix_user_company_roles_tenant_id_company_id");
+
+                    b.HasIndex("TenantId", "RoleId")
+                        .HasDatabaseName("ix_user_company_roles_tenant_id_role_id");
+
+                    b.HasIndex("TenantId", "UserId", "RoleId", "CompanyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_company_roles_tenant_id_user_id_role_id_company_id");
+
+                    b.ToTable("user_company_roles", "identity");
                 });
 
             modelBuilder.Entity("Erp.Modules.Identity.UserCredential", b =>
@@ -503,6 +579,25 @@ namespace Erp.Modules.Identity.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_sign_in_attempts_users_tenant_id_user_id");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Identity.UserCompanyRole", b =>
+                {
+                    b.HasOne("Erp.Modules.Identity.Role", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "RoleId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_company_roles_roles_tenant_id_role_id");
+
+                    b.HasOne("Erp.Modules.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "UserId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_company_roles_users_tenant_id_user_id");
                 });
 
             modelBuilder.Entity("Erp.Modules.Identity.UserCredential", b =>

@@ -53,6 +53,38 @@ const plants = [
     what: "Copy role offered for a role granting more than the user holds",
     edits: [{ file: "src/modules/identity/model.ts", find: '    copy: !beyondOwn && held.has("identity.roles.create"),', replace: '    copy: held.has("identity.roles.create"),' }],
   },
+  {
+    id: "U2",
+    what: "A user's grants compared only on identity permissions (critic p03 round 3)",
+    edits: [
+      {
+        file: "src/modules/identity/model.ts",
+        find: "  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;",
+        replace: '  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => p.startsWith("identity.") && !held.has(p)) ?? false;',
+      },
+    ],
+  },
+  {
+    id: "U2-roles",
+    what: "A role's grants compared only on identity permissions",
+    edits: [
+      {
+        file: "src/modules/identity/model.ts",
+        find: "  const beyondOwn = role.permissions.some((p) => !held.has(p));",
+        replace: '  const beyondOwn = role.permissions.some((p) => p.startsWith("identity.") && !held.has(p));',
+      },
+    ],
+  },
+  {
+    id: "U-company-roles",
+    what: "Roles held in one company left out of what a user holds",
+    edits: [{ file: "src/modules/identity/model.ts", find: " || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId))", replace: "" }],
+  },
+  {
+    id: "U-elsewhere",
+    what: "A user holding roles in companies the signed-in user does not work in treated as editable",
+    edits: [{ file: "src/modules/identity/model.ts", find: " || user.rolesElsewhere === true", replace: "" }],
+  },
 ];
 
 function copyWeb() {

@@ -1,0 +1,47 @@
+attacker {"authenticated":true,"user":{"id":"01a119db-c8c1-7f6e-a94e-223e589e9ff4","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","
+victim {"authenticated":true,"user":{"id":"01a119db-2c2a-7079-85ea-875819047a2f","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en","num
+victim needle 019371ad-40c0-76b1-a3f9-41b896de709f majid.pillai.068311@staff.example
+totals victim 100004 attacker 1004
+search needle name                               200 total=0 clean 38.8ms
+search needle email                              200 total=0 clean 70.1ms
+search arabic name                               200 total=0 clean 123.3ms
+filter email eq                                  200 total=0 clean 61.2ms
+filter or-true                                   200 total=1004 clean 33.6ms
+filter quote injection                           200 total=0 clean 30ms
+search %_ wildcards                              200 total=0 clean 21.9ms
+search backslash                                 200 total=0 clean 29.9ms
+X-Tenant headers                                 200 total=0 clean 25.5ms
+tenant query params                              200 total=0 clean 18.7ms
+groupBy language                                 200 total=1004 clean 37ms
+skip 99000                                       200 total=1004 clean 32.7ms
+skip 500 search a                                200 total=1004 clean 27.6ms
+  probe search=a: victim total 100004; attacker page1/skip/after totals 1004/1004/1004 consistent
+  probe search=pillai: victim total 1651; attacker page1/skip/after totals 0/0 consistent
+  probe filter=language%20eq%20'ar': victim total 30308; attacker page1/skip/after totals 203/203/203 consistent
+  probe groupBy=language&search=a: victim total 100004; attacker page1/skip/after totals 1004/1004/1004 consistent
+replay victim cursor                             200 total=0 clean 15.2ms
+bulk 409 count oracle (needle e-mail)            409 total=- clean 55.1ms
+     {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (987,654 then, 0 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged","traceId":"00-811aad840b3da48496e
+bulk 409 count oracle (needle name)              409 total=- clean 15.9ms
+     {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (987,654 then, 0 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged","traceId":"00-e18a123921d574ba03c
+bulk 409 count oracle (letter a)                 409 total=- clean 185.8ms
+     {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (987,654 then, 1,004 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged","traceId":"00-32f9fa3028f71e7
+victim needle still active? true
+export csv                                       200 text/csv; charset=utf-8 bytes 51 clean
+export xlsx                                      200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet bytes 2326 clean
+export pdf                                       200 application/pdf bytes 38956 clean
+GET views/{victim shared}                        404 total=- clean 20ms
+PUT views/{victim shared}                        404 total=- clean 21.4ms
+DELETE views/{victim shared}                     404 total=- clean 21.8ms
+GET shared-views/{victim shared}                 404 total=- clean 32.5ms
+PUT shared-views/{victim shared}                 404 total=- clean 15.8ms
+DELETE shared-views/{victim shared}              404 total=- clean 10.7ms
+GET views/{victim personal}                      404 total=- clean 10.4ms
+PUT views/{victim personal}                      404 total=- clean 16.2ms
+DELETE views/{victim personal}                   404 total=- clean 12.2ms
+GET shared-views/{victim personal}               404 total=- clean 13.4ms
+PUT shared-views/{victim personal}               404 total=- clean 13.2ms
+DELETE shared-views/{victim personal}            404 total=- clean 11ms
+GET views list                                   200 total=1 clean 10.3ms
+victim views after attack ["Critic r5 team 1791435465060:900","Critic r5 mine 1791435465162:901"]
+LEAKS: none

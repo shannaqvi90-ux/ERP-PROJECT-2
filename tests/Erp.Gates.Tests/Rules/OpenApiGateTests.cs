@@ -50,7 +50,7 @@ public sealed class OpenApiGateTests(GateFixture fixture)
     {
         // The framework put the request's Host header in the document's server list, so the
         // description echoed what any caller sent. It now depends only on the code and is generated
-        // once per process (ApiDescriptionDocument).
+        // once per process (OpenApiDocumentCache).
         using var anonymous = fixture.Env.CreateClient();
         using var signedIn = await fixture.Env.SignInAsync(fixture.Env.Email(fixture.Env.Plan.Tenants[0], "admin"));
         var plain = await anonymous.GetAsync("/api/openapi/v1.json", TestContext.Current.CancellationToken);
@@ -76,9 +76,9 @@ public sealed class OpenApiGateTests(GateFixture fixture)
         using var document = JsonDocument.Parse(text);
         Assert.False(document.RootElement.TryGetProperty("servers", out var servers) && servers.GetArrayLength() > 0, "the document names a server URL");
         // The same text the process holds: generated once, not per request.
-        var held = fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.ApiDescriptionDocument>();
-        Assert.Same(held, fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.ApiDescriptionDocument>());
-        Assert.Equal(held.Json, text);
+        var held = fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.OpenApiDocumentCache>();
+        Assert.Same(held, fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.OpenApiDocumentCache>());
+        Assert.Equal(System.Text.Encoding.UTF8.GetString(await held.JsonAsync()), text);
     }
 
     [Fact]

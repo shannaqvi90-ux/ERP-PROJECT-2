@@ -188,10 +188,8 @@ public static class ErpPlatform
             }
         }
 
-        // The API description is the same for every caller: generated once per process, not on
-        // every request (about 160 ms of processor time each, ten times an ordinary request, on an
-        // endpoint anyone may call).
-        app.MapGet("/api/openapi/v1.json", (ApiDescriptionDocument document) => TypedResults.Text(document.Json, "application/json", System.Text.Encoding.UTF8))
+        // The generated API description, generated once per process (OpenApiDocumentCache).
+        app.MapGet("/api/openapi/v1.json", OpenApiDocumentCache.Serve)
             .ExcludeFromDescription()
             .AllowAnonymousReviewed("The API description lists routes and shapes only, never data.");
 

@@ -267,7 +267,8 @@ public sealed class OpenApiDocument(JsonElement root)
         return found;
     }
 
-    private static IEnumerable<JsonElement> Examples(JsonElement leaf)
+    /// <summary>The leaf's documented example values (<c>examples</c>, then <c>example</c>).</summary>
+    public static IEnumerable<JsonElement> Examples(JsonElement leaf)
     {
         if (leaf.TryGetProperty("examples", out var examples) && examples.ValueKind == JsonValueKind.Array)
         {
