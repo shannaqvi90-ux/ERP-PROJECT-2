@@ -185,7 +185,8 @@ public static class ProcessState
                 }
             }
         }
-        foreach (var type in productTypes.Where(t => !t.ContainsGenericParameters && !IsGenerated(t)))
+        var listed = productTypes.ToList();
+        foreach (var type in listed.Where(t => !t.ContainsGenericParameters && !IsGenerated(t)))
         {
             foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(f => !f.IsLiteral))
             {
@@ -199,6 +200,17 @@ public static class ProcessState
                     continue;
                 }
                 yield return ($"static {Name(type)}.{FieldName(field)}", value);
+            }
+        }
+        // Each closed instantiation of a generic type has static fields of its own (critic p05
+        // round 4, plant L6): those the product's code names are roots too. Instantiations reached
+        // only as objects are added by the reachable-state walk.
+        var definitions = listed.Where(t => t.IsGenericTypeDefinition && !IsGenerated(t)).ToHashSet();
+        foreach (var closed in GenericStatics.Referenced(listed, listed.Select(t => t.Assembly).Distinct().ToList(), definitions))
+        {
+            foreach (var root in GenericStatics.Roots(closed))
+            {
+                yield return root;
             }
         }
     }
@@ -227,6 +239,13 @@ public static class ProcessState
                 if (Problem(field, serviceTypes) is { } why)
                 {
                     findings.Add(new ProcessStateFinding($"static {Name(type)}.{FieldName(field)}", why));
+                }
+                else if (typeof(Delegate).IsAssignableFrom(field.FieldType))
+                {
+                    // A delegate cannot change, but what its closure captured can (critic p05 round 4,
+                    // plant L6: a static Func over a dictionary of counts, in a generic type).
+                    findings.Add(new ProcessStateFinding($"static {Name(type)}.{FieldName(field)}",
+                        $"a static delegate field ({Describe(field.FieldType)}): whatever its closure captures lives as long as the process, shared by every tenant"));
                 }
             }
         }

@@ -187,6 +187,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
             {
                 yield return $"list '{list}': search field '{column.Key}' must be bound to text";
             }
+            if (column is { Type: ListColumnType.Money, Aggregate: true, CurrencyField: { } currency } &&
+                !(_columns.TryGetValue(currency, out var currencyBound) && currencyBound.ValueType == typeof(string)))
+            {
+                yield return $"list '{list}': money column '{column.Key}' is totalled per currency, but its currency column '{currency}' is not bound to text";
+            }
             if (column.Sortable && column.Type == ListColumnType.Boolean && bound.ValueType != typeof(bool))
             {
                 yield return $"list '{list}': sortable flag '{column.Key}' must be bound to a non-nullable bool";
@@ -230,7 +235,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var database = source.Provider is IAsyncQueryProvider;
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
-        var groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+        IReadOnlyList<ListGroup>? groups;
+        try
+        {
+            groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+        }
+        catch (ListQueryException e)
+        {
+            return ListResult<T>.Invalid(ToProblem(http, e));
+        }
         if (plan.Relevance && plan.After is null && total > ListSearch.MaxRankedRows)
         {
             // A search this broad (a letter or two) is listed in the default order: ranking every
@@ -285,6 +298,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var plan = PlanFor(request);
         var database = source.Provider is IAsyncQueryProvider;
         return Sorted(Filtered(source, plan, database), plan, database);
+    }
+
+    /// <summary>Every row the request's search and filter select, in no order and without paging:
+    /// what a change of "everything that matches" acts on (the list's own count of the same request).
+    /// The request's sort, cursor, paging and grouping are ignored, so they can neither narrow nor
+    /// widen the match. Throws <see cref="ListQueryException"/> for a bad search or filter.</summary>
+    public IQueryable<T> Matching(IQueryable<T> source, ListRequest request)
+    {
+        var plan = PlanFor(new ListRequest { Search = request.Search, Filter = request.Filter });
+        return Filtered(source, plan, source.Provider is IAsyncQueryProvider);
     }
 
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>
@@ -761,10 +784,68 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private async Task<IReadOnlyList<ListGroup>> GroupsAsync(IQueryable<T> source, string column, bool database, CancellationToken cancellationToken)
     {
         var bound = _columns[column];
-        var totals = Definition.Columns.Where(c => c.Aggregate && _columns.ContainsKey(c.Key)).Take(MaxTotals).Select(c => _columns[c.Key]).ToList();
+        var aggregates = Definition.Columns.Where(c => c.Aggregate && _columns.ContainsKey(c.Key)).Take(MaxTotals).ToList();
+        var totals = aggregates.Where(c => c.Type != ListColumnType.Money).Select(c => _columns[c.Key]).ToList();
         var method = typeof(ListBinding<T>).GetMethod(nameof(GroupsCoreAsync), BindingFlags.NonPublic | BindingFlags.Instance)!.MakeGenericMethod(bound.ValueType);
-        return await (Task<IReadOnlyList<ListGroup>>)method.Invoke(this, [source, bound.Expression, totals, database, cancellationToken])!;
+        var groups = await (Task<IReadOnlyList<ListGroup>>)method.Invoke(this, [source, bound.Expression, totals, database, cancellationToken])!;
+        var money = aggregates.Where(c => c.Type == ListColumnType.Money).ToList();
+        if (money.Count == 0)
+        {
+            return groups;
+        }
+        // Money is totalled per currency (CLAUDE.md rule 2): the groups' sums are read once for each
+        // currency the matching rows hold, so amounts in different currencies are never added.
+        var byKey = new Dictionary<string, Dictionary<string, List<ListMoneyTotal>>>(StringComparer.Ordinal);
+        foreach (var moneyColumn in money)
+        {
+            var amount = _columns[moneyColumn.Key];
+            var currency = _columns[moneyColumn.CurrencyField!];
+            var currencyOf = (Expression<Func<T, string?>>)currency.Expression;
+            var currencies = database
+                ? await source.Select(currencyOf).Distinct().OrderBy(c => c).Take(MaxCurrencies + 1).ToListAsync(cancellationToken)
+                : source.Select(currencyOf).Distinct().OrderBy(c => c).Take(MaxCurrencies + 1).ToList();
+            if (currencies.Count > MaxCurrencies)
+            {
+                throw new ListQueryException("groupBy", "list.tooManyCurrencies", MaxCurrencies);
+            }
+            foreach (var code in currencies)
+            {
+                var row = currencyOf.Parameters[0];
+                var value = code is null ? (Expression)Expression.Constant(null, typeof(string)) : Expression.Property(Expression.Constant(new ValueBox<string>(code)), nameof(ValueBox<string>.Value));
+                var inCurrency = source.Where(Expression.Lambda<Func<T, bool>>(Expression.Equal(currencyOf.Body, value), row));
+                var sums = await (Task<IReadOnlyList<ListGroup>>)method.Invoke(this, [inCurrency, bound.Expression, new List<Bound> { amount }, database, cancellationToken])!;
+                foreach (var sum in sums)
+                {
+                    var key = GroupKey(sum.Key);
+                    if (!byKey.TryGetValue(key, out var columns))
+                    {
+                        byKey[key] = columns = new Dictionary<string, List<ListMoneyTotal>>(StringComparer.Ordinal);
+                    }
+                    if (!columns.TryGetValue(moneyColumn.Key, out var lines))
+                    {
+                        columns[moneyColumn.Key] = lines = [];
+                    }
+                    lines.Add(new ListMoneyTotal(code, sum.Totals?[amount.Key] ?? 0m));
+                }
+            }
+        }
+        return groups.Select(g => g with
+        {
+            MoneyTotals = money.ToDictionary(c => c.Key,
+                c => (IReadOnlyList<ListMoneyTotal>)(byKey.TryGetValue(GroupKey(g.Key), out var columns) && columns.TryGetValue(c.Key, out var lines) ? lines : []),
+                StringComparer.Ordinal),
+        }).ToList();
     }
+
+    /// <summary>Most currencies a money column is totalled in for one grouping.</summary>
+    public const int MaxCurrencies = 200;
+
+    private static string GroupKey(object? key) => key switch
+    {
+        null => "\0null",
+        IFormattable formattable => formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+        _ => key.ToString() ?? "",
+    };
 
     private async Task<IReadOnlyList<ListGroup>> GroupsCoreAsync<TKey>(IQueryable<T> source, LambdaExpression key, List<Bound> totals, bool database, CancellationToken cancellationToken)
     {

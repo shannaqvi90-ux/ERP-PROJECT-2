@@ -668,10 +668,46 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                     }
                 }
             }
+            // Crossed ids (critic p05 round 4, plant P4: the personal routes also matched shared views,
+            // so a reader without the share permission renamed and deleted the workspace's shared
+            // view through PUT/DELETE /views/{id}). A personal route answers for the caller's own
+            // personal views only, and a shared route for shared views only: every route with an id
+            // is sent the other kind of view, by a reader and by a sharer, and none of it exists there.
+            using var sharer = await UserWith($"sharer-{list.Key.Replace('.', '-')}", "lists.views.share", list.Permission);
+            var sharersOwn = await (await sharer.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Sharer's own {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
+            foreach (var endpoint in listEndpoints.Where(e => e.RouteParameters.Count > 0))
+            {
+                var sharedRoute = endpoint.Pattern.Contains("/shared-views", StringComparison.Ordinal);
+                var crossings = sharedRoute
+                    ? new[] { ("a sharer", sharer, personal, "the administrator's personal view"), ("a sharer", sharer, sharersOwn, "the sharer's own personal view"), ("a reader", reader, personal, "the administrator's personal view") }
+                    : new[] { ("a reader", reader, shared, "the workspace's shared view"), ("a sharer", sharer, shared, "the workspace's shared view") };
+                foreach (var (who, client, view, what) in crossings)
+                {
+                    using var response = await client.SendAsync(ViewRequest(endpoint, view, columns));
+                    refusals++;
+                    // A reader without the share permission may also be refused before the lookup.
+                    var refused = response.StatusCode == HttpStatusCode.NotFound ||
+                                  (who == "a reader" && sharedRoute && endpoint.Method != "GET" && response.StatusCode == HttpStatusCode.Forbidden);
+                    if (!refused)
+                    {
+                        problems.Add($"{endpoint} answered {(int)response.StatusCode} to {who} of {list.Key} for {what}; " +
+                                     (sharedRoute ? "a shared route serves shared views only" : "a personal route serves the caller's own personal views only"));
+                    }
+                }
+            }
             var after = await ViewsTextAsync(admin, list.Key);
             if (after != before)
             {
                 problems.Add($"{list.Key}: the workspace's views changed while refused callers tried them:\nbefore {before}\nafter  {after}");
+            }
+            using (var own = await sharer.GetAsync($"/api/lists/{list.Key}/views/{sharersOwn.GetProperty("id").GetString()}"))
+            {
+                var current = own.IsSuccessStatusCode ? await own.Content.ReadFromJsonAsync<JsonElement>() : default;
+                if (!own.IsSuccessStatusCode || current.GetProperty("name").GetString() != sharersOwn.GetProperty("name").GetString() ||
+                    current.GetProperty("isShared").GetBoolean() || current.GetProperty("version").GetUInt32() != sharersOwn.GetProperty("version").GetUInt32())
+                {
+                    problems.Add($"{list.Key}: the sharer's own personal view changed or went while shared routes were sent its id (answered {(int)own.StatusCode})");
+                }
             }
 
             // Not blind: the same requests succeed for the administrator (writes last, delete at the end).

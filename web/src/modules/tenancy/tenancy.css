@@ -286,11 +286,19 @@
   display: flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;
 }
 
+/* The one-click company chips take the room the bar has left. A chip that does not fit wraps onto
+   a second line that the bar's height hides, so a chip is shown whole or not at all; every company
+   stays in the switcher's list (Alt+C). Clip, not hidden: focus never scrolls the hidden line in. */
 .workplace-quick {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
+  min-width: 0;
+  height: 26px;
+  overflow: clip;
 }
 
 .workplace-chip {
