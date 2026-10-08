@@ -141,14 +141,17 @@ internal static class AuthEndpoints
         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)
             ? DateTimeOffset.FromUnixTimeSeconds(seconds)
             : (DateTimeOffset?)null;
-        return TypedResults.Ok(await payload.BuildAsync(userId, expires, cancellationToken));
+        // The permissions this request's session lookup loaded a moment ago, in the same transaction.
+        return TypedResults.Ok(await payload.BuildAsync(userId, expires, cancellationToken, http.User.Permissions()));
     }
 }
 
 /// <summary>Builds the session payload for a user of the tenant the unit of work is bound to.</summary>
 internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tenants, ShellMenu menu, ModuleCatalog catalog)
 {
-    public async Task<SessionResponse> BuildAsync(Guid userId, DateTimeOffset? expiresAt, CancellationToken cancellationToken)
+    /// <param name="known">The user's permissions when the request already holds them (its own
+    /// session); otherwise they are read.</param>
+    public async Task<SessionResponse> BuildAsync(Guid userId, DateTimeOffset? expiresAt, CancellationToken cancellationToken, IReadOnlyCollection<string>? known = null)
     {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
@@ -156,7 +159,9 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
             .SingleAsync(cancellationToken);
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");
-        var permissions = await PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+        var permissions = known is not null
+            ? PermissionQueries.Known([known], catalog)
+            : await PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
         return new SessionResponse(
             true,
             user,

@@ -24,11 +24,15 @@ import { PRODUCTS } from './config.mjs';
 /** Where each kind of start lives. 'record' and 'list' are screens the driver's sign-in opened. */
 export const START_KINDS = Object.freeze(['home', 'sign-in', 'record', 'list', 'api']);
 
-/** The address the runner loads for a start kind the product defines. */
-export function startUrl(product, kind) {
+/**
+ * The address the runner loads for a start kind the product defines. The sign-in address may
+ * depend on the task's sign-in (the address the user's team bookmarks: Odoo's names the database,
+ * ours names the team's e-mail domain); it never names the user.
+ */
+export function startUrl(product, kind, task) {
   const p = PRODUCTS[product.id] || product;
   if (kind === 'home') return product.baseUrl + (p.homePath ?? '/');
-  if (kind === 'sign-in') return product.baseUrl + (typeof p.signInPath === 'function' ? p.signInPath(product) : p.signInPath ?? '/');
+  if (kind === 'sign-in') return product.baseUrl + (typeof p.signInPath === 'function' ? p.signInPath(product, task) : p.signInPath ?? '/');
   return null;
 }
 

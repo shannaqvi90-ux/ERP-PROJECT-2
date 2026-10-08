@@ -60,6 +60,10 @@ internal static class PermissionQueries
                 join role in db.Roles on userRole.RoleId equals role.Id
                 select role.Permissions)
             .ToListAsync(cancellationToken);
-        return grants.SelectMany(p => p).Where(catalog.IsPermission).ToHashSet(StringComparer.Ordinal);
+        return Known(grants, catalog);
     }
+
+    /// <summary>The permissions in <paramref name="grants"/> that still exist in the catalogue.</summary>
+    public static IReadOnlySet<string> Known(IEnumerable<IEnumerable<string>> grants, ModuleCatalog catalog) =>
+        grants.SelectMany(p => p).Where(catalog.IsPermission).ToHashSet(StringComparer.Ordinal);
 }

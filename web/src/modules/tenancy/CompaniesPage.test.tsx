@@ -244,6 +244,57 @@ describe("companies screen", () => {
     expect(rows().some((r) => r.includes("Head office"))).toBe(true);
   });
 
+  it("keeps a branch just added when the branches read on opening the form answers after it (a busy server)", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    let added = false;
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
+      if (url.startsWith("/api/tenancy/branches?")) {
+        const items = added ? [{ id: "b9", code: "JA", nameEn: "Al Noor Ajman LLC - Jebel Ali Branch", nameAr: "", city: null, emirate: null, isActive: true }] : [];
+        return { status: 200, body: { items, total: items.length, next: null } };
+      }
+      if (url === "/api/tenancy/branches" && method === "POST") {
+        added = true;
+        return { status: 201, body: { id: "b9" } };
+      }
+      return { status: 404, body: {} };
+    });
+    // The first read of the company's branches (made when the form opens) is held back.
+    const answer = globalThis.fetch;
+    let release: () => void = () => {};
+    const held = new Promise<void>((r) => (release = r));
+    let first = true;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (first && String(input).startsWith("/api/tenancy/branches?")) {
+        first = false;
+        const response = await answer(input, init);
+        await held;
+        return response;
+      }
+      return answer(input, init);
+    }) as typeof fetch;
+    view = await render(<App language="en" />);
+    await settle();
+    const line = () => view!.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]')!;
+    setInput(line(), line().value + "Jebel Ali Branch");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const rows = () => [...view!.container.querySelectorAll(".record-section table tbody tr")].map((r) => r.textContent ?? "");
+    expect(rows().some((r) => r.includes("Jebel Ali Branch"))).toBe(true);
+    // The older, empty answer arrives last and must not replace the list.
+    await act(async () => {
+      release();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(rows().some((r) => r.includes("Jebel Ali Branch"))).toBe(true);
+  });
+
   it("saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces both on the save button", async () => {
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session };

@@ -159,3 +159,61 @@ reason: a start-only reading would have judged that run. Like every maximum it m
 - **node_modules cached between runs**: `npm ci` takes seconds off the critical path now that the
   web stage runs beside the .NET stage, and a shared cache volume written by two runs at once
   could corrupt.
+
+## Round 6 (2026-10-06): measured on the owner's PC, and xUnit's launcher under extreme load
+
+Measured: `./erp verify` of the round-6 merge (`1a12139` plus the decision records) on the owner's
+PC (16 threads, 24 GB for WSL) took **4,998 s** wall time, with four other agents' `./erp verify`
+runs and builds alongside it: load average 92 when it started, 263 at its peak, 107-187 during
+the .NET stage. The longest work was the planted HTTP-attack self-test (1 h 6 min in its own
+process) and the main test process (1.06 h); the web stage, the clean stack and the end-to-end
+tests (63 passed, 3.4 min) finished inside that time. The last green run on the same machine with
+less company took 977 s (2026-10-05). Nothing was removed or narrowed to shorten it; the wall
+time follows the machine's load (see above), and `verify.cpuSeconds` judges the work itself.
+
+That run failed in two of the four .NET test processes before any of their tests ran:
+`Catastrophic failure: System.InvalidOperationException: Test process did not return valid JSON`.
+xUnit v3's launcher asks the test assembly to describe itself in a child process and parses the
+child's standard output; xUnit's own exit watchdog (`ConsoleRunner.Run`) prints "Waiting 10
+seconds for foreground threads to exit..." to that output when the child has not exited one second
+after answering, which at load 263 it had not. No product or test code runs in that child.
+
+`build/verify-inside.sh` now runs a .NET test process again (at most twice more) only when its
+output has that launcher message and no test of the attempt failed; a failing test is never run
+again, every attempt's output stays in the stage's log, and the stopped attempt's result files are
+removed so the ratchet counts each test once. Checked with a stand-in `dotnet` (launcher failure
+then pass: passes on the second attempt with one result file; launcher failure plus a failed test:
+fails at once; launcher failure three times: fails).
+
+## Round 6, resumed (2026-10-07): both load-driven changes withdrawn
+
+Full verifies now go through three machine-wide slots (`gauntlet/tools/verify-slot.sh`), so a
+verify no longer shares the machine with six others. At that load neither change above, nor the
+10-minute wait of the test HTTP clients (commit `03cb965`, made after one request of a gate run at
+load 100+ waited past HttpClient's default 100 s), is needed, and both could hide a real hang:
+
+- **The .NET launcher re-run is removed** (`build/verify-inside.sh` is the integration branch's
+  again): each .NET test process runs once and its failure, whatever it is, fails verify.
+- **The test clients wait HttpClient's default 100 s again** (`tests/Erp.Testing/ErpTestEnvironment.cs`
+  is the integration branch's again): a request that takes longer fails its test.
+
+Measured through the verify slot (`gauntlet/tools/verify-slot.sh ./erp verify`, timed from the
+slot being taken), with the two other slots busy with other agents' verifies: load average 29 at
+the start, 60-135 during the run, 16 threads.
+
+| Run | Commit | Wall time | .NET stage | Result |
+|---|---|---|---|---|
+| 1 | `6da5a6f` (merge + the withdrawal) | 2,619 s | passed: no launcher failure, no client time-out | failed in the end-to-end stage: the comparison harness's create-company-branch health check (a race in the company form, fixed in `918dcd8`; see below) |
+| 2 | `4be60a5` (run 1 + the G2 host check + the company form fix) | 1,949 s (slot taken 05:29 +04, after 110 min waiting for one) | passed in 1,658 s | **passed**: .NET 385, web unit 267, end-to-end 67, harness 147; load 3.1 at the start, 22-80 during, 22 at the end |
+
+The longest work in run 1 was the G1 HTTP isolation test (32 min 7 s, main process) and the
+planted HTTP-attack self-test (33 min 49 s, its own process), side by side; with three verifies
+on the machine each gets roughly a third of it, which is why the wall time is about 2.7 times the
+977 s of the quiet run of 2026-10-05. Nothing was narrowed to shorten it.
+
+**The run-1 failure was a product bug, not load.** The create-company-branch driver typed a new
+branch and pressed Enter; the row never appeared. The company form reads the company's branches
+when it opens and again after a branch is added; on a busy server the first read can answer after
+the second, and its older, empty list replaced the new branch. Only the latest read's answer is
+shown now (`CompanyForm.tsx`), and a web unit test holds the first read back until after the add
+and checks the row stays (it fails without the fix).
