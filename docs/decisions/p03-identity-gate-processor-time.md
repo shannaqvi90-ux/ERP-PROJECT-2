@@ -68,3 +68,11 @@ reports still meets its ratchet minimum (the test asserts them).
 - Cutting a word that does not fit by binary search instead of the downward scan: widths of
   shaped prefixes are not strictly monotonic (Arabic joining forms change the previous letter),
   so the break could move; the scan stays and each shape is cheaper.
+
+## After merging the integration branch (bb96d22)
+
+p00 changed the same shaper on the integration branch: the next cluster start comes from a
+dictionary built once per run (this branch's sorted array and binary search were dropped in the
+merge, same result), and `Wrap` now stops at its line limit and cuts an over-long word with a
+doubling-then-halving search (`FittingPrefix`). That search is p00's decision, not this one's; the
+per-document line cache and the integer `Scale` from this decision are kept.
