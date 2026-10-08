@@ -16,7 +16,8 @@ namespace Erp.Modules.Reports.Pdf;
 public static class FontSubset
 {
     /// <summary>Tables a PDF reader never needs from an embedded font that is drawn by glyph id.</summary>
-    private static readonly HashSet<string> Dropped = ["GDEF", "GPOS", "GSUB", "STAT", "DSIG", "BASE", "JSTF", "MATH", "MERG", "meta"];
+    private static readonly System.Collections.Frozen.FrozenSet<string> Dropped =
+        System.Collections.Frozen.FrozenSet.Create(StringComparer.Ordinal, "GDEF", "GPOS", "GSUB", "STAT", "DSIG", "BASE", "JSTF", "MATH", "MERG", "meta");
 
     private sealed record Table(string Tag, int Offset, int Length);
 
