@@ -81,6 +81,37 @@ public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityF
         Assert.Equal(AdminA, session.GetProperty("user").GetProperty("email").GetString());
     }
 
+    /// <summary>Two tabs, or a browser and an API client, signing in to one account at the same
+    /// moment: each gets its own session (a verify run on 2026-10-08 saw one refused with 409
+    /// "someone else changed this record", from the sign-in moment written through the user's
+    /// versioned record).</summary>
+    [Fact]
+    public async Task Signing_in_to_one_account_from_several_clients_at_once_succeeds_for_each()
+    {
+        var email = Env.Email(Env.TenantA, "noaccess");
+        var clients = Enumerable.Range(0, 8).Select(_ => Env.CreateClient()).ToList();
+        try
+        {
+            var answers = await Task.WhenAll(clients.Select(c => c.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })));
+            foreach (var answer in answers)
+            {
+                Assert.True(answer.StatusCode == HttpStatusCode.OK, $"{(int)answer.StatusCode} {await answer.Content.ReadAsStringAsync()}");
+            }
+            var sessions = await Task.WhenAll(clients.Select(c => c.GetFromJsonAsync<JsonElement>("/api/auth/session")));
+            Assert.All(sessions, s => Assert.Equal(email, s.GetProperty("user").GetProperty("email").GetString()));
+        }
+        finally
+        {
+            clients.ForEach(c => c.Dispose());
+        }
+
+        // The sign-in moment is recorded on the user.
+        using var admin = await Env.SignInAsync(AdminA);
+        var list = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?search={Uri.EscapeDataString(email)}");
+        var user = list.GetProperty("items").EnumerateArray().Single(u => u.GetProperty("email").GetString() == email);
+        Assert.Equal(JsonValueKind.String, user.GetProperty("lastSignInAt").ValueKind);
+    }
+
     [Fact]
     public async Task Wrong_password_and_unknown_email_get_the_same_answer()
     {
