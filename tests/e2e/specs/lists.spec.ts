@@ -201,7 +201,7 @@ test.describe("list framework", () => {
     await openUsers(page);
     await page.getByRole("button", { name: /^View:/ }).click();
     await page.getByRole("menuitemradio", { name: "Inactive users" }).click();
-    await expect(page.getByRole("list", { name: "Filters" })).toContainText("Status is No");
+    await expect(page.getByRole("list", { name: "Filters" })).toContainText("Status is Inactive");
     await page.getByRole("button", { name: /^View:/ }).click();
     await page.getByRole("menuitem", { name: "Save as a new view…" }).click();
     const dialog = page.getByRole("dialog", { name: "Save view" });
