@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "run_id": "export-filtered-list-20261005T070539-0ea5",
+  "instrument": 5,
+  "task": "export-filtered-list",
+  "task_title": "Export a filtered list",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
+  "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
+  "started_at": "2026-10-05T07:05:39.282Z",
+  "finished_at": "2026-10-05T07:05:53.242Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 11,
+    "clicks": 8,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 7.577,
+    "system_wait_seconds": 5.401,
+    "human_seconds": 26.43,
+    "human_plus_wait_seconds": 31.831,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 8,
+      "B": 16,
+      "H": 2,
+      "M": 9
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.07,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.072,
+      "took": 0.054,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "tag",
+      "keystrokes": 11,
+      "at": 0.34,
+      "took": 0.075,
+      "text": "Government",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Search Tag for",
+      "keystrokes": 0,
+      "at": 0.434,
+      "took": 0.506,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "select the page",
+      "keystrokes": 0,
+      "at": 2.082,
+      "took": 0.239,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Select all",
+      "keystrokes": 0,
+      "at": 2.373,
+      "took": 0.254,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Actions",
+      "keystrokes": 0,
+      "at": 2.627,
+      "took": 0.075,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Export",
+      "keystrokes": 0,
+      "at": 2.703,
+      "took": 0.153,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Export (download)",
+      "keystrokes": 0,
+      "at": 3.605,
+      "took": 0.199,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.126,
+      "seconds": 0.189
+    },
+    {
+      "label": "contact list, search focused",
+      "at": 0.315,
+      "seconds": 0.007
+    },
+    {
+      "label": "search options",
+      "at": 0.416,
+      "seconds": 0.016
+    },
+    {
+      "label": "filtered list",
+      "at": 0.94,
+      "seconds": 1.141
+    },
+    {
+      "label": "select-all offer",
+      "at": 2.322,
+      "seconds": 0.05
+    },
+    {
+      "label": "export dialog",
+      "at": 2.856,
+      "seconds": 0.226
+    },
+    {
+      "label": "file received",
+      "at": 3.804,
+      "seconds": 3.772
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "1fe80982695c961f.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/1fe80982695c961f.jpg"
+    },
+    {
+      "moment": "export options chosen",
+      "file": "d3c9718ebd02d12d.jpg",
+      "at": 3.084,
+      "path": "gauntlet/reference/odoo/shots/d3c9718ebd02d12d.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "cd2004b5a2057fcf.jpg",
+      "at": 7.577,
+      "path": "gauntlet/reference/odoo/shots/cd2004b5a2057fcf.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "Contact (res.partner).xlsx",
+      "header": [
+        "Avatar 128",
+        "Display Name",
+        "Email",
+        "Phone",
+        "Activities",
+        "Country",
+        "Stats"
+      ],
+      "rows": 6581,
+      "expected_rows": 6581
+    }
+  },
+  "path_notes": "Apps menu > Contacts > type the tag > choose \"Search Tag for\" > header check box > Select all > Actions > Export > Export (the dialog proposes the list's columns: name, e-mail, phone and more).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/export-filtered-list.mjs",
+    "sha256": "9589cdc286d5a9681e974dabeaec8984e6cc38d5568f80384d148c8387a71e74"
+  },
+  "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "seconds": 0.103,
+      "verified": true
+    },
+    {
+      "seconds": 0.121,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "result_file": "gauntlet/reference/odoo/tasks/export-filtered-list.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070525-b8bd.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070539-0ea5.json",
+    "gauntlet/reference/odoo/results/export-filtered-list-20261005T070553-694b.json"
+  ]
+}

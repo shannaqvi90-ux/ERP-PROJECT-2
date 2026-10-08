@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/identity/model.ts b/web/src/modules/identity/model.ts
+index 611cfa5..2645465 100644
+--- a/web/src/modules/identity/model.ts
++++ b/web/src/modules/identity/model.ts
+@@ -210,7 +210,7 @@ export function userActions(
+   selfId: string | null,
+ ) {
+   const self = user.id === selfId;
+-  const beyondOwn = user.roleIds.some((id) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false);
++  const beyondOwn = user.roleIds.some((id) => roles.find((r) => r.id === id)?.permissions.some((p) => p.startsWith("identity.") && !held.has(p)) ?? false); // CRITIC PLANT U2
+   const others = !self && !beyondOwn;
+   return {
+     self,

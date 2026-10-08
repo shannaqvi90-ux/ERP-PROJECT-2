@@ -1,0 +1,44 @@
+A session tenant gulfsteel
+B session tenant alnoor
+B finds needle 200 51 ["majid.pillai.098528@staff.example","majid.pillai.096881@staff.example","majid.pillai.091659@staff.example","majid.pillai.068311@staff.example","majid.pillai.043877@staff.example"]
+totals B 100004 A 1004
+A search needle name 200 total=0 clean 45.8ms
+A search needle email 200 total=0 clean 79ms
+A filter email eq 200 total=0 clean 75.4ms
+A filter id-ish 200 total=0 clean 34.1ms
+A filter or-true 200 total=1004 clean 37.4ms
+A injection quote 200 total=0 clean 21.7ms
+A search wildcards 200 total=0 clean 20.9ms
+A X-Tenant header 200 total=0 clean 25ms
+A tenant query 200 total=0 clean 27.3ms
+A groupBy language 200 total=1004 clean 61.3ms
+A groupBy search a 200 total=1004 clean 39.5ms
+A replays B cursor 200 total=0 clean 51.7ms
+A replays B cursor (no search) 200 total=1004 clean 32.7ms
+cursor plain {"s":"-createdAt","k":["2026-10-07T01:31:47.8004930\u002B00:00"],"i":"01a113fc-f6d7-795d-bffd-b252e1969ac3"}
+A skip deep 200 total=1004 clean 20.7ms
+B views 200 [["01a113fd-cdd5-7620-abeb-4382403ff7b0","Team view",true]]
+A GET B shared view 404 total=- clean 27.6ms
+B personal create 201 01a113ff-0262-72f7-a091-a40925f84a29
+A GET B personal view 404 total=- clean 37.6ms
+A PUT B personal view 404 total=- clean 40ms
+A PUT B shared view 404 total=- clean 15.2ms
+A DELETE B shared view 404 total=- clean 17.3ms
+A DELETE B personal view 404 total=- clean 9.8ms
+A list views 200 total=1 clean 16.2ms
+B personal view after A attacks 200 B secret alnoor view
+B shared view after A attacks 200 Team view
+A export csv 200 total=- clean 125.6ms
+A export xlsx 200 total=- clean 37.7ms
+A export pdf 200 total=- clean 96.9ms
+A export csv with B view filter 200 total=- clean 62.5ms
+A POST view with B id 201 total=- clean 23.9ms
+timing B search=Majid%20Anil%20Pillai total 1 median ms 27.6 max 32
+timing B search=pillai total 1651 median ms 27.7 max 52.5
+timing B search=%D9%85%D8%A7%D8%AC%D8%AF%20%D8%A8%D9%8A%D9%84%D8%A7%D9%8A total 51 median ms 144.3 max 157.2
+timing B search=a total 100004 median ms 106.9 max 202.2
+timing B filter=language%20eq%20'ar' total 30308 median ms 40 max 50
+timing B groupBy=language total 100004 median ms 68.6 max 108.1
+timing B sort=email&skip=50000 total 100004 median ms 105.1 max 195.2
+timing B search=majid.pillai.068311%40staff.example total 1 median ms 55.4 max 89.7
+LEAKS: 0 []

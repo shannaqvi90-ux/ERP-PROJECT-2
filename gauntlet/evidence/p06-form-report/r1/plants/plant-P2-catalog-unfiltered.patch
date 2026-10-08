@@ -1,0 +1,22 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 9da4200..322067c 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -95,7 +95,7 @@ internal static class ReportEndpoints
+     {
+         var asked = http.Request.Query["language"].ToString();
+         var language = Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
+-        var items = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).Select(r =>
++        var items = catalog.Reports /* PLANT P2: no permission filter */.Select(r =>
+         {
+             var d = r.Definition;
+             return new ReportSummaryDto(d.Key, r.Module, strings.Get(d.LabelKey, language), d.DescriptionKey is null ? null : strings.Get(d.DescriptionKey, language),
+@@ -110,7 +110,7 @@ internal static class ReportEndpoints
+                 d.Columns.Select(c => new ReportColumnDto(c.Key, strings.Get(c.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString()), c.Total, c.Groupable)).ToList(),
+                 d.DefaultGroupBy, d.Facts is { Count: > 0 });
+         }).ToList();
+-        var lists = catalog.PrintableLists.Where(p => caller.Has(p.List.Permission))
++        var lists = catalog.PrintableLists /* PLANT P2 */
+             .Select(p => new PrintableListDto(p.List.Key, strings.Get(p.List.LabelKey, language), $"/api/reports/lists/{p.List.Key}"))
+             .ToList();
+         return TypedResults.Ok(new ReportCatalogDto(items, lists));

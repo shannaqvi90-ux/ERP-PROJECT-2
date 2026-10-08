@@ -1,0 +1,34 @@
+# Process-wide state in the product's assemblies (static fields, fields of singleton services,
+# cache services). Every tenant shares one process, so state that outlives a request can carry one
+# tenant's data to another. Reviewed list: every entry needs a reason after '#' saying why it can
+# never hold tenant data. The G1 process-state gate fails on an unreviewed or stale entry.
+# Format: static|singleton <Namespace.Type>.<field>   or   service <Service.Type.FullName>
+singleton Erp.Kernel.Modules.ModuleCatalog._modules  # The module registry, filled from code once while the host starts (ModuleBuilder) and only read afterwards; holds module names, permission keys, routes, menus and list registrations with their query bindings (column expressions compiled from code), never tenant data.
+singleton Erp.Kernel.Modules.ModuleCatalog._permissionKeys  # Lazily computed set of the permission keys declared in code by the modules above; identical for every tenant.
+singleton Erp.Kernel.Hosting.OpenApiDocumentCache._json  # The API description generated once from code (routes, request and response types, permissions, anonymous reasons) without a request, then only read; identical for every tenant and caller and holds nothing a request sent (decision p03-identity-openapi-generated-once).
+static Erp.Modules.Identity.Seeding.DemoPeople.ArabicFirstNames  # Fixed list of demo first names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.ArabicLastNames  # Fixed list of demo last names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.FirstNames  # Fixed list of demo first names in code, read by the demo seeder only; never written.
+static Erp.Modules.Identity.Seeding.DemoPeople.LastNames  # Fixed list of demo last names in code, read by the demo seeder only; never written.
+# Registration objects reached from the module catalogue, judged field by field (ReachableState).
+# Each is filled by ModuleBuilder while its module's Register runs at start-up and only read
+# afterwards; the G1 HTTP attack also fingerprints all reachable state before and after the
+# attack and fails if any of it changed while tenants used the app.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Commands  # The module's command-line verbs (verb, usage text and handler from code), filled during registration and run only by the operator's command line, never by a request; identical for every tenant.
+reachable Erp.Kernel.Modules.ModuleDescriptor.DbContexts  # The DbContext types the module registered (types from code), filled during registration, identical for every tenant.
+reachable Erp.Kernel.Modules.ModuleDescriptor.EndpointMaps  # The module's endpoint-mapping delegates (route prefix and mapping code), filled during registration and run once while the host maps routes; the delegates and the closures they hold are walked and judged on their own.
+reachable Erp.Kernel.Modules.ModuleDescriptor.IsolationProbes  # The isolation probe types the module registered (types from code), filled during registration.
+reachable Erp.Kernel.Modules.ModuleDescriptor.ListBindings  # The module's list query bindings by list key, filled during registration; each binding is immutable (Column and InMemory return a new binding) and is walked and judged field by field.
+reachable Erp.Kernel.Modules.ModuleDescriptor.ListsServedBy  # Which other module's list serves each of this module's lists (list keys from code), filled during registration and read once when the catalogue resolves bindings at start-up; identical for every tenant.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Lists  # The module's list definitions (immutable records from code), filled during registration.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Menu  # The module's menu entries (immutable records from code), filled during registration.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Permissions  # The permission definitions the module declares in code, filled during registration.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Seeders  # The seeder types the module registered (types from code), filled during registration.
+reachable Erp.Kernel.Modules.ModuleDescriptor.ListRowReaders  # Readers of the module's list rows by list key (delegates from code that read rows exactly as the list endpoint does, for reports' print and export), filled during registration; the delegates and the closures they hold are walked and judged on their own.
+reachable Erp.Kernel.Modules.ModuleDescriptor.Reports  # The module's report registrations (immutable report definitions and source types from code), filled during registration; each registration is walked and judged field by field.
+# Embedded fonts of printed documents (Reports module, PdfFonts singleton): each face is built once
+# from fonts bundled in code when the singleton starts and never written afterwards.
+reachable Erp.Modules.Reports.Pdf.PdfFontFace.Sfnt  # The TrueType bytes of a font bundled in code, decoded once when the face is built and only copied into PDFs; identical for every tenant.
+reachable Erp.Modules.Reports.Pdf.PdfFontFace.Font  # HarfBuzz font over the bundled font's immutable face, used only to read glyphs and shape text; holds no text it shaped.
+reachable Erp.Modules.Reports.Pdf.PdfFontFace._blob  # HarfBuzz blob over the bundled font's bytes, made immutable (MakeImmutable) when the face is built.
+reachable Erp.Modules.Reports.Pdf.PdfFontFace._face  # HarfBuzz face over the immutable blob, made immutable (MakeImmutable) when the face is built.

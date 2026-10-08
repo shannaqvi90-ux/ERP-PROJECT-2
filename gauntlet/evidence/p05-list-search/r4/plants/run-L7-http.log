@@ -1,0 +1,118 @@
+Test run for /home/shan/critic/p05-list-search-r4-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.80]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.10]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:19:39.20]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:19:39.22]       1 isolation checks failed:
+[xUnit.net 00:19:39.22]       
+[xUnit.net 00:19:39.22]       102 list answers that are not the asking tenant's own:
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=e answered total 1, but walking the same query returns 7 rows (the other tenant's answer to the same request was 1)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=Activity answered total 16, but walking the same query returns 6 rows (the other tenant's answer to the same request was 16)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 16, but walking the same query returns 9 rows (the other tenant's answer to the same request was 16)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameEn%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameAr%20contains%20%27a%27 answered total 0, but walking the same query returns 7 rows (the other tenant's answer to the same request was 0)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=baseCurrency%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=city%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.22]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=emirate%20eq%20%27abuDhabi%27 answered total 16, but walking the same query returns 7 rows (the other tenant's answer to the same request was 16)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=isActive%20eq%20true answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=baseCurrency answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=baseCurrency: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=baseCurrency answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=baseCurrency: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=city answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=city: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=city answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=city: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=emirate answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=emirate: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=emirate answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.23]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=emirate: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=isActive answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=isActive: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=isActive answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=isActive: group counts add up to 9, the total is 18
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/branches?take=50 answered total 12, but walking the same query returns 7 rows (the other tenant's answer to the same request was 12)
+[xUnit.net 00:19:39.24]       tenant B asks first, tenant A judged: GET /api/tenancy/branches?take=50&search=a answered total 12, but walking the same query returns 7 rows (the other tenant's answer to the same request was 12)
+[xUnit.net 00:19:39.24]       Stack Trace:
+[xUnit.net 00:19:39.25]         /home/shan/critic/p05-list-search-r4-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(138,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:19:39.25]         --- End of stack trace from previous location ---
+[xUnit.net 00:19:39.25]       Output:
+[xUnit.net 00:19:39.25]         routes, tenant headers and guessed queries: 61140 requests so far, 128.0 s
+[xUnit.net 00:19:39.25]         tenant switch inputs: 19 headers, 32 query names, 2 cookies, 34 body names: 71718 requests so far, 192.3 s
+[xUnit.net 00:19:39.25]         write after write: 100 pairs over 50 endpoints, 11380 tenant A requests: 71718 requests so far, 401.4 s
+[xUnit.net 00:19:39.25]         tenant B values in route and query parameters: 190752 requests so far, 743.2 s
+[xUnit.net 00:19:39.25]         registered lists through their query contract: 12177 attacks, 21881 requests: 212633 requests so far, 903.5 s
+[xUnit.net 00:19:39.25]         list answers judged against each tenant's own rows: 552 queries, 158 with different true answers, 12327 rows walked; process-wide state fingerprinted in 4082 lines from 60 roots: 212633 requests so far, 966.1 s
+[xUnit.net 00:19:39.25]         tenant B values in body fields: 233748 requests so far, 1073.9 s
+[xUnit.net 00:19:39.25]         tenant B activity: 63338 requests (23166 concurrent with the attack), 504 successful own writes, 63270 responses judged for tenant A markers: 233748 requests so far, 1118.5 s
+[xUnit.net 00:19:39.25]         tenant B: 91 ids (52 sampled), 103 text values, 81 extra markers, 39 probe values
+[xUnit.net 00:19:39.25]         290419 tenant bindings and 782133 setting statements judged among 2863541 statements; 290419 tenant values judged, 2863589 statements observed with their parameters; 10578 tenant switch inputs over 19 header names; 181175 responses judged on every header
+[xUnit.net 00:19:39.25]         1673 tenant B route values replayed, 2912 tenant B opens of the routes A was about to attack
+[xUnit.net 00:19:39.25]         107 endpoints, 245128 requests, 194 tenant B values, 86157 parameter attacks, 21115 body value attacks, 51234 differential checks (2523 values tenant A holds itself not compared), 292067 traced lookups
+[xUnit.net 00:19:39.39]   Finished:    Erp.Gates.Tests (ID = 'a6db3d1b2afe6b6368b76f08fc840a6648bd599bd7eac11905ce8b49e1bb22b9')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [19 m 20 s]
+  Error Message:
+   1 isolation checks failed:
+
+102 list answers that are not the asking tenant's own:
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=e answered total 1, but walking the same query returns 7 rows (the other tenant's answer to the same request was 1)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=Activity answered total 16, but walking the same query returns 6 rows (the other tenant's answer to the same request was 16)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 16, but walking the same query returns 9 rows (the other tenant's answer to the same request was 16)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameEn%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameAr%20contains%20%27a%27 answered total 0, but walking the same query returns 7 rows (the other tenant's answer to the same request was 0)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=baseCurrency%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=city%20contains%20%27a%27 answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=emirate%20eq%20%27abuDhabi%27 answered total 16, but walking the same query returns 7 rows (the other tenant's answer to the same request was 16)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=isActive%20eq%20true answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=baseCurrency answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=baseCurrency: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=baseCurrency answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=baseCurrency: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=city answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=city: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=city answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=city: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=emirate answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=emirate: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=emirate answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=emirate: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=isActive answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&groupBy=isActive: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=isActive answered total 18, but walking the same query returns 9 rows (the other tenant's answer to the same request was 18)
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a&groupBy=isActive: group counts add up to 9, the total is 18
+tenant B asks first, tenant A judged: GET /api/tenancy/branches?take=50 answered total 12, but walking the same query returns 7 rows (the other tenant's answer to the same request was 12)
+tenant B asks first, tenant A judged: GET /api/tenancy/branches?take=50&search=a answered total 12, but walking the same query returns 7 rows (the other tenant's answer to the same request was 12)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/shan/critic/p05-list-search-r4-plants/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 138
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 61140 requests so far, 128.0 s
+ tenant switch inputs: 19 headers, 32 query names, 2 cookies, 34 body names: 71718 requests so far, 192.3 s
+ write after write: 100 pairs over 50 endpoints, 11380 tenant A requests: 71718 requests so far, 401.4 s
+ tenant B values in route and query parameters: 190752 requests so far, 743.2 s
+ registered lists through their query contract: 12177 attacks, 21881 requests: 212633 requests so far, 903.5 s
+ list answers judged against each tenant's own rows: 552 queries, 158 with different true answers, 12327 rows walked; process-wide state fingerprinted in 4082 lines from 60 roots: 212633 requests so far, 966.1 s
+ tenant B values in body fields: 233748 requests so far, 1073.9 s
+ tenant B activity: 63338 requests (23166 concurrent with the attack), 504 successful own writes, 63270 responses judged for tenant A markers: 233748 requests so far, 1118.5 s
+ tenant B: 91 ids (52 sampled), 103 text values, 81 extra markers, 39 probe values
+ 290419 tenant bindings and 782133 setting statements judged among 2863541 statements; 290419 tenant values judged, 2863589 statements observed with their parameters; 10578 tenant switch inputs over 19 header names; 181175 responses judged on every header
+ 1673 tenant B route values replayed, 2912 tenant B opens of the routes A was about to attack
+ 107 endpoints, 245128 requests, 194 tenant B values, 86157 parameter attacks, 21115 body value attacks, 51234 differential checks (2523 values tenant A holds itself not compared), 292067 traced lookups
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 19.6743 Minutes

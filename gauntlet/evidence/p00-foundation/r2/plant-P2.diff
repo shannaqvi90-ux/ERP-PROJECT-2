@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..21af04b 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -38,6 +38,18 @@ internal static class UserEndpoints
+             .WithSummary("Users of the workspace, newest first, optionally filtered by e-mail or name.")
+             .RequirePermission(IdentityPermissions.UsersRead);
+ 
++        // PLANTED P2: a write action (reactivate and unlock a user) that only needs the read permission.
++        group.MapPost("/users/{id:guid}/reactivate", async (Guid id, IdentityDbContext db, HttpContext http, CancellationToken ct) =>
++        {
++            var user = await db.Users.SingleOrDefaultAsync(u => u.Id == id, ct);
++            if (user is null) return (IResult)Problems.NotFound(http);
++            user.IsActive = true;
++            user.LockoutUntil = null;
++            user.FailedSignInCount = 0;
++            await db.SaveChangesAsync(ct);
++            return TypedResults.NoContent();
++        }).WithName("identity.users.reactivate").WithSummary("Reactivate and unlock a user.").RequirePermission(IdentityPermissions.UsersRead);
++
+         group.MapGet("/users/{id:guid}", Get)
+             .WithName("identity.users.get")
+             .WithSummary("One user.")

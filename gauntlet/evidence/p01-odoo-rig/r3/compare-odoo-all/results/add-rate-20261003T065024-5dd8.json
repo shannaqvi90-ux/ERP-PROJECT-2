@@ -1,0 +1,592 @@
+{
+  "schema": 1,
+  "run_id": "add-rate-20261003T065024-5dd8",
+  "instrument": 3,
+  "task": "add-rate",
+  "task_title": "Add an exchange rate",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Record today's rate for the euro: 1 EUR = 4.2875 AED.",
+  "done_when": "The rate is saved; the back end holds a EUR rate dated today equal to 4.2875 AED per euro.",
+  "started_at": "2026-10-03T06:50:24.800Z",
+  "finished_at": "2026-10-03T06:50:39.251Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": 100000,
+    "node": "v22.22.0"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 8,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 4,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.824,
+    "system_wait_seconds": 1.86,
+    "human_seconds": 22.08,
+    "human_plus_wait_seconds": 23.94,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 6,
+      "B": 12,
+      "H": 1,
+      "M": 8
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0,
+      "took": 0.041
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Invoicing app",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.042,
+      "took": 0.049
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Configuration menu",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.577,
+      "took": 0.06
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Currencies",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.637,
+      "took": 0.066
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open EUR",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 0.707,
+      "took": 0.491
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Add a line (date defaults to today)",
+      "keystrokes": 0,
+      "chain": false,
+      "at": 1.442,
+      "took": 0.034
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "next cell 1",
+      "keystrokes": 1,
+      "chain": false,
+      "at": 1.802,
+      "took": 0.131,
+      "chord": "Tab"
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "next cell 2",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 1.933,
+      "took": 0.023,
+      "chord": "Tab"
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "next cell 3",
+      "keystrokes": 1,
+      "chain": true,
+      "at": 1.956,
+      "took": 0.012,
+      "chord": "Tab"
+    },
+    {
+      "n": 10,
+      "kind": "type",
+      "label": "AED per unit",
+      "keystrokes": 6,
+      "chain": true,
+      "at": 1.978,
+      "took": 0.022,
+      "text": "4.2875"
+    },
+    {
+      "n": 11,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "chain": false,
+      "at": 2,
+      "took": 0.032,
+      "chord": "Alt+s"
+    }
+  ],
+  "waits": [
+    {
+      "label": "Invoicing loaded",
+      "at": 0.091,
+      "seconds": 0.486
+    },
+    {
+      "label": "currency list",
+      "at": 0.704,
+      "seconds": 0.003
+    },
+    {
+      "label": "currency form with its rates",
+      "at": 1.198,
+      "seconds": 0.244
+    },
+    {
+      "label": "new rate row",
+      "at": 1.476,
+      "seconds": 0.326
+    },
+    {
+      "label": "AED per unit cell",
+      "at": 1.968,
+      "seconds": 0.01
+    },
+    {
+      "label": "saved",
+      "at": 2.033,
+      "seconds": 0.791
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "4c77d3d44b806c18.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/4c77d3d44b806c18.jpg"
+    },
+    {
+      "moment": "rate entered",
+      "file": "4a8acd306b25ad1c.jpg",
+      "at": 2,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/4a8acd306b25ad1c.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "00fc632daf366f0b.jpg",
+      "at": 2.824,
+      "path": "../../evidence-staging/p01-odoo-rig/r3/compare-odoo-all/blind/shots/00fc632daf366f0b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "date": "2026-10-03",
+      "rates": [
+        {
+          "id": 100015,
+          "inverse_company_rate": 4.2875,
+          "company_rate": 0.23323615160349856,
+          "company_id": [
+            1,
+            "Demo Trading LLC"
+          ]
+        }
+      ]
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Invoicing > Configuration > Currencies > EUR > Add a line > Tab, Tab, Tab (AED per unit, selected) > type > Alt+S | pointer: Apps menu > Invoicing > Configuration > Currencies > EUR > Add a line > click AED per unit > Ctrl+A > type > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/add-rate.mjs",
+    "sha256": "5824a3cc47327ab9479046988ba23e805006fd8a70c8c2af7bc39035d7fe6316"
+  },
+  "task_notes": "Set-up removes any EUR rate dated today; clean-up deletes the new one. The rig and the dataset hold 100,000 rates.",
+  "error": null,
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Invoicing > Configuration > Currencies > EUR > Add a line > Tab, Tab, Tab (AED per unit, selected) > type > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 11,
+        "keystrokes": 11,
+        "clicks": 6,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 4,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 2.824,
+        "system_wait_seconds": 1.86,
+        "human_seconds": 22.08,
+        "human_plus_wait_seconds": 23.94,
+        "klm_operator_counts": {
+          "K": 11,
+          "P": 6,
+          "B": 12,
+          "H": 1,
+          "M": 8
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.041
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Invoicing app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.042,
+          "took": 0.049
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Configuration menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.577,
+          "took": 0.06
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Currencies",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.637,
+          "took": 0.066
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "open EUR",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.707,
+          "took": 0.491
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "Add a line (date defaults to today)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.442,
+          "took": 0.034
+        },
+        {
+          "n": 7,
+          "kind": "key",
+          "label": "next cell 1",
+          "keystrokes": 1,
+          "chain": false,
+          "at": 1.802,
+          "took": 0.131,
+          "chord": "Tab"
+        },
+        {
+          "n": 8,
+          "kind": "key",
+          "label": "next cell 2",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 1.933,
+          "took": 0.023,
+          "chord": "Tab"
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "next cell 3",
+          "keystrokes": 1,
+          "chain": true,
+          "at": 1.956,
+          "took": 0.012,
+          "chord": "Tab"
+        },
+        {
+          "n": 10,
+          "kind": "type",
+          "label": "AED per unit",
+          "keystrokes": 6,
+          "chain": true,
+          "at": 1.978,
+          "took": 0.022,
+          "text": "4.2875"
+        },
+        {
+          "n": 11,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "chain": false,
+          "at": 2,
+          "took": 0.032,
+          "chord": "Alt+s"
+        }
+      ],
+      "waits": [
+        {
+          "label": "Invoicing loaded",
+          "at": 0.091,
+          "seconds": 0.486
+        },
+        {
+          "label": "currency list",
+          "at": 0.704,
+          "seconds": 0.003
+        },
+        {
+          "label": "currency form with its rates",
+          "at": 1.198,
+          "seconds": 0.244
+        },
+        {
+          "label": "new rate row",
+          "at": 1.476,
+          "seconds": 0.326
+        },
+        {
+          "label": "AED per unit cell",
+          "at": 1.968,
+          "seconds": 0.01
+        },
+        {
+          "label": "saved",
+          "at": 2.033,
+          "seconds": 0.791
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "date": "2026-10-03",
+          "rates": [
+            {
+              "id": 100015,
+              "inverse_company_rate": 4.2875,
+              "company_rate": 0.23323615160349856,
+              "company_id": [
+                1,
+                "Demo Trading LLC"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Invoicing > Configuration > Currencies > EUR > Add a line > click AED per unit > Ctrl+A > type > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 8,
+        "clicks": 8,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 4.517,
+        "system_wait_seconds": 3.463,
+        "human_seconds": 24.24,
+        "human_plus_wait_seconds": 27.703,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 8,
+          "B": 16,
+          "H": 2,
+          "M": 8
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0,
+          "took": 0.213
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Invoicing app",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 0.213,
+          "took": 0.049
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Configuration menu",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.864,
+          "took": 0.051
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Currencies",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.915,
+          "took": 0.048
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "open EUR",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 1.972,
+          "took": 0.478
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "Add a line (date defaults to today)",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 2.594,
+          "took": 0.076
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "AED per unit cell",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 3.572,
+          "took": 0.036
+        },
+        {
+          "n": 8,
+          "kind": "key",
+          "label": "select the suggested rate",
+          "keystrokes": 2,
+          "chain": true,
+          "at": 3.609,
+          "took": 0.005,
+          "chord": "Control+a"
+        },
+        {
+          "n": 9,
+          "kind": "type",
+          "label": "AED per unit",
+          "keystrokes": 6,
+          "chain": true,
+          "at": 3.614,
+          "took": 0.033,
+          "text": "4.2875"
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "chain": false,
+          "at": 3.647,
+          "took": 0.064
+        }
+      ],
+      "waits": [
+        {
+          "label": "Invoicing loaded",
+          "at": 0.262,
+          "seconds": 1.602
+        },
+        {
+          "label": "currency list",
+          "at": 1.963,
+          "seconds": 0.008
+        },
+        {
+          "label": "currency form with its rates",
+          "at": 2.449,
+          "seconds": 0.145
+        },
+        {
+          "label": "new rate row",
+          "at": 2.67,
+          "seconds": 0.902
+        },
+        {
+          "label": "saved",
+          "at": 3.711,
+          "seconds": 0.806
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "date": "2026-10-03",
+          "rates": [
+            {
+              "id": 100016,
+              "inverse_company_rate": 4.2875,
+              "company_rate": 0.23323615160349856,
+              "company_id": [
+                1,
+                "Demo Trading LLC"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

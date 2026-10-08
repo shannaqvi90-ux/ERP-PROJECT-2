@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index e990eef..13657ec 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -141,7 +141,7 @@ internal static class AccessEndpoints
+         var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
+         var after = wanted.ToDictionary(c => c.CompanyId!.Value,
+             c => new CompanyHolding(c.CompanyId!.Value, c.AllBranches == true ? null : (c.BranchIds ?? []).ToHashSet()));
+-        if (!CompanyAccessRules.ChangeWithinCaller(mine, before, after))
++        if (false && !CompanyAccessRules.ChangeWithinCaller(mine, before, after))
+         {
+             return Problems.Forbidden(http, "tenancy.grantBeyondOwn");
+         }

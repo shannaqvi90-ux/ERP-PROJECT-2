@@ -1,0 +1,7 @@
+role 201
+user 201
+target admin.ar@alnoor.example active true roles 1
+single-user edit deactivating the Administrator: 403 {"type":"urn:erp:problem:identity.userBeyondOwn","title":"This user has permissions you do not hold yourself, so you can
+bulk all-matching deactivating the same Administrator: 200 {"matched":1,"changed":0,"unchanged":0,"refusedSelf":0,"refusedBeyondOwn":1}
+Administrator admin.ar active afterwards: true
+restored by admin: 200 {"matched":1,"changed":0,"unchanged":1,"refusedSelf":0,"refusedBeyondOwn":0}

@@ -1,0 +1,36 @@
+Users list, tenant with 100,004 users. Round-trip from the host, 5 runs each.
+   20.0 ms median (max 32)  200  {'search': 'Yousef Samir Wang'}  -> (1, 1, [])
+   20.9 ms median (max 29)  200  {'search': 'yousef wang'}  -> (46, 46, [])
+   10.6 ms median (max 19)  200  {'search': '060019'}  -> (1, 1, [])
+   33.1 ms median (max 37)  200  {'search': 'yousef.wang.060019@staff.example'}  -> (1, 1, [])
+   21.8 ms median (max 46)  200  {'search': 'wang'}  -> (1616, 50, [])
+  102.6 ms median (max 109)  200  {'search': 'Wa'}  -> (9783, 50, [])
+   58.0 ms median (max 79)  200  {'search': 'a'}  -> (100004, 50, [])
+   10.8 ms median (max 12)  200  {'search': 'يوسف'}  -> (0, 0, [])
+   15.1 ms median (max 37)  200  {'filter': "displayName eq 'Yousef Samir Wang'"}  -> (1, 1, [])
+   21.3 ms median (max 33)  200  {'filter': "email contains 'wang' and language eq 'ar'"}  -> (491, 50, [])
+   41.3 ms median (max 57)  200  {'filter': "(language eq 'ar' or isActive eq false) and not displayName startsWith 'M'"}  -> (29504, 50, [])
+    7.9 ms median (max 27)  200  {'filter': "lastSignInAt is null and createdAt ge '2026-01-01'"}  -> (1, 1, [])
+   20.1 ms median (max 26)  200  {'sort': 'displayName', 'take': 100}  -> (100004, 100, [])
+   21.8 ms median (max 27)  200  {'sort': '-email', 'take': 100}  -> (100004, 100, [])
+   41.6 ms median (max 81)  200  {'groupBy': 'language'}  -> (100004, 50, [{'key': 'ar', 'count': 30308, 'totals': None}, {'key': 'en', 'count': 69696, 'totals': None}])
+   29.4 ms median (max 57)  200  {'groupBy': 'isActive', 'search': 'wang'}  -> (1616, 50, [{'key': False, 'count': 64, 'totals': None}, {'key': True, 'count': 1552, 'totals': None}])
+  182.2 ms median (max 186)  200  {'skip': 99000, 'take': 50, 'sort': 'displayName'}  -> (100004, 50, [])
+   26.5 ms median (max 28)  200  {}  -> (100004, 50, [])
+
+Keyset paging walk (filter email contains 'wang', take 37):
+  sort=displayName    pages=44 rows=1616 unique=1616 total=1616
+  sort=-displayName   pages=44 rows=1616 unique=1616 total=1616
+  sort=lastSignInAt   pages=44 rows=1616 unique=1616 total=1616
+  sort=-lastSignInAt  pages=44 rows=1616 unique=1616 total=1616
+  sort=email          pages=44 rows=1616 unique=1616 total=1616
+  sort=-createdAt     pages=44 rows=1616 unique=1616 total=1616
+  sort=createdAt      pages=44 rows=1616 unique=1616 total=1616
+
+Arabic search (user 'فاطمة الزعابي'):
+  search 'فاطمة': total 1
+  search 'فاطمه': total 0
+  search 'الزعابي': total 1
+  search 'الزعابى': total 0
+  search 'زعابي': total 1
+  search 'fatima': total 3371

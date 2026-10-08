@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "run_id": "who-changed-field-20261005T072015-94ad",
+  "instrument": 5,
+  "task": "who-changed-field",
+  "task_title": "Who changed this field, and when",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find out who last changed the e-mail address of the contact Shamma Waleed Al Romaithi, from what to what, and when.",
+  "done_when": "The change is on screen: the old and new e-mail, the person who made it (Noor Editor) and the time.",
+  "started_at": "2026-10-05T07:20:15.505Z",
+  "finished_at": "2026-10-05T07:20:40.750Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 2.84,
+    "system_wait_seconds": 2.004,
+    "human_seconds": 18.5,
+    "human_plus_wait_seconds": 20.504,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.056,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.057,
+      "took": 0.055,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "at": 0.496,
+      "took": 0.571,
+      "text": "Shamma Waleed Al Romaithi",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 1.069,
+      "took": 0.027,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "at": 1.989,
+      "took": 0.068,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.112,
+      "seconds": 0.363
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.476,
+      "seconds": 0.004
+    },
+    {
+      "label": "one result",
+      "at": 1.097,
+      "seconds": 0.891
+    },
+    {
+      "label": "latest change on screen",
+      "at": 2.057,
+      "seconds": 0.686
+    },
+    {
+      "label": "the product still answering when run() returned (1 request)",
+      "at": 2.78,
+      "seconds": 0.06,
+      "settle": true
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c8824263561dacaf.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/c8824263561dacaf.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "98dc54876638d034.jpg",
+      "at": 2.84,
+      "path": "gauntlet/reference/odoo/shots/98dc54876638d034.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "latest_change_on_screen": "Noor Editor 11:20 AM shamma.al.romaithi.73519@mail.example → shamma.romaithi.new@mail.example (Email)"
+    }
+  },
+  "path_notes": "Apps menu > Contacts (search focused) > type the name > Enter > open the result; the change log beside the form shows the latest change first (old > new e-mail, who, when).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/who-changed-field.mjs",
+    "sha256": "ce0f1e72478c566406371ad15d74bc8f0e8509cb76df54c8c9d24415606153ed"
+  },
+  "task_notes": "Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "seconds": 0,
+      "verified": true
+    },
+    {
+      "seconds": 0,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "result_file": "gauntlet/reference/odoo/tasks/who-changed-field.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/who-changed-field-20261005T071953-f81e.json",
+    "gauntlet/reference/odoo/results/who-changed-field-20261005T072015-94ad.json",
+    "gauntlet/reference/odoo/results/who-changed-field-20261005T072040-86f7.json"
+  ]
+}

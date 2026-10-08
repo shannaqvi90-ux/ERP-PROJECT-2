@@ -1,0 +1,21 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 1c8ebc6..eabcd6c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -17,7 +17,15 @@ internal static class TenancyEndpoints
+ {
+     public static void Map(RouteGroupBuilder group)
+     {
+-        group.MapGet("/tenant", GetTenant)
++        TenantDto? remembered = null;
++        group.MapGet("/tenant", async (TenancyDbContext db, HttpContext http, CancellationToken cancellationToken) =>
++            {
++                if (remembered is not null) return Results.Ok(remembered);
++                var tenant = await db.Tenants.AsNoTracking().SingleOrDefaultAsync(cancellationToken);
++                if (tenant is null) return (IResult)Problems.NotFound(http);
++                remembered = ToDto(tenant);
++                return Results.Ok(remembered);
++            })
+             .WithName("tenancy.tenant.get")
+             .WithSummary("The signed-in user's tenant.")
+             .RequirePermission(TenancyPermissions.TenantRead);

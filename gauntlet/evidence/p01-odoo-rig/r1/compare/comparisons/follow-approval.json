@@ -1,0 +1,36 @@
+{
+  "task": "follow-approval",
+  "verdict": "not_built",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": null,
+      "odoo": 4,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": null,
+      "odoo": 0,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": null,
+      "odoo": 1.695,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": null,
+      "odoo": 10.6,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": null,
+      "odoo": 12.032,
+      "outcome": "not_comparable"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r1/compare/results/follow-approval-20261003T001139-df2a.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r1/compare/results/follow-approval-20261003T001139-5393.json"
+  }
+}

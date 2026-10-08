@@ -1,0 +1,34 @@
+diff --git a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+index 19a2516..24390a0 100644
+--- a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
++++ b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+@@ -179,6 +179,13 @@ public static class ErpPlatform
+             .WithSummary("Liveness and database connectivity.")
+             .AllowAnonymousReviewed("Container health checks run without a session; returns no tenant data.");
+ 
++        api.MapPost("/platform/cache/clear", () => TypedResults.NoContent())
++            .WithName("platform.cacheClear")
++            .WithTags("platform")
++            .WithSummary("Clears the platform caches.")
++            .WithMetadata(new RequiresPermissionAttribute("tenancy.tenant.update"))
++            .RequireAuthorization();
++
+         foreach (var module in catalog.Modules)
+         {
+             foreach (var (prefix, map) in module.EndpointMaps)
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 9712ecd..2aade9a 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -162,7 +162,10 @@ internal sealed class SessionAuthenticationHandler(
+ public static class PrincipalExtensions
+ {
+     public static bool HasPermission(this ClaimsPrincipal principal, string permission) =>
+-        principal.HasClaim(ErpClaims.Permission, permission);
++        principal.HasClaim(ErpClaims.Permission, permission)
++        // Whoever may change a record may also remove it.
++        || (permission.EndsWith(".delete", StringComparison.Ordinal)
++            && principal.HasClaim(ErpClaims.Permission, permission[..^".delete".Length] + ".update"));
+ 
+     public static Guid? FindTenantId(this ClaimsPrincipal principal) =>
+         Guid.TryParse(principal.FindFirstValue(ErpClaims.TenantId), out var id) ? id : null;

@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/TenantPage.tsx b/web/src/modules/tenancy/TenantPage.tsx
+index 7da4b8c..689a91f 100644
+--- a/web/src/modules/tenancy/TenantPage.tsx
++++ b/web/src/modules/tenancy/TenantPage.tsx
+@@ -34,7 +34,7 @@ export function TenantPage() {
+       timeZone: tenant?.timeZone ?? "",
+       weekStart: tenant?.weekStart ?? "monday",
+     }),
+-    canEdit: editable,
++    canEdit: true,
+     save: (draft, tenant) =>
+       api<Tenant>("PUT", "/api/tenancy/tenant", { ...draft, version: tenant?.version ?? null }),
+     onSaved: () => void refresh(),

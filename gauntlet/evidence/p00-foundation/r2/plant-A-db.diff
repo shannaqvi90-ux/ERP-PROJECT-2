@@ -1,0 +1,12 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002224822_ReviewedLookupsUnboundOnly.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002224822_ReviewedLookupsUnboundOnly.cs
+index e75d6ea..f0d1b68 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002224822_ReviewedLookupsUnboundOnly.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261002224822_ReviewedLookupsUnboundOnly.cs
+@@ -11,6 +11,7 @@ namespace Erp.Modules.Identity.Migrations
+         protected override void Up(MigrationBuilder migrationBuilder)
+         {
+             migrationBuilder.Sql(IdentitySql.UnboundOnlyUp);
++            migrationBuilder.Sql("ALTER TABLE identity.user_roles DISABLE ROW LEVEL SECURITY;"); // PLANTED LEAK A-db
+         }
+ 
+         /// <inheritdoc />

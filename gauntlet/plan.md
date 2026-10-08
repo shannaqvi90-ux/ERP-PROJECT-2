@@ -6,6 +6,10 @@ builder's claim about what was built.
 
 ## Machine facts (this run)
 
+From 2026-10-05 the run continues on the owner's PC; `gauntlet/handover.md` has the current
+machine and how the loop restarts there. The facts below describe the original cloud machine.
+
+
 - 4 CPUs, 15 GB RAM, ~30 GB disk. At most two agents work at once.
 - Docker daemon: start with `dockerd` if `docker info` fails (`(nohup dockerd >/tmp/dockerd.log 2>&1 &)`).
 - .NET 10 SDK: `/opt/dotnet` (also `mcr.microsoft.com/dotnet/sdk:10.0`). `builds.dotnet.microsoft.com`
@@ -22,6 +26,17 @@ builder's claim about what was built.
   merging the integration branch in before it starts.
 - Each critic judges a fresh clone of an integration commit in `/home/user/critic/<piece>-r<round>`.
   A critic never reads `/home/user/wt/*` or any builder notes.
+
+- **Docker Desktop verify fix: one copy only (lead decision, 2026-10-05).** The integration branch
+  carries p00's fix (a3ddb25, decision 013bfc5): `./erp` sets `TESTCONTAINERS_HOST_OVERRIDE` to
+  `host.docker.internal` when `docker info` names Docker Desktop, otherwise 127.0.0.1;
+  `ERP_TESTCONTAINERS_HOST` overrides. Builders drop their own copy when they merge the
+  integration branch: p03 reverts 515c560 (reaper off plus test-container labels: not needed
+  once the reaper is reachable), p05 drops 05cdb7c's `erp` change and its decision record
+  `p05-list-search-verify-on-docker-desktop.md` (point to p00's instead), and p02 ea55842,
+  p04 2d2fbdb, p06 6a70eb3 are byte-identical to p00's and merge as no-ops. Integrators resolving
+  a conflict in `erp` around `run_toolbox`/`testcontainers_host` keep the integration branch's
+  version and drop the piece's variant.
 
 ## Ports
 
@@ -84,8 +99,13 @@ task for every other thing a user can touch in their piece. Tasks are never remo
 | p13 | Approval flows | 3 | p06, p12 | follow an approval |
 | p14 | Import and export | 3 | p05, p09, p12 | import 5,000 rows; export a filtered list |
 | p15 | Documented API for everything | 3 | all | do a screen task through the API |
+| p16 | Shared Contacts directory (owner decision, 2026-10-02) | 2 | p05, p06 | find one contact among 100,000; custom field and filter; import 5,000 |
 
 Piece scope details are in `gauntlet/pieces/<piece>.md`.
+
+Owner decisions (2026-10-02): Contacts is part of the platform core as shared master data and
+is the main 100,000-record list for the comparisons (p16). Odoo captures stay in
+`gauntlet/reference/` until the owner approves `bar/reference/`. Pull requests target `main`.
 
 ## Round protocol
 

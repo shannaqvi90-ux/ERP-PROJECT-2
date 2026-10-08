@@ -1,0 +1,16 @@
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 13.054s  human 30.05s  human+wait 43.426s  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T181453-13ba.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 12.909s  human 30.05s  human+wait 42.376s  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T181550-4cce.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 12.147s  human 30.05s  human+wait 41.127s  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T181649-8450.json
+create-restricted-user   ours  error     steps 2  keys 1  machine 120.413s  human 4.68s  human+wait 5.009s  (pointer: error locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T181747-b7de.json
+create-restricted-user   ours  error     steps 2  keys 1  machine 120.295s  human 4.68s  human+wait 4.892s  (pointer: error locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T182156-29ae.json
+create-restricted-user   ours  error     steps 2  keys 1  machine 120.316s  human 4.68s  human+wait 4.897s  (pointer: error locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p03-identity/r2/compare/results/create-restricted-user-20261003T182604-4af9.json
+create-restricted-user   verdict ours error
+find-user                odoo  verified  steps 6  keys 21  machine 3.407s  human 14.55s  human+wait 17.677s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183011-ac7f.json
+find-user                odoo  verified  steps 6  keys 21  machine 3.592s  human 14.55s  human+wait 17.655s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183024-7333.json
+find-user                odoo  verified  steps 6  keys 21  machine 2.797s  human 14.55s  human+wait 16.932s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183038-5070.json
+find-user                ours  verified  steps 3  keys 11  machine 0.355s  human 10.53s  human+wait 10.643s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183052-b53a.json
+find-user                ours  verified  steps 3  keys 11  machine 0.721s  human 10.53s  human+wait 10.997s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183055-53c0.json
+find-user                ours  verified  steps 3  keys 11  machine 0.719s  human 10.53s  human+wait 10.99s  -> ../../evidence-staging/p03-identity/r2/compare/results/find-user-20261003T183058-e6a5.json
+find-user                verdict win
+blind review page: ../../../../evidence-staging/p03-identity/r2/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r2/compare

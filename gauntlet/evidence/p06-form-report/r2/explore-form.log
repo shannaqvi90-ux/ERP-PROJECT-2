@@ -1,0 +1,19 @@
+url http://localhost:20650/tenancy/companies/018dca08-f08c-7fcf-b128-4c340ea92e5c
+form title ALN-AUH · Al Noor Technical Services LLC
+sections/tabs ["General","Registration","Accounting","Address","Contact"]
+field kinds ["legalNameEn:input/text","legalNameAr:input/text","code:input/text","isActive:input/checkbox","tradeLicenceNumber:input/text","tradeLicenceAuthority:input/text","taxRegistrationNumber:input/text","baseCurrency:input/text","fiscalYearStartMonth:select/","fiscalYearStartDay:input/text","addressLine1:input/text","addressLine2:input/text","city:input/text","emirate:select/","poBox:input/text","country:input/text","addressAr:textarea/","phone:input/tel","email:input/email","website:input/url"]
+  shot 01-company-form-en
+header after edit ALN-AUH · Al Noor Technical Services LLC ●Unsaved changes‹1 of 4›PrintDiscard changesSaveClose
+leave dialog after Escape ["Unsaved changesThis record has changes that are not saved yet.Save and closeDiscard changesKeep editing"]
+  shot 02-leave-warning-en
+  [native dialog] confirm You have unsaved changes. Leave and discard them?
+url after nav attempt http://localhost:20650/tenancy/companies/018dca08-f08c-7fcf-b128-4c340ea92e5c dialogs []
+still on form http://localhost:20650/tenancy/companies/018dca08-f08c-7fcf-b128-4c340ea92e5c +971 4 555 7777
+after Alt+Z +971 2 555 7810 orig +971 2 555 7810
+errors ["Some fields need attention.","Enter a valid e-mail address."]
+focused after refused save INPUT  not-an-email field=email
+  shot 03-server-validation-en
+after save notice ["Saved."]
+restored +971 2 555 7810 ["Saved."]
+next/prev ALN-AUH · Al Noor Technical Services LLC -> ALN-DXB · Al Noor Trading LLC -> ALN-AUH · Al Noor Technical Services LLC
+print menu items ["PDF in English","PDF in Arabic","Show the document on screen"] focused A menuitem PDF in English field=

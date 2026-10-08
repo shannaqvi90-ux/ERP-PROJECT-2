@@ -1,0 +1,93 @@
+RESULT control: status=verified steps=3 keys=10 machine=2.175 wait=2.027 human=8.9 error=
+✔ control: honest path (type, Go, wait for the 2 s answer) (3587.642999ms)
+RESULT T2: status=verified steps=3 keys=10 machine=0.107 wait=0 human=8.9 error=
+✖ plant T2 (wrong timer): run() returns right after the click; verify() waits for the end state off the clock (3559.284687ms)
+RESULT U4: status=verified steps=1 keys=0 machine=0.058 wait=0 human=2.65 error=
+✖ plant U4 (uncounted action): fetch captured at module load does the work inside the measured part (1209.451189ms)
+RESULT U5: status=verified steps=1 keys=0 machine=0.047 wait=0 human=2.65 error=
+✖ plant U5 (uncounted action): process.getBuiltinModule reaches node:child_process / node:net while measured (1276.490606ms)
+RESULT C2 ControlOrMeta+v: status=verified steps=3 keys=2 machine=2.128 wait=2.03 human=8.01 error=
+✖ plant C2 ControlOrMeta+v: text copied in set-up is pasted while measured (3539.21356ms)
+RESULT C3 empty copy then Control+v: status=verified steps=4 keys=4 machine=2.127 wait=2.034 human=9.92 error=
+✖ plant C3 empty copy then Control+v: text copied in set-up is pasted while measured (3373.937723ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 1
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16936.878894
+
+✖ failing tests:
+
+test at test/zz-critic-r5.test.mjs:54:1
+✖ plant T2 (wrong timer): run() returns right after the click; verify() waits for the end state off the clock (3559.284687ms)
+  AssertionError [ERR_ASSERTION]: MISSED: verified with machine 0.107s although the product took 2 s to answer
+      at TestContext.<anonymous> (file:///home/user/critic/p01-odoo-rig-r5-plants/gauntlet/compare/test/zz-critic-r5.test.mjs:65:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r5.test.mjs:68:1
+✖ plant U4 (uncounted action): fetch captured at module load does the work inside the measured part (1209.451189ms)
+  AssertionError [ERR_ASSERTION]: MISSED: a back-end write through the module-load fetch went uncounted (steps 1)
+      at TestContext.<anonymous> (file:///home/user/critic/p01-odoo-rig-r5-plants/gauntlet/compare/test/zz-critic-r5.test.mjs:76:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r5.test.mjs:79:1
+✖ plant U5 (uncounted action): process.getBuiltinModule reaches node:child_process / node:net while measured (1276.490606ms)
+  AssertionError [ERR_ASSERTION]: MISSED: a back-end write through child_process went uncounted (steps 1)
+      at TestContext.<anonymous> (file:///home/user/critic/p01-odoo-rig-r5-plants/gauntlet/compare/test/zz-critic-r5.test.mjs:93:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r5.test.mjs:97:3
+✖ plant C2 ControlOrMeta+v: text copied in set-up is pasted while measured (3539.21356ms)
+  AssertionError [ERR_ASSERTION]: MISSED: 10 characters entered with 2 keys
+      at TestContext.<anonymous> (file:///home/user/critic/p01-odoo-rig-r5-plants/gauntlet/compare/test/zz-critic-r5.test.mjs:116:12)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r5.test.mjs:97:3
+✖ plant C3 empty copy then Control+v: text copied in set-up is pasted while measured (3373.937723ms)
+  AssertionError [ERR_ASSERTION]: MISSED: 10 characters entered with 4 keys
+      at TestContext.<anonymous> (file:///home/user/critic/p01-odoo-rig-r5-plants/gauntlet/compare/test/zz-critic-r5.test.mjs:116:12)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+rc=1

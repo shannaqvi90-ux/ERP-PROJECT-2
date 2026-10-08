@@ -1,0 +1,30 @@
+# Reviewed endpoint-to-permission map of the tenancy module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, or a changed permission, fails the gate until
+# this file is reviewed and changed with it: the reason after # says why that permission, and no
+# broader one, guards the endpoint. (Critic p02 round 2, plant P1: the logo replacement guarded by
+# tenancy.workplace.switch passed every G2 test, because nothing reviewed /api/tenancy.)
+prefix /api/tenancy/
+
+GET /api/tenancy/tenant tenancy.tenant.read # the workspace's names and settings (language, time zone, week start)
+PUT /api/tenancy/tenant tenancy.tenant.update # renaming the workspace and changing its settings affects every user
+
+GET /api/tenancy/companies tenancy.companies.read # the companies list (only the caller's companies)
+GET /api/tenancy/companies/{id:guid} tenancy.companies.read # one company record: legal names, licence, TRN, address
+POST /api/tenancy/companies tenancy.companies.create # a new legal entity (also needs every company of the workspace, checked in the handler)
+PUT /api/tenancy/companies/{id:guid} tenancy.companies.update # changing a company's legal details or deactivating it
+GET /api/tenancy/companies/{id:guid}/logo tenancy.companies.read # the logo is part of the company record
+PUT /api/tenancy/companies/{id:guid}/logo tenancy.companies.update # the logo prints on the company's documents: changing it is changing the company
+DELETE /api/tenancy/companies/{id:guid}/logo tenancy.companies.update # removing the logo is changing the company
+
+GET /api/tenancy/branches tenancy.branches.read # the branches list (only branches the caller may work in)
+GET /api/tenancy/branches/{id:guid} tenancy.branches.read # one branch record
+POST /api/tenancy/branches tenancy.branches.create # a new branch (also needs every branch of its company, checked in the handler)
+PUT /api/tenancy/branches/{id:guid} tenancy.branches.update # changing a branch or deactivating it
+
+GET /api/tenancy/access tenancy.access.read # who may work in which of the caller's companies
+GET /api/tenancy/access/{userId:guid} tenancy.access.read # one user's companies and branches, and what the caller could give
+PUT /api/tenancy/access/{userId:guid} tenancy.access.update # giving or taking company and branch access is a grant (checked against the caller's own access and the target's permissions in the handler)
+
+GET /api/tenancy/workplace tenancy.workplace.read # the caller's own working company and what the switcher offers
+PUT /api/tenancy/workplace tenancy.workplace.switch # switching the caller's own working company; never anyone else's, never a company they lack

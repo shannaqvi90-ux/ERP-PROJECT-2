@@ -1,0 +1,23 @@
+== baseline
+[2m Test Files [22m [1m[32m24 passed[39m[22m[90m (24)[39m
+[2m      Tests [22m [1m[32m175 passed[39m[22m[90m (175)[39m
+== P3a useRecordForm ignores canEdit
+111:  const readOnly = false; // PLANT P3a
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 8 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/kernel/forms/forms.test.tsx[2m > [22mthe record form[2m > [22mshows a record read-only to a user who may not change it: no save, fields disabled, the reason said
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22musers screen[2m > [22mhides creation and account actions from a read-only user
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mroles screen[2m > [22mshows the Administrator system role read-only, with copy offered
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting a permission the user lacks is shown read-only, with no copy or delete
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: without identity.users.update there is no "Save"
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: nothing acts on someone whose roles grant more than the user holds, and nobody who signed in can be deleted
+[41m[1m FAIL [22m[49m src/modules/tenancy/AccessPage.test.tsx[2m > [22mcompany access screen[2m > [22msays why a stronger user's access is read-only and offers no way to change it
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m21 passed[39m[22m[90m (24)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m167 passed[39m[22m[90m (175)[39m
+== P3b company form editable for everyone
+100:    canEdit: true, // PLANT P3b
+[2m Test Files [22m [1m[32m24 passed[39m[22m[90m (24)[39m
+[2m      Tests [22m [1m[32m175 passed[39m[22m[90m (175)[39m
+U-delete: caught (Delete role offered without identity.roles.delete (critic p03 round 1))
+U-copy: caught (Copy role offered for a role granting more than the user holds)
+identity screens permission gate self-test: 5 plants, all caught

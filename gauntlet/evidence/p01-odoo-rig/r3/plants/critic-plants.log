@@ -1,0 +1,56 @@
+TAP version 13
+# PLANT control: status=verified steps=5 keys=2 machine=0.216 human=10.11 wait=0.068 err=
+# Subtest: control: honest path, click A, type, click B, type, click Save
+ok 1 - control: honest path, click A, type, click B, type, click Save
+  ---
+  duration_ms: 953.183436
+  type: 'test'
+  ...
+# PLANT U1-setup-page-script: status=verified steps=2 keys=1 machine=0.113 human=3.33 wait=0.075 err=
+# Subtest: PLANT U1: page script installed during signIn (unmeasured) acts during the measured part
+ok 2 - PLANT U1: page script installed during signIn (unmeasured) acts during the measured part
+  ---
+  duration_ms: 1091.122107
+  type: 'test'
+  ...
+# PLANT U2-context-init-script: status=verified steps=1 keys=1 machine=0.075 human=2.03 wait=0.072 err=
+# Subtest: PLANT U2: init script added to the context in setup acts during the measured part
+ok 3 - PLANT U2: init script added to the context in setup acts during the measured part
+  ---
+  duration_ms: 944.550084
+  type: 'test'
+  ...
+# PLANT S1-newline-in-type: status=verified steps=4 keys=4 machine=0.12 human=5.52 wait=0.07 err=
+# PLANT S1-honest: status=verified steps=5 keys=4 machine=0.134 human=5.52 wait=0.069 err=
+# Subtest: PLANT S1: op.type carries a newline, so Enter is pressed inside the typing step and is not a step of its own
+ok 4 - PLANT S1: op.type carries a newline, so Enter is pressed inside the typing step and is not a step of its own
+  ---
+  duration_ms: 1811.671595
+  type: 'test'
+  ...
+# PLANT T1-honest: status=verified steps=1 keys=0 machine=1.581 human=2.65 wait=1.534 err=
+# PLANT T1-gamed: status=verified steps=1 keys=0 machine=0.126 human=2.65 wait=0.018 err=
+# T1 shots taken while measuring: 24
+# Subtest: PLANT T1: screenshots taken while the product works hide its latency from machine seconds
+ok 5 - PLANT T1: screenshots taken while the product works hide its latency from machine seconds
+  ---
+  duration_ms: 4895.580073
+  type: 'test'
+  ...
+# PLANT K1-honest: status=verified steps=5 keys=2 machine=0.22 human=10.11 wait=0.07 err=
+# PLANT K1-gamed: status=verified steps=5 keys=2 machine=0.182 human=6.06 wait=0.067 err=
+# Subtest: PLANT K1: every step marked chain:true drops every M from the human model
+ok 6 - PLANT K1: every step marked chain:true drops every M from the human model
+  ---
+  duration_ms: 2286.223103
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12553.746302

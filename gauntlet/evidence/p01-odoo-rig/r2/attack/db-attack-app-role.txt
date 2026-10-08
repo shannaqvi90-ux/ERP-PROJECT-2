@@ -1,0 +1,83 @@
+ count 
+-------
+     0
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+     proname     
+-----------------
+ resolve_session
+ resolve_login
+(2 rows)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+UPDATE 0
+ERROR:  relation "audit.changes" does not exist
+LINE 1: select count(*) from audit.changes
+                             ^
+ROLLBACK
+              tenant_id               |               user_id                |                                       password_hash                                        | is_active | lockout_until 
+--------------------------------------+--------------------------------------+--------------------------------------------------------------------------------------------+-----------+---------------
+ 0190a000-0000-7000-8000-000000000002 | 01a0ff70-75b3-7d87-aaac-effa5a7cc0c6 | pbkdf2-sha512$210000$z9y5UaOV9a9TK4shZ4hbnQ==$Lpl8z61YwKqiBBUDDxEbil6Fz0dK3iavwIlQ2siZTKU= | t         | 
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1790992047.369650
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100004
+(1 row)
+
+UPDATE 0
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100010
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |     2
+(1 row)
+
+ROLLBACK

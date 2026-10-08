@@ -1,0 +1,413 @@
+import { expect, test, type Page } from "@playwright/test";
+import { checkAccessibility, expectFocusRing } from "./a11y";
+import { freshStart, signIn, users } from "./demo";
+
+const navigation = (page: Page, name = "Main navigation") => page.getByRole("navigation", { name });
+
+async function setPreferences(page: Page, body: { language?: "en" | "ar"; numerals?: "latn" | "arab" }) {
+  const response = await page.request.put("/api/identity/me/preferences", { data: body, headers: { "X-Erp-Request": "1" } });
+  expect(response.ok()).toBe(true);
+}
+
+test.describe("app shell", () => {
+  test("a fresh visit, with or without a stale session cookie, logs no error and no failed request", async ({ page, context }) => {
+    const errors: string[] = [];
+    page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+    page.on("pageerror", (e) => errors.push(e.message));
+    page.on("response", (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
+    await page.goto("/");
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await context.addCookies([{ name: "erp_session", value: "A".repeat(43), url: page.url() }]);
+    await page.goto("/");
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    expect(errors).toEqual([]);
+  });
+
+  test("the printed-at and printed-by stamp of a screen shows on paper only, never on screen", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    const stamp = page.locator(".print-document-screen .print-footer");
+    await expect(stamp).toHaveCount(1);
+    await expect(stamp).toBeHidden();
+    await page.emulateMedia({ media: "print" });
+    await expect(stamp).toBeVisible();
+    await expect(stamp).toContainText("Printed");
+    await page.emulateMedia({ media: "screen" });
+    await expect(stamp).toBeHidden();
+  });
+
+  test("nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    for (const language of ["en", "ar"]) {
+      if (language === "ar") {
+        await page.keyboard.press("Alt+l");
+        await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      }
+      const paperOnly = page.locator(".print-only");
+      expect(await paperOnly.count()).toBeGreaterThanOrEqual(2);
+      const shown = await paperOnly.evaluateAll((nodes) => nodes.filter((n) => getComputedStyle(n).display !== "none" || (n as HTMLElement).offsetHeight > 0).map((n) => n.className));
+      expect(shown, `paper-only parts shown on screen (${language})`).toEqual([]);
+      await page.emulateMedia({ media: "print" });
+      await expect(page.locator(".print-screen-head")).toBeVisible();
+      await expect(page.locator(".print-document-screen .print-footer")).toBeVisible();
+      await page.emulateMedia({ media: "screen" });
+    }
+    // Restore the viewer's language for the tests that follow.
+    await page.keyboard.press("Alt+l");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("the tab's title names the screen, and follows the language at once", async ({ page }) => {
+    await freshStart(page, "en");
+    await expect(page).toHaveTitle("Sign in · ERP");
+    await signIn(page, users.viewer);
+    await expect(navigation(page)).toBeVisible();
+    await expect(page).toHaveTitle("Home · ERP");
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page).toHaveTitle("Users · ERP");
+    await page.keyboard.press("Alt+l");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    await expect(page).toHaveTitle("المستخدمون · نظام تخطيط الموارد");
+    await page.keyboard.press("Alt+h");
+    await expect(page).toHaveTitle("الرئيسية · نظام تخطيط الموارد");
+    await page.keyboard.press("Alt+l");
+    await expect(page).toHaveTitle("Home · ERP");
+  });
+
+  test("switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await navigation(page).getByRole("link", { name: "Users" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    try {
+      const started = Date.now();
+      await page.getByRole("button", { name: "العربية" }).click();
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.getByRole("heading", { name: "المستخدمون" })).toBeVisible();
+      await expect(page.locator("table thead")).toContainText("البريد الإلكتروني");
+      console.log(`switch to Arabic on the users list: ${Date.now() - started} ms`);
+      await expect(page.locator("table tbody tr").first()).toBeVisible();
+      // Mirrored layout: the navigation pane moves to the right of the screen, the brand to the
+      // right end of the top bar, and direction-implying icons flip.
+      const nav = (await navigation(page, "التنقل الرئيسي").boundingBox())!;
+      const main = (await page.locator("main").boundingBox())!;
+      expect(nav.x).toBeGreaterThan(main.x);
+      const flipped = await page.locator(".breadcrumbs .icon-directional").first().evaluate((el) => getComputedStyle(el).transform);
+      expect(flipped).toContain("matrix(-1");
+      // Reload straight away, before the preference request may have returned.
+      await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.getByRole("heading", { name: "المستخدمون" })).toBeVisible();
+      await expect
+        .poll(async () => (await (await page.request.get("/api/auth/session")).json()).user.language)
+        .toBe("ar");
+    } finally {
+      await setPreferences(page, { language: "en" });
+    }
+  });
+
+  test("keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    const started = Date.now();
+    await page.keyboard.press("Control+K");
+    await expect(page.getByRole("combobox")).toBeFocused();
+    await page.keyboard.type("rol");
+    await expect(page.getByRole("option").first()).toContainText("Roles");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main h1")).toHaveText("Roles");
+    console.log(`palette to the Roles screen: ${Date.now() - started} ms, 3 steps, 6 keystrokes`);
+    await expect(page).toHaveURL(/\/identity\/roles$/);
+    await expect(page.getByRole("navigation", { name: "Breadcrumb" })).toContainText("Settings");
+
+    await page.keyboard.press("Alt+M");
+    await expect(navigation(page).getByRole("link", { name: "Roles" })).toBeFocused();
+    await expectFocusRing(page, "navigation entry");
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Company access" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Companies" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Branches" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Workspace" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main h1")).toHaveText("Workspace");
+
+    await page.keyboard.press("Alt+H");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+
+    await page.keyboard.press("Shift+?");
+    const help = page.getByRole("dialog", { name: "Keyboard shortcuts" });
+    await expect(help).toBeVisible();
+    for (const action of ["Open the command palette", "Switch language", "Move to the navigation pane", "Go to the home screen", "Open my preferences"]) {
+      await expect(help).toContainText(action);
+    }
+    await page.keyboard.press("Escape");
+    await expect(help).toHaveCount(0);
+  });
+
+  test("shortcuts work with an Arabic keyboard layout (matched by key position)", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await expect(page.getByRole("heading", { name: /مرحبًا/ })).toBeVisible();
+    // Ctrl and the key that types "ن" on an Arabic layout (the K position).
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ن", code: "KeyK", ctrlKey: true, bubbles: true, cancelable: true })));
+    await expect(page.getByRole("combobox")).toBeFocused();
+    await page.keyboard.type("الادوار");
+    await expect(page.getByRole("option").first()).toContainText("الأدوار");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main h1")).toHaveText("الأدوار");
+  });
+
+  test("the palette finds a record and opens it", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("viewer@alnoor");
+    const option = page.getByRole("option", { name: /Omar Haddad/ });
+    await expect(option).toBeVisible();
+    await option.click();
+    // The users list narrowed to the record, with the record open in its details panel.
+    await expect(page).toHaveURL(/\/identity\/users\/[0-9a-f-]{36}\?q=viewer%40alnoor\.example$/);
+    await expect(page.locator("table tbody tr")).toHaveCount(1);
+    await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
+    await expect(page.getByRole("region", { name: "Details" })).toContainText(users.viewer);
+  });
+
+  test("the palette leads from a few record matches to the list of every match", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("alnoor");
+    const all = page.getByRole("option", { name: /^Show all [\d,]+ matches for “alnoor”$/ });
+    await expect(all).toBeVisible();
+    // Keyboard only: the entry is the last of the users' results (Up from the first wraps to it).
+    for (let i = 0; i < 20 && (await all.getAttribute("aria-selected")) !== "true"; i++) await page.keyboard.press("ArrowUp");
+    await expect(all).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/identity\/users\?q=alnoor$/);
+    await expect(page.locator('input[type="search"]')).toHaveValue("alnoor");
+    await expect(page.locator("table tbody tr").nth(5)).toBeVisible();
+  });
+
+  for (const language of ["en", "ar"] as const) {
+    test(`at phone width nothing is wider than the window (${language})`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await freshStart(page, language);
+      await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+      await expect(page.locator("main h1")).toBeVisible();
+      const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(await overflow(), "home scrolls sideways").toBeLessThanOrEqual(0);
+      // The navigation pane starts closed on a phone; the menu button lays it over the screen,
+      // and opening a screen puts it away.
+      const pane = page.locator("nav.navpane");
+      await expect(pane).toBeHidden();
+      await page.locator(".topbar button[aria-controls='navpane']").click();
+      await expect(pane).toBeVisible();
+      expect(await overflow(), "open navigation scrolls sideways").toBeLessThanOrEqual(0);
+      await pane.getByRole("link").first().click();
+      await expect(pane).toBeHidden();
+      await expect(page.locator("main h1")).toBeVisible();
+      expect(await overflow(), "a screen scrolls sideways").toBeLessThanOrEqual(0);
+    });
+  }
+
+  test("the palette offers a user with no roles nothing they cannot open", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.noAccess);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("users");
+    await expect(page.getByText("Nothing matches “users”.")).toBeVisible();
+    await expect(page.getByRole("option")).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Control+K");
+    const offered = await page.getByRole("option").allTextContents();
+    expect(offered.join(" ")).not.toMatch(/Users|Roles|Workspace/);
+  });
+
+  test("Arabic-Indic digits are a per-user choice that follows the user", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    try {
+      await page.keyboard.press("Alt+P");
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toHaveAccessibleName("Preferences");
+      await dialog.getByLabel("العربية").check();
+      await expect(dialog).toHaveAccessibleName("التفضيلات");
+      await dialog.getByLabel("هندية (٠١٢٣)").check();
+      await expect(dialog.getByRole("status")).toContainText("حُفظ في ملفك الشخصي");
+      await page.keyboard.press("Escape");
+      await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+      await expect(page.locator(".screen-header .muted")).toHaveText(/^[٠-٩٬]+ مستخدم/);
+      // A new sign-in, on a device that never saw the choice, brings it back.
+      await page.getByRole("button", { name: "تسجيل الخروج" }).click();
+      // The sign-in screen shows only once the server has ended the session.
+      await expect(page.locator('input[name="email"]')).toBeVisible();
+      await page.evaluate(() => localStorage.clear());
+      await page.goto("/");
+      await signIn(page, users.viewer);
+      await expect(page.getByRole("heading", { name: /مرحبًا/ })).toBeVisible();
+      await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+      await expect(page.locator(".screen-header .muted")).toHaveText(/^[٠-٩٬]+ مستخدم/);
+    } finally {
+      await setPreferences(page, { language: "en", numerals: "latn" });
+    }
+  });
+
+  test("printing shows the screen's content with a letterhead and none of the app's chrome", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "الأدوار" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    await expect(page.locator(".topbar")).toBeHidden();
+    await expect(page.locator(".navpane")).toBeHidden();
+    await expect(page.locator(".statusbar")).toBeHidden();
+    await expect(page.locator(".print-screen-head")).toBeVisible();
+    await expect(page.locator(".print-screen-head")).toContainText("شركة النور للتجارة ذ.م.م");
+    // The screen prints through the print layout base: letterhead with the screen's name, footer.
+    await expect(page.locator(".print-document .print-title")).toHaveText("الأدوار");
+    await expect(page.locator(".print-document .print-footer")).toBeVisible();
+    await expect(page.locator(".print-document .print-footer")).toContainText("طبعه");
+    await expect(page.locator("main h1")).toHaveText("الأدوار");
+    expect(await page.evaluate(() => getComputedStyle(document.querySelector("main")!).direction)).toBe("rtl");
+    await page.emulateMedia({ media: "screen" });
+  });
+
+  test("a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+    await expect(page.locator("table tbody tr").first()).toBeVisible();
+    // A sorted column, so a sort mark exists on screen.
+    await expect(page.locator("main .list-statusbar")).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    try {
+      const visible = await page.evaluate(() => {
+        const shown = (el: Element) => {
+          const box = (el as HTMLElement).getBoundingClientRect();
+          return getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden" && box.width > 0 && box.height > 0;
+        };
+        const main = document.querySelector("main")!;
+        return {
+          buttons: [...main.querySelectorAll("button")].filter((b) => shown(b) && !b.classList.contains("list-sort")).map((b) => b.textContent?.trim() || b.getAttribute("aria-label")),
+          checkboxes: [...main.querySelectorAll('input[type="checkbox"]')].filter(shown).length,
+          sortMarks: [...main.querySelectorAll(".list-sort-mark")].filter(shown).length,
+          hints: [...main.querySelectorAll(".list-statusbar")].filter(shown).length,
+          headings: [...main.querySelectorAll<HTMLElement>("thead th")].filter(shown).map((th) => th.innerText.trim()).filter(Boolean),
+        };
+      });
+      expect(visible.buttons).toEqual([]);
+      expect(visible.checkboxes).toBe(0);
+      expect(visible.sortMarks).toBe(0);
+      expect(visible.hints).toBe(0);
+      // The column titles still print, as plain headings, in Arabic.
+      expect(visible.headings).toEqual(expect.arrayContaining(["الاسم", "البريد الإلكتروني"]));
+      await expect(page.locator(".print-document .print-title")).toHaveText("المستخدمون");
+      // The printout says it holds only the rows on screen, of how many (critic p04 round 3).
+      await expect(page.locator(".list-print-scope")).toBeVisible();
+      await expect(page.locator(".list-print-scope")).toContainText("من أصل");
+      // The users list is printable: the note points at the report path that prints every row.
+      await expect(page.locator(".list-print-scope")).toContainText("طباعة أو تصدير");
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+  });
+
+  for (const [width, height] of [[1366, 768], [1280, 720], [1920, 1080]] as const) {
+    test(`the status line stays in view on every screen and the page never scrolls (${width}x${height})`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await freshStart(page, "en");
+      await signIn(page, users.admin);
+      await expect(page.locator("main h1")).toBeVisible();
+      const links = await navigation(page).locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+      const problems: string[] = [];
+      for (const href of ["/", ...links]) {
+        if (href !== "/") await navigation(page).locator(`a[href="${href}"]`).click();
+        await expect(page.locator("main h1").first()).toBeVisible();
+        await page.waitForLoadState("networkidle").catch(() => undefined);
+        const layout = await page.evaluate(() => ({
+          statusBottom: document.querySelector("footer.statusbar")!.getBoundingClientRect().bottom,
+          statusTop: document.querySelector("footer.statusbar")!.getBoundingClientRect().top,
+          scrollHeight: document.documentElement.scrollHeight,
+          innerHeight: window.innerHeight,
+        }));
+        if (layout.statusBottom > layout.innerHeight + 0.5 || layout.statusTop < 0) problems.push(`${href}: status line at ${layout.statusTop}-${layout.statusBottom} in a ${layout.innerHeight} px window`);
+        if (layout.scrollHeight > layout.innerHeight) problems.push(`${href}: the page is ${layout.scrollHeight - layout.innerHeight} px taller than the window`);
+      }
+      expect(problems).toEqual([]);
+    });
+  }
+
+  test("Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await navigation(page, "التنقل الرئيسي").getByRole("link", { name: "المستخدمون" }).click();
+    await expect(page.locator("main h1")).toHaveText("المستخدمون");
+    await page.evaluate(() => document.fonts.ready);
+    const platformFonts = async () => {
+      const cdp = await page.context().newCDPSession(page);
+      await cdp.send("DOM.enable");
+      await cdp.send("CSS.enable");
+      const { root } = await cdp.send("DOM.getDocument", { depth: -1 });
+      const { nodeId } = await cdp.send("DOM.querySelector", { nodeId: root.nodeId, selector: "main h1" });
+      const { fonts } = await cdp.send("CSS.getPlatformFontsForNode", { nodeId });
+      await cdp.detach();
+      return fonts.map((f) => f.familyName);
+    };
+    expect(await platformFonts()).toContain("Noto Sans Arabic");
+    await page.emulateMedia({ media: "print" });
+    try {
+      expect(await platformFonts()).toContain("Noto Sans Arabic");
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+    // Latin text keeps the system font: the bundled font covers Arabic only.
+    const latin = await page.evaluate(() => [...document.fonts].filter((f) => f.family.includes("Noto Sans Arabic Variable")).map((f) => f.unicodeRange));
+    expect(latin.every((range) => !/U\+0?0?(00|20)-/i.test(range))).toBe(true);
+  });
+
+  for (const language of ["en", "ar"] as const) {
+    test(`every shell screen and dialog meets the accessibility basics (${language})`, async ({ page }) => {
+      await freshStart(page, language);
+      let checked = await checkAccessibility(page, `sign-in (${language})`);
+      await page.keyboard.press("Tab");
+      await expectFocusRing(page, "sign-in, after Tab");
+      await page.keyboard.press("Shift+Tab");
+      await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+      await expect(page.locator("main h1")).toBeVisible();
+      checked += await checkAccessibility(page, `home (${language})`);
+      const links = await navigation(page, language === "ar" ? "التنقل الرئيسي" : "Main navigation").locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+      for (const href of links) {
+        await navigation(page, language === "ar" ? "التنقل الرئيسي" : "Main navigation").locator(`a[href="${href}"]`).click();
+        await expect(page.locator("main table tbody tr, main dl dd").first()).toBeVisible();
+        checked += await checkAccessibility(page, `${href} (${language})`);
+      }
+      await page.keyboard.press("Control+K");
+      // The palette's own box (screens such as the workspace settings have selects too).
+      await expect(page.getByRole("dialog").getByRole("combobox")).toBeFocused();
+      checked += await checkAccessibility(page, `command palette (${language})`);
+      await page.keyboard.press("Escape");
+      await page.keyboard.press("Control+/");
+      await expect(page.getByRole("dialog")).toBeVisible();
+      checked += await checkAccessibility(page, `shortcut help (${language})`);
+      await page.keyboard.press("Escape");
+      await page.keyboard.press("Alt+P");
+      await expect(page.getByRole("dialog")).toBeVisible();
+      checked += await checkAccessibility(page, `preferences (${language})`);
+      await page.keyboard.press("Escape");
+      expect(checked).toBeGreaterThan(100);
+    });
+  }
+});

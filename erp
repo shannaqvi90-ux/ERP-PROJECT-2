@@ -1,0 +1,343 @@
+#!/usr/bin/env bash
+# The one command. Needs only Docker (with Compose), bash and git.
+#
+#   ./erp up                    build, migrate, seed the demo and serve it; prints the URL and sign-ins
+#   ./erp down [--volumes]      stop the demo (--volumes also deletes its database)
+#   ./erp verify                build, migrate, seed and run every test: web unit tests, .NET unit,
+#                               integration (Testcontainers) and gate tests, then Playwright end to end
+#                               against a freshly set-up stack
+#   ./erp verify --clean-clone  G3: clone HEAD into a temporary directory and run `./erp verify` and
+#                               `./erp up` there, then sign in to the demo over HTTP
+#   ./erp status | logs | psql
+#   ./erp tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar]
+#   ./erp tenant suspend|activate --code <code> | ./erp tenant list
+#                               platform operator commands against the running demo's database
+#                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated)
+#                               (the audit trail names the operator: --operator <name>, else
+#                               ERP_OPERATOR, else user@host)
+#
+# Environment (all optional; lets several copies run side by side):
+#   ERP_PROJECT           compose project name                 (default erp)
+#   ERP_HTTP_PORT         demo web port                         (default 8080)
+#   ERP_DB_PORT           demo PostgreSQL port                  (default 5440)
+#   ERP_SEED_VOLUME       users seeded in the demo tenant       (default 100000)
+#   ERP_VERIFY_HTTP_PORT  web port of the stack verify starts   (default ERP_HTTP_PORT + 10)
+#   ERP_VERIFY_DB_PORT    db port of the stack verify starts    (default ERP_DB_PORT + 10)
+#   ERP_VERIFY_VOLUME     users seeded for the verify stack     (default 2000)
+#   ERP_KNOWN_PROXIES     reverse proxy addresses the demo trusts for X-Forwarded-For (comma separated)
+#   ERP_KNOWN_NETWORKS    reverse proxy networks in CIDR form, the same way          (default: none)
+#   ERP_SEED_USERS_CSV    users.csv of the shared comparison dataset (gauntlet/compare/data/out/users.csv,
+#                         made by node gauntlet/compare/data/generate.mjs): the demo tenant's bulk users
+#                         become exactly the dataset's users, as in the Odoo reference. Applies when the
+#                         demo database is first seeded (./erp down --volumes to start again).
+#                         Unset: generated demo users.
+#   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
+#                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
+#   ERP_EXTRA_CA_CERTS    PEM file of extra CA certificates the build and test containers must trust
+#                         (networks that inspect TLS). Defaults to NODE_EXTRA_CA_CERTS or SSL_CERT_FILE
+#                         when one of them names a file; unset on an ordinary machine.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
+
+export ERP_PROJECT="${ERP_PROJECT:-erp}"
+export ERP_HTTP_PORT="${ERP_HTTP_PORT:-8080}"
+export ERP_DB_PORT="${ERP_DB_PORT:-5440}"
+ERP_VERIFY_HTTP_PORT="${ERP_VERIFY_HTTP_PORT:-$((ERP_HTTP_PORT + 10))}"
+ERP_VERIFY_DB_PORT="${ERP_VERIFY_DB_PORT:-$((ERP_DB_PORT + 10))}"
+ERP_VERIFY_VOLUME="${ERP_VERIFY_VOLUME:-2000}"
+DEMO_PASSWORD="${ERP_DEMO_PASSWORD:-Demo-Pass-2026}"
+TOOLBOX_IMAGE="erp-toolbox:pw1.63.0-net10"
+
+# Extra CA certificates for networks that re-terminate TLS (never needed on an ordinary machine).
+if [[ -z "${ERP_EXTRA_CA_CERTS:-}" ]]; then
+  for candidate in "${NODE_EXTRA_CA_CERTS:-}" "${SSL_CERT_FILE:-}"; do
+    if [[ -n "$candidate" && -s "$candidate" ]]; then
+      ERP_EXTRA_CA_CERTS="$candidate"
+      break
+    fi
+  done
+fi
+if [[ -n "${ERP_EXTRA_CA_CERTS:-}" ]]; then
+  [[ -s "$ERP_EXTRA_CA_CERTS" ]] || { printf 'erp: ERP_EXTRA_CA_CERTS=%s is not a readable file\n' "$ERP_EXTRA_CA_CERTS" >&2; exit 1; }
+  ERP_EXTRA_CA_CERTS="$(cd "$(dirname "$ERP_EXTRA_CA_CERTS")" && pwd)/$(basename "$ERP_EXTRA_CA_CERTS")"
+  export ERP_EXTRA_CA_CERTS
+fi
+
+# The comparison dataset's users file, mounted read-only into the one-shot setup container.
+if [[ -n "${ERP_SEED_USERS_CSV:-}" ]]; then
+  [[ -s "$ERP_SEED_USERS_CSV" ]] || { printf 'erp: ERP_SEED_USERS_CSV=%s is not a readable file (node gauntlet/compare/data/generate.mjs makes it)\n' "$ERP_SEED_USERS_CSV" >&2; exit 1; }
+  ERP_SEED_DATA_DIR="$(cd "$(dirname "$ERP_SEED_USERS_CSV")" && pwd)"
+  ERP_SEED_USERS_CSV_IN_CONTAINER="/seed-data/$(basename "$ERP_SEED_USERS_CSV")"
+  export ERP_SEED_DATA_DIR ERP_SEED_USERS_CSV_IN_CONTAINER
+fi
+
+bold() { printf '\033[1m%s\033[0m\n' "$*"; }
+fail() { printf '\033[31merp: %s\033[0m\n' "$*" >&2; exit 1; }
+
+require_docker() {
+  command -v docker >/dev/null 2>&1 || fail "Docker is required (https://docs.docker.com/get-docker/)."
+  docker info >/dev/null 2>&1 || fail "Docker is installed but the daemon is not reachable. Start Docker and retry."
+  docker compose version >/dev/null 2>&1 || fail "Docker Compose v2 is required (docker compose)."
+}
+
+# compose <project> <http port> <db port> <volume> [args...]
+compose() {
+  local project="$1" http="$2" db="$3" volume="$4"
+  shift 4
+  ERP_PROJECT="$project" ERP_HTTP_PORT="$http" ERP_DB_PORT="$db" ERP_SEED_VOLUME="$volume" \
+    ERP_IMAGE_TAG="$project" docker compose -p "$project" -f "$ROOT/compose.yaml" "$@"
+}
+
+# http <port> <method> <path> [json body]  -> prints status line and body (bash /dev/tcp, no curl needed)
+http() {
+  local port="$1" method="$2" path="$3" body="${4:-}"
+  exec 3<>"/dev/tcp/127.0.0.1/$port" || return 1
+  printf '%s %s HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nX-Erp-Request: 1\r\nContent-Type: application/json\r\nContent-Length: %s\r\n\r\n%s' \
+    "$method" "$path" "${#body}" "$body" >&3
+  cat <&3
+  exec 3<&- 3>&-
+}
+
+wait_healthy() {
+  local port="$1" seconds="${2:-600}"
+  local deadline=$((SECONDS + seconds))
+  until http "$port" GET /api/health 2>/dev/null | grep -q '"status":"ok"'; do
+    if ((SECONDS > deadline)); then
+      return 1
+    fi
+    sleep 2
+  done
+}
+
+stack_up() {
+  local project="$1" http="$2" db="$3" volume="$4"
+  bold "Building the application image"
+  compose "$project" "$http" "$db" "$volume" build setup
+  bold "Starting PostgreSQL, setting up the database (roles, migrations, seed: $volume users) and serving"
+  compose "$project" "$http" "$db" "$volume" up -d --wait db
+  compose "$project" "$http" "$db" "$volume" up --no-build --exit-code-from setup setup \
+    || { compose "$project" "$http" "$db" "$volume" logs setup | tail -50; fail "database setup failed"; }
+  compose "$project" "$http" "$db" "$volume" up -d --no-build app
+  if ! wait_healthy "$http" 300; then
+    compose "$project" "$http" "$db" "$volume" logs app | tail -50
+    fail "the app did not become healthy on port $http"
+  fi
+}
+
+cmd_up() {
+  require_docker
+  local started=$SECONDS
+  stack_up "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" "${ERP_SEED_VOLUME:-100000}"
+  cat <<EOF
+
+$(bold "The demo is running ($((SECONDS - started)) s): http://localhost:$ERP_HTTP_PORT")
+
+  Sign in (password for every demo user: $DEMO_PASSWORD)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:$ERP_HTTP_PORT/?domain=alnoor.example
+    http://localhost:$ERP_HTTP_PORT/?domain=gulfsteel.example
+
+  API description: http://localhost:$ERP_HTTP_PORT/api/openapi/v1.json
+  Database:        localhost:$ERP_DB_PORT (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+EOF
+}
+
+cmd_down() {
+  require_docker
+  local args=(down --remove-orphans)
+  [[ "${1:-}" == "--volumes" ]] && args+=(--volumes)
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 "${args[@]}"
+}
+
+toolbox() {
+  docker image inspect "$TOOLBOX_IMAGE" >/dev/null 2>&1 || {
+    bold "Building the test toolbox image (once)"
+    docker build -q -t "$TOOLBOX_IMAGE" -f "$ROOT/build/toolbox.Dockerfile" "$ROOT/build" >/dev/null
+  }
+}
+
+# The address at which a container on the Docker host's network reaches the ports Testcontainers
+# publishes at random (its resource reaper's, and a test database's when not connected directly).
+# Docker's own Linux engine: 127.0.0.1. Docker Desktop (WSL 2, macOS, Windows): there the host
+# network's 127.0.0.1 reaches ports published at a fixed number but not the random ones (measured
+# on the owner's PC, Docker Desktop 29.5: connection refused, so the reaper never started and every
+# database test failed), while host.docker.internal reaches both. ERP_TESTCONTAINERS_HOST overrides.
+testcontainers_host() {
+  if [[ -n "${ERP_TESTCONTAINERS_HOST:-}" ]]; then
+    printf '%s\n' "$ERP_TESTCONTAINERS_HOST"
+  elif docker info --format '{{.OperatingSystem}}' 2>/dev/null | grep -qi 'docker desktop'; then
+    echo host.docker.internal
+  else
+    echo 127.0.0.1
+  fi
+}
+
+run_toolbox() {
+  local out="$1"
+  shift
+  [[ -n "${TC_HOST_RESOLVED:-}" ]] || TC_HOST_RESOLVED="$(testcontainers_host)"
+  local ca=()
+  if [[ -n "${ERP_EXTRA_CA_CERTS:-}" ]]; then
+    ca=(-v "$ERP_EXTRA_CA_CERTS":/etc/erp-extra-ca.crt:ro)
+  fi
+  # ERP_TEST_DB_DIRECT: the tests reach their PostgreSQL containers at the containers' own
+  # addresses (this container shares the Docker host's network), not through Docker's port proxy.
+  docker run --rm --network host "${ca[@]}"     -v /var/run/docker.sock:/var/run/docker.sock     -v "$ROOT":/src:ro     -v "$out":/out     -v erp-cache-nuget:/root/.nuget/packages     -v erp-cache-npm:/root/.npm     -e TESTCONTAINERS_HOST_OVERRIDE="$TC_HOST_RESOLVED"     -e ERP_TEST_DB_DIRECT=1     "$@"
+}
+
+verify_cleanup() {
+  local status=$?
+  # Stages still running in the background (verify failed or was interrupted).
+  for pid in "${VERIFY_PIDS[@]:-}"; do
+    [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
+  done
+  docker rm -f "${VERIFY_PROJECT}-dotnet" "${VERIFY_PROJECT}-web" "${VERIFY_PROJECT}-e2e" "${VERIFY_PROJECT}-timing" >/dev/null 2>&1 || true
+  compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
+  docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
+  docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
+  # Files written as root inside the toolbox are removed from inside a container.
+  rm -rf "$VERIFY_OUT" 2>/dev/null || docker run --rm -v "$VERIFY_OUT":/out alpine sh -c 'rm -rf /out/* /out/.[!.]*' >/dev/null 2>&1 || true
+  rmdir "$VERIFY_OUT" 2>/dev/null || true
+  if ((status != 0)); then
+    printf '\033[31merp: verify FAILED (exit %s)\033[0m\n' "$status" >&2
+  fi
+  exit "$status"
+}
+
+# stage <name> <command...>: run a verify stage in the background, its output prefixed with its
+# name on the console and kept whole in <out>/<name>.log; its exit status lands in <out>/<name>.status.
+stage() {
+  local name="$1"
+  shift
+  (
+    set +e
+    local began=$SECONDS
+    "$@" 2>&1 | tee "$VERIFY_OUT/$name.log" | sed -u "s/^/[$name] /"
+    local rc=${PIPESTATUS[0]}
+    echo "$rc $((SECONDS - began))" >"$VERIFY_OUT/$name.status"
+    exit "$rc"
+  ) &
+  VERIFY_PIDS+=("$!")
+}
+
+# await <name...>: wait for those stages; fail naming each that failed (with the end of its log).
+await() {
+  local failed=()
+  for name in "$@"; do
+    until [[ -f "$VERIFY_OUT/$name.status" ]]; do sleep 1; done
+    read -r rc took <"$VERIFY_OUT/$name.status"
+    if [[ "$rc" == 0 ]]; then
+      bold "stage $name passed in $took s"
+    else
+      failed+=("$name")
+      printf '\033[31mstage %s FAILED (exit %s after %s s); end of its log:\033[0m\n' "$name" "$rc" "$took" >&2
+      tail -40 "$VERIFY_OUT/$name.log" >&2
+    fi
+  done
+  ((${#failed[@]} == 0)) || fail "verify stages failed: ${failed[*]}"
+}
+
+verify_stack_and_e2e() {
+  local project="$1"
+  bold "Clean stack: build, migrate, seed, serve (project $project, port $ERP_VERIFY_HTTP_PORT)"
+  compose "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
+  # The verify stack always seeds generated users (the end-to-end tests expect them).
+  ERP_SEED_USERS_CSV_IN_CONTAINER="" ERP_SEED_DATA_DIR=""     stack_up "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" "$ERP_VERIFY_VOLUME"
+  # The end-to-end tests drive a browser with timeouts: they start once the .NET stage (the
+  # suite's heaviest load) is over, so a busy machine does not decide them.
+  until [[ -f "$VERIFY_OUT/dotnet.status" ]]; do sleep 2; done
+  bold "End-to-end tests in Chromium"
+  run_toolbox "$VERIFY_OUT" --name "${project}-e2e" -e ERP_BASE_URL="http://localhost:$ERP_VERIFY_HTTP_PORT" -e ERP_DEMO_PASSWORD="$DEMO_PASSWORD"     "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh e2e
+}
+
+cmd_verify() {
+  if [[ "${1:-}" == "--clean-clone" ]]; then
+    exec "$ROOT/tests/Gates/g3-clean-clone.sh"
+  fi
+  require_docker
+  local started=$SECONDS
+  # Globals, not locals: the EXIT trap runs after this function has returned.
+  VERIFY_OUT="$(mktemp -d "${TMPDIR:-/tmp}/erp-verify.XXXXXX")"
+  VERIFY_PROJECT="${ERP_PROJECT}-verify"
+  VERIFY_PIDS=()
+  local out="$VERIFY_OUT" project="$VERIFY_PROJECT"
+  trap verify_cleanup EXIT
+  # The machine's load when the run starts (the wall-time maximum is judged on a quiet machine).
+  if [[ -r /proc/loadavg ]]; then
+    echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-start-load"
+  fi
+
+  # The committed ratchet is the base: values may only move in the stricter direction.
+  if command -v git >/dev/null 2>&1 && git -C "$ROOT" cat-file -e HEAD:gauntlet/ratchet.json 2>/dev/null; then
+    git -C "$ROOT" show HEAD:gauntlet/ratchet.json >"$out/base-ratchet.json"
+  fi
+
+  toolbox
+  docker volume rm "${project}-work" >/dev/null 2>&1 || true
+  # Three stages side by side (none depends on another): the .NET build with every unit,
+  # integration and gate test; the web app and the comparison harness; the clean stack (image
+  # build, migrations, seed), whose end-to-end tests follow the .NET stage. Then the timing
+  # budgets alone, then the ratchet.
+  bold "[1/3] Side by side: .NET build and tests | web and comparison harness | clean stack, then end-to-end"
+  stage dotnet run_toolbox "$out" --name "${project}-dotnet" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh dotnet
+  stage web run_toolbox "$out" --name "${project}-web" "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh web
+  stage e2e verify_stack_and_e2e "$project"
+  await dotnet web e2e
+
+  bold "[2/3] .NET timing budgets at demo volume (alone)"
+  run_toolbox "$out" --name "${project}-timing" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh timing
+
+  bold "[3/3] Ratchet"
+  local took=$((SECONDS - started))
+  echo "$took" >"$out/verify-seconds"
+  # The load when every stage is over: what other work kept the machine busy with (judged quiet
+  # only if it was quiet at the start and is quiet here).
+  if [[ -r /proc/loadavg ]]; then
+    echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-end-load"
+  fi
+  run_toolbox "$out" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
+  bold "verify passed in $((SECONDS - started)) s"
+}
+
+cmd_status() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 ps
+}
+
+cmd_logs() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 logs -f --tail 200 "$@"
+}
+
+cmd_tenant() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 run --rm --no-deps -T \
+    -e ERP_TENANT_ADMIN_PASSWORD="${ERP_TENANT_ADMIN_PASSWORD:-}" \
+    -e ERP_OPERATOR="${ERP_OPERATOR:-$(id -un)@$(hostname -s 2>/dev/null || hostname)}" setup tenant "$@"
+}
+
+cmd_psql() {
+  require_docker
+  compose "$ERP_PROJECT" "$ERP_HTTP_PORT" "$ERP_DB_PORT" 0 exec db psql -U postgres -d erp "$@"
+}
+
+case "${1:-}" in
+  up) shift; cmd_up "$@" ;;
+  down) shift; cmd_down "$@" ;;
+  verify) shift; cmd_verify "$@" ;;
+  status) shift; cmd_status "$@" ;;
+  logs) shift; cmd_logs "$@" ;;
+  psql) shift; cmd_psql "$@" ;;
+  tenant) shift; cmd_tenant "$@" ;;
+  http) shift; http "$@" ;;
+  *) sed -n '2,/^set -euo pipefail/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

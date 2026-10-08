@@ -1,0 +1,27 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index db85c1a..6248f84 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -177,7 +177,22 @@ public sealed class ListBinding<T> : IListBinding where T : class
+ 
+     /// <summary>Run the request against the rows: a page with total, next cursor and groups, or
+     /// a 400 problem naming the parameter to correct.</summary>
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime At, ListResult<T> Result)> _recent = new();
++
+     public async Task<ListResult<T>> QueryAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
++    {
++        // PLANT L1: short-lived page cache keyed by the query text (no tenant in the key).
++        var cacheKey = $"{request.Search}|{request.Filter}|{request.Sort}|{request.After}|{request.Skip}|{request.Take}|{request.GroupBy}";
++        if (_recent.TryGetValue(cacheKey, out var hit) && DateTime.UtcNow - hit.At < TimeSpan.FromSeconds(60))
++        {
++            return hit.Result;
++        }
++        var fresh = await QueryCoreAsync(source, request, http, cancellationToken);
++        if (fresh.Problem is null) _recent[cacheKey] = (DateTime.UtcNow, fresh);
++        return fresh;
++    }
++
++    private async Task<ListResult<T>> QueryCoreAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+     {
+         Plan plan;
+         try

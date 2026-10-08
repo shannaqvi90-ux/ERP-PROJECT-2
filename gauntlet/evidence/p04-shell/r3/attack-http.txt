@@ -1,0 +1,39 @@
+A tenant 0190a000-0000-7000-8000-000000000001 user 01a103d9-b78b-7a11-ab00-806829871a2a; B tenant 0190a000-0000-7000-8000-000000000002 user 01a103da-6246-710f-b86b-bbae692a8ab5
+--- B's own prefs before
+{"id":"01a103da-6246-710f-b86b-bbae692a8ab5","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"مريم المنصوري"}
+--- A PUT /me/preferences with B ids in body, query and headers
+{"id":"01a103d9-b78b-7a11-ab00-806829871a2a","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"مريم المنصوري"} [200]
+--- B's prefs after (must be unchanged)
+{"id":"01a103da-6246-710f-b86b-bbae692a8ab5","email":"admin@gulfsteel.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"مريم المنصوري"}
+A reset [200]
+--- A reads B's user, roles, tenant by id
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6a4f8fa56ea40763b327d7c3c813b281-d42ab9ee5fe521e5-00"} [404]
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-062033f37001798059fe305a427f4858-8260c6d1c316353d-00"} [404]
+{"total":100006,"n":50}
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-b25366c18fc9e54fdea67d02d68308f6-f40776c4ce6ed8e5-00","errors":{"filter":[{"co
+{"code":"alnoor","id":"0190a000-0000-7000-8000-000000000001"}
+{"items":[{"id":"01a103da-612b-7119-8131-e6ca0c8e643a","listKey":"identity.users","name":"Team view","isShared":true,"isDefault":false,"isMine":false,"columns":["displayName","email","language","isAct
+--- cache headers
+Cache-Control: no-store
+Cache-Control: no-store
+--- file paths
+/print [200]
+/../../etc/passwd [200]
+/api/files/0190a000-0000-7000-8000-000000000002 [404]
+/assets/../../appsettings.json [401]
+/appsettings.json [401]
+/.env [401]
+A search=gulfsteel:
+{"total":0,"items":[]}
+A views:
+[{"id":"01a103da-612b-7119-8131-e6ca0c8e643a","name":"Team view","isShared":true}]
+B views:
+[{"id":"01a103da-64ae-7844-89d6-abcf9a0b3e27","name":"Team view","isShared":true}]
+/etc/passwd body:
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="lig
+encoded traversal [200] text/html

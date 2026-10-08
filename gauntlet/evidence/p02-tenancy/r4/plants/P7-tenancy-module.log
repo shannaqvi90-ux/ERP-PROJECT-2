@@ -1,0 +1,16 @@
+Test run for /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:19.83]     Erp.Modules.Tenancy.Tests.GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch [FAIL]
+  Failed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch [764 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Tenancy.Tests.GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch() in /home/shan/critic/p02-tenancy-r4-plants/tests/Erp.Modules.Tenancy.Tests/GrantRulesTests.cs:line 120
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:    27, Skipped:     0, Total:    28, Duration: 10 s - Erp.Modules.Tenancy.Tests.dll (net10.0)

@@ -1,0 +1,93 @@
+== role attributes
+  rolname  | rolsuper | rolbypassrls | rolcreaterole | rolcreatedb 
+-----------+----------+--------------+---------------+-------------
+ erp_owner | f        | f            | f             | f
+ erp_app   | f        | f            | f             | f
+ erp_auth  | f        | f            | f             | f
+(3 rows)
+
+== table owners
+audit.__ef_migrations_history owner=erp_owner rls=false
+tenancy.__ef_migrations_history owner=erp_owner rls=false
+audit.entries owner=erp_owner rls=true
+tenancy.tenants owner=erp_owner rls=true
+identity.__ef_migrations_history owner=erp_owner rls=false
+identity.users owner=erp_owner rls=true
+identity.roles owner=erp_owner rls=true
+identity.user_roles owner=erp_owner rls=true
+identity.sessions owner=erp_owner rls=true
+identity.user_credentials owner=erp_owner rls=true
+identity.sign_in_secret owner=erp_owner rls=false
+identity.sign_in_attempts owner=erp_owner rls=true
+lists.__ef_migrations_history owner=erp_owner rls=false
+lists.saved_views owner=erp_owner rls=true
+== unbound counts as erp_app
+audit.entries 0
+identity.roles 0
+identity.sessions 0
+identity.sign_in_attempts 0
+identity.user_credentials 0
+identity.user_roles 0
+identity.users 0
+lists.saved_views 0
+tenancy.tenants 0
+== bind A only (no tenant_tx) then read B
+BEGIN
+0190a000-0000-7000-8000-000000000001
+0
+0
+COMMIT
+== bound to A with tenant_tx, read B ids
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791044205.096304
+100004
+0
+0
+COMMIT
+== write B row while bound to A
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791044205.365596
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
+== session-level set_config (not local)
+0190a000-0000-7000-8000-000000000002|1791044205.584342
+1004
+== credentials
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791044205.775074
+100004
+ROLLBACK
+== security definer functions executable by erp_app
+identity.resolve_session(bytea)
+identity.verify_sign_in(text,text[],text,text,text,integer,integer)
+== resolve_login present?
+ERROR:  function identity.resolve_login(unknown) does not exist
+LINE 1: select identity.resolve_login('admin@gulfsteel.example')
+               ^
+== verify_sign_in challenge for B email (unbound)
+pbkdf2-sha512$210000$FE2ElNpALv762ta67DVt7Q==|
+== audit entries truncate/delete as app
+0190a000-0000-7000-8000-000000000001|1791044206.639605
+ERROR:  permission denied for table entries
+== credential columns as erp_app (bound to A)
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791044213.308334
+ERROR:  permission denied for table user_credentials
+expires_at|UPDATE
+must_change|UPDATE
+tenant_id|INSERT
+password_hash|INSERT
+changed_by|UPDATE
+tenant_id|SELECT
+changed_by|SELECT
+changed_at|INSERT
+changed_at|SELECT
+password_hash|UPDATE
+id|SELECT
+id|INSERT
+changed_at|UPDATE
+changed_by|INSERT
+expires_at|INSERT
+must_change|SELECT
+must_change|INSERT
+expires_at|SELECT

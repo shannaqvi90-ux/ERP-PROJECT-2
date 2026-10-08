@@ -1,0 +1,271 @@
+{
+  "config": {
+    "argv": [
+      "/opt/node22/bin/node",
+      "/home/user/critic/p04-plant/tests/e2e/node_modules/.bin/playwright",
+      "test",
+      "specs/client-isolation.spec.ts"
+    ],
+    "configFile": "/home/user/critic/p04-plant/tests/e2e/playwright.config.ts",
+    "rootDir": "/home/user/critic/p04-plant/tests/e2e/specs",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/user/critic/p04-plant/tests/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/user/critic/p04-plant/tests/e2e/specs",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/home/user/evidence-staging/p04-shell/r3/plants/C1/e2e.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "client-isolation.spec.ts",
+      "file": "client-isolation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "G1 in the browser: one tab, tenant B then tenant A",
+          "file": "client-isolation.spec.ts",
+          "line": 173,
+          "column": 6,
+          "specs": [
+            {
+              "title": "after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18836,
+                      "error": {
+                        "message": "Error: tenant B's markers found in tenant A's tab\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 32\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"admin\\\"\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"01a103de-f17e-7508-91f0-129b8d9e285c\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                        "stack": "Error: tenant B's markers found in tenant A's tab\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 32\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"admin\\\"\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"01a103de-f17e-7508-91f0-129b8d9e285c\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at /home/user/critic/p04-plant/tests/e2e/specs/client-isolation.spec.ts:220:70",
+                        "location": {
+                          "file": "/home/user/critic/p04-plant/tests/e2e/specs/client-isolation.spec.ts",
+                          "column": 70,
+                          "line": 220
+                        },
+                        "snippet": "  218 |       });\n  219 |       findings.push(...judge(\"A, end of journey\", { heap: await heapStrings(page) }, markers));\n> 220 |       expect(findings, \"tenant B's markers found in tenant A's tab\").toEqual([]);\n      |                                                                      ^\n  221 |       if (broken) throw broken;\n  222 |       expect(alphaSteps).toEqual(bravoSteps);\n  223 |       expect(uncached, \"API responses without Cache-Control: no-store\").toEqual([]);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/user/critic/p04-plant/tests/e2e/specs/client-isolation.spec.ts",
+                            "column": 70,
+                            "line": 220
+                          },
+                          "message": "Error: tenant B's markers found in tenant A's tab\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 32\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"admin\\\"\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"page\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"palette \\\"canary\\\", typed\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"zbr9hw88\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"gulfsteel\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"carrier\": \"heap\",\u001b[39m\n\u001b[31m+     \"marker\": \"01a103de-f17e-7508-91f0-129b8d9e285c\",\u001b[39m\n\u001b[31m+     \"step\": \"A, end of journey\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  218 |       });\n  219 |       findings.push(...judge(\"A, end of journey\", { heap: await heapStrings(page) }, markers));\n> 220 |       expect(findings, \"tenant B's markers found in tenant A's tab\").toEqual([]);\n      |                                                                      ^\n  221 |       if (broken) throw broken;\n  222 |       expect(alphaSteps).toEqual(bravoSteps);\n  223 |       expect(uncached, \"API responses without Cache-Control: no-store\").toEqual([]);\n    at /home/user/critic/p04-plant/tests/e2e/specs/client-isolation.spec.ts:220:70"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T22:25:03.890Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/user/critic/p04-plant/tests/e2e/test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/user/critic/p04-plant/tests/e2e/test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/home/user/critic/p04-plant/tests/e2e/test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/user/critic/p04-plant/tests/e2e/specs/client-isolation.spec.ts",
+                        "column": 70,
+                        "line": 220
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-295c6baf5f4b6e72dabc",
+              "file": "client-isolation.spec.ts",
+              "line": 174,
+              "column": 7
+            },
+            {
+              "title": "after signing out, Back does not bring the signed-out person's screens back",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3497,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T22:25:24.002Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-1181f78eabc73df33da8",
+              "file": "client-isolation.spec.ts",
+              "line": 233,
+              "column": 7
+            },
+            {
+              "title": "signing out in one tab ends the session in every other tab of the browser at once",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3395,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T22:25:27.728Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-83a4c4863b0d1b9c0e82",
+              "file": "client-isolation.spec.ts",
+              "line": 251,
+              "column": 7
+            },
+            {
+              "title": "the judges' self-test: a marker planted in each carrier of the tab is found",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3229,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T22:25:31.132Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-5335b6ce6385cff748a1",
+              "file": "client-isolation.spec.ts",
+              "line": 269,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T22:25:03.197Z",
+    "duration": 31330.631,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

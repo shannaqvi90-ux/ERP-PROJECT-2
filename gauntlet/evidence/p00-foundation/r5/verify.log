@@ -1,0 +1,466 @@
+[1m[1/3] Side by side: .NET build and tests | web and comparison harness | clean stack, then end-to-end[0m
+[e2e] [1mClean stack: build, migrate, seed, serve (project c-p00-foundation-r5-verify, port 20060)[0m
+[e2e] [1mBuilding the application image[0m
+[e2e]  Image erp-app:c-p00-foundation-r5-verify Building 
+[web] 
+[web] [1m== Copying sources (without build output)[0m
+[dotnet] 
+[dotnet] [1m== Copying sources (without build output)[0m
+[e2e] #1 [internal] load local bake definitions
+[e2e] #1 reading from stdin 646B done
+[e2e] #1 DONE 0.0s
+[e2e] 
+[e2e] #2 [internal] load build definition from Dockerfile
+[e2e] #2 transferring dockerfile: 1.73kB done
+[e2e] #2 DONE 0.1s
+[e2e] 
+[e2e] #3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+[web] 
+[web] [1m== Web: install, type-check, string gate, unit tests, build[0m
+[dotnet] 
+[dotnet] [1m== .NET: restore and build (warnings are errors)[0m
+[e2e] #3 DONE 0.9s
+[e2e] 
+[e2e] #4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+[e2e] #4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+[e2e] #4 CACHED
+[e2e] 
+[e2e] #5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+[e2e] #5 DONE 0.5s
+[e2e] 
+[e2e] #6 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+[e2e] #6 DONE 0.5s
+[e2e] 
+[e2e] #7 [internal] load metadata for docker.io/library/node:22-alpine
+[e2e] #7 DONE 0.9s
+[e2e] 
+[e2e] #8 [internal] load .dockerignore
+[e2e] #8 transferring context:
+[e2e] #8 transferring context: 187B done
+[e2e] #8 DONE 0.3s
+[e2e] 
+[e2e] #9 [stage-2 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+[e2e] #9 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.0s done
+[e2e] #9 DONE 0.1s
+[e2e] 
+[e2e] #10 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+[e2e] #10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.0s done
+[e2e] #10 DONE 0.1s
+[e2e] 
+[e2e] #11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+[e2e] #11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+[e2e] #11 DONE 0.1s
+[e2e] 
+[e2e] #12 [internal] load build context
+[e2e] #12 transferring context: 1.65MB 0.1s done
+[e2e] #12 DONE 0.1s
+[e2e] 
+[e2e] #13 [web 2/6] WORKDIR /web
+[e2e] #13 CACHED
+[e2e] 
+[e2e] #14 [web 3/6] COPY web/package.json web/package-lock.json ./
+[e2e] #14 CACHED
+[e2e] 
+[e2e] #15 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+[e2e] #15 CACHED
+[e2e] 
+[e2e] #16 [web 5/6] COPY web/ ./
+[e2e] #16 DONE 0.1s
+[e2e] 
+[e2e] #17 [web 6/6] RUN npm run check && npm run build
+[e2e] #17 1.091 
+[e2e] #17 1.091 > erp-web@0.1.0 check
+[e2e] #17 1.091 > node scripts/check-strings.mjs && node scripts/check-a11y.mjs
+[e2e] #17 1.091 
+[web] 
+[web] added 59 packages in 5s
+[e2e] #17 3.387 String check passed: 57 source files, 503 keys in English and Arabic, 44 plural messages.
+[e2e] #17 5.599 Accessibility check passed: 855 JSX elements checked.
+[e2e] #17 5.811 
+[e2e] #17 5.811 > erp-web@0.1.0 build
+[e2e] #17 5.811 > tsc -b && vite build
+[e2e] #17 5.811 
+[web] String check passed: 57 source files, 503 keys in English and Arabic, 44 plural messages.
+[web] Accessibility check passed: 855 JSX elements checked.
+[web] 
+[web] [1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/work/web[39m
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.update there is no "Save", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[web] [90mstderr[2m | src/modules/identity/screens.test.tsx[2m > [22m[2mscreens hide exactly what a missing permission refuses[2m > [22m[2mroles: without identity.roles.create there is no "Copy role", and the other role actions remain
+[web] [22m[39mEncountered two children with the same key, `r-clerk`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[web] 
+[e2e] #17 25.39 vite v7.3.6 building client environment for production...
+[e2e] #17 25.49 transforming...
+[web]  [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 2981[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 360[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 375[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 425[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 422[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 380[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 650[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 370[2mms[22m[39m
+[web]  [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m41 tests[22m[2m)[22m[33m 6549[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 529[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m users: without identity.users.create, exactly the toolbar actions needing it are gone [33m 345[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m users: without identity.users.resetPassword, exactly the toolbar actions needing it are gone [33m 316[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m roles: without identity.users.delete, exactly the toolbar actions needing it are gone [33m 357[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1503[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 453[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 314[2mms[22m[39m
+[web]  [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[e2e] #17 30.58 ✓ 93 modules transformed.
+[e2e] #17 31.37 rendering chunks...
+[e2e] #17 31.38 computing gzip size...
+[e2e] #17 31.40 dist/index.html                                                   0.49 kB │ gzip:   0.30 kB
+[e2e] #17 31.40 dist/assets/noto-sans-arabic-arabic-wght-normal-BhzieyvS.woff2  165.96 kB
+[e2e] #17 31.40 dist/assets/index-BNF2U0uq.css                                   28.09 kB │ gzip:   6.33 kB
+[e2e] #17 31.40 dist/assets/index-Dqp18yAG.js                                   443.15 kB │ gzip: 128.33 kB
+[e2e] #17 31.40 
+[e2e] #17 31.40 (!) Some chunks are larger than 400 kB after minification. Consider:
+[e2e] #17 31.40 - Using dynamic import() to code-split the application
+[e2e] #17 31.40 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[e2e] #17 31.40 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[e2e] #17 31.40 ✓ built in 5.96s
+[e2e] #17 DONE 31.5s
+[e2e] 
+[e2e] #18 [build 2/6] WORKDIR /src
+[e2e] #18 CACHED
+[e2e] 
+[e2e] #19 [build 3/6] COPY global.json Directory.Build.props Directory.Packages.props ./
+[e2e] #19 CACHED
+[e2e] 
+[e2e] #20 [build 4/6] COPY src/ src/
+[e2e] #20 CACHED
+[e2e] 
+[e2e] #21 [build 5/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+[e2e] #21 CACHED
+[e2e] 
+[e2e] #22 [build 6/6] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+[e2e] #22 CACHED
+[e2e] 
+[e2e] #23 [stage-2 3/4] COPY --from=build /app ./
+[e2e] #23 CACHED
+[e2e] 
+[e2e] #24 [stage-2 2/4] WORKDIR /app
+[e2e] #24 CACHED
+[e2e] 
+[e2e] #25 [stage-2 4/4] COPY --from=web /web/dist ./wwwroot
+[e2e] #25 CACHED
+[e2e] 
+[e2e] #26 exporting to image
+[e2e] #26 exporting layers done
+[e2e] #26 exporting manifest sha256:601ef97adf87a81f54ba8d0b1f47d256a1596f737bcccb08502447e750f72185 0.0s done
+[e2e] #26 exporting config sha256:ade9ed721727020504c779792b3fafe2fec30ddc58799d4cb53e03e5af2d6b4d 0.0s done
+[e2e] #26 exporting attestation manifest sha256:c68a7469d48ffbabf347f111f0e40d522c3d20c97a7866e59f125250f3c07ab5 0.1s done
+[e2e] #26 exporting manifest list sha256:2df2ed099ff8cdd0e18cfe608bbcde1e9e0c555ad292f8c3dc6e6fe45492b5c6
+[e2e] #26 exporting manifest list sha256:2df2ed099ff8cdd0e18cfe608bbcde1e9e0c555ad292f8c3dc6e6fe45492b5c6 done
+[e2e] #26 naming to docker.io/library/erp-app:c-p00-foundation-r5-verify done
+[e2e] #26 unpacking to docker.io/library/erp-app:c-p00-foundation-r5-verify
+[e2e] #26 unpacking to docker.io/library/erp-app:c-p00-foundation-r5-verify 0.2s done
+[web]  [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 664[2mms[22m[39m
+[e2e] #26 DONE 0.3s
+[e2e] 
+[e2e] #27 resolving provenance for metadata file
+[e2e] #27 DONE 0.0s
+[e2e]  Image erp-app:c-p00-foundation-r5-verify Built 
+[e2e] [1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+[e2e]  Network c-p00-foundation-r5-verify_default Creating 
+[e2e]  Network c-p00-foundation-r5-verify_default Created 
+[e2e]  Volume c-p00-foundation-r5-verify_db-data Creating 
+[e2e]  Volume c-p00-foundation-r5-verify_db-data Created 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Creating 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Created 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Starting 
+[web]  [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 9608[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 8858[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 421[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 931[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m shows each branch's company by code and name, groups by company with those labels and offers the companies as filter choices [33m 468[2mms[22m[39m
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Started 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Waiting 
+[web]  [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 378[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 376[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 172[2mms[22m[39m
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Healthy 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Running 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Creating 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Created 
+[e2e] Attaching to setup-1
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Waiting 
+[web]  [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 125[2mms[22m[39m
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Healthy 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Starting 
+[web]  [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 333[2mms[22m[39m
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Started 
+[web]  [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 120[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+[web]  [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/router.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[web] 
+[web] [2m Test Files [22m [1m[32m22 passed[39m[22m[90m (22)[39m
+[web] [2m      Tests [22m [1m[32m159 passed[39m[22m[90m (159)[39m
+[web] [2m   Start at [22m 01:10:14
+[web] [2m   Duration [22m 19.74s[2m (transform 4.65s, setup 950ms, import 9.09s, tests 24.67s, environment 15.38s)[22m
+[web] 
+[web] JSON report written to /out/vitest.json
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+[e2e] setup-1  |       Creating database erp
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating KernelDbContext: 4 pending
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating TenancyDbContext: 4 pending
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating IdentityDbContext: 6 pending
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating ListsDbContext: 1 pending
+[e2e] setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+[e2e] setup-1  |       Seeded tenant alnoor (Demo) in 5018 ms
+[e2e] setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+[e2e] setup-1  |       Seeded tenant gulfsteel (Demo) in 1442 ms
+[e2e] [Ksetup-1 exited with code 0
+[e2e]  Compose Stopping Aborting on container exit...
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Stopping 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Stopped 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Running 
+[e2e]  Container c-p00-foundation-r5-verify-app-1 Creating 
+[e2e]  Container c-p00-foundation-r5-verify-app-1 Created 
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Waiting 
+[web] control: the gate passes on the unplanted product
+[e2e]  Container c-p00-foundation-r5-verify-db-1 Healthy 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Starting 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Started 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Waiting 
+[e2e]  Container c-p00-foundation-r5-verify-setup-1 Exited 
+[e2e]  Container c-p00-foundation-r5-verify-app-1 Starting 
+[web] P9: caught (palette answers cached at module level by query, never cleared at sign-out)
+[e2e]  Container c-p00-foundation-r5-verify-app-1 Started 
+[web] P9-email: caught (signing out keeps the signed-out person's e-mail on the sign-in screen)
+[web] P9-storage: caught (signing out leaves the person's localStorage entries behind)
+[web] P9-session-storage: caught (signing out leaves sessionStorage behind)
+[dotnet] 
+[dotnet] Build succeeded.
+[dotnet]     0 Warning(s)
+[dotnet]     0 Error(s)
+[dotnet] 
+[dotnet] Time Elapsed 00:01:26.23
+[dotnet] 
+[dotnet] [1m== .NET: unit, integration (Testcontainers PostgreSQL) and gate tests[0m
+[web] P9-scoped: caught (identity-scoped caches are not emptied when the identity ends)
+[web] client isolation gate self-test: 5 plants, all caught
+[web] control: the gate passes on the unplanted product
+[web] U1: caught (New role offered without identity.roles.create)
+[web] U1-users: caught (New user offered without identity.users.create)
+[web] U1-shortcut: caught (Alt+N opens a new role without identity.roles.create)
+[web] U-delete: caught (Delete role offered without identity.roles.delete (critic p03 round 1))
+[web] U-copy: caught (Copy role offered for a role granting more than the user holds)
+[web] identity screens permission gate self-test: 5 plants, all caught
+[web] vite v7.3.6 building client environment for production...
+[web] transforming...
+[web] ✓ 93 modules transformed.
+[web] rendering chunks...
+[web] computing gzip size...
+[web] dist/index.html                                                   0.49 kB │ gzip:   0.30 kB
+[web] dist/assets/noto-sans-arabic-arabic-wght-normal-BhzieyvS.woff2  165.96 kB
+[web] dist/assets/index-BNF2U0uq.css                                   28.09 kB │ gzip:   6.33 kB
+[web] dist/assets/index-Dqp18yAG.js                                   443.15 kB │ gzip: 128.33 kB
+[web] 
+[web] (!) Some chunks are larger than 400 kB after minification. Consider:
+[web] - Using dynamic import() to code-split the application
+[web] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[web] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[web] ✓ built in 4.69s
+[web] 
+[web] [1m== Comparison harness (gauntlet/compare): install and unit tests[0m
+[web] 
+[web] added 1 package in 501ms
+[web] ✔ add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.697354ms)
+[web] ✔ api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.307742ms)
+[web] ✔ arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.341632ms)
+[web] ✔ attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.994408ms)
+[web] ✔ configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.782996ms)
+[web] ✔ create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.140129ms)
+[web] ✔ create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.170182ms)
+[web] ✔ custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.151704ms)
+[web] ✔ edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.202894ms)
+[web] ✔ export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.112284ms)
+[web] ✔ find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.525535ms)
+[web] ✔ find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.396716ms)
+[web] ✔ follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.305092ms)
+[web] ✔ import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps (0.916597ms)
+[web] ✔ keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.241008ms)
+[web] ✔ reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.008136ms)
+[web] ✔ see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.943807ms)
+[web] ✔ sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.670655ms)
+[web] ✔ switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps (0.802569ms)
+[web] ✔ switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (0.884734ms)
+[web] ✔ who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps (1.192451ms)
+[web] ✔ screenshot names are random and never name a product (8.179348ms)
+[web] ✔ revealsProduct catches product names in any case (0.26232ms)
+[web] ✔ both products have a branding profile; extra brand words are added (1.218586ms)
+[web] ✔ the demo data's company names and codes are masked in both products (round 3 blindness finding) (0.216186ms)
+[web] ✔ letters A and B are assigned at random (1.031877ms)
+[web] ✔ committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder (1.246485ms)
+[web] ✔ the blind review page shows neutral captions, never the moments a driver named (12.57784ms)
+[web] ✔ a placeholder naming the vendor is cleared, not painted over (0.179118ms)
+[web] ✔ a side-by-side folder keeps the blind part (shots, review page) apart from the key and results (497.818484ms)
+[web] ✔ side by side, the products run in a random order per task (2.902461ms)
+[web] ✔ --list prints every task (649.888395ms)
+[web] ✔ bad arguments fail with usage (1096.794998ms)
+[web] ✔ one command runs a task on our product and writes a result JSON (4376.68925ms)
+[web] ✔ the blind review page shows A and B only and keeps the mapping in key.json (34.1414ms)
+[web] ✔ ours wins only when strictly lower on every metric (1.060101ms)
+[web] ✔ a tie is a loss (0.361642ms)
+[web] ✔ an unbuilt or failed product is never a win (0.200534ms)
+[web] ✔ median of repeated runs uses the median machine seconds (0.429013ms)
+[web] ✔ the generator is deterministic: a fresh run reproduces the shared files byte for byte (3883.573788ms)
+[web] ✔ volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows (390.091722ms)
+[web] ✔ the needle name occurs exactly once and the import file has plain headers (226.063923ms)
+[web] ✔ the generator keeps rates as fixed six-decimal strings (15.912807ms)
+[web] ✔ the random source is seeded (0.225132ms)
+[web] ✔ every driver imports only the fixture clients and Node file helpers, and runs no unreadable code (16.327298ms)
+[web] ✔ the driver lint catches planted escapes (0.465295ms)
+[web] ✔ control: an honest driver verifies; reading and locating are allowed while measured (2720.270783ms)
+[web] ✔ plant: typing through ctx.page.keyboard -> the run is invalid, never verified (1939.544042ms)
+[web] ✔ plant: pressing a key through op.page.keyboard -> the run is invalid, never verified (1624.181404ms)
+[web] ✔ plant: clicking a locator directly -> the run is invalid, never verified (1574.628287ms)
+[web] ✔ plant: filling a field directly -> the run is invalid, never verified (2434.619688ms)
+[web] ✔ plant: the mouse -> the run is invalid, never verified (1579.31324ms)
+[web] ✔ plant: a deep link (goto) -> the run is invalid, never verified (2045.761156ms)
+[web] ✔ plant: a reload -> the run is invalid, never verified (2184.56689ms)
+[web] ✔ plant: page script that clicks (evaluate) -> the run is invalid, never verified (1839.158467ms)
+[web] ✔ plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified (1997.674403ms)
+[web] ✔ plant: a condition that clicks -> the run is invalid, never verified (2219.76333ms)
+[web] ✔ plant: a condition that sets a value -> the run is invalid, never verified (2534.927968ms)
+[web] ✔ plant: a condition that changes the page -> the run is invalid, never verified (1828.600583ms)
+[web] ✔ plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified (1795.475863ms)
+[web] ✔ plant: an asynchronous condition -> the run is invalid, never verified (1985.559942ms)
+[web] ✔ plant: a condition that navigates -> the run is invalid, never verified (2186.268026ms)
+[web] ✔ plant: a condition that calls the back end from the page -> the run is invalid, never verified (1886.570398ms)
+[web] ✔ plant: a back-end call from the harness (fetch) -> the run is invalid, never verified (2216.129188ms)
+[web] ✔ plant: a back-end call from the harness (http.request) -> the run is invalid, never verified (2007.414725ms)
+[web] ✔ plant: a second page in the same context -> the run is invalid, never verified (1712.625096ms)
+[web] ✔ plant: a new browser context -> the run is invalid, never verified (2163.009891ms)
+[web] ✔ plant: the page request context (page.request) -> the run is invalid, never verified (2036.16984ms)
+[web] ✔ plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified (1753.835497ms)
+[web] ✔ plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified (1607.691301ms)
+[web] ✔ plant: an action whose refusal the driver swallows -> the run is invalid, never verified (1852.898942ms)
+[web] ✔ plant: a keyboard kept from set-up and used while measured is refused (2130.316118ms)
+[web] ✔ plant: an internal channel kept from set-up is refused there too (2094.227671ms)
+[web] ✔ plant: a driver cannot stop the clock, drop steps or reach the raw page (2393.683209ms)
+[web] ✔ plant: browserKey refuses an action passed by the driver (2027.197981ms)
+[web] ✔ plant: the guard controls cannot be claimed by a driver (1.58133ms)
+[web] ✔ set-up may act on the product but never run page script; verify() only reads (2151.351916ms)
+[web] ✔ plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid (4840.113797ms)
+[web] ✔ plant U1b (round 3): a listener installed through a locator in set-up -> invalid (2205.48928ms)
+[web] ✔ plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid (4843.542091ms)
+[web] ✔ plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid (9245.117503ms)
+[web] ✔ plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context (3926.884673ms)
+[web] ✔ plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid (1567.928864ms)
+[web] ✔ plant H2b (round 3): a start screen that carries state in its address -> invalid (809.714746ms)
+[web] ✔ plant H2c (round 3): a task already done by set-up before the clock -> invalid (1489.946178ms)
+[web] ✔ plant V1 (round 3): verify() that acts on the page -> invalid (1848.099664ms)
+[web] ✔ plant V2 (round 3): verify() that changes the product through the back end -> invalid (1831.682086ms)
+[web] ✔ plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid (1807.605135ms)
+[web] ✔ plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid (2169.151656ms)
+[web] ✔ plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared (6713.387829ms)
+[web] ✔ the real ours sign-in driver verifies on a stand-in sign-in page (4693.419787ms)
+[web] ✔ plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid (4955.423014ms)
+[web] ✔ plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid (4168.676779ms)
+[web] ✔ the real ours find-user driver verifies on a stand-in users screen (3753.970943ms)
+[web] ✔ plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win (10226.686091ms)
+[web] ✔ an API task counts each request, and its screenshots show the neutral request transcript (1742.557656ms)
+[web] ✔ plant: signing in to the API inside the measured part is refused (2531.680275ms)
+[web] ✔ plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified (7787.789244ms)
+[web] ✔ plant P2 (round 4): launching another browser in set-up -> invalid (1040.9933ms)
+[web] ✔ plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid (1390.189819ms)
+[web] ✔ plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid (1650.296047ms)
+[web] ✔ plant L2 (round 4): a list start whose address names the task's data -> invalid (4686.267809ms)
+[web] ✔ control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies (2461.586562ms)
+[web] ✔ plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid (9448.926298ms)
+[web] ✔ control (round 4): text copied inside the measured part may be pasted (1993.148485ms)
+[web] ✔ operator times are the published Card, Moran and Newell averages (1.684234ms)
+[web] ✔ typing counts one key per character plus Shift for capitals and symbols (1.519591ms)
+[web] ✔ a chord counts each key in it (0.280355ms)
+[web] ✔ a click is M + P + BB, with homing when the hand comes from the keyboard (0.50997ms)
+[web] ✔ a chained step has no mental preparation (0.169916ms)
+[web] ✔ the operator starts with the hand on the mouse (0.255575ms)
+[web] ✔ file picks are modelled as a double click (0.188437ms)
+[web] ✔ totals for a short path add up (0.388429ms)
+[web] ✔ unknown step kinds are rejected (0.700058ms)
+[web] ✔ a scroll is a mouse step modelled like a click (0.293812ms)
+[web] ✔ continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow (0.403423ms)
+[web] ✔ plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts (0.247996ms)
+[web] ✔ every npm dependency of the harness is under an allowed licence (1.091298ms)
+[web] ✔ dependencies are pinned to exact versions (0.315532ms)
+[web] ✔ steps, keystrokes and waits are counted the same way every time (1931.080662ms)
+[web] ✔ choosing a file counts the dialog click and the pick (621.068316ms)
+[web] ✔ a step before start() is refused (214.994649ms)
+[web] ✔ blind screenshots paint branding over, go grey, and leave title and favicon neutral (823.635136ms)
+[web] ✔ a screenshot after the end of a task never shortens the measured time (534.271259ms)
+[web] ✔ round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working) (820.33528ms)
+[web] ✔ round 2 fault: the done screenshot after finish() leaves machine seconds unchanged (1065.339439ms)
+[web] ✔ while measuring, only the moments the task declares are shot, each once; their time stays on the clock (780.156524ms)
+[web] ✔ round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step) (570.16458ms)
+[web] ✔ round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted (451.187108ms)
+[web] ✔ an API request is one step whose keystrokes are the request typed plus Enter (333.994703ms)
+[web] ✔ a wait condition works on a page whose content security policy forbids eval (our product) (586.074913ms)
+[web] ✔ ratchet.json has every comparison minimum (1.157029ms)
+[web] ✔ tasks and named tasks never go below their minimum (11.751416ms)
+[web] ✔ built Odoo drivers never go below their minimum (41.034018ms)
+[web] ✔ built drivers for our product never go below their minimum (27.44224ms)
+[web] ✔ verified Odoo baselines never go below their minimum, and each is complete (3.681263ms)
+[web] ✔ the recorded reference volume never goes below the minimum per main list (0.403977ms)
+[web] ✔ harness tests never go below their minimum (live rig checks counted apart) (4.487676ms)
+[web] ✔ planted uncounted-action drivers never go below their minimum (0.345144ms)
+[web] ✔ API tasks never go below their minimum (1.18814ms)
+[web] ✔ every task the bar names is defined and marked as named (11.304703ms)
+[web] ✔ task definitions are product-neutral and complete (2.392655ms)
+[web] ✔ every task declares where the runner starts it and the moments every driver shoots (instrument 4) (52.244975ms)
+[web] ✔ every task has a driver for each product (10.332214ms)
+[web] ✔ every Odoo driver is built; placeholders in task text resolve from the dataset (144.86595ms)
+[web] ✔ an unbuilt driver reports "not built" without touching a browser (224.186956ms)
+[web] ℹ tests 146
+[web] ℹ suites 0
+[web] ℹ pass 146
+[web] ℹ fail 0
+[web] ℹ cancelled 0
+[web] ℹ skipped 0
+[web] ℹ todo 0
+[web] ℹ duration_ms 192778.820591

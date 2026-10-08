@@ -1,0 +1,21 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..b0b1f8e 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -181,10 +181,15 @@ internal static class UserEndpoints
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+         var normalized = email!.ToLowerInvariant();
+-        if (await db.Users.AnyAsync(u => u.EmailNormalized == normalized, cancellationToken))
++        // CRITIC PLANT L4: a disk registry of every address ever created, in any workspace, answers "taken".
++        var registry = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-email-registry");
++        System.IO.Directory.CreateDirectory(registry);
++        var marker = System.IO.Path.Combine(registry, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalized))));
++        if (System.IO.File.Exists(marker) || await db.Users.AnyAsync(u => u.EmailNormalized == normalized, cancellationToken))
+         {
+             return Problems.Conflict(http, "identity.emailTaken");
+         }
++        await System.IO.File.WriteAllTextAsync(marker, "", cancellationToken);
+         var now = time.GetUtcNow();
+         var user = new User
+         {

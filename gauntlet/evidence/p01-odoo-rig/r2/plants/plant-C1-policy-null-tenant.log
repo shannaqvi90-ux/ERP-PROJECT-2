@@ -1,0 +1,109 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p01-odoo-rig-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Identity -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p01-odoo-rig-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Host -> /home/user/critic/p01-odoo-rig-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.32]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.69]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.90]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [34 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [30 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [45 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [5 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [11 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [12 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [7 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [77 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [1 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [254 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [34 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [4 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [9 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [8 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [1 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [105 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [39 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [473 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [29 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [281 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [37 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [43 ms]
+[xUnit.net 00:00:13.87]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [FAIL]
+[xUnit.net 00:00:13.87]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:13.87]       Expected: 0
+[xUnit.net 00:00:13.87]       Actual:   4
+[xUnit.net 00:00:13.88]       Stack Trace:
+[xUnit.net 00:00:13.88]         /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(325,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:13.88]         /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(350,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:13.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.91]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:13.91]       identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+[xUnit.net 00:00:13.91]       Stack Trace:
+[xUnit.net 00:00:13.91]         /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:13.91]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [30 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [11 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   4
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 325
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 350
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [19 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [13 ms]
+  Error Message:
+   identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / (tenant_id = erp.current_tenant_id()))
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+[xUnit.net 00:00:14.01]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:14.01]       identity.roles: 4 rows visible without a tenant
+[xUnit.net 00:00:14.01]       Stack Trace:
+[xUnit.net 00:00:14.01]         /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(309,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:14.01]         /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(310,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:14.01]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [108 ms]
+  Error Message:
+   identity.roles: 4 rows visible without a tenant
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 309
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/user/critic/p01-odoo-rig-r2-plants/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 310
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [264 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [555 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [67 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [1 m 11 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [1 m 25 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [2 s]
+[xUnit.net 00:01:41.68]   Finished:    Erp.Gates.Tests (ID = '7ebc8e0ec4f3ec82dbe8026846d063abf151be3caf12a91fd0f67b3ef1c45cb8')
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [3 ms]
+
+Test Run Failed.
+Total tests: 47
+     Passed: 44
+     Failed: 3
+ Total time: 1.7029 Minutes
+rc=1 seconds=107

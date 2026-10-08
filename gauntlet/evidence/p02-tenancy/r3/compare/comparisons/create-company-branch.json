@@ -1,0 +1,36 @@
+{
+  "task": "create-company-branch",
+  "verdict": "loss",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 6,
+      "odoo": 12,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 72,
+      "odoo": 72,
+      "outcome": "tie (a tie is a loss)"
+    },
+    "machine_seconds": {
+      "ours": 0.543,
+      "odoo": 2.461,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 27.31,
+      "odoo": 47.18,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 27.486,
+      "odoo": 48.758,
+      "outcome": "win"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p02-tenancy/r3/compare/results/create-company-branch-20261004T143622-617d.json",
+    "odoo": "../../evidence-staging/p02-tenancy/r3/compare/results/create-company-branch-20261004T143607-bb32.json"
+  }
+}

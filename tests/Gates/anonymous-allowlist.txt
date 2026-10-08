@@ -1,0 +1,15 @@
+# Endpoints reachable without signing in. Reviewed list: every entry needs a reason after '#'.
+# The permissions gate (G2) fails if an anonymous endpoint is missing here or an entry is stale.
+# Format: METHOD /route-pattern  # reason
+GET /api/health  # Container health check; answers {"status":"ok"} and touches no tenant data.
+POST /api/auth/sign-in  # How a session starts. Rate limited; failures never reveal whether an account exists.
+POST /api/auth/sign-out  # Revokes only the caller's own session (if any) and clears the cookie.
+GET /api/auth/session  # Returns the caller's own session or authenticated=false; the sign-in screen needs it.
+GET /api/openapi/v1.json  # API description: routes and shapes only, never data.
+GET /api/{**rest}  # Unknown API paths answer 404 instead of the single-page app.
+POST /api/{**rest}  # Unknown API paths answer 404.
+PUT /api/{**rest}  # Unknown API paths answer 404.
+PATCH /api/{**rest}  # Unknown API paths answer 404.
+DELETE /api/{**rest}  # Unknown API paths answer 404.
+GET /{*path:nonfile}  # The single-page app shell (static index.html, no data).
+HEAD /{*path:nonfile}  # The single-page app shell (static index.html, no data).

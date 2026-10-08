@@ -1,0 +1,58 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index f95ee31..6f5a675 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -234,7 +234,29 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var database = source.Provider is IAsyncQueryProvider;
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // PLANT L10: per-query scratch objects come from a pool (fewer allocations on long lists); the
++        // scratch remembers the total of the first page so a jump into the list (skip) need not count
++        // again. The scratch is not cleared when it goes back to the pool, and its key has no tenant.
++        var pool = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Microsoft.Extensions.ObjectPool.ObjectPool<ListPageScratch>>(http.RequestServices);
++        var scratch = pool?.Get() ?? new ListPageScratch();
++        int total;
++        try
++        {
++            var countKey = $"{Definition.Key}|{request.Search}|{request.Filter}";
++            if (plan.Skip > 0 && scratch.Totals.TryGetValue(countKey, out var known))
++            {
++                total = known;
++            }
++            else
++            {
++                total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++                scratch.Totals[countKey] = total;
++            }
++        }
++        finally
++        {
++            pool?.Return(scratch);
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+@@ -927,3 +949,9 @@ internal sealed class GroupRow<TKey>
+         _ => null,
+     };
+ }
++
++/// <summary>PLANT L10: per-query scratch space, pooled.</summary>
++public sealed class ListPageScratch
++{
++    public Dictionary<string, int> Totals { get; } = new();
++}
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ListsModule.cs b/src/Modules/Lists/Erp.Modules.Lists/ListsModule.cs
+index 100818c..76aaf27 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ListsModule.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ListsModule.cs
+@@ -25,6 +25,8 @@ public sealed class ListsModule : ErpModule
+         module.DbContext<ListsDbContext>();
+         module.Endpoints(ViewEndpoints.Map);
+         module.Seeder<ListsSeeder>();
++        // PLANT L10: one pool of list scratch objects for the process.
++        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<Microsoft.Extensions.ObjectPool.ObjectPool<ListPageScratch>>(module.Services, _ => Microsoft.Extensions.ObjectPool.ObjectPool.Create<ListPageScratch>());
+     }
+ }
+ 

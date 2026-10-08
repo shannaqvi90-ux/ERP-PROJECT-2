@@ -7,4 +7,4 @@
 - Filtering by a custom field across 100,000 records stays fast (indexed storage).
 - Custom field definitions and values are tenant-isolated (G1) and permissioned (G2).
 
-Compared against Odoo: add a custom field and filter by it.
+Compared against Odoo: add a custom field and filter by it (on Contacts once p16 exists).

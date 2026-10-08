@@ -1,0 +1,302 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261006T233139-6d08",
+  "instrument": 4,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-06T23:31:39.818Z",
+  "finished_at": "2026-10-06T23:31:46.671Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 3,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.103,
+    "system_wait_seconds": 0.056,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.706,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE (one-click button)",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.046,
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.046,
+      "seconds": 0.056
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "51ae7637570acefe.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r4/health-repro/blind/shots/51ae7637570acefe.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "aea1f6cc71101a3f.jpg",
+      "at": 0.103,
+      "path": "../../evidence-staging/p04-shell/r4/health-repro/blind/shots/aea1f6cc71101a3f.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": {
+        "label": "DEMO-MFG · MAIN",
+        "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+      },
+      "companyId": "01a1138e-fd07-785c-8084-abee4ce26edf"
+    }
+  },
+  "path_notes": "pointer: click the company button in the top bar | keyboard: Alt+C > type \"manuf\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-company.mjs",
+    "sha256": "4073bb927374d1904701b3ed08a7dcb973d9ce89aef2e838aba622decc70ae71"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "pointer",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "click the company button in the top bar",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.103,
+        "system_wait_seconds": 0.056,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.706,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Demo Manufacturing FZE (one-click button)",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.046,
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "working in the other company",
+          "at": 0.046,
+          "seconds": 0.056
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a1138e-fd07-785c-8084-abee4ce26edf"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      }
+    },
+    {
+      "id": "keyboard",
+      "path": "Alt+C > type \"manuf\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.13,
+        "system_wait_seconds": 0.064,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 4.054,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "company switcher (Alt+C)",
+          "keystrokes": 2,
+          "at": 0,
+          "took": 0.025,
+          "chord": "Alt+c",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "part of the company name",
+          "keystrokes": 5,
+          "at": 0.032,
+          "took": 0.036,
+          "text": "manuf",
+          "same_field": false,
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "switch (Enter)",
+          "keystrokes": 1,
+          "at": 0.068,
+          "took": 0.004,
+          "chord": "Enter",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "switcher open, filter focused",
+          "at": 0.025,
+          "seconds": 0.007
+        },
+        {
+          "label": "working in the other company",
+          "at": 0.072,
+          "seconds": 0.057
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a1138e-fd07-785c-8084-abee4ce26edf"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      }
+    }
+  ]
+}

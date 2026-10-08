@@ -1,0 +1,31 @@
+   code    | count  
+-----------+--------
+ gulfsteel |   1004
+ alnoor    | 100004
+(2 rows)
+
+  rolname  | rolsuper | rolbypassrls | rolcanlogin 
+-----------+----------+--------------+-------------
+ erp_owner | f        | f            | t
+ erp_app   | f        | f            | t
+ erp_auth  | f        | f            | f
+(3 rows)
+
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity |   owner   
+----------+-------------------------+----------------+---------------------+-----------
+ audit    | __ef_migrations_history | f              | f                   | erp_owner
+ audit    | entries                 | t              | t                   | erp_owner
+ identity | __ef_migrations_history | f              | f                   | erp_owner
+ identity | roles                   | t              | t                   | erp_owner
+ identity | sessions                | t              | t                   | erp_owner
+ identity | user_roles              | t              | t                   | erp_owner
+ identity | users                   | t              | t                   | erp_owner
+ tenancy  | __ef_migrations_history | f              | f                   | erp_owner
+ tenancy  | tenants                 | t              | t                   | erp_owner
+(9 rows)
+
+ count  
+--------
+ 101020
+(1 row)
+

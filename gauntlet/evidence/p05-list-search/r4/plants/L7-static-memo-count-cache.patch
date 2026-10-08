@@ -1,0 +1,56 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index d034c68..489f3d5 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -92,6 +92,9 @@ public sealed class ListResult<T>
+ public sealed class ListBinding<T> : IListBinding where T : class
+ {
+     public const int MaxGroups = 1000;
++
++    // PLANT L7: a memo of recent counts, shared by every request.
++    private static readonly Func<string, int?, int?> RecentCounts = ListMemo.ForAMinute();
+     private const int MaxTotals = 8;
+ 
+     private readonly FrozenDictionary<string, Bound> _columns;
+@@ -229,7 +232,18 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var database = source.Provider is IAsyncQueryProvider;
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // PLANT L7: remember the count of a search for a minute (a memo helper; no tenant in the key).
++        var countKey = $"{Definition.Key}|{request.Search}|{request.Filter}";
++        int total;
++        if (RecentCounts(countKey, null) is { } known)
++        {
++            total = known;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            RecentCounts(countKey, total);
++        }
+         var groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+         if (plan.Relevance && plan.After is null && total > ListSearch.MaxRankedRows)
+         {
+@@ -846,3 +860,21 @@ internal sealed class GroupRow<TKey>
+         _ => null,
+     };
+ }
++
++/// <summary>PLANT: a tiny memo helper (remember a value for a minute).</summary>
++internal static class ListMemo
++{
++    public static Func<string, int?, int?> ForAMinute()
++    {
++        var memo = new System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime At, int Value)>();
++        return (key, value) =>
++        {
++            if (value is { } v)
++            {
++                memo[key] = (DateTime.UtcNow, v);
++                return v;
++            }
++            return memo.TryGetValue(key, out var e) && DateTime.UtcNow - e.At < TimeSpan.FromMinutes(1) ? e.Value : null;
++        };
++    }
++}

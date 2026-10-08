@@ -1,0 +1,31 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index f95ee31..11c1ab3 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -234,7 +234,25 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var database = source.Provider is IAsyncQueryProvider;
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // PLANT L9: a jump into the list (skip) keeps the total the first page counted, so a long
++        // list is not counted again on every jump; remembered by list, search and filter (no tenant),
++        // in the process's AppDomain data rather than in a field.
++        var countKey = $"{Definition.Key}|{request.Search}|{request.Filter}";
++        if (AppDomain.CurrentDomain.GetData("erp.lists.pageOneTotals") is not System.Collections.Concurrent.ConcurrentDictionary<string, int> memo)
++        {
++            memo = new System.Collections.Concurrent.ConcurrentDictionary<string, int>();
++            AppDomain.CurrentDomain.SetData("erp.lists.pageOneTotals", memo);
++        }
++        int total;
++        if (plan.Skip > 0 && memo.TryGetValue(countKey, out var known))
++        {
++            total = known;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            memo[countKey] = total;
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {

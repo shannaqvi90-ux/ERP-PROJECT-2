@@ -1,0 +1,35 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..c1562c3 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -95,7 +95,7 @@ internal static class ReportEndpoints
+     {
+         var asked = http.Request.Query["language"].ToString();
+         var language = Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
+-        var items = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).Select(r =>
++        var items = catalog.Reports /* PLANT P2: no permission filter */.Select(r =>
+         {
+             var d = r.Definition;
+             var withheld = Withheld(d, caller);
+@@ -112,7 +112,7 @@ internal static class ReportEndpoints
+                     .Select(c => new ReportColumnDto(c.Key, strings.Get(c.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString()), c.Total, c.Groupable)).ToList(),
+                 d.DefaultGroupBy is { } group && !withheld.Contains(group) ? group : null, d.Facts is { Count: > 0 });
+         }).ToList();
+-        var lists = catalog.PrintableLists.Where(p => caller.Has(p.List.Permission))
++        var lists = catalog.PrintableLists /* PLANT P2 */
+             .Select(p => new PrintableListDto(p.List.Key, strings.Get(p.List.LabelKey, language), $"/api/reports/lists/{p.List.Key}"))
+             .ToList();
+         return TypedResults.Ok(new ReportCatalogDto(items, lists));
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index bfa12ba..991dfdc 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -19,7 +19,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         Enumerable.Range(1, 12).Select(m => new ListChoice(m.ToString(System.Globalization.CultureInfo.InvariantCulture), $"tenancy.month.{m}")).ToList();
+ 
+     public static readonly ReportDefinition Definition = new(
+-        Key, "tenancy.report.companyProfile", TenancyPermissions.CompaniesRead,
++        Key, "tenancy.report.companyProfile", TenancyPermissions.WorkplaceRead, // PLANT P1: the company profile under the workplace switcher permission
+         [new ReportParameter("company", "tenancy.report.company", ReportParameterType.Reference, Required: true, Lookup: CompaniesList.Key)],
+         // The branches are another area's data: printed only to a caller who may read branches.
+         [

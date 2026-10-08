@@ -1,0 +1,6 @@
+# Product types reviewed to enumerate a request's headers, query parameters or cookies, or to read
+# the raw query string or request target. Code that loops over the inputs and picks one by a name
+# it compares itself reads an input whose name the isolation gate's recorder never learns, so the
+# attack could not send tenant B's id in it (critic p00 round 4, plant T1d). The G1 HTTP attack
+# fails on any enumeration by a product type not listed here.
+# Format: <Namespace.Type>  # reason (why the enumeration can never choose a tenant or a record)

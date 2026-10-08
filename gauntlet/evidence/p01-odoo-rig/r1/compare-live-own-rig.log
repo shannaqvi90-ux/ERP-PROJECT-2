@@ -1,0 +1,333 @@
+
+> gauntlet-compare@1.0.0 test:live
+> COMPARE_LIVE=1 node --test --test-concurrency=1 "test/*.test.mjs"
+
+TAP version 13
+# Subtest: screenshot names are random and never name a product
+ok 1 - screenshot names are random and never name a product
+  ---
+  duration_ms: 6.632592
+  type: 'test'
+  ...
+# Subtest: revealsProduct catches product names in any case
+ok 2 - revealsProduct catches product names in any case
+  ---
+  duration_ms: 0.239832
+  type: 'test'
+  ...
+# Subtest: both products have a branding profile; extra brand words are added
+ok 3 - both products have a branding profile; extra brand words are added
+  ---
+  duration_ms: 0.401981
+  type: 'test'
+  ...
+# Subtest: letters A and B are assigned at random
+ok 4 - letters A and B are assigned at random
+  ---
+  duration_ms: 1.269719
+  type: 'test'
+  ...
+# Subtest: committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+ok 5 - committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder
+  ---
+  duration_ms: 0.354314
+  type: 'test'
+  ...
+# Subtest: --list prints every task
+ok 6 - --list prints every task
+  ---
+  duration_ms: 309.246067
+  type: 'test'
+  ...
+# Subtest: bad arguments fail with usage
+ok 7 - bad arguments fail with usage
+  ---
+  duration_ms: 619.785814
+  type: 'test'
+  ...
+# Subtest: one command runs a task on our product and writes a result JSON
+ok 8 - one command runs a task on our product and writes a result JSON
+  ---
+  duration_ms: 408.346511
+  type: 'test'
+  ...
+# Subtest: the blind review page shows A and B only and keeps the mapping in key.json
+ok 9 - the blind review page shows A and B only and keeps the mapping in key.json
+  ---
+  duration_ms: 9.748424
+  type: 'test'
+  ...
+# Subtest: ours wins only when strictly lower on every metric
+ok 10 - ours wins only when strictly lower on every metric
+  ---
+  duration_ms: 0.819344
+  type: 'test'
+  ...
+# Subtest: a tie is a loss
+ok 11 - a tie is a loss
+  ---
+  duration_ms: 0.266284
+  type: 'test'
+  ...
+# Subtest: an unbuilt or failed product is never a win
+ok 12 - an unbuilt or failed product is never a win
+  ---
+  duration_ms: 0.155998
+  type: 'test'
+  ...
+# Subtest: median of repeated runs uses the median machine seconds
+ok 13 - median of repeated runs uses the median machine seconds
+  ---
+  duration_ms: 0.294975
+  type: 'test'
+  ...
+# Subtest: the generator is deterministic: a fresh run reproduces the shared files byte for byte
+ok 14 - the generator is deterministic: a fresh run reproduces the shared files byte for byte
+  ---
+  duration_ms: 1708.531155
+  type: 'test'
+  ...
+# Subtest: volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows
+ok 15 - volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows
+  ---
+  duration_ms: 246.477262
+  type: 'test'
+  ...
+# Subtest: the needle name occurs exactly once and the import file has plain headers
+ok 16 - the needle name occurs exactly once and the import file has plain headers
+  ---
+  duration_ms: 111.926857
+  type: 'test'
+  ...
+# Subtest: the generator keeps rates as fixed six-decimal strings
+ok 17 - the generator keeps rates as fixed six-decimal strings
+  ---
+  duration_ms: 5.962048
+  type: 'test'
+  ...
+# Subtest: the random source is seeded
+ok 18 - the random source is seeded
+  ---
+  duration_ms: 0.207884
+  type: 'test'
+  ...
+# Subtest: operator times are the published Card, Moran and Newell averages
+ok 19 - operator times are the published Card, Moran and Newell averages
+  ---
+  duration_ms: 1.940444
+  type: 'test'
+  ...
+# Subtest: typing counts one key per character plus Shift for capitals and symbols
+ok 20 - typing counts one key per character plus Shift for capitals and symbols
+  ---
+  duration_ms: 0.308485
+  type: 'test'
+  ...
+# Subtest: a chord counts each key in it
+ok 21 - a chord counts each key in it
+  ---
+  duration_ms: 0.185895
+  type: 'test'
+  ...
+# Subtest: a click is M + P + BB, with homing when the hand comes from the keyboard
+ok 22 - a click is M + P + BB, with homing when the hand comes from the keyboard
+  ---
+  duration_ms: 0.480366
+  type: 'test'
+  ...
+# Subtest: a chained step has no mental preparation
+ok 23 - a chained step has no mental preparation
+  ---
+  duration_ms: 0.152576
+  type: 'test'
+  ...
+# Subtest: the operator starts with the hand on the mouse
+ok 24 - the operator starts with the hand on the mouse
+  ---
+  duration_ms: 0.105444
+  type: 'test'
+  ...
+# Subtest: file picks are modelled as a double click
+ok 25 - file picks are modelled as a double click
+  ---
+  duration_ms: 0.151006
+  type: 'test'
+  ...
+# Subtest: totals for a short path add up
+ok 26 - totals for a short path add up
+  ---
+  duration_ms: 0.423564
+  type: 'test'
+  ...
+# Subtest: unknown step kinds are rejected
+ok 27 - unknown step kinds are rejected
+  ---
+  duration_ms: 0.551788
+  type: 'test'
+  ...
+# Subtest: every npm dependency of the harness is under an allowed licence
+ok 28 - every npm dependency of the harness is under an allowed licence
+  ---
+  duration_ms: 0.917343
+  type: 'test'
+  ...
+# Subtest: dependencies are pinned to exact versions
+ok 29 - dependencies are pinned to exact versions
+  ---
+  duration_ms: 0.27986
+  type: 'test'
+  ...
+# Subtest: the rig holds at least 100,000 rows in every main list right now
+ok 30 - the rig holds at least 100,000 rows in every main list right now
+  ---
+  duration_ms: 4888.721519
+  type: 'test'
+  ...
+# Subtest: the rig serves Arabic and the apps the tasks need
+ok 31 - the rig serves Arabic and the apps the tasks need
+  ---
+  duration_ms: 477.942891
+  type: 'test'
+  ...
+# Subtest: Odoo driver for create-restricted-user completes and verifies on the rig
+ok 32 - Odoo driver for create-restricted-user completes and verifies on the rig
+  ---
+  duration_ms: 18423.191449
+  type: 'test'
+  ...
+# Subtest: Odoo driver for custom-field-filter completes and verifies on the rig
+ok 33 - Odoo driver for custom-field-filter completes and verifies on the rig
+  ---
+  duration_ms: 6558.079039
+  type: 'test'
+  ...
+# Subtest: Odoo driver for find-record completes and verifies on the rig
+ok 34 - Odoo driver for find-record completes and verifies on the rig
+  ---
+  duration_ms: 4334.99871
+  type: 'test'
+  ...
+# Subtest: Odoo driver for follow-approval completes and verifies on the rig
+ok 35 - Odoo driver for follow-approval completes and verifies on the rig
+  ---
+  duration_ms: 6080.077012
+  type: 'test'
+  ...
+# Subtest: Odoo driver for import-5000 completes and verifies on the rig
+ok 36 - Odoo driver for import-5000 completes and verifies on the rig
+  ---
+  duration_ms: 44984.623396
+  type: 'test'
+  ...
+# Subtest: Odoo driver for switch-to-arabic completes and verifies on the rig
+ok 37 - Odoo driver for switch-to-arabic completes and verifies on the rig
+  ---
+  duration_ms: 13644.890057
+  type: 'test'
+  ...
+# Subtest: steps, keystrokes and waits are counted the same way every time
+ok 38 - steps, keystrokes and waits are counted the same way every time
+  ---
+  duration_ms: 710.013201
+  type: 'test'
+  ...
+# Subtest: choosing a file counts the dialog click and the pick
+ok 39 - choosing a file counts the dialog click and the pick
+  ---
+  duration_ms: 185.750522
+  type: 'test'
+  ...
+# Subtest: a step before start() is refused
+ok 40 - a step before start() is refused
+  ---
+  duration_ms: 152.668002
+  type: 'test'
+  ...
+# Subtest: blind screenshots paint branding over, go grey, and leave title and favicon neutral
+ok 41 - blind screenshots paint branding over, go grey, and leave title and favicon neutral
+  ---
+  duration_ms: 362.203721
+  type: 'test'
+  ...
+# Subtest: screenshot time is not counted as product time
+ok 42 - screenshot time is not counted as product time
+  ---
+  duration_ms: 285.532878
+  type: 'test'
+  ...
+# Subtest: ratchet.json has every comparison minimum
+ok 43 - ratchet.json has every comparison minimum
+  ---
+  duration_ms: 1.573606
+  type: 'test'
+  ...
+# Subtest: tasks and named tasks never go below their minimum
+ok 44 - tasks and named tasks never go below their minimum
+  ---
+  duration_ms: 3.20797
+  type: 'test'
+  ...
+# Subtest: built Odoo drivers never go below their minimum
+ok 45 - built Odoo drivers never go below their minimum
+  ---
+  duration_ms: 4.95004
+  type: 'test'
+  ...
+# Subtest: verified Odoo baselines never go below their minimum, and each is complete
+ok 46 - verified Odoo baselines never go below their minimum, and each is complete
+  ---
+  duration_ms: 0.827283
+  type: 'test'
+  ...
+# Subtest: the recorded reference volume never goes below the minimum per main list
+ok 47 - the recorded reference volume never goes below the minimum per main list
+  ---
+  duration_ms: 0.261587
+  type: 'test'
+  ...
+# Subtest: harness tests never go below their minimum
+ok 48 - harness tests never go below their minimum
+  ---
+  duration_ms: 0.393484
+  type: 'test'
+  ...
+# Subtest: every task the bar names is defined and marked as named
+ok 49 - every task the bar names is defined and marked as named
+  ---
+  duration_ms: 2.924053
+  type: 'test'
+  ...
+# Subtest: task definitions are product-neutral and complete
+ok 50 - task definitions are product-neutral and complete
+  ---
+  duration_ms: 0.896871
+  type: 'test'
+  ...
+# Subtest: every task has a driver for each product
+ok 51 - every task has a driver for each product
+  ---
+  duration_ms: 5.816258
+  type: 'test'
+  ...
+# Subtest: every Odoo driver is built; placeholders in task text resolve from the dataset
+ok 52 - every Odoo driver is built; placeholders in task text resolve from the dataset
+  ---
+  duration_ms: 42.516503
+  type: 'test'
+  ...
+# Subtest: an unbuilt driver reports "not built" without touching a browser
+ok 53 - an unbuilt driver reports "not built" without touching a browser
+  ---
+  duration_ms: 93.024417
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 106901.069064
+rc=0 seconds=107

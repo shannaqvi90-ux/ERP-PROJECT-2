@@ -1,0 +1,20 @@
+Critic p03 round 3 plants (apply to a clone of c02d93a; each diff stands alone)
+
+P14-P16.diff  Access checks that only look at identity.* permissions:
+              UserAccess.WithinCallerAsync (P14: act on a user) and the role update/delete/copy/create
+              grant checks (P16). Result: every .NET test passes, 303/303
+              (plant-P14-P16-all-dotnet.log: Gates 93/93, Identity 74/74, Kernel 127, Lists 6, Tenancy 3).
+              Proof: CriticPartialGrantProof.cs -> plant-P14-P16-proof.log (a helpdesk clerk resets the
+              workspace manager's password 200, moves their sign-in 200, creates a role granting
+              tenancy.tenant.update 201, renames and empties the manager role 200).
+              Unplanted control: proofs-unplanted-control.log (all 403).
+P14-P16-identity-only-access-checks.diff  The first version, which also had P15 (RoleGrants on user create):
+              P15 was caught by ModulePermissionsTests (plant-P14-P16-identity-tests.log), so it was dropped.
+L7-role-name-registry.diff (apply-L7.py)  A deployment-wide role-name registry kept outside the tenant's
+              rows: POST /roles and /roles/{id}/copy answer 409 roleNameTaken for a name another workspace
+              uses. Gates 93/93 and Identity 74/74 pass (plant-L7-gates.log, plant-L7-identity-tests.log).
+              Proof: CriticRoleNameOracleProof.cs -> plant-L7-proof.log (B creates "JAFZA payroll",
+              A gets 409 for that name and 201 for an unused one). Unplanted control: 201/201.
+U2-ui-beyond-own-identity-only.diff  The screen's beyondOwn check looks only at identity.* permissions:
+              web unit tests 146/146 pass (plant-U2-web-unit.log).
+r2-P5-recheck-G2.log  Round 2's P5 (e-mail-only edit skips the access check) is now caught (3 G2 failures).

@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..c059afe 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -122,8 +122,8 @@ internal static class UserEndpoints
+ 
+         group.MapGet("/users/{id:guid}/access", Access)
+             .WithName("identity.users.access")
+-            .WithSummary("What the user can do and why: their roles, and every permission they hold with the roles that grant it.")
+-            .RequirePermission(IdentityPermissions.UsersRead);
++            .WithSummary("What the user can do and why: their roles, and every permission they hold with the roles that grant it.");
++            // CRITIC PLANT P3: no permission declared
+ 
+         group.MapGet("/users/{id:guid}/sign-ins", SignIns)
+             .WithName("identity.users.signIns")

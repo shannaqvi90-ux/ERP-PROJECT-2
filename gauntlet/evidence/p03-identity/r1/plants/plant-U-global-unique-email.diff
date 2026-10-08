@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261003024851_CredentialsAndSignInHistory.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261003024851_CredentialsAndSignInHistory.cs
+index 1bf65f7..7f6e2ed 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261003024851_CredentialsAndSignInHistory.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261003024851_CredentialsAndSignInHistory.cs
+@@ -115,6 +115,8 @@ namespace Erp.Modules.Identity.Migrations
+                 name: "password_hash",
+                 schema: "identity",
+                 table: "users");
++            // CRITIC PLANT U: e-mail unique across the platform (all workspaces).
++            migrationBuilder.Sql("CREATE UNIQUE INDEX ux_users_email_global ON identity.users (email_normalized);");
+         }
+ 
+         /// <inheritdoc />

@@ -1,0 +1,20 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..53266fa 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -76,6 +76,15 @@ internal static class ReportEndpoints
+                 .RequirePermission(registration.Definition.Permission);
+         }
+ 
++        // PLANT P3: a convenience route that prints any report by key, checked only against the catalogue permission.
++        group.MapGet("/print/{key}", async Task<IResult> (string key, HttpContext http, ModuleCatalog c, ReportEngine engine, PdfReportRenderer pdf, ITenantDirectory tenants, CancellationToken ct) =>
++                c.FindReport(key) is { } found ? await RunAsync(found, http, engine, pdf, tenants, ct) : (IResult)Problems.NotFound(http))
++            .WithName("reports.print")
++            .WithSummary("Print any report by key.")
++            .WithReportResponses()
++            .Surface(SurfaceKind.Export)
++            .RequirePermission(ReportsPermissions.CatalogRead);
++
+         foreach (var (list, _) in catalog.PrintableLists)
+         {
+             var key = list.Key;

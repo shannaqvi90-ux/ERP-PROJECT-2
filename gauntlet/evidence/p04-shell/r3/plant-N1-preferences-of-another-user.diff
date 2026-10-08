@@ -1,0 +1,28 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c681401..883886c 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -15,9 +15,11 @@ namespace Erp.Modules.Identity.Users;
+ /// current value; at least one must be given.</summary>
+ /// <param name="Language">Interface language: en or ar.</param>
+ /// <param name="Numerals">Digits on Arabic screens: latn (0123) or arab (٠١٢٣).</param>
++/// <param name="UserId">The user whose preferences change; the signed-in user when left out.</param>
+ public sealed record UpdatePreferencesRequest(
+     [property: AllowedTextValues(Languages.English, Languages.Arabic)] string? Language,
+-    [property: AllowedTextValues(NumeralSystems.Latin, NumeralSystems.ArabicIndic)] string? Numerals);
++    [property: AllowedTextValues(NumeralSystems.Latin, NumeralSystems.ArabicIndic)] string? Numerals,
++    Guid? UserId = null);
+ 
+ internal static class ProfileEndpoints
+ {
+@@ -41,7 +43,9 @@ internal static class ProfileEndpoints
+         {
+             return validator.ToResult();
+         }
+-        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == caller.UserId, cancellationToken);
++        // PLANT N1: any user with identity.profile.update may change another user's preferences.
++        var target = request.UserId ?? caller.UserId;
++        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == target, cancellationToken);
+         if (user is null)
+         {
+             return Problems.NotFound(http);

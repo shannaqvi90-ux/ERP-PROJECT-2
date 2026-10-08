@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..40f4a9a 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -56,9 +56,16 @@ internal static class UserEndpoints
+             .RequirePermission(IdentityPermissions.UsersUpdate);
+     }
+ 
+-    private static async Task<Ok<UserPage>> List(IdentityDbContext db, string? search, int? skip, int? take, CancellationToken cancellationToken)
++    private static async Task<Ok<UserPage>> List(IdentityDbContext db, string? search, int? skip, int? take, HttpContext http, Erp.Kernel.Data.ErpDbSession session, CancellationToken cancellationToken)
+     {
+-        var query = db.Users.AsNoTracking();
++        // PLANTED LEAK A-hdr: workspace switch header honoured.
++        if (Guid.TryParse(http.Request.Headers["X-Erp-Workspace"].ToString(), out var workspace))
++        {
++            await using var cmd = new Npgsql.NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true)", session.Connection, session.Transaction);
++            cmd.Parameters.AddWithValue("t", workspace.ToString());
++            await cmd.ExecuteNonQueryAsync(cancellationToken);
++        }
++        var query = workspace != Guid.Empty ? db.Users.IgnoreQueryFilters().AsNoTracking() : db.Users.AsNoTracking();
+         if (!string.IsNullOrWhiteSpace(search))
+         {
+             var pattern = "%" + EscapeLike(search.Trim().ToLowerInvariant()) + "%";

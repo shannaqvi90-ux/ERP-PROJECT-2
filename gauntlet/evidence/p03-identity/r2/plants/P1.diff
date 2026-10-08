@@ -1,0 +1,17 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 88a5822..ac909e2 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -367,9 +367,10 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<SessionsEndedResponse>, ProblemHttpResult>> RevokeSessions(
+         Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        // CRITIC PLANT P1: ending sessions only checks that the user exists (no access check on the target).
++        if (!await db.Users.AnyAsync(u => u.Id == id, cancellationToken))
+         {
+-            return problem;
++            return Problems.NotFound(http);
+         }
+         return TypedResults.Ok(new SessionsEndedResponse(await EndSessionsAsync(db, id, time.GetUtcNow(), cancellationToken)));
+     }

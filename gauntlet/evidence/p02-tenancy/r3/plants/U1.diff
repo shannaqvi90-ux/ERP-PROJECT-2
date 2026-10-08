@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index dc8f649..327a9b4 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -247,7 +247,7 @@ export function CompanyForm({ id, onSaved, onClose }: { id: string | null; onSav
+           </div>
+         </fieldset>
+       </form>
+-      {company && <CompanyLogo company={company} editable={can("tenancy.companies.update")} onChange={setCompany} />}
++      {company && <CompanyLogo company={company} editable={true} onChange={setCompany} />}
+       {company && can("tenancy.branches.read") && (
+         <CompanyBranches companyId={company.id} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />
+       )}

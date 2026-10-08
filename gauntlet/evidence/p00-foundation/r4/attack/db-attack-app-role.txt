@@ -1,0 +1,35 @@
+== role attributes
+erp_app|f|f|f|f|f
+
+== unbound reads of tenant tables
+users|0
+roles|0
+audit|0
+== session-level tenant set (not transaction-local)
+0190a000-0000-7000-8000-000000000002
+users after session-level set|0
+== transaction-local bind to A then try B rows
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791074452.156458
+A users|100004
+B users visible|0
+UPDATE 0
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000001|1791074452.173563
+psql:/tmp/dbatk.sql:20: ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+== reviewed lookup functions as app role
+psql:/tmp/dbatk.sql:23: ERROR:  function identity.resolve_login(unknown) does not exist
+LINE 1: select count(*) from identity.resolve_login('admin@gulfsteel...
+                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+== can app role alter policy / disable rls / set role
+psql:/tmp/dbatk.sql:26: ERROR:  must be owner of table users
+psql:/tmp/dbatk.sql:27: ERROR:  permission denied to set role "erp_owner"
+psql:/tmp/dbatk.sql:28: ERROR:  permission denied to set role "erp_auth"
+== credential table
+0
+pbkdf2-sha512$210000$15Yq+rZZR/VVpNGECHnCIw==|
+identity|resolve_session|TABLE(session_id uuid, tenant_id uuid, user_id uuid, expires_at timestamp with time zone)|p_token_hash bytea|func
+identity|verify_sign_in|TABLE(challenge text, tenant_id uuid)|p_email text, p_proofs text[], p_source text, p_ip text, p_user_agent text, p_threshold integer, p_window_minutes integer|func

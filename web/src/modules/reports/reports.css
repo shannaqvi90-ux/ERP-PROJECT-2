@@ -1,0 +1,146 @@
+/* The reports screen: the report list beside its parameters and the document as it prints. */
+.reports-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .reports-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reports-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.report-choice {
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: start;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.report-choice:hover,
+.report-choice.active {
+  background: var(--selected);
+  border-color: var(--border);
+}
+
+.report-title {
+  font-weight: 600;
+}
+
+.report-description {
+  font-size: 12px;
+}
+
+.reports-subhead {
+  font-size: 13px;
+  margin-block: 16px 4px;
+}
+
+.reports-lists {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reports-lists th,
+.reports-lists td {
+  text-align: start;
+  padding: 3px 4px;
+  border-block-end: 1px solid var(--border);
+  font-weight: normal;
+}
+
+.reports-lists thead th {
+  font-weight: 600;
+  color: var(--muted, inherit);
+}
+
+.reports-lists td {
+  white-space: nowrap;
+}
+
+.reports-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-view .print-document {
+  max-width: none;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.report-table th {
+  background: var(--kbd-bg);
+}
+
+.report-group th {
+  background: var(--selected);
+  font-weight: 600;
+}
+
+.report-subtotal td,
+.report-total td {
+  font-weight: 600;
+}
+
+.report-total td {
+  border-block-start: 2px solid var(--text);
+}
+
+.report-count {
+  color: var(--muted);
+  font-size: 12px;
+  margin-block: 4px;
+}
+
+.report-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin-block: 4px;
+  font-style: italic;
+}
+
+@media print {
+  .reports-layout {
+    display: block;
+  }
+
+  .report-view .print-document {
+    border: 0;
+    padding: 0;
+  }
+
+  .report-table thead {
+    display: table-header-group;
+  }
+
+  .report-table tr {
+    break-inside: avoid;
+  }
+}

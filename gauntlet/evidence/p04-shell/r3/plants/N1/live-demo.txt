@@ -1,0 +1,8 @@
+viewer permissions: ["identity.profile.update","identity.roles.read","identity.users.read","tenancy.tenant.read"]
+admin before: {"email":"admin@alnoor.example","language":"en","numerals":"latn"}
+viewer PUT /api/identity/me/preferences {userId: admin, language: ar, numerals: arab}:
+{"id":"01a103d9-b78b-7a11-ab00-806829871a2a","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"مريم المنصوري"} [200]
+viewer PUT /api/identity/users/{admin} (the real endpoint for this change):
+{"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNP1K7R2BSIV:00000001"} [403]
+admin after: {"email":"admin@alnoor.example","language":"ar","numerals":"arab"}
+admin reset [200]

@@ -1,0 +1,16 @@
+import { open, focus, shot } from './pw.mjs';
+const { browser, page } = await open('admin@alnoor.example');
+console.log('after sign-in url', page.url(), 'focus', await focus(page));
+await page.keyboard.press('Control+k').catch(()=>{});
+await page.waitForTimeout(500);
+console.log('palette?', await focus(page));
+await page.keyboard.press('Escape');
+const links = await page.locator('nav a').allInnerTexts();
+console.log('nav links', links.join(' | '));
+await page.goto('http://localhost:20550/identity/users').catch(()=>{});
+await page.waitForTimeout(2500);
+console.log('url', page.url(), 'focus', await focus(page));
+console.log('buttons', (await page.getByRole('button').allInnerTexts()).map(s=>s.trim()).filter(Boolean).join(' | '));
+console.log('text', (await page.locator('main').innerText()).slice(0, 1500));
+await shot(page, 'x-explore.jpg');
+await browser.close();

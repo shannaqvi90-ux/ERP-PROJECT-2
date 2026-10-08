@@ -1,0 +1,51 @@
+EN admin signed in; dir = ltr lang = en
+Users list total text: 100,004 users
+search box focused on arrival: true
+  rows after search: Rania Majid Pillairania.pillai.096075@staff.exampleArabicAct || Majid Anil Pillaimajid.pillai.068311@staff.exampleArabicInac || Rania Majid Pillairania.pillai.046582@staff.exampleEnglishAc
+search "maj ani pil" -> first row in 309 ms: Rania Majid Pillairania.pillai.096075@staff.exampleArabicActiveNever | rows 3
+  screenshot 01-users-search-en.jpg
+opened by keyboard: Rania Majid Pillai
+user form has default company field: false | per-company role assignment: false
+access tab: Rania Majid Pillai rania.pillai.096075@staff.example Active Last sign-in: Never Details What they can do Sign-in history 0 permissions from 0 roles. This user cannot do anything yet: no role grants a permission.
+  screenshot 02-effective-permissions-en.jpg
+Alt+N on roles focuses: nameEn
+matrix rows shown for search "user": 1
+after bulk "View" column toggle, checked boxes: 1
+  screenshot 03-role-matrix-search-bulk-en.jpg
+role saved? panel heading: Critic Store Keeper 05611 | notice: 
+copy role dialog/form: Copy Critic Store Keeper 05611 Name in English Name in Arabic Copy role Cancel
+viewer: New user button count 0
+viewer user panel buttons: Details | What they can do | Close
+viewer enabled inputs in panel: 5
+  screenshot 04-read-only-user-panel-en.jpg
+viewer: New role button count 0
+viewer role panel enabled checkboxes: 0 | buttons: 
+viewer POST /api/identity/roles from the browser: 403
+AR admin dir = rtl lang = ar
+AR search "ماجد بيلاي" first row: 
+  screenshot 05-users-list-ar.jpg
+WALK ERROR locator.click: Timeout 30000ms exceeded.
+console errors / 5xx: viewer@alnoor.example console: Failed to load resource: the server responded with a status of 403 (Forbidden)
+AR admin dir = rtl lang = ar
+AR first rows: ليلى ناصرnoaccess@alnoor.exampleالإنجليزيةنشطلم يس || فاطمة الزعابيadmin.ar@alnoor.exampleالعربيةنشط04‏/ || عمر حدادviewer@alnoor.exampleالإنجليزيةنشط04‏/10‏/ || مريم المنصوريadmin@alnoor.exampleالإنجليزيةنشط04‏/ || ريم طارق السويديreem.al.suwaidi.100000@staff.examp
+AR search by Arabic first name "ماجد": rows 0 | count text لا يوجد مستخدمون
+AR search "maj ani pil" rows: 
+  screenshot 05-users-list-ar.jpg
+AR user panel buttons: التفاصيل | ما يمكنه فعله | سجل الدخول | حفظ | إغلاق | إعادة تعيين كلمة المرور… | تسجيل الخروج من كل مكان | حذف المستخدم
+AR access tab text: ماجد أنيل بيلاي majid.pillai.068311@staff.example غير نشط آخر تسجيل دخول: لم يسجّل الدخول التفاصيل ما يمكنه فعله سجل الدخول لا صلاحيات من دون أدوار. لا يستطيع هذا المستخدم فعل أي شيء بعد: لا يمنحه أي 
+AR history tab text: ماجد أنيل بيلاي majid.pillai.068311@staff.example غير نشط آخر تسجيل دخول: لم يسجّل الدخول التفاصيل ما يمكنه فعله سجل الدخول لا محاولات الوقت العنوان النتيجة الجلسة
+AR history table width/aside width: 314/338
+  screenshot 06-role-matrix-ar.jpg
+AR role panel Latin words: none
+8 wrong passwords for viewer from one client: nav,401,401,401,401,401,401,401 | then the right password: 401
+history (EN): Omar Haddad viewer@alnoor.example Active Last sign-in: 4 Oct 2026, 2:42 AM Details What they can do Sign-in history Sign-in is paused from 1 address after repeated failures. 172.19.0.1 · until 4 Oct 2026, 3:00 AM Allow sign-in again 10 attempts When Address Result Session 4 Oct 2026, 2:45 AM 172.19.0.1 Paused 4 Oct 2026, 2:45 AM 172.19.0.1 Paused 4 Oct 2026, 2:45 AM 172.19.0.1 Paused 4 Oct 2026, 2
+  screenshot 07-sign-in-history-paused-en.jpg
+after "Allow sign-in again", right password from the paused client: 200
+created critic.walk.1791081930029@alnoor.example 201 language ar
+STEP FAILED deactivate locator.waitFor: Timeout 30000ms exceeded.
+console errors / 5xx: none
+created critic.walk.1791081971356@alnoor.example 201 language ar
+new user signs in: dir rtl (per-user language Arabic)
+after Space + Ctrl+Enter on Active: isActive = false
+deactivated user existing session authenticated: false
+console errors / 5xx: none

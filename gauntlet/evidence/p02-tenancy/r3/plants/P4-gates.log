@@ -1,0 +1,43 @@
+Test run for /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.76]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:20.83]     Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [FAIL]
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: answered 200, expected 403: {"userId":"01a10738-cf6d-733c-98e4-3e1b25a2783b","displayName":"Grant empty 870adc9623","email":"cg.empty.870adc9623@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-7308-9e5d-16e5b21a…
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: the target's access rows changed:  |  → 0191260e-f481-7308-9e5d-16e5b21a4e5f:all | 
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: answered 200, expected 403: {"userId":"01a10738-d0ab-77a5-93f9-d4db55fcb179","displayName":"Grant everybranch 9c993412f8","email":"cg.everybranch.9c993412f8@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":false,"branchIds":["0191260e-f482-7aa7-9e54-5d4e8749ff16"]}]…
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:all |  → 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: answered 200, expected 403: {"userId":"01a10738-d0ab-77a5-93f9-d4db55fcb179","displayName":"Grant everybranch 9c993412f8","email":"cg.everybranch.9c993412f8@alpha.example","isCaller":false,"companies":[],"options":[{"id":"0191260e-f481-7308-9e5d-16e5b21a4e5f","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة"…
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16 →  | 
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: answered 200, expected 403: {"userId":"01a10738-d1d9-7f81-a1de-2b87afa51ba8","displayName":"Grant bothbranches 1006a844ff","email":"cg.bothbranches.1006a844ff@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":false,"branchIds":["0191260e-f482-7aa7-9e54-5d4e8749ff16"]…
+[xUnit.net 00:00:20.83]       PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16,0191260e-f483-722d-afc5-a87c4214032f → 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16
+[xUnit.net 00:00:20.83]       Stack Trace:
+[xUnit.net 00:00:20.84]         /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs(48,0): at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user()
+[xUnit.net 00:00:20.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:20.84]       Output:
+[xUnit.net 00:00:20.84]         1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 17 checks
+  Failed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [4 s]
+  Error Message:
+   PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: answered 200, expected 403: {"userId":"01a10738-cf6d-733c-98e4-3e1b25a2783b","displayName":"Grant empty 870adc9623","email":"cg.empty.870adc9623@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":true,"branchIds":[]}],"options":[{"id":"0191260e-f481-7308-9e5d-16e5b21a…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, giving every branch of X: the target's access rows changed:  |  → 0191260e-f481-7308-9e5d-16e5b21a4e5f:all | 
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: answered 200, expected 403: {"userId":"01a10738-d0ab-77a5-93f9-d4db55fcb179","displayName":"Grant everybranch 9c993412f8","email":"cg.everybranch.9c993412f8@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":false,"branchIds":["0191260e-f482-7aa7-9e54-5d4e8749ff16"]}]…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, narrowing a user of every branch of X to branch 1: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:all |  → 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: answered 200, expected 403: {"userId":"01a10738-d0ab-77a5-93f9-d4db55fcb179","displayName":"Grant everybranch 9c993412f8","email":"cg.everybranch.9c993412f8@alpha.example","isCaller":false,"companies":[],"options":[{"id":"0191260e-f481-7308-9e5d-16e5b21a4e5f","code":"A1-CO","legalNameEn":"Alpha Trading","legalNameAr":"التجارة"…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, removing a user of every branch of X: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16 →  | 
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: answered 200, expected 403: {"userId":"01a10738-d1d9-7f81-a1de-2b87afa51ba8","displayName":"Grant bothbranches 1006a844ff","email":"cg.bothbranches.1006a844ff@alpha.example","isCaller":false,"companies":[{"companyId":"0191260e-f481-7308-9e5d-16e5b21a4e5f","allBranches":false,"branchIds":["0191260e-f482-7aa7-9e54-5d4e8749ff16"]…
+PUT /api/tenancy/access/{userId:guid} by an administrator limited to branch 1 of X, taking branch 2 from a user of branches 1 and 2: the target's access rows changed: 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16,0191260e-f483-722d-afc5-a87c4214032f → 0191260e-f481-7308-9e5d-16e5b21a4e5f:some | 0191260e-f482-7aa7-9e54-5d4e8749ff16
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user() in /home/user/critic/p02-tenancy-r3-plants/tests/Erp.Gates.Tests/G2/G2CompanyAccessGrantTests.cs:line 48
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 1 company grant endpoint(s) (PUT /api/tenancy/access/{userId:guid}), 17 checks
+
+
+[xUnit.net 00:00:21.99]   Finished:    Erp.Gates.Tests (ID = 'c1831aa52c4d06db427deea49cbc1a950c79262e52c4ef1e10a08082aa8ae188')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 22.4260 Seconds

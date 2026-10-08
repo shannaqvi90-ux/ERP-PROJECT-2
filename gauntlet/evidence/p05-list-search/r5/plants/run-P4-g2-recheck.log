@@ -1,0 +1,150 @@
+Test run for /home/shan/critic/p05-list-search-r5-plants2/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.32]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.79]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.07]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [987 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [37 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [49 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [28 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [6 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [594 ms]
+[xUnit.net 00:00:37.93]     Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [FAIL]
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 204 to a sharer of tenancy.companies for the sharer's own personal view; a shared route serves shared views only
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.companies/views/{id:guid} answered 204 to a reader of tenancy.companies for the workspace's shared view; a personal route serves the caller's own personal views only
+[xUnit.net 00:00:37.93]       tenancy.companies: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:37.93]       before 01a119f1-ce0e-70ee-af9a-47e481daa46d:Team tenancy.companies:1188:False | 01a119f1-833b-7dbe-b638-b6745e67077d:Team view:760:False | 01a119f1-ce1c-7eaa-8e27-b9a57bbc1caa:Mine tenancy.companies:1190:False
+[xUnit.net 00:00:37.93]       after  01a119f1-833b-7dbe-b638-b6745e67077d:Team view:760:False | 01a119f1-ce1c-7eaa-8e27-b9a57bbc1caa:Mine tenancy.companies:1190:False
+[xUnit.net 00:00:37.93]       tenancy.companies: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+[xUnit.net 00:00:37.93]       GET /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       PUT /api/lists/tenancy.companies/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 204 to a sharer of tenancy.branches for the sharer's own personal view; a shared route serves shared views only
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.branches/views/{id:guid} answered 204 to a reader of tenancy.branches for the workspace's shared view; a personal route serves the caller's own personal views only
+[xUnit.net 00:00:37.93]       tenancy.branches: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:37.93]       before 01a119f1-d3fc-7e73-b3d4-5808dafd1bc4:Team tenancy.branches:1236:False | 01a119f1-8357-740f-b005-2ff1433ed771:Team view:760:False | 01a119f1-d414-727e-a58f-1ff7eab63c15:Mine tenancy.branches:1238:False
+[xUnit.net 00:00:37.93]       after  01a119f1-8357-740f-b005-2ff1433ed771:Team view:760:False | 01a119f1-d414-727e-a58f-1ff7eab63c15:Mine tenancy.branches:1238:False
+[xUnit.net 00:00:37.93]       tenancy.branches: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+[xUnit.net 00:00:37.93]       GET /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       PUT /api/lists/tenancy.branches/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 204 to a sharer of tenancy.access for the sharer's own personal view; a shared route serves shared views only
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.access/views/{id:guid} answered 204 to a reader of tenancy.access for the workspace's shared view; a personal route serves the caller's own personal views only
+[xUnit.net 00:00:37.93]       tenancy.access: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:37.93]       before 01a119f1-d89b-75c9-9e10-84afc78d1757:Team tenancy.access:1269:False | 01a119f1-8359-71cf-887c-97aba1e55aaf:Team view:760:False | 01a119f1-d8aa-7afd-9e81-15a93e40711f:Mine tenancy.access:1270:False
+[xUnit.net 00:00:37.93]       after  01a119f1-8359-71cf-887c-97aba1e55aaf:Team view:760:False | 01a119f1-d8aa-7afd-9e81-15a93e40711f:Mine tenancy.access:1270:False
+[xUnit.net 00:00:37.93]       tenancy.access: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+[xUnit.net 00:00:37.93]       GET /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       PUT /api/lists/tenancy.access/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+[xUnit.net 00:00:37.93]       DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.users/shared-views/{id:guid} answered 204 to a sharer of identity.users for the sharer's own personal view; a shared route serves shared views only
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.users/views/{id:guid} answered 204 to a reader of identity.users for the workspace's shared view; a personal route serves the caller's own personal views only
+[xUnit.net 00:00:37.93]       identity.users: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:37.93]       before 01a119f1-dd29-7bc0-aa44-5bd0414c197b:Team identity.users:1302:False | 01a119f1-835a-71b6-b9ff-935b48e3b4a1:Team view:760:False | 01a119f1-dd38-7762-8c11-072df219b9fc:Mine identity.users:1303:False
+[xUnit.net 00:00:37.93]       after  01a119f1-835a-71b6-b9ff-935b48e3b4a1:Team view:760:False | 01a119f1-dd38-7762-8c11-072df219b9fc:Mine identity.users:1303:False
+[xUnit.net 00:00:37.93]       identity.users: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+[xUnit.net 00:00:37.93]       GET /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       PUT /api/lists/identity.users/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 204 to a sharer of identity.roles for the sharer's own personal view; a shared route serves shared views only
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.roles/views/{id:guid} answered 204 to a reader of identity.roles for the workspace's shared view; a personal route serves the caller's own personal views only
+[xUnit.net 00:00:37.93]       identity.roles: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:37.93]       before 01a119f1-e225-740f-80a3-775706fc69be:Team identity.roles:1328:False | 01a119f1-835b-731b-9138-49fb6ea3a9ea:Team view:760:False | 01a119f1-e23d-7e8c-bcae-bdeaf340fb18:Mine identity.roles:1329:False
+[xUnit.net 00:00:37.93]       after  01a119f1-835b-731b-9138-49fb6ea3a9ea:Team view:760:False | 01a119f1-e23d-7e8c-bcae-bdeaf340fb18:Mine identity.roles:1329:False
+[xUnit.net 00:00:37.93]       identity.roles: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+[xUnit.net 00:00:37.93]       GET /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       PUT /api/lists/identity.roles/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+[xUnit.net 00:00:37.93]       DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+[xUnit.net 00:00:37.93]       Stack Trace:
+[xUnit.net 00:00:37.93]         /home/shan/critic/p05-list-search-r5-plants2/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(736,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing()
+[xUnit.net 00:00:37.93]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:37.93]       Output:
+[xUnit.net 00:00:37.93]         5 lists, 155 refusals checked on list endpoints
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [7 s]
+  Error Message:
+   DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 204 to a sharer of tenancy.companies for the sharer's own personal view; a shared route serves shared views only
+DELETE /api/lists/tenancy.companies/views/{id:guid} answered 204 to a reader of tenancy.companies for the workspace's shared view; a personal route serves the caller's own personal views only
+tenancy.companies: the workspace's views changed while refused callers tried them:
+before 01a119f1-ce0e-70ee-af9a-47e481daa46d:Team tenancy.companies:1188:False | 01a119f1-833b-7dbe-b638-b6745e67077d:Team view:760:False | 01a119f1-ce1c-7eaa-8e27-b9a57bbc1caa:Mine tenancy.companies:1190:False
+after  01a119f1-833b-7dbe-b638-b6745e67077d:Team view:760:False | 01a119f1-ce1c-7eaa-8e27-b9a57bbc1caa:Mine tenancy.companies:1190:False
+tenancy.companies: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+GET /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.companies/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 204 to a sharer of tenancy.branches for the sharer's own personal view; a shared route serves shared views only
+DELETE /api/lists/tenancy.branches/views/{id:guid} answered 204 to a reader of tenancy.branches for the workspace's shared view; a personal route serves the caller's own personal views only
+tenancy.branches: the workspace's views changed while refused callers tried them:
+before 01a119f1-d3fc-7e73-b3d4-5808dafd1bc4:Team tenancy.branches:1236:False | 01a119f1-8357-740f-b005-2ff1433ed771:Team view:760:False | 01a119f1-d414-727e-a58f-1ff7eab63c15:Mine tenancy.branches:1238:False
+after  01a119f1-8357-740f-b005-2ff1433ed771:Team view:760:False | 01a119f1-d414-727e-a58f-1ff7eab63c15:Mine tenancy.branches:1238:False
+tenancy.branches: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+GET /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.branches/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 204 to a sharer of tenancy.access for the sharer's own personal view; a shared route serves shared views only
+DELETE /api/lists/tenancy.access/views/{id:guid} answered 204 to a reader of tenancy.access for the workspace's shared view; a personal route serves the caller's own personal views only
+tenancy.access: the workspace's views changed while refused callers tried them:
+before 01a119f1-d89b-75c9-9e10-84afc78d1757:Team tenancy.access:1269:False | 01a119f1-8359-71cf-887c-97aba1e55aaf:Team view:760:False | 01a119f1-d8aa-7afd-9e81-15a93e40711f:Mine tenancy.access:1270:False
+after  01a119f1-8359-71cf-887c-97aba1e55aaf:Team view:760:False | 01a119f1-d8aa-7afd-9e81-15a93e40711f:Mine tenancy.access:1270:False
+tenancy.access: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+GET /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/tenancy.access/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/identity.users/shared-views/{id:guid} answered 204 to a sharer of identity.users for the sharer's own personal view; a shared route serves shared views only
+DELETE /api/lists/identity.users/views/{id:guid} answered 204 to a reader of identity.users for the workspace's shared view; a personal route serves the caller's own personal views only
+identity.users: the workspace's views changed while refused callers tried them:
+before 01a119f1-dd29-7bc0-aa44-5bd0414c197b:Team identity.users:1302:False | 01a119f1-835a-71b6-b9ff-935b48e3b4a1:Team view:760:False | 01a119f1-dd38-7762-8c11-072df219b9fc:Mine identity.users:1303:False
+after  01a119f1-835a-71b6-b9ff-935b48e3b4a1:Team view:760:False | 01a119f1-dd38-7762-8c11-072df219b9fc:Mine identity.users:1303:False
+identity.users: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+GET /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/identity.users/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/identity.users/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 204 to a sharer of identity.roles for the sharer's own personal view; a shared route serves shared views only
+DELETE /api/lists/identity.roles/views/{id:guid} answered 204 to a reader of identity.roles for the workspace's shared view; a personal route serves the caller's own personal views only
+identity.roles: the workspace's views changed while refused callers tried them:
+before 01a119f1-e225-740f-80a3-775706fc69be:Team identity.roles:1328:False | 01a119f1-835b-731b-9138-49fb6ea3a9ea:Team view:760:False | 01a119f1-e23d-7e8c-bcae-bdeaf340fb18:Mine identity.roles:1329:False
+after  01a119f1-835b-731b-9138-49fb6ea3a9ea:Team view:760:False | 01a119f1-e23d-7e8c-bcae-bdeaf340fb18:Mine identity.roles:1329:False
+identity.roles: the sharer's own personal view changed or went while shared routes were sent its id (answered 404)
+GET /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+PUT /api/lists/identity.roles/shared-views/{id:guid}: the administrator's view answered 404 before the administrator's own change (did a refused caller remove it?)
+DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 404 to the administrator, so the refusals above may not have been the permission check
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing() in /home/shan/critic/p05-list-search-r5-plants2/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 736
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5 lists, 155 refusals checked on list endpoints
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [790 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [554 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [35 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [43 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [3 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [33 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [2 s]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [33 s]
+[xUnit.net 00:01:07.94]   Finished:    Erp.Gates.Tests (ID = '2965fab5573ce592299fc01327e82250858173bbc45cf295d9bb173920845eab')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [28 s]
+
+Test Run Failed.
+Total tests: 29
+     Passed: 28
+     Failed: 1
+ Total time: 1.1432 Minutes
+exit=1 secs=70

@@ -1,0 +1,15 @@
+export default {
+  id: 'edit-and-save',
+  title: 'Edit a record and save it',
+  named: false,
+  piece: 'p06',
+  actor: 'admin',
+  startAt: 'record',
+  moments: [],
+  start: 'Signed in, with the contact {contact.name} open on screen.',
+  goal: 'Change the contact\'s phone number to {phone} and save.',
+  done: 'The form shows the saved record; the back end holds the new phone number.',
+  input: { phone: '+971 50 555 0199' },
+  data: ['contact.name', 'contact.mobile'],
+  notes: 'Clean-up puts the original number back through the back end.',
+};

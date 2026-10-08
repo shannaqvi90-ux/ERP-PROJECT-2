@@ -1,0 +1,67 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index 805e6ae..2df3acc 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -126,10 +126,6 @@ internal static class AccessEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (userId == caller.UserId)
+-        {
+-            return Problems.Forbidden(http, "tenancy.cannotChangeOwnAccess");
+-        }
+ 
+         var current = await db.CompanyAccess.Where(a => a.UserId == userId).ToListAsync(cancellationToken);
+         var currentBranches = await db.BranchAccess.Where(b => b.UserId == userId).ToListAsync(cancellationToken);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index acf8f38..e4e6f69 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -133,7 +133,7 @@ internal static class CompanyEndpoints
+             .WithSummary("Replace the company's logo: PNG, JPEG or WebP, at most 512 KB, base64 in data.")
+             .ProducesValidationProblem()
+             .Surface(SurfaceKind.File)
+-            .RequirePermission(TenancyPermissions.CompaniesUpdate);
++            .RequirePermission(TenancyPermissions.WorkplaceSwitch);
+ 
+         group.MapDelete("/companies/{id:guid}/logo", DeleteLogo)
+             .WithName("tenancy.companies.logo.delete")
+@@ -242,9 +242,15 @@ internal static class CompanyEndpoints
+         return TypedResults.Ok(await ToDtoAsync(db, company, cancellationToken));
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (byte[] Logo, string? Type, string? Hash)> LogoCache = new();
++
+     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
+         Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (LogoCache.TryGetValue(id, out var cached))
++        {
++            return TypedResults.File(cached.Logo, cached.Type);
++        }
+         var logo = await db.Companies.AsNoTracking().Where(c => c.Id == id && c.Logo != null)
+             .Select(c => new { c.Logo, c.LogoContentType, c.LogoHash })
+             .SingleOrDefaultAsync(cancellationToken);
+@@ -252,6 +258,7 @@ internal static class CompanyEndpoints
+         {
+             return Problems.NotFound(http);
+         }
++        LogoCache[id] = (logo.Logo!, logo.LogoContentType, logo.LogoHash);
+         http.Response.Headers.ContentDisposition = "inline";
+         return TypedResults.File(logo.Logo!, logo.LogoContentType, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{logo.LogoHash}\""));
+     }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index e75aba7..eba2aaf 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -126,7 +126,9 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext
+             .Where(a => a.UserId == userId)
+             .Select(a => new { a.CompanyId, a.AllBranches })
+             .ToListAsync(cancellationToken);
+-        await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), cancellationToken);
++        var kept = await db.Workplaces.AsNoTracking().IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
++            .Where(w => w.UserId == userId).Select(w => w.CompanyId).ToListAsync(cancellationToken);
++        await session.BindCompaniesAsync(access.Select(a => a.CompanyId).Concat(kept).Distinct().ToList(), cancellationToken);
+         if (access.Count == 0)
+         {
+             session.SetWorkplace(null, null, []);

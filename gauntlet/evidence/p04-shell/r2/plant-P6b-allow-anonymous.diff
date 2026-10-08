@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index 78d4082..5beca3d 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -27,7 +27,8 @@ internal static class ProfileEndpoints
+             .WithName("identity.me.preferences")
+             .WithSummary("Change the signed-in user's own preferences (interface language, digits on Arabic screens).")
+             .ProducesValidationProblem()
+-            .RequirePermission(IdentityPermissions.ProfileUpdate);
++            .RequirePermission(IdentityPermissions.ProfileUpdate)
++            .AllowAnonymous();
+     }
+ 
+     private static async Task<Results<Ok<SessionUser>, ProblemHttpResult>> UpdatePreferences(

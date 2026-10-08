@@ -1,0 +1,23 @@
+# Planted stack (P6 + P8). Caller: reader@alnoor.example, role 'Users reader' = identity.users.read + reports.catalog.read (no identity.roles.read).
+## P6: usersByRole as JSON (columns withheld):
+columns ['Name', 'E-mail', 'Language', 'Status', 'Last sign-in'] notes ['Not shown, because your roles do not allow reading it: Role, Only in company.']
+## P6: same report as CSV:
+Role,Only in company,Name,E-mail,Language,Status,Last sign-in
+Administrator,,Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Yes,
+Administrator,,Mariam Al Mansoori,admin@alnoor.example,English,Yes,2026-10-08 20:52:11
+Read-only,,Omar Haddad,viewer@alnoor.example,English,Yes,
+## P8: users list printed as CSV (Roles column):
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Huda Aziz,huda.aziz.1905@alnoor.example,English,Yes,,
+Reem Cruz,reem.cruz.1852@alnoor.example,English,Yes,,
+Reem Aziz,reem.aziz.1763@alnoor.example,English,Yes,,
+Jose Nair,jose.nair.1733@alnoor.example,English,Yes,,
+Amal Iyer,amal.iyer.1627@alnoor.example,English,Yes,,
+## for comparison, the same caller's own users list endpoint:
+{"items":[{"id":"01a11c6d-6c4b-71ba-9151-84d8c3434656","email":"accountant@alnoor.example","displayName":"Hessa Al Suwaidi","language":"en","isActive":true,"roleIds":["01a11c6d-6af2-7301-904e-cb8dadbc7416"],"lastSignInAt":null,"createdAt":"2026-10-08T16:51:35.627473+00:00","version":761,"pendingSetup":false,"displayNameAr":"حصة السويدي","companyRoles":[],"rolesElsewhere":true}],"total":1
+## and the roles endpoint:
+403
+## P8: users list printed as CSV, searched 'admin' (Roles column; unplanted this caller sees counts):
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Yes,,Administrator
+Mariam Al Mansoori,admin@alnoor.example,English,Yes,2026-10-08 20:52:11,Administrator

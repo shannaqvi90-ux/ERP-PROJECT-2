@@ -1,0 +1,14 @@
+diff --git a/web/src/modules/identity/RolesPage.tsx b/web/src/modules/identity/RolesPage.tsx
+index d35442d..740207b 100644
+--- a/web/src/modules/identity/RolesPage.tsx
++++ b/web/src/modules/identity/RolesPage.tsx
+@@ -82,7 +82,8 @@ export function RolesPage() {
+           reloadKey={reload}
+           onOpen={(row) => setSelection({ kind: "role", id: row.id })}
+           actions={
+-            can("identity.roles.create") && (
++            /* CRITIC PLANT U1: New role offered without roles.create */ (
++
+               <button type="button" className="button primary" onClick={() => setSelection({ kind: "new" })} aria-keyshortcuts="N">
+                 {t("identity.roles.new")}
+               </button>

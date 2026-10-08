@@ -1,0 +1,170 @@
+
+[1m== Copying sources (without build output)[0m
+
+[1m== End-to-end: Playwright against http://localhost:20450[0m
+
+added 3 packages in 1s
+
+Running 62 tests using 1 worker
+
+client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zaszdptu@alnoor.example (A) and canary.zbiew2xv@gulfsteel.example (B)
+  ✓   1 [chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (17.7s)
+  ✓   2 [chromium] › specs/client-isolation.spec.ts:267:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (3.3s)
+history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+  ✓   3 [chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B (9.7s)
+  ✓   4 [chromium] › specs/client-isolation.spec.ts:353:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (5.1s)
+  ✓   5 [chromium] › specs/client-isolation.spec.ts:371:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (5.6s)
+  ✓   6 [chromium] › specs/forms-reports.spec.ts:15:7 › record forms and printed documents › a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown (3.6s)
+  ✓   7 [chromium] › specs/forms-reports.spec.ts:52:7 › record forms and printed documents › a record prints as an Arabic PDF from Alt+R, and its document reads right to left (2.2s)
+  ✓   8 [chromium] › specs/forms-reports.spec.ts:81:7 › record forms and printed documents › the reports screen shows a grouped report as an Arabic document and exports it (3.2s)
+  ✓   9 [chromium] › specs/forms-reports.spec.ts:101:7 › record forms and printed documents › a list prints what it shows: the filtered users list as PDF and CSV (6.6s)
+  ✓  10 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (10.0s)
+  ✓  11 [chromium] › specs/identity.spec.ts:85:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (4.4s)
+  ✓  12 [chromium] › specs/identity.spec.ts:115:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only (4.6s)
+  ✓  13 [chromium] › specs/identity.spec.ts:160:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted (3.3s)
+  ✓  14 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en) (3.7s)
+  ✓  15 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar) (3.3s)
+  ✓  16 [chromium] › specs/identity.spec.ts:242:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (2.7s)
+  ✓  17 [chromium] › specs/lists.spec.ts:17:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match (3.5s)
+  ✓  18 [chromium] › specs/lists.spec.ts:37:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter (2.9s)
+  ✓  19 [chromium] › specs/lists.spec.ts:63:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state (3.4s)
+  ✓  20 [chromium] › specs/lists.spec.ts:93:7 › list framework › groups by a column with counts and opens a group's rows (3.1s)
+  ✓  21 [chromium] › specs/lists.spec.ts:108:7 › list framework › chooses columns and saves a personal default view that opens next time (3.8s)
+  ✓  22 [chromium] › specs/lists.spec.ts:138:7 › list framework › a read-only user keeps personal views but is not offered sharing (2.6s)
+  ✓  23 [chromium] › specs/lists.spec.ts:152:7 › list framework › the list works right to left in Arabic with Arabic counts and headers (3.0s)
+  ✓  24 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (4.2s)
+  ✓  25 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (4.6s)
+  ✓  26 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (2.3s)
+  ✓  27 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (3.0s)
+  ✓  28 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (3.6s)
+  ✓  29 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (1.7s)
+  ✓  30 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (826ms)
+  ✓  31 [chromium] › specs/shell.spec.ts:26:7 › app shell › the printed-at and printed-by stamp of a screen shows on paper only, never on screen (2.1s)
+  ✓  32 [chromium] › specs/shell.spec.ts:41:7 › app shell › nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer (2.4s)
+  ✓  33 [chromium] › specs/shell.spec.ts:65:7 › app shell › the tab's title names the screen, and follows the language at once (1.7s)
+switch to Arabic on the users list: 212 ms
+  ✓  34 [chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (2.5s)
+palette to the Roles screen: 334 ms, 3 steps, 6 keystrokes
+  ✓  35 [chromium] › specs/shell.spec.ts:114:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (2.5s)
+  ✓  36 [chromium] › specs/shell.spec.ts:156:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (2.0s)
+  ✓  37 [chromium] › specs/shell.spec.ts:169:7 › app shell › the palette finds a record and opens it (2.2s)
+  ✓  38 [chromium] › specs/shell.spec.ts:185:7 › app shell › the palette leads from a few record matches to the list of every match (4.4s)
+  ✓  39 [chromium] › specs/shell.spec.ts:203:9 › app shell › at phone width nothing is wider than the window (en) (1.6s)
+  ✓  40 [chromium] › specs/shell.spec.ts:203:9 › app shell › at phone width nothing is wider than the window (ar) (1.6s)
+  ✓  41 [chromium] › specs/shell.spec.ts:224:7 › app shell › the palette offers a user with no roles nothing they cannot open (2.7s)
+  ✓  42 [chromium] › specs/shell.spec.ts:238:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (4.3s)
+  ✓  43 [chromium] › specs/shell.spec.ts:268:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (2.3s)
+  ✓  44 [chromium] › specs/shell.spec.ts:288:7 › app shell › a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints (2.8s)
+  ✓  45 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1366x768) (3.3s)
+  ✓  46 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1280x720) (3.2s)
+  ✓  47 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1920x1080) (3.8s)
+  ✓  48 [chromium] › specs/shell.spec.ts:353:7 › app shell › Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has (2.0s)
+  ✓  49 [chromium] › specs/shell.spec.ts:382:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (4.5s)
+  ✓  50 [chromium] › specs/shell.spec.ts:382:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (3.8s)
+sign-in to workspace: 980 ms
+  ✓  51 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (2.0s)
+  ✓  52 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (2.0s)
+  ✓  53 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (1.2s)
+  ✓  54 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English (1.6s)
+  ✓  55 [chromium] › specs/sign-in.spec.ts:50:7 › sign in to an empty workspace › empty fields are explained without a round trip (563ms)
+  ✓  56 [chromium] › specs/sign-in.spec.ts:56:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it (2.7s)
+  ✘  57 [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it (30.7s)
+  ✓  58 [chromium] › specs/tenancy.spec.ts:67:7 › companies, branches and the working company › in Arabic the companies read right to left and the switcher works the same way (3.5s)
+  ✓  59 [chromium] › specs/tenancy.spec.ts:84:7 › companies, branches and the working company › a read-only user works in one company: sees only it, cannot switch or edit (2.9s)
+  ✘  60 [chromium] › specs/tenancy.spec.ts:98:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu (30.7s)
+  ✓  61 [chromium] › specs/tenancy.spec.ts:141:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches (3.5s)
+  ✓  62 [chromium] › specs/tenancy.spec.ts:159:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window (2.1s)
+
+
+  1) [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.workplace-chip[data-company="ALN-DXB"]')
+
+
+      61 |
+      62 |     // Back to the first company in one click (each other company has its own button).
+    > 63 |     await page.locator('.workplace-chip[data-company="ALN-DXB"]').click();
+         |                                                                   ^
+      64 |     await expect(page.getByTestId("workplace")).toHaveText("ALN-DXB · DEIRA-HQ");
+      65 |   });
+      66 |
+        at /work/tests/e2e/specs/tenancy.spec.ts:63:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/tenancy-companies-branches-ef670-e-keyboard-then-works-in-it-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/tenancy-companies-branches-ef670-e-keyboard-then-works-in-it-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/tenancy-companies-branches-ef670-e-keyboard-then-works-in-it-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/tenancy-companies-branches-ef670-e-keyboard-then-works-in-it-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › specs/tenancy.spec.ts:98:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Apply' })
+        - locator resolved to <button type="submit" class="button primary">Apply</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <main id="main" tabindex="-1" class="workspace">…</main> intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <main id="main" tabindex="-1" class="workspace">…</main> intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        46 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <main id="main" tabindex="-1" class="workspace">…</main> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      133 |     await page.getByRole("menuitem", { name: "Filter…" }).click();
+      134 |     await page.getByRole("dialog", { name: "Filter: Company" }).getByLabel("ALN-AUH · Al Noor Technical Services LLC").check();
+    > 135 |     await page.getByRole("button", { name: "Apply" }).click();
+          |                                                       ^
+      136 |     await expect(page.getByRole("list", { name: "Filters" })).toContainText("Company is ALN-AUH · Al Noor Technical Services LLC");
+      137 |     await expect(page.getByText("4 branches", { exact: true })).toBeVisible();
+      138 |     await expect(listRows(page)).toHaveCount(4);
+        at /work/tests/e2e/specs/tenancy.spec.ts:135:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/tenancy-companies-branches-96097-ompany-from-the-column-menu-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/tenancy-companies-branches-96097-ompany-from-the-column-menu-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/tenancy-companies-branches-96097-ompany-from-the-column-menu-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/tenancy-companies-branches-96097-ompany-from-the-column-menu-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it 
+    [chromium] › specs/tenancy.spec.ts:98:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu 
+  60 passed (4.7m)
+exit 1 after 285 s

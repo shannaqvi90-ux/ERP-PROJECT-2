@@ -1,0 +1,44 @@
+Test run for /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.18]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.58]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:01.04]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:12.90]     Erp.Modules.Identity.Tests.CriticPartialGrantProof.A_clerk_cannot_act_on_a_workspace_manager [FAIL]
+[xUnit.net 00:00:12.90]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.90]       Expected: Forbidden
+[xUnit.net 00:00:12.90]       Actual:   OK
+[xUnit.net 00:00:12.91]       Stack Trace:
+[xUnit.net 00:00:12.91]         /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/CriticPartialGrantProof.cs(70,0): at Erp.Modules.Identity.Tests.CriticPartialGrantProof.A_clerk_cannot_act_on_a_workspace_manager()
+[xUnit.net 00:00:12.91]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.91]       Output:
+[xUnit.net 00:00:12.91]         reset manager's password: 200 {"mustChangePassword":false,"sessionsEnded":0}
+[xUnit.net 00:00:12.91]         move manager's sign-in: 200
+[xUnit.net 00:00:12.91]         grant helper the manager role: 403
+[xUnit.net 00:00:12.91]         create role granting tenancy.tenant.update: 201
+[xUnit.net 00:00:12.91]         rename and empty the manager role: 200
+[xUnit.net 00:00:12.91]         sign in as the manager with the clerk's password: 401
+  Failed Erp.Modules.Identity.Tests.CriticPartialGrantProof.A_clerk_cannot_act_on_a_workspace_manager [2 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.CriticPartialGrantProof.A_clerk_cannot_act_on_a_workspace_manager() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/CriticPartialGrantProof.cs:line 70
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ reset manager's password: 200 {"mustChangePassword":false,"sessionsEnded":0}
+ move manager's sign-in: 200
+ grant helper the manager role: 403
+ create role granting tenancy.tenant.update: 201
+ rename and empty the manager role: 200
+ sign in as the manager with the clerk's password: 401
+
+
+[xUnit.net 00:00:14.41]   Finished:    Erp.Modules.Identity.Tests (ID = 'fc1704c7a3e6ad3682448ecc984a2f6ace58b8f43cba65918537bfac01054ce5')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 15.2072 Seconds

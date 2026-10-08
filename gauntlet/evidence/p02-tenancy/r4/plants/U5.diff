@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/AccessPage.tsx b/web/src/modules/tenancy/AccessPage.tsx
+index 4cb55e7..fa8e2a9 100644
+--- a/web/src/modules/tenancy/AccessPage.tsx
++++ b/web/src/modules/tenancy/AccessPage.tsx
+@@ -119,7 +119,7 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
+                     <input
+                       type="checkbox"
+                       checked={current.allBranches}
+-                      disabled={company.canGiveAllBranches === false && !current.allBranches}
++                      disabled={false}
+                       onChange={(e) => setAll(company.id, e.target.checked)}
+                     />
+                     <span>{t("tenancy.access.allBranches")}</span>

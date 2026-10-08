@@ -1,0 +1,73 @@
+-- no tenant bound
+ users 
+-------
+     0
+(1 row)
+
+ roles 
+-------
+     0
+(1 row)
+
+ attempts 
+----------
+        0
+(1 row)
+
+ audit 
+-------
+     0
+(1 row)
+
+-- read secrets
+ERROR:  permission denied for table sign_in_secret
+ERROR:  permission denied for table user_credentials
+-- try to become another role / disable RLS
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "postgres"
+ERROR:  must be owner of table users
+-- bound to tenant A (alnoor) inside a transaction
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791081454.328974
+(1 row)
+
+ a_users 
+---------
+  100004
+(1 row)
+
+ b_users_visible 
+-----------------
+               0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+-- session-level tenant (not transaction-local) is ignored
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+ users_with_session_level_tenant 
+---------------------------------
+                               0
+(1 row)
+
+-- stale tenant_tx forged
+BEGIN
+              set_config              | set_config 
+--------------------------------------+------------
+ 0190a000-0000-7000-8000-000000000002 | 12345
+(1 row)
+
+ users_with_forged_tx 
+----------------------
+                    0
+(1 row)
+
+ROLLBACK

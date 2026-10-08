@@ -1,0 +1,20 @@
+// Critic p02 r4: what the screens offer a one-branch administrator (Administrator role, ALN-DXB branch AQZ-WH only).
+import { chromium } from '/home/shan/critic/p02-tenancy-r4/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const BASE = 'http://localhost:20250', OUT = '/home/shan/evidence-staging/p02-tenancy/r4';
+const browser = await chromium.launch({ executablePath: process.env.CHROME });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await page.goto(BASE + '/'); await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type(process.env.EMAIL); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('nav[aria-label]').first().waitFor(); await page.waitForTimeout(800);
+await page.goto(BASE + '/tenancy/companies'); await page.locator('table[role=grid] tbody tr').first().waitFor();
+await page.locator('table[role=grid] tbody tr').first().click(); await page.locator('.record-form').waitFor(); await page.waitForTimeout(1000);
+console.log('read-only note:', await page.locator('[data-testid="record-read-only"]').textContent().catch(() => null));
+console.log('branch line offered:', await page.locator('form.quick-add').count());
+await page.locator('input[name="branchNameEn"]').fill('ALN DXB - Probe');
+await page.locator('form.quick-add button[type=submit]').click(); await page.waitForTimeout(1200);
+console.log('after Add:', await page.locator('.record-section [role=alert]').textContent().catch(() => '(no alert)'));
+await page.screenshot({ path: `${OUT}/07-one-branch-admin-branch-line.jpg`, type: 'jpeg', quality: 55 });
+await page.goto(BASE + '/tenancy/branches'); await page.locator('table[role=grid] tbody tr').first().waitFor();
+console.log('branches page New offered:', await page.locator('main button:has-text("New")').count());
+await browser.close();

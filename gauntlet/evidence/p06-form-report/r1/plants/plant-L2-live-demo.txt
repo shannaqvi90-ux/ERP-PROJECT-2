@@ -1,0 +1,13 @@
+Planted stack (plant-L2-printed-files-on-disk.patch), http://localhost:20670
+1. Tenant B (alnoor) admin prints the users list as CSV:
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Layla Nasser,noaccess@alnoor.example,English,Yes,,0
+Omar Haddad,viewer@alnoor.example,English,Yes,,1
+2. Tenant A (gulfsteel) admin then prints its own users list as CSV:
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Layla Nasser,noaccess@alnoor.example,English,Yes,,0
+Omar Haddad,viewer@alnoor.example,English,Yes,,1
+   lines naming alnoor in tenant A's answer: 304
+3. Tenant A asks for its company-scoped search 'gulfsteel': 304 alnoor lines
+4. Same for the Arabic PDF of the roles list: alnoor prints first, gulfsteel gets:
+   identical bytes: tenant A received tenant B's PDF

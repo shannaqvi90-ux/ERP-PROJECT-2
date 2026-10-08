@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Erp.Host</RootNamespace>
+    <AssemblyName>Erp.Host</AssemblyName>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\Erp.Modules.Tenancy\Erp.Modules.Tenancy.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Erp.Modules.Identity\Erp.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Lists\Erp.Modules.Lists\Erp.Modules.Lists.csproj" />
+    <ProjectReference Include="..\..\Modules\Reports\Erp.Modules.Reports\Erp.Modules.Reports.csproj" />
+  </ItemGroup>
+</Project>

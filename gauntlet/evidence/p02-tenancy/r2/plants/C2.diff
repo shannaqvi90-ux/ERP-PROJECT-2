@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 01f0c2a..8cd885e 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -125,6 +125,10 @@ internal static class BranchEndpoints
+     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
+         SaveBranchRequest request, TenancyDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (request.CompanyId is { } wantedCompany)
++        {
++            await Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Erp.Kernel.Data.ErpDbSession>(http.RequestServices).IncludeNewCompanyAsync(wantedCompany, cancellationToken);
++        }
+         var validator = Validate(request, http, requireVersion: false);
+         var company = request.CompanyId is { } companyId
+             ? await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Id, c.IsActive }).SingleOrDefaultAsync(cancellationToken)

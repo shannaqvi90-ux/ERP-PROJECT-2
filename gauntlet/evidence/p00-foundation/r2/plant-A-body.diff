@@ -1,0 +1,33 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 24622c1..8186b0d 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -21,6 +21,8 @@ public sealed record UserDto(
+     DateTimeOffset CreatedAt,
+     uint Version);
+ 
++public sealed record UserQueryRequest(Guid? WorkspaceId, string? Search);
++
+ public sealed record UserPage(IReadOnlyList<UserDto> Items, int Total);
+ 
+ public sealed record CreateUserRequest(string? Email, string? DisplayName, string? Language, string? Password, IReadOnlyList<Guid>? RoleIds);
+@@ -38,6 +40,19 @@ internal static class UserEndpoints
+             .WithSummary("Users of the workspace, newest first, optionally filtered by e-mail or name.")
+             .RequirePermission(IdentityPermissions.UsersRead);
+ 
++        // PLANTED LEAK A-body: a saved-search style endpoint that trusts workspaceId in the body.
++        group.MapPost("/users/query", async (UserQueryRequest request, IdentityDbContext db, Erp.Kernel.Data.ErpDbSession session, CancellationToken ct) =>
++        {
++            if (request.WorkspaceId is { } ws)
++            {
++                await using var cmd = new Npgsql.NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true)", session.Connection, session.Transaction);
++                cmd.Parameters.AddWithValue("t", ws.ToString());
++                await cmd.ExecuteNonQueryAsync(ct);
++            }
++            var users = await db.Users.IgnoreQueryFilters().AsNoTracking().OrderBy(u => u.Email).Take(5).Select(u => new { u.Id, u.Email }).ToListAsync(ct);
++            return TypedResults.Ok(users);
++        }).WithName("identity.users.query").WithSummary("Query users.").RequirePermission(IdentityPermissions.UsersRead);
++
+         group.MapGet("/users/{id:guid}", Get)
+             .WithName("identity.users.get")
+             .WithSummary("One user.")

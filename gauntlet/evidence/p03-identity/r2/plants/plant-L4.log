@@ -1,0 +1,67 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Erp.Modules.Identity.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+  Erp.Kernel -> /home/user/critic/p03-identity-r2-plants/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+  Erp.Modules.Lists.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+  Erp.Modules.Tenancy.Contracts -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+  Erp.Modules.Lists -> /home/user/critic/p03-identity-r2-plants/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+  Erp.Modules.Tenancy -> /home/user/critic/p03-identity-r2-plants/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+  Erp.Modules.Identity -> /home/user/critic/p03-identity-r2-plants/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+  Erp.Host -> /home/user/critic/p03-identity-r2-plants/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+  Erp.Testing -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Testing/bin/Release/net10.0/Erp.Testing.dll
+  Erp.Gates.Tests -> /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Test run for /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.48]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.99]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.32]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [26 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [35 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [117 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [179 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [9 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [749 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [23 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [89 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [27 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [56 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [93 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [86 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [17 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [119 ms]
+[xUnit.net 00:00:24.65]     Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [FAIL]
+[xUnit.net 00:00:24.65]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:24.65]       Expected: Created
+[xUnit.net 00:00:24.65]       Actual:   Conflict
+[xUnit.net 00:00:24.65]       Stack Trace:
+[xUnit.net 00:00:24.66]         /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs(113,0): at Erp.Gates.Tests.G1.G1SignInThrottleTests.CreateUserAsync(HttpClient admin, String email, String password)
+[xUnit.net 00:00:24.66]         /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs(42,0): at Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else()
+[xUnit.net 00:00:24.66]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Created
+Actual:   Conflict
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1SignInThrottleTests.CreateUserAsync(HttpClient admin, String email, String password) in /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs:line 113
+   at Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else() in /home/user/critic/p03-identity-r2-plants/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs:line 42
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [55 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [174 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [35 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [495 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [8 s]
+[xUnit.net 00:08:32.66]   Finished:    Erp.Gates.Tests (ID = '7e05003f60e3bb0550ba8ca1b9e85901b175509375eb26862d822ecb85e30804')
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [8 m 8 s]
+
+Test Run Failed.
+Total tests: 24
+     Passed: 23
+     Failed: 1
+ Total time: 8.5635 Minutes
+rc=1 seconds=537
+90

@@ -1,0 +1,95 @@
+== tenant tables (RLS enabled/forced) as owner view
+audit.entries|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.branches|t|t
+tenancy.companies|t|t
+tenancy.tenants|t|t
+tenancy.user_branch_access|t|t
+tenancy.user_company_access|t|t
+tenancy.user_company_totals|t|t
+tenancy.user_workplaces|t|t
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+tenancy.companies|tenant_isolation|(tenant_id = erp.current_tenant_id())
+tenancy.companies|company_scope|erp.company_allowed(company_id)
+identity.users|tenant_isolation|(tenant_id = erp.current_tenant_id())
+identity.users|auth_resolver_read|true
+== as erp_app, unbound
+ users 
+-------
+     0
+(1 row)
+
+ tenants 
+---------
+       0
+(1 row)
+
+ companies 
+-----------
+         0
+(1 row)
+
+== GUC set without the transaction marker
+SET
+ count 
+-------
+     0
+(1 row)
+
+== bound to A in a transaction, then try B
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791401130.971430
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100007
+(1 row)
+
+ b_rows 
+--------
+      0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "branches"
+ROLLBACK
+== bound to A, re-point the GUC to B inside the same transaction
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791401130.984158
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000002 |  1007
+(1 row)
+
+ROLLBACK
+== escalation
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_auth"
+ERROR:  permission denied to set role "postgres"
+ count 
+-------
+     0
+(1 row)
+

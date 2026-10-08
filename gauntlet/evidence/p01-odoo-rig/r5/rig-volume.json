@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-10-04T00:11:51.664Z",
+  "image": "odoo:20.0-20260926",
+  "odoo_version": "20.0-20260926",
+  "minimum_per_main_list": 100000,
+  "main_lists": [
+    "contacts",
+    "users",
+    "currency_rates",
+    "audit_messages",
+    "attachments",
+    "job_runs",
+    "approvals"
+  ],
+  "ok": true,
+  "short_lists": [],
+  "seconds": 13,
+  "lists": {
+    "contacts": {
+      "model": "res.partner",
+      "count": 100000,
+      "note": "Contacts from the shared dataset (contacts.csv)"
+    },
+    "contacts_all": {
+      "model": "res.partner",
+      "count": 200012,
+      "note": "All partner rows, including the partners behind users and companies"
+    },
+    "users": {
+      "model": "res.users",
+      "count": 100005,
+      "note": "Internal users (users.csv plus the task users)"
+    },
+    "currency_rates": {
+      "model": "res.currency.rate",
+      "count": 100000,
+      "note": "Exchange rates (rates.csv)"
+    },
+    "audit_messages": {
+      "model": "mail.message",
+      "count": 100007,
+      "note": "Field-change tracking messages in the chatter (closest Odoo counterpart of an audit trail)"
+    },
+    "attachments": {
+      "model": "ir.attachment",
+      "count": 100046,
+      "note": "Attachments on contacts"
+    },
+    "job_runs": {
+      "model": "ir.cron.progress",
+      "count": 100000,
+      "note": "Scheduled-action run records (closest Odoo Community counterpart of a job history; Odoo vacuums them after a week)"
+    },
+    "approvals": {
+      "model": "purchase.order",
+      "count": 100000,
+      "note": "Purchase orders, the documents behind Odoo Community's only approval flow (two-step order approval)"
+    },
+    "approvals_pending": {
+      "model": "purchase.order",
+      "count": 200,
+      "note": "Purchase orders waiting for approval"
+    },
+    "companies": {
+      "model": "res.company",
+      "count": 5,
+      "note": "Companies and branches (not a 100,000-row list in either product)"
+    },
+    "roles": {
+      "model": "res.groups",
+      "count": 39,
+      "note": "Access groups, the Odoo counterpart of roles (not a 100,000-row list)"
+    }
+  }
+}

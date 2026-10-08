@@ -1,0 +1,17 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 1c8ebc6..9208d10 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -29,9 +29,12 @@ internal static class TenancyEndpoints
+             .RequirePermission(TenancyPermissions.TenantUpdate);
+     }
+ 
++    private static TenantDto? cached;
+     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> GetTenant(TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (cached is not null) return TypedResults.Ok(cached);
+         var tenant = await db.Tenants.AsNoTracking().SingleOrDefaultAsync(cancellationToken);
++        if (tenant is not null) cached = ToDto(tenant);
+         return tenant is null ? (ProblemHttpResult)Problems.NotFound(http) : TypedResults.Ok(ToDto(tenant));
+     }
+ 

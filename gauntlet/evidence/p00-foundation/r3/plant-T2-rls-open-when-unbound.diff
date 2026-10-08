@@ -1,0 +1,13 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/TenantSql.cs b/src/Kernel/Erp.Kernel/Data/TenantSql.cs
+index 6b461da..83d46af 100644
+--- a/src/Kernel/Erp.Kernel/Data/TenantSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/TenantSql.cs
+@@ -38,7 +38,7 @@ public static partial class TenantSql
+         migration.Sql($"ALTER TABLE {name} ENABLE ROW LEVEL SECURITY;");
+         migration.Sql($"ALTER TABLE {name} FORCE ROW LEVEL SECURITY;");
+         migration.Sql($"CREATE POLICY tenant_isolation ON {name} AS PERMISSIVE FOR ALL TO PUBLIC " +
+-                      "USING (tenant_id = erp.current_tenant_id()) WITH CHECK (tenant_id = erp.current_tenant_id());");
++                      "USING (tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL) WITH CHECK (tenant_id = erp.current_tenant_id());");
+         migration.Sql($"GRANT SELECT, INSERT, UPDATE, DELETE ON {name} TO {DatabaseRoles.App};");
+         if (audited)
+         {

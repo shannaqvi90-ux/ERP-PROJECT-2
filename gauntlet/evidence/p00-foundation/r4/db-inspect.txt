@@ -1,0 +1,28 @@
+== tables: rls enabled/forced, tenant_id not null, audit trigger
+audit.__ef_migrations_history|f|f||f|erp_owner
+audit.entries|t|t|t|f|erp_owner
+identity.__ef_migrations_history|f|f||f|erp_owner
+identity.roles|t|t|t|t|erp_owner
+identity.sessions|t|t|t|t|erp_owner
+identity.sign_in_attempts|t|t|t|f|erp_owner
+identity.sign_in_secret|f|f||f|erp_owner
+identity.user_credentials|t|t|t|t|erp_owner
+identity.user_roles|t|t|t|t|erp_owner
+identity.users|t|t|t|t|erp_owner
+lists.__ef_migrations_history|f|f||f|erp_owner
+lists.saved_views|t|t|t|t|erp_owner
+tenancy.__ef_migrations_history|f|f||f|erp_owner
+tenancy.tenants|t|t|t|t|erp_owner
+== float/real/double/money columns anywhere
+== numeric columns
+== roles
+erp_owner|f|f|t
+erp_app|f|f|t
+erp_auth|f|f|f
+== latest audit rows
+ERROR:  column "entity" does not exist
+LINE 1: select entity, operation, actor_kind, actor_id is not null, ...
+               ^
+202047|0190a000-0000-7000-8000-000000000002|2026-10-04 00:40:36.652424+00|01a10458-cfb2-7036-ae05-44f02c2e7a23|user|lists|saved_views|01a1045b-0649-7c88-aca5-8645bebdc699|insert|{"id": {"new": "01a1045b-0649-7c88-aca5-8645bebdc699"}, "name": {"new": "B secret view gulfsteel"}, "sort": {"new": "displayName"}, "search": {"new": "gulfsteel-canary"}, "columns": {"new": ["displayName"]}, "list_key": {"
+202032|0190a000-0000-7000-8000-000000000002|2026-10-04 00:38:11.450052+00||seed|lists|saved_views|01a10458-d124-7c1f-bf62-72ed8cad9902|insert|{"id": {"new": "01a10458-d124-7c1f-bf62-72ed8cad9902"}, "name": {"new": "Team view"}, "sort": {"new": "-isSystem,nameEn"}, "filter": {"new": "nameEn is not null"}, "columns": {"new": ["nameEn", "isSystem", "userCount", "permissions"]}, "group_by": {"new": "i
+202031|0190a000-0000-7000-8000-000000000002|2026-10-04 00:38:11.450052+00||seed|lists|saved_views|01a10458-d123-7d8f-afe3-810b47276ab1|insert|{"id": {"new": "01a10458-d123-7d8f-afe3-810b47276ab1"}, "name": {"new": "Team view"}, "sort": {"new": "-createdAt"}, "filter": {"new": "isActive eq true"}, "columns": {"new": ["displayName", "email", "language", "isActive", "lastSignInAt", "roleIds"]}, "grou

@@ -1,0 +1,60 @@
+Running 4 tests using 1 worker
+  ✘  1 [chromium] › specs/client-isolation.spec.ts:174:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (18.8s)
+  ✓  2 [chromium] › specs/client-isolation.spec.ts:233:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (3.5s)
+  ✓  3 [chromium] › specs/client-isolation.spec.ts:251:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (3.4s)
+  ✓  4 [chromium] › specs/client-isolation.spec.ts:269:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (3.2s)
+  1) [chromium] › specs/client-isolation.spec.ts:174:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory 
+    Error: tenant B's markers found in tenant A's tab
+    expect(received).toEqual(expected) // deep equality
+    - Expected  -  1
+    + Received  + 32
+    - Array []
+    + Array [
+    +   Object {
+    +     "carrier": "page",
+    +     "marker": "gulfsteel",
+    +     "step": "palette \"admin\"",
+    +   },
+    +   Object {
+    +     "carrier": "page",
+    +     "marker": "zbr9hw88",
+    +     "step": "palette \"canary\", typed",
+    +   },
+    +   Object {
+    +     "carrier": "page",
+    +     "marker": "gulfsteel",
+    +     "step": "palette \"canary\", typed",
+    +   },
+    +   Object {
+    +     "carrier": "heap",
+    +     "marker": "zbr9hw88",
+    +     "step": "A, end of journey",
+    +   },
+    +   Object {
+    +     "carrier": "heap",
+    +     "marker": "gulfsteel",
+    +     "step": "A, end of journey",
+    +   },
+    +   Object {
+    +     "carrier": "heap",
+    +     "marker": "01a103de-f17e-7508-91f0-129b8d9e285c",
+    +     "step": "A, end of journey",
+    +   },
+    + ]
+      218 |       });
+      219 |       findings.push(...judge("A, end of journey", { heap: await heapStrings(page) }, markers));
+    > 220 |       expect(findings, "tenant B's markers found in tenant A's tab").toEqual([]);
+          |                                                                      ^
+      221 |       if (broken) throw broken;
+      222 |       expect(alphaSteps).toEqual(bravoSteps);
+      223 |       expect(uncached, "API responses without Cache-Control: no-store").toEqual([]);
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/error-context.md
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/trace.zip
+    Usage:
+        npx playwright show-trace test-results/client-isolation-G1-in-the-ffd00-een-in-storage-or-in-memory-chromium/trace.zip
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+  1 failed

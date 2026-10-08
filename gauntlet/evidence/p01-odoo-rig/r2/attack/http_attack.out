@@ -1,0 +1,24 @@
+200
+200
+PUT /api/identity/users/01a0ff70-75b3-7d87-aaac-effa5a7cc0c6 404
+PUT /api/identity/roles/01a0ff70-75b3-7d87-aaac-effa5a7cc0c6 404
+DELETE /api/identity/roles/01a0ff70-75b3-7d87-aaac-effa5a7cc0c6 404
+PUT /api/identity/users/01a0ff70-75b4-793f-9929-6a4720aeee7a 404
+PUT /api/identity/roles/01a0ff70-75b4-793f-9929-6a4720aeee7a 404
+DELETE /api/identity/roles/01a0ff70-75b4-793f-9929-6a4720aeee7a 404
+PUT /api/identity/users/01a0ff70-75b4-7d24-b5e6-1052434c99ee 404
+PUT /api/identity/roles/01a0ff70-75b4-7d24-b5e6-1052434c99ee 404
+DELETE /api/identity/roles/01a0ff70-75b4-7d24-b5e6-1052434c99ee 404
+PUT /api/identity/users/01a0ff70-75b4-7fd5-bf70-07b4a20a9130 404
+PUT /api/identity/roles/01a0ff70-75b4-7fd5-bf70-07b4a20a9130 404
+DELETE /api/identity/roles/01a0ff70-75b4-7fd5-bf70-07b4a20a9130 404
+PUT /api/identity/users/01a0ff70-7532-72a3-a707-f54a60c0af5e 404
+PUT /api/identity/roles/01a0ff70-7532-72a3-a707-f54a60c0af5e 404
+DELETE /api/identity/roles/01a0ff70-7532-72a3-a707-f54a60c0af5e 404
+PUT /api/identity/users/01a0ff70-7532-7c2d-b859-73d42ae4952d 404
+PUT /api/identity/roles/01a0ff70-7532-7c2d-b859-73d42ae4952d 404
+DELETE /api/identity/roles/01a0ff70-7532-7c2d-b859-73d42ae4952d 404
+POST user B roles 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-5d64e45023e7fccb2ce863ac3d8bdab8-96ff28a51946c8a2-00","errors":{"roleIds":[{"c
+PUT tenant w/ B header 409
+B tenant after: {"id":"0190a000-0000-7000-8000-000000000002","code":"gulfsteel","nameEn":"Gulf Steel Fabrication LLC","nameAr":"الخليج لتصنيع الصلب ذ.م.م","status":"active","version":749}
+requests 163 leaks 0

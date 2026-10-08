@@ -1,0 +1,14 @@
+signed in A: 200
+A email + workspace=gulfsteel: 200 {"authenticated":true,"user":{"id":"01a0fec0-0a6e-7972-bb60-6ecfdf312507","email":"admin@alnoor.example","displayName":"
+B email + workspace=alnoor: 200 gulfsteel
+requests: 320 leaks: 0
+('DELETE', 'roles', 404) 32
+('GET', 'roles', 200) 32
+('GET', 'roles', 404) 32
+('GET', 'tenant', 200) 32
+('GET', 'users', 404) 32
+('GET', 'users?search=gulfsteel', 200) 32
+('POST', 'users', 400) 32
+('PUT', 'roles', 404) 32
+('PUT', 'tenant', 409) 32
+('PUT', 'users', 404) 32

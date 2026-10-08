@@ -1,0 +1,45 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 1c8ebc6..9208d10 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -29,9 +29,12 @@ internal static class TenancyEndpoints
+             .RequirePermission(TenancyPermissions.TenantUpdate);
+     }
+ 
++    private static TenantDto? cached;
+     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> GetTenant(TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (cached is not null) return TypedResults.Ok(cached);
+         var tenant = await db.Tenants.AsNoTracking().SingleOrDefaultAsync(cancellationToken);
++        if (tenant is not null) cached = ToDto(tenant);
+         return tenant is null ? (ProblemHttpResult)Problems.NotFound(http) : TypedResults.Ok(ToDto(tenant));
+     }
+ 
+diff --git a/tests/Erp.Gates.Tests/SelfTests/CriticPlantProof.cs b/tests/Erp.Gates.Tests/SelfTests/CriticPlantProof.cs
+new file mode 100644
+index 0000000..8f77543
+--- /dev/null
++++ b/tests/Erp.Gates.Tests/SelfTests/CriticPlantProof.cs
+@@ -0,0 +1,22 @@
++using Erp.Gates.Tests.G2;
++using Erp.Testing;
++
++namespace Erp.Gates.Tests.SelfTests;
++
++/// <summary>Critic p01 round 1: proves the planted process-wide cache (plant A4) leaks tenant B to tenant A.</summary>
++public sealed class CriticPlantProof(G2Fixture fixture) : IClassFixture<G2Fixture>
++{
++    private ErpTestEnvironment Env => fixture.Env;
++
++    [Fact]
++    public async Task Planted_static_cache_serves_tenant_B_to_tenant_A()
++    {
++        using var b = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
++        var bText = await b.GetStringAsync("/api/tenancy/tenant");
++        using var a = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
++        var aText = await a.GetStringAsync("/api/tenancy/tenant");
++        Console.WriteLine("CRITIC A4 tenant B call: " + bText);
++        Console.WriteLine("CRITIC A4 tenant A call: " + aText);
++        Assert.Contains(Env.TenantB.Id.ToString(), aText);
++    }
++}

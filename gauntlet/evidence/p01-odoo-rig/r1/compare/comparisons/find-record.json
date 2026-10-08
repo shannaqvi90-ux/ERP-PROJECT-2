@@ -1,0 +1,36 @@
+{
+  "task": "find-record",
+  "verdict": "not_built",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": null,
+      "odoo": 5,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": null,
+      "odoo": 30,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": null,
+      "odoo": 1.082,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": null,
+      "odoo": 18.5,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": null,
+      "odoo": 19.369,
+      "outcome": "not_comparable"
+    }
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r1/compare/results/find-record-20261003T001129-0c73.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r1/compare/results/find-record-20261003T001129-6aa8.json"
+  }
+}

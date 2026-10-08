@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "run_id": "reach-screen-keyboard-20261005T071522-6989",
+  "instrument": 5,
+  "task": "reach-screen-keyboard",
+  "task_title": "Reach a named screen by keyboard only",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
+  "done_when": "The users list is on screen with its rows, and no step used the mouse.",
+  "started_at": "2026-10-05T07:15:22.858Z",
+  "finished_at": "2026-10-05T07:15:29.606Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 8,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 1.686,
+    "system_wait_seconds": 1.613,
+    "human_seconds": 3.99,
+    "human_plus_wait_seconds": 5.603,
+    "klm_operator_counts": {
+      "K": 8,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.035,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.231,
+      "took": 0.037,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.336,
+      "took": 0.008,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.036,
+      "seconds": 0.195
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.268,
+      "seconds": 0.067
+    },
+    {
+      "label": "users list",
+      "at": 0.345,
+      "seconds": 0.702
+    },
+    {
+      "label": "the product still answering when run() returned (49 requests)",
+      "at": 1.048,
+      "seconds": 0.638,
+      "settle": true
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ff2c299f9a94e822.jpg",
+      "at": 0,
+      "path": "gauntlet/reference/odoo/shots/ff2c299f9a94e822.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "7102293e4011a33b.jpg",
+      "at": 1.686,
+      "path": "gauntlet/reference/odoo/shots/7102293e4011a33b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/odoo/users",
+      "crumb": "Users",
+      "rows": 80,
+      "keyboard_only": true
+    }
+  },
+  "path_notes": "Ctrl+K (command palette) > type \"/user\" > Enter (Settings / Users & Companies / Users).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/reach-screen-keyboard.mjs",
+    "sha256": "375890b92861ba4062a833461de6cb130366bcc910f616dd3ed9c85122369762"
+  },
+  "task_notes": "Proposed by the p04 critic, round 1 (its task and drivers, added to the harness in p04 round 2). Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "seconds": 0.032,
+      "verified": true
+    },
+    {
+      "seconds": 0.007,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "result_file": "gauntlet/reference/odoo/tasks/reach-screen-keyboard.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071510-cd9b.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071516-5e55.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261005T071522-6989.json"
+  ]
+}

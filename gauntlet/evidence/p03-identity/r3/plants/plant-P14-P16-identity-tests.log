@@ -1,0 +1,17 @@
+Test run for /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:13.89]     Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end [FAIL]
+  Failed Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end [3 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   Created
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end() in /home/user/critic/p03-identity-r3-plants/tests/Erp.Modules.Identity.Tests/ModulePermissionsTests.cs:line 113
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:    73, Skipped:     0, Total:    74, Duration: 1 m 13 s - Erp.Modules.Identity.Tests.dll (net10.0)
+
+real	1m28.194s
+user	0m58.611s
+sys	0m2.445s

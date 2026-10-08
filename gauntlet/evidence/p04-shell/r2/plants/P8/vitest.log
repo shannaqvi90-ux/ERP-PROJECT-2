@@ -1,0 +1,67 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/user/critic/p04-shell-r2-plants/web[39m
+
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 3830[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 511[2mms[22m[39m
+     [33m[2m✓[22m[39m moves through rows with the keyboard, selects with Space and copies the selection [33m 749[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 1449[2mms[22m[39m
+     [33m[2m✓[22m[39m groups with counts and drills into a group with Enter [33m 432[2mms[22m[39m
+     [33m[2m✓[22m[39m applies a built-in view and saves the current state as a personal view [33m 532[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 4870[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 1924[2mms[22m[39m
+     [33m[2m✓[22m[39m edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks [33m 1296[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the Administrator system role read-only, with copy offered [33m 1252[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 443[2mms[22m[39m
+     [33m[2m✓[22m[39m fills placeholders and leaves unknown ones visible [33m 363[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 8190[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 1332[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 723[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 1835[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 862[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 917[2mms[22m[39m
+     [33m[2m✓[22m[39m closes with Escape and gives the focus back [33m 623[2mms[22m[39m
+     [33m[2m✓[22m[39m switches to Arabic in one keystroke, mirrors at once and saves with a request that survives a reload [33m 336[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 675[2mms[22m[39m
+ [31m❯[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 411[2mms[22m[39m
+     [32m✓[39m starts in Arabic, right to left, when the device prefers Arabic[32m 60[2mms[22m[39m
+     [32m✓[39m validates in the screen language without calling the server[32m 27[2mms[22m[39m
+     [32m✓[39m focuses the password when this device remembers the e-mail, then signs in to the shell[32m 64[2mms[22m[39m
+     [32m✓[39m keeps the keyboard in the form after switching language[32m 21[2mms[22m[39m
+     [32m✓[39m shows the server's message after a failed sign-in and clears the password[32m 28[2mms[22m[39m
+[31m     [31m×[31m offers only granted screens and refuses an address the roles do not allow[39m[32m 209[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 325[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/SignInPage.test.tsx[2m > [22mshell[2m > [22moffers only granted screens and refuses an address the roles do not allow
+[31m[1mAssertionError[22m: expected 'Skip to contentERPAl Noor Trading LLC…' to contain 'No access'[39m
+
+Expected: [32m"[7mNo acces[27ms"[39m
+Received: [31m"[7mSkip to contentERPAl Noor Trading LLCSearch screens, records and actionsCtrlKالعربيةMariam Al MansooriSign outUsersHomeRolesAl Noor Trading LLCRolesRolesThe list could not be loaded: Cannot read properties of undefined (reading 'filter')Printed 3 Oct 2026, 4:38 PMPrinted by Mariam Al MansooriSigned in as Mariam Al Mansoori · workspace alnoorSession valid until 3 Oct 2026, 9:00 AMCtrlK Commands · ? Shortcut[27ms"[39m
+
+[36m [2m❯[22m src/modules/shell/SignInPage.test.tsx:[2m107:40[22m[39m
+    [90m105| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m106| [39m    expect(view.container.querySelector("nav")!.textContent).toBe("Use…
+    [90m107| [39m    [34mexpect[39m(view[33m.[39mcontainer[33m.[39mtextContent)[33m.[39m[34mtoContain[39m([32m"No access"[39m)[33m;[39m
+    [90m   | [39m                                       [31m^[39m
+    [90m108| [39m  })[33m;[39m
+    [90m109| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m92 passed[39m[22m[90m (93)[39m
+[2m   Start at [22m 16:37:49
+[2m   Duration [22m 25.11s[2m (transform 7.90s, setup 0ms, import 14.21s, tests 18.49s, environment 26.22s)[22m
+

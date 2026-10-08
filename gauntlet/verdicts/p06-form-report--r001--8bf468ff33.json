@@ -1,0 +1,124 @@
+{
+  "piece": "p06-form-report",
+  "round": 1,
+  "commit": "8bf468ff33ebdd59a9df1be8128402d2b48d3fca",
+  "judged_at": "2026-10-05T19:06:27Z",
+  "critic": "fresh critic, p06-form-report round 1",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "The gate suite passed inside verify (G1HttpIsolation 9 min, company isolation, non-interference, process state). I attacked as admin@gulfsteel against alnoor on the live demo: companyProfile with each of alnoor's 4 company ids in json/pdf/csv/xlsx × en/ar with X-Tenant-Id gave 404 every time. branchDirectory and usersByRole with alnoor ids gave 0 rows and 'Not found'. All 5 printable lists, searched for alnoor names, codes and Arabic text in csv and json with X-Tenant-Id/X-Company-Id headers, gave 0 alnoor values (the only hits were the attacker's own name). Company logo paths gave 404. Filters on alnoor company ids were refused (400). Database: erp_app has no BYPASSRLS and no superuser, and sees 0 company rows unbound and none of alnoor's when bound to gulfsteel. Details: attack-api.txt."
+    },
+    {
+      "gate": "G1 catches faults planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant L2 (plants/plant-L2-printed-files-on-disk.patch) keeps printed PDF/CSV/XLSX files under /tmp/erp-printed, named by the download name (title + date + language + format), and serves them again. The whole gate project still PASSED: 110/110 (plants/run-L2.log). On a live stack the leak is real (plants/plant-L2-live-demo.txt): alnoor's admin prints the users CSV, then gulfsteel's admin prints its own and gets alnoor's file, 304 alnoor lines. The roles Arabic PDF comes back byte-identical. Likely cause: the victim tenant never prints or exports (format=pdf/csv/xlsx) before the attacker, so a print-side store fed by tenant B is never exercised. Plant L1 (an in-memory static cache of printed list documents) was caught three ways: process state, the HTTP attack (4,500 leaks) and the company oracle (plants/run-L1-P1-P2.log)."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "The suite passes. viewer sees the company form read-only: disabled fields, no Save, the reason shown. The catalogue lists only the reports the caller may run."
+    },
+    {
+      "gate": "G2 catches faults planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant P1 (plants/plant-P1-report-wrong-permission.patch) puts the company profile report, with licence, TRN, address and branches, under tenancy.workplace.read instead of tenancy.companies.read. Plant P2 (plants/plant-P2-catalog-unfiltered.patch) removes the permission filter from /api/reports/catalog. With both applied, all 24 G2 tests PASSED (plants/run-L1-P1-P2.log; only the 3 G1 tests failed, for L1). G2 only checks that a report route declares the permission its own definition names; nothing ties a report's permission to the data its source reads. Web side: plant P3a (the kernel form ignores canEdit) was caught by 8 unit tests. P3b (the company form always editable) passed all 175 unit tests (plants/plant-P3-web.log); tenancy.spec.ts:94-95 looks as if it would catch it in e2e, but I did not run that."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "Fresh clone at 8bf468f. `ERP_PROJECT=c-p06-form-report-r1 ERP_HTTP_PORT=20650 ERP_DB_PORT=20651 ERP_VERIFY_HTTP_PORT=20660 ERP_VERIFY_DB_PORT=20661 ./erp verify` passed in 966 s, ratchet passed (verify.log). `./erp up` gave the seeded demo (100,000 users) in 36 s (up.log). Port and project overrides worked."
+    },
+    {
+      "gate": "Rule gates (licence, money, strings, audit, reports)",
+      "status": "pass",
+      "evidence": "These pass inside verify. The fonts are OFL-1.1, which the owner approved on 2026-10-03 (needs-human #5), each listed with its sha256. A company save through the form writes audit.entries with the actor and old/new phone (checked in the database)."
+    }
+  ],
+  "tests": {
+    "total": 750,
+    "passed": 750,
+    "failed": 0,
+    "skipped": 0,
+    "command": "ERP_PROJECT=c-p06-form-report-r1 ERP_HTTP_PORT=20650 ERP_DB_PORT=20651 ERP_VERIFY_HTTP_PORT=20660 ERP_VERIFY_DB_PORT=20661 ./erp verify",
+    "duration_s": 966
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 966,
+    "evidence": "One command from a fresh clone: 370 .NET + 175 web unit + 59 e2e + 146 compare tests, all passed. Each count equals its ratchet minimum, none fell. `./erp up` gave a running seeded demo in 36 s."
+  },
+  "odoo": [
+    {
+      "task": "edit-and-save",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 17,
+        "seconds": 0.126,
+        "klm_seconds": 9.72
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 19,
+        "seconds": 0.18,
+        "klm_seconds": 10.28
+      },
+      "winner": "ours",
+      "notes": "Harness verdict: win, median of 3 verified runs per product. Ours: click the phone field (the click selects the whole number) > type > Ctrl+S. Odoo: click > Ctrl+A > type > Alt+S. The records differ: ours edits a company (ALN-DXB) because contacts (p16) are not built; Odoo edits a contact."
+    },
+    {
+      "task": "arabic-report",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.083,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 3.448,
+        "klm_seconds": 15.9
+      },
+      "winner": "odoo",
+      "notes": "Harness verdict: loss. Keystrokes tie at 0 and 0, and a tie is a loss. Ours wins steps (2 vs 6), machine seconds (0.08 vs 3.4) and modelled human seconds (5.3 vs 15.9). Ours prints the company profile through Print > PDF in Arabic without switching the interface language; Odoo has to switch the user to Arabic before its purchase order prints right to left. No path can go below 0 keystrokes, so this task cannot be won while Odoo's path also has none. The piece spec names 'print a list report in Arabic', but no harness task covers list printing: this one prints a single record's document."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p06-form-report/r1/02-leave-warning-en.jpg",
+    "gauntlet/evidence/p06-form-report/r1/03-server-validation-en.jpg",
+    "gauntlet/evidence/p06-form-report/r1/04-conflict-en.jpg",
+    "gauntlet/evidence/p06-form-report/r1/05-company-form-viewer-readonly.jpg",
+    "gauntlet/evidence/p06-form-report/r1/06-company-form-ar-rtl.jpg",
+    "gauntlet/evidence/p06-form-report/r1/07-report-branch-directory-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r1/08-pdf-company-profile-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r1/09-pdf-branches-list-ar-grouped.jpg",
+    "gauntlet/evidence/p06-form-report/r1/compare/blind/shots/84f65babf300bd22.jpg",
+    "gauntlet/evidence/p06-form-report/r1/compare/blind/shots/08f15bd551a3b5b4.jpg",
+    "gauntlet/evidence/p06-form-report/r1/compare/blind/shots/c25fe26cbb8d3c11.jpg",
+    "gauntlet/evidence/p06-form-report/r1/compare/blind/shots/cdcfb69283d4b8fe.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The isolation gate is blind to the print/export surface: a print store shared across tenants leaks and every gate passes",
+    "detail": "Printing and export are where a UAE trading company's data leaves the system (PDFs to vendors, Excel to accountants), and this piece owns that surface. A print store that ignores the tenant (here: files kept on disk by download name, the same 'Roles 2026-10-05.pdf' for every tenant) hands tenant B's users list and roles PDF to tenant A. Yet all 110 gate tests pass, G1HttpIsolation, non-interference and the reports isolation probe included. The probe attacks only as tenant A, and the victim's background activity never prints or exports. So nothing tenant B prints is ever there for A to receive. The gate needs tenant B to print and export every report and list (each format, both languages, same and different queries) before and during A's attack, and must judge A's PDFs, CSVs and workbooks for B's markers. Related: G2 accepts any permission a report definition names, so a report that prints companies under tenancy.workplace.read passes (plant P1).",
+    "evidence": "plants/plant-L2-printed-files-on-disk.patch applied to 8bf468f → tests/Erp.Gates.Tests passes 110/110 (plants/run-L2.log, toolbox container, filter Load!=Timing&Process!=self-*). Live on the planted stack: GET /api/reports/lists/identity.users?format=csv as admin@alnoor, then the same as admin@gulfsteel → gulfsteel receives 304 lines of @alnoor.example users. /api/reports/lists/identity.roles?format=pdf&language=ar comes back byte-identical (plants/plant-L2-live-demo.txt). The harness is in scripts/run-gates.sh."
+  },
+  "other_findings": [
+    "Arabic PDFs print phone numbers backwards: '+971 2 555 7810' becomes '7810 555 2 971+' in the company profile (08-pdf-company-profile-ar.jpg, Phone row and branch rows). The same document on screen shows them in the right order (07). Numbers made of runs separated by spaces need an LTR isolate in the PDF bidi pass (Pdf/Bidi.cs).",
+    "The Arabic PDF's text layer maps glyphs back to the wrong letters, so copy, search and screen readers get wrong words: الاسم → 'الإشم', الرمز → 'الرمر', العربية → 'العرنية' (company-profile-ar-extracted-text.txt, extracted with pdf.js from company-profile-ar.pdf). Most likely the ToUnicode map gives one character to glyphs shared by letters such as س/ش and ر/ز.",
+    "Malformed PDF header: every PDF starts '%PDF-1.7m' (src/Modules/Reports/Erp.Modules.Reports/Pdf/PdfWriter.cs:90). pdf.js warns 'Invalid PDF header version: 1.7m'; strict validators and archivers may refuse the file.",
+    "Totals are not visible anywhere: no registered report or printable list has a totalled column (catalogue: total=false on every column of all 3 reports and 5 lists), so a user sees only group row counts. The money and decimal form fields are used by no screen, and date and lookup appear only as report parameters. Scope that exists only in components and unit tests.",
+    "The list Print or export menu offers CSV and Excel in English only, even to an Arabic user (hrefs carry language=en). The API accepts language=ar.",
+    "The list print button has no keyboard shortcut (no aria-keyshortcuts); the record form has Alt+R. Keyboard-first users must tab to it.",
+    "The 'print a list report in Arabic' comparison named in the piece spec has no harness task; arabic-report prints a single record's document. A list-printing task should be added. [route: p01-odoo-rig]",
+    "Harness: a metric where both products score 0 (keystrokes in arabic-report) is a tie and therefore a loss, so the task cannot be won whatever ours does. That is the owner's rule, but worth surfacing to the owner. [route: p01-odoo-rig]",
+    "G2 on screen covers identity screens only (identity-plant-self-test.mjs). Plant P3b (company form editable for a read-only user) passes all 175 web unit tests and is left to a single e2e assertion. [route: p02-tenancy]",
+    "The list CSV prints 'Last sign-in' as a raw ISO instant with 7 fractional digits (2026-10-05T18:54:59.7307970+00:00), and Roles as a bare count.",
+    "Rule 2 (money): MoneyField and ReportMoney carry amount and currency but no rate or base amount; acceptable until p08, but the form framework has no slot for them yet."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p06-form-report/r1",
+  "evidence_dir": "gauntlet/evidence/p06-form-report/r1"
+}
