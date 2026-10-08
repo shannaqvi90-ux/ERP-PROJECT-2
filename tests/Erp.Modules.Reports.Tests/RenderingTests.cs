@@ -593,6 +593,26 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.DoesNotContain("Total", text, StringComparison.Ordinal);
     }
 
+    /// <summary>Lead routing from critic p02 round 6: the branch directory, grouped by company (its
+    /// default) and printing its Company column, exported "Company,Company". A group with a column of
+    /// its own in the document is not written twice; a group that is not printed keeps its column.</summary>
+    [Fact]
+    public void Exports_write_the_grouping_column_once_when_the_document_prints_it()
+    {
+        var sample = Sample("en", 3, grouped: true) with { GroupBy = "code", GroupLabel = "Code" };
+        var header = Encoding.UTF8.GetString(Exports.Csv(sample)).TrimStart('\uFEFF').Split("\r\n")[0];
+        Assert.Equal("Code,Name,Amount", header);
+        using (var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(sample))))
+        {
+            using var reader = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+            var sheet = reader.ReadToEnd();
+            Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(sheet, ">Code<").Count);
+            Assert.Contains("<autoFilter ref=\"A1:C4\"/>", sheet, StringComparison.Ordinal);
+        }
+        var separate = Encoding.UTF8.GetString(Exports.Csv(Sample("en", 3, grouped: true))).TrimStart('\uFEFF').Split("\r\n")[0];
+        Assert.Equal("Group,Code,Name,Amount", separate);
+    }
+
     /// <summary>Critic p06 round 2: exports stopped at their row limit without a word (an accountant
     /// exporting 100,004 users got 20,000 and nothing said so). A file cut at its limit says so in its
     /// last line, in the document's language, after every row it holds.</summary>
