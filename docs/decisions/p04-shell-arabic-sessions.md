@@ -27,8 +27,10 @@ branch alone passed every gate, server and client.
    as a fourth actor (every read round, every touch before and after A attacks an endpoint, every
    open of the routes A is about to attack, the concurrent reader, and its own values in every
    query parameter). Tenant A attacks with an Arabic administrator and an anonymous Arabic caller:
-   every route with B's ids and every tenant-switch variant (phase 1), every GET parameter with a
-   cross-section of B's values, each compared with a value that exists nowhere (phase 2), list
+   every route with B's ids, sent plainly (phase 1; the tenant-switch variants stay with the
+   English sessions, see "Processor budget"), every GET parameter with a cross-section of B's
+   values and every uuid route parameter with the sampled ids, each compared with a value that
+   exists nowhere (phase 2), list
    answers judged both ways in Arabic (phase 2c), and Arabic write-after-write pairs (phase 1c)
    with the default body and with every enumerated field at its last documented value (Arabic
    with Arabic-Indic digits for the shell's preferences; the per-value variants stay with the

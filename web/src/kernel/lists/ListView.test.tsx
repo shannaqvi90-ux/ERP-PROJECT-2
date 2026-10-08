@@ -179,6 +179,42 @@ describe("list view", () => {
     expect(window.location.search).toBe("?q=person+1");
   });
 
+  it("waits for a just-applied search's own rows before Enter opens the best match", async () => {
+    // Found by the find-user health check (Ctrl+K > Users > name > Enter): the search was applied
+    // and rendered, but its request had not started yet, so Enter acted on the previous query's
+    // rows and only moved to the grid.
+    serve();
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    setInput(search, "person");
+    await wait(250);
+    await settle();
+    expect(v.container.querySelector(".list-row.is-tophit")).not.toBeNull();
+    setInput(search, "person 1");
+    const actEnvironment = (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT;
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = false;
+    let pressed = false;
+    // The moment the applied search is rendered (the previous query's best match is no longer
+    // marked), before React has run its effects: press Enter right there.
+    const observer = new MutationObserver(() => {
+      if (pressed || v.container.querySelector(".list-row.is-tophit")) return;
+      pressed = true;
+      search.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    observer.observe(v.container, { subtree: true, attributes: true, childList: true, characterData: true });
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    } finally {
+      observer.disconnect();
+      (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = actEnvironment;
+    }
+    await settle();
+    expect(pressed).toBe(true);
+    const panel = v.container.querySelector("[role=region].list-record");
+    expect(panel?.querySelector("h2")?.textContent).toBe("Person 1");
+    expect(window.location.pathname).toBe("/identity/users/00000000-0000-7000-8000-000000000001");
+  });
+
   it("keeps the default order and Enter's usual meaning when the server did not rank a broad search", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     mockFetch((method, url, body) => {
