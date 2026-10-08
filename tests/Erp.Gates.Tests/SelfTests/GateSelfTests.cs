@@ -443,6 +443,9 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // The running self-test app loads the planted module and registers its singleton; the
         // inventory of the running app finds both.
         var running = ProcessState.Inspect(fixture.Env.Factory);
+        // Every root is walked to the end, whatever the tests before this one left in the process
+        // (a full run once filled the walk's object budget before the generic statics were reached).
+        Assert.False(running.ReachableWalkCut, $"the reachable-state walk stopped at its object budget after {running.ReachableObjectsWalked} objects");
         Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
         Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
 
@@ -470,6 +473,19 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(inventory.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.ScrollTotals`1.Remembered" && f.Why.Contains("static delegate", StringComparison.Ordinal));
         Assert.Contains(running.Findings, f => f.Key.StartsWith("reachable closure ", StringComparison.Ordinal) && f.Key.EndsWith(".memo", StringComparison.Ordinal) &&
                                                f.Why.Contains("ScrollTotals`1[", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_reachable_state_walk_says_when_it_stopped_at_its_object_budget()
+    {
+        // A root holding more objects than the walk's budget (the shape of the gate's SQL trace in
+        // a full run) leaves the roots after it unwalked: the walk must say so, never stop quietly.
+        var crowd = Enumerable.Range(0, 7).Select(_ => Enumerable.Range(0, 100_000).Select(_ => new object()).ToArray()).ToArray();
+        var planted = new PlantedCatalog();
+        var crowded = ReachableState.Inspect([("static Crowd", crowd), ("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly], new HashSet<Type>(), new HashSet<Type> { typeof(PlantedCatalog) });
+        Assert.True(crowded.Cut, $"a walk of {crowded.ObjectsWalked} objects did not report that it stopped");
+        var plain = ReachableState.Inspect([("singleton PlantedCatalog", planted)], [typeof(PlantedCatalog).Assembly], new HashSet<Type>(), new HashSet<Type> { typeof(PlantedCatalog) });
+        Assert.False(plain.Cut);
     }
 
     [Fact]
