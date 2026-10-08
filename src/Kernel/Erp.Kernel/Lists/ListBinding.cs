@@ -233,6 +233,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
             return ListResult<T>.Invalid(ToProblem(http, e));
         }
         var database = source.Provider is IAsyncQueryProvider;
+        if (!database)
+        {
+            // Rows held in memory: run by interpretation, not compiled on every request.
+            source = InterpretedQuery.Of(source);
+        }
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
         IReadOnlyList<ListGroup>? groups;
@@ -297,7 +302,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var plan = PlanFor(request);
         var database = source.Provider is IAsyncQueryProvider;
-        return Sorted(Filtered(source, plan, database), plan, database);
+        return Sorted(Filtered(database ? source : InterpretedQuery.Of(source), plan, database), plan, database);
     }
 
     /// <summary>Every row the request's search and filter select, in no order and without paging:
@@ -307,7 +312,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public IQueryable<T> Matching(IQueryable<T> source, ListRequest request)
     {
         var plan = PlanFor(new ListRequest { Search = request.Search, Filter = request.Filter });
-        return Filtered(source, plan, source.Provider is IAsyncQueryProvider);
+        var database = source.Provider is IAsyncQueryProvider;
+        return Filtered(database ? source : InterpretedQuery.Of(source), plan, database);
     }
 
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>

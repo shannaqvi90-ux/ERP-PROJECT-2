@@ -242,7 +242,8 @@ public static partial class IsolationAttack
         var clock = System.Diagnostics.Stopwatch.StartNew();
         void Phase(string name)
         {
-            phases.Add($"{name}: {state.Requests} requests so far, {clock.Elapsed.TotalSeconds:F1} s");
+            phases.Add($"{name}: {state.Requests} requests so far ({attackers.Where(x => x.Arabic).Sum(x => x.Requests)} by tenant A's Arabic sessions; " +
+                       $"tenant B {activity.Requests}, {activity.ArabicRequests} in Arabic), {clock.Elapsed.TotalSeconds:F1} s");
         }
 
         var victimRouteValues = victim.IdsByTable.Values.SelectMany(ids => ids.Take(VictimIdsPerTable))
