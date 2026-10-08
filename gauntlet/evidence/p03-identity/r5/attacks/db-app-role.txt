@@ -1,0 +1,106 @@
+== as erp_app, no tenant bound
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+ users_visible 
+---------------
+             0
+(1 row)
+
+ roles_visible 
+---------------
+             0
+(1 row)
+
+ company_roles_visible 
+-----------------------
+                     0
+(1 row)
+
+== bind tenant A at session level (not transaction) and look for B
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+== bind in a transaction as the app does (find the setting names)
+ name 
+------
+(0 rows)
+
+== tables of identity with RLS state
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity 
+----------+-------------------------+----------------+---------------------
+ audit    | __ef_migrations_history | f              | f
+ audit    | entries                 | t              | t
+ identity | __ef_migrations_history | f              | f
+ identity | roles                   | t              | t
+ identity | sessions                | t              | t
+ identity | sign_in_attempts        | t              | t
+ identity | sign_in_secret          | f              | f
+ identity | user_company_roles      | t              | t
+ identity | user_credentials        | t              | t
+ identity | user_roles              | t              | t
+ identity | users                   | t              | t
+ lists    | __ef_migrations_history | f              | f
+ lists    | saved_views             | t              | t
+ tenancy  | __ef_migrations_history | f              | f
+ tenancy  | branches                | t              | t
+ tenancy  | companies               | t              | t
+ tenancy  | tenants                 | t              | t
+ tenancy  | user_branch_access      | t              | t
+ tenancy  | user_company_access     | t              | t
+ tenancy  | user_company_totals     | t              | t
+ tenancy  | user_workplaces         | t              | t
+(21 rows)
+
+== policies on user_company_roles
+     polname      |                               using_expr                                |              check_expr               
+------------------+-------------------------------------------------------------------------+---------------------------------------
+ tenant_isolation | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ company_scope    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | erp.company_allowed(company_id)
+(2 rows)
+
+== try to bypass
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+ERROR:  query would be affected by row-level security policy for table "user_credentials"
+== bound to tenant A inside a transaction (the app way): B rows?
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791449411.439871
+(1 row)
+
+ a_users | other_tenant_rows 
+---------+-------------------
+  100010 |                 0
+(1 row)
+
+ b_by_email 
+------------
+          0
+(1 row)
+
+ ucr_other 
+-----------
+         0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "user_company_roles"
+ROLLBACK
+== resolve_session / verify_sign_in with junk
+ session_id | tenant_id | user_id | expires_at 
+------------+-----------+---------+------------
+(0 rows)
+
