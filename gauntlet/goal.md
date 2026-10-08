@@ -24,7 +24,11 @@ THE BAR
    among 100,000, create a user with a restricted role, add a custom field and filter by it,
    switch to Arabic, import 5,000 rows, follow an approval. It compares screenshots, number
    of steps, keystrokes and seconds. Hide the branding so the comparison is blind wherever
-   possible. A tie is a loss.
+   possible. A tie is a loss. One exception (owner, 2026-10-08, needs-human #11): a count
+   metric (steps, keystrokes, clicks, field entries and the like, never time) on which both
+   products score exactly 0 is left out of that task's comparison, neither a tie nor a win.
+   Every other metric must still be strictly better for ours; any other tie is still a loss;
+   if every metric ties, the task is a loss; the verdict names the metrics left out.
 
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not

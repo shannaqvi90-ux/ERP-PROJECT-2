@@ -1,0 +1,18 @@
+import { signIn } from './lib.mjs';
+const log = (...a) => console.log(...a);
+const A = await signIn('admin@alnoor.example');
+const brEmail = process.argv[2];
+const R = await signIn(brEmail, 'Critic-Pass-2026!x');
+const viewer = (await A.get('/api/identity/users?search=viewer')).json.items.find(u => u.email === 'viewer@alnoor.example');
+const rows = (await R.get('/api/tenancy/access?search=viewer%40alnoor')).json.items;
+log('access row for viewer as seen by branch admin', JSON.stringify(rows));
+const rowsA = (await A.get('/api/tenancy/access?search=viewer%40alnoor')).json.items;
+log('access row for viewer as seen by tenant admin', JSON.stringify(rowsA));
+const va = (await R.get('/api/tenancy/access/' + viewer.id)).json;
+const r1 = await R.put('/api/tenancy/access/' + viewer.id, { companies: va.companies, version: va.version });
+log('save unchanged (as screen shows)', r1.status, r1.text.slice(0, 160));
+const va2 = (await R.get('/api/tenancy/access/' + viewer.id)).json;
+const r2 = await R.put('/api/tenancy/access/' + viewer.id, { companies: [], version: va2.version });
+log('remove viewer from DXB', r2.status, r2.text.slice(0, 200));
+const after = (await A.get('/api/tenancy/access/' + viewer.id)).json.companies;
+log('viewer access after (tenant admin view)', JSON.stringify(after));

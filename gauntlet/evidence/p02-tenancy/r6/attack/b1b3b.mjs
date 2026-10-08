@@ -1,0 +1,17 @@
+import { signIn } from './lib.mjs';
+const log = (...a) => console.log(...a);
+const A = await signIn('admin@alnoor.example');
+const adminRole = (await A.get('/api/identity/roles?take=50')).json.items.find(r => r.nameEn === 'Administrator');
+const dxb = (await A.get('/api/tenancy/companies?take=50')).json.items.find(c => c.code === 'ALN-DXB');
+const aqz = (await A.get(`/api/tenancy/branches?filter=${encodeURIComponent(`companyId eq '${dxb.id}'`)}`)).json.items.find(b => b.code === 'AQZ-WH');
+const email = `b1-${Date.now().toString(36)}@alnoor.example`;
+const u = await A.post('/api/identity/users', { email, displayName: 'B1 tester', displayNameAr: 'ب', language: 'en', password: 'Critic-Pass-2026!x', roleIds: [adminRole.id], mustChangePassword: false });
+const cur = (await A.get('/api/tenancy/access/' + u.json.id)).json;
+await A.put('/api/tenancy/access/' + u.json.id, { companies: [{ companyId: dxb.id, allBranches: false, branchIds: [aqz.id] }], version: cur.version });
+const R = await signIn(email, 'Critic-Pass-2026!x');
+log('branches list', (await R.get('/api/tenancy/branches')).json.items.map(b => b.code));
+const viewer = (await A.get('/api/identity/users?search=viewer')).json.items.find(u => u.email === 'viewer@alnoor.example');
+const acc = (await R.get('/api/tenancy/access/' + viewer.id)).json;
+log('B1 GET /access/{viewer} options branches:', JSON.stringify(acc.options.map(o => [o.code, o.branches.map(b => b.code + ' ' + b.nameEn)])));
+const bd = await R.get('/api/reports/run/tenancy.branchDirectory?format=csv');
+log('B3b branch directory csv:\n' + bd.text);

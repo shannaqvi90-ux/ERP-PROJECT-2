@@ -7,6 +7,13 @@ namespace Erp.Gates.Tests.Infrastructure;
 /// <param name="Enum">The values the document publishes for it (an enumeration), when it does.</param>
 public sealed record ApiParameter(string Name, string In, string Type, string? Format, IReadOnlyList<string>? Enum = null);
 
+/// <summary>A request-body leaf with the values the document allows for it.</summary>
+/// <param name="Path">Property names from the body's root (<see cref="OpenApiDocument.ArrayItems"/> for an array's items).</param>
+public sealed record EnumLeaf(IReadOnlyList<string> Path, IReadOnlyList<JsonNode> Values)
+{
+    public string Name => string.Join('.', Path);
+}
+
 /// <summary>The OpenAPI document served by the running app.</summary>
 public sealed class OpenApiDocument(JsonElement root)
 {
@@ -271,6 +278,115 @@ public sealed class OpenApiDocument(JsonElement root)
         {
             yield return single;
         }
+    }
+
+    /// <summary>
+    /// Every leaf of a request body whose document publishes its allowed values (an <c>enum</c>,
+    /// which <c>AllowedTextValues</c> fields and enumerations both become), with those values
+    /// (null left out), in document order. A body built with documented values always takes the
+    /// first one; the code behind every other value (the Arabic side of a language or digits
+    /// field, critic p04 round 4) is only reached when a caller sends it, so the isolation gates
+    /// send each of them (<see cref="SetLeaf"/>).
+    /// </summary>
+    public IReadOnlyList<EnumLeaf> EnumLeaves(JsonElement schema)
+    {
+        var leaves = new List<EnumLeaf>();
+        void Walk(JsonElement s, List<string> path, int depth)
+        {
+            s = Resolve(s);
+            if (depth > 6 || s.ValueKind != JsonValueKind.Object) return;
+            switch (TypeOf(s))
+            {
+                case "object":
+                    if (s.TryGetProperty("properties", out var properties))
+                    {
+                        foreach (var property in properties.EnumerateObject()) Walk(property.Value, [.. path, property.Name], depth + 1);
+                    }
+                    return;
+                case "array":
+                    if (s.TryGetProperty("items", out var items)) Walk(items, [.. path, ArrayItems], depth + 1);
+                    return;
+            }
+            var allowed = AllowedValues(s);
+            if (allowed.Count > 0 && path.Count > 0)
+            {
+                leaves.Add(new EnumLeaf(path, allowed));
+            }
+        }
+        Walk(schema, [], 0);
+        return leaves;
+    }
+
+    /// <summary>The segment of an <see cref="EnumLeaf"/> path that stands for every item of an array.</summary>
+    public const string ArrayItems = "[]";
+
+    private List<JsonNode> AllowedValues(JsonElement leaf)
+    {
+        if (leaf.TryGetProperty("enum", out var values) && values.ValueKind == JsonValueKind.Array)
+        {
+            return values.EnumerateArray().Where(v => v.ValueKind != JsonValueKind.Null).Select(v => JsonNode.Parse(v.GetRawText())!).ToList();
+        }
+        foreach (var combinator in new[] { "oneOf", "anyOf", "allOf" })
+        {
+            if (leaf.TryGetProperty(combinator, out var options) && options.ValueKind == JsonValueKind.Array)
+            {
+                var found = options.EnumerateArray().Select(Resolve).Where(o => o.ValueKind == JsonValueKind.Object).SelectMany(AllowedValues).ToList();
+                if (found.Count > 0)
+                {
+                    return found.DistinctBy(v => v.ToJsonString()).ToList();
+                }
+            }
+        }
+        return [];
+    }
+
+    /// <summary>Puts <paramref name="value"/> at the leaf's path in a body built for the same
+    /// schema (every item of an array on the path; missing objects are created). Returns whether
+    /// the body now holds the value somewhere.</summary>
+    public static bool SetLeaf(JsonNode? body, IReadOnlyList<string> path, JsonNode value)
+    {
+        if (body is null || path.Count == 0)
+        {
+            return false;
+        }
+        var segment = path[0];
+        var rest = path.Skip(1).ToList();
+        if (segment == ArrayItems)
+        {
+            if (body is not JsonArray array)
+            {
+                return false;
+            }
+            var set = false;
+            for (var i = 0; i < array.Count; i++)
+            {
+                if (rest.Count == 0)
+                {
+                    array[i] = value.DeepClone();
+                    set = true;
+                }
+                else
+                {
+                    set |= SetLeaf(array[i], rest, value);
+                }
+            }
+            return set;
+        }
+        if (body is not JsonObject obj)
+        {
+            return false;
+        }
+        var key = obj.FirstOrDefault(p => string.Equals(p.Key, segment, StringComparison.OrdinalIgnoreCase)).Key ?? segment;
+        if (rest.Count == 0)
+        {
+            obj[key] = value.DeepClone();
+            return true;
+        }
+        if (obj[key] is null)
+        {
+            obj[key] = rest[0] == ArrayItems ? new JsonArray(new JsonObject()) : new JsonObject();
+        }
+        return SetLeaf(obj[key], rest, value);
     }
 
     /// <summary>The schema's type (the first non-null one when it allows several), after

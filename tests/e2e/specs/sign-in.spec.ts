@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { freshStart, password, signIn, users } from "./demo";
+import { freshStart, paceSignIn, password, signIn, users } from "./demo";
 
 test.describe("sign in to an empty workspace", () => {
   test("keyboard only, in English, lands in the workspace with its menu", async ({ page }) => {
@@ -72,5 +72,98 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.locator('input[name="email"]')).toBeFocused();
     await expect(page.locator('input[name="email"]')).toHaveValue("");
     expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBeNull();
+  });
+
+  test("first visit on the team's sign-in address: the part before @, Enter, the password, Enter", async ({ page }) => {
+    await freshStart(page, "en");
+    // The address every user of the team is given (My account, set-up hand-over).
+    await page.goto("/?domain=alnoor.example");
+    const email = page.locator('input[name="email"]');
+    await expect(email).toBeFocused();
+    await expect(page.locator("#email-domain")).toContainText("@alnoor.example");
+    await paceSignIn(page);
+    await page.keyboard.type("admin");
+    await page.keyboard.press("Enter");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(page.locator(".field-error")).toHaveCount(0);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBe(users.admin);
+    // My account shows the same address to copy and share.
+    await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "My account" }).click();
+    await expect(page.getByTestId("team-address")).toHaveText(/\/\?domain=alnoor\.example$/);
+  });
+
+  test("first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter", async ({ page }) => {
+    await freshStart(page, "en");
+    await page.goto("/?domain=alnoor.example");
+    const email = page.locator('input[name="email"]');
+    await expect(email).toBeFocused();
+    await expect(page.locator("#email-moves-on")).toHaveText("Typing your whole address moves on to the password.");
+    await paceSignIn(page);
+    // Typed as a person types it, key by key: the screen moves on when the address is whole.
+    await page.keyboard.type(users.admin);
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(email).toHaveValue(users.admin);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("erp.lastEmail"))).toBe(users.admin);
+  });
+
+  test("returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter", async ({ page, context }) => {
+    await freshStart(page, "en");
+    await page.goto("/?domain=alnoor.example");
+    // The screen is ready for the keyboard before anything is typed.
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await expect(page.locator("#email-domain")).toContainText("@alnoor.example");
+    await paceSignIn(page);
+    await page.keyboard.type("admin");
+    await page.keyboard.press("Enter");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    // The session ends without signing out; the person comes back to the team's address.
+    await context.clearCookies();
+    await page.goto("/?domain=alnoor.example");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await expect(page.locator('input[name="email"]')).toHaveValue(users.admin);
+    await expect(page.locator("#email-domain")).toHaveCount(0);
+    await paceSignIn(page);
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+  });
+
+  test("the password can be shown from the keyboard to check it, then hidden, and still signs in", async ({ page }) => {
+    await freshStart(page, "en");
+    await page.keyboard.type(users.admin);
+    await page.keyboard.press("Tab");
+    await page.keyboard.type(password);
+    const field = page.locator('input[name="password"]');
+    await expect(field).toHaveAttribute("type", "password");
+    // Tab reaches the Show button right after the field; Space presses it and the focus returns.
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Show the password" })).toBeFocused();
+    await page.keyboard.press("Space");
+    await expect(field).toHaveAttribute("type", "text");
+    await expect(field).toHaveValue(password);
+    await expect(field).toBeFocused();
+    await page.getByRole("button", { name: "Hide the password" }).click();
+    await expect(field).toHaveAttribute("type", "password");
+    await paceSignIn(page);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+  });
+
+  test("on the team's sign-in address in Arabic the domain stays left to right after the field", async ({ page }) => {
+    await freshStart(page, "ar");
+    await page.goto("/?domain=alnoor.example");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    const field = await page.locator('input[name="email"]').boundingBox();
+    const domain = await page.locator("#email-domain").boundingBox();
+    expect(domain!.x).toBeGreaterThan(field!.x); // e-mail addresses read left to right in both languages
   });
 });

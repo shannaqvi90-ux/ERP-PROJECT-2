@@ -602,6 +602,24 @@ describe("identity form keys", () => {
 });
 
 describe("my account", () => {
+  it("shows the team's sign-in address for the user's own e-mail domain, in both languages", async () => {
+    for (const language of ["en", "ar"] as const) {
+      window.history.replaceState(null, "", "/identity/me");
+      mockFetch((_m, url) => {
+        if (url === "/api/auth/session") return { status: 200, body: session(all, language) };
+        return listReply(_m, url) ?? { status: 404, body: {} };
+      });
+      view = await render(<App language={language} />);
+      await settle();
+      const address = view.container.querySelector('[data-testid="team-address"]')!;
+      expect(address.textContent).toBe(`${window.location.origin}/?domain=demo-trading.example`);
+      expect(address.getAttribute("dir")).toBe("ltr");
+      expect(view.container.textContent).toContain(language === "en" ? "Team sign-in address" : "عنوان تسجيل الدخول لفريقك");
+      view.unmount();
+      view = undefined;
+    }
+  });
+
   it("changes the password with the form keys and shows each refusal on its field, linked to the input", async () => {
     window.history.replaceState(null, "", "/identity/me");
     const calls = mockFetch((method, url) => {

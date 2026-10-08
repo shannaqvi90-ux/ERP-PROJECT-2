@@ -112,6 +112,56 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.All(lines, l => Assert.True(l.Width <= 80.5m, $"{l.Width}"));
     }
 
+    /// <summary>A cell of thousands of characters without a space (the companies a user may work in,
+    /// printed as one value: found by the isolation gate when its write variants gave an
+    /// administrator sixty companies) kept the access list's PDF request busy for good. Wrapping
+    /// now stops at the lines kept and cuts a long word by halving.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(bool arabic)
+    {
+        var shaper = new TextShaper(fixture.Fonts);
+        var word = string.Concat(Enumerable.Range(1, 2_000).Select(i => arabic ? $"شركة{i}،" : $"ACT-{i},"));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var lines = shaper.Wrap(word, 8.5m, false, arabic, 80m, maxLines: 12);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5), $"{clock.Elapsed.TotalSeconds:F1} s");
+        Assert.Equal(12, lines.Count);
+        Assert.All(lines, l => Assert.True(l.Width <= 80.5m && !l.IsEmpty, $"{l.Width}"));
+        // Many short words stop at the lines kept as well.
+        var words = string.Join(" ", Enumerable.Range(1, 20_000).Select(i => $"w{i}"));
+        clock.Restart();
+        Assert.Equal(12, shaper.Wrap(words, 8.5m, false, false, 80m, maxLines: 12).Count);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5), $"{clock.Elapsed.TotalSeconds:F1} s");
+    }
+
+    [Fact]
+    public void A_line_narrower_than_one_character_still_ends()
+    {
+        var shaper = new TextShaper(fixture.Fonts);
+        var lines = shaper.Wrap("WMW", 8.5m, false, false, 1m);
+        Assert.Equal(["W", "M", "W"], lines.Select(l => string.Concat(l.Runs.Select(r => r.Text))));
+    }
+
+    [Fact]
+    public void A_report_with_a_huge_cell_renders_in_seconds()
+    {
+        var document = Sample("ar", rows: 40, grouped: false);
+        var huge = string.Concat(Enumerable.Range(1, 3_000).Select(i => $"{{\"code\":\"ACT-{i}\",\"allBranches\":true}},"));
+        document = document with
+        {
+            Groups = document.Groups.Select(g => g with
+            {
+                Rows = g.Rows.Select(r => r with { Cells = [r.Cells[0], new ReportCell(huge, huge), .. r.Cells.Skip(2)] }).ToList(),
+            }).ToList(),
+        };
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var bytes = new PdfReportRenderer(fixture.Fonts).Render(document);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(30), $"{clock.Elapsed.TotalSeconds:F1} s");
+        using var pdf = PdfDocument.Open(bytes);
+        Assert.True(pdf.NumberOfPages >= 2);
+    }
+
     [Fact]
     public void Font_units_scale_to_thousandths_of_an_em_rounded_half_to_even_as_decimals_round()
     {

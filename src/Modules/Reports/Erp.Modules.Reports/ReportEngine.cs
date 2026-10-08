@@ -347,10 +347,38 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                         .Order(StringComparer.Create(CultureInfo.GetCultureInfo(language == Languages.Arabic ? "ar-AE" : "en-AE"), ignoreCase: true))),
                 ListColumnType.Choice when element.ValueKind == JsonValueKind.Array => element.EnumerateArray().Select(e => e.ToString()).ToList(),
                 ListColumnType.Reference when column.LabelField is { } labelField && row.TryGetProperty(labelField, out var label) && label.ValueKind == JsonValueKind.String => label.GetString(),
+                // A list of records (the companies a user may work in): their names or codes, not
+                // the JSON they arrive in.
+                _ when element.ValueKind == JsonValueKind.Array => string.Join(", ", element.EnumerateArray().Select(item => ItemText(item, language))),
                 _ => element.ValueKind == JsonValueKind.String ? element.GetString() : element.ToString(),
             };
         }
         return values;
+    }
+
+    /// <summary>One item of a list value as a reader names it: text as it is; a record by its
+    /// label, code or name (the Arabic name on an Arabic document when it has one).</summary>
+    private static string ItemText(JsonElement item, string language)
+    {
+        if (item.ValueKind == JsonValueKind.String)
+        {
+            return item.GetString() ?? "";
+        }
+        if (item.ValueKind != JsonValueKind.Object)
+        {
+            return item.ToString();
+        }
+        var names = language == Languages.Arabic
+            ? new[] { "label", "code", "nameAr", "displayNameAr", "name", "nameEn", "displayName" }
+            : new[] { "label", "code", "nameEn", "name", "displayName", "nameAr" };
+        foreach (var name in names)
+        {
+            if (item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()))
+            {
+                return value.GetString()!;
+            }
+        }
+        return item.GetRawText();
     }
 
     /// <summary>A filter as printed facts: one per condition of a plain "and" filter ("Status: is

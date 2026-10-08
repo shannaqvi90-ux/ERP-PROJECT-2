@@ -1,0 +1,35 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index 6c90b55..72580a4 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -209,7 +209,7 @@ internal static class AccessEndpoints
+                               select new { b.CompanyId, b.BranchId }).ToListAsync(cancellationToken);
+         var companies = await db.Companies.AsNoTracking().OrderBy(c => c.Code)
+             .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive }).ToListAsync(cancellationToken);
+-        var allBranches = await db.Branches.AsNoTracking().OrderBy(b => b.Code)
++        var allBranches = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().OrderBy(b => b.Code)
+             .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive }).ToListAsync(cancellationToken);
+         return new UserAccessDto(user.Id, user.DisplayName, user.Email, isCaller,
+             access.Select(a => new CompanyAccessDto(a.CompanyId, a.AllBranches,
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index bfa12ba..64d96f2 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -67,7 +67,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         {
+             return null;
+         }
+-        var branches = !run.PrintsRows ? [] : await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
++        var branches = !run.PrintsRows ? [] : await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
+             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
+             .ToListAsync(cancellationToken);
+         // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a
+@@ -143,7 +143,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
+ 
+     public async Task<ReportData?> RunAsync(ReportRun run, CancellationToken cancellationToken)
+     {
+-        var branches = db.Branches.AsNoTracking();
++        var branches = db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking();
+         var texts = new Dictionary<string, LocalText>();
+         if (run.Get<Guid>("company") is { } companyId)
+         {
