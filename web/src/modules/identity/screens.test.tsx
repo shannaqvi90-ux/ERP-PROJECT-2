@@ -102,6 +102,106 @@ describe("users screen", () => {
     expect(window.location.search).toBe("?open=u-new");
   });
 
+  it("names in the Roles column the roles held in every company, those held in one company with its code, and roles elsewhere", async () => {
+    // Critic p03 round 5: a user whose roles were all per company showed an empty Roles cell.
+    window.history.replaceState(null, "", "/identity/users");
+    const row = (id: string, displayName: string, extra: Record<string, unknown>) => ({
+      id, email: `${id}@demo-trading.example`, displayName, language: "en", isActive: true, roleIds: [], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, ...extra,
+    });
+    const items = [
+      row("u-mgr", "Dubai Manager", { companyRoles: [{ roleId: "r-admin", companyId: "c-dxb" }] }),
+      row("u-acc", "Accountant", { roleIds: ["r-clerk"], companyRoles: [{ roleId: "r-admin", companyId: "c-fze" }], rolesElsewhere: true }),
+    ];
+    mockFetch((m, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      const list = listReply(m, url);
+      if (list) return list;
+      if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items, total: items.length } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/companies")
+        return { status: 200, body: [{ id: "c-dxb", code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور" }, { id: "c-fze", code: "ALN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور" }] };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const text = (name: string) => [...view!.container.querySelectorAll("tbody tr")].find((r) => r.textContent?.includes(name))!.textContent;
+    expect(text("Dubai Manager")).toContain("Administrator (ALN-DXB)");
+    expect(text("Accountant")).toContain("Contacts clerk, Administrator (ALN-FZE), roles in other companies");
+  });
+
+  // Critic p03 round 5: roles in one company and the starting company were only in the panel after
+  // creation, and the starting company needed company access given first on another screen.
+  for (const accessFails of [false, true]) {
+    it(`creates a user with a role in one company, the companies they work in and where they start${accessFails ? ", and says so when the access is refused" : ""}`, async () => {
+      window.history.replaceState(null, "", "/identity/users");
+      const calls = mockFetch((method, url, body) => {
+        if (url === "/api/auth/session") return { status: 200, body: session([...all, "tenancy.access.read", "tenancy.access.update"]) };
+        const list = listReply(method, url);
+        if (list) return list;
+        if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+        if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+        if (url === "/api/identity/companies")
+          return { status: 200, body: [{ id: "c-dxb", code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور" }, { id: "c-fze", code: "ALN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور" }] };
+        if (method === "POST" && url === "/api/identity/users")
+          return { status: 201, body: { id: "u-new", ...(body as object), isActive: true, lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true, setupCode: "K7QM-3XRA-PZ9D" } };
+        if (url === "/api/tenancy/access/u-new" && method === "GET") return { status: 200, body: { userId: "u-new", companies: [], options: [], version: 4 } };
+        if (url === "/api/tenancy/access/u-new" && method === "PUT")
+          return accessFails ? { status: 403, body: { title: "You may not give access to that company.", code: "tenancy.forbidden", status: 403 } } : { status: 200, body: {} };
+        if (url === "/api/identity/users/u-new/default-company" && method === "GET") return { status: 200, body: { userId: "u-new", companyId: null, companies: [], version: 7 } };
+        if (url === "/api/identity/users/u-new/default-company" && method === "PUT") return { status: 200, body: { userId: "u-new", companyId: "c-fze", companies: [], version: 8 } };
+        if (url === "/api/identity/users/u-new")
+          return { status: 200, body: { id: "u-new", email: "rana@demo-trading.example", displayName: "Rana", language: "en", isActive: true, roleIds: [], companyRoles: [{ roleId: "r-clerk", companyId: "c-fze" }], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true } };
+        return { status: 404, body: {} };
+      });
+      view = await render(<App language="en" />);
+      await settle();
+      await act(async () => new Promise((r) => setTimeout(r, 200)));
+      key(document.body, { key: "n" });
+      await settle();
+      setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "rana");
+      // A role in one company: the clerk role in ALN-FZE. Adding it ticks that company under "Works in".
+      const company = view.container.querySelector<HTMLSelectElement>('select[name="companyRoleCompany"]')!;
+      act(() => {
+        company.value = "c-fze";
+        company.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      const role = view.container.querySelector<HTMLSelectElement>('select[name="companyRoleRole"]')!;
+      act(() => {
+        role.value = "r-clerk";
+        role.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      key(role, { key: "Enter" });
+      await settle();
+      const worksIn = [...view.container.querySelectorAll<HTMLInputElement>('input[name="worksIn"]')];
+      expect(worksIn.map((c) => c.checked)).toEqual([false, true]);
+      await act(async () => worksIn[0]!.click());
+      const startsIn = view.container.querySelector<HTMLSelectElement>('select[name="defaultCompany"]')!;
+      act(() => {
+        startsIn.value = "c-fze";
+        startsIn.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      key(startsIn, { key: "Enter", ctrlKey: true });
+      await settle();
+      await settle();
+
+      const post = calls.find((c) => c.method === "POST" && c.url === "/api/identity/users")!;
+      expect(post.body).toEqual({ email: "rana@demo-trading.example", displayName: "Rana", language: "en", roleIds: [], companyRoles: [{ companyId: "c-fze", roleId: "r-clerk" }] });
+      const access = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/access/u-new")!;
+      expect(access.body).toEqual({ companies: [{ companyId: "c-fze", allBranches: true, branchIds: [] }, { companyId: "c-dxb", allBranches: true, branchIds: [] }], version: 4 });
+      const starts = calls.find((c) => c.method === "PUT" && c.url === "/api/identity/users/u-new/default-company");
+      expect(window.location.search).toBe("?open=u-new");
+      expect(view.container.querySelector('[data-testid="setup-code"]')!.textContent).toBe("K7QM-3XRA-PZ9D");
+      if (accessFails) {
+        expect(starts).toBeUndefined();
+        expect(view.container.textContent).toContain("The account was created, but its company access or starting company was not saved: You may not give access to that company.");
+      } else {
+        expect(starts!.body).toEqual({ companyId: "c-fze", version: 7 });
+        expect(view.container.textContent).not.toContain("was not saved");
+      }
+    });
+  }
+
   it("hides creation and account actions from a read-only user", async () => {
     window.history.replaceState(null, "", "/identity/users?open=u1");
     mockFetch((_m, url) => {
@@ -311,6 +411,41 @@ describe("roles screen", () => {
     expect(put.body).toEqual({ nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.roles.read", "identity.users.read"], version: 1 });
   });
 
+  it("ticks only the permissions a search matches: 'view' then Select all shown gives a view-only role", async () => {
+    // Critic p03 round 5: the search kept whole rows, so "view" then "Select all shown" built a
+    // near-administrator (deleting users, resetting passwords, changing the workspace).
+    window.history.replaceState(null, "", "/identity/roles");
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session([...all, "tenancy.tenant.read"]) };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
+      if (method === "PUT") return { status: 200, body: { ...clerk, ...(body as object) } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const row = [...view.container.querySelectorAll("tbody tr")].find((r) => r.textContent?.includes("Contacts clerk")) as HTMLElement;
+    await act(async () => row.click());
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[aria-label="Search permissions"]')!, "view");
+    await settle();
+    expect(view.container.querySelector('input[aria-label="Reset passwords"]')).toBeNull();
+    expect(view.container.querySelector('input[aria-label="Create users"]')).toBeNull();
+    const selectShown = [...view.container.querySelectorAll("button")].find((b) => b.textContent === "Select all shown")!;
+    await act(async () => selectShown.click());
+    setInput(view.container.querySelector<HTMLInputElement>('input[aria-label="Search permissions"]')!, "");
+    await settle();
+    for (const ticked of ["View users", "View roles", "View the workspace"]) expect(view.container.querySelector<HTMLInputElement>(`input[aria-label="${ticked}"]`)!.checked).toBe(true);
+    for (const clear of ["Create users", "Reset passwords"]) expect(view.container.querySelector<HTMLInputElement>(`input[aria-label="${clear}"]`)!.checked).toBe(false);
+    await submit(view.container.querySelector("aside")!);
+    await settle();
+    const put = calls.find((c) => c.method === "PUT")!;
+    expect((put.body as { permissions: string[] }).permissions).toEqual(["identity.roles.read", "identity.users.read", "tenancy.tenant.read"]);
+  });
+
   it("shows the Administrator system role read-only, with copy offered", async () => {
     window.history.replaceState(null, "", "/identity/roles");
     mockFetch((_m, url) => {
@@ -430,6 +565,25 @@ describe("screens hide exactly what a missing permission refuses", () => {
     expect(buttons).not.toContain("Delete user");
     expect(buttons).toContain("Reset password…");
   });
+  // Critic p03 round 5: a clerk who may not read roles opened the Administrator and was offered
+  // editable fields, Save and "Sign out everywhere"; the server refused both. Roles the screen
+  // cannot read count as beyond the user.
+  it("users: a user who may not read roles gets someone holding roles read-only, and someone holding none editable", async () => {
+    const clerkOnly = ["identity.users.read", "identity.users.update"];
+    const administrator = { ...invited, id: "u-admin", displayName: "Mariam", roleIds: ["r-admin"], pendingSetup: false };
+    const manager = { ...invited, id: "u-mgr", displayName: "Dubai Manager", roleIds: [], companyRoles: [{ roleId: "r-admin", companyId: "c-dxb" }], pendingSetup: false };
+    for (const target of [administrator, manager]) {
+      const buttons = await openUser(clerkOnly, target, []);
+      for (const hidden of ["Save", "Sign out everywhere"]) expect(buttons).not.toContain(hidden);
+      expect([...view!.container.querySelectorAll("aside input:not([type=checkbox]):not([disabled]):not([readonly])")].length).toBe(0);
+      view?.unmount();
+      view = undefined;
+    }
+    // Control: someone holding no role is the clerk's to change.
+    const buttons = await openUser(clerkOnly, { ...invited, id: "u-plain", roleIds: [], pendingSetup: false }, []);
+    for (const shown of ["Save", "Sign out everywhere"]) expect(buttons).toContain(shown);
+  });
+
   // Critic p03 round 3, plant U2: the screens compared only identity permissions, so someone
   // holding every identity permission was offered Save, Reset password and Delete on a workspace
   // manager whose role grants only tenancy permissions. Every permission of another module (and

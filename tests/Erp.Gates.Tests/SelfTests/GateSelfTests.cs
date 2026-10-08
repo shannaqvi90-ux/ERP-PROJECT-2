@@ -576,6 +576,39 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains("POST /api/identity/users", result.Checked);
     }
 
+    /// <summary>Bugs 53 and 54 (critic p03 round 5, plant P2 and finding R1): "all that match"
+    /// activation that judges nothing the chosen users hold, and one that judges only roles held
+    /// in every company. The set-based takeover check must report the first changing the
+    /// Administrator, and the second changing users whose roles are held in one company and a user
+    /// holding a role in a company the caller does not work in, while leaving the Administrator
+    /// and users holding workspace-wide grants alone (the second's own check works).</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_judging_nothing_or_only_roles_held_everywhere()
+    {
+        const string anyone = "POST /api/leaky/users/matching/active-anyone";
+        const string workspaceOnly = "POST /api/leaky/users/matching/active-workspace-roles";
+        var result = await SetTakeover.RunAsync(fixture.Env, userLists: ["/api/leaky/users"],
+            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
+        foreach (var problem in result.Problems.Take(12))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(anyone, result.Checked);
+        Assert.Contains(workspaceOnly, result.Checked);
+        Assert.Contains(result.Problems, p => p.StartsWith(anyone + " by search", StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(anyone + " by filter", StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(workspaceOnly + selector, StringComparison.Ordinal) && p.Contains("in one company only", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+            Assert.Contains(result.Problems, p => p.StartsWith(workspaceOnly + selector, StringComparison.Ordinal) && p.Contains("a company the caller does not work in", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(workspaceOnly, StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(workspaceOnly, StringComparison.Ordinal) && p.Contains("aimed at a user holding", StringComparison.Ordinal) &&
+                                                    !p.Contains("in one company only", StringComparison.Ordinal) && !p.Contains("a company the caller does not work in", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.True(result.CompanyAimed > 0);
+    }
+
     [Fact]
     public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
     {

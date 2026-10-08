@@ -24,6 +24,8 @@
 #   ERP_VERIFY_HTTP_PORT  web port of the stack verify starts   (default ERP_HTTP_PORT + 10)
 #   ERP_VERIFY_DB_PORT    db port of the stack verify starts    (default ERP_DB_PORT + 10)
 #   ERP_VERIFY_VOLUME     users seeded for the verify stack     (default 2000)
+#   ERP_KNOWN_PROXIES     reverse proxy addresses the demo trusts for X-Forwarded-For (comma separated)
+#   ERP_KNOWN_NETWORKS    reverse proxy networks in CIDR form, the same way          (default: none)
 #   ERP_SEED_USERS_CSV    users.csv of the shared comparison dataset (gauntlet/compare/data/out/users.csv,
 #                         made by node gauntlet/compare/data/generate.mjs): the demo tenant's bulk users
 #                         become exactly the dataset's users, as in the Odoo reference. Applies when the

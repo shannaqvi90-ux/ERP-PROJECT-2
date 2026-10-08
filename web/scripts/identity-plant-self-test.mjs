@@ -59,8 +59,19 @@ const plants = [
     edits: [
       {
         file: "src/modules/identity/model.ts",
-        find: "  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;",
-        replace: '  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => p.startsWith("identity.") && !held.has(p)) ?? false;',
+        find: "  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;",
+        replace: '  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => p.startsWith("identity.") && !held.has(p)) ?? true;',
+      },
+    ],
+  },
+  {
+    id: "U-unreadable",
+    what: "Roles the screen cannot read counted as within the signed-in user (critic p03 round 5: a clerk offered Save on the Administrator)",
+    edits: [
+      {
+        file: "src/modules/identity/model.ts",
+        find: "  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;",
+        replace: "  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;",
       },
     ],
   },
