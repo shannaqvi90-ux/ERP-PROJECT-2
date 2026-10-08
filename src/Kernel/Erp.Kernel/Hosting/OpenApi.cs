@@ -15,13 +15,44 @@ public sealed class ApiExampleAttribute(string value) : Attribute
     public string Value { get; } = value;
 }
 
+/// <summary>
+/// The API description, generated once, on the first call, and served as the same text to every
+/// caller after that. Built per request (as <c>MapOpenApi</c> does), every call of this anonymous
+/// endpoint rebuilt the whole document from every endpoint's metadata: about 300 ms of processor
+/// time each, which anyone could ask for again and again. The routes and shapes it describes are
+/// fixed once the app serves requests, so nothing is lost by building it once; it holds routes and
+/// shapes only, never data, and is the same for every tenant. It is not built while the host starts:
+/// the framework's endpoint description is read once and kept, and at start-up it can still miss
+/// endpoints (the gates saw that). No <c>servers</c> entry is written (a URL taken from a request's
+/// Host header would differ by caller); clients use the address they fetched it from.
+/// </summary>
+internal sealed class OpenApiDescription
+{
+    public const string DocumentName = "v1";
+
+    /// <summary>Made by dependency injection the first time the endpoint is called (a singleton:
+    /// one instance, built once, under the container's own lock).</summary>
+    public OpenApiDescription(IServiceProvider services)
+    {
+        var provider = services.GetRequiredKeyedService<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(DocumentName);
+        var document = provider.GetOpenApiDocumentAsync(CancellationToken.None).GetAwaiter().GetResult();
+        using var text = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        document.SerializeAsV31(new Microsoft.OpenApi.OpenApiJsonWriter(text));
+        Json = text.ToString();
+    }
+
+    /// <summary>The OpenAPI 3.1 document as JSON.</summary>
+    public string Json { get; }
+}
+
 internal static class OpenApiSetup
 {
     /// <summary>OpenAPI document generated from the running app: every endpoint, its permission
     /// (<c>x-erp-permission</c>) or anonymous reason (<c>x-erp-anonymous</c>), decimals as strings.</summary>
     public static IServiceCollection AddErpOpenApi(this IServiceCollection services)
     {
-        services.AddOpenApi("v1", options =>
+        services.AddSingleton<OpenApiDescription>();
+        services.AddOpenApi(OpenApiDescription.DocumentName, options =>
         {
             options.AddDocumentTransformer((document, _, _) =>
             {
