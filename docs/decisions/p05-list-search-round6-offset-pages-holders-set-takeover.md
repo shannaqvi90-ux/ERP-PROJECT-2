@@ -73,8 +73,32 @@ a user manager deactivated the Administrator.
 
 ## Evidence of the gates catching the round-5 plants
 
-- L10 applied to this branch: `G1TenantSourceTests` fails on `ListBinding.cs` and `ListsModule.cs`
-  (`process-global`), `G1ProcessStateTests` fails on
-  `framework-singleton Microsoft.Extensions.ObjectPool.ObjectPool<Erp.Kernel.Lists.ListPageScratch>`.
-  The G1 HTTP isolation and non-interference runs with L10 are described in the round's notes.
-- P5 applied to this branch: the set-based takeover check fails with the Administrator changed.
+Each plant applied to this branch (then reverted), gate tests run on the host:
+
+- **L10** (`gauntlet/evidence/p05-list-search/r5/plants/L10-pooled-scratch-skip-total.patch`):
+  - `G1TenantSourceTests` fails: `ListBinding.cs` and `ListsModule.cs` keep state in a process-wide
+    store outside fields [process-global].
+  - `G1ProcessStateTests` fails: `framework-singleton
+    Microsoft.Extensions.ObjectPool.ObjectPool<Erp.Kernel.Lists.ListPageScratch>`.
+  - `G1HttpIsolationTests` fails three ways: 374 list answers that are not the asking tenant's own
+    (for example "the judged offset page 2 of 2 (skip=12) of GET /api/tenancy/companies?take=12
+    answered total 46, but the keyset walk returns 23 rows"), and process-wide state changed under
+    traffic (`singleton Microsoft.Extensions.ObjectPool.ObjectPool<…ListPageScratch>._items[0]
+    (Erp.Kernel.Lists.ListPageScratch).Totals …`).
+  - `G1NonInterferenceTests` fails: 40 answers depend on the other tenant's activity (for example
+    `GET /api/identity/users?take=5&skip=5&search=al`).
+- **P5** (`…/P5-bulk-matching-acts-on-stronger-users.patch`): the set-based takeover check fails:
+  "POST /api/identity/users/matching/active by search [active=false]: aimed at the Administrator by a
+  user holding only [identity.users.update, identity.users.read, identity.roles.read] answered 200 and
+  changed them", and the same for every user holding one permission the caller lacks.
+
+On the product as built all of these pass. The set-based check aims 136 requests at stronger users.
+
+## Routed from other verdicts
+
+- p04-shell r4, users grid columns misaligned between rows: checked in Chromium at 1440 px, English
+  and Arabic: every cell of 32 rendered rows lines up with its header to 0 px.
+- p06-form-report r2, Arabic companies list legal-name headers overlapping: no header spills or
+  overlaps (and the e2e test "every header stays inside its own column" holds). The same screen cut
+  English legal names at their beginning ("…oor Technical Services LLC"): a screen's own
+  `<span dir>` value is now a box of its own direction, and text values carry `dir="auto"`.
