@@ -66,6 +66,20 @@ public sealed class G1TenantSourceTests
             ("process-global", "Environment.SetEnvironmentVariable(\"ERP_LAST_TENANT\", id);"),
             ("process-global", "[ThreadStatic] private static Guid _tenant;"),
             ("process-global", "private static readonly ThreadLocal<Guid> Tenant = new();"),
+            // Critic p05 round 5, plant L10: a pooled scratch object (DefaultObjectPool, a framework
+            // singleton) kept a total keyed without the tenant. Pools and framework caches are
+            // process-wide stores whose contents no product field holds.
+            ("process-global", "services.AddSingleton<ObjectPool<ListPageScratch>>(_ => ObjectPool.Create<ListPageScratch>());"),
+            ("process-global", "var pool = provider.GetRequiredService<ObjectPoolProvider>().Create(new ScratchPolicy());"),
+            ("process-global", "private readonly DefaultObjectPool<StringBuilder> _builders;"),
+            ("process-global", "var buffer = ArrayPool<char>.Shared.Rent(256);"),
+            ("process-global", "public sealed class Totals(IMemoryCache cache)"),
+            ("process-global", "await cache.SetStringAsync(key, total); // IDistributedCache"),
+            ("process-global", "public sealed class Totals(HybridCache cache)"),
+            ("process-global", "private static readonly ConditionalWeakTable<Type, object> Seen = new();"),
+            ("process-global", "private static readonly AsyncLocal<Guid> Tenant = new();"),
+            ("process-global", "builder.Services.AddOutputCache();"),
+            ("process-global", "builder.Services.AddMemoryCache();"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -130,8 +144,12 @@ public static class TenantBypassScanner
             new(@"\b[Rr]equest\.(?:Headers|Query|Cookies|Form)\s*(?:\)|\.\s*(?:Keys|Values|Where|Select|SelectMany|Any|All|First|FirstOrDefault|Single|SingleOrDefault|Last|LastOrDefault|ToList|ToArray|ToDictionary|ToHashSet|Aggregate|OrderBy|GroupBy|CopyTo|GetEnumerator|Count\s*\())|\b[Rr]equest\.QueryString\b|\bRawTarget\b|\bIHttpRequestFeature\b", Options)),
         // Critic p00 round 4, plant T2: an answer cache kept in AppContext data, outside any field
         // the process-state gate reflects over. Process-wide stores other than fields.
-        new("process-global", "keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static or thread-local storage, the default memory cache)",
-            new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bMemoryCache\.Default\b", Options)),
+        // Critic p05 round 5, plant L10: object pools, array pools and framework caches, whose
+        // contents live in framework singletons that no product field holds.
+        new("process-global", "keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables)",
+            new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bAsyncLocal\s*<|\bMemoryCache\.Default\b|" +
+              @"\b(?:Default|Leak[A-Za-z]*)?ObjectPool(?:Provider)?\b|\bArrayPool\s*<|\bMemoryPool\s*<|\bIMemoryCache\b|\bIDistributedCache\b|\bHybridCache\b|\bIOutputCacheStore\b|" +
+              @"\bAdd(?:Memory|DistributedMemory|StackExchangeRedis|Output|Response|Hybrid)Cach(?:e|ing)\s*\(|\bSetString(?:Async)?\s*\(|\bConditionalWeakTable\s*<", Options)),
     ];
 
     public static IEnumerable<string> SourceFiles()

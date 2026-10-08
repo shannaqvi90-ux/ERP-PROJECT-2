@@ -13,7 +13,10 @@ namespace Erp.Modules.Reports;
 public sealed record ReportOptions(string Language, string Numerals, TimeZoneInfo TimeZone);
 
 /// <summary>A column of the document being built, with how to read its value from a row.</summary>
-internal sealed record ColumnSpec(string Key, string LabelKey, ListColumnType Type, bool Total, IReadOnlyList<ListChoice>? Choices);
+/// <param name="TrueLabelKey">A boolean column's word for true (a list column's "Active"); null: "Yes".</param>
+/// <param name="FalseLabelKey">A boolean column's word for false; null: "No".</param>
+internal sealed record ColumnSpec(string Key, string LabelKey, ListColumnType Type, bool Total, IReadOnlyList<ListChoice>? Choices,
+    string? TrueLabelKey = null, string? FalseLabelKey = null);
 
 /// <summary>
 /// Builds a <see cref="ReportDocument"/> from a report's data or a list's rows: picks every label
@@ -126,11 +129,11 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         {
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.groupBy", f.Language), strings.Get(list.Column(groupBy)!.LabelKey, f.Language), groupBy));
         }
-        var specs = columns.Select(c => new ColumnSpec(c.Key, c.LabelKey, c.Type, c.Aggregate, c.Choices)).ToList();
+        var specs = columns.Select(c => new ColumnSpec(c.Key, c.LabelKey, c.Type, c.Aggregate, c.Choices, c.TrueLabelKey, c.FalseLabelKey)).ToList();
         if (groupBy is not null && specs.All(s => s.Key != groupBy))
         {
             var group = list.Column(groupBy)!;
-            specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices));
+            specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices, group.TrueLabelKey, group.FalseLabelKey));
         }
         var typed = rows.Select(row => ListRow(list, row, specs, f.Language, names)).ToList();
         var shown = specs.Where(s => columns.Any(c => c.Key == s.Key)).ToList();
@@ -278,9 +281,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 var number = Convert.ToInt64(value, CultureInfo.InvariantCulture);
                 return new ReportCell(number, f.Integer(number));
             case bool b:
-                // A flag column may name its two values (a role's type: System or Custom), else Yes or No.
+                // A flag column may name its two values: by its true and false words (Active or Inactive),
+                // or by choices 'true' and 'false' (a role's type: System or Custom); else Yes or No.
                 var named = column.Choices?.FirstOrDefault(c => c.Value == (b ? "true" : "false"));
-                return new ReportCell(b, strings.Get(named?.LabelKey ?? (b ? "lists.yes" : "lists.no"), f.Language));
+                return new ReportCell(b, strings.Get((b ? column.TrueLabelKey : column.FalseLabelKey) ?? named?.LabelKey ?? (b ? "lists.yes" : "lists.no"), f.Language));
             case DateOnly date:
                 return new ReportCell(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), f.Date(date));
             case DateTimeOffset instant:
@@ -412,7 +416,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         foreach (var condition in conditions)
         {
             var column = list.Column(condition.Column)!;
-            var spec = new ColumnSpec(column.Key, column.LabelKey, column.Type, false, column.Choices);
+            var spec = new ColumnSpec(column.Key, column.LabelKey, column.Type, false, column.Choices, column.TrueLabelKey, column.FalseLabelKey);
             var op = condition.Operator switch
             {
                 FilterOperator.StartsWith => "startsWith",

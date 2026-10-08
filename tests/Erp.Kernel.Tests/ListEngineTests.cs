@@ -126,6 +126,8 @@ public sealed class ListEngineTests
                 new ListColumn("kind", "c", ListColumnType.Choice, Filterable: true),
                 new ListColumn("label", "d", ListColumnType.Text, Aggregate: true),
                 new ListColumn("Bad", "e", ListColumnType.Text),
+                new ListColumn("named", "f", ListColumnType.Text, TrueLabelKey: "x.on", FalseLabelKey: "x.off"),
+                new ListColumn("half", "g", ListColumnType.Boolean, TrueLabelKey: "x.on"),
             ],
             SearchFields = ["name"],
             DefaultSort = "-kind",
@@ -139,6 +141,10 @@ public sealed class ListEngineTests
         Assert.Contains(problems, p => p.Contains("default sort '-kind' is not a sortable column", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("preset 'p' filter is invalid", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("preset 'q' groups by 'name'", StringComparison.Ordinal));
+        // Words for true and false belong to boolean columns, and come in pairs.
+        Assert.Contains(problems, p => p.Contains("column 'named' names words for true and false but is not a boolean column", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.Contains("column 'half' names a word for only one of true and false", StringComparison.Ordinal));
+        Assert.DoesNotContain(problems, p => p.Contains("'named' names a word for only one", StringComparison.Ordinal));
 
         var binding = ListBinding<Item>.For(Definition, i => i.Id).Column("name", i => i.Quantity).Column("ghost", i => i.Name);
         var bindingProblems = binding.Problems().ToList();
