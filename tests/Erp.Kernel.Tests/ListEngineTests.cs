@@ -224,6 +224,22 @@ public sealed class ListEngineTests
         Assert.Equal(3, (await Run(new ListRequest { GroupBy = "day" })).Groups!.Count);
     }
 
+    [Theory]
+    [InlineData("", "", "")]
+    [InlineData("item 3", "", "")]
+    [InlineData("", "kind eq 'raw' and quantity ge 2", "-quantity,code")]
+    [InlineData("c-0", "active eq true or seen eq null", "seen")]
+    [InlineData("", "code startswith 'C-01' or code eq null", "-code")]
+    public async Task Rows_in_memory_are_paged_as_linq_to_objects_orders_them(string search, string filter, string sort)
+    {
+        // The page (interpreted in memory) holds the rows LINQ to objects selects and orders.
+        var request = new ListRequest { Search = search, Filter = filter, Sort = sort, Take = 200 };
+        var expected = Binding().Apply(Items.AsQueryable(), request).Select(i => i.Id).ToList();
+        var page = await Run(request);
+        Assert.Equal(expected, page.Rows.Select(i => i.Id).ToList());
+        Assert.Equal(expected.Count, page.Total);
+    }
+
     [Fact]
     public async Task Matching_is_every_row_the_search_and_filter_select_whatever_the_paging_sort_or_grouping()
     {

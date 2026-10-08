@@ -973,7 +973,7 @@ export function ListView(props: ListViewProps) {
           {t(definition?.printable ? "lists.print.partialReport" : "lists.print.partial", { from: i18n.formatNumber(range.start + 1), to: i18n.formatNumber(range.end), total: i18n.formatNumber(rows.total) })}
         </p>
       )}
-      <div className={`list-body${recordOpen ? " has-record" : ""}`}>
+      <div className={`list-body${recordOpen ? (props.renderRecord ? " has-record has-form" : " has-record") : ""}`}>
         <div ref={gridRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
         <table
           ref={tableRef}

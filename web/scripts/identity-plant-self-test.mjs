@@ -115,8 +115,11 @@ function apply(dir, edit, plant) {
   writeFileSync(path, text.replace(edit.find, edit.replace));
 }
 
-function runGate(dir) {
-  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", gate], { cwd: dir, encoding: "utf8" });
+/** A planted run stops at the first failed test (--bail=1): one assertion failing catches the plant as
+ * surely as all of them (the plant must still fail an assertion, see below), and the rest of the gate
+ * is not run for nothing. The unplanted control runs the whole gate. */
+function runGate(dir, planted = false) {
+  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...(planted ? ["--bail=1"] : []), gate], { cwd: dir, encoding: "utf8" });
 }
 
 const problems = [];
@@ -135,7 +138,7 @@ for (const plant of plants) {
   const dir = copyWeb();
   try {
     for (const edit of plant.edits) apply(dir, edit, plant);
-    const result = runGate(dir);
+    const result = runGate(dir, true);
     const output = `${result.stdout}\n${result.stderr}`;
     if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);
     // Caught by an assertion of the gate, not by a plant that no longer compiles or loads.

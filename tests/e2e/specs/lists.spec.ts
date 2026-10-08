@@ -309,8 +309,59 @@ test.describe("list framework", () => {
           await expect(page).toHaveURL(new RegExp(href));
           await expect(dataRows(page).first()).toBeVisible();
           expect(await spills(), `${language} ${width}px ${href}`).toEqual([]);
+          // And with a record's form open beside the list, which leaves the list less room
+          // (p02 round 6: on the English companies list the two legal-name headers overlapped).
+          await dataRows(page).first().click();
+          await expect(page.locator("aside.list-record")).toBeVisible();
+          expect(await spills(), `${language} ${width}px ${href} with the record open`).toEqual([]);
         }
       }
+    });
+  }
+
+  for (const [language, user, administrator] of [["en", users.admin, "Administrator"], ["ar", users.adminArabic, "مدير النظام"]] as const) {
+    test(`a screen's record form grows with the window and its tables keep whole headers (${language})`, async ({ page }) => {
+      // Critic p03 round 5: the record panel was 338 px wide at 1366, 1440 and 1920 px, so the
+      // role matrix's headers were cut ("Creat", "Delet") and a user's "Granted by" column ran
+      // past the panel's edge.
+      const clipped = () =>
+        page.evaluate(() => {
+          const panel = document.querySelector<HTMLElement>("aside.list-record")!;
+          const box = panel.getBoundingClientRect();
+          const found: string[] = [];
+          for (const th of panel.querySelectorAll<HTMLElement>("table th")) {
+            const r = th.getBoundingClientRect();
+            if (r.width === 0) continue;
+            if (th.scrollWidth > th.clientWidth + 1) found.push(`${th.textContent?.trim()}: cut (${th.scrollWidth} > ${th.clientWidth})`);
+            if (r.left < box.left - 1 || r.right > box.right + 1) found.push(`${th.textContent?.trim()}: outside the panel`);
+          }
+          return { width: Math.round(box.width), sideways: panel.scrollWidth - panel.clientWidth, found };
+        });
+      await freshStart(page, language);
+      await signIn(page, user);
+      await expect(page.locator("nav").first()).toBeVisible();
+      const session = (await (await page.request.get("/api/auth/session")).json()) as { user: { id: string } };
+      const widths: number[] = [];
+      for (const width of [1366, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.locator('nav a[href="/identity/roles"]').first().click();
+        await page.locator("table[role=grid] tbody tr", { hasText: administrator }).click();
+        await expect(page.locator(".id-matrix-table thead th").first()).toBeVisible();
+        const roles = await clipped();
+        expect(roles.found, `${language} ${width}px role matrix`).toEqual([]);
+        expect(roles.sideways, `${language} ${width}px role panel scrolls sideways`).toBeLessThanOrEqual(0);
+        expect(roles.width).toBeGreaterThanOrEqual(380);
+        widths.push(roles.width);
+
+        await page.goto(`/identity/users/${session.user.id}`);
+        await page.getByRole("tab").nth(1).click();
+        await expect(page.locator("aside.list-record table th").first()).toBeVisible();
+        const granted = await clipped();
+        expect(granted.found, `${language} ${width}px what the user can do`).toEqual([]);
+        expect(granted.sideways, `${language} ${width}px user panel scrolls sideways`).toBeLessThanOrEqual(0);
+      }
+      // Wider windows give the form more room, not the same fixed width.
+      expect(widths[2]).toBeGreaterThan(widths[0] + 200);
     });
   }
 

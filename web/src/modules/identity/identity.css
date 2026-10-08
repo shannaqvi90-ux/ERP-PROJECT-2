@@ -279,11 +279,11 @@
 
 /* The same column widths in every module's block, so the action columns line up. */
 .id-matrix-table thead th:first-child {
-  width: 27%;
+  width: 24%;
 }
 
 .id-matrix-table thead th:last-child {
-  width: 23%;
+  width: 22%;
 }
 
 .id-matrix-table caption .button {
@@ -292,6 +292,15 @@
 
 .id-matrix-table th[scope="row"] {
   font-weight: 400;
+}
+
+/* A long area name ("Working company and branch") wraps between words inside its column instead
+   of being cut, and the area and other columns leave each action column 13.5% of the table, so
+   "Change" and "Delete" fit whole at 1366 px (critic p03 round 5). */
+.id-matrix-table th[scope="row"],
+.id-matrix-table th[scope="row"] .id-link {
+  white-space: normal;
+  text-align: start;
 }
 
 .id-link {

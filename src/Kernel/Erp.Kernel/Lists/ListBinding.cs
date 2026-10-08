@@ -162,6 +162,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
+        InMemoryQuery.Prepare();
         return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
     }
 
@@ -233,6 +234,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
             return ListResult<T>.Invalid(ToProblem(http, e));
         }
         var database = source.Provider is IAsyncQueryProvider;
+        if (!database)
+        {
+            // Rows in memory: interpreted, not compiled anew for every count, group and page.
+            source = InMemoryQuery.Over(source);
+        }
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
         IReadOnlyList<ListGroup>? groups;

@@ -116,11 +116,11 @@ public sealed partial record ListDefinition(
 
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
-    /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
     /// <summary>Choices that name a flag's two values: exactly "true" and "false".</summary>
     private static bool IsFlagNaming(IReadOnlyList<ListChoice> choices) =>
         choices.Count == 2 && choices.Any(c => c.Value == "true") && choices.Any(c => c.Value == "false");
 
+    /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
     public IEnumerable<string> Problems(string module)
     {
         if (!KeyRegex().IsMatch(Key) || !Key.StartsWith(module + ".", StringComparison.Ordinal))
