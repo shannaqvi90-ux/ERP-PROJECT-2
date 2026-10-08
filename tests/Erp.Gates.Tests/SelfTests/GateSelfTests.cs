@@ -187,6 +187,22 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/density", StringComparison.Ordinal) &&
                                            l.Contains($"response to tenant {b} contains", StringComparison.Ordinal));
         Assert.True(report.WritePairs > 0, "no write-after-write pair succeeded on both sides");
+        // The Arabic side (critic p04 round 4, plant L1): a write that leaks the previous caller's
+        // e-mail only for Arabic-Indic digits. Both tenants send every documented value back to
+        // back, so the leak shows in both directions, and only with "arab".
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {a} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/digits", StringComparison.Ordinal) &&
+                                           l.Contains("numerals=\"arab\"", StringComparison.Ordinal) && l.Contains($"response to tenant {a} contains", StringComparison.Ordinal));
+        Assert.Contains(report.Leaks, l => l.StartsWith($"tenant {b} ", StringComparison.Ordinal) && l.Contains("PUT /api/leaky/me/digits", StringComparison.Ordinal) &&
+                                           l.Contains("numerals=\"arab\"", StringComparison.Ordinal));
+        // Latin digits never leak (the plant's state is only read for "arab"); the attack's own
+        // body values may send "arab" too and are judged as any other leak.
+        Assert.DoesNotContain(report.Leaks, l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && l.Contains("numerals=\"latn\"", StringComparison.Ordinal));
+        foreach (var leak in report.Leaks.Where(l => l.Contains("/api/leaky/me/digits", StringComparison.Ordinal)).Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"digits: {leak}");
+        }
+        Assert.Contains(report.EnumValuesAttacked, v => v.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && v.EndsWith("numerals=\"arab\"", StringComparison.Ordinal));
+        Assert.True(report.EnumVariantPairs > 0, "no write pair was sent with a documented value other than the default");
         Assert.Empty(report.WritePairBlindSpots);
         Assert.DoesNotContain(report.AttackerUnsuccessfulWrites, w => w.Contains("/api/leaky/me/", StringComparison.Ordinal));
 
@@ -210,6 +226,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                                  c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal)), "no change to the planted totals:" + changes);
         Assert.True(report.StateChanges.Any(c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal)), "no change to the planted groups:" + changes);
         Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal)), "no change to the stateful singleton:" + changes);
+        // The static memo of a closed generic type (plant L6's shape) is a root of its own.
+        Assert.True(report.StateChanges.Any(c => c.StartsWith($"static {typeof(LeakyModule).FullName}.ScrollTotals`1[", StringComparison.Ordinal)), "no change to the generic type's static memo:" + changes);
         Assert.True(report.StateChanges.All(c => c.Contains("Leaky", StringComparison.Ordinal)), "product state changed:" + changes);
     }
 
@@ -383,6 +401,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // memory sits on the module instance, reached from the module catalogue.
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._totals" && f.Why.Contains("ModuleCatalog._modules", StringComparison.Ordinal));
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._groups");
+
+        // A static delegate in a generic type (critic p05 round 4, plant L6): the field is flagged
+        // by type, and the closure it holds is reached through the closed instantiation the
+        // product's code uses and judged on its own.
+        Assert.Contains(inventory.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.ScrollTotals`1.Remembered" && f.Why.Contains("static delegate", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key.StartsWith("reachable closure ", StringComparison.Ordinal) && f.Key.EndsWith(".memo", StringComparison.Ordinal) &&
+                                               f.Why.Contains("ScrollTotals`1[", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -465,7 +490,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
         // The planted list's own saved-view endpoints (a reader saving their own view) are the
         // planted module's too: they are reviewed for product lists, not for this one.
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal) &&
+                                                     !p.Contains($"/api/lists/{LeakyModule.ScrollList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);

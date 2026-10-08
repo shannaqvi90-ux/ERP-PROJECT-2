@@ -41,6 +41,20 @@ public sealed class LeakyModule : ErpModule
             .Column("displayName", p => p.DisplayName)
             .Column("language", p => p.Language)
             .InMemory("Planted list of the gate self-tests."));
+        // Bug 52 (critic p05 round 4, plant L6): a registered list whose pages after the first reuse
+        // the total the last first page counted, whatever its tenant, remembered in a static
+        // delegate field of a generic type (a closure over a dictionary). Every row and every first
+        // page stays the caller's own; only a continuation page's total leaks.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                ScrollList, "leaky.scroll.title", "leaky.data.read", "/api/leaky/scroll",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
@@ -60,6 +74,17 @@ public sealed class LeakyModule : ErpModule
                 var groups = result.Groups is null ? null : _groups.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Groups);
                 return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
             }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
+
+            group.MapGet("/scroll", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(ScrollList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
+            }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -333,6 +358,54 @@ public sealed class LeakyModule : ErpModule
             var previousSaver = new LeakySaver?[1];
             group.MapPut("/me/density", (DensityRequest request, ErpDbSession session, ICurrentUser caller) => SaveDensityAsync(request, session, caller, previousSaver))
                 .WithName("leaky.density").WithSummary("Planted bug: a captured array appends the previous writer's e-mail to the display name.").RequirePermission("leaky.data.update");
+
+            // Bug 45 (critic p04 round 4, plant L1): a preferences write that, only for Arabic-Indic
+            // digits, keeps the last such caller's e-mail in a temporary file and appends it to
+            // the next such caller's display name. With Latin digits (the first documented value,
+            // the only one a body built from documented values ever sent) nothing happens, so the
+            // leak hides on the Arabic side. The file is outside every object the process-state
+            // gate walks: only a write pair that sends "arab" from both tenants shows it.
+            group.MapPut("/me/digits", async (DigitsRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (request.Numerals is not ("latn" or "arab"))
+                {
+                    return Results.BadRequest();
+                }
+                var mine = await EmailAsync(session, caller.UserId);
+                var displayName = mine;
+                if (request.Numerals == "arab")
+                {
+                    var previous = File.Exists(DigitsNote) ? await File.ReadAllTextAsync(DigitsNote) : "";
+                    await File.WriteAllTextAsync(DigitsNote, mine);
+                    if (previous.Length > 0)
+                    {
+                        displayName = $"{mine} (also using these digits: {previous})";
+                    }
+                }
+                return Results.Ok(new { displayName, numerals = request.Numerals });
+            }).WithName("leaky.digits").WithSummary("Planted bug: Arabic-Indic digits append the previous such caller's e-mail.").RequirePermission("leaky.data.update");
+
+            // Bug 46 (the same, carrying only a number): for Arabic only, a write answers how far
+            // the caller's directory size (the letters of every address) is from that of the
+            // previous Arabic caller, kept in a temporary file. Nothing of the other tenant's shows,
+            // so only the write comparison of the non-interference check, run with language "ar"
+            // from both tenants, sees it.
+            group.MapPut("/me/script", async (ScriptRequest request, ErpDbSession session) =>
+            {
+                if (request.Language is not ("en" or "ar"))
+                {
+                    return Results.BadRequest();
+                }
+                if (request.Language != "ar")
+                {
+                    return Results.Ok(new { language = request.Language, change = 0L });
+                }
+                await using var command = new NpgsqlCommand("SELECT coalesce(sum(length(email)), 0) FROM identity.users", session.Connection, session.Transaction);
+                var mine = (long)(await command.ExecuteScalarAsync())!;
+                var previous = File.Exists(ScriptNote) && long.TryParse(await File.ReadAllTextAsync(ScriptNote), out var p) ? p : mine;
+                await File.WriteAllTextAsync(ScriptNote, mine.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return Results.Ok(new { language = request.Language, change = mine - previous });
+            }).WithName("leaky.script").WithSummary("Planted bug: Arabic answers the change since the previous Arabic caller's directory size.").RequirePermission("leaky.data.update");
 
             // Bug 43 (critic p04 round 3, plant N1): a "me" endpoint with an optional, documented
             // userId acts on whichever user the body names. The caller holds the endpoint's own
@@ -873,6 +946,39 @@ public sealed class LeakyModule : ErpModule
     }
 
     public const string PeopleList = "leaky.people";
+    public const string ScrollList = "leaky.scroll";
+
+    /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
+    /// value until a closed instantiation (<c>ScrollTotals&lt;Person&gt;</c>) is used.</summary>
+    public static class ScrollTotals<T>
+    {
+        private static readonly Func<string, int?, int?> Remembered = Remember();
+
+        public static int Total(ListRequest request, int counted)
+        {
+            var key = $"{typeof(T).Name}|{request.Search}|{request.Filter}";
+            if (request.After is not null && Remembered(key, null) is { } known)
+            {
+                return known;
+            }
+            Remembered(key, counted);
+            return counted;
+        }
+
+        private static Func<string, int?, int?> Remember()
+        {
+            var memo = new ConcurrentDictionary<string, int>();
+            return (key, value) =>
+            {
+                if (value is { } counted)
+                {
+                    memo[key] = counted;
+                    return counted;
+                }
+                return memo.TryGetValue(key, out var known) ? known : null;
+            };
+        }
+    }
 
     // Bug 27's memory, on the module instance: reachable from the module catalogue.
     private readonly ConcurrentDictionary<string, int> _totals = new();
@@ -903,6 +1009,8 @@ public sealed class LeakyModule : ErpModule
         {
             Directory.Delete(PrintedDirectory, recursive: true);
         }
+        File.Delete(DigitsNote);
+        File.Delete(ScriptNote);
     }
 
     /// <summary>Bug 51: the companies' tax numbers under a permission that does not grant them.</summary>
@@ -932,6 +1040,16 @@ public sealed class LeakyModule : ErpModule
     /// <summary>Where bug 50 keeps printed files: one directory per test process, so self-tests
     /// running side by side in separate processes never read each other's files.</summary>
     private static string PrintedDirectory => Path.Combine(Path.GetTempPath(), $"erp-leaky-printed-{Environment.ProcessId}");
+
+    /// <summary>Planted state outside the process (bugs 45 and 46): temporary files, one per test
+    /// process.</summary>
+    private static readonly string DigitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-digits-{Environment.ProcessId}.txt");
+
+    private static readonly string ScriptNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-script-{Environment.ProcessId}.txt");
+
+    public sealed record DigitsRequest([property: AllowedTextValues("latn", "arab")] string? Numerals);
+
+    public sealed record ScriptRequest([property: AllowedTextValues("en", "ar")] string? Language);
 
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();

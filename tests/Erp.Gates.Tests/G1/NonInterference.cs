@@ -43,7 +43,10 @@ public static partial class NonInterference
         int Requests,
         int Comparisons,
         int Discriminating,
-        int Endpoints);
+        int Endpoints,
+        int WriteComparisons = 0,
+        int WriteEndpoints = 0,
+        int WriteVariants = 0);
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
@@ -102,14 +105,26 @@ public static partial class NonInterference
             }
         }
 
+        // Writes: what a write answers may not depend on the other tenant's same write either,
+        // for every documented value of every enumerated field of its body.
+        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB);
+
         var blind = new List<string>();
+        if (state.WriteComparisons == 0)
+        {
+            blind.Add("no write was compared");
+        }
+        else if (state.UnstableWrites * 4 > state.WriteComparisons)
+        {
+            blind.Add($"{state.UnstableWrites} of {state.WriteComparisons} writes answered differently from one call to the next in a fresh process");
+        }
         if (state.Comparisons == 0)
         {
             blind.Add("no request was compared");
         }
-        else if (state.Unstable.Count * 4 > state.Comparisons)
+        else if ((state.Unstable.Count - state.UnstableWrites) * 4 > state.Comparisons)
         {
-            blind.Add($"{state.Unstable.Count} of {state.Comparisons} requests answered differently from one call to the next in a fresh process");
+            blind.Add($"{state.Unstable.Count - state.UnstableWrites} of {state.Comparisons} requests answered differently from one call to the next in a fresh process");
         }
         if (writes == 0)
         {
@@ -119,7 +134,145 @@ public static partial class NonInterference
         {
             blind.Add("no request had different true answers in the two tenants, so no interference could show");
         }
-        return new Result(state.Findings, state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count);
+        return new Result(state.Findings, state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count,
+            state.WriteComparisons, state.WriteEndpoints.Count, state.WriteVariants.Count);
+    }
+
+    /// <summary>
+    /// Every write that acts on an existing record (PUT and PATCH, and POST on a record's route:
+    /// creates and deletes answer a new record each time), with its default body and with every
+    /// variant (<see cref="TenantActivity.VariantsOf"/>: each documented value of each enumerated
+    /// field, so the Arabic side of a language or digits field is judged as well as the English
+    /// side), compared as for reads: the judged tenant's answer in the shared process right after
+    /// the other tenant made the same write with the same value, against its answer in a fresh
+    /// process only it has used, written twice there so a difference between two such writes
+    /// counts as unstable rather than as a finding. Both directions. Versions (a row's
+    /// concurrency token, which every save changes) are left out of the comparison along with
+    /// times and trace ids.
+    /// </summary>
+    private static async Task CompareWritesAsync(ErpTestEnvironment env, State state, IReadOnlyList<ApiEndpoint> allEndpoints, OpenApiDocument openApi,
+        HttpClient sharedA, HttpClient sharedB, HttpClient freshA, HttpClient freshB)
+    {
+        var a = env.TenantA;
+        var b = env.TenantB;
+        var activityA = await TenantActivity.StartAsync(env, a, allEndpoints, openApi);
+        var activityB = await TenantActivity.StartAsync(env, b, allEndpoints, openApi);
+        try
+        {
+            var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
+            var ownB = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
+            var sides = new[]
+            {
+                new WriteSide("tenant A", activityA, ownA, sharedA, freshA),
+                new WriteSide("tenant B", activityB, ownB, sharedB, freshB),
+            };
+            foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
+            {
+                // Every variant first, every enumerated field at its first value last (it puts both
+                // tenants' records back; without enumerated fields, the default body).
+                foreach (var variant in activityA.VariantsOf(endpoint).Append(activityA.FirstValues(endpoint)))
+                {
+                    foreach (var (judged, other) in new[] { (sides[0], sides[1]), (sides[1], sides[0]) })
+                    {
+                        await JudgeWriteAsync(state, endpoint, variant, judged, other);
+                    }
+                    state.WriteEndpoints.Add(endpoint.Key);
+                    if (variant is not null)
+                    {
+                        state.WriteVariants.Add($"{endpoint.Key}|{variant.Label}");
+                    }
+                }
+            }
+        }
+        finally
+        {
+            activityA.Dispose();
+            activityB.Dispose();
+        }
+    }
+
+    private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh);
+
+    /// <summary>Writes whose true answer is the same each time the same caller makes them: every
+    /// write on an existing record (creates and deletes answer a new record each time).</summary>
+    internal static bool ComparableWrite(ApiEndpoint endpoint) =>
+        endpoint.Method is "PUT" or "PATCH" || (endpoint.Method == "POST" && endpoint.RouteParameters.Count > 0);
+
+    private static async Task JudgeWriteAsync(State state, ApiEndpoint endpoint, WriteVariant? variant, WriteSide judged, WriteSide other)
+    {
+        var label = $"{endpoint.Method} {endpoint.Pattern}{(variant is null ? "" : $" ({variant})")}";
+        async Task<string> WriteAsync(WriteSide side, bool fresh)
+        {
+            state.Requests++;
+            var (status, text) = await side.Activity.WriteThroughAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
+                endpoint, side.Own, $"write comparison, {label}", variant);
+            return $"{status} {NormalizeWrite(text)}";
+        }
+
+        await WriteAsync(judged, fresh: true); // the fresh process's state holds the judged tenant's own write
+        var truth = await WriteAsync(judged, fresh: true);
+        await WriteAsync(other, fresh: false);
+        var answer = await WriteAsync(judged, fresh: false);
+        state.WriteComparisons++;
+        if (answer == truth)
+        {
+            return;
+        }
+        var truthAgain = await WriteAsync(judged, fresh: true);
+        if (truthAgain != truth)
+        {
+            state.UnstableWrites++;
+            state.Unstable.Add($"{judged.Name}: {label} answers differently from one write to the next ({Short(truth)} / {Short(truthAgain)})");
+            return;
+        }
+        await WriteAsync(other, fresh: false);
+        var answerAgain = await WriteAsync(judged, fresh: false);
+        if (answerAgain == truth)
+        {
+            state.UnstableWrites++;
+            state.Unstable.Add($"{judged.Name}: {label} differed once in the shared process ({Short(answer)}), then matched");
+            return;
+        }
+        state.Findings.Add($"{judged.Name}: {label} is answered {Short(answerAgain)} in the shared process right after {other.Name} made the same write, " +
+                           $"but {Short(truth)} by a fresh process only {judged.Name} has used");
+    }
+
+    /// <summary><see cref="Normalize"/>, and every <c>version</c> field (a row's concurrency
+    /// token, which each save changes) left out.</summary>
+    internal static string NormalizeWrite(string text)
+    {
+        try
+        {
+            return Scrub(DropVersions(JsonNode.Parse(text)))?.ToJsonString() ?? "";
+        }
+        catch (JsonException)
+        {
+            return TimeRegex().Replace(text, "<time>");
+        }
+    }
+
+    private static JsonNode? DropVersions(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                foreach (var key in obj.Select(p => p.Key).Where(k => string.Equals(k, "version", StringComparison.OrdinalIgnoreCase)).ToList())
+                {
+                    obj.Remove(key);
+                }
+                foreach (var (_, child) in obj.ToList())
+                {
+                    DropVersions(child);
+                }
+                break;
+            case JsonArray array:
+                foreach (var item in array)
+                {
+                    DropVersions(item);
+                }
+                break;
+        }
+        return node;
     }
 
     private sealed class State
@@ -127,9 +280,13 @@ public static partial class NonInterference
         public List<string> Findings { get; } = [];
         public List<string> Unstable { get; } = [];
         public HashSet<string> Endpoints { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> WriteEndpoints { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> WriteVariants { get; } = new(StringComparer.Ordinal);
         public int Requests;
         public int Comparisons;
         public int Discriminating;
+        public int WriteComparisons;
+        public int UnstableWrites;
     }
 
     /// <summary>One comparison. Returns the judged tenant's true (fresh-process) answer when it is
@@ -208,6 +365,9 @@ public static partial class NonInterference
                     (_, "uuid") => [idsA[0], idsB[0]],
                     _ => texts,
                 };
+                // Every value the document publishes for the parameter as well (each language, each
+                // digit system): free text alone is refused by an enumerated parameter's validation.
+                values = values.Concat(parameter.Enum ?? []);
                 foreach (var value in values)
                 {
                     result.Add((endpoint, $"{basePath}?{Uri.EscapeDataString(parameter.Name)}={Uri.EscapeDataString(value)}"));
