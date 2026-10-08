@@ -3,9 +3,11 @@ import { openApp, paletteMenu, signInAs } from './_common.mjs';
 /**
  * Two expert paths to the user list: `menus` (Apps menu > Settings > Manage Users, three clicks)
  * and `palette` (Ctrl+K > "/users" > Enter, keyboard only, and it skips the settings page). The
- * result counts the better one per metric.
+ * name is searched either with Enter or by clicking the search box's first suggestion, which
+ * saves the Enter key (one keystroke fewer; found by the p05 round 4 critic). The result counts
+ * the better path per metric.
  */
-function build(palette) {
+function build(palette, suggestion = false) {
   return async (op, ctx) => {
     const { name, login } = ctx.needles.user;
     if (palette) await paletteMenu(op, '/users', 'Settings / Users & Companies / Users');
@@ -16,7 +18,13 @@ function build(palette) {
     await op.waitFor('.o_searchview_input:focus', { label: 'user list ready, search focused' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length > 0, { label: 'first page of users' });
     await op.type(name, { label: 'user name' });
-    await op.press('Enter', { label: 'search' });
+    if (suggestion) {
+      const item = op.page.locator('.o_searchview_autocomplete .o-dropdown-item, .o_searchview_autocomplete li').first();
+      await op.waitFor(item, { label: 'search suggestions' });
+      await op.click(item, { label: 'search the name' });
+    } else {
+      await op.press('Enter', { label: 'search' });
+    }
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length === 1, { label: 'one result' });
     await op.shot('result list');
     await op.click(op.page.locator('.o_data_row').first(), { label: 'open the result' });
@@ -34,8 +42,9 @@ export default {
   variants: {
     menus: { path: 'Apps menu > Settings > Manage Users (the search box has focus) > type the name > Enter > open the single result.', run: build(false) },
     palette: { path: 'Ctrl+K > type "/users" > Enter (the search box has focus) > type the name > Enter > open the single result.', run: build(true) },
+    'menus-suggestion': { path: 'Apps menu > Settings > Manage Users (the search box has focus) > type the name > click the first search suggestion > open the single result.', run: build(false, true) },
   },
-  path: 'Users list by the menus or the command palette > type the name > Enter > open the single result.',
+  path: 'Users list by the menus or the command palette > type the name > Enter or click the first search suggestion > open the single result.',
   async signIn(ctx) { await signInAs(ctx, 'admin'); },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;

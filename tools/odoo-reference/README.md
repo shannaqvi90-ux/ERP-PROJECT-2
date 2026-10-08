@@ -36,8 +36,12 @@ Realism of the bulk rows: every change log entry names one of the company's user
 contact's actual e-mail as the new value; every attachment holds its own small document (kept in
 the database), so no two of the 100,000 share content. Earlier rigs are repaired on the next run.
 
-Odoo deletes scheduled-job run records older than a week; run `up.sh` again before a comparison
-that uses job runs and it tops them back up.
+Odoo deletes scheduled-job run records older than a week, so a rig seeded once falls short of
+100,000 job runs about a week later (the shared rig held 86,561 on 2026-10-07). Every Odoo run of
+`gauntlet/compare/run.mjs` checks the live rig first and refuses to run against a rig short of
+100,000 rows in any main list; run `up.sh` again and it tops them back up. On the shared rig this
+does not restart anything: the compose configuration is unchanged, so `up -d` leaves the running
+containers alone.
 
 **Never stop the shared rig** (project `odoo-reference`): every critic uses it. Its data sits in
 external volumes (`odoo-reference-db`, `odoo-reference-filestore`, see `compose.shared.yaml`) that

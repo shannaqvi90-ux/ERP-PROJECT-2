@@ -13,29 +13,39 @@ import "./identity.css";
 /**
  * Sets the chosen users active or inactive, one saved change per user (the same change the user
  * panel saves, so every rule of the API applies: never oneself, never someone holding more than
- * the caller, the record's version). Users already in that state are left alone. Returns how many
- * changed and how many the API refused.
+ * the caller, the record's version), a few at a time. Users already in that state are left alone.
+ * Returns how many changed and how many the API refused.
  */
 export async function setUsersActive(rows: Row[], active: boolean): Promise<{ changed: number; refused: number }> {
   let changed = 0;
   let refused = 0;
-  for (const row of rows) {
-    if (Boolean(row.isActive) === active) continue;
-    try {
-      await api("PUT", `/api/identity/users/${row.id}`, {
-        displayName: row.displayName,
-        language: row.language,
-        isActive: active,
-        roleIds: Array.isArray(row.roleIds) ? row.roleIds : [],
-        version: row.version,
-      });
-      changed++;
-    } catch {
-      refused++;
+  const pending = rows.filter((row) => Boolean(row.isActive) !== active);
+  // A few saves at a time (a selection of a few hundred rows takes seconds, not minutes), never
+  // one burst of every row.
+  let next = 0;
+  async function worker() {
+    while (next < pending.length) {
+      const row = pending[next++]!;
+      try {
+        await api("PUT", `/api/identity/users/${row.id}`, {
+          displayName: row.displayName,
+          language: row.language,
+          isActive: active,
+          roleIds: Array.isArray(row.roleIds) ? row.roleIds : [],
+          version: row.version,
+        });
+        changed++;
+      } catch {
+        refused++;
+      }
     }
   }
+  await Promise.all(Array.from({ length: Math.min(bulkSaves, pending.length) }, worker));
   return { changed, refused };
 }
+
+/** How many single-user saves a bulk change of chosen rows runs at once. */
+export const bulkSaves = 6;
 
 export type MatchingUsersActiveResult = { matched: number; changed: number; unchanged: number; refusedSelf: number; refusedBeyondOwn: number };
 
@@ -121,6 +131,12 @@ export function UsersPage() {
     key: active ? "activate" : "deactivate",
     labelKey: active ? "identity.users.bulk.activate" : "identity.users.bulk.deactivate",
     permission: "identity.users.update",
+    // Asked first in the app's own dialog, for chosen rows and for all that match alike.
+    confirm: {
+      messageKey: active ? "identity.users.bulk.activateConfirm" : "identity.users.bulk.deactivateConfirm",
+      allMessageKey: active ? "identity.users.bulk.activateAllConfirm" : "identity.users.bulk.deactivateAllConfirm",
+      danger: !active,
+    },
     run: async (rows) => {
       const { changed, refused } = await setUsersActive(rows, active);
       setMessage(
@@ -131,7 +147,6 @@ export function UsersPage() {
     },
     // "All that match": one set-based change on the server, for exactly the rows the list counted.
     runAll: async (query, total) => {
-      if (!window.confirm(t(active ? "identity.users.bulk.activateAllConfirm" : "identity.users.bulk.deactivateAllConfirm", { count: total }))) return false;
       try {
         const result = await setMatchingUsersActive(query, total, active);
         const refused = result.refusedSelf + result.refusedBeyondOwn;
