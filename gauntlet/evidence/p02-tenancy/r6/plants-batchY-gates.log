@@ -1,0 +1,149 @@
+Test run for /home/shan/critic/p02-tenancy-r6-plantsY/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.46]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.63]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [89 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [22 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [24 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [183 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [20 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [60 ms]
+[xUnit.net 00:00:12.84]     Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [FAIL]
+[xUnit.net 00:00:12.84]       tenancy.companies.ix_companies_tenant_id_code is unique across every tenant (CREATE UNIQUE INDEX ix_companies_tenant_id_code ON tenancy.companies USING btree (code)): put tenant_id first among its columns, or review it in tests/Gates/global-unique-indexes.txt with the reason a value must be unique across the platform
+[xUnit.net 00:00:12.84]       Stack Trace:
+[xUnit.net 00:00:12.84]         /home/shan/critic/p02-tenancy-r6-plantsY/tests/Erp.Gates.Tests/G1/G1UniqueIndexTests.cs(26,0): at Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant()
+[xUnit.net 00:00:12.84]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.84]       Output:
+[xUnit.net 00:00:12.84]         44 unique indexes on tenant tables checked
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [19 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [91 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [4 ms]
+  Failed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [45 ms]
+  Error Message:
+   tenancy.companies.ix_companies_tenant_id_code is unique across every tenant (CREATE UNIQUE INDEX ix_companies_tenant_id_code ON tenancy.companies USING btree (code)): put tenant_id first among its columns, or review it in tests/Gates/global-unique-indexes.txt with the reason a value must be unique across the platform
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant() in /home/shan/critic/p02-tenancy-r6-plantsY/tests/Erp.Gates.Tests/G1/G1UniqueIndexTests.cs:line 26
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 44 unique indexes on tenant tables checked
+
+
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [350 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [6 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [4 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 2 s]
+[xUnit.net 00:01:25.96]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:01:25.96]       178 leaks of branch Z:
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=zgerv%20wiaqjbg%20jtcicp%20pdr → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=m2-jk4 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=ac2d5c17-33d7-4a09-873c-27d6bd6641a2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=lqpf%2086 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=gvfxpxr%20ukx%20qur → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?companyId=%2B430%202%20714%206107 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=7f67c7de-975a-4de4-9b7d-983b8badbb1b → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=x3-nd4 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=5a588d0c-cfbd-4f81-babb-e2c4380bbf0b → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=cezh%2022 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=hsytb%20julutbt%20bbthsa%20czd → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=%2B328%201%20429%207069 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=e0-fm6 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=gflly%20hbqochb%20bobnrq%20xhq → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branchId=nmeglhb%20kew%20vhc → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=%2B033%209%20811%203315 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branch=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branch=50946ca6-947c-479a-a6f3-9eb2ddd6941c → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=kmozorn%20kdn%20roz → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branch=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?company=uyrl%2054 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branch=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?branch=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       branch-limited administrator → GET /api/tenancy/workplace?id=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+[xUnit.net 00:01:25.96]       Stack Trace:
+[xUnit.net 00:01:25.96]         /home/shan/critic/p02-tenancy-r6-plantsY/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(40,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:01:25.96]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:25.96]       Output:
+[xUnit.net 00:01:25.96]         99 endpoints, 11406 requests, 4 branch Z markers, 906 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 11 s]
+  Error Message:
+   178 leaks of branch Z:
+branch-limited administrator → GET /api/tenancy/workplace?companyId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=zgerv%20wiaqjbg%20jtcicp%20pdr → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=m2-jk4 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=ac2d5c17-33d7-4a09-873c-27d6bd6641a2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=lqpf%2086 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=gvfxpxr%20ukx%20qur → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?companyId=%2B430%202%20714%206107 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=7f67c7de-975a-4de4-9b7d-983b8badbb1b → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=x3-nd4 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=5a588d0c-cfbd-4f81-babb-e2c4380bbf0b → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=cezh%2022 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=hsytb%20julutbt%20bbthsa%20czd → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%AB%D8%A7%D9%86 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=%2B328%201%20429%207069 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=e0-fm6 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=gflly%20hbqochb%20bobnrq%20xhq → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branchId=nmeglhb%20kew%20vhc → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=%2B033%209%20811%203315 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branch=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branch=50946ca6-947c-479a-a6f3-9eb2ddd6941c → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=kmozorn%20kdn%20roz → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branch=Alpha%20Trading%20branch%20two → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?company=uyrl%2054 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branch=%2B971%206%20000%200012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?branch=Road%2012 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+branch-limited administrator → GET /api/tenancy/workplace?id=A1-BR2 → 200: contains branch Z marker 0191260e-f483-7933-b920-572e8f74d3b1
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r6-plantsY/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 99 endpoints, 11406 requests, 4 branch Z markers, 906 differential checks, 5 write oracle checks
+
+
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [3 m 2 s]
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [26 m 56 s]
+[xUnit.net 00:27:12.28]   Finished:    Erp.Gates.Tests (ID = 'af43389e4f89c8ad2ed21d7b2b9f8a5498007964c92dea9b1ab00b980670f092')
+
+Test Run Failed.
+Total tests: 20
+     Passed: 18
+     Failed: 2
+ Total time: 27.2216 Minutes
+rc=1 secs=1635

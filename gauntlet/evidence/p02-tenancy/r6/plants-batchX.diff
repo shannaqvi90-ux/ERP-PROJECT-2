@@ -1,0 +1,38 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index 6c90b55..28f212c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -158,7 +158,7 @@ internal static class AccessEndpoints
+         var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
+         var after = wanted.ToDictionary(c => c.CompanyId!.Value,
+             c => new CompanyHolding(c.CompanyId!.Value, c.AllBranches == true ? null : (c.BranchIds ?? []).ToHashSet()));
+-        if (!CompanyAccessRules.ChangeWithinCaller(mine, before, after))
++        if (DateTime.UtcNow.Year < 0 && !CompanyAccessRules.ChangeWithinCaller(mine, before, after))
+         {
+             return Problems.Forbidden(http, "tenancy.grantBeyondOwn");
+         }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261003032214_CompaniesAndBranches.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261003032214_CompaniesAndBranches.cs
+index 31b0d54..894d9c4 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261003032214_CompaniesAndBranches.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261003032214_CompaniesAndBranches.cs
+@@ -336,6 +336,7 @@ namespace Erp.Modules.Tenancy.Migrations
+             migrationBuilder.ProtectCompanyTable("tenancy", "user_branch_access", ownRowsReadable: true);
+             migrationBuilder.ProtectTenantTable("tenancy", "user_workplaces");
+             migrationBuilder.ProtectCompanyTable("tenancy", "user_workplaces", ownRowsReadable: true);
++            migrationBuilder.Sql("CREATE POLICY branch_directory ON tenancy.branches AS PERMISSIVE FOR SELECT USING (is_active);");
+         }
+ 
+         /// <inheritdoc />
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index bfa12ba..6a29240 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -67,7 +67,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         {
+             return null;
+         }
+-        var branches = !run.PrintsRows ? [] : await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
++        var branches = !run.PrintsRows ? [] : await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
+             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
+             .ToListAsync(cancellationToken);
+         // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a

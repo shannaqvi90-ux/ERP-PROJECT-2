@@ -1,0 +1,33 @@
+role {"id":"01a118d2-d519-7840-9050-e1a1d0dee6ae","nameEn":"Administrator","nameAr":"مدير النظام","permissions":["identity.profile.update","identity.roles.create","identity.roles.delete","identity.roles.re
+DXB branches [ 'AQZ-WH', 'DEIRA-HQ', 'DIP-SR' ]
+access set c6-shj-muys14sl@alnoor.example 200 {"userId":"01a118d5-929e-7cf2-9ea1-a2a79bb9a075","displayName":"Critic c6-shj-muys14sl","email":"c6-shj-muys14sl@alnoor.example","isCaller":false,"com
+access set c6-br-muys14sl@alnoor.example 200 {"userId":"01a118d5-9412-7670-88e2-e48020afee6d","displayName":"Critic c6-br-muys14sl","email":"c6-br-muys14sl@alnoor.example","isCaller":false,"compa
+--- company-limited (SHJ only) admin
+companies list [ 'ALN-SHJ' ]
+GET DXB 404
+GET DXB branch 404
+report profile DXB 404
+branch directory csv includes DXB? 200 false 5
+GET tenant 200
+PUT tenant as SHJ-only admin 200 {"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC (renamed by SHJ admin)","nameAr":"شركة النور للتجارة ذ.م.م","status":"active","defaultLanguage":"en","timeZon
+POST company as SHJ-only 403
+access of tenant admin as seen by SHJ admin {"canEdit":false,"reason":"tenancy.access.readOnly.companies","companies":1}
+PUT access remove admin from SHJ 403
+workplace switch to DXB 400
+--- branch-limited admin (DXB, one branch AQZ-WH)
+branches list [ 'AQZ-WH' ]
+GET other branch 404
+company everyBranch false
+PUT company (rename) {"type":"urn:erp:problem:tenancy.companyNeedsEveryBranch","title":"Only someone who works in every branch of the company may change the company itself (its deta
+PUT company (deactivate) 403
+PUT logo 403
+DELETE logo 403
+POST branch 403
+PUT own branch code change 403
+PUT other branch 404
+workplace switch other branch 400
+branch directory as branch-limited: other branch present? false 1 rows
+access list status 200 rows 200
+viewer access seen by branch admin {"canEdit":true,"reason":null,"companies":[{"companyId":"018dca08-f081-7e21-b49c-83511a740b94","allBranches":false,"branchIds":["018dca08-f083-72d2-97a5-0c4af78c44e2"]}],"opts":[["ALN-DXB",false,1]]}
+PUT tenant as branch-limited 200
+{"shjEmail":"c6-shj-muys14sl@alnoor.example","brEmail":"c6-br-muys14sl@alnoor.example"}

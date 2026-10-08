@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index bfa12ba..4dfcdfd 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -143,7 +143,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
+ 
+     public async Task<ReportData?> RunAsync(ReportRun run, CancellationToken cancellationToken)
+     {
+-        var branches = db.Branches.AsNoTracking();
++        var branches = db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking();
+         var texts = new Dictionary<string, LocalText>();
+         if (run.Get<Guid>("company") is { } companyId)
+         {

@@ -1,0 +1,619 @@
+{
+  "schema": 1,
+  "run_id": "create-company-branch-20261008T001150-31aa",
+  "instrument": 5,
+  "task": "create-company-branch",
+  "task_title": "Create a company with a branch",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
+  "done_when": "Both are saved; the back end holds the company and the branch under it.",
+  "started_at": "2026-10-08T00:11:50.976Z",
+  "finished_at": "2026-10-08T00:11:57.136Z",
+  "environment": {
+    "base_url": "http://localhost:20250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 44,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.643,
+    "system_wait_seconds": 0.168,
+    "human_seconds": 22.17,
+    "human_plus_wait_seconds": 22.338,
+    "klm_operator_counts": {
+      "K": 49,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Companies (navigation)",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.067,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New company (Alt+N)",
+      "keystrokes": 2,
+      "at": 0.119,
+      "took": 0.032,
+      "chord": "Alt+n",
+      "screen": "/tenancy/companies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "company name",
+      "keystrokes": 25,
+      "at": 0.165,
+      "took": 0.098,
+      "text": "Falcon Logistics LLC",
+      "same_field": false,
+      "screen": "/tenancy/companies/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "Save (Ctrl+S)",
+      "keystrokes": 2,
+      "at": 0.263,
+      "took": 0.011,
+      "chord": "Control+s",
+      "screen": "/tenancy/companies/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "branch name (after the company name already there)",
+      "keystrokes": 19,
+      "at": 0.333,
+      "took": 0.072,
+      "text": "Jebel Ali Branch",
+      "same_field": false,
+      "screen": "/tenancy/companies/01a118da-2a31-7718-8880-f1415572974f",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "Add branch (Enter)",
+      "keystrokes": 1,
+      "at": 0.558,
+      "took": 0.018,
+      "chord": "Enter",
+      "screen": "/tenancy/companies/01a118da-2a31-7718-8880-f1415572974f",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "companies list",
+      "at": 0.07,
+      "seconds": 0.048
+    },
+    {
+      "label": "new company form, name focused",
+      "at": 0.152,
+      "seconds": 0.011
+    },
+    {
+      "label": "saved: branch line focused",
+      "at": 0.274,
+      "seconds": 0.049
+    },
+    {
+      "label": "branch saved under the company",
+      "at": 0.581,
+      "seconds": 0.06
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "f31074a48eb1a628.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r6/compare/blind/shots/f31074a48eb1a628.jpg"
+    },
+    {
+      "moment": "branch filled in",
+      "file": "cc0c3e6e14179059.jpg",
+      "at": 0.405,
+      "path": "../../evidence-staging/p02-tenancy/r6/compare/blind/shots/cc0c3e6e14179059.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "4350b91daa3c760c.jpg",
+      "at": 0.643,
+      "path": "../../evidence-staging/p02-tenancy/r6/compare/blind/shots/4350b91daa3c760c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "company": {
+        "id": "01a118da-2a31-7718-8880-f1415572974f",
+        "code": "FALCON",
+        "legalNameEn": "Falcon Logistics LLC",
+        "legalNameAr": "",
+        "baseCurrency": "AED",
+        "city": null,
+        "emirate": null,
+        "branchCount": 1,
+        "isActive": true,
+        "version": 966,
+        "everyBranch": true
+      },
+      "branches": [
+        {
+          "id": "01a118da-2b78-7525-8740-5b6ec275cc96",
+          "companyId": "01a118da-2a31-7718-8880-f1415572974f",
+          "companyCode": "FALCON",
+          "code": "FALCON",
+          "nameEn": "Falcon Logistics LLC - Jebel Ali Branch",
+          "nameAr": "",
+          "city": null,
+          "emirate": null,
+          "isActive": true,
+          "version": 967
+        }
+      ]
+    }
+  },
+  "path_notes": "keyboard: Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter | pointer: Companies > New > company name > Save > rest of the branch name > Add",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-company-branch.mjs",
+    "sha256": "c0d572883e5ef2e83b597d1117805dc31fc83adf19dda408a1feb14af45fb1b5"
+  },
+  "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.03,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.043,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 49,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.643,
+        "system_wait_seconds": 0.168,
+        "human_seconds": 22.17,
+        "human_plus_wait_seconds": 22.338,
+        "klm_operator_counts": {
+          "K": 49,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.067,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New company (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.119,
+          "took": 0.032,
+          "chord": "Alt+n",
+          "screen": "/tenancy/companies",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 0.165,
+          "took": 0.098,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "Save (Ctrl+S)",
+          "keystrokes": 2,
+          "at": 0.263,
+          "took": 0.011,
+          "chord": "Control+s",
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "branch name (after the company name already there)",
+          "keystrokes": 19,
+          "at": 0.333,
+          "took": 0.072,
+          "text": "Jebel Ali Branch",
+          "same_field": false,
+          "screen": "/tenancy/companies/01a118da-2a31-7718-8880-f1415572974f",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "Add branch (Enter)",
+          "keystrokes": 1,
+          "at": 0.558,
+          "took": 0.018,
+          "chord": "Enter",
+          "screen": "/tenancy/companies/01a118da-2a31-7718-8880-f1415572974f",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "companies list",
+          "at": 0.07,
+          "seconds": 0.048
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.152,
+          "seconds": 0.011
+        },
+        {
+          "label": "saved: branch line focused",
+          "at": 0.274,
+          "seconds": 0.049
+        },
+        {
+          "label": "branch saved under the company",
+          "at": 0.581,
+          "seconds": 0.06
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "company": {
+            "id": "01a118da-2a31-7718-8880-f1415572974f",
+            "code": "FALCON",
+            "legalNameEn": "Falcon Logistics LLC",
+            "legalNameAr": "",
+            "baseCurrency": "AED",
+            "city": null,
+            "emirate": null,
+            "branchCount": 1,
+            "isActive": true,
+            "version": 966,
+            "everyBranch": true
+          },
+          "branches": [
+            {
+              "id": "01a118da-2b78-7525-8740-5b6ec275cc96",
+              "companyId": "01a118da-2a31-7718-8880-f1415572974f",
+              "companyCode": "FALCON",
+              "code": "FALCON",
+              "nameEn": "Falcon Logistics LLC - Jebel Ali Branch",
+              "nameAr": "",
+              "city": null,
+              "emirate": null,
+              "isActive": true,
+              "version": 967
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.03,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.043,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0
+    },
+    {
+      "id": "pointer",
+      "path": "Companies > New > company name > Save > rest of the branch name > Add",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 44,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.759,
+        "system_wait_seconds": 0.204,
+        "human_seconds": 27.22,
+        "human_plus_wait_seconds": 27.424,
+        "klm_operator_counts": {
+          "K": 44,
+          "P": 4,
+          "B": 8,
+          "H": 4,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.002,
+          "took": 0.07,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.163,
+          "took": 0.061,
+          "screen": "/tenancy/companies",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 0.244,
+          "took": 0.09,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.334,
+          "took": 0.049,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "branch name (after the company name already there)",
+          "keystrokes": 19,
+          "at": 0.464,
+          "took": 0.067,
+          "text": "Jebel Ali Branch",
+          "same_field": false,
+          "screen": "/tenancy/companies/01a118da-3682-70c7-9638-e6c47cb2da29",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "Add branch",
+          "keystrokes": 0,
+          "at": 0.653,
+          "took": 0.046,
+          "screen": "/tenancy/companies/01a118da-3682-70c7-9638-e6c47cb2da29",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "companies list",
+          "at": 0.072,
+          "seconds": 0.09
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.224,
+          "seconds": 0.007
+        },
+        {
+          "label": "saved: branch line focused",
+          "at": 0.383,
+          "seconds": 0.048
+        },
+        {
+          "label": "branch saved under the company",
+          "at": 0.7,
+          "seconds": 0.059
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "company": {
+            "id": "01a118da-3682-70c7-9638-e6c47cb2da29",
+            "code": "FALCON-2",
+            "legalNameEn": "Falcon Logistics LLC",
+            "legalNameAr": "",
+            "baseCurrency": "AED",
+            "city": null,
+            "emirate": null,
+            "branchCount": 1,
+            "isActive": true,
+            "version": 971,
+            "everyBranch": true
+          },
+          "branches": [
+            {
+              "id": "01a118da-37be-7594-945d-3dd340919c47",
+              "companyId": "01a118da-3682-70c7-9638-e6c47cb2da29",
+              "companyCode": "FALCON-2",
+              "code": "FALCON",
+              "nameEn": "Falcon Logistics LLC - Jebel Ali Branch",
+              "nameAr": "",
+              "city": null,
+              "emirate": null,
+              "isActive": true,
+              "version": 972
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.032,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.04,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0
+    }
+  ]
+}
