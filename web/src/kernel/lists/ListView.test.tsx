@@ -276,6 +276,25 @@ describe("list view", () => {
     expect(v.container.textContent).not.toContain("selected");
   });
 
+  // Critic p06 round 3: right after Enter opened a record from the grid, Alt+PageDown did nothing
+  // (the grid took it as PageDown). Alt keys belong to the application's shortcuts.
+  it("leaves Alt+PageDown and Alt+PageUp to the open record's next and previous", async () => {
+    serve();
+    await show();
+    grid().focus();
+    await key(grid(), "ArrowDown");
+    for (const k of ["PageDown", "PageUp"]) {
+      const event = new KeyboardEvent("keydown", { key: k, code: k, altKey: true, bubbles: true, cancelable: true });
+      await act(async () => {
+        grid().dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(false);
+      expect(grid().getAttribute("aria-activedescendant")).toMatch(/-row-1$/);
+    }
+    await key(grid(), "PageDown");
+    expect(grid().getAttribute("aria-activedescendant")).not.toMatch(/-row-1$/);
+  });
+
   it("selects every row that matches, not only the loaded ones, and copies them page by page", async () => {
     const many: Row[] = Array.from({ length: 250 }, (_, i) => ({ id: `00000000-0000-7000-9000-${String(i).padStart(12, "0")}`, displayName: `Member ${i}`, email: `m${i}@alnoor.example`, language: "en" }));
     const calls: string[] = [];

@@ -370,6 +370,36 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Contains("Total", pdf, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p06 round 3: the API description gave report and list-print routes no media
+    /// types or schema for 200, so a client could not learn the document's shape. Each route answers
+    /// 200 as the ReportDocument JSON, a PDF, a CSV or an XLSX workbook, and says so.</summary>
+    [Fact]
+    public async Task The_api_description_gives_every_report_route_its_document_schema_and_file_types()
+    {
+        using var client = Env.Factory.CreateClient();
+        var document = await client.GetFromJsonAsync<JsonElement>("/api/openapi/v1.json");
+        var paths = document.GetProperty("paths").EnumerateObject()
+            .Where(p => p.Name.StartsWith("/api/reports/run/", StringComparison.Ordinal) || p.Name.StartsWith("/api/reports/lists/", StringComparison.Ordinal)).ToList();
+        Assert.True(paths.Count >= 9, $"{paths.Count} report and list-print routes described");
+        foreach (var path in paths)
+        {
+            var ok = path.Value.GetProperty("get").GetProperty("responses").GetProperty("200");
+            Assert.True(ok.TryGetProperty("content", out var content), $"{path.Name}: 200 without content: {ok}");
+            var types = content.EnumerateObject().Select(c => c.Name).ToList();
+            Assert.True(new[] { "application/json", "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }.All(types.Contains),
+                $"{path.Name}: 200 as [{string.Join(", ", types)}]");
+            var schema = content.GetProperty("application/json").GetProperty("schema");
+            Assert.True(schema.TryGetProperty("$ref", out var reference) && reference.GetString()!.EndsWith("/ReportDocument", StringComparison.Ordinal), $"{path.Name}: JSON schema {schema}");
+            foreach (var file in new[] { "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+            {
+                var fileSchema = content.GetProperty(file).GetProperty("schema");
+                Assert.True(fileSchema.TryGetProperty("format", out var format) && format.GetString() == "binary", $"{path.Name}: {file} schema {fileSchema}");
+            }
+        }
+        var components = document.GetProperty("components").GetProperty("schemas");
+        Assert.True(components.TryGetProperty("ReportDocument", out var reportDocument) && reportDocument.GetProperty("properties").TryGetProperty("groups", out _));
+    }
+
     /// <summary>Critic p06 round 3: the Roles and access report counted only users holding a role in
     /// every company, so a role held in one company only showed 0 users while the roles list said 1.
     /// The report counts as the roles list does: every holder once, in every company or in one.</summary>

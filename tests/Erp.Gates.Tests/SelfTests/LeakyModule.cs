@@ -60,8 +60,38 @@ public sealed class LeakyModule : ErpModule
         // registration numbers under the planted module's own read permission, which grants no
         // company data anywhere else.
         module.Report<TaxNumbersReport>(TaxNumbersReport.Definition);
+        // Bug 55 (critic p06 round 3, plant P6's shape): a report whose CSV and XLSX exports print
+        // what its document does not (the companies' tax numbers, in the files only).
+        module.Report<ExportOnlyReport>(ExportOnlyReport.Definition);
+        // Bug 56 (critic p06 round 3, plant P8's shape): a printable list whose printout names each
+        // person's roles, which the list itself does not show and its permission does not grant.
+        module.List(ListBinding<PrintedPerson>.For(new ListDefinition(
+                PrintedPeopleList, "leaky.people.title", "leaky.data.read", "/api/leaky/printed-people",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("roles", "identity.users.roles", ListColumnType.Text),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .Column("roles", p => p.Roles)
+            .InMemory("Planted list of the gate self-tests."));
+        module.ListRows(PrintedPeopleList, async (services, request, http, ct) =>
+        {
+            var rows = await PrintedPeopleAsync(services.GetRequiredService<ErpDbSession>(), withRoles: true);
+            return (await services.GetRequiredService<ModuleCatalog>().ListBinding<PrintedPerson>(PrintedPeopleList).QueryAsync(rows.AsQueryable(), request, http, ct))
+                .Map(r => (object)r);
+        });
         module.Endpoints(group =>
         {
+            group.MapGet("/printed-people", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PrintedPeopleAsync(session, withRoles: false);
+                var result = await catalog.ListBinding<PrintedPerson>(PrintedPeopleList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                return result.Problem is { } problem ? (IResult)problem : Results.Ok(result.ToPage(r => r));
+            }).WithName("leaky.printedPeople").WithSummary("Planted bug: a list whose printout names the roles it does not show.").RequirePermission("leaky.data.read");
+
             group.MapGet("/people", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
             {
                 var rows = await PeopleAsync(session);
@@ -1131,6 +1161,25 @@ public sealed class LeakyModule : ErpModule
     }
 
     public const string PeopleList = "leaky.people";
+    public const string PrintedPeopleList = "leaky.printedPeople";
+
+    public sealed record PrintedPerson(Guid Id, string DisplayName, string? Roles);
+
+    /// <summary>The workspace's people; with their roles' names only for bug 56's printout.</summary>
+    private static async Task<List<PrintedPerson>> PrintedPeopleAsync(ErpDbSession session, bool withRoles)
+    {
+        await using var command = new NpgsqlCommand(
+            "SELECT u.id, u.display_name, coalesce(string_agg(r.name_en, ', ' ORDER BY r.name_en), '') FROM identity.users u " +
+            "LEFT JOIN identity.user_roles ur ON ur.user_id = u.id LEFT JOIN identity.roles r ON r.id = ur.role_id GROUP BY u.id, u.display_name",
+            session.Connection, session.Transaction);
+        await using var reader = await command.ExecuteReaderAsync();
+        var people = new List<PrintedPerson>();
+        while (await reader.ReadAsync())
+        {
+            people.Add(new PrintedPerson(reader.GetGuid(0), reader.GetString(1), withRoles ? reader.GetString(2) : null));
+        }
+        return people;
+    }
     public const string ScrollList = "leaky.scroll";
 
     /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
@@ -1217,6 +1266,31 @@ public sealed class LeakyModule : ErpModule
             while (await reader.ReadAsync(cancellationToken))
             {
                 rows.Add(new Dictionary<string, object?> { ["code"] = reader.GetString(0), ["taxNumber"] = reader.GetString(1) });
+            }
+            return new Erp.Kernel.Reports.ReportData { Rows = rows };
+        }
+    }
+
+    /// <summary>Bug 55: the people's names in the document, and in its exports (the rows a file may
+    /// hold, more than a document's) the companies' tax registration numbers as well.</summary>
+    public sealed class ExportOnlyReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource
+    {
+        public static readonly Erp.Kernel.Reports.ReportDefinition Definition = new(
+            "leaky.exportOnly", "leaky.people.title", "leaky.data.read", [],
+            [new Erp.Kernel.Reports.ReportColumn("name", "leaky.people.name", Erp.Kernel.Lists.ListColumnType.Text)]);
+
+        public async Task<Erp.Kernel.Reports.ReportData?> RunAsync(Erp.Kernel.Reports.ReportRun run, CancellationToken cancellationToken)
+        {
+            var rows = (await PeopleAsync(session)).Select(p => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?> { ["name"] = p.DisplayName }).ToList();
+            if (run.MaxRows > 2000)
+            {
+                await using var command = new NpgsqlCommand("SELECT tax_registration_number FROM tenancy.companies WHERE tax_registration_number IS NOT NULL",
+                    session.Connection, session.Transaction);
+                await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    rows.Add(new Dictionary<string, object?> { ["name"] = reader.GetString(0) });
+                }
             }
             return new Erp.Kernel.Reports.ReportData { Rows = rows };
         }

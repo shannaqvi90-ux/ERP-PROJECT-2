@@ -126,9 +126,21 @@
   font-style: italic;
 }
 
+.report-table td.report-nowrap {
+  white-space: nowrap;
+}
+
 @media print {
   .reports-layout {
     display: block;
+  }
+
+  /* A report shown on the screen prints as its own document, with its own letterhead and "printed
+     by" line in its language: the screen's letterhead and footer would repeat both (critic p06
+     round 3: the issuer twice, the printed-by line in English and again in Arabic). */
+  .print-document-screen:has(.report-view) > .print-screen-head,
+  .print-document-screen:has(.report-view) > .print-footer {
+    display: none !important;
   }
 
   .report-view .print-document {

@@ -505,6 +505,9 @@ export function ListView(props: ListViewProps) {
     // Keys pressed on a control inside the grid (a column header's sort or menu button, a filter
     // editor) belong to that control: Enter and Space press it, arrows move within it.
     if (event.target !== event.currentTarget) return;
+    // Alt with a key is an application shortcut (Alt+PageDown and Alt+PageUp move the open record
+    // to the next or previous one), never a move in the grid: leave it to the shortcuts.
+    if (event.altKey) return;
     const page = Math.max(1, Math.floor(viewport / rowHeight) - 1);
     const count = grouped ? (rows.groups?.length ?? 0) : total;
     switch (event.key) {

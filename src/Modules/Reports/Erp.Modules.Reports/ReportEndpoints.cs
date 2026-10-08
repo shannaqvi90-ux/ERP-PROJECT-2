@@ -497,9 +497,25 @@ internal static class ReportEndpoints
             return Task.CompletedTask;
         });
 
+    /// <summary>200 as the <see cref="ReportDocument"/> JSON (format=json) or as the file asked for
+    /// (a PDF, a CSV, an XLSX workbook). A second <c>Produces</c> for the same status replaced the
+    /// first and left 200 without any content (critic p06 round 3), so the files are added to the
+    /// JSON response by an operation transformer.</summary>
     private static RouteHandlerBuilder WithReportResponses(this RouteHandlerBuilder builder) =>
         builder.Produces<ReportDocument>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status200OK, contentType: "application/pdf", additionalContentTypes: [Exports.CsvType, Exports.XlsxType])
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                if (operation.Responses?.TryGetValue("200", out var found) == true && found is OpenApiResponse ok)
+                {
+                    ok.Description = "The document as JSON (format=json, the default), or the file asked for: a PDF (format=pdf), the rows as CSV (format=csv) or as an XLSX workbook (format=xlsx).";
+                    ok.Content ??= new Dictionary<string, OpenApiMediaType>();
+                    foreach (var type in new[] { "application/pdf", Exports.CsvType, Exports.XlsxType })
+                    {
+                        ok.Content[type] = new OpenApiMediaType { Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "binary" } };
+                    }
+                }
+                return Task.CompletedTask;
+            });
 }

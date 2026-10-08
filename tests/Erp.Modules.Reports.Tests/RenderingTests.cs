@@ -606,7 +606,7 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         {
             using var reader = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
             var sheet = reader.ReadToEnd();
-            Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(sheet, ">Code<").Count);
+            Assert.Single(System.Text.RegularExpressions.Regex.Matches(sheet, ">Code<"));
             Assert.Contains("<autoFilter ref=\"A1:C4\"/>", sheet, StringComparison.Ordinal);
         }
         var separate = Encoding.UTF8.GetString(Exports.Csv(Sample("en", 3, grouped: true))).TrimStart('\uFEFF').Split("\r\n")[0];

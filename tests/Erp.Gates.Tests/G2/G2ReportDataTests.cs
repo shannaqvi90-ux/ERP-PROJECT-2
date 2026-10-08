@@ -91,8 +91,10 @@ public static class ReportDataCheck
         var tenant = env.TenantA;
         using var admin = await env.SignInAsync(env.Email(tenant, "admin"));
         var reads = catalog.PermissionKeys.Where(p => p.EndsWith(".read", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToList();
-        var reports = onlyList is null ? catalog.Reports.Select(r => r.Definition).Where(d => onlyReport is null || d.Key == onlyReport).ToList() : [];
-        var lists = onlyReport is null ? catalog.PrintableLists.Select(p => p.List).Where(l => onlyList is null || l.Key == onlyList).ToList() : [];
+        // Everything, or only the report and the list named.
+        var all = onlyReport is null && onlyList is null;
+        var reports = catalog.Reports.Select(r => r.Definition).Where(d => all || d.Key == onlyReport).ToList();
+        var lists = catalog.PrintableLists.Select(p => p.List).Where(l => all || l.Key == onlyList).ToList();
 
         // Every permission set judged: the report's (or list's) own alone, then with each other read permission.
         var sets = new List<(ReportDefinition Report, IReadOnlyList<string> Permissions)>();
