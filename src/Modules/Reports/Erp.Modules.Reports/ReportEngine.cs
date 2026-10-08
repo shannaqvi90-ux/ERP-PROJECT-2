@@ -343,6 +343,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             values[spec.Key] = column.Type switch
             {
                 ListColumnType.Number => element.ValueKind == JsonValueKind.Number ? element.GetDecimal() : decimal.Parse(element.GetString()!, CultureInfo.InvariantCulture),
+                // An amount with its currency (the list's currency column), so totals are per currency.
+                ListColumnType.Money when column.CurrencyField is { } currencyField && row.TryGetProperty(currencyField, out var currency) &&
+                                           currency.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(currency.GetString()) =>
+                    new ReportMoney(element.ValueKind == JsonValueKind.Number ? element.GetDecimal() : decimal.Parse(element.GetString()!, CultureInfo.InvariantCulture), currency.GetString()!),
                 ListColumnType.Money => element.ValueKind == JsonValueKind.Number ? element.GetDecimal() : decimal.Parse(element.GetString()!, CultureInfo.InvariantCulture),
                 ListColumnType.Date => DateOnly.ParseExact(element.GetString()![..10], "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 ListColumnType.DateTime => DateTimeOffset.Parse(element.GetString()!, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),

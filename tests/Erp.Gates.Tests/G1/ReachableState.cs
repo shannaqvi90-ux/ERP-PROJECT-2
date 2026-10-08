@@ -84,6 +84,7 @@ public static class ReachableState
     {
         var lines = new Dictionary<string, string>(StringComparer.Ordinal);
         var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        var staticsWalked = new HashSet<Type>();
         void Note(string path, string summary)
         {
             if (lines.Count < MaxObjects)
@@ -120,6 +121,13 @@ public static class ReachableState
             }
             var isProduct = product.Contains(type.Assembly);
             Note(path, value is System.Collections.ICollection collection ? $"{TypeName(type)} count={collection.Count}" : TypeName(type));
+            if (isProduct)
+            {
+                foreach (var (name, root) in StaticsOfInstantiations(type, product, staticsWalked))
+                {
+                    Walk(root, name, depth + 1);
+                }
+            }
             switch (value)
             {
                 case Delegate @delegate:
@@ -254,6 +262,7 @@ public static class ReachableState
         private readonly HashSet<object> _visited = new(ReferenceEqualityComparer.Instance);
         private readonly Dictionary<Type, string> _objects = [];
         private readonly Dictionary<Type, string> _closures = [];
+        private readonly HashSet<Type> _staticsWalked = [];
 
         public IEnumerable<(Type Type, string Path)> ProductObjects => _objects.Select(p => (p.Key, p.Value));
         public IReadOnlyList<(Type Type, string Path)> Closures => _closures.Select(p => (p.Key, p.Value)).ToList();
@@ -286,6 +295,13 @@ public static class ReachableState
             else if (isProduct)
             {
                 _objects.TryAdd(type, path);
+            }
+            if (isProduct)
+            {
+                foreach (var (name, root) in StaticsOfInstantiations(type, product, _staticsWalked))
+                {
+                    Walk(root, $"{name}, reached from {path}", depth + 1);
+                }
             }
             switch (value)
             {
@@ -344,4 +360,43 @@ public static class ReachableState
 
     private static bool IsGenerated(Type type) =>
         type.Name.Contains('<', StringComparison.Ordinal) || type.GetCustomAttribute<CompilerGeneratedAttribute>() is not null;
+
+    /// <summary>The static fields of a reached product object's closed generic type, its generic
+    /// base types and the generic types it is nested in, once per type (critic p05 round 4, plant
+    /// L6: a static memo in <c>ListBinding&lt;T&gt;</c> held by every registered binding's type,
+    /// never a root because a generic definition has no static values of its own).</summary>
+    private static IEnumerable<(string Name, object? Value)> StaticsOfInstantiations(Type type, IReadOnlyCollection<Assembly> product, HashSet<Type> walked)
+    {
+        var candidates = new List<Type>();
+        for (var current = type; current is not null && product.Contains(current.Assembly); current = current.BaseType)
+        {
+            for (var nested = current; nested is not null; nested = Declaring(nested))
+            {
+                candidates.Add(nested);
+            }
+        }
+        // A closed nested type's DeclaringType is the open definition: close it with the leading
+        // type arguments (ListBinding`1+Bound[User] is nested in ListBinding`1[User]).
+        static Type? Declaring(Type nested)
+        {
+            if (nested.DeclaringType is not { } declaring)
+            {
+                return null;
+            }
+            if (!declaring.IsGenericTypeDefinition || !nested.IsGenericType || nested.ContainsGenericParameters)
+            {
+                return declaring;
+            }
+            var count = declaring.GetGenericArguments().Length;
+            var arguments = nested.GetGenericArguments();
+            return arguments.Length >= count ? declaring.MakeGenericType(arguments[..count]) : declaring;
+        }
+        foreach (var candidate in candidates.Where(c => GenericStatics.HasStatics(c) && walked.Add(c)))
+        {
+            foreach (var root in GenericStatics.Roots(candidate))
+            {
+                yield return root;
+            }
+        }
+    }
 }

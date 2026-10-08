@@ -615,6 +615,17 @@ public sealed class TenantActivity
                 }
             }
         }
+        // An action on every row a list's search and filter match, confirmed by the count the list
+        // showed (expectedCount; POST /api/identity/users/matching/active): the search carries the
+        // tenant's marker and a word nothing holds, and the count is 0, so the handler runs to the
+        // end (match, count, rules, a set-based update of no rows) without deactivating the users the
+        // rest of the gate signs in as. A generated filter would not parse, so there is none.
+        if (body.ContainsKey("expectedCount") && body.ContainsKey("search"))
+        {
+            body["search"] = $"Activity {_tenant.Canary ?? _tenant.Code} {Guid.NewGuid():N}";
+            body["expectedCount"] = 0;
+            body.Remove("filter");
+        }
         return body;
     }
 

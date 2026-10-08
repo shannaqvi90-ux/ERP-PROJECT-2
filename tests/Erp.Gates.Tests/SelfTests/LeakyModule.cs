@@ -41,6 +41,20 @@ public sealed class LeakyModule : ErpModule
             .Column("displayName", p => p.DisplayName)
             .Column("language", p => p.Language)
             .InMemory("Planted list of the gate self-tests."));
+        // Bug 52 (critic p05 round 4, plant L6): a registered list whose pages after the first reuse
+        // the total the last first page counted, whatever its tenant, remembered in a static
+        // delegate field of a generic type (a closure over a dictionary). Every row and every first
+        // page stays the caller's own; only a continuation page's total leaks.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                ScrollList, "leaky.scroll.title", "leaky.data.read", "/api/leaky/scroll",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
@@ -60,6 +74,17 @@ public sealed class LeakyModule : ErpModule
                 var groups = result.Groups is null ? null : _groups.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Groups);
                 return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
             }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
+
+            group.MapGet("/scroll", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(ScrollList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
+            }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -996,6 +1021,41 @@ public sealed class LeakyModule : ErpModule
                 return await command.ExecuteNonQueryAsync() == 1 ? Results.Ok(new { id }) : Results.NotFound();
             }).WithName("leaky.branchRename").WithSummary("Planted bug: renames any branch of the caller's companies.").RequirePermission("leaky.data.update");
 
+            // Bug 18 (critic p02 round 4, plant P7): reads and changes the legal name of any company
+            // of the caller's scope with SQL of its own (row-level security allows the company, the
+            // kernel's company-wide row guard never sees the write): an administrator limited to
+            // one branch renames the company every branch shares.
+            group.MapGet("/company-profile/{id:guid}", async (Guid id, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT legal_name_en FROM tenancy.companies WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                return await command.ExecuteScalarAsync() is string name ? Results.Ok(new { legalNameEn = name }) : Results.NotFound();
+            }).WithName("leaky.companyProfile").WithSummary("Planted bug: reads any company's legal name.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/company-profile/{id:guid}", async (Guid id, LeakyCompanyProfile request, ErpDbSession session) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.LegalNameEn))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["legalNameEn"] = ["required"] });
+                }
+                await using var command = new NpgsqlCommand("UPDATE tenancy.companies SET legal_name_en = @n, updated_at = now() WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("n", request.LegalNameEn.Trim());
+                return await command.ExecuteNonQueryAsync() == 1 ? Results.Ok(new { legalNameEn = request.LegalNameEn.Trim() }) : Results.NotFound();
+            }).WithName("leaky.companyProfileUpdate").WithSummary("Planted bug: renames any company of the caller's scope, whatever its branch limits.").RequirePermission("leaky.data.update");
+
+            // Bug 19 (critic p02 round 4, plant C5): opens one branch by its id with SQL of its own
+            // (row-level security limits it to the company scope, not to the caller's branches).
+            // Its answer carries the id the request sent and the branch's texts, which the marker
+            // check alone may count as the attacker's own; the read must answer as for an id that
+            // exists nowhere.
+            group.MapGet("/branch-by-id/{id:guid}", async (Guid id, ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT is_active FROM tenancy.branches WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                return await command.ExecuteScalarAsync() is bool active ? Results.Ok(new { id, active }) : Results.NotFound();
+            }).WithName("leaky.branchById").WithSummary("Planted bug: opens any branch of the caller's companies.").RequirePermission("leaky.data.read");
+
             // Bug 8: grants whatever roles the body names to the caller (no check against the caller's own permissions).
             group.MapPost("/grants", async (GrantRequest request, ErpDbSession session, ICurrentUser caller) =>
             {
@@ -1023,6 +1083,39 @@ public sealed class LeakyModule : ErpModule
     }
 
     public const string PeopleList = "leaky.people";
+    public const string ScrollList = "leaky.scroll";
+
+    /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
+    /// value until a closed instantiation (<c>ScrollTotals&lt;Person&gt;</c>) is used.</summary>
+    public static class ScrollTotals<T>
+    {
+        private static readonly Func<string, int?, int?> Remembered = Remember();
+
+        public static int Total(ListRequest request, int counted)
+        {
+            var key = $"{typeof(T).Name}|{request.Search}|{request.Filter}";
+            if (request.After is not null && Remembered(key, null) is { } known)
+            {
+                return known;
+            }
+            Remembered(key, counted);
+            return counted;
+        }
+
+        private static Func<string, int?, int?> Remember()
+        {
+            var memo = new ConcurrentDictionary<string, int>();
+            return (key, value) =>
+            {
+                if (value is { } counted)
+                {
+                    memo[key] = counted;
+                    return counted;
+                }
+                return memo.TryGetValue(key, out var known) ? known : null;
+            };
+        }
+    }
 
     // Bug 27's memory, on the module instance: reachable from the module catalogue.
     private readonly ConcurrentDictionary<string, int> _totals = new();
@@ -1272,6 +1365,8 @@ public sealed class LeakyModule : ErpModule
     public sealed record LeakyCompanyRequest(string? Code, string? LegalNameEn);
 
     public sealed record LeakyBranchRename(string? NameEn);
+
+    public sealed record LeakyCompanyProfile(string? LegalNameEn);
 
     public sealed record LeakyCompanyAccess(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 

@@ -209,6 +209,16 @@ public static class SubjectInjection
         }
         var company = (await admin.GetFromJsonAsync<JsonObject>("/api/tenancy/workplace"))?["companyId"]?.GetValue<string>() ?? "";
         var body = G1WriteOracle.Valid(openApi, s, env, tag, company);
+        // An action on every row a list's search matches, confirmed by the count the list showed
+        // (POST /api/identity/users/matching/active): the search names the caller alone, so the
+        // valid request acts on the caller's own row and nobody else's; a handler that honoured a
+        // subject field instead would change the victim's rows.
+        if (HasProperty(openApi, s, "expectedCount") && HasProperty(openApi, s, "search"))
+        {
+            body["search"] = callerEmail;
+            body["expectedCount"] = 1;
+            body.Remove("filter");
+        }
         if (endpoint.Method is "PUT" or "PATCH")
         {
             using var current = await admin.GetAsync(endpoint.Pattern);
@@ -225,6 +235,10 @@ public static class SubjectInjection
         }
         return body;
     }
+
+    private static bool HasProperty(OpenApiDocument openApi, JsonElement schema, string name) =>
+        openApi.Resolve(schema).TryGetProperty("properties", out var properties) &&
+        properties.EnumerateObject().Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
     private static JsonObject? Without(JsonObject? body, IReadOnlySet<string> fields)
     {

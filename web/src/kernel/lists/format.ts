@@ -1,5 +1,5 @@
 import { isDecimalString, scaleOf } from "../format";
-import type { Condition, ListColumn, ListDefinition, Row, Value } from "./model";
+import type { Condition, ListColumn, ListDefinition, ListGroup, Row, Value } from "./model";
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
@@ -51,6 +51,19 @@ export function formatValue(column: ListColumn, value: unknown, f: Formatters): 
     default:
       return String(value);
   }
+}
+
+/**
+ * A group's total of a totalled column: a number column's sum, or a money column's sum in each
+ * currency its rows hold ("AED 1,250.00 · USD 40.00"), never amounts of different currencies added.
+ */
+export function groupTotal(column: ListColumn, group: ListGroup, f: Formatters): string {
+  if (column.type !== "money") return formatValue(column, group.totals?.[column.key] ?? "0", f);
+  const lines = group.moneyTotals?.[column.key] ?? [];
+  if (lines.length === 0) return formatValue(column, "0", f);
+  return lines
+    .map((line) => (line.currency ? `${line.currency}\u00A0${formatValue(column, line.amount, f)}` : formatValue(column, line.amount, f)))
+    .join(" \u00B7 ");
 }
 
 export function columnLabel(definition: ListDefinition, key: string, t: Translate): string {

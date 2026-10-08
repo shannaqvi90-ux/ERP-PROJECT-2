@@ -240,6 +240,55 @@ describe("the record form", () => {
     expect(links[0]!.hasAttribute("download")).toBe(true);
     expect(document.activeElement).toBe(links[0]);
   });
+
+  it("keeps a record it has just created on screen when the screen points it at the new id (no re-read, no Loading); another record or a reload is read", async () => {
+    function NewThing() {
+      const [id, setId] = useState<string | null>(null);
+      const form = useRecordForm<Thing, Draft>({
+        load: id === null ? undefined : (signal) => api<Thing>("GET", `/api/things/${id}`, undefined, { signal }),
+        initial: (t) => ({ name: t?.name ?? "", amount: t?.amount ?? "" }),
+        canEdit: true,
+        save: (draft, thing) => (thing ? api<Thing>("PUT", `/api/things/${thing.id}`, draft) : api<Thing>("POST", "/api/things", draft)),
+        onSaved: (saved) => setId(saved.id),
+      }, id);
+      return (
+        <>
+          <RecordForm form={form} title={form.record?.name ?? "New"} after={form.record && <input name="next-step" />}>
+            <FormSection title="Main">
+              <TextField field={form.bind("name")} label="Name" />
+            </FormSection>
+          </RecordForm>
+          <button type="button" onClick={() => setId("t2")}>other</button>
+          <button type="button" onClick={form.reload}>reload</button>
+        </>
+      );
+    }
+    const calls = mockFetch((method, url, body) => {
+      if (method === "POST") return { status: 201, body: { ...thing, id: "t9", ...(body as object) } };
+      if (method === "GET" && url === "/api/things/t9") return { status: 200, body: { ...thing, id: "t9", name: "Chair" } };
+      if (method === "GET" && url === "/api/things/t2") return { status: 200, body: { ...thing, id: "t2", name: "Shelf" } };
+      return { status: 404, body: {} };
+    });
+    await show(<NewThing />);
+    setInput(input("name"), "Chair");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const nextStep = view!.container.querySelector<HTMLInputElement>('input[name="next-step"]')!;
+    expect(nextStep).not.toBeNull();
+    await settle();
+    expect(calls.filter((c) => c.method === "GET")).toEqual([]);
+    expect(view!.container.querySelector(".record-form[aria-busy]")).toBeNull();
+    expect(nextStep.isConnected).toBe(true);
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+
+    act(() => [...view!.container.querySelectorAll("button")].find((b) => b.textContent === "reload")!.click());
+    await settle();
+    expect(calls.filter((c) => c.method === "GET").map((c) => c.url)).toEqual(["/api/things/t9"]);
+    act(() => [...view!.container.querySelectorAll("button")].find((b) => b.textContent === "other")!.click());
+    await settle();
+    expect(calls.filter((c) => c.method === "GET").map((c) => c.url)).toEqual(["/api/things/t9", "/api/things/t2"]);
+    expect(input("name").value).toBe("Shelf");
+  });
 });
 
 describe("entering a field with the mouse", () => {

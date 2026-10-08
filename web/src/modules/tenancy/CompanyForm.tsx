@@ -155,7 +155,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         company && (
           <>
             <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt} />
-            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} />}
+            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} everyBranch={everyBranch} />}
           </>
         )
       }
@@ -300,7 +300,15 @@ export const branchNameOf = (typed: string) => typed.replace(/\s+-\s*$/, "");
 /** The company's branches, with a one-line form to add another (Enter saves). A new branch
  * starts in the company's emirate, its English name with the company's; right after the company
  * is created the line has the focus, the caret after the company's name. */
-function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: { companyId: string; companyName: string; defaultEmirate: Emirate | ""; autoFocus: boolean }) {
+function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus, everyBranch }: {
+  companyId: string;
+  companyName: string;
+  defaultEmirate: Emirate | "";
+  autoFocus: boolean;
+  /** False when the user works in only some of the company's branches: a branch is added only by
+   * someone who works in every branch (the server answers 403 tenancy.branchNeedsEveryBranch). */
+  everyBranch: boolean;
+}) {
   const { t } = useI18n();
   const { can } = useSession();
   const [branches, setBranches] = useState<BranchRow[]>([]);
@@ -401,7 +409,7 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus }: 
         </tbody>
       </table>
       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
-      {can("tenancy.branches.create") && (
+      {can("tenancy.branches.create") && everyBranch && (
         <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
           <input ref={nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
           <input name="branchNameAr" value={draft.nameAr} onChange={set("nameAr")} placeholder={t("tenancy.branch.nameAr")} aria-label={t("tenancy.branch.nameAr")} aria-invalid={invalid("nameAr")} dir="rtl" maxLength={200} />

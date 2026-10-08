@@ -76,6 +76,10 @@ public sealed record CompanyAttackReport(
     /// <summary>Every write the in-tenant write oracle sent company Y's values to, with the field
     /// and the table the value came from: "POST /api/tenancy/companies [code] &lt;- tenancy.companies".</summary>
     public IReadOnlyList<string> WriteOracleSources { get; init; } = [];
+
+    /// <summary>The branch attack on the records every branch of the attacker's company shares
+    /// (null in the company attack).</summary>
+    public SharedCompanyRecords.Report? Shared { get; init; }
 }
 
 /// <summary>The company attack, reusable by the gate self-tests.</summary>
@@ -147,6 +151,17 @@ public static class CompanyAttack
                 "   WHERE b.tenant_id = a.tenant_id AND b.user_id = a.user_id AND b.branch_id = @z)))",
                 ("t", tenant.Id), ("c", x), ("e", env.Email(tenant, "viewer").ToLowerInvariant()), ("z", z));
             Assert.False(viewerHoldsZ, "the read-only user of company X must be limited to branches other than branch Z");
+        }
+
+        // The records every branch of company X shares (its own record, its logo): the branch-limited
+        // administrator reads them and must not change them (critic p02 round 4, plant P7: with the
+        // company update's branch check removed, it renamed and deactivated the company for every
+        // branch and every gate passed). Each write is first proven valid by the tenant's
+        // administrator, then the rows are fingerprinted before the attack.
+        SharedCompanyRecords.Prepared? shared = null;
+        if (branchLayer)
+        {
+            shared = await SharedCompanyRecords.PrepareAsync(env, openApi, endpoints, tenantAdmin, tenant.Id, x);
         }
 
         var examples = openApi.ExampleValues();
@@ -287,7 +302,13 @@ public static class CompanyAttack
                 var n = 0;
                 foreach (var value in routeValues)
                 {
-                    batch.Add((endpoint.Method, endpoint.Path(_ => value), Body(env, openApi, schema, yIds, n++, branchLayer ? x : null), value, null, null));
+                    // A read by the victim's id must answer exactly as a read by an id that exists
+                    // nowhere (critic p02 round 4, plant C5: opening branch Z by its id answered its
+                    // record, and the marker check alone missed it, because the id was the request's
+                    // own and the texts were ones the attacker had stored elsewhere).
+                    var control = get && value.Length > 0 ? Guid.NewGuid().ToString() : null;
+                    batch.Add((endpoint.Method, endpoint.Path(_ => value), Body(env, openApi, schema, yIds, n++, branchLayer ? x : null), value,
+                        control is null ? null : endpoint.Path(_ => control), control));
                 }
                 // Y's ids and texts in every query parameter, with a value that exists nowhere for GETs.
                 var basePath = endpoint.Path(_ => Guid.NewGuid().ToString());
@@ -410,6 +431,8 @@ public static class CompanyAttack
         var session = await scopedClient.GetFromJsonAsync<JsonElement>("/api/auth/session");
         if (session.GetProperty("permissions").GetArrayLength() == 0) escalations.Add($"the {label} holds no permissions (the attack would be blind)");
 
+        var sharedReport = shared is null ? null : await SharedCompanyRecords.AttackAsync(env, openApi, shared, scopedClient, label);
+
         var after = branchLayer ? await CompanySnapshot.TakeBranchAsync(env, tenant.Id, z, examples) : await CompanySnapshot.TakeAsync(env, tenant.Id, y, examples);
         foreach (var (_, client) in attackers)
         {
@@ -419,6 +442,7 @@ public static class CompanyAttack
             attacked, state.Requests, before.Markers.Count, state.DifferentialChecks, writeOracleChecks)
         {
             WriteOracleSources = [.. writeOracleSources],
+            Shared = sharedReport,
         };
     }
 
@@ -481,7 +505,7 @@ public static class CompanyAttack
 
     /// <summary>A value of the same shape (letters for letters, digits for digits, case kept)
     /// that exists nowhere.</summary>
-    private static string Reshape(string value)
+    internal static string Reshape(string value)
     {
         var random = System.Security.Cryptography.RandomNumberGenerator.GetBytes(value.Length);
         var at = value.IndexOf('@');

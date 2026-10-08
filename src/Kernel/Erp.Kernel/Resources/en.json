@@ -10,6 +10,7 @@
   "problem.request.cancelled": "The request was cancelled.",
   "problem.request.tooMany": "Too many attempts. Wait a minute and try again.",
   "problem.request.missingRequestHeader": "The request is missing the X-Erp-Request header required for changes.",
+  "problem.companyNeedsEveryBranch": "Only someone who works in every branch of the company may change this, because every branch of the company shares it.",
   "validation.required": "Required.",
   "validation.maxLength": "{0, plural, one {Use at most # character.} other {Use at most # characters.}}",
   "validation.length": "Use between {0} and {1, plural, one {# character} other {# characters}}.",
@@ -38,5 +39,8 @@
   "validation.list.notSearchable": "This list has no searchable columns; use a filter instead.",
   "validation.list.invalidCursor": "This page position is no longer valid for the current order. Start again from the first page.",
   "validation.list.afterWithSkip": "Page with either after or skip, not both.",
-  "validation.list.searchTooManyWords": "{0, plural, one {Search for at most # word.} other {Search for at most # words.}}"
+  "validation.list.searchTooManyWords": "{0, plural, one {Search for at most # word.} other {Search for at most # words.}}",
+  "validation.list.tooManyCurrencies": "{0, plural, one {These rows hold amounts in more than # currency; filter them before grouping.} other {These rows hold amounts in more than # currencies; filter them before grouping.}}",
+  "validation.list.matchingCountNegative": "Give the number of matching rows the list showed: zero or more.",
+  "problem.list.matchingChanged": "The rows that match changed since you chose them ({0} then, {1} now). Nothing was changed: look at the list again and retry."
 }
