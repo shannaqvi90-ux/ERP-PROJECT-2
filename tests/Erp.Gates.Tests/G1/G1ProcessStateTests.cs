@@ -36,7 +36,7 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{inventory.TypesInspected} types, {inventory.FieldsInspected} fields, {inventory.SingletonsInspected} singleton services inspected, " +
             $"{inventory.EndpointsWalked} endpoint delegates walked ({inventory.DelegateObjectsWalked} objects) to {inventory.ClosuresInspected} closures; " +
-            $"{inventory.ReachableRoots} roots walked to {inventory.ReachableObjectsWalked} objects, {inventory.ReachableTypesJudged} product types judged field by field; {inventory.Findings.Count} reviewed findings");
+            $"{inventory.FrameworkSingletonsInspected} framework singletons over product types; {inventory.ReachableRoots} roots walked to {inventory.ReachableObjectsWalked} objects, {inventory.ReachableTypesJudged} product types judged field by field; {inventory.Findings.Count} reviewed findings");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.False(inventory.ReachableWalkCut, $"the reachable-state walk stopped at its object budget after {inventory.ReachableObjectsWalked} objects; what it did not reach was not judged");
         Assert.True(inventory.FieldsInspected >= Ratchet.Min("g1.processStateFieldsInspected"),
@@ -51,6 +51,8 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
             $"g1.reachableObjectsWalked: {inventory.ReachableObjectsWalked}; ratchet minimum {Ratchet.Min("g1.reachableObjectsWalked")}");
         Assert.True(inventory.ReachableTypesJudged >= Ratchet.Min("g1.reachableTypesJudged"),
             $"g1.reachableTypesJudged: {inventory.ReachableTypesJudged}; ratchet minimum {Ratchet.Min("g1.reachableTypesJudged")}");
+        Assert.True(inventory.FrameworkSingletonsInspected >= Ratchet.Min("g1.frameworkSingletonsInspected"),
+            $"g1.frameworkSingletonsInspected: {inventory.FrameworkSingletonsInspected}; ratchet minimum {Ratchet.Min("g1.frameworkSingletonsInspected")}");
         Assert.True(inventory.DelegateObjectsWalked >= Ratchet.Min("g1.endpointDelegateObjectsWalked"),
             $"g1.endpointDelegateObjectsWalked: {inventory.DelegateObjectsWalked}; ratchet minimum {Ratchet.Min("g1.endpointDelegateObjectsWalked")}");
     }
