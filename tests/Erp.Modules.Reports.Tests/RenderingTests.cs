@@ -137,6 +137,175 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Contains("/FontFile2", raw, StringComparison.Ordinal);
     }
 
+    /// <summary>A document embeds only the glyphs it draws (a subset font, PDF 1.7 9.6.4 and 9.9):
+    /// an Arabic page no longer carries the whole 289 KB Arabic face. Each embedded font is named
+    /// with a six-letter subset tag, every letter on the page still has its outline (a reader draws
+    /// it from the subset: its glyph box is not empty), and the same document is the same bytes
+    /// every time it is printed.</summary>
+    [Fact]
+    public void A_pdf_embeds_only_the_glyphs_it_draws_and_every_letter_keeps_its_outline()
+    {
+        var renderer = new PdfReportRenderer(fixture.Fonts);
+        var document = Sample("ar", rows: 30, grouped: true);
+        var bytes = renderer.Render(document);
+        var arabicFace = fixture.Fonts.Faces.Single(f => f.Name == "NotoSansArabic-Regular");
+        Assert.True(bytes.Length < arabicFace.Sfnt.Length / 4, $"an Arabic page is {bytes.Length} bytes; the whole Arabic face alone is {arabicFace.Sfnt.Length}");
+        var raw = Encoding.Latin1.GetString(bytes);
+        var baseFonts = System.Text.RegularExpressions.Regex.Matches(raw, @"/BaseFont /([^ /]+)").Select(m => m.Groups[1].Value).Distinct().ToList();
+        Assert.NotEmpty(baseFonts);
+        Assert.All(baseFonts, name => Assert.Matches(@"^[A-Z]{6}\+NotoSans", name));
+        Assert.DoesNotContain("/FontName /NotoSans", raw, StringComparison.Ordinal);
+
+        using var pdf = PdfDocument.Open(bytes);
+        var letters = pdf.GetPages().SelectMany(p => p.Letters).Where(l => !string.IsNullOrWhiteSpace(l.Value) && l.Value != "\u200B").ToList();
+        Assert.NotEmpty(letters);
+        Assert.All(letters, l => Assert.True(l.BoundingBox.Width > 0 && l.BoundingBox.Height > 0, $"'{l.Value}' ({l.FontName}) draws no outline"));
+        Assert.Contains(letters, l => l.FontName?.Contains("NotoSansArabic", StringComparison.Ordinal) == true);
+        Assert.Equal(bytes, renderer.Render(document));
+    }
+
+    /// <summary>The subset keeps every glyph id where it was: a kept glyph has the outline it had in
+    /// the whole font, a glyph not drawn has none, glyph 0 (the box drawn for a character no font
+    /// has) and every component of a composite glyph are kept, and the font is still a font
+    /// (HarfBuzz reads it; every table checksum and the whole-font checksum hold).</summary>
+    [Fact]
+    public void A_font_subset_keeps_the_drawn_glyphs_and_their_components_at_their_ids()
+    {
+        foreach (var face in fixture.Fonts.Faces)
+        {
+            var whole = face.Font;
+            var drawn = Enumerable.Range(1, face.GlyphCount - 1).Where(g => g % 37 == 0).Select(g => (uint)g).ToList();
+            var subset = FontSubset.Of(face.Sfnt, drawn);
+            Assert.True(subset.Length < face.Sfnt.Length, face.Name);
+            var memory = System.Runtime.InteropServices.Marshal.AllocHGlobal(subset.Length);
+            try
+            {
+                System.Runtime.InteropServices.Marshal.Copy(subset, 0, memory, subset.Length);
+                using var blob = new HarfBuzzSharp.Blob(memory, subset.Length, HarfBuzzSharp.MemoryMode.ReadOnly);
+                using var cutFace = new HarfBuzzSharp.Face(blob, 0);
+                using var cut = new HarfBuzzSharp.Font(cutFace);
+                Assert.Equal(face.GlyphCount, cutFace.GlyphCount);
+                // What must be kept: the drawn glyphs, glyph 0, and the components of composites, all the way down.
+                var kept = new HashSet<uint>();
+                var pending = new Stack<uint>(drawn.Append(0u));
+                while (pending.TryPop(out var next))
+                {
+                    if (kept.Add(next))
+                    {
+                        foreach (var component in FontSubset.Components(Outline(face.Sfnt, (int)next)))
+                        {
+                            pending.Push((uint)component);
+                        }
+                    }
+                }
+                for (uint g = 0; g < face.GlyphCount; g++)
+                {
+                    whole.TryGetGlyphExtents(g, out var before);
+                    cut.TryGetGlyphExtents(g, out var after);
+                    if (kept.Contains(g))
+                    {
+                        Assert.Equal((before.XBearing, before.YBearing, before.Width, before.Height), (after.XBearing, after.YBearing, after.Width, after.Height));
+                    }
+                    else
+                    {
+                        Assert.True(after.Width == 0 && after.Height == 0, $"{face.Name}: glyph {g} is not drawn but kept its outline");
+                    }
+                    Assert.Equal(whole.GetHorizontalGlyphAdvance(g), cut.GetHorizontalGlyphAdvance(g));
+                }
+            }
+            finally
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(memory);
+            }
+            AssertChecksums(subset, face.Name);
+        }
+    }
+
+    [Fact]
+    public void A_composite_glyph_keeps_the_glyphs_it_is_built_from()
+    {
+        // Find composite glyphs in the faces (accented Latin letters are built from a base and an accent).
+        var found = 0;
+        foreach (var face in fixture.Fonts.Faces)
+        {
+            for (var g = 1; g < face.GlyphCount && found < 40; g++)
+            {
+                var components = FontSubset.Components(Outline(face.Sfnt, g));
+                if (components.Count == 0)
+                {
+                    continue;
+                }
+                found++;
+                var subset = FontSubset.Of(face.Sfnt, [(uint)g]);
+                foreach (var component in components)
+                {
+                    Assert.True(Outline(subset, component).Length > 0 || Outline(face.Sfnt, component).Length == 0,
+                        $"{face.Name}: glyph {g} is built from glyph {component}, which the subset left out");
+                }
+                // The outline is copied as it was (padded with at most three zero bytes to a four-byte boundary).
+                var before = Outline(face.Sfnt, g).ToArray();
+                var after = Outline(subset, g).ToArray();
+                Assert.Equal(before, after[..before.Length]);
+                Assert.True(after.Length - before.Length < 4 && after[before.Length..].All(b => b == 0), $"{face.Name}: glyph {g}");
+            }
+        }
+        Assert.True(found > 0, "no composite glyph in the bundled faces to check");
+    }
+
+    private static ReadOnlySpan<byte> Outline(byte[] sfnt, int glyph)
+    {
+        var tables = TableOffsets(sfnt);
+        var (glyf, _) = tables["glyf"];
+        var (loca, _) = tables["loca"];
+        var (head, _) = tables["head"];
+        var longOffsets = System.Buffers.Binary.BinaryPrimitives.ReadInt16BigEndian(sfnt.AsSpan(head + 50)) == 1;
+        int At(int g) => longOffsets
+            ? (int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(loca + g * 4))
+            : System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(sfnt.AsSpan(loca + g * 2)) * 2;
+        return sfnt.AsSpan(glyf + At(glyph), At(glyph + 1) - At(glyph));
+    }
+
+    private static Dictionary<string, (int Offset, int Length)> TableOffsets(byte[] sfnt)
+    {
+        var count = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(sfnt.AsSpan(4));
+        return Enumerable.Range(0, count).Select(i => 12 + i * 16).ToDictionary(
+            r => Encoding.ASCII.GetString(sfnt, r, 4),
+            r => ((int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(r + 8)), (int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(r + 12))));
+    }
+
+    private static void AssertChecksums(byte[] font, string name)
+    {
+        static uint Sum(ReadOnlySpan<byte> data)
+        {
+            uint sum = 0;
+            Span<byte> word = stackalloc byte[4];
+            for (var i = 0; i < data.Length; i += 4)
+            {
+                word.Clear();
+                data.Slice(i, Math.Min(4, data.Length - i)).CopyTo(word);
+                sum = unchecked(sum + System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(word));
+            }
+            return sum;
+        }
+        var tables = TableOffsets(font);
+        var count = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(font.AsSpan(4));
+        for (var i = 0; i < count; i++)
+        {
+            var record = 12 + i * 16;
+            var tag = Encoding.ASCII.GetString(font, record, 4);
+            var (offset, length) = tables[tag];
+            var data = font.AsSpan(offset, length).ToArray();
+            if (tag == "head")
+            {
+                Array.Clear(data, 8, 4);
+            }
+            Assert.True(System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(font.AsSpan(record + 4)) == Sum(data), $"{name}: table {tag} checksum");
+        }
+        Assert.True(Sum(font) == 0xB1B0AFBA, $"{name}: whole-font checksum");
+        Assert.DoesNotContain("GSUB", tables.Keys);
+        Assert.DoesNotContain("GPOS", tables.Keys);
+    }
+
     [Fact]
     public void A_pdf_starts_with_a_well_formed_header()
     {

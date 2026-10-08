@@ -6,8 +6,8 @@ namespace Erp.Modules.Reports.Pdf;
 
 /// <summary>
 /// A minimal PDF 1.7 writer for printed documents: pages with Flate-compressed content streams,
-/// embedded TrueType fonts (Type0 / CIDFontType2, Identity-H) with only the widths of the glyphs
-/// used, a ToUnicode map so text can be searched and copied, replacement text (<c>/ActualText</c>)
+/// embedded TrueType fonts (Type0 / CIDFontType2, Identity-H) cut down to the glyphs used, with
+/// only their widths, a ToUnicode map so text can be searched and copied, replacement text (<c>/ActualText</c>)
 /// in logical order on right-to-left runs, the document language, and a right-to-left reading
 /// direction for Arabic documents.
 /// <para>Text is addressed by character id, not glyph id: every distinct pair of a glyph and the
@@ -74,9 +74,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Raw(body);
             Raw("\nendobj\n");
         }
-        void Stream(int id, byte[] data, string extra = "", System.Collections.Immutable.ImmutableArray<byte>? alreadyCompressed = null)
+        void Stream(int id, byte[] data, string extra = "")
         {
-            ReadOnlySpan<byte> compressed = alreadyCompressed is { } done ? done.AsSpan() : Deflate(data);
+            var compressed = Deflate(data);
             Begin(id);
             Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
             output.Write(compressed);
@@ -111,8 +111,11 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             {
                 widths.Append(cid).Append(" [").Append(use.Widths[cid]).Append("] ");
             }
-            Object(fontIds[face], $"<< /Type /Font /Subtype /Type0 /BaseFont /{face.Name} /Encoding /Identity-H /DescendantFonts [{descendant} 0 R] /ToUnicode {toUnicode} 0 R >>");
-            Object(descendant, $"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{face.Name} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> " +
+            // Only the glyphs this document draws are embedded (a subset, named with its tag).
+            var subset = FontSubset.Of(face.Sfnt, use.Glyphs);
+            var baseFont = $"{FontSubset.Tag(face.Name, use.Glyphs)}+{face.Name}";
+            Object(fontIds[face], $"<< /Type /Font /Subtype /Type0 /BaseFont /{baseFont} /Encoding /Identity-H /DescendantFonts [{descendant} 0 R] /ToUnicode {toUnicode} 0 R >>");
+            Object(descendant, $"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /{baseFont} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> " +
                                $"/FontDescriptor {descriptor} 0 R /DW 0 /W [{widths}] /CIDToGIDMap {cidToGid} 0 R >>");
             var map = new byte[use.Glyphs.Count * 2];
             for (var cid = 0; cid < use.Glyphs.Count; cid++)
@@ -122,9 +125,9 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             }
             Stream(cidToGid, map);
             var box = face.BoundingBox;
-            Object(descriptor, $"<< /Type /FontDescriptor /FontName /{face.Name} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
+            Object(descriptor, $"<< /Type /FontDescriptor /FontName /{baseFont} /Flags 32 /FontBBox [{box[0]} {box[1]} {box[2]} {box[3]}] /ItalicAngle 0 " +
                                $"/Ascent {face.Ascent} /Descent {face.Descent} /CapHeight {face.CapHeight} /StemV {(face.Bold ? 120 : 80)} /FontWeight {(face.Bold ? 700 : 400)} /FontFile2 {file} 0 R >>");
-            Stream(file, face.Sfnt, $" /Length1 {face.Sfnt.Length}", face.CompressedSfnt);
+            Stream(file, subset, $" /Length1 {subset.Length}");
             Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Texts)));
         }
         Object(pages, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
