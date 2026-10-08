@@ -14,6 +14,27 @@ public sealed record EnumLeaf(IReadOnlyList<string> Path, IReadOnlyList<JsonNode
     public string Name => string.Join('.', Path);
 }
 
+/// <summary>A scalar leaf of a request body.</summary>
+/// <param name="Path">Property names from the body's root (<see cref="OpenApiDocument.ArrayItems"/> for an array's items).</param>
+public sealed record BodyLeaf(IReadOnlyList<string> Path, string Type, string? Format, JsonElement Schema)
+{
+    /// <summary>The leaf's own name: the last property on its path (an array of ids is named by its property).</summary>
+    public string Name => Path.Last(p => p != OpenApiDocument.ArrayItems);
+
+    /// <summary>The path as people write it: <c>companyRoles[].companyId</c>, <c>roleIds[]</c>, <c>email</c>.</summary>
+    public string Display => string.Join('.', Path).Replace("." + OpenApiDocument.ArrayItems, OpenApiDocument.ArrayItems, StringComparison.Ordinal);
+
+    /// <summary>Whether the leaf sits inside an object that is an item of an array.</summary>
+    public bool InArrayObject
+    {
+        get
+        {
+            var at = Path.ToList().LastIndexOf(OpenApiDocument.ArrayItems);
+            return at >= 0 && at < Path.Count - 1;
+        }
+    }
+}
+
 /// <summary>The OpenAPI document served by the running app.</summary>
 public sealed class OpenApiDocument(JsonElement root)
 {
@@ -319,6 +340,83 @@ public sealed class OpenApiDocument(JsonElement root)
 
     /// <summary>The segment of an <see cref="EnumLeaf"/> path that stands for every item of an array.</summary>
     public const string ArrayItems = "[]";
+
+    /// <summary>
+    /// Every scalar leaf of a request body with its path from the root, at any depth: properties
+    /// of objects, items of arrays and properties of objects inside arrays (a document's lines,
+    /// a user's roles per company). Gates that place one value in one field at a time reach the
+    /// nested ones through this (critic p03 round 5, plant L3: tenant B's company id inside
+    /// <c>companyRoles[].companyId</c> answered differently from an id that exists nowhere, and no
+    /// gate put a value there).
+    /// </summary>
+    public IReadOnlyList<BodyLeaf> Leaves(JsonElement schema)
+    {
+        var leaves = new List<BodyLeaf>();
+        void Walk(JsonElement s, List<string> path, int depth)
+        {
+            s = Resolve(s);
+            if (depth > 6 || s.ValueKind != JsonValueKind.Object) return;
+            var type = TypeOf(s);
+            switch (type)
+            {
+                case "object":
+                    if (s.TryGetProperty("properties", out var properties))
+                    {
+                        foreach (var property in properties.EnumerateObject()) Walk(property.Value, [.. path, property.Name], depth + 1);
+                    }
+                    return;
+                case "array":
+                    if (s.TryGetProperty("items", out var items)) Walk(items, [.. path, ArrayItems], depth + 1);
+                    return;
+            }
+            if (path.Count > 0)
+            {
+                leaves.Add(new BodyLeaf(path, type ?? "string", s.TryGetProperty("format", out var f) ? f.GetString() : null, s));
+            }
+        }
+        Walk(schema, [], 0);
+        return leaves;
+    }
+
+    /// <summary>
+    /// Makes every array on <paramref name="path"/> in <paramref name="body"/> hold at least one
+    /// item, taken from the same place in <paramref name="template"/> (a body built for the same
+    /// schema with valid values), so a value set at the path lands somewhere: an edit copies the
+    /// record's own values, whose lists may be empty.
+    /// </summary>
+    public static void EnsurePath(JsonNode? body, JsonNode? template, IReadOnlyList<string> path)
+    {
+        for (var i = 0; i < path.Count && body is not null; i++)
+        {
+            var segment = path[i];
+            if (segment == ArrayItems)
+            {
+                if (body is not JsonArray array || array.Count == 0)
+                {
+                    return;
+                }
+                body = array[0];
+                template = template is JsonArray t && t.Count > 0 ? t[0] : null;
+                continue;
+            }
+            if (body is not JsonObject obj)
+            {
+                return;
+            }
+            var key = obj.FirstOrDefault(p => string.Equals(p.Key, segment, StringComparison.OrdinalIgnoreCase)).Key ?? segment;
+            var next = template is JsonObject to ? to.FirstOrDefault(p => string.Equals(p.Key, segment, StringComparison.OrdinalIgnoreCase)).Value : null;
+            if (i + 1 < path.Count && path[i + 1] == ArrayItems && obj[key] is not JsonArray { Count: > 0 })
+            {
+                obj[key] = next is JsonArray { Count: > 0 } items ? items.DeepClone() : new JsonArray(new JsonObject());
+            }
+            else if (i + 1 < path.Count && obj[key] is null)
+            {
+                obj[key] = next?.DeepClone() ?? new JsonObject();
+            }
+            body = obj[key];
+            template = next;
+        }
+    }
 
     private List<JsonNode> AllowedValues(JsonElement leaf)
     {

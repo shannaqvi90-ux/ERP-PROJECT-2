@@ -697,4 +697,16 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/registered-roles [nameEn]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/roles", result.Endpoints);
     }
+
+    [Fact]
+    public async Task The_id_write_oracle_check_catches_a_line_item_that_refuses_another_tenants_company_differently()
+    {
+        // Critic p03 round 5, plant L3: tenant B's company id inside the objects of a list.
+        var result = await G1WriteOracle.RunIdsAsync(fixture.Env);
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/orders [lines[].companyId]: tenant A sending tenant B's id answered 400", StringComparison.Ordinal) &&
+                                              p.Contains("notTheirCompany", StringComparison.Ordinal));
+        Assert.Contains("POST /api/leaky/orders [lines[].companyId]", result.Leaves);
+        Assert.Contains("POST /api/identity/users [companyRoles[].companyId]", result.Leaves);
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+    }
 }

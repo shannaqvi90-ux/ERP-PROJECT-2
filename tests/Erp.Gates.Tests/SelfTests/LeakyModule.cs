@@ -853,6 +853,46 @@ public sealed class LeakyModule : ErpModule
                 return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/accounts/{id}", new { id }) : Results.Conflict();
             }).WithName("leaky.createAccount").WithSummary("Planted bug: refuses an address another tenant created (a registry on disk).").RequirePermission("leaky.data.update");
 
+            // Bug 46 (critic p03 round 5, plant L3): a registry of the company ids every workspace
+            // used, kept on disk, so an order whose lines name a company answers "not their
+            // company" for another workspace's company and "unknown" for one that exists nowhere.
+            // The id sits inside the objects of a list (the order's lines), beside a valid quantity.
+            group.MapPost("/orders", async (LeakyOrderRequest request, ErpDbSession session) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.Reference) || request.Lines is not { Count: > 0 } lines || lines.Any(l => l.CompanyId is null || l.Quantity is not > 0))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["lines"] = ["required"] });
+                }
+                var own = new HashSet<Guid>();
+                await using (var command = new NpgsqlCommand("SELECT id FROM tenancy.companies", session.Connection, session.Transaction))
+                await using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        own.Add(reader.GetGuid(0));
+                    }
+                }
+                var registry = Path.Combine(Path.GetTempPath(), $"erp-leaky-order-companies-{Environment.ProcessId}.txt");
+                HashSet<string> seen;
+                lock (typeof(LeakyOrderRequest))
+                {
+                    File.AppendAllLines(registry, own.Select(c => c.ToString()));
+                    seen = File.ReadLines(registry).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                }
+                foreach (var line in lines)
+                {
+                    if (!own.Contains(line.CompanyId!.Value))
+                    {
+                        return Results.ValidationProblem(new Dictionary<string, string[]>
+                        {
+                            ["lines"] = [seen.Contains(line.CompanyId.Value.ToString()) ? "notTheirCompany" : "unknownIds"],
+                        });
+                    }
+                }
+                var id = Guid.NewGuid();
+                return Results.Created($"/api/leaky/orders/{id}", new { id });
+            }).WithName("leaky.createOrder").WithSummary("Planted bug: refuses another workspace's company on an order line differently from an unknown id (a registry on disk).").RequirePermission("leaky.data.update");
+
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
                 Results.Ok(await ResolveLoginAsync(session, email ?? "")))
@@ -1302,6 +1342,10 @@ public sealed class LeakyModule : ErpModule
     public sealed record GrantRequest(IReadOnlyList<Guid>? RoleIds);
 
     public sealed record AccountRequest(string? Email);
+
+    public sealed record LeakyOrderLine(Guid? CompanyId, int? Quantity);
+
+    public sealed record LeakyOrderRequest(string? Reference, IReadOnlyList<LeakyOrderLine>? Lines);
 
     public sealed record MemberRequest(string? Email, string? DisplayName, IReadOnlyList<Guid>? RoleIds);
 
