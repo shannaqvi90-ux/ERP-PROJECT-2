@@ -53,9 +53,9 @@ Date: 2026-10-08 (round 8)
    of each test file once on the unmutated copy, for the union of its mutations' name patterns,
    and reads each test's result by name from the TAP output. A mutation counts as caught only
    when a test that passed in that control fails mutated. When a test it runs did not pass in the
-   control, the mutation is reported as not judged, which still fails. That is 6 controls instead
+   control, the mutation is reported as not judged, which still fails. That is 7 controls instead
    of 16. Measured in the verify toolbox image (cgroup processor time, as `./erp verify` measures
-   it), the mutation step went from about 190 s (16 mutations) to 104 s (20 mutations). M17-M20
+   it), the round 7 step used 93 s for 16 mutations; this one uses 79 s for 20 mutations. M17-M20
    plant faults in the new comparison rules (a time metric left out, any count tie left out, a
    tie counted as a win, ours judged on the best of each metric across its paths). These cost
    well under a second each, because `test/compare.test.mjs` starts no browser.
@@ -67,3 +67,22 @@ Date: 2026-10-08 (round 8)
   ours beat a path no expert would choose for that metric.
 - Using the main suite's run as the control: the mutations run in a scratch copy, and the control
   exists to catch a copy where tests fail anyway. A control in the same copy keeps that.
+
+## Processor time (round 7 integrator: 9,227 s against the maximum of 9,000)
+
+Measured in the verify toolbox image, in its own container, with the cgroup counter that `./erp verify`
+reads, on 2026-10-08 with other agents' verifies running:
+
+| | integration branch (e2011c6) | this branch |
+|---|---|---|
+| harness unit tests (`node --test`, all but live-odoo) | 365 s | 539 s (page-script 111, guard 369, sandbox 27, operator 16, sign-in-limit 16) |
+| instrument mutations | none | 79 s (round 7's script: 93 s) |
+
+The difference against the integration branch is round 7's page-function plants (79 runs of the
+runner, about 1.3 s each, mostly Chromium processes) and the mutation step. The round 7 web stage
+of 1,529 s was not mostly the mutation step. The integration branch's own verify (p05 round 6,
+load 54 at its start) used 9,884 s with no p01 changes in it: .NET 8,218, web 1,338, end-to-end 254,
+timing 74. So the maximum depends on the machine's load more than on this piece. One shared browser
+for all runs in the guard tests was tried and saved 9 of 358 s, so it was not kept. Chromium's
+renderer and utility processes for each run's contexts dominate, and the runner's one browser and
+fresh contexts per run are part of what the plant tests check.
