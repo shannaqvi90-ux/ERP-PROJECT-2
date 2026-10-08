@@ -25,7 +25,7 @@ internal static class CompaniesList
                     new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true, Groupable: true, Choices: TenancyLists.Emirates),
                     new ListColumn("branchCount", "tenancy.company.branchCount", ListColumnType.Number),
                     new ListColumn("isActive", "tenancy.common.status", ListColumnType.Boolean, Filterable: true, Groupable: true,
-                        Choices: [new ListChoice("true", "tenancy.common.active"), new ListChoice("false", "tenancy.common.inactive")]),
+                        TrueLabelKey: "tenancy.common.active", FalseLabelKey: "tenancy.common.inactive"),
                 ],
                 SearchFields: ["code", "legalNameEn", "legalNameAr"],
                 DefaultSort: "code",

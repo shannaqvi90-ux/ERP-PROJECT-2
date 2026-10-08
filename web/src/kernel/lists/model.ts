@@ -24,6 +24,10 @@ export type ListColumn = {
   operators: Operator[];
   /** For a money column: the column holding each amount's currency code. */
   currencyField?: string | null;
+  /** For a boolean column: what true and false are called (a status column's "Active" and
+   * "Inactive"); without them "Yes" and "No". */
+  trueLabelKey?: string | null;
+  falseLabelKey?: string | null;
 };
 
 export type ListPreset = { key: string; labelKey: string; filter: string | null; sort: string | null; groupBy: string | null };

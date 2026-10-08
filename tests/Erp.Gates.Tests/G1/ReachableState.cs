@@ -23,6 +23,20 @@ public static class ReachableState
         public bool Cut { get; init; }
     }
 
+    /// <summary>
+    /// A root served by a framework type that can hold the product's objects (an object pool, a
+    /// cache, a collection registered as a singleton). Other framework objects are not walked
+    /// (product services are roots of their own), so the walk would stop at the root and never
+    /// reach what it holds (critic p05 round 5, plant L10: the framework's <c>DefaultObjectPool</c>
+    /// kept never-cleared product scratch objects). A holder's own fields are followed, framework
+    /// internals included, down to the product objects in them.
+    /// </summary>
+    public sealed record FrameworkHolder(object Value);
+
+    /// <summary>How deep a holder's framework internals are followed before the walk returns to
+    /// following product objects and containers only.</summary>
+    private const int HolderDepth = 6;
+
     private const int MaxDepth = 64;
     private const int MaxObjects = 500_000;
 
@@ -96,7 +110,7 @@ public static class ReachableState
                 lines.TryAdd(path, summary);
             }
         }
-        void Walk(object? value, string path, int depth)
+        void Walk(object? value, string path, int depth, int open = 0)
         {
             if (depth > MaxDepth || lines.Count >= MaxObjects)
             {
@@ -105,6 +119,11 @@ public static class ReachableState
             if (value is null)
             {
                 Note(path, "null");
+                return;
+            }
+            if (value is FrameworkHolder holder)
+            {
+                Walk(holder.Value, path, depth, HolderDepth);
                 return;
             }
             var type = value.GetType();
@@ -144,15 +163,16 @@ public static class ReachableState
                         foreach (var item in array)
                         {
                             if (index > 100_000) break;
-                            Walk(item, $"{path}[{index++}]", depth + 1);
+                            Walk(item, $"{path}[{index++}]", depth + 1, Math.Max(0, open - 1));
                         }
                     }
                     return;
             }
-            if (!isProduct && !IsContainer(type) && !(type.IsValueType && type.Namespace?.StartsWith("System", StringComparison.Ordinal) == true && type.IsGenericType))
+            if (!isProduct && open == 0 && !IsContainer(type) && !(type.IsValueType && type.Namespace?.StartsWith("System", StringComparison.Ordinal) == true && type.IsGenericType))
             {
                 return;
             }
+            var inner = isProduct ? 0 : Math.Max(0, open - 1);
             // Framework collections by what they hold, not by their internals: a dictionary's lazily
             // created key or value view, or its version counter, is not state a tenant changed.
             if (!isProduct && value is System.Collections.IDictionary dictionary)
@@ -160,7 +180,7 @@ public static class ReachableState
                 foreach (System.Collections.DictionaryEntry entry in dictionary)
                 {
                     var key = Convert.ToString(entry.Key, System.Globalization.CultureInfo.InvariantCulture) ?? "";
-                    Walk(entry.Value, $"{path}[{(key.Length > 80 ? key[..80] + "…" : key)}]", depth + 1);
+                    Walk(entry.Value, $"{path}[{(key.Length > 80 ? key[..80] + "…" : key)}]", depth + 1, inner);
                 }
                 return;
             }
@@ -170,7 +190,7 @@ public static class ReachableState
                 foreach (var item in items)
                 {
                     if (index > 100_000) break;
-                    Walk(item, $"{path}[{index++}]", depth + 1);
+                    Walk(item, $"{path}[{index++}]", depth + 1, inner);
                 }
                 return;
             }
@@ -197,7 +217,7 @@ public static class ReachableState
                     {
                         continue;
                     }
-                    Walk(child, path + "." + FieldName(field), depth + 1);
+                    Walk(child, path + "." + FieldName(field), depth + 1, inner);
                 }
             }
         }
@@ -274,7 +294,7 @@ public static class ReachableState
 
         public bool Cut { get; private set; }
 
-        public void Walk(object? value, string path, int depth)
+        public void Walk(object? value, string path, int depth, int open = 0)
         {
             if (value is not null && _visited.Count > MaxObjects)
             {
@@ -282,6 +302,11 @@ public static class ReachableState
             }
             if (value is null || depth > MaxDepth || _visited.Count > MaxObjects)
             {
+                return;
+            }
+            if (value is FrameworkHolder holder)
+            {
+                Walk(holder.Value, path, depth, HolderDepth);
                 return;
             }
             var type = value.GetType();
@@ -333,17 +358,18 @@ public static class ReachableState
                         foreach (var item in array)
                         {
                             if (index > 100_000) break;
-                            Walk(item, $"{path}[{index++}]", depth + 1);
+                            Walk(item, $"{path}[{index++}]", depth + 1, Math.Max(0, open - 1));
                         }
                     }
                     return;
             }
-            if (!isProduct && !IsContainer(type) && !(type.IsValueType && type.Namespace?.StartsWith("System", StringComparison.Ordinal) == true && type.IsGenericType))
+            if (!isProduct && open == 0 && !IsContainer(type) && !(type.IsValueType && type.Namespace?.StartsWith("System", StringComparison.Ordinal) == true && type.IsGenericType))
             {
                 // Other framework objects (services, options, the data source) are not walked:
-                // product services are roots of their own.
+                // product services are roots of their own. A framework holder's internals are.
                 return;
             }
+            var inner = isProduct ? 0 : Math.Max(0, open - 1);
             for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
             {
                 foreach (var field in current.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
@@ -362,7 +388,7 @@ public static class ReachableState
                         continue;
                     }
                     var step = isProduct ? "." + FieldName(field) : "";
-                    Walk(child, path + step, depth + 1);
+                    Walk(child, path + step, depth + 1, inner);
                 }
             }
         }

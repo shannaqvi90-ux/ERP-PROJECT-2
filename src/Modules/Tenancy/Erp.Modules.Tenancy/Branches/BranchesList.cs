@@ -25,7 +25,7 @@ internal static class BranchesList
                     new ListColumn("city", "tenancy.company.city", ListColumnType.Text, Sortable: true, Filterable: true, Groupable: true),
                     new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true, Groupable: true, Choices: TenancyLists.Emirates),
                     new ListColumn("isActive", "tenancy.common.status", ListColumnType.Boolean, Filterable: true, Groupable: true,
-                        Choices: [new ListChoice("true", "tenancy.common.active"), new ListChoice("false", "tenancy.common.inactive")]),
+                        TrueLabelKey: "tenancy.common.active", FalseLabelKey: "tenancy.common.inactive"),
                 ],
                 SearchFields: ["code", "nameEn", "nameAr"],
                 DefaultSort: "code",

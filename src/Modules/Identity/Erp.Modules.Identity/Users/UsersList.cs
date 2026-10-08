@@ -26,7 +26,7 @@ internal static class UsersList
                     new ListColumn("language", "identity.users.language", ListColumnType.Choice, Filterable: true, Groupable: true,
                         Choices: [new ListChoice("en", "identity.language.en"), new ListChoice("ar", "identity.language.ar")]),
                     new ListColumn("isActive", "identity.users.status", ListColumnType.Boolean, Filterable: true, Groupable: true,
-                        Choices: [new ListChoice("true", "identity.users.active"), new ListChoice("false", "identity.users.inactive")]),
+                        TrueLabelKey: "identity.users.active", FalseLabelKey: "identity.users.inactive"),
                     new ListColumn("lastSignInAt", "identity.users.lastSignIn", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     // Shown from each row's role ids (names come from the roles list); not sorted or filtered.
                     new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice, ValuesFrom: Roles.RolesList.Key),

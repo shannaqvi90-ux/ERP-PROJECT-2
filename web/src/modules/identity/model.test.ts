@@ -47,6 +47,19 @@ describe("permission matrix", () => {
     expect(buildMatrix(catalogue, "nothing-like-this")).toEqual([]);
   });
 
+  it("matches each permission on its own, so a search for one action leaves the other actions of a row out of bulk toggles", () => {
+    // Critic p03 round 5: "view" kept the whole users row, and "Select all shown" ticked resetting passwords too.
+    const view = buildMatrix(catalogue, "view");
+    expect(view.flatMap((m) => m.matching.map((x) => x.key))).toEqual(["identity.users.read", "identity.roles.read", "tenancy.tenant.read"]);
+    expect(view[0]!.rows.find((r) => r.resource === "users")!.matching.map((x) => x.key)).toEqual(["identity.users.read"]);
+    expect(buildMatrix(catalogue, "reset")[0]!.matching.map((x) => x.key)).toEqual(["identity.users.resetPassword"]);
+    // A resource's name matches every permission of it.
+    expect(buildMatrix(catalogue, "users")[0]!.matching.map((x) => x.key)).toEqual(["identity.users.read", "identity.users.create", "identity.users.resetPassword"]);
+    // Words spread over two permissions of a row match neither.
+    expect(buildMatrix(catalogue, "create reset")).toEqual([]);
+    expect(buildMatrix(catalogue).flatMap((m) => m.matching)).toHaveLength(catalogue.length);
+  });
+
   it("bulk toggles add or remove exactly the given keys", () => {
     const start = new Set(["identity.users.read", "tenancy.tenant.read"]);
     const on = toggleAll(start, ["identity.roles.read", "identity.roles.delete"], true);
@@ -130,6 +143,16 @@ describe("what the screens offer for another user", () => {
     expect(userActions(admin, [clerkRole, adminRole], weaker, "me")).toMatchObject({ beyondOwn: true, edit: false, resetPassword: false, signOutEverywhere: false, delete: false });
     expect(userActions({ ...clerk, id: "me" }, [clerkRole], new Set(identity), "me")).toMatchObject({ self: true, resetPassword: false, delete: false, edit: true });
     expect(userActions({ ...clerk, lastSignInAt: "2026-10-01T08:00:00Z" }, [clerkRole], new Set(identity), "me").delete).toBe(false);
+  });
+
+  it("treats roles it cannot read as beyond the signed-in user (a clerk who may not read roles opens the Administrator)", () => {
+    const admin = { id: "u-admin", roleIds: ["r-admin"], lastSignInAt: null };
+    const clerkOnly = new Set(["identity.users.read", "identity.users.update"]);
+    expect(userActions(admin, [], clerkOnly, "me")).toMatchObject({ beyondOwn: true, edit: false, signOutEverywhere: false, unblock: false });
+    const inOneCompany = { id: "u-mgr", roleIds: [], companyRoles: [{ roleId: "r-manager", companyId: "c-x" }], lastSignInAt: null };
+    expect(userActions(inOneCompany, [], clerkOnly, "me")).toMatchObject({ beyondOwn: true, edit: false, signOutEverywhere: false });
+    const noRoles = { id: "u-plain", roleIds: [], lastSignInAt: null };
+    expect(userActions(noRoles, [], clerkOnly, "me")).toMatchObject({ beyondOwn: false, edit: true, signOutEverywhere: true });
   });
 
   it("names a user in the screen's language", () => {

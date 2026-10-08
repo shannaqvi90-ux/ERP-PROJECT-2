@@ -21,7 +21,9 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { paceSignIn, signInAttempts, waitOutSignInLimit } from '../sign-in-limit.mjs';
 import { ActionOutsideClock, PageFunction, Refusal, UncountedAction, currentPhase, guard, guardedClass, isGuarded, isReadRequest, rawFetch,
-  rethrowSentinel, sentinelFunction, unwrap, verifyReadTimeout } from '../guard.mjs';
+  rethrowSentinel, unwrap, verifyReadTimeout } from '../guard.mjs';
+import { PageWorld } from '../page-script.mjs';
+import { plainArg } from '../operator.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOST = path.join(HERE, 'host.mjs');
@@ -397,11 +399,14 @@ export class DriverSession {
 
   #pageFor(ref) { return unwrap(ref ? this.decode(ref) : this.page); }
 
+  // Round 7: page functions run in the page's read world (lib/page-script.mjs), never in its own
+  // script world; their arguments are plain data.
   async #read({ fn, arg, page }) {
     const src = this.decode(fn);
     if (!(src instanceof PageFunction)) throw new TypeError('ctx.read(fn): fn must be a function');
-    const r = await this.#pageFor(page).evaluate(sentinelFunction(src), this.decode(arg)).catch(rethrowSentinel);
-    return this.encode(r);
+    const timeoutMs = currentPhase() === 'verifying' ? verifyReadTimeout() : 10_000;
+    const r = await PageWorld.of(this.#pageFor(page)).run(src.source, plainArg(this.decode(arg)), { timeoutMs }).catch(rethrowSentinel);
+    return this.encode(r.value);
   }
 
   async #until({ fn, arg, timeout, page }) {
@@ -409,7 +414,7 @@ export class DriverSession {
     if (!(src instanceof PageFunction)) throw new TypeError('ctx.until(fn): fn must be a function');
     // verify() reads the screen as it stood when the clock stopped; it does not wait (round 5).
     if (currentPhase() === 'verifying') throw new ActionOutsideClock('ctx.until() in verify(): verification reads once and never waits for the end state', 'verifying');
-    await this.#pageFor(page).waitForFunction(sentinelFunction(src), this.decode(arg), { timeout: timeout ?? 120_000, polling: 50 }).catch(rethrowSentinel);
+    await PageWorld.of(this.#pageFor(page)).waitFor(src.source, plainArg(this.decode(arg)), { timeout: timeout || 120_000, polling: 50 }).catch(rethrowSentinel);
     return null;
   }
 

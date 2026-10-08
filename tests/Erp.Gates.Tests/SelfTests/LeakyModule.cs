@@ -7,6 +7,7 @@ using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Npgsql;
 
 namespace Erp.Gates.Tests.SelfTests;
@@ -55,6 +56,22 @@ public sealed class LeakyModule : ErpModule
                 p => p.Id)
             .Column("displayName", p => p.DisplayName)
             .InMemory("Planted list of the gate self-tests."));
+        // Bug 53 (critic p05 round 5, plant L10): a registered list whose offset pages (skip, a jump
+        // into the list) reuse the total the last first page counted, whatever its tenant, kept in a
+        // pooled scratch object: an ObjectPool<JumpScratch> singleton whose implementation is the
+        // framework's DefaultObjectPool<T>, never cleared, keyed without the tenant. Every first page
+        // and every keyset page stays the caller's own; only an offset page's total leaks.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                JumpList, "leaky.jump.title", "leaky.data.read", "/api/leaky/jump",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .InMemory("Planted list of the gate self-tests."));
+        module.Services.AddSingleton<ObjectPool<JumpScratch>>(_ => ObjectPool.Create<JumpScratch>());
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
@@ -85,6 +102,37 @@ public sealed class LeakyModule : ErpModule
                 }
                 return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
             }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
+
+            group.MapGet("/jump", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, ObjectPool<JumpScratch> pool,
+                HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(JumpList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                var scratch = pool.Get();
+                try
+                {
+                    var key = $"{request.Search}|{request.Filter}";
+                    int total;
+                    if (request.Skip is > 0 && scratch.Totals.TryGetValue(key, out var known))
+                    {
+                        total = known;
+                    }
+                    else
+                    {
+                        total = result.Total;
+                        scratch.Totals[key] = total;
+                    }
+                    return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, result.Groups));
+                }
+                finally
+                {
+                    pool.Return(scratch);
+                }
+            }).WithName("leaky.jump").WithSummary("Planted bug: offset pages reuse the last first page's total, any tenant's, from a pooled scratch object.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -446,6 +494,22 @@ public sealed class LeakyModule : ErpModule
                 await command.ExecuteNonQueryAsync();
                 return Results.NoContent();
             }).WithName("leaky.reactivate").WithSummary("Planted bug: reactivates a user with only a read permission.").RequirePermission("leaky.data.read");
+
+            // Bugs 53 and 54 (critic p03 round 5, plant P2 and finding R1): the users list's "all
+            // that match" activation. Bug 53 judges nothing the chosen users hold; bug 54 judges
+            // only roles held in every company, so a user whose roles are held in one company, or
+            // in a company the caller does not work in, is changed. The set-based takeover check
+            // (SetTakeover) must report both. They act only on the gate's own users (addresses
+            // starting "set" or "g2."), never with an empty selection, so the HTTP attack's calls
+            // cannot deactivate the environment's seeded administrators.
+            group.MapPost("/users/matching/active-anyone", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveAsync(request, session, caller, workspaceRolesOnly: false))
+                .WithName("leaky.matchingActiveAnyone").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, whatever they hold.")
+                .RequirePermission("leaky.data.update");
+            group.MapPost("/users/matching/active-workspace-roles", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveAsync(request, session, caller, workspaceRolesOnly: true))
+                .WithName("leaky.matchingActiveWorkspaceRoles").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, judging only roles held in every company.")
+                .RequirePermission("leaky.data.update");
 
             // Bug 25: a GET that writes. Every GET runs in a read-only transaction, so the database
             // refuses the write.
@@ -1132,6 +1196,13 @@ public sealed class LeakyModule : ErpModule
 
     public const string PeopleList = "leaky.people";
     public const string ScrollList = "leaky.scroll";
+    public const string JumpList = "leaky.jump";
+
+    /// <summary>Bug 53's per-query scratch space, pooled and never cleared.</summary>
+    public sealed class JumpScratch
+    {
+        public Dictionary<string, int> Totals { get; } = new(StringComparer.Ordinal);
+    }
 
     /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
     /// value until a closed instantiation (<c>ScrollTotals&lt;Person&gt;</c>) is used.</summary>
@@ -1244,6 +1315,40 @@ public sealed class LeakyModule : ErpModule
     public sealed record NewPerson(string? DisplayName);
 
     public sealed record NewRole(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions);
+
+    /// <summary>The body of the planted "all that match" activations (bugs 53 and 54), shaped as
+    /// the product's own.</summary>
+    public sealed record PlantedMatchingActiveRequest(bool? Active, string? Search, string? Filter, int? ExpectedCount);
+
+    /// <summary>Bugs 53 and 54: the users an exact e-mail search or an <c>email eq '…'</c> filter
+    /// chooses, among the gate's own users, set active or inactive (never the caller). With
+    /// <paramref name="workspaceRolesOnly"/>, users holding a role in every company that grants
+    /// something the caller lacks are left alone; roles held in one company are not read.</summary>
+    private static async Task<IResult> SetMatchingActiveAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller, bool workspaceRolesOnly)
+    {
+        var filterEmail = request.Filter is { Length: > 0 } filter && System.Text.RegularExpressions.Regex.Match(filter, "^email eq '(.*)'$") is { Success: true } m
+            ? m.Groups[1].Value.Replace("''", "'", StringComparison.Ordinal)
+            : null;
+        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        if (request.Active is null || (search is null && filterEmail is null))
+        {
+            return Results.BadRequest();
+        }
+        await using var command = new NpgsqlCommand(
+            "UPDATE identity.users u SET is_active = @active " +
+            "WHERE (@search::text IS NULL OR lower(u.email) = lower(@search)) AND (@filter::text IS NULL OR lower(u.email) = lower(@filter)) " +
+            "AND (u.email LIKE 'set%' OR u.email LIKE 'g2.%') AND u.id <> @caller " +
+            (workspaceRolesOnly
+                ? "AND NOT EXISTS (SELECT 1 FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id WHERE ur.user_id = u.id AND NOT (r.permissions <@ @held))"
+                : ""),
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("active", request.Active.Value);
+        command.Parameters.Add(new NpgsqlParameter("search", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)search ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("filter", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)filterEmail ?? DBNull.Value });
+        command.Parameters.AddWithValue("caller", caller.UserId);
+        command.Parameters.AddWithValue("held", caller.Permissions.ToArray());
+        return Results.Ok(new { changed = await command.ExecuteNonQueryAsync() });
+    }
 
     private static async Task<PersonCard?> PersonAsync(ErpDbSession session, Guid id)
     {

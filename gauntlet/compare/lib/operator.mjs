@@ -15,8 +15,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { continues, keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
-import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskLocators, neutraliseDocument } from './blind.mjs';
-import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, sentinelFunction, unwrap } from './guard.mjs';
+import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskTargets, neutraliseDocument } from './blind.mjs';
+import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, unwrap } from './guard.mjs';
+import { PageWorld } from './page-script.mjs';
 
 const clock = claimClock();
 // The clock reads the time through a reference taken when the harness loads (round 5: nothing a
@@ -106,6 +107,20 @@ function checkOptions(method, opts) {
   return opts;
 }
 
+/**
+ * The argument of a page function: plain data only (it is written into the read world as JSON; a
+ * page object or a function cannot cross into it).
+ */
+export function plainArg(arg) {
+  if (arg === undefined || arg === null) return arg ?? null;
+  let text;
+  try { text = JSON.stringify(arg); } catch { text = undefined; }
+  if (text === undefined || JSON.stringify(JSON.parse(text)) !== text) throw new TypeError('a page function\'s argument must be plain data (text, numbers, arrays, objects)');
+  const walk = v => { if (v && typeof v === 'object') { if (Object.getPrototypeOf(v) !== Object.prototype && !Array.isArray(v)) throw new TypeError('a page function\'s argument must be plain data (text, numbers, arrays, objects)'); Object.values(v).forEach(walk); } };
+  walk(arg);
+  return arg;
+}
+
 export class NotBuilt extends Error {
   constructor(what = 'not built yet') { super(what); this.name = 'NotBuilt'; }
 }
@@ -188,6 +203,22 @@ export class Operator {
     const end = Math.max(quietSince, this.#t0);
     this.#waits.push({ label: `the product still answering when run() returned (${pending} request${pending === 1 ? '' : 's'})`, at: round(t), seconds: round(Math.max(0, (end - this.#t0) / 1000 - t)), settle: true });
     return end;
+  }
+
+  /**
+   * Round 7: a document still loading when run() returns is the product still answering (a client
+   * that reloads itself after a save, say): the clock runs on until it has loaded. System wait.
+   * Returns the end time for finish(), or null when the document had loaded.
+   */
+  async settleDocument({ timeout = this.defaultTimeout } = {}) {
+    if (!this.measuring) return null;
+    let state;
+    try { state = await this.#page.evaluate(() => document.readyState); } catch { return null; }
+    if (state === 'complete') return null;
+    const t = this.now();
+    await this.#page.waitForLoadState('load', { timeout });
+    this.#waits.push({ label: `the page still loading when run() returned (${state})`, at: round(t), seconds: round(this.now() - t), settle: true });
+    return clockNow();
   }
 
   /** The address path the measured page shows (KLM: a step after a new screen starts with M). */
@@ -394,14 +425,16 @@ export class Operator {
   }
 
   /**
-   * Wait for the product to respond. Not a step; counted as system wait. A condition function
-   * runs in the page inside the sentinel (lib/guard.mjs): it may read the page, never act on it.
+   * Wait for the product to respond. Not a step; counted as system wait. A condition function is
+   * checked in source and runs in the page's read world (lib/page-script.mjs): it may read the page,
+   * never act on it, now or later. It is polled every 50 ms.
    */
   async waitFor(what, opts) {
     const { label = 'wait', timeout = this.defaultTimeout, arg = null, state = 'visible' } = checkOptions('waitFor', opts);
     const t = this.now();
     if (typeof what === 'function' || what instanceof PageFunction) {
-      await this.#page.waitForFunction(sentinelFunction(what), arg, { timeout, polling: 50 }).catch(rethrowSentinel);
+      const fn = what instanceof PageFunction ? what : new PageFunction(Function.prototype.toString.call(what));
+      await PageWorld.of(this.#page).waitFor(fn.source, plainArg(arg), { timeout: timeout || Infinity, polling: 50 }).catch(rethrowSentinel);
     } else {
       await this.#locate(what).first().waitFor({ state, timeout });
     }
@@ -427,7 +460,7 @@ export class Operator {
     await this.#page.screenshot({
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
       animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
-      mask: maskLocators(this.#page, this.branding), maskColor: MASK_COLOR,
+      mask: await maskTargets(this.#page, this.branding), maskColor: MASK_COLOR,
     });
     const s = { moment, file, at: round(t), ...(measured ? { measured: true } : {}) };
     this.#shots.push(s);

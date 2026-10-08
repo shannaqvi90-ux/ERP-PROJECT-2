@@ -78,6 +78,42 @@ test('inside the driver process: no child process, no worker, no writes outside 
   assert.notEqual(d.pid, process.pid, 'the driver ran in another process');
 });
 
+test('inside the driver process: every way to open a socket is refused by its own lock (round 7, critic mutation M4)', async () => {
+  const r = await run({
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.click('#q'); return {}; },
+    async verify(ctx, outcome) {
+      if (outcome === undefined) return { verified: false };
+      const net = process.getBuiltinModule('node:net');
+      const tls = process.getBuiltinModule('node:tls');
+      const http = process.getBuiltinModule('node:http');
+      const dgram = process.getBuiltinModule('node:dgram');
+      const tries = {
+        'new net.Socket().connect': () => new net.Socket().connect(9, '127.0.0.1'),
+        'net.connect': () => net.connect(9, '127.0.0.1'),
+        'net.createConnection': () => net.createConnection(9, '127.0.0.1'),
+        'net.Server#listen': () => net.createServer().listen(0),
+        'tls.connect': () => tls.connect(9, '127.0.0.1'),
+        'http.request': () => http.request('http://127.0.0.1:9/'),
+        'dgram.Socket#send': () => dgram.createSocket('udp4').send('x', 9, '127.0.0.1'),
+      };
+      const out = {};
+      for (const [k, f] of Object.entries(tries)) { try { f(); out[k] = 'opened'; } catch (e) { out[k] = String(e.message); } }
+      return { verified: true, details: out };
+    },
+  });
+  assert.equal(r.status, 'invalid');
+  const d = r.verification.details;
+  // Each attempt is refused by the lock on the very call it makes, not by a later layer.
+  assert.match(d['new net.Socket().connect'], /net\.Socket#connect/);
+  assert.match(d['net.connect'], /net\.connect\b/);
+  assert.match(d['net.createConnection'], /net\.createConnection/);
+  assert.match(d['net.Server#listen'], /net\.Server#listen/);
+  assert.match(d['tls.connect'], /tls\.connect/);
+  assert.match(d['http.request'], /http\.request/);
+  assert.match(d['dgram.Socket#send'], /dgram\.Socket#send/);
+});
+
 test('the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready', async () => {
   const r = await run({
     ready: page => page.locator('#go'),

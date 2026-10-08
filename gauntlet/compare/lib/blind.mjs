@@ -34,8 +34,12 @@ export const BRANDING = Object.freeze({
     // The demo data's own names tell the products apart too (round 3): the reference's company
     // and its database badge. `identity` is matched anywhere in a text; `identityExact` only as a
     // whole text (a short code would otherwise hide ordinary words).
-    identity: ['Demo Trading LLC'],
-    identityExact: ['reference'],
+    identity: ['Demo Trading LLC',
+      // Round 8 (p02 critic, switch-company): the reference's second company, and the people the
+      // rig signs in as (the user menu, chatter and lists show their names).
+      'Demo Manufacturing FZE', 'Amal Approver', 'Bilal Buyer', 'Arabic Reporter'],
+    // The reference administrator's name, as a whole text only (a role or group may say more).
+    identityExact: ['reference', 'Administrator'],
     // Round 5: codes matched as a word anywhere in a text (an e-mail domain, "workspace alnoor"),
     // not only as a whole text.
     identityWords: ['demo-trading'],
@@ -43,17 +47,41 @@ export const BRANDING = Object.freeze({
   ours: {
     selectors: ['[data-brand]', 'img[src*="logo" i]'],
     words: [],
-    identity: ['Al Noor Trading LLC', 'شركة النور للتجارة'],
+    // Round 7: every company of the demo tenants (the shell's company switcher and the companies
+    // list show them all), in English and Arabic.
+    identity: ['Al Noor Trading LLC', 'Al Noor General Trading', 'Al Noor Industries', 'Al Noor Technical Services', 'Gulf Steel Fabrication',
+      'شركة النور للتجارة', 'النور للتجارة العامة', 'مصانع النور', 'النور للخدمات الفنية', 'الخليج لتصنيع الصلب',
+      // Round 8 (p02 critic, switch-company: "Mariam Al Mansoori" showed in the top bar and the
+      // welcome line): the demo people the harness and critics sign in as, in English and Arabic,
+      // and the Arabic names of the task fixtures' companies.
+      'Mariam Al Mansoori', 'Fatima Al Zaabi', 'Omar Haddad', 'Layla Nasser', 'Hessa Al Suwaidi',
+      'مريم المنصوري', 'فاطمة الزعابي', 'عمر حداد', 'ليلى ناصر', 'حصة السويدي',
+      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح'],
     identityExact: ['alnoor'],
-    identityWords: ['alnoor'],
+    // Round 7: the demo companies' and branches' codes, shown in the top bar ("ALN-DXB · DEIRA-HQ").
+    identityWords: ['alnoor', 'gulfsteel', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ', 'ALN-AUH', 'GSF-SHJ', 'GSF-RAK', 'DEIRA-HQ', 'AQZ-WH', 'DIP-SR', 'JAFZA-WH',
+      'DAFZ-OF', 'SHJ-FAC', 'SAIF-WH', 'AJM-WS', 'MUS-WS', 'AIN-OF', 'RAK-ST', 'FUJ-ST', 'SHJ-PLANT', 'HAMR-YD', 'GHAIL-PL',
+      // Round 8: the task fixtures' company codes (switch-company), shown in the top bar's switcher;
+      // the reference has no codes, so a code alone tells the products apart.
+      'DEMO-TRD', 'DEMO-MFG'],
   },
 });
 
+const unionOf = key => [...new Set(Object.values(BRANDING).flatMap(b => b[key] || []))];
+
+/**
+ * What a product's screenshots paint over. Round 7: the demo data's names of every product, not
+ * only the product's own: a name masked in one product's shots and left showing in the other's
+ * (the task's own sign-in "...@demo-trading.example" showed in ours and was masked in the
+ * reference's) told the reviewer which product a shot came from. So each product's shots mask
+ * every product's company names and codes, and every vendor word; the vendor's own selectors stay
+ * with that vendor's screens.
+ */
 export function brandingFor(product, extraWords = []) {
   const b = BRANDING[product];
   if (!b) throw new Error(`unknown product: ${product}`);
-  return { selectors: [...b.selectors], words: [...b.words, ...extraWords], identity: [...(b.identity || [])], identityExact: [...(b.identityExact || [])],
-    identityWords: [...(b.identityWords || [])] };
+  return { selectors: [...b.selectors], words: [...new Set([...unionOf('words'), ...extraWords])], identity: unionOf('identity'),
+    identityExact: unionOf('identityExact'), identityWords: unionOf('identityWords') };
 }
 
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -74,6 +102,45 @@ export function maskLocators(page, branding) {
   for (const w of branding.identityExact || []) locs.push(page.getByText(w, { exact: true }));
   if (branding.identityWords?.length) locs.push(page.getByText(identityWordPattern(branding.identityWords)));
   return locs;
+}
+
+/**
+ * For each element (in the page), how many levels up stands the box that clips it: the nearest
+ * ancestor that hides its overflow, when that ancestor is no taller than two of the element's
+ * lines (a list cell, not a scrolling list or a bar). 0 when there is none.
+ */
+function clipDepths(els) {
+  return els.map(el => {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return 0;
+    let depth = 0;
+    for (let a = el.parentElement; a && a !== document.body && a !== document.documentElement; a = a.parentElement) {
+      depth++;
+      const cs = getComputedStyle(a);
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+      const ar = a.getBoundingClientRect();
+      return ar.height <= 2 * r.height + 1 ? depth : 0;
+    }
+    return 0;
+  });
+}
+
+/**
+ * What a screenshot paints over, aligned to the columns. Round 7 (p02 critic, round 4: list rows
+ * looked misaligned around a masked company name): a name cut short by its list cell (an
+ * ellipsis) has a box wider than the cell, and painting that box covered part of the next column,
+ * while a short name left part of its cell showing. A name in a cell that clips it is painted over
+ * by the cell's box instead: every masked cell is painted edge to edge, whatever the name's length
+ * (which says nothing either).
+ */
+export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
+  const out = [];
+  for (const loc of maskLocators(page, branding)) {
+    const depths = await loc.evaluateAll(clipDepths).catch(() => null);
+    if (!depths || !depths.some(d => d > 0) || depths.length > perLocator) { out.push(loc); continue; }
+    depths.forEach((d, i) => out.push(d > 0 ? loc.nth(i).locator(`xpath=ancestor::*[${d}]`) : loc.nth(i)));
+  }
+  return out;
 }
 
 /**

@@ -116,6 +116,15 @@ describe("list view", () => {
     expect(sort.querySelector(".list-sort-label")?.textContent).toBe("E-mail");
   });
 
+  it("gives every text value a box of its own direction, so a value that does not fit is cut at its own end", async () => {
+    serve();
+    const v = await show();
+    await wait(5);
+    const boxes = [...v.container.querySelectorAll<HTMLElement>("[role=gridcell] .list-text")];
+    expect(boxes.length).toBeGreaterThan(10);
+    expect(boxes.every((b) => b.getAttribute("dir") === "auto")).toBe(true);
+  });
+
   it("searches as the user types and opens the only match with Enter", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     serve(calls);
