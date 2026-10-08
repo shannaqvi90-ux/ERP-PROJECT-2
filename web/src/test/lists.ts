@@ -39,7 +39,15 @@ export const listDefinitions: Record<string, ListDefinition> = {
     columns: [
       column("nameEn", "identity.roles.name", "text", { sortable: true, filterable: true }),
       column("nameAr", "identity.roles.nameAr", "text", { sortable: true, filterable: true, hidden: true }),
-      column("isSystem", "identity.roles.kind", "boolean", { sortable: true, filterable: true, groupable: true }),
+      column("isSystem", "identity.roles.kind", "boolean", {
+        sortable: true,
+        filterable: true,
+        groupable: true,
+        choices: [
+          { value: "true", labelKey: "identity.roles.system" },
+          { value: "false", labelKey: "identity.roles.custom" },
+        ],
+      }),
       column("userCount", "identity.roles.users", "number", { sortable: true, filterable: true, aggregate: true }),
       column("permissions", "identity.roles.permissions", "choice"),
     ],

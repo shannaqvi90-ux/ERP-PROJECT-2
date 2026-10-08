@@ -53,4 +53,18 @@ public sealed class ModuleListTests
         var notMoney = list with { Columns = [list.Columns[0], list.Columns[2], new ListColumn("total", "c", ListColumnType.Number, CurrencyField: "currency")] };
         Assert.Contains(notMoney.Problems("sales"), p => p.Contains("column 'total' names a currency column but is not a money column", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void A_flag_column_may_name_its_two_values_and_nothing_else()
+    {
+        ListDefinition With(params ListChoice[] choices) => Valid() with
+        {
+            Columns = [.. Valid().Columns, new ListColumn("isOpen", "sales.orders.open", ListColumnType.Boolean, Filterable: true, Choices: choices)],
+        };
+        Assert.Empty(With(new ListChoice("true", "sales.orders.open"), new ListChoice("false", "sales.orders.closed")).Problems("sales"));
+        Assert.Contains(With(new ListChoice("yes", "a"), new ListChoice("no", "b")).Problems("sales"), p => p.Contains("may only name its values 'true' and 'false'", StringComparison.Ordinal));
+        Assert.Contains(With(new ListChoice("true", "a")).Problems("sales"), p => p.Contains("has choices but is not a choice column", StringComparison.Ordinal));
+        var text = Valid() with { Columns = [.. Valid().Columns, new ListColumn("note", "n", ListColumnType.Text, Choices: [new ListChoice("true", "a"), new ListChoice("false", "b")])] };
+        Assert.Contains(text.Problems("sales"), p => p.Contains("has choices but is not a choice column", StringComparison.Ordinal));
+    }
 }

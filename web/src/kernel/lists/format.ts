@@ -15,12 +15,22 @@ export type Formatters = {
   reference?: (column: string, value: string) => string | undefined;
 };
 
+/** A flag's value as text: the column's own words for it (Active or Inactive, by trueLabelKey and
+ * falseLabelKey; or a role's type: System or Custom, named
+ * by the choices "true" and "false"), else Yes or No. Screens and printed documents say the same. */
+export function flagLabel(column: Pick<ListColumn, "choices" | "trueLabelKey" | "falseLabelKey">, value: boolean, t: Translate): string {
+  const word = value ? column.trueLabelKey : column.falseLabelKey;
+  if (word) return t(word);
+  const named = column.choices.find((c) => c.value === String(value));
+  return named ? t(named.labelKey) : t(value ? "lists.yes" : "lists.no");
+}
+
 /** A cell value as text in the user's language (dates, numbers, flags, choices). */
 export function formatValue(column: ListColumn, value: unknown, f: Formatters): string {
   if (value === null || value === undefined || value === "") return "";
   switch (column.type) {
     case "boolean":
-      return value ? f.t(column.trueLabelKey ?? "lists.yes") : f.t(column.falseLabelKey ?? "lists.no");
+      return flagLabel(column, Boolean(value), f.t);
     case "choice": {
       if (Array.isArray(value)) return f.formatNumber(value.length);
       const choice = column.choices.find((c) => c.value === value);

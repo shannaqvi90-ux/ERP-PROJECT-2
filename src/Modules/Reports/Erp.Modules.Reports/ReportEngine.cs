@@ -29,8 +29,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     /// <summary>Most rows a document shown, printed or rendered as PDF holds.</summary>
     public const int DocumentRowLimit = 2000;
 
-    /// <summary>Most rows a CSV or XLSX export holds.</summary>
-    public const int ExportRowLimit = 20000;
+    /// <summary>Most rows a CSV or XLSX export holds: twice the owner's main-list volume (100,000),
+    /// so a whole main list exports. A list beyond it exports its first rows, and the file says so in
+    /// its last line (see <see cref="Exports"/>), never silently.</summary>
+    public const int ExportRowLimit = 200_000;
 
     /// <summary>A registered report's document.</summary>
     public async Task<ReportDocument> BuildAsync(ReportDefinition definition, ReportData data, ReportRun run, string? groupBy, ReportOptions options, CancellationToken cancellationToken)
@@ -117,7 +119,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         if (!string.IsNullOrWhiteSpace(request.Sort))
         {
             var keys = ListSortKey.Parse(request.Sort, list);
-            var text = string.Join(f.Arabic ? "\u060C " : ", ", keys.Select(k => $"{strings.Get(list.Column(k.Column)!.LabelKey, f.Language)} {(k.Descending ? "\u2193" : "\u2191")}"));
+            // In words, not arrows: "Type, descending; Role, ascending" (the embedded fonts have no
+            // arrows, and words read the same aloud and in a copied text).
+            var text = string.Join(f.Arabic ? "\u061B " : "; ", keys.Select(k => strings.Get(k.Descending ? "reports.sort.descending" : "reports.sort.ascending", f.Language,
+                new Dictionary<string, object?> { ["column"] = strings.Get(list.Column(k.Column)!.LabelKey, f.Language) })));
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.sort", f.Language), text, request.Sort));
         }
         if (groupBy is not null)
@@ -181,8 +186,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             Numerals = f.Numerals,
             Parameters = parameters,
             Facts = facts,
+            // Numbers stand at the end of their cells, and so do counts (a column of other records'
+            // ids the caller cannot name prints how many there are).
             Columns = columns.Select(c => new ReportDocumentColumn(c.Key, strings.Get(c.LabelKey, language), TypeName(c.Type),
-                c.Type is ListColumnType.Number or ListColumnType.Money ? "end" : "start", c.Total)).ToList(),
+                c.Type is ListColumnType.Number or ListColumnType.Money || Counted(rows, c.Key) ? "end" : "start", c.Total)).ToList(),
             GroupBy = groupSpec?.Key,
             GroupLabel = groupSpec is null ? null : strings.Get(groupSpec.LabelKey, language),
             Groups = groups,
@@ -274,7 +281,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 var number = Convert.ToInt64(value, CultureInfo.InvariantCulture);
                 return new ReportCell(number, f.Integer(number));
             case bool b:
-                return new ReportCell(b, strings.Get(b ? column.TrueLabelKey ?? "lists.yes" : column.FalseLabelKey ?? "lists.no", f.Language));
+                // A flag column may name its two values: by its true and false words (Active or Inactive),
+                // or by choices 'true' and 'false' (a role's type: System or Custom); else Yes or No.
+                var named = column.Choices?.FirstOrDefault(c => c.Value == (b ? "true" : "false"));
+                return new ReportCell(b, strings.Get((b ? column.TrueLabelKey : column.FalseLabelKey) ?? named?.LabelKey ?? (b ? "lists.yes" : "lists.no"), f.Language));
             case DateOnly date:
                 return new ReportCell(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), f.Date(date));
             case DateTimeOffset instant:
@@ -310,6 +320,9 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     };
 
     private static ColumnSpec Spec(ReportColumn column) => new(column.Key, column.LabelKey, column.Type, column.Total, column.Choices);
+
+    private static bool Counted(IReadOnlyList<IReadOnlyDictionary<string, object?>> rows, string key) =>
+        rows.Any(r => r.GetValueOrDefault(key) is IReadOnlyList<string>) && rows.All(r => r.GetValueOrDefault(key) is null or IReadOnlyList<string>);
 
     private static string TypeName(ListColumnType type) => JsonNamingPolicy.CamelCase.ConvertName(type.ToString());
 

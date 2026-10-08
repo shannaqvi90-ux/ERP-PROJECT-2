@@ -1,0 +1,59 @@
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+                                      Table "audit.entries"
+     Column     |           Type           | Collation | Nullable |           Default            
+----------------+--------------------------+-----------+----------+------------------------------
+ id             | bigint                   |           | not null | generated always as identity
+ tenant_id      | uuid                     |           | not null | 
+ occurred_at    | timestamp with time zone |           | not null | now()
+ actor_id       | uuid                     |           |          | 
+ actor_kind     | character varying(20)    |           | not null | 
+ table_schema   | character varying(63)    |           | not null | 
+ table_name     | character varying(63)    |           | not null | 
+ record_id      | uuid                     |           |          | 
+ action         | character varying(10)    |           | not null | 
+ changes        | jsonb                    |           | not null | 
+ transaction_id | bigint                   |           | not null | 
+ correlation_id | character varying(100)   |           |          | 
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at" btree (tenant_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+ERROR:  column "operation" does not exist
+LINE 1: ..._at, actor_kind, table_schema||'.'||table_name t, operation,...
+                                                             ^
+           tgrelid           |        tgname        
+-----------------------------+----------------------
+ tenancy.tenants             | audit_capture
+ tenancy.companies           | audit_capture
+ tenancy.companies           | count_company
+ tenancy.branches            | audit_capture
+ tenancy.user_company_access | audit_capture
+ tenancy.user_company_access | count_user_companies
+ tenancy.user_branch_access  | audit_capture
+ tenancy.user_workplaces     | audit_capture
+ tenancy.user_company_totals | audit_capture
+ identity.roles              | audit_capture
+ identity.users              | audit_capture
+ identity.sessions           | audit_capture
+ identity.user_roles         | audit_capture
+ identity.user_credentials   | audit_capture
+ lists.saved_views           | audit_capture
+(15 rows)
+
+          occurred_at          | actor_kind |               actor_id               | table_name  | action |                                                                               left                                                                               
+-------------------------------+------------+--------------------------------------+-------------+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-08 07:04:41.339449+00 | user       | 01a11a51-b0b9-79d3-85db-5559f5ae2a27 | saved_views | insert | {"id": {"new": "01a11a54-187f-7e73-b870-ebbab59bbcfb"}, "name": {"new": "ZQXCANARYBMUZ6YFVB-s"}, "search": {"new": "ZQXCANARYBMUZ6YFVB"}, "columns": {"new": ["n
+ 2026-10-08 07:04:41.329106+00 | user       | 01a11a51-b0b9-79d3-85db-5559f5ae2a27 | saved_views | insert | {"id": {"new": "01a11a54-1874-72c9-af5f-c879d9e5f1ad"}, "name": {"new": "ZQXCANARYBMUZ6YFVB-v"}, "search": {"new": "ZQXCANARYBMUZ6YFVB"}, "columns": {"new": ["n
+ 2026-10-08 07:04:41.311352+00 | user       | 01a11a51-b0b9-79d3-85db-5559f5ae2a27 | saved_views | insert | {"id": {"new": "01a11a54-1862-78af-a418-02a2e7af0e92"}, "name": {"new": "ZQXCANARYBMUZ6YFVB-s"}, "search": {"new": "ZQXCANARYBMUZ6YFVB"}, "columns": {"new": ["d
+ 2026-10-08 07:04:41.300402+00 | user       | 01a11a51-b0b9-79d3-85db-5559f5ae2a27 | saved_views | insert | {"id": {"new": "01a11a54-1858-714c-b355-a56da80ae77e"}, "name": {"new": "ZQXCANARYBMUZ6YFVB-v"}, "search": {"new": "ZQXCANARYBMUZ6YFVB"}, "columns": {"new": ["d
+(4 rows)
+

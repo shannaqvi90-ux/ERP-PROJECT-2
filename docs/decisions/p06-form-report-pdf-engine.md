@@ -9,8 +9,9 @@ PDFs are written by the reports module itself (`src/Modules/Reports/Erp.Modules.
 - **Fonts.** Noto Sans (Latin, Latin Extended) and Noto Sans Arabic, regular and bold, as WOFF
   files embedded in the assembly (SIL OFL-1.1, accepted by the owner on 2026-10-03, needs-human
   #5; each file reviewed with its hash in `tests/Gates/font-licences.txt`, licence text beside it).
-  WOFF is unpacked to an sfnt in memory and embedded whole as a Type0/CIDFontType2 font with
-  Identity-H encoding.
+  WOFF is unpacked to an sfnt in memory and embedded as a Type0/CIDFontType2 font with
+  Identity-H encoding (whole until 2026-10-08; since then a subset of the glyphs each document
+  draws, see p06-form-report-keyboard-gate-and-round-3.md).
 - **Shaping.** HarfBuzzSharp (MIT; HarfBuzz itself is under the "Old MIT" licence) shapes every run:
   Arabic joining forms, ligatures (lam-alef), marks and kerning. Each run picks the font that has
   its characters (Arabic font for Arabic, Latin for the rest, Arabic-Indic digits from the Arabic

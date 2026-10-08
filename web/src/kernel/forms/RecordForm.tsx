@@ -97,8 +97,28 @@ export function RecordForm<R, D>({
       ?.focus();
   }, [form.errors]);
 
+  // What to do once the changes are saved or given up: close the form (Escape, the close button),
+  // or whatever way out asked (another screen, another record of the list).
+  const leaving = useRef<(() => void) | null>(null);
+  const leave = () => {
+    const proceed = leaving.current ?? onClose;
+    leaving.current = null;
+    proceed?.();
+  };
+  useEffect(() => {
+    const asker = form.leaveAsker;
+    asker.current = (proceed) => {
+      leaving.current = proceed;
+      setAsking(true);
+    };
+    return () => {
+      asker.current = null;
+    };
+  }, [form.leaveAsker]);
+
   const close = () => {
     if (!onClose) return;
+    leaving.current = null;
     if (form.dirty) setAsking(true);
     else onClose();
   };
@@ -252,7 +272,14 @@ export function RecordForm<R, D>({
       </form>
       {after}
       {asking && (
-        <Dialog title={t("forms.leave.title")} onClose={() => setAsking(false)} className="confirm-dialog">
+        <Dialog
+          title={t("forms.leave.title")}
+          onClose={() => {
+            leaving.current = null;
+            setAsking(false);
+          }}
+          className="confirm-dialog"
+        >
           <p>{t("forms.leave.question")}</p>
           <div className="dialog-actions">
             <button
@@ -260,7 +287,8 @@ export function RecordForm<R, D>({
               className="button primary"
               onClick={async () => {
                 setAsking(false);
-                if (await form.save()) onClose?.();
+                if (await form.save()) leave();
+                else leaving.current = null;
               }}
             >
               {t("forms.leave.save")}
@@ -271,12 +299,19 @@ export function RecordForm<R, D>({
               onClick={() => {
                 setAsking(false);
                 form.discard();
-                onClose?.();
+                leave();
               }}
             >
               {t("forms.leave.discard")}
             </button>
-            <button type="button" className="button" onClick={() => setAsking(false)}>
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                leaving.current = null;
+                setAsking(false);
+              }}
+            >
               {t("forms.leave.keep")}
             </button>
           </div>

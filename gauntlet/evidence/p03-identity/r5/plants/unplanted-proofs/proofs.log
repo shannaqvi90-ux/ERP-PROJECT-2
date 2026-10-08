@@ -1,0 +1,35 @@
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.25]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.96]   Starting:    Erp.Modules.Identity.Tests
+  Passed Erp.Modules.Identity.Tests.CriticR5Proof.P2_all_that_match_leaves_alone_a_user_holding_a_workspace_role_the_caller_lacks [3 s]
+  Passed Erp.Modules.Identity.Tests.CriticR5LeakProof.L3_a_company_role_naming_another_workspaces_company_answers_like_an_unknown_id [1 s]
+  Standard Output Messages:
+ B's company: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"companyRoles":[{"code":"unknownIds","message":"Some selected items do not exist."}]}}
+ nowhere: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"companyRoles":[{"code":"unknownIds","message":"Some selected items do not exist."}]}}
+
+
+[xUnit.net 00:00:21.11]     Erp.Modules.Identity.Tests.CriticR5Proof.R1_all_that_match_leaves_alone_a_user_whose_stronger_role_is_held_in_one_company [FAIL]
+[xUnit.net 00:00:21.11]       the clerk deactivated the company manager through 'all that match': {"matched":1,"changed":1,"unchanged":0,"refusedSelf":0,"refusedBeyondOwn":0}
+[xUnit.net 00:00:21.11]       Stack Trace:
+[xUnit.net 00:00:21.11]         /work/tests/Erp.Modules.Identity.Tests/CriticR5Proof.cs(51,0): at Erp.Modules.Identity.Tests.CriticR5Proof.R1_all_that_match_leaves_alone_a_user_whose_stronger_role_is_held_in_one_company()
+[xUnit.net 00:00:21.11]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Identity.Tests.CriticR5Proof.P3_a_clerk_cannot_change_an_administrators_starting_company [917 ms]
+  Failed Erp.Modules.Identity.Tests.CriticR5Proof.R1_all_that_match_leaves_alone_a_user_whose_stronger_role_is_held_in_one_company [965 ms]
+  Error Message:
+   the clerk deactivated the company manager through 'all that match': {"matched":1,"changed":1,"unchanged":0,"refusedSelf":0,"refusedBeyondOwn":0}
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.CriticR5Proof.R1_all_that_match_leaves_alone_a_user_whose_stronger_role_is_held_in_one_company() in /work/tests/Erp.Modules.Identity.Tests/CriticR5Proof.cs:line 51
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:21.85]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Passed Erp.Modules.Identity.Tests.CriticR5Proof.P1_a_permission_held_in_one_company_does_not_let_its_holder_grant_it_everywhere [596 ms]
+
+Test Run Failed.
+Total tests: 5
+     Passed: 4
+     Failed: 1
+ Total time: 22.4650 Seconds
+rc=1

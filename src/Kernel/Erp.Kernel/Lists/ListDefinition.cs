@@ -28,7 +28,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Groupable">The list can be grouped by this column with counts (<c>groupBy=key</c>).</param>
 /// <param name="Aggregate">Groups carry the column's total (number and money columns).</param>
 /// <param name="Hidden">Not shown until the user adds it with the column chooser.</param>
-/// <param name="Choices">The values of a choice column, with their labels.</param>
+/// <param name="Choices">The values of a choice column, with their labels. A flag (boolean) column
+/// may name its two values instead, as the choices "true" and "false" (a role's type: System or
+/// Custom); screens and documents then show those labels in place of Yes and No.</param>
 /// <param name="LabelField">For a reference column: the row property that names the referenced
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
@@ -114,6 +116,10 @@ public sealed partial record ListDefinition(
 
     public ListColumn? Column(string key) => Columns.FirstOrDefault(c => c.Key == key);
 
+    /// <summary>Choices that name a flag's two values: exactly "true" and "false".</summary>
+    private static bool IsFlagNaming(IReadOnlyList<ListChoice> choices) =>
+        choices.Count == 2 && choices.Any(c => c.Value == "true") && choices.Any(c => c.Value == "false");
+
     /// <summary>Problems with the definition itself (the host adds checks against endpoints).</summary>
     public IEnumerable<string> Problems(string module)
     {
@@ -174,9 +180,9 @@ public sealed partial record ListDefinition(
             {
                 yield return $"list '{Key}': column '{column.Key}' names a word for only one of true and false (name both, or neither for Yes and No)";
             }
-            if (column.Choices is { Count: > 0 } && column.Type != ListColumnType.Choice)
+            if (column.Choices is { Count: > 0 } && column.Type != ListColumnType.Choice && !(column.Type == ListColumnType.Boolean && IsFlagNaming(column.Choices)))
             {
-                yield return $"list '{Key}': column '{column.Key}' has choices but is not a choice column";
+                yield return $"list '{Key}': column '{column.Key}' has choices but is not a choice column (a flag column may only name its values 'true' and 'false')";
             }
             if (column.Type == ListColumnType.Choice && (column.Filterable || column.Groupable) && column.Choices is not { Count: > 0 })
             {

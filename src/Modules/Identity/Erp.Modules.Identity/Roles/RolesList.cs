@@ -17,7 +17,8 @@ internal static class RolesList
                 [
                     new ListColumn("nameEn", "identity.roles.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "nameAr"),
                     new ListColumn("nameAr", "identity.roles.nameAr", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true),
-                    new ListColumn("isSystem", "identity.roles.kind", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true),
+                    new ListColumn("isSystem", "identity.roles.kind", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true,
+                        Choices: [new ListChoice("true", "identity.roles.system"), new ListChoice("false", "identity.roles.custom")]),
                     new ListColumn("userCount", "identity.roles.users", ListColumnType.Number, Sortable: true, Filterable: true, Aggregate: true),
                     new ListColumn("permissions", "identity.roles.permissions", ListColumnType.Choice),
                 ],

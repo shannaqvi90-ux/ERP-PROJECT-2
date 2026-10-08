@@ -4,6 +4,7 @@ using System.Text.Json;
 using Erp.Gates.Tests.Infrastructure;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Reports;
+using Erp.Modules.Reports.Pdf;
 using Erp.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +16,8 @@ namespace Erp.Gates.Tests.Rules;
 /// tests/Gates/unprintable-lists.txt); every report names a permission of the catalogue and looks
 /// its references up in registered lists; and every report and printable list actually renders,
 /// in every format and both languages, for an administrator (a PDF that is a PDF, a workbook that
-/// is a ZIP, a document whose direction follows its language).
+/// is a ZIP, a document whose direction follows its language), and every character a document
+/// prints has a glyph in the embedded fonts (critic p06 round 2: sort arrows printed as boxes).
 /// </summary>
 public sealed class ReportGateTests(GateFixture fixture)
 {
@@ -79,7 +81,14 @@ public sealed class ReportGateTests(GateFixture fixture)
             paths.Add($"/api/reports/run/{report.Key}?{string.Join("&", query)}");
         }
         paths.AddRange(catalog.PrintableLists.Select(p => $"/api/reports/lists/{p.List.Key}?"));
+        // Sorted, so the document prints its order too (one column descending, one ascending).
+        paths.AddRange(catalog.PrintableLists
+            .Select(p => (p.List.Key, Sortable: p.List.Columns.Where(c => c.Sortable).Select(c => c.Key).Take(2).ToList()))
+            .Where(p => p.Sortable.Count > 0)
+            .Select(p => $"/api/reports/lists/{p.Key}?sort={string.Join(",", p.Sortable.Select((k, i) => i == 0 ? "-" + k : k))}"));
         var rendered = 0;
+        var charactersChecked = 0;
+        using var fonts = new PdfFonts();
         foreach (var path in paths)
         {
             foreach (var language in new[] { "en", "ar" })
@@ -107,6 +116,10 @@ public sealed class ReportGateTests(GateFixture fixture)
                             {
                                 problems.Add($"{where}: the document's language or direction does not follow the request");
                             }
+                            foreach (var missing in Unprintable(document, fonts, ref charactersChecked))
+                            {
+                                problems.Add($"{where}: '{missing.Text}' prints U+{missing.Codepoint:X4} '{char.ConvertFromUtf32(missing.Codepoint)}', which no embedded font has (a box on paper)");
+                            }
                             break;
                     }
                 }
@@ -114,6 +127,55 @@ public sealed class ReportGateTests(GateFixture fixture)
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(rendered >= Ratchet.Min("rules.reportRenders"), $"rules.reportRenders: {rendered}");
+        Assert.True(charactersChecked >= Ratchet.Min("rules.reportGlyphsChecked"), $"rules.reportGlyphsChecked: {charactersChecked}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"rules.reportRenders: {rendered}, rules.reportGlyphsChecked: {charactersChecked}");
+    }
+
+    /// <summary>Every character of every text the document carries (titles, parameters, column
+    /// titles, cells, totals, fixed texts) that the PDF would draw, and no face of the embedded
+    /// fonts has. Whitespace and invisible format characters (direction marks) are not drawn.</summary>
+    private static IEnumerable<(string Text, int Codepoint)> Unprintable(JsonElement element, PdfFonts fonts, ref int checkedCount)
+    {
+        var missing = new List<(string, int)>();
+        var count = 0;
+        void Walk(JsonElement e)
+        {
+            switch (e.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var property in e.EnumerateObject())
+                    {
+                        Walk(property.Value);
+                    }
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var item in e.EnumerateArray())
+                    {
+                        Walk(item);
+                    }
+                    break;
+                case JsonValueKind.String:
+                    var text = e.GetString()!;
+                    for (var i = 0; i < text.Length; i += char.IsSurrogatePair(text, i) ? 2 : 1)
+                    {
+                        var codepoint = char.ConvertToUtf32(text, i);
+                        var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(codepoint);
+                        if (category is System.Globalization.UnicodeCategory.Format or System.Globalization.UnicodeCategory.Control || char.IsWhiteSpace(text, i))
+                        {
+                            continue;
+                        }
+                        count++;
+                        if (fonts.For(codepoint, bold: false, null) is null || fonts.For(codepoint, bold: true, null) is null)
+                        {
+                            missing.Add((text, codepoint));
+                        }
+                    }
+                    break;
+            }
+        }
+        Walk(element);
+        checkedCount += count;
+        return missing.DistinctBy(m => m.Item2);
     }
 
     private static async Task<string> FirstIdAsync(HttpClient client, string endpoint)

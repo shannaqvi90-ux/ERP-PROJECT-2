@@ -95,40 +95,54 @@ internal sealed class ReportsIsolationProbe(Erp.Kernel.Modules.ModuleCatalog cat
         }
         var shapes = ReportEndpoints.Formats.SelectMany(format => Erp.Kernel.Localization.Languages.All.Select(language => (Format: format, Language: language))).ToList();
         var work = paths.SelectMany(path => shapes.Select(shape => $"{path}format={shape.Format}&language={shape.Language}")).ToList();
-        var results = new (int Attempts, List<string> Observed)[work.Count];
+        var results = new (int Attempts, List<string> Observed, string? Failure)[work.Count];
         await Parallel.ForEachAsync(Enumerable.Range(0, work.Count), new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = cancellationToken }, async (i, ct) =>
         {
             var uri = work[i];
             var seen = new List<string>();
             var tries = 0;
-            if (context.Victim is { } victim)
+            try
             {
-                // Tenant B first, on its own records (its ids are its own): its answer is not observed.
-                using var own = await victim.GetAsync(uri, ct);
-                await own.Content.ReadAsByteArrayAsync(ct);
-                tries++;
-            }
-            foreach (var withHeaders in new[] { false, true })
-            {
-                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-                if (withHeaders)
+                if (context.Victim is { } victim)
                 {
-                    request.Headers.TryAddWithoutValidation("X-Tenant-Id", context.VictimTenantId.ToString());
-                    request.Headers.TryAddWithoutValidation("X-Company-Id", ids[i % ids.Count].ToString());
+                    // Tenant B first, on its own records (its ids are its own): its answer is not observed.
+                    using var own = await victim.GetAsync(uri, ct);
+                    await own.Content.ReadAsByteArrayAsync(ct);
+                    tries++;
                 }
-                using var response = await context.Attacker.SendAsync(request, ct);
-                tries++;
-                var body = await response.Content.ReadAsByteArrayAsync(ct);
-                seen.Add(IsolationProbeResult.Body(response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream", body));
-                seen.Add(string.Join("\n", response.Headers.Concat(response.Content.Headers).Select(h => $"{h.Key}: {string.Join(", ", h.Value)}")));
+                foreach (var withHeaders in new[] { false, true })
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    if (withHeaders)
+                    {
+                        request.Headers.TryAddWithoutValidation("X-Tenant-Id", context.VictimTenantId.ToString());
+                        request.Headers.TryAddWithoutValidation("X-Company-Id", ids[i % ids.Count].ToString());
+                    }
+                    using var response = await context.Attacker.SendAsync(request, ct);
+                    tries++;
+                    var body = await response.Content.ReadAsByteArrayAsync(ct);
+                    seen.Add(IsolationProbeResult.Body(response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream", body));
+                    seen.Add(string.Join("\n", response.Headers.Concat(response.Content.Headers).Select(h => $"{h.Key}: {string.Join(", ", h.Value)}")));
+                }
+                results[i] = (tries, seen, null);
             }
-            results[i] = (tries, seen);
+            catch (Exception e) when (e is HttpRequestException or OperationCanceledException && !ct.IsCancellationRequested)
+            {
+                // A request that fails or times out is reported to the gate with what was asked; the
+                // answers already seen are still judged, and the other requests still run.
+                results[i] = (tries, seen, $"GET {uri} after {tries} of 3 requests: {e.GetType().Name}: {e.Message}");
+            }
         });
-        foreach (var (tries, seen) in results)
+        var failures = new List<string>();
+        foreach (var (tries, seen, failure) in results)
         {
             attempts += tries;
             observed.AddRange(seen);
+            if (failure is not null)
+            {
+                failures.Add(failure);
+            }
         }
-        return new IsolationProbeResult(attempts, observed);
+        return new IsolationProbeResult(attempts, observed) { Failures = failures };
     }
 }

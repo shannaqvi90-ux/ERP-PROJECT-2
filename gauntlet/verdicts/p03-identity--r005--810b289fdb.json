@@ -1,0 +1,129 @@
+{
+  "piece": "p03-identity",
+  "round": 5,
+  "commit": "810b289fdb0042c7e123701871b50018c26d4c65",
+  "judged_at": "2026-10-08T10:24:38Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p03-identity round 5",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "My own attacks found no leak. As alnoor's admin I made 60 API calls against gulfsteel. They covered B's admin and accountant (GET, access, sign-ins, default-company, PUT including an e-mail move, password, unblock, revoke, DELETE, tenancy access) and B's Administrator and Company manager roles (GET, PUT, copy, DELETE). Every call by id answered 404 or 400, and B's records read back unchanged (attacks/attack-a-vs-b.txt). Eleven differential checks compared B's role and company ids with random ids in create and edit bodies (roleIds, companyRoles, default company, workplace), in reports and in a filter. All gave identical answers. A role name or e-mail that B uses answered 201, the same as an unused one (attacks/attack-a-vs-b-differential.txt). The 'leaks' flagged in attack-a-vs-b.txt are my own tenant A user with the address admin@gulfsteel.example, which tenant A may legitimately hold. As erp_app: no tenant bound gives 0 rows. Bound to A, 0 rows of other tenants and UPDATE 0. An insert into B's user_company_roles was refused by RLS. A session-level tenant was ignored. DISABLE RLS, SET ROLE erp_owner and row_security=off were all refused (attacks/db-app-role.txt)."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Three leaks were planted; two were caught and one was missed.\n- L1 (plants/L1-L3-leaks.diff): a per-user-id disk cache on GET /api/identity/users/{id}/default-company. Caught by G1HttpIsolation (48 leaks, 10 differential answers).\n- L2: r3's L7 role-name registry. Caught by G1WriteOracle, so r3's gap stays fixed (plants/run-leaks/gates.log).\n- L3 (plants/apply-L3-only.py): a disk registry of every company id any workspace lists. companyRoles in POST /api/identity/users then answers 'identityNotTheirCompany' for tenant B's company and 'unknownIds' for an id that exists nowhere. With L3 in place, G1HttpIsolation (28 min) and G1WriteOracle both PASSED (plants/run2/gates.log). The proof plants/CriticR5LeakProof.cs fails under the plant: 400 identityNotTheirCompany against 400 unknownIds (plants/run2/identity.log). It passes unplanted (plants/unplanted-proofs/proofs.log). The body attack does not reach tenant B's ids placed in nested array objects such as companyRoles[].companyId."
+    },
+    {
+      "gate": "G2 permissions of the product as built (restricted roles, escalation, screens hide)",
+      "status": "fail",
+      "evidence": "Real fault R1: POST /api/identity/users/matching/active (the list's 'all that match') judges 'stronger' users by workspace-wide user_roles only. It ignores user_company_roles and roles in companies the caller cannot see. The case: a Helpdesk clerk holds identity.users.read and users.update and works in no company. 'Dubai Manager' holds 'Company manager' (tenancy.*) in ALN-DXB only. The clerk's PUT /users/{id} isActive=false answers 403 identity.userBeyondOwnCompanies, and so does sessions/revoke. The clerk's bulk request with search equal to the manager's e-mail and expectedCount 1 answers {matched:1, changed:1, refusedBeyondOwn:0}. The manager's live session then gets 401 and their sign-in fails (attacks/G2-bulk-deactivate-company-manager.txt, script attacks/g2bulk.sh). It reproduces in the test harness: CriticR5Proof.R1 fails on the shipped product (plants/unplanted-proofs/proofs.log). Screens: a clerk without identity.roles.read who opens the Administrator is offered editable Name, Active and 'Starts work in' fields, Save and 'Sign out everywhere'. The server answers 403 to both (browser-walk-6-restricted.txt, screenshot 09). The read-only viewer is correctly shown read-only, with no Save."
+    },
+    {
+      "gate": "G2 gate catches permission faults planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Three permission faults were planted (plants/P1-P3-permissions.diff, run2), and the gate also missed the real fault R1.\n- P1: a permission held in one company counted as held everywhere. Caught by G2CompanyRoleTests.\n- P3: no access check on PUT /users/{id}/default-company. Caught by both G2AccountTakeoverTests.\n- P2: 'all that match' with its stronger-user check removed. NOT caught: no gate test names /users/matching/active (grep count 0 in plants/run2/gates.log). Only the module test MatchingUsersActiveTests and my proof CriticR5Proof.P2 failed.\n- R1 above ships with all 470 .NET tests green. G2AccountTakeoverTests takes its inventory only from routes under /api/identity/users/{ and /roles/{. An endpoint that acts on users chosen by a search body is therefore never aimed at a stronger user."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds, tests",
+      "status": "pass",
+      "evidence": "Fresh clone of 810b289 with ERP_PROJECT=c-p03-identity-r5 and ports 20350/20351/20360/20361, run through verify-slot.sh. 'verify passed in 3211 s' (slot taken 08:45:04Z, rc=0 at 09:38:38Z). Ratchet check passed: dotnet 470, web unit 315, e2e 74, compare 194 (verify.log). Load average on the machine reached 85 during the run."
+    },
+    {
+      "gate": "G3 clean clone: one command to a running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up with ERP_SEED_USERS_CSV pointing at the shared dataset served the demo on port 20350 in 67 s, with 100,005 users in alnoor (up.log)."
+    },
+    {
+      "gate": "Rule gates (licences, money, strings, audit) and ratchet",
+      "status": "pass",
+      "evidence": "Passed inside verify. In the database, audit rows exist for users, roles, user_roles, user_company_roles, credentials and sessions, with field-level old and new values and the actor. Each bulk deactivation is audited with the clerk as the actor (attacks/audit-sample.txt). The only tables without an audit trigger are sign_in_attempts (append-only) and sign_in_secret (a platform table)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r5 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1053,
+    "passed": 1053,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3211
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3211,
+    "evidence": "verify.log: 'verify passed in 3211 s', rc=0, ratchet check passed. ./erp up took 67 s on the same clone (up.log)."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.446,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 10.744,
+        "klm_seconds": 30.05
+      },
+      "notes": "Median of 3 runs each, blind, shipped drivers (compare/comparisons/create-restricted-user.json). Ours wins every metric: human plus wait 21.8 s against 40.2 s. No metric tied at zero. Caveat unchanged since r1: no contacts permission exists, so 'Clerk (restricted)' was used (screenshot 11)."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 0.581,
+        "klm_seconds": 6.64
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 9,
+        "seconds": 2.485,
+        "klm_seconds": 11.19
+      },
+      "notes": "Shortest expert path in each, median of 3 (compare-find-user-shortest/). Ours: Users, then 'm an pi' (the shortest prefixes I found by probing the API that rank the user first among 594 matches), then Enter. Odoo: Settings > Manage Users, then 'd anil p' (the shortest distinguishing fragment, probed over JSON-RPC: 7 rows), then Enter and a click on the row. Critic driver variants: find-user.ours.critic.mjs and find-user.odoo.critic.mjs. Shipped drivers also win: 3/15/0.549 s/8.6 against 6/21/2.735 s/14.55 (compare/). The keystroke tie at 9-9 from r3 is gone. Screenshots 10."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r5/01-user-found-panel-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/02-effective-permissions-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/03-role-matrix-cramped-1920.jpg",
+    "gauntlet/evidence/p03-identity/r5/04-new-user-setup-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/05-sign-in-history-paused-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/06-users-search-arabic-ar.jpg",
+    "gauntlet/evidence/p03-identity/r5/07-role-matrix-ar.jpg",
+    "gauntlet/evidence/p03-identity/r5/08-read-only-user-roles-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/09-clerk-offered-edit-of-administrator-en.jpg",
+    "gauntlet/evidence/p03-identity/r5/10-compare-find-user-result-ours.jpg",
+    "gauntlet/evidence/p03-identity/r5/10-compare-find-user-result-reference.jpg",
+    "gauntlet/evidence/p03-identity/r5/11-compare-create-user-filled-ours.jpg"
+  ],
+  "biggest_gap": {
+    "title": "'All that match' deactivation ignores roles held per company: a helpdesk clerk can lock out a company manager, and no gate looks at that endpoint",
+    "detail": "POST /api/identity/users/matching/active (UserBulkEndpoints.SetMatchingActive) decides who is 'stronger' only from workspace-wide identity.user_roles:\n  strongRoles = roles granting something caller.Has() lacks; exclude users with a user_roles row in strongRoles\nIt never reads identity.user_company_roles, and it never refuses users whose roles lie in companies the caller cannot see (users.company_role_count greater than the visible count). The single-user rule, UserAccess.RefusalAsync, checks both.\n\nThis matters because roles per company are the UAE model the piece just added: 'accountant in the Dubai LLC, manager in the JAFZA FZE'. Once they are in use, every company-level manager can be deactivated and signed out by anyone holding identity.users.update, through the users list's 'select all that match'. That is a whole-workforce denial-of-service and a step in a takeover. Odoo's group-based access has no such hole.\n\nThe gates miss it. G2AccountTakeoverTests inventories only routes under /api/identity/users/{ and /roles/{, so an action that picks its targets by a search body is never aimed at a stronger user. Planting P2, the bulk stronger-user check removed entirely, also passed every gate.\n\nFix:\n- Make the bulk path apply the same rule as RefusalAsync, set-based. Exclude users with a user_company_roles row whose role grants something the caller lacks in that company. Exclude users whose company_role_count exceeds what the caller can see.\n- Extend the takeover and grant gates to every endpoint that changes user or role rows, including body-selected ones like matching/active. Aim them at a target whose only grants are per company, and at one with roles in a company the caller does not work in.\n- Add P2 and R1 as gate self-tests.",
+    "evidence": "Live, on a demo from a clean clone of 810b289 (attacks/G2-bulk-deactivate-company-manager.txt; script attacks/g2bulk.sh):\n1. As admin@alnoor, create role 'Helpdesk clerk' (identity.users.read, identity.users.update) and user clerk@alnoor with it.\n2. Create 'Dubai Manager' with roleIds [] and companyRoles [{Company manager, ALN-DXB}].\n3. As the clerk, PUT /api/identity/users/{manager} with isActive=false: 403 identity.userBeyondOwnCompanies. POST …/sessions/revoke: 403.\n4. As the clerk, POST /api/identity/users/matching/active with {active:false, search:'dubai.manager@alnoor.example', filter:'', expectedCount:1}: 200 {matched:1, changed:1, refusedBeyondOwn:0}.\n5. The manager's live session now gets 401, and their next sign-in fails.\n\nIn the test harness: copy plants/CriticR5Proof.cs into tests/Erp.Modules.Identity.Tests and run dotnet test --filter FullyQualifiedName~CriticR5. R1 fails on the shipped product, and P1–P3 pass (plants/unplanted-proofs/proofs.log).\n\nGate blindness: apply plants/P1-P3-permissions.diff. No gate failure names matching/active (plants/run2/gates.log); P1 and P3 were caught. The unplanted verify passes all 1,053 tests with R1 present (verify.log)."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p03-identity/r5",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r5",
+  "other_findings": [
+    "[route: p00-foundation] The G1 body-value attack and G1WriteOracle do not place tenant B's ids inside nested array objects. Plant L3 passed both: companyRoles[].companyId on POST /api/identity/users answered 'identityNotTheirCompany' for B's company and 'unknownIds' for an id that exists nowhere (plants/apply-L3-only.py, plants/run2/gates.log; proof plants/CriticR5LeakProof.cs). Any later module with line items (invoice lines, order lines) carries the same blind spot.",
+    "Screens do not hide what a user cannot do when the screen cannot judge it. A clerk without identity.roles.read who opens the Administrator is offered editable Name, Active and 'Starts work in' fields, Save and 'Sign out everywhere', and the server answers 403 (screenshot 09, browser-walk-6-restricted.txt). The panel should treat 'grants unknown' as 'beyond own'. All 315 web unit tests and the identity screen plant self-test pass with this behaviour.",
+    "[route: p05-list-search] The record side panel is fixed at 338 px at every viewport (1366, 1440 and 1920 wide), and p03's screens are crushed by it. The role matrix headers read 'Creat', 'Chan', 'Delet', the Other column and 'Name in Arabic' are cut, and 'Sign-in history' overlaps its checkbox. The 'Granted by' column of 'What they can do', the core of the effective-permission view, is clipped ('Company mar…'). Arabic is crushed the same way. In r3 the role panel took half the screen. Screenshots 01, 02, 03 and 07.",
+    "Role matrix trap: the permission search filters whole areas, and 'Select all shown' then ticks every permission in those areas. Typing 'view' then 'Select all shown' produced a 21-permission role that includes identity.users.delete, users.resetPassword and tenancy.tenant.update (browser-walk-2-roles.txt). An administrator building a 'view only' role this way gets a near-administrator.",
+    "The users list Roles column shows only workspace-wide roles. A user whose roles are all per company ('Dubai Manager') shows an empty Roles cell, and the accountant shows only 'Staff'. The list therefore misstates who can do what.",
+    "The new-user form has no company roles or starting company. Both appear only in the panel after creation, and the starting company also needs company access to be granted first on another screen.",
+    "Unchanged since r1: behind the default compose deployment every sign-in attempt is recorded from the gateway 172.21.0.1 (screenshot 05). Eight failures paused the account for every client behind that address; X-Forwarded-For is ignored and compose sets no known proxies. 'Allow sign-in again' restores it (200).",
+    "Fixed since r3 and still fixed:\n- Arabic name search works ('ماجد أنيل' returns 61 ranked results; screenshot 06).\n- 'maj ani pil' ranks Majid Anil Pillai first.\n- Roles per company and a per-user starting company now exist, which closes the r1–r3 scope gap.\n- r3's L7 role-name oracle is caught by G1WriteOracle.\n- A company-scoped grant widened to 'everywhere' (P1) is caught by G2CompanyRoleTests.\n- Test counts rose from 643 to 1,053, and the find-user keystroke tie with Odoo is gone.\n- The read-only user gets no Save, Alt+N does nothing for them, and the clerk gets 'No access' on Roles.",
+    "Positive:\n- Alt+N opens New user and New role from the focused search.\n- The set-up code is shown once with its expiry (screenshot 04).\n- Deleting an invited user who holds a company role leaves no orphan rows.\n- Every change, including the clerk's bulk deactivations, is in the audit trail with the actor.\n- No console errors or 5xx responses during the browser walks.",
+    "create-restricted-user still uses 'Clerk (restricted)' because no contacts permission exists (p16). The win does not yet show the bar's 'view and create contacts only' role.",
+    "Harness notes:\n- verify's Testcontainers still publish random host ports outside the critic port block.\n- Load average reached 85 while my verify and another agent's run shared the machine.\n- The plant gate runs were serialised through verify-slot.sh, and HTTP isolation took 12 to 28 minutes per run."
+  ],
+  "human_gates": []
+}

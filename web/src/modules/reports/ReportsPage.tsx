@@ -195,7 +195,9 @@ export function ReportsPage() {
                 ))}
                 {report.columns.some((c) => c.groupable) && (
                   <SelectField
-                    field={bind("groupBy")}
+                    // The report's own grouping until the user picks another (critic p06 round 2: the
+                    // select said "No grouping" over a document grouped by its default).
+                    field={{ ...bind("groupBy"), value: values.groupBy ?? report.defaultGroupBy ?? "" }}
                     label={t("reports.groupBy")}
                     empty={report.defaultGroupBy ? undefined : t("reports.noGrouping")}
                     options={[

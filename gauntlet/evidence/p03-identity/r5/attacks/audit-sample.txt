@@ -1,0 +1,46 @@
+             tbl             | action | count  
+-----------------------------+--------+--------
+ identity.roles              | insert |     14
+ identity.sessions           | insert |     40
+ identity.user_company_roles | delete |      1
+ identity.user_company_roles | insert |      6
+ identity.user_credentials   | delete |      4
+ identity.user_credentials   | insert | 101022
+ identity.user_roles         | delete |      3
+ identity.user_roles         | insert |     14
+ identity.users              | delete |      4
+ identity.users              | insert | 101022
+ identity.users              | update |      7
+ lists.saved_views           | insert |     10
+ tenancy.branches            | insert |     15
+ tenancy.companies           | insert |      6
+ tenancy.tenants             | insert |      2
+ tenancy.user_branch_access  | insert |      3
+ tenancy.user_company_access | insert |     18
+ tenancy.user_company_totals | insert |      8
+ tenancy.user_company_totals | update |     10
+ tenancy.user_workplaces     | insert |      8
+(20 rows)
+
+          occurred_at          |    table_name    | action |        actor         |                                                                                                                                               changes                                                                                                                                                
+-------------------------------+------------------+--------+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-08 08:47:15.524386+00 | user_credentials | insert | admin@alnoor.example | {"id": {"new": "01a11ab2-005c-7801-a48e-e427647b8026"}, "changed_at": {"new": "2026-10-08T08:47:15.548796+00:00"}, "changed_by": {"new": "01a11ab0-96aa-71d4-aee7-36b1274b8659"}, "must_change": {"new": false}, "password_hash": {"new": "[redacted]"}}
+ 2026-10-08 08:47:15.524386+00 | users            | insert | admin@alnoor.example | {"id": {"new": "01a11ab2-005c-7801-a48e-e427647b8026"}, "email": {"new": "dubai.manager@alnoor.example"}, "language": {"new": "en"}, "numerals": {"new": "latn"}, "is_active": {"new": true}, "display_name": {"new": "Dubai Manager"}, "email_normalized": {"new": "dubai.manager@alnoor.example"}}
+ 2026-10-08 08:47:24.349913+00 | users            | update | clerk@alnoor.example | {"is_active": {"new": false, "old": true}}
+ 2026-10-08 08:47:48.45873+00  | users            | update | clerk@alnoor.example | {"is_active": {"new": true, "old": false}}
+ 2026-10-08 08:47:48.71016+00  | users            | update | clerk@alnoor.example | {"is_active": {"new": false, "old": true}}
+ 2026-10-08 08:48:02.880161+00 | users            | update | admin@alnoor.example | {"is_active": {"new": true, "old": false}}
+ 2026-10-08 08:48:03.343164+00 | users            | update | clerk@alnoor.example | {"is_active": {"new": false, "old": true}}
+(7 rows)
+
+ tenant_tables_without_audit_trigger 
+-------------------------------------
+                                   2
+(1 row)
+
+ table_schema |    table_name    
+--------------+------------------
+ identity     | sign_in_secret
+ identity     | sign_in_attempts
+(2 rows)
+
