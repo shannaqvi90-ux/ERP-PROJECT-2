@@ -24,8 +24,10 @@
  *     is not reviewed.
  */
 
-/** Settings of the device, not of a person: kept across sign-outs. Nothing here may hold data. */
-export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen"];
+/** Settings of the device, not of a person: kept across sign-outs. Nothing here may hold data.
+ * `erp.passkeyOffer` ("1"/"0"): whether the sign-in screen asks this device for a passkey as soon
+ * as it opens (kernel/passkeys.ts); it names nobody. */
+export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer"];
 
 /**
  * The e-mail of the last sign-in on this device, so a returning person types only the password.

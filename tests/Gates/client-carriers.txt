@@ -9,7 +9,7 @@
 # Format: <file> <carrier> <count>
 web/src/kernel/deviceState.ts cookie 3  # The forgetter: reads the names of the cookies a script can see and expires each one at every in-app path and domain when an identity ends; it never writes a value.
 web/src/kernel/deviceState.ts window-name 1  # The forgetter: resets window.name to "" when an identity ends; nothing writes a value into it.
-web/src/kernel/deviceState.ts local-storage 3  # The forgetter: walks the keys and removes every one except the device settings (language, digits, navigation pane) and, when a session ended by itself, the remembered e-mail.
+web/src/kernel/deviceState.ts local-storage 3  # The forgetter: walks the keys and removes every one except the device settings (language, digits, navigation pane, whether to ask for a passkey on arrival) and, when a session ended by itself, the remembered e-mail.
 web/src/kernel/deviceState.ts session-storage 1  # The forgetter: clears sessionStorage when an identity ends, the tab's history epoch with it (kernel/historyGuard).
 web/src/kernel/deviceState.ts indexed-db 4  # The forgetter: lists and deletes every IndexedDB database of the origin when an identity ends; the product creates none.
 web/src/kernel/deviceState.ts cache-storage 2  # The forgetter: deletes every Cache Storage cache of the origin when an identity ends; the product creates none.
@@ -22,5 +22,7 @@ web/src/kernel/router.tsx history 1  # The router's pushState for in-app navigat
 web/src/kernel/session.tsx local-storage 2  # The tabs' shared session mark (tenant id / user id of the signed-in identity) so other tabs start over when it changes; removed by the forgetter when the identity ends.
 web/src/modules/reports/ReportsPage.tsx history 1  # The reports screen keeps the chosen report and its parameters (for example ?report=…&company=<id>) in the current entry's address with replaceState; stamped for the identity by kernel/historyGuard and dropped when another identity's Back reaches it (e2e client-isolation: B opens its company profile, A presses Back).
 web/src/modules/shell/AppShell.tsx local-storage 4  # The navigation pane's open/closed device setting, and the user's recent screens (paths only) under a per-user key that the forgetter removes when the identity ends.
-web/src/modules/shell/SignInPage.tsx local-storage 2  # The remembered sign-in e-mail of the last person on this device, forgotten when that person signs out (kept only when a session ended by itself).
+web/src/modules/shell/SignInPage.tsx local-storage 3  # The remembered sign-in e-mail of the last person on this device (after a password or a passkey sign-in), forgotten when that person signs out (kept only when a session ended by itself).
+web/src/kernel/passkeys.ts local-storage 2  # The device setting erp.passkeyOffer ("1" or "0"): whether the sign-in screen asks this device for a passkey as soon as it opens. It names nobody (no e-mail, no id) and is kept across sign-outs like the language.
+web/src/kernel/passkeys.ts session-storage 3  # The tab's mark erp.signedOut ("1"), set by Sign out after the forgetter cleared sessionStorage and removed by the very next sign-in screen, so that screen does not ask for a passkey right after the person left. Holds no data.
 web/src/modules/tenancy/WorkplaceSwitcher.tsx local-storage 2  # The companies the user switched between most recently (company ids only, newest first, at most six) under a per-user key, so groups with more than six companies keep one-click switching; removed by the forgetter when the identity ends.

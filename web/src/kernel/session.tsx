@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, sessionEndedEvent, type FieldError } from "./api";
 import { forgetIdentity, startOver } from "./deviceState";
+import { markSignedOut, type PasskeyAssertion, type PasskeySignIn } from "./passkeys";
 
 export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar"; numerals?: "latn" | "arab"; displayNameAr?: string | null };
 
@@ -19,7 +20,7 @@ export type Session = {
   expiresAt: string | null;
 };
 
-type SessionResponse = Session | { authenticated: false };
+type SessionResponse = Session | { authenticated: false; passkey?: PasskeySignIn };
 
 export type Workspace = { code: string; nameEn: string; nameAr: string };
 
@@ -32,7 +33,8 @@ export type SignInResult =
 
 type SessionState =
   | { status: "loading" }
-  | { status: "anonymous" }
+  /** Nobody is signed in; `passkey` is a fresh challenge for signing in with a passkey. */
+  | { status: "anonymous"; passkey?: PasskeySignIn }
   | { status: "signedIn"; session: Session }
   /** The identity ended: this browser forgets it and the document is replaced (kernel/deviceState). */
   | { status: "leaving" };
@@ -58,6 +60,8 @@ type SessionApi = {
   state: SessionState;
   /** With `newPassword`, the password is changed as part of signing in (one-time set-up codes). */
   signIn: (email: string, password: string, workspace?: string, newPassword?: string) => Promise<SignInResult>;
+  /** Signs in with a device's answer to a passkey challenge. */
+  signInWithPasskey: (assertion: PasskeyAssertion) => Promise<SignInResult>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   /** True when the signed-in user's roles grant the permission. The API enforces it anyway. */
@@ -67,8 +71,26 @@ type SessionApi = {
 const SessionContext = createContext<SessionApi | null>(null);
 
 export async function requestSignIn(email: string, password: string, workspace?: string, newPassword?: string): Promise<SignInResult> {
+  return send(newPassword ? { email, password, workspace, newPassword } : { email, password, workspace });
+}
+
+export async function requestPasskeySignIn(passkey: PasskeyAssertion): Promise<SignInResult> {
+  return send({ passkey });
+}
+
+/** A fresh passkey sign-in challenge (from the anonymous session answer), or null when signed in or unreachable. */
+export async function freshPasskeyChallenge(): Promise<PasskeySignIn | null> {
   try {
-    const session = await api<Session>("POST", "/api/auth/sign-in", newPassword ? { email, password, workspace, newPassword } : { email, password, workspace });
+    const response = await api<SessionResponse>("GET", "/api/auth/session");
+    return !response.authenticated && response.passkey ? response.passkey : null;
+  } catch {
+    return null;
+  }
+}
+
+async function send(body: Record<string, unknown>): Promise<SignInResult> {
+  try {
+    const session = await api<Session>("POST", "/api/auth/sign-in", body);
     return { kind: "ok", session };
   } catch (error) {
     if (!(error instanceof ApiError)) throw error;
@@ -105,7 +127,7 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     try {
       const response = await api<SessionResponse>("GET", "/api/auth/session");
       if (ending.current) return;
-      setState(response.authenticated ? { status: "signedIn", session: response } : { status: "anonymous" });
+      setState(response.authenticated ? { status: "signedIn", session: response } : { status: "anonymous", passkey: response.passkey });
     } catch {
       if (!ending.current) setState({ status: "anonymous" });
     }
@@ -179,6 +201,12 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     return result;
   }, []);
 
+  const signInWithPasskey = useCallback(async (assertion: PasskeyAssertion) => {
+    const result = await requestPasskeySignIn(assertion);
+    if (result.kind === "ok" && !ending.current) setState({ status: "signedIn", session: result.session });
+    return result;
+  }, []);
+
   const signOut = useCallback(async () => {
     if (ending.current) return;
     ending.current = true;
@@ -192,14 +220,16 @@ export function SessionProvider({ children, onSignedIn }: { children: ReactNode;
     } finally {
       // Signing out forgets the remembered e-mail too: the next person sees an empty sign-in.
       await forgetIdentity({ keepEmail: false, appPaths: visited.current });
+      // The person just left: the next screen does not ask this device for a passkey at once.
+      markSignedOut();
       startOver("/");
     }
   }, []);
 
   const value = useMemo<SessionApi>(() => {
     const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
-    return { state, signIn, signOut, refresh, can: (permission) => granted.has(permission) };
-  }, [state, signIn, signOut, refresh]);
+    return { state, signIn, signInWithPasskey, signOut, refresh, can: (permission) => granted.has(permission) };
+  }, [state, signIn, signInWithPasskey, signOut, refresh]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

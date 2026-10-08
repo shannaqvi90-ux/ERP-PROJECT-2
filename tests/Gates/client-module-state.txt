@@ -5,7 +5,7 @@
 # (tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs) fails on unreviewed or stale entries.
 # Caches of data belong in identityScoped() maps (web/src/kernel/deviceState.ts), never here.
 # Format: <file> <name>
-web/src/kernel/deviceState.ts deviceKeys  # The names of the three device-setting keys kept across sign-outs (language, digits, navigation pane); fixed in code, never written.
+web/src/kernel/deviceState.ts deviceKeys  # The names of the four device-setting keys kept across sign-outs (language, digits, navigation pane, whether to ask for a passkey on arrival); fixed in code, never written.
 web/src/kernel/deviceState.ts resets  # The reset functions of identity-scoped caches, added once per cache when its module loads; holds functions, never the cached data, and runs them when an identity ends.
 web/src/kernel/extensions.ts extensions  # The shell's extension registry, collected once from the modules' extensions files (code) when the bundle loads; holds components and functions, never records.
 web/src/kernel/forms/RecordForm.tsx formChords  # The record form's keyboard chords (Mod+S, Alt+Z, Alt+PageDown, ...); fixed in code (as const).
