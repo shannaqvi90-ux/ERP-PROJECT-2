@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Erp.Modules.Identity.Reports;
 
 /// <summary>
-/// Roles and access: every role with how many users hold it and how many permissions it grants,
+/// Roles and access: every role with how many users hold it (in every company or in one of the
+/// caller's companies, as the roles list counts) and how many permissions it grants,
 /// grouped by kind (system or custom) with a total of each per group and for the workspace. A
 /// review of who can do what starts here. Rows are read through row-level security.
 /// </summary>
@@ -41,15 +42,18 @@ internal sealed class RoleSummaryReport(IdentityDbContext db) : IReportSource
         var page = await roles
             .OrderBy(r => r.NameEn).ThenBy(r => r.Id)
             .Take(run.MaxRows)
-            .Select(r => new { r.NameEn, r.NameAr, r.IsSystem, r.Permissions, Users = db.UserRoles.Count(ur => ur.RoleId == r.Id) })
+            .Select(r => new { r.Id, r.NameEn, r.NameAr, r.IsSystem, r.Permissions })
             .ToListAsync(cancellationToken);
+        // Counted as the roles list counts: holders in every company and in one of the caller's
+        // companies (critic p06 round 3: per-company holders were left out).
+        var counts = await Roles.RoleEndpoints.UserCountsAsync(db, cancellationToken);
         return new ReportData
         {
             Rows = page.Select(r => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>
             {
                 ["name"] = new LocalText(r.NameEn, r.NameAr),
                 ["kind"] = r.IsSystem ? "system" : "custom",
-                ["users"] = r.Users,
+                ["users"] = counts.GetValueOrDefault(r.Id),
                 ["permissions"] = r.Permissions.Count,
             }).ToList(),
             Truncated = total > page.Count,

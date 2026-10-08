@@ -267,6 +267,12 @@ export function lookupLabel(row: LookupRow, fields: string[], language: string):
   return code && row[code] && row[code] !== name ? `${String(row[code])} · ${String(name)}` : String(name);
 }
 
+/** A value made of digits and their signs only (a phone number, a code like 04-123) never breaks
+ * across lines; numbers align to the end. */
+const unbroken = /^[\d\s+\-()./\u0660-\u0669]+$/;
+const cellClass = (align: string, text: string) =>
+  [align === "end" ? "num" : null, text.length > 0 && unbroken.test(text) ? "report-nowrap" : null].filter(Boolean).join(" ") || undefined;
+
 /**
  * A report document as it prints: in its own language and direction (an Arabic document reads
  * right to left on an English screen), with the issuer, title, parameters, a record's facts, the
@@ -331,7 +337,7 @@ export function ReportView({ document: doc }: { document: ReportDocument }) {
                 {group.rows.map((row, r) => (
                   <tr key={r}>
                     {row.cells.map((cell, c) => (
-                      <td key={c} className={doc.columns[c]!.align === "end" ? "num" : undefined} dir={doc.columns[c]!.align === "end" ? undefined : "auto"}>
+                      <td key={c} className={cellClass(doc.columns[c]!.align, cell.text)} dir={doc.columns[c]!.align === "end" ? undefined : "auto"}>
                         {cell.text}
                       </td>
                     ))}

@@ -78,6 +78,16 @@ internal static class RoleEndpoints
     /// <summary>One page of the roles list exactly as the endpoint serves it (reports print it too).</summary>
     internal static async Task<ListResult<RoleDto>> PageAsync(IdentityDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        var counts = await UserCountsAsync(db, cancellationToken);
+        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
+        var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
+        return await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
+    }
+
+    /// <summary>How many users hold each role: in every company, or in one of the caller's
+    /// companies (each user once). The roles list and the Roles and access report count alike.</summary>
+    internal static async Task<Dictionary<Guid, int>> UserCountsAsync(IdentityDbContext db, CancellationToken cancellationToken)
+    {
         var counts = await db.UserRoles.AsNoTracking().GroupBy(ur => ur.RoleId)
             .Select(g => new { RoleId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RoleId, x => x.Count, cancellationToken);
@@ -91,9 +101,7 @@ internal static class RoleEndpoints
         {
             counts[extra.RoleId] = counts.GetValueOrDefault(extra.RoleId) + extra.Count;
         }
-        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
-        var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
-        return await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
+        return counts;
     }
 
     private static async Task<Results<Ok<RoleDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)
