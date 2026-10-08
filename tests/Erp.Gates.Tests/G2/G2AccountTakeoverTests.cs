@@ -276,6 +276,36 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{moduleFieldVariants} single-field requests aimed at users holding another module's grants; ratchet minimum {Ratchet.Min("g2.takeoverModuleFieldVariants")}");
     }
 
+    /// <summary>
+    /// G2, privilege escalation by acting on users chosen by a search or a filter (critic p05 round
+    /// 5, plant P5: with the "never change a user who holds a permission the caller lacks" check
+    /// removed from POST /api/identity/users/matching/active, a user manager deactivated the
+    /// Administrator, whom the one-user route refuses with 403; critic p03 round 5, finding R1: the
+    /// same endpoint judged only roles held in every company, so a helpdesk clerk deactivated a
+    /// company manager whose roles were all held in one company). <see cref="SetTakeover"/> finds
+    /// every such write and aims it, by search and by filter, at the Administrator, at users
+    /// holding grants the caller lacks in every shape of <see cref="GrantTargets"/>, at users
+    /// holding one module's grants through a role in one company only, and at a user holding a
+    /// role in a company the caller does not work in: each must stay exactly as they were, while
+    /// the same requests change a user without roles. A set-based write on roles has no such check
+    /// yet and fails until it gets one.
+    /// </summary>
+    [Fact]
+    public async Task Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold()
+    {
+        var result = await SetTakeover.RunAsync(Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checked.Count} endpoints changing users chosen by a search or filter ({string.Join(", ", result.Checked)}), " +
+                                                        $"{result.Aimed} requests aimed at stronger users, {result.CompanyAimed} of them at users whose roles are held in one company");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.Contains("POST /api/identity/users/matching/active", result.Checked);
+        Assert.True(result.Checked.Count >= Ratchet.Min("g2.takeoverSetEndpointsChecked"),
+            $"{result.Checked.Count} endpoints changing users chosen by a search or filter checked; ratchet minimum {Ratchet.Min("g2.takeoverSetEndpointsChecked")}");
+        Assert.True(result.Aimed >= Ratchet.Min("g2.takeoverSetTargets"),
+            $"{result.Aimed} set-based requests aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverSetTargets")}");
+        Assert.True(result.CompanyAimed >= Ratchet.Min("g2.takeoverSetCompanyTargets"),
+            $"{result.CompanyAimed} set-based requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverSetCompanyTargets")}");
+    }
+
     /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>
     private static async Task<string> ReadUserAsync(HttpClient admin, Guid id)
     {
