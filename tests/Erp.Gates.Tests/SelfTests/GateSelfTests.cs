@@ -659,30 +659,6 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                               p.Contains("which no other endpoint those permissions open shows", StringComparison.Ordinal));
         Assert.True(result.ValuesJudged > 0);
     }
-
-    /// <summary>Bugs 55 and 56 (critic p06 round 3, plants P6 and P8): an export printing what its
-    /// document does not, and a list printout naming records the list does not show and its
-    /// permission does not grant, must each fail the report data check, which judges every format
-    /// and every printable list (it once judged only reports, as JSON).</summary>
-    [Fact]
-    public async Task The_report_data_check_catches_exports_beyond_their_document_and_list_prints_beyond_their_list()
-    {
-        var result = await G2.ReportDataCheck.RunAsync(fixture.Env, onlyReport: "leaky.exportOnly", onlyList: "leaky.printedPeople");
-        foreach (var problem in result.Problems.Take(10))
-        {
-            TestContext.Current.TestOutputHelper?.WriteLine(problem);
-        }
-        foreach (var format in new[] { "CSV", "XLSX" })
-        {
-            Assert.Contains(result.Problems, p => p.StartsWith("leaky.exportOnly (permission leaky.data.read) as a user holding exactly [leaky.data.read]", StringComparison.Ordinal) &&
-                                                  p.Contains($"the {format} prints", StringComparison.Ordinal) &&
-                                                  p.Contains("which the JSON document of the same request does not", StringComparison.Ordinal));
-        }
-        Assert.DoesNotContain(result.Problems, p => p.StartsWith("leaky.exportOnly", StringComparison.Ordinal) && p.Contains("the JSON prints", StringComparison.Ordinal));
-        Assert.Contains(result.Problems, p => p.StartsWith("leaky.printedPeople (permission leaky.data.read) as a user holding exactly [leaky.data.read]", StringComparison.Ordinal) &&
-                                              p.Contains("which the list does not show that caller", StringComparison.Ordinal));
-        Assert.True(result.Lists == 1 && result.Reports == 1 && result.FormatValuesJudged > 0);
-    }
 }
 
 /// <summary>Its own environment with the leaky module: the write-oracle check leaves tenant B's

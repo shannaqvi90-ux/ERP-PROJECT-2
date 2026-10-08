@@ -52,9 +52,12 @@ caught.
   `Every_report_prints_only_data_its_permissions_show_elsewhere`. P6 fails on the column titles and
   on values not in the JSON document. P8 fails on the count rule and on values the list does not
   show.
-- The self-test `The_report_data_check_catches_exports_beyond_their_document_and_list_prints_beyond_their_list`
-  plants both shapes in the leaky module: `leaky.exportOnly`, whose exports add the companies' tax
-  numbers, and `leaky.printedPeople`, whose printout names the roles that the list hides.
+- The self-test `ReportPrintSelfTests` plants both shapes in a module of its own
+  (`PrintPlantModule`, in its own environment): `printplant.exportOnly`, whose exports add the
+  companies' tax numbers, and `printplant.people`, whose printout names the roles that the list
+  hides. The first try put them in the leaky module, but every endpoint there is attacked by the
+  HTTP isolation self-test. That stretched it from 44 to 58 minutes, and it failed on the new routes,
+  which sit outside `/api/leaky/`. The separate environment costs about 12 s.
 - Ratchet: `g2.printedListPermissionSets` 45, `g2.reportFilesJudged` 936,
   `g2.reportFileValuesJudged` 45,000, and `g2.reportValuesJudged` raised from 2,500 to 15,000.
 
