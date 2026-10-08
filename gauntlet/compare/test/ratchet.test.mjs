@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BASELINE_DIR, HARNESS_DIR, REPO_ROOT } from '../lib/config.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
-import { MUTATIONS } from '../scripts/mutations.mjs';
+import { MUTATIONS, tapResult, unionPattern } from '../scripts/mutations.mjs';
 
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
@@ -118,5 +118,21 @@ test('instrument mutations never go below their minimum, and each still finds wh
     assert.notEqual(text, replacement, `${id}: changes nothing`);
     assert.ok(fs.readFileSync(path.join(HARNESS_DIR, file), 'utf8').includes(text), `${id}: ${file} no longer holds the text it mutates`);
     assert.ok(fs.existsSync(path.join(HARNESS_DIR, testFile)), `${id}: ${testFile} missing`);
+  }
+});
+
+// Round 8: the controls of one test file run together, once, and each test is judged by name.
+test('the mutation check reads each test by name, and runs one control per test file for all its patterns', () => {
+  assert.deepEqual(tapResult('ok 3 - the freeze holds'), { passed: true, name: 'the freeze holds' });
+  assert.deepEqual(tapResult('    not ok 1 - plant T3 (round 6): never verified'), { passed: false, name: 'plant T3 (round 6): never verified' });
+  assert.deepEqual(tapResult('not ok 2 - flaky # TODO later'), { passed: false, name: 'flaky' });
+  assert.equal(tapResult('ok 4 - filtered out # SKIP test name does not match pattern'), null);
+  assert.equal(tapResult('# Subtest: the freeze holds'), null);
+  assert.equal(unionPattern(['live ticker|plant T3', 'plant T6']), '(?:live ticker|plant T3)|(?:plant T6)');
+  assert.equal(unionPattern(['plant T6', '']), '', 'a whole-file pattern makes the control the whole file');
+  // Every mutation's own tests are inside its file's control.
+  for (const [id, , , , , testFile, pattern] of MUTATIONS) {
+    const union = new RegExp(unionPattern(MUTATIONS.filter(m => m[5] === testFile).map(m => m[6])));
+    if (pattern) assert.ok(union.source.includes(`(?:${pattern})`) || union.source === '(?:)', id);
   }
 });

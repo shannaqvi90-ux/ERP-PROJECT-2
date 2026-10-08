@@ -34,8 +34,12 @@ export const BRANDING = Object.freeze({
     // The demo data's own names tell the products apart too (round 3): the reference's company
     // and its database badge. `identity` is matched anywhere in a text; `identityExact` only as a
     // whole text (a short code would otherwise hide ordinary words).
-    identity: ['Demo Trading LLC'],
-    identityExact: ['reference'],
+    identity: ['Demo Trading LLC',
+      // Round 8 (p02 critic, switch-company): the reference's second company, and the people the
+      // rig signs in as (the user menu, chatter and lists show their names).
+      'Demo Manufacturing FZE', 'Amal Approver', 'Bilal Buyer', 'Arabic Reporter'],
+    // The reference administrator's name, as a whole text only (a role or group may say more).
+    identityExact: ['reference', 'Administrator'],
     // Round 5: codes matched as a word anywhere in a text (an e-mail domain, "workspace alnoor"),
     // not only as a whole text.
     identityWords: ['demo-trading'],
@@ -46,11 +50,20 @@ export const BRANDING = Object.freeze({
     // Round 7: every company of the demo tenants (the shell's company switcher and the companies
     // list show them all), in English and Arabic.
     identity: ['Al Noor Trading LLC', 'Al Noor General Trading', 'Al Noor Industries', 'Al Noor Technical Services', 'Gulf Steel Fabrication',
-      'شركة النور للتجارة', 'النور للتجارة العامة', 'مصانع النور', 'النور للخدمات الفنية', 'الخليج لتصنيع الصلب'],
+      'شركة النور للتجارة', 'النور للتجارة العامة', 'مصانع النور', 'النور للخدمات الفنية', 'الخليج لتصنيع الصلب',
+      // Round 8 (p02 critic, switch-company: "Mariam Al Mansoori" showed in the top bar and the
+      // welcome line): the demo people the harness and critics sign in as, in English and Arabic,
+      // and the Arabic names of the task fixtures' companies.
+      'Mariam Al Mansoori', 'Fatima Al Zaabi', 'Omar Haddad', 'Layla Nasser', 'Hessa Al Suwaidi',
+      'مريم المنصوري', 'فاطمة الزعابي', 'عمر حداد', 'ليلى ناصر', 'حصة السويدي',
+      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح'],
     identityExact: ['alnoor'],
     // Round 7: the demo companies' and branches' codes, shown in the top bar ("ALN-DXB · DEIRA-HQ").
     identityWords: ['alnoor', 'gulfsteel', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ', 'ALN-AUH', 'GSF-SHJ', 'GSF-RAK', 'DEIRA-HQ', 'AQZ-WH', 'DIP-SR', 'JAFZA-WH',
-      'DAFZ-OF', 'SHJ-FAC', 'SAIF-WH', 'AJM-WS', 'MUS-WS', 'AIN-OF', 'RAK-ST', 'FUJ-ST', 'SHJ-PLANT', 'HAMR-YD', 'GHAIL-PL'],
+      'DAFZ-OF', 'SHJ-FAC', 'SAIF-WH', 'AJM-WS', 'MUS-WS', 'AIN-OF', 'RAK-ST', 'FUJ-ST', 'SHJ-PLANT', 'HAMR-YD', 'GHAIL-PL',
+      // Round 8: the task fixtures' company codes (switch-company), shown in the top bar's switcher;
+      // the reference has no codes, so a code alone tells the products apart.
+      'DEMO-TRD', 'DEMO-MFG'],
   },
 });
 

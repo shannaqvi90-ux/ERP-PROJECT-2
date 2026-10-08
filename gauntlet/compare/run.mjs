@@ -126,10 +126,9 @@ async function main() {
       const file = path.join(outDir, 'comparisons', `${id}.json`);
       fs.mkdirSync(path.dirname(file), { recursive: true });
       fs.writeFileSync(file, JSON.stringify(cmp, null, 2) + '\n');
-      console.log(`${id.padEnd(24)} verdict ${cmp.verdict}`);
-      if (cmp.ties_at_zero.length) {
-        console.log(`${id.padEnd(24)} TIE AT ZERO on ${cmp.ties_at_zero.join(', ')} (both products 0; counted as a tie, and a tie is a loss)` +
-          (cmp.loss_only_from_ties_at_zero ? ': every other metric is a win, so this loss comes from the tie at zero alone' : '') + '. Owner question pending, gauntlet/needs-human.md.');
+      console.log(`${id.padEnd(24)} verdict ${cmp.verdict}` + (cmp.ours_path ? ` (ours judged on its whole path '${cmp.ours_path}')` : ''));
+      if (cmp.left_out.length) {
+        console.log(`${id.padEnd(24)} left out: ${cmp.left_out.join(', ')} (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)`);
       }
     }
   }

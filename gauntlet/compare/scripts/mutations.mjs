@@ -6,8 +6,11 @@
 //   node scripts/mutations.mjs            every mutation
 //   node scripts/mutations.mjs M5 M7      only those
 //
-// Each mutation's self-tests run unmutated first and must pass (the control). Exit code 1 when any
-// mutation is missed or its control fails. Takes some minutes (each runs a browser).
+// Each mutation's self-tests run unmutated first and must pass (the control). The controls of one
+// test file run together, once (round 8: one control per mutation cost a browser start each and put
+// ./erp verify over its processor-time maximum); each test is judged by name, so a mutation is
+// caught only when a test that passed unmutated fails mutated. Exit code 1 when any mutation is
+// missed or its control fails. Takes a few minutes (most runs start a browser).
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -38,6 +41,11 @@ export const MUTATIONS = [
   ['M14', "a product's shots mask only its own names", 'lib/blind.mjs', "identity: unionOf('identity'),", 'identity: [...(b.identity || [])],', 'test/blind.test.mjs', 'every product'],
   ['M15', 'the lint ignores page functions', 'test/drivers-lint.test.mjs', '  problems.push(...lintParsed(src));', '', 'test/drivers-lint.test.mjs', 'catches planted escapes'],
   ['M16', "a name cut short by its cell painted with its whole box", 'lib/blind.mjs', '      return ar.height <= 2 * r.height + 1 ? depth : 0;', '      return 0;', 'test/blind.test.mjs', 'cut short by its list cell'],
+  // Round 8: the owner's zero rule (needs-human #11) and whole paths (p00 critic, sign-in).
+  ['M17', 'the zero rule leaves out a time metric too', 'lib/runner.mjs', '} else if (COUNT_METRICS.includes(m) && a === 0 && b === 0) {', '} else if (a === 0 && b === 0) {', 'test/compare.test.mjs', 'zero rule: count metrics only'],
+  ['M18', 'any tie on a count metric left out, not only both at 0', 'lib/runner.mjs', '} else if (COUNT_METRICS.includes(m) && a === 0 && b === 0) {', '} else if (COUNT_METRICS.includes(m) && a === b) {', 'test/compare.test.mjs', 'zero rule: any other tie'],
+  ['M19', 'a tie counted as a win', 'lib/runner.mjs', "outcome: a < b ? 'win' : a === b ?", "outcome: a <= b ? 'win' : a === b ?", 'test/compare.test.mjs', 'zero rule: when every metric ties'],
+  ['M20', "ours judged on the best of each metric across its paths", 'lib/runner.mjs', '  if (variants.length) return variants.map(', '  if (false) return variants.map(', 'test/compare.test.mjs', 'whole paths: ours wins only'],
 ];
 
 function copyHarness() {
@@ -53,49 +61,72 @@ function copyHarness() {
   return { root, dest };
 }
 
-/** Runs the self-tests of one file (and name pattern) in the scratch copy; counts TAP results. */
+/** One TAP result line ("ok 3 - name", "not ok 4 - name # TODO"): passed?, name; null for a skipped test or another line. */
+export function tapResult(line) {
+  const m = /^\s*(not )?ok \d+ - (.*)$/.exec(line);
+  if (!m) return null;
+  const directive = /\s#\s*(SKIP|TODO)\b/i.exec(m[2]);
+  if (directive?.[1].toUpperCase() === 'SKIP') return null;
+  return { passed: !m[1], name: (directive ? m[2].slice(0, directive.index) : m[2]).trim() };
+}
+
+/** Runs the self-tests of one file (and name pattern) in the scratch copy; each test's result by name. */
 function selfTests(dest, testFile, pattern) {
   // TAP named explicitly: newer Node (the toolbox's 24) prints its spec reporter by default, even to a pipe.
   const args = ['--test', '--test-reporter=tap', '--test-concurrency=1', ...(pattern ? [`--test-name-pattern=${pattern}`] : []), testFile];
   const r = spawnSync(process.execPath, args, { cwd: dest, encoding: 'utf8', timeout: 20 * 60_000 });
   const out = r.stdout || '';
-  const failing = (out.match(/^not ok/gm) || []).length;
-  const passing = (out.match(/^ok/gm) || []).length;
-  const why = failing || passing ? '' : `no test result read (exit ${r.status}${r.error ? `, ${r.error.message}` : ''}): ${(r.stderr || out).trim().split('\n').slice(-3).join(' | ')}`;
-  return { failing, passing, why };
+  const results = new Map();
+  for (const line of out.split('\n')) {
+    const t = tapResult(line);
+    if (t) results.set(t.name, results.has(t.name) ? results.get(t.name) && t.passed : t.passed);
+  }
+  const failing = [...results.values()].filter(v => !v).length;
+  const passing = results.size - failing;
+  const why = results.size ? '' : `no test result read (exit ${r.status}${r.error ? `, ${r.error.message}` : ''}): ${(r.stderr || out).trim().split('\n').slice(-3).join(' | ')}`;
+  return { results, failing, passing, why };
+}
+
+/** The name patterns of the mutations of one test file, as one (empty when one of them is the whole file). */
+export function unionPattern(patterns) {
+  return patterns.some(p => !p) ? '' : patterns.map(p => `(?:${p})`).join('|');
 }
 
 /**
  * Runs the mutations named in `only` (all when empty); returns how many the self-tests missed.
- * Each mutation's self-tests first run on the unmutated copy (the control) and must all pass
- * there: a test that fails anyway (no browser, a broken copy) would otherwise count as a catch.
+ * The control: each test file's self-tests (those of its mutations' patterns, together) run once
+ * on the unmutated copy, and every test a mutation runs must have passed there: a test that fails
+ * anyway (no browser, a broken copy) would otherwise count as a catch.
  */
 export function runMutations(only = [], log = console.log) {
   const { root, dest } = copyHarness();
+  const chosen = MUTATIONS.filter(([id]) => !only.length || only.includes(id));
   const controls = new Map();
   let missed = 0;
   try {
-    for (const [id, what, file, text, replacement, testFile, pattern] of MUTATIONS) {
-      if (only.length && !only.includes(id)) continue;
+    for (const testFile of new Set(chosen.map(m => m[5]))) {
+      controls.set(testFile, selfTests(dest, testFile, unionPattern(chosen.filter(m => m[5] === testFile).map(m => m[6]))));
+    }
+    for (const [id, what, file, text, replacement, testFile, pattern] of chosen) {
       const p = path.join(dest, file);
       const original = fs.readFileSync(p, 'utf8');
       if (!original.includes(text)) { log(`${id} ${what}: the text to mutate is gone (update scripts/mutations.mjs)`); missed++; continue; }
-      const key = `${testFile}\0${pattern}`;
-      if (!controls.has(key)) controls.set(key, selfTests(dest, testFile, pattern));
-      const control = controls.get(key);
-      if (control.failing || !control.passing) {
-        missed++;
-        log(`${id} ${what}: NOT JUDGED, its self-tests do not pass unmutated (${control.failing} failing, ${control.passing} passing${control.why ? `; ${control.why}` : ''})`);
-        continue;
-      }
+      const control = controls.get(testFile);
       fs.writeFileSync(p, original.replace(text, replacement));
+      let mutated;
       try {
-        const { failing, passing, why } = selfTests(dest, testFile, pattern);
-        if (!failing) missed++;
-        log(`${id} ${what}: ${failing ? 'caught' : 'MISSED'} (${failing} failing, ${passing} passing${why ? `; ${why}` : ''})`);
+        mutated = selfTests(dest, testFile, pattern);
       } finally {
         fs.writeFileSync(p, original);
       }
+      const unjudged = [...mutated.results.keys()].filter(name => control.results.get(name) !== true);
+      if (!mutated.results.size || unjudged.length) {
+        missed++;
+        log(`${id} ${what}: ${mutated.results.size ? `NOT JUDGED, its self-tests do not pass unmutated (${unjudged.length} of ${mutated.results.size}: ${unjudged.slice(0, 3).join('; ')})` : `MISSED (${mutated.why})`}`);
+        continue;
+      }
+      if (!mutated.failing) missed++;
+      log(`${id} ${what}: ${mutated.failing ? 'caught' : 'MISSED'} (${mutated.failing} failing, ${mutated.passing} passing)`);
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

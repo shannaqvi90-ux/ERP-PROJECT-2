@@ -136,18 +136,24 @@ test('every product\'s shots mask every product\'s demo names and codes (round 7
     assert.deepEqual(new Set(brandingFor('ours')[key]), new Set(brandingFor('odoo')[key]), `${key} differs between the products`);
   }
   const ours = brandingFor('ours');
-  for (const code of ['ALN-DXB', 'DEIRA-HQ', 'ALN-AUH', 'ALN-FZE', 'ALN-SHJ']) assert.ok(ours.identityWords.includes(code), code);
+  for (const code of ['ALN-DXB', 'DEIRA-HQ', 'ALN-AUH', 'ALN-FZE', 'ALN-SHJ', 'DEMO-TRD', 'DEMO-MFG']) assert.ok(ours.identityWords.includes(code), code);
   const browser = await launch();
   try {
     const page = await (await newContext(browser)).newPage();
-    await page.setContent(`<header><span id="bar">ALN-DXB · DEIRA-HQ</span></header><table>
+    // Round 8 (p02 critic, switch-company): the signed-in person's name in the top bar and the
+    // welcome line, the fixture companies' codes in the switcher, and the reference's own people.
+    await page.setContent(`<header><span id="bar">ALN-DXB · DEIRA-HQ</span><button id="chip">DEMO-MFG · MAIN</button><span id="me">Mariam Al Mansoori</span></header>
+      <h1 id="welcome">Welcome, Mariam Al Mansoori</h1><p id="meAr">مرحبا، مريم المنصوري</p><table>
       <tr><td id="ourCo">Al Noor General Trading FZE</td><td id="theirMail">signin.tester@demo-trading.example</td><td id="theirCo">Demo Trading LLC</td></tr>
-      <tr><td id="plain">mariam.khoury.000001@staff.example</td><td id="word">Branch codes</td></tr></table>`);
+      <tr><td id="theirCo2">Demo Manufacturing FZE</td><td id="theirAdmin">Administrator</td><td id="approver">Amal Approver</td><td id="fixtureAr">ديمو للتصنيع م.م.ح</td></tr>
+      <tr><td id="plain">mariam.khoury.000001@staff.example</td><td id="word">Branch codes</td><td id="role">Settings: Administrator rights</td><td id="demo">DEMO-</td></tr></table>`);
     for (const product of ['ours', 'odoo']) {
       const masked = new Set();
       for (const loc of maskLocators(page, brandingFor(product))) for (const id of await loc.evaluateAll(els => els.map(e => e.id))) masked.add(id);
-      for (const id of ['bar', 'ourCo', 'theirMail', 'theirCo']) assert.ok(masked.has(id), `${product}: ${id} not masked (${[...masked].join(', ')})`);
-      assert.ok(!masked.has('plain') && !masked.has('word'), `${product}: ordinary text masked`);
+      for (const id of ['bar', 'chip', 'me', 'welcome', 'meAr', 'ourCo', 'theirMail', 'theirCo', 'theirCo2', 'theirAdmin', 'approver', 'fixtureAr']) {
+        assert.ok(masked.has(id), `${product}: ${id} not masked (${[...masked].join(', ')})`);
+      }
+      for (const id of ['plain', 'word', 'role', 'demo']) assert.ok(!masked.has(id), `${product}: ordinary text masked (${id})`);
     }
   } finally { await browser.close(); }
 });
