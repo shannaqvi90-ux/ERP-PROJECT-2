@@ -178,9 +178,12 @@ export function UsersPage() {
                 onCreated={(user) => {
                   setNotices((all) => ({
                     ...all,
-                    [user.id]: user.setupCode
-                      ? { kind: "code", code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
-                      : { kind: "info", text: t("identity.form.created") },
+                    [user.id]: {
+                      ...(user.setupCode
+                        ? { kind: "code" as const, code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
+                        : { kind: "info" as const, text: t("identity.form.created") }),
+                      ...(user.followUpError ? { warning: user.followUpError } : {}),
+                    },
                   }));
                   panel.saved(user.id);
                 }}

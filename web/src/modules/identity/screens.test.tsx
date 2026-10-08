@@ -130,6 +130,78 @@ describe("users screen", () => {
     expect(text("Accountant")).toContain("Contacts clerk, Administrator (ALN-FZE), roles in other companies");
   });
 
+  // Critic p03 round 5: roles in one company and the starting company were only in the panel after
+  // creation, and the starting company needed company access given first on another screen.
+  for (const accessFails of [false, true]) {
+    it(`creates a user with a role in one company, the companies they work in and where they start${accessFails ? ", and says so when the access is refused" : ""}`, async () => {
+      window.history.replaceState(null, "", "/identity/users");
+      const calls = mockFetch((method, url, body) => {
+        if (url === "/api/auth/session") return { status: 200, body: session([...all, "tenancy.access.read", "tenancy.access.update"]) };
+        const list = listReply(method, url);
+        if (list) return list;
+        if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+        if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+        if (url === "/api/identity/companies")
+          return { status: 200, body: [{ id: "c-dxb", code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور" }, { id: "c-fze", code: "ALN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور" }] };
+        if (method === "POST" && url === "/api/identity/users")
+          return { status: 201, body: { id: "u-new", ...(body as object), isActive: true, lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true, setupCode: "K7QM-3XRA-PZ9D" } };
+        if (url === "/api/tenancy/access/u-new" && method === "GET") return { status: 200, body: { userId: "u-new", companies: [], options: [], version: 4 } };
+        if (url === "/api/tenancy/access/u-new" && method === "PUT")
+          return accessFails ? { status: 403, body: { title: "You may not give access to that company.", code: "tenancy.forbidden", status: 403 } } : { status: 200, body: {} };
+        if (url === "/api/identity/users/u-new/default-company" && method === "GET") return { status: 200, body: { userId: "u-new", companyId: null, companies: [], version: 7 } };
+        if (url === "/api/identity/users/u-new/default-company" && method === "PUT") return { status: 200, body: { userId: "u-new", companyId: "c-fze", companies: [], version: 8 } };
+        if (url === "/api/identity/users/u-new")
+          return { status: 200, body: { id: "u-new", email: "rana@demo-trading.example", displayName: "Rana", language: "en", isActive: true, roleIds: [], companyRoles: [{ roleId: "r-clerk", companyId: "c-fze" }], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true } };
+        return { status: 404, body: {} };
+      });
+      view = await render(<App language="en" />);
+      await settle();
+      await act(async () => new Promise((r) => setTimeout(r, 200)));
+      key(document.body, { key: "n" });
+      await settle();
+      setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "rana");
+      // A role in one company: the clerk role in ALN-FZE. Adding it ticks that company under "Works in".
+      const company = view.container.querySelector<HTMLSelectElement>('select[name="companyRoleCompany"]')!;
+      act(() => {
+        company.value = "c-fze";
+        company.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      const role = view.container.querySelector<HTMLSelectElement>('select[name="companyRoleRole"]')!;
+      act(() => {
+        role.value = "r-clerk";
+        role.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      key(role, { key: "Enter" });
+      await settle();
+      const worksIn = [...view.container.querySelectorAll<HTMLInputElement>('input[name="worksIn"]')];
+      expect(worksIn.map((c) => c.checked)).toEqual([false, true]);
+      await act(async () => worksIn[0]!.click());
+      const startsIn = view.container.querySelector<HTMLSelectElement>('select[name="defaultCompany"]')!;
+      act(() => {
+        startsIn.value = "c-fze";
+        startsIn.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      key(startsIn, { key: "Enter", ctrlKey: true });
+      await settle();
+      await settle();
+
+      const post = calls.find((c) => c.method === "POST" && c.url === "/api/identity/users")!;
+      expect(post.body).toEqual({ email: "rana@demo-trading.example", displayName: "Rana", language: "en", roleIds: [], companyRoles: [{ companyId: "c-fze", roleId: "r-clerk" }] });
+      const access = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/access/u-new")!;
+      expect(access.body).toEqual({ companies: [{ companyId: "c-fze", allBranches: true, branchIds: [] }, { companyId: "c-dxb", allBranches: true, branchIds: [] }], version: 4 });
+      const starts = calls.find((c) => c.method === "PUT" && c.url === "/api/identity/users/u-new/default-company");
+      expect(window.location.search).toBe("?open=u-new");
+      expect(view.container.querySelector('[data-testid="setup-code"]')!.textContent).toBe("K7QM-3XRA-PZ9D");
+      if (accessFails) {
+        expect(starts).toBeUndefined();
+        expect(view.container.textContent).toContain("The account was created, but its company access or starting company was not saved: You may not give access to that company.");
+      } else {
+        expect(starts!.body).toEqual({ companyId: "c-fze", version: 7 });
+        expect(view.container.textContent).not.toContain("was not saved");
+      }
+    });
+  }
+
   it("hides creation and account actions from a read-only user", async () => {
     window.history.replaceState(null, "", "/identity/users?open=u1");
     mockFetch((_m, url) => {
