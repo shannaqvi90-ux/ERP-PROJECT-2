@@ -1,0 +1,13 @@
+exact name                 median   25 ms max   35 ms total 1 
+prefixes                   median   19 ms max   24 ms total 3 
+e-mail fragment            median   14 ms max   17 ms total 1 
+one letter a               median  100 ms max  210 ms total 100004 
+arabic two words           median  131 ms max  184 ms total 51 
+surname pillai             median   24 ms max   26 ms total 1651 
+filter language ar         median   33 ms max   51 ms total 30308 
+filter or                  median   31 ms max   42 ms total 30308 
+groupBy language           median   62 ms max   68 ms total 100004 
+sort email desc            median   29 ms max   40 ms total 100004 
+skip 50000                 median   46 ms max   94 ms total 100004 
+skip 99990 sorted name     median  178 ms max  359 ms total 100004 
+search + filter + group    median   47 ms max  108 ms total 2375 
