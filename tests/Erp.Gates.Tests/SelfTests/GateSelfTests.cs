@@ -21,6 +21,25 @@ public sealed class LeakyFixture : IAsyncLifetime
     }
 
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
+
+    private readonly Lock _runs = new();
+    private Task<GrantBearingRecords.Result>? _grantBearing;
+    private Task<GrantEscalation.Result>? _grantEscalation;
+
+    /// <summary>The grant-bearing record check over this environment, run once: three self-tests
+    /// judge the same run, each for its own plants (three identical full runs were most of the
+    /// processor time of the gate self-tests outside the attacks).</summary>
+    public Task<GrantBearingRecords.Result> GrantBearingRecordsAsync()
+    {
+        lock (_runs) return _grantBearing ??= GrantBearingRecords.RunAsync(Env);
+    }
+
+    /// <summary>The grant escalation check over this environment, run once for the two self-tests
+    /// that judge it (see <see cref="GrantBearingRecordsAsync"/>).</summary>
+    public Task<GrantEscalation.Result> GrantEscalationAsync()
+    {
+        lock (_runs) return _grantEscalation ??= GrantEscalation.RunAsync(Env);
+    }
 }
 
 /// <summary>
@@ -329,7 +348,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     public async Task The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check()
     {
         // Critic p03 round 1, plant P2: deleting a role never checks what it grants.
-        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        var result = await fixture.GrantBearingRecordsAsync();
         Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
         Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/roles/{id:guid}", StringComparison.Ordinal) && p.Contains("changed", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
@@ -342,7 +361,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Critic p03 round 2, plant P5: an e-mail-only edit of a stronger account skips the access
         // check. The edit that changes the name (the one request earlier gates sent) is refused;
         // only the single-field request finds the bypass.
-        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        var result = await fixture.GrantBearingRecordsAsync();
         Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
         Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid} [email changed]", StringComparison.Ordinal) && p.Contains("changed: before", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => p.StartsWith("PUT /api/leaky/members/{id:guid}: ", StringComparison.Ordinal));
@@ -359,7 +378,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // identity part of what it grants. A record granting everything still answers 403 (it
         // also grants identity permissions the caller lacks); a record granting another module's
         // permissions alone finds the narrowed checks.
-        var result = await GrantBearingRecords.RunAsync(fixture.Env);
+        var result = await fixture.GrantBearingRecordsAsync();
         foreach (var planted in new[]
                  {
                      "PUT /api/leaky/narrow-roles/{id:guid}", "DELETE /api/leaky/narrow-roles/{id:guid}", "POST /api/leaky/narrow-roles/{id:guid}/copy",
@@ -388,7 +407,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Critic p03 round 3, plant P16 (and P15's shape on members): creating a role, or a member
         // with roles, checks only the identity part of the grants. Asking for everything is refused;
         // asking for another module's permission alone, or a role granting it, is not.
-        var result = await GrantEscalation.RunAsync(fixture.Env);
+        var result = await fixture.GrantEscalationAsync();
         foreach (var planted in new[] { "POST /api/leaky/narrow-roles", "POST /api/leaky/narrow-members", "PUT /api/leaky/narrow-roles/{id:guid}", "PUT /api/leaky/narrow-members/{id:guid}" })
         {
             Assert.Contains(planted, result.Checked);
@@ -499,7 +518,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     [Fact]
     public async Task The_grant_escalation_check_catches_an_endpoint_that_grants_any_role()
     {
-        var result = await GrantEscalation.RunAsync(fixture.Env);
+        var result = await fixture.GrantEscalationAsync();
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/grants", StringComparison.Ordinal) && p.Contains("Administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
