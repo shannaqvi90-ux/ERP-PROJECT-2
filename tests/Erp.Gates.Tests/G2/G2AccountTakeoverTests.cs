@@ -68,6 +68,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var fieldVariants = 0;
         var moduleFieldVariants = 0;
         var targetsAimed = 0;
+        var companyTargetsAimed = 0;
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -123,6 +124,11 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             {
                 var victim = await targets.UserAsync(target.Permissions);
                 var victimBefore = await ReadUserAsync(admin, victim);
+                if (victimBefore.StartsWith("404 ", StringComparison.Ordinal))
+                {
+                    problems.Add($"{endpoint}: the user holding {target} is gone (an earlier request removed them)");
+                    continue;
+                }
                 var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(caller, openApi, endpoint, victim, $"{tag}g{++targetsAimed}"));
                 if (targetStatus != (int)HttpStatusCode.Forbidden)
                 {
@@ -132,6 +138,66 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 if (victimAfter != victimBefore)
                 {
                     problems.Add($"{endpoint}: the user holding {target} changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                }
+            }
+
+            // Users whose grants the caller lacks are held in one company only (critic p03 round 5,
+            // finding R1: a check reading only workspace-wide roles lets a clerk act on a company
+            // manager). One target per module, its role held in the first company, which the caller
+            // works in (so nothing is hidden from them: only what the role grants protects it).
+            if (companies.First is { } inCompany)
+            {
+                foreach (var target in GrantTargets.PerModule(catalogue, permissions))
+                {
+                    var victim = await targets.UserInCompanyAsync(target.Permissions, inCompany, companies);
+                    var victimBefore = await ReadUserAsync(admin, victim);
+                    if (victimBefore.StartsWith("404 ", StringComparison.Ordinal))
+                    {
+                        problems.Add($"{endpoint}: the user holding {target} in one company only is gone (an earlier request removed them)");
+                        continue;
+                    }
+                    var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(caller, openApi, endpoint, victim, $"{tag}c{++companyTargetsAimed}"));
+                    if (targetStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user holding {target} in one company only by a user holding only [{string.Join(", ", permissions)}] everywhere answered {targetStatus} (expected 403): {Short(targetText)}");
+                    }
+                    var victimAfter = await ReadUserAsync(admin, victim);
+                    if (victimAfter != victimBefore)
+                    {
+                        problems.Add($"{endpoint}: the user holding {target} in one company only changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                    }
+                }
+
+                // A user holding, in a company the caller does not work in, a role granting nothing
+                // the caller lacks: what it grants cannot be seen from the caller's companies, so
+                // the user is beyond them. The caller works in the first company alone for this
+                // request, and in both again afterwards.
+                if (companies.Ids.Count > 1)
+                {
+                    var elsewhere = await targets.UserInCompanyAsync(["identity.users.read"], companies.Ids[1], companies, fresh: true);
+                    var elsewhereBefore = await ReadUserAsync(admin, elsewhere);
+                    await companies.LimitAccessAsync(callerId, inCompany);
+                    var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
+                    var elsewhereAfter = await ReadUserAsync(admin, elsewhere);
+                    // Control: working in the first company alone, the caller still acts on a user
+                    // without roles who works there too.
+                    var limitedTarget = await CreatedIdAsync(admin, "/api/identity/users", new { email = $"limited.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Limited target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
+                    await companies.LimitAccessAsync(limitedTarget, inCompany);
+                    var (limitedStatus, limitedText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => limitedTarget.ToString()), await BodyAsync(caller, openApi, endpoint, limitedTarget, $"{tag}hc"));
+                    await companies.GiveAccessAsync(callerId);
+                    if (limitedStatus is < 200 or >= 300)
+                    {
+                        problems.Add($"{endpoint}: working in one company, aimed at a user without roles answered {limitedStatus}, so the gate cannot tell the check of hidden roles from a malformed request: {Short(limitedText)}");
+                    }
+                    companyTargetsAimed++;
+                    if (hiddenStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user holding a role in a company the caller does not work in answered {hiddenStatus} (expected 403): {Short(hiddenText)}");
+                    }
+                    if (elsewhereAfter != elsewhereBefore)
+                    {
+                        problems.Add($"{endpoint}: the user holding a role in a company the caller does not work in changed: before {Short(elsewhereBefore)}; after {Short(elsewhereAfter)}");
+                    }
                 }
             }
 
@@ -196,7 +262,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         }
         TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator, " +
                                                         $"{targetsAimed} requests aimed at users holding grants the caller lacks, {moduleFieldVariants} single-field requests aimed at them");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{companyTargetsAimed} requests aimed at users whose roles are held in one company");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(companyTargetsAimed >= Ratchet.Min("g2.takeoverCompanyTargets"),
+            $"{companyTargetsAimed} requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyTargets")}");
         Assert.True(fieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
             $"{fieldVariants} single-field requests aimed at the Administrator; ratchet minimum {Ratchet.Min("g2.takeoverFieldVariantsChecked")}");
         Assert.True(checkedEndpoints >= Ratchet.Min("g2.takeoverEndpointsChecked"),
