@@ -34,6 +34,13 @@ caller sent and differed from caller to caller.
    with another Host, forwarded headers or Arabic, never contains those values or a server URL, and
    is the text the process holds.
 
+## Measured
+
+The G1 HTTP isolation test alone, run locally with the verify's runtime settings: 2,647 processor
+seconds before (36 min 58 s, load about 50; that run also carried a five-minute stack-sampling
+trace) and 2,291 after (30 min 30 s, load 12 to 30). The other attacks (the HTTP self-test on the
+planted module, the company and branch attacks, non-interference) send the endpoint too.
+
 ## Alternatives considered
 
 - *ASP.NET Core output caching on the endpoint.* Its default policy skips signed-in callers, so the
