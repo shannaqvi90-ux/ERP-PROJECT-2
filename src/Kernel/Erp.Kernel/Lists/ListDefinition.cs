@@ -40,6 +40,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// ISO 4217 code of each row's amount. Every money column names one (CLAUDE.md rule 2: an amount
 /// never travels without its currency), and group totals of a money column are given per currency,
 /// never added across currencies.</param>
+/// <param name="TrueLabelKey">For a boolean column: web string key of what a true value is called in
+/// cells, groups, filter chips, prints and exports (a status column's "Active"); null: "Yes".</param>
+/// <param name="FalseLabelKey">For a boolean column: what a false value is called ("Inactive"); null: "No".</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -53,7 +56,9 @@ public sealed record ListColumn(
     string? LabelField = null,
     string? ArabicField = null,
     string? ValuesFrom = null,
-    string? CurrencyField = null);
+    string? CurrencyField = null,
+    string? TrueLabelKey = null,
+    string? FalseLabelKey = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>
@@ -160,6 +165,14 @@ public sealed partial record ListDefinition(
                 {
                     yield return $"list '{Key}': money column '{column.Key}' names currency column '{currency}', which is not a text or choice column of the list";
                 }
+            }
+            if ((column.TrueLabelKey is not null || column.FalseLabelKey is not null) && column.Type != ListColumnType.Boolean)
+            {
+                yield return $"list '{Key}': column '{column.Key}' names words for true and false but is not a boolean column";
+            }
+            if ((column.TrueLabelKey is null) != (column.FalseLabelKey is null))
+            {
+                yield return $"list '{Key}': column '{column.Key}' names a word for only one of true and false (name both, or neither for Yes and No)";
             }
             if (column.Choices is { Count: > 0 } && column.Type != ListColumnType.Choice)
             {

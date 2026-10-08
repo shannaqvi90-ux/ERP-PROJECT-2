@@ -136,11 +136,11 @@ describe("users screen bulk actions", () => {
   async function showUsers(
     permissions: string[],
     put: (url: string) => { status: number; body: unknown },
-    more: { total?: number; address?: string; post?: (url: string, body: unknown) => { status: number; body: unknown } } = {},
+    more: { total?: number; address?: string; post?: (url: string, body: unknown) => { status: number; body: unknown }; language?: "en" | "ar" } = {},
   ) {
     window.history.replaceState(null, "", more.address ?? "/identity/users");
     const calls = mockFetch((method, url, body) => {
-      if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
+      if (url === "/api/auth/session") return { status: 200, body: session(permissions, more.language ?? "en") };
       const list = listReply(method, url);
       if (list) return list;
       if (method === "GET" && url.startsWith("/api/identity/users?"))
@@ -150,7 +150,7 @@ describe("users screen bulk actions", () => {
       if (method === "POST" && more.post) return more.post(url, body);
       return { status: 404, body: {} };
     });
-    view = await render(<App language="en" />);
+    view = await render(<App language={more.language ?? "en"} />);
     await settle();
     await act(async () => new Promise((r) => setTimeout(r, 200)));
     return calls;
@@ -158,6 +158,19 @@ describe("users screen bulk actions", () => {
 
   const grid = () => view!.container.querySelector<HTMLElement>('[role="grid"]')!;
   const barButton = (label: string) => [...view!.container.querySelectorAll<HTMLButtonElement>(".list-selectionbar button")].find((b) => b.textContent === label);
+  // The app's own confirmation (never the browser's window.confirm, whose buttons follow the
+  // browser's language and sit outside the keyboard and right-to-left layout).
+  const dialog = () => view!.container.querySelector<HTMLElement>('[role="alertdialog"]');
+  const dialogButton = (label: string) => [...(dialog()?.querySelectorAll<HTMLButtonElement>("button") ?? [])].find((b) => b.textContent === label);
+  const realConfirm = window.confirm;
+  beforeEach(() => {
+    window.confirm = () => {
+      throw new Error("window.confirm was called: the list asks in its own dialog");
+    };
+  });
+  afterEach(() => {
+    window.confirm = realConfirm;
+  });
 
   it("deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused", async () => {
     const calls = await showUsers(all, (url) =>
@@ -173,7 +186,17 @@ describe("users screen bulk actions", () => {
     expect(deactivate).toBeTruthy();
     await act(async () => deactivate.click());
     await settle();
+    // Asked first, for the chosen rows too, in the app's dialog with the confirming button focused
+    // (Enter confirms); nothing is sent before the answer.
+    expect(dialog()).toBeTruthy();
+    expect(dialog()!.getAttribute("aria-modal")).toBe("true");
+    expect(dialog()!.textContent).toContain("Deactivate the 3 chosen users? They will no longer be able to sign in.");
+    expect(document.activeElement).toBe(dialogButton("Deactivate"));
+    expect(calls.filter((c) => c.method === "PUT")).toEqual([]);
+    await act(async () => dialogButton("Deactivate")!.click());
     await settle();
+    await settle();
+    expect(dialog()).toBeNull();
 
     const puts = calls.filter((c) => c.method === "PUT");
     expect(puts.map((c) => c.url).sort()).toEqual(["/api/identity/users/me", "/api/identity/users/u2"]);
@@ -191,6 +214,9 @@ describe("users screen bulk actions", () => {
     await settle();
     await act(async () => barButton("Activate")!.click());
     await settle();
+    expect(dialog()!.textContent).toContain("Activate the 3 chosen users?");
+    await act(async () => dialogButton("Activate")!.click());
+    await settle();
     await settle();
     const puts = calls.filter((c) => c.method === "PUT");
     expect(puts.map((c) => c.url)).toEqual(["/api/identity/users/u3"]);
@@ -198,17 +224,46 @@ describe("users screen bulk actions", () => {
     expect(view!.container.textContent).not.toContain("was not changed");
   });
 
-  describe("on all that match", () => {
-    const realConfirm = window.confirm;
-    afterEach(() => {
-      window.confirm = realConfirm;
-    });
+  it("changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape", async () => {
+    const calls = await showUsers(all, () => ({ status: 200, body: { ...people[1], isActive: false, version: 8 } }));
+    act(() => grid().focus());
+    key(grid(), { key: "a", ctrlKey: true });
+    await settle();
+    // Pressed from the keyboard: the button has focus when it opens the dialog.
+    act(() => barButton("Deactivate")!.focus());
+    await act(async () => barButton("Deactivate")!.click());
+    await settle();
+    expect(dialog()).toBeTruthy();
+    key(dialog()!, { key: "Escape" });
+    await settle();
+    expect(dialog()).toBeNull();
+    expect(calls.filter((c) => c.method === "PUT")).toEqual([]);
+    expect(view!.container.textContent).toContain("3 selected");
+    // Focus goes back to the button that asked.
+    expect(document.activeElement).toBe(barButton("Deactivate"));
+  });
 
+  it("asks in Arabic, right to left, with Arabic buttons, on an Arabic screen", async () => {
+    await showUsers(all, () => ({ status: 200, body: {} }), { language: "ar" });
+    act(() => grid().focus());
+    key(grid(), { key: "a", ctrlKey: true });
+    await settle();
+    await act(async () => barButton("إلغاء التفعيل")!.click());
+    await settle();
+    expect(dialog()!.textContent).toContain("هل تريد إلغاء تفعيل 3 مستخدمين مختارين؟");
+    expect(dialogButton("إلغاء التفعيل")).toBeTruthy();
+    expect(dialogButton("إلغاء")).toBeTruthy();
+    expect(dialog()!.closest("[dir]")?.getAttribute("dir") ?? document.documentElement.getAttribute("dir")).toBe("rtl");
+  });
+
+  describe("on all that match", () => {
     async function selectAllMatching(post: (url: string, body: unknown) => { status: number; body: unknown }, confirmed: boolean) {
       const asked: string[] = [];
-      window.confirm = (message?: string) => {
-        asked.push(String(message));
-        return confirmed;
+      const answer = async () => {
+        asked.push(dialog()?.querySelector("p")?.textContent ?? "(no dialog)");
+        const button = confirmed ? dialog()!.querySelector<HTMLButtonElement>("button")! : dialogButton("Cancel")!;
+        await act(async () => button.click());
+        await settle();
       };
       const calls = await showUsers(all, () => ({ status: 500, body: {} }), { total: 3265, address: "/identity/users?q=pillai&filter=language%20eq%20'en'", post });
       act(() => grid().focus());
@@ -217,15 +272,17 @@ describe("users screen bulk actions", () => {
       key(grid(), { key: "a", ctrlKey: true });
       await settle();
       expect(view!.container.textContent).toContain("All 3,265 matching rows selected");
-      return { calls, asked };
+      return { calls, asked, answer };
     }
 
     it("deactivates every matching user in one request with the list's search, filter and count, after a confirmation", async () => {
-      const { calls, asked } = await selectAllMatching(() => ({ status: 200, body: { matched: 3265, changed: 3200, unchanged: 63, refusedSelf: 1, refusedBeyondOwn: 1 } }), true);
+      const { calls, asked, answer } = await selectAllMatching(() => ({ status: 200, body: { matched: 3265, changed: 3200, unchanged: 63, refusedSelf: 1, refusedBeyondOwn: 1 } }), true);
       const deactivate = barButton("Deactivate")!;
       expect(deactivate.disabled).toBe(false);
       await act(async () => deactivate.click());
       await settle();
+      expect(calls.filter((c) => c.method === "POST")).toEqual([]);
+      await answer();
       await settle();
       expect(asked).toEqual(["Deactivate all 3,265 matching users? They will no longer be able to sign in."]);
       const posts = calls.filter((c) => c.method === "POST");
@@ -240,21 +297,23 @@ describe("users screen bulk actions", () => {
     });
 
     it("changes nothing and keeps the selection when the confirmation is cancelled", async () => {
-      const { calls, asked } = await selectAllMatching(() => ({ status: 200, body: {} }), false);
+      const { calls, asked, answer } = await selectAllMatching(() => ({ status: 200, body: {} }), false);
       await act(async () => barButton("Activate")!.click());
       await settle();
+      await answer();
       expect(asked).toEqual(["Activate all 3,265 matching users?"]);
       expect(calls.filter((c) => c.method === "POST" || c.method === "PUT")).toEqual([]);
       expect(view!.container.textContent).toContain("All 3,265 matching rows selected");
     });
 
     it("shows the API's reason when the matching rows changed meanwhile", async () => {
-      await selectAllMatching(
+      const { answer } = await selectAllMatching(
         () => ({ status: 409, body: { type: "urn:erp:problem:list.matchingChanged", title: "The rows that match changed since you chose them (3265 then, 3266 now). Nothing was changed: look at the list again and retry.", status: 409, code: "list.matchingChanged" } }),
         true,
       );
       await act(async () => barButton("Deactivate")!.click());
       await settle();
+      await answer();
       await settle();
       expect(view!.container.textContent).toContain("The rows that match changed since you chose them");
     });

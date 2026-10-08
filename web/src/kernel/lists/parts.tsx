@@ -54,6 +54,88 @@ export function Popover({
   );
 }
 
+/**
+ * The app's own confirmation (never the browser's, whose buttons follow the browser's language and
+ * sit outside the app's keyboard and right-to-left layout): a modal alert dialog over the screen,
+ * in the user's language and direction. The confirming button has focus, so Enter confirms; Escape
+ * or Cancel cancels; Tab stays inside the dialog; focus returns to the opener when it closes.
+ */
+export function ConfirmDialog({
+  title,
+  message,
+  confirmLabel,
+  danger,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  /** The action cannot be undone in one step (for example deactivating accounts). */
+  danger?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const { t } = useI18n();
+  const id = useId();
+  const ref = useRef<HTMLDivElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    confirmRef.current?.focus();
+    return () => {
+      opener?.focus?.();
+    };
+    // Mount and unmount only: the opener is the element focused when the dialog opened.
+  }, []);
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      onCancel();
+      return;
+    }
+    if (event.key === "Tab") {
+      const items = [...(ref.current?.querySelectorAll<HTMLElement>("button") ?? [])];
+      if (items.length === 0) return;
+      const index = items.indexOf(document.activeElement as HTMLElement);
+      const next = items[(index + (event.shiftKey ? -1 : 1) + items.length) % items.length];
+      event.preventDefault();
+      next?.focus();
+    }
+    // Keys typed in the dialog never reach the grid or the screen's shortcuts behind it.
+    event.stopPropagation();
+  };
+  return (
+    <div className="list-confirm-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
+      <div
+        ref={ref}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-message`}
+        className="list-confirm"
+        onKeyDown={onKeyDown}
+      >
+        <h2 id={`${id}-title`} className="list-popover-title">
+          {title}
+        </h2>
+        <p id={`${id}-message`} className="list-confirm-message">
+          {message}
+        </p>
+        <div className="list-popover-actions">
+          <button ref={confirmRef} type="button" className={`button ${danger ? "danger" : "primary"}`} onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+          <button type="button" className="button" onClick={onCancel}>
+            {t("lists.confirm.cancel")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const textOperators: Operator[] = ["contains", "eq", "ne", "startsWith", "endsWith", "isNull", "isNotNull"];
 
 /** The filter editor of one column; it replaces that column's conditions. */
@@ -211,7 +293,7 @@ export function FilterEditor({
           {(["any", "true", "false"] as const).map((value) => (
             <label key={value} className="list-check">
               <input type="radio" name={`${id}-flag`} checked={flag === value} onChange={() => setFlag(value)} />
-              {t(value === "any" ? "lists.filter.any" : value === "true" ? "lists.filter.yes" : "lists.filter.no")}
+              {t(value === "any" ? "lists.filter.any" : value === "true" ? (column.trueLabelKey ?? "lists.filter.yes") : (column.falseLabelKey ?? "lists.filter.no"))}
             </label>
           ))}
         </fieldset>

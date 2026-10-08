@@ -188,9 +188,17 @@ test.describe("list framework", () => {
     await expect(page.getByRole("button", { name: "View: With creation date" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: /Created/ })).toBeVisible();
 
-    page.once("dialog", (d) => void d.accept());
+    // Asked in the app's own dialog (never the browser's): Enter on the focused Delete confirms.
+    page.once("dialog", (d) => {
+      throw new Error(`the browser's ${d.type()} dialog was shown: ${d.message()}`);
+    });
     await page.getByRole("button", { name: /^View:/ }).click();
     await page.getByRole("menuitem", { name: "Delete this view" }).click();
+    const confirm = page.getByRole("alertdialog", { name: "Delete this view" });
+    await expect(confirm).toContainText("Delete the view With creation date?");
+    await expect(confirm.getByRole("button", { name: "Delete this view" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(confirm).toHaveCount(0);
     await expect(page.getByRole("button", { name: "View: Standard" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: /Status/ })).toBeVisible();
   });

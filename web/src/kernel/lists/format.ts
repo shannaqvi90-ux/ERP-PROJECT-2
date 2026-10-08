@@ -20,7 +20,7 @@ export function formatValue(column: ListColumn, value: unknown, f: Formatters): 
   if (value === null || value === undefined || value === "") return "";
   switch (column.type) {
     case "boolean":
-      return value ? f.t("lists.yes") : f.t("lists.no");
+      return value ? f.t(column.trueLabelKey ?? "lists.yes") : f.t(column.falseLabelKey ?? "lists.no");
     case "choice": {
       if (Array.isArray(value)) return f.formatNumber(value.length);
       const choice = column.choices.find((c) => c.value === value);
