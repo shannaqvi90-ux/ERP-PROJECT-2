@@ -156,8 +156,19 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         var expected = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?filter={filter}&take=200")).GetProperty("total").GetInt32();
         Assert.Equal(expected, document.GetProperty("rowCount").GetInt32());
         Assert.Equal(new[] { "displayName", "email", "language" }, document.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("key").GetString()!).ToArray());
-        Assert.Contains(document.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Status" && p.GetProperty("text").GetString() == "is Yes");
+        // A status is printed in the column's own words (round 6: "is Active", not "is Yes").
+        Assert.Contains(document.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Status" && p.GetProperty("text").GetString() == "is Active");
         Assert.Contains(document.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "English");
+        // The printed status cells and status groups too, in English and in Arabic.
+        var byStatus = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?columns=displayName,isActive&groupBy=isActive");
+        var statusIndex = byStatus.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("key").GetString()).ToList().IndexOf("isActive");
+        var statusTexts = byStatus.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+            .Select(r => r.GetProperty("cells")[statusIndex].GetProperty("text").GetString()).ToHashSet();
+        Assert.Contains("Active", statusTexts);
+        Assert.DoesNotContain("Yes", statusTexts);
+        Assert.Contains(byStatus.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "Active");
+        var arabic = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?columns=displayName,isActive&groupBy=isActive&language=ar");
+        Assert.Contains(arabic.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "نشط");
 
         // Roles carry a total of their user counts.
         var roles = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.roles?columns=nameEn,userCount");

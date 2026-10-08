@@ -172,8 +172,11 @@ test.describe("list framework", () => {
     await page.getByRole("button", { name: "Options for the column Status" }).click();
     await page.getByRole("menuitem", { name: "Group by this column" }).click();
     const groups = page.locator("tbody.list-groups tr");
-    await expect(groups.first()).toContainText("Active");
-    await expect(page.locator("tbody.list-groups")).not.toContainText(/\bYes\b|\bNo\b/);
+    await expect(groups).toHaveCount(2);
+    const labels = await groups.allTextContents();
+    expect(labels.filter((l) => /^Active(?![A-Za-z])/.test(l)), JSON.stringify(labels)).toHaveLength(1);
+    expect(labels.filter((l) => /^Inactive(?![A-Za-z])/.test(l)), JSON.stringify(labels)).toHaveLength(1);
+    expect(labels.filter((l) => /(?<![A-Za-z])(Yes|No)(?![A-Za-z])/.test(l)), JSON.stringify(labels)).toEqual([]);
   });
 
   test("chooses columns and saves a personal default view that opens next time", async ({ page }) => {
