@@ -248,8 +248,15 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             }
         }
 
-        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var adminId = (await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user").GetProperty("id").GetGuid();
+        using var seeded = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var adminId = (await seeded.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user").GetProperty("id").GetGuid();
+        // The gate reads and prepares through an Administrator of its own, so a change that reaches
+        // the seeded Administrator (the target) is reported as such, not as the gate losing its session.
+        var administratorRole = (await seeded.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
+            .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var observerEmail = $"setobserver.{Guid.NewGuid():N}"[..24] + $"@{Env.TenantA.EmailDomain}";
+        await CreatedIdAsync(seeded, "/api/identity/users", new { email = observerEmail, displayName = "Set takeover observer", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { administratorRole } });
+        using var admin = await Env.SignInAsync(observerEmail);
         var targets = new TargetRecords(admin, Env);
         var companies = await GateCompanies.OfAsync(admin);
         var checkedEndpoints = 0;
@@ -269,10 +276,11 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             var weakId = await CreatedIdAsync(admin, "/api/identity/users", new { email = weakEmail, displayName = $"Set target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
             await companies.GiveAccessAsync(weakId);
 
-            var strong = new List<(Guid Id, string Label)> { (adminId, "the Administrator") };
+            var strong = new List<(Guid Id, string Label, string Email)> { (adminId, "the Administrator", Env.Email(Env.TenantA, "admin")) };
             foreach (var target in GrantTargets.For(catalogue, permissions))
             {
-                strong.Add((await targets.UserAsync(target.Permissions), $"a user holding {target}"));
+                var id = await targets.UserAsync(target.Permissions);
+                strong.Add((id, $"a user holding {target}", (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}")).GetProperty("email").GetString()!));
             }
             var variants = FlagVariants(schema);
             foreach (var (selector, select) in new (string, Func<string, (string? Search, string? Filter)>)[]
@@ -284,9 +292,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 var weakChanged = false;
                 foreach (var flags in variants)
                 {
-                    foreach (var (strongId, label) in strong)
+                    foreach (var (strongId, label, strongEmail) in strong)
                     {
-                        var strongEmail = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{strongId}")).GetProperty("email").GetString()!;
                         var (search, filter) = select(strongEmail);
                         var count = await ListCountAsync(caller, usersList.Endpoint, search, filter);
                         if (count != 1)
