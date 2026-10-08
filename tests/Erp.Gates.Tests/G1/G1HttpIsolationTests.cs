@@ -140,6 +140,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
         CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
         CheckAtLeast(report.ListAnswerPagesJudged, "g1.listAnswerPagesJudged");
+        CheckAtLeast(report.ListAnswerOffsetPagesJudged, "g1.listAnswerOffsetPagesJudged");
         Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
         CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
         CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
@@ -702,6 +703,7 @@ public static partial class IsolationAttack
             ListAnswerQueries = listAnswers.Sum(r => r.Queries),
             ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
             ListAnswerPagesJudged = listAnswers.Sum(r => r.PagesJudged),
+            ListAnswerOffsetPagesJudged = listAnswers.Sum(r => r.OffsetPagesJudged),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
@@ -1570,6 +1572,9 @@ public sealed record IsolationReport(
 
     /// <summary>Keyset pages (first and following, both tenants) whose total and groups were judged.</summary>
     public int ListAnswerPagesJudged { get; init; }
+
+    /// <summary>Pages of offset (skip) walks whose total, groups and rows were judged.</summary>
+    public int ListAnswerOffsetPagesJudged { get; init; }
 
     /// <summary>Process-wide state (reachable from singletons and static fields) that changed
     /// while the tenants used the app.</summary>

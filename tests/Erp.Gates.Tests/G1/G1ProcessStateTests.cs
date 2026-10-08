@@ -70,6 +70,10 @@ public sealed record ProcessStateInventory(IReadOnlyList<ProcessStateFinding> Fi
     /// <summary>Objects visited while walking endpoint delegates (a walk that reaches nothing is blind).</summary>
     public int DelegateObjectsWalked { get; init; }
 
+    /// <summary>Framework singletons built over the product's types (or bare framework collections)
+    /// found, reported and walked as roots.</summary>
+    public int FrameworkSingletonsInspected { get; init; }
+
     /// <summary>Singleton instances and static fields whose object graphs were walked.</summary>
     public int ReachableRoots { get; init; }
 
@@ -99,7 +103,22 @@ public static class ProcessState
     ];
 
     /// <summary>The product's assemblies, the app's service types and its product singleton types.</summary>
-    public sealed record ProductContext(IReadOnlyList<Assembly> Assemblies, IReadOnlyList<ServiceDescriptor> Descriptors, IReadOnlySet<Type> ServiceTypes, IReadOnlyList<Type> Singletons);
+    public sealed record ProductContext(IReadOnlyList<Assembly> Assemblies, IReadOnlyList<ServiceDescriptor> Descriptors, IReadOnlySet<Type> ServiceTypes, IReadOnlyList<Type> Singletons)
+    {
+        /// <summary>Singletons whose implementation is a framework type built over the product's
+        /// types or a bare framework collection (critic p05 round 5, plant L10: an
+        /// <c>ObjectPool&lt;ListPageScratch&gt;</c> whose implementation, the framework's
+        /// <c>DefaultObjectPool&lt;T&gt;</c>, held never-cleared product objects that no product
+        /// singleton or static field reached).</summary>
+        public IReadOnlyList<FrameworkSingleton> FrameworkHolders { get; init; } = [];
+    }
+
+    /// <summary>A framework singleton that can hold the product's objects: its service type, the
+    /// live instance, and why it counts.</summary>
+    public sealed record FrameworkSingleton(Type ServiceType, object Instance, string Why)
+    {
+        public string Key => $"framework-singleton {Readable(ServiceType)}";
+    }
 
     public static ProductContext ContextOf(ErpAppFactory factory)
     {
@@ -121,7 +140,99 @@ public static class ProcessState
                 singletons.Add(type);
             }
         }
-        return new ProductContext(assemblies, descriptors, serviceTypes, singletons.Distinct().ToList());
+        return new ProductContext(assemblies, descriptors, serviceTypes, singletons.Distinct().ToList()) { FrameworkHolders = FrameworkHoldersOf(factory, descriptors, assemblies) };
+    }
+
+    /// <summary>
+    /// Singleton registrations served by a framework type that can hold the product's objects: the
+    /// service or implementation type is built over a product type (an object pool, a cache, a
+    /// channel, a collection of the product's records, at any depth of generic arguments), or it is
+    /// a bare framework collection. Their state is as process-wide as a product singleton's but no
+    /// product field holds them, so they are roots of their own: each is reported (it needs a
+    /// reviewed reason) and walked, framework internals included, down to the product objects it
+    /// holds.
+    /// </summary>
+    private static List<FrameworkSingleton> FrameworkHoldersOf(ErpAppFactory factory, IReadOnlyList<ServiceDescriptor> descriptors, IReadOnlyList<Assembly> assemblies)
+    {
+        var found = new List<FrameworkSingleton>();
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        foreach (var descriptor in descriptors.Where(d => d.Lifetime == ServiceLifetime.Singleton && !d.IsKeyedService && !d.ServiceType.ContainsGenericParameters))
+        {
+            var declared = descriptor.ImplementationType ?? descriptor.ImplementationInstance?.GetType();
+            if (declared is not null && IsProduct(declared, assemblies))
+            {
+                continue;
+            }
+            var why = Carries(descriptor.ServiceType, assemblies, 0) ?? (declared is null ? null : Carries(declared, assemblies, 0));
+            if (why is null && !(ReachableState.IsContainer(descriptor.ServiceType) || (declared is not null && ReachableState.IsContainer(declared))))
+            {
+                continue;
+            }
+            object? instance;
+            try
+            {
+                instance = descriptor.ImplementationInstance ?? factory.Services.GetService(descriptor.ServiceType);
+            }
+            catch (InvalidOperationException)
+            {
+                continue;
+            }
+            if (instance is null || IsProduct(instance.GetType(), assemblies) || !seen.Add(instance))
+            {
+                continue;
+            }
+            why ??= Carries(instance.GetType(), assemblies, 0) ?? $"a framework collection ({Describe(instance.GetType())})";
+            found.Add(new FrameworkSingleton(descriptor.ServiceType, instance, why));
+        }
+        return found;
+    }
+
+    /// <summary>Why a framework type can hold the product's objects (a product type among its
+    /// generic arguments or array elements, at any depth), or null.</summary>
+    private static string? Carries(Type type, IReadOnlyList<Assembly> assemblies, int depth)
+    {
+        if (depth > 8)
+        {
+            return null;
+        }
+        if (type.IsArray)
+        {
+            var element = type.GetElementType()!;
+            return IsProduct(element, assemblies) ? $"built over the product's {Readable(element)}" : Carries(element, assemblies, depth + 1);
+        }
+        if (!type.IsGenericType)
+        {
+            return null;
+        }
+        foreach (var argument in type.GetGenericArguments())
+        {
+            if (IsProduct(argument, assemblies))
+            {
+                return $"built over the product's {Readable(argument)}";
+            }
+            if (Carries(argument, assemblies, depth + 1) is { } inner)
+            {
+                return inner;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>A type's name with its generic arguments spelled out (<c>Microsoft.Extensions.ObjectPool.ObjectPool&lt;Erp.X.Scratch&gt;</c>).</summary>
+    public static string Readable(Type type)
+    {
+        if (type.IsArray)
+        {
+            return Readable(type.GetElementType()!) + "[]";
+        }
+        if (!type.IsGenericType)
+        {
+            return (type.FullName ?? type.Name).Replace('+', '.');
+        }
+        var definition = type.GetGenericTypeDefinition();
+        var name = (definition.FullName ?? definition.Name).Replace('+', '.');
+        var tick = name.IndexOf('`', StringComparison.Ordinal);
+        return $"{(tick < 0 ? name : name[..tick])}<{string.Join(", ", type.GetGenericArguments().Select(Readable))}>";
     }
 
     /// <summary>Every live root of process-wide state in the running app (product singleton
@@ -130,8 +241,13 @@ public static class ProcessState
     {
         var context = ContextOf(factory);
         var types = context.Assemblies.SelectMany(LoadableTypes).Where(t => !Instrument(t));
-        return (Roots(factory, context.Descriptors, context.Singletons, types).ToList(), context.Assemblies);
+        return (Roots(factory, context.Descriptors, context.Singletons, types).Concat(HolderRoots(context)).ToList(), context.Assemblies);
     }
+
+    /// <summary>The framework singletons that can hold the product's objects, as roots whose own
+    /// framework fields are followed (<see cref="ReachableState.FrameworkHolder"/>).</summary>
+    private static IEnumerable<(string Name, object? Value)> HolderRoots(ProductContext context) =>
+        context.FrameworkHolders.Select(h => ($"singleton {Readable(h.ServiceType)}", (object?)new ReachableState.FrameworkHolder(h.Instance)));
 
     /// <summary>
     /// The gate's own instruments (the SQL trace, the attack's bookkeeping) change while they
@@ -145,7 +261,8 @@ public static class ProcessState
 
     public static ProcessStateInventory Inspect(ErpAppFactory factory)
     {
-        var (assemblies, descriptors, serviceTypes, singletons) = ContextOf(factory);
+        var context = ContextOf(factory);
+        var (assemblies, descriptors, serviceTypes, singletons) = context;
         var productTypes = assemblies.SelectMany(LoadableTypes).ToList();
         var inventory = InspectTypes(productTypes, singletons, serviceTypes);
         var findings = inventory.Findings.ToList();
@@ -155,9 +272,14 @@ public static class ProcessState
         // are not walked as roots. The SQL trace holds every call of every test in the process, so
         // in a full run it could fill the walk's object budget before the app's last roots (the
         // statics of generic instantiations) were reached, and a planted memo went unjudged.
-        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes.Where(t => !Instrument(t))), assemblies, serviceTypes, singletons.ToHashSet());
+        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes.Where(t => !Instrument(t))).Concat(HolderRoots(context)),
+            assemblies, serviceTypes, singletons.ToHashSet());
+        // A framework singleton that can hold the product's objects is process-wide state like a
+        // product singleton: it needs a reviewed reason (and what it holds is judged by the walk).
+        findings.AddRange(context.FrameworkHolders.Select(h => new ProcessStateFinding(h.Key,
+            $"a framework singleton ({Describe(h.Instance.GetType())}) {h.Why}: whatever it keeps lives as long as the process, shared by every tenant")));
         findings.AddRange(reachable.Findings);
-        inventory = inventory with { ReachableRoots = reachable.Roots, ReachableObjectsWalked = reachable.ObjectsWalked, ReachableTypesJudged = reachable.TypesJudged, ReachableWalkCut = reachable.Cut };
+        inventory = inventory with { FrameworkSingletonsInspected = context.FrameworkHolders.Count, ReachableRoots = reachable.Roots, ReachableObjectsWalked = reachable.ObjectsWalked, ReachableTypesJudged = reachable.TypesJudged, ReachableWalkCut = reachable.Cut };
         // Variables captured by endpoint lambdas live as long as the endpoint: walk every endpoint's
         // delegate to the product closures and objects it holds.
         var closures = EndpointClosures.Inspect(factory.Services, assemblies, serviceTypes);
