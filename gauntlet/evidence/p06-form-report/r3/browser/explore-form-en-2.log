@@ -1,0 +1,13 @@
+restored notice Saved.
+PUT status 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-6b51744d7a93e5461f1bc86ce3cfa369-c7638fe101733111-00","errors":{"taxRegistrationNumber":[{"code":"tenancyTaxNumber","message":"Use digits only (up to 20)."}],"website":[{"code":"tenancyWebsite","message":"Enter a web address starting with http:// or https://."}]}}
+invalid fields ["taxRegistrationNumber :: Use digits only (up to 20).","website :: Enter a web address starting with http:// or https://."]
+focused taxRegistrationNumber
+form alerts ["Some fields need attention.","Use digits only (up to 20).","Enter a web address starting with http:// or https://."]
+after discard website https://www.example.ae invalid left 0
+Alt+PageDown from field -> http://localhost:20650/tenancy/companies/018dca08-f088-7685-969e-c31713b6f8ef ALN-SHJ · Al Noor Industries LLC | ‹ | 4 of 4 | › | Print | Save | Close
+Alt+PageDown from body -> http://localhost:20650/tenancy/companies/018dca08-f088-7685-969e-c31713b6f8ef ALN-SHJ · Al Noor Industries LLC | ‹ | 4 of 4 | › | Print | Save | Close
+next button count/disabled 1 true
+next click err locator.click: Timeout 30000ms exceeded.
+after Next click -> http://localhost:20650/tenancy/companies/018dca08-f088-7685-969e-c31713b6f8ef ALN-SHJ · Al Noor Industries LLC | ‹ | 4 of 4 | › | Print | Save | Close
+shortcut sheet none
+writes ["POST http://localhost:20650/api/auth/sign-in","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616"]

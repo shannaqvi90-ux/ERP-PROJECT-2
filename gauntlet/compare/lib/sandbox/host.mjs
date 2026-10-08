@@ -237,15 +237,23 @@ async function loadModule(file) {
 }
 
 const HOOKS = ['setup', 'signIn', 'observe', 'verify', 'cleanup', 'run'];
+const hooksOf = d => Object.fromEntries(HOOKS.map(h => [h, typeof d?.[h] === 'function']));
+const readyOf = d => (typeof d?.ready === 'function' ? 'function' : typeof d?.ready === 'string' ? d.ready : null);
 function describeDriver(d) {
   const variants = d?.variants && typeof d.variants === 'object' ? Object.entries(d.variants) : [];
   return {
     built: d?.built,
     reason: d?.reason ?? null,
     path: d?.path ?? null,
-    hooks: Object.fromEntries(HOOKS.map(h => [h, typeof d?.[h] === 'function'])),
-    ready: typeof d?.ready === 'function' ? 'function' : typeof d?.ready === 'string' ? d.ready : null,
-    variants: variants.length ? Object.fromEntries(variants.map(([id, v]) => [id, { path: v?.path ?? null, run: typeof v?.run === 'function' }])) : null,
+    hooks: hooksOf(d),
+    ready: readyOf(d),
+    // Round 7: each variant's hooks are the base driver's with the variant's own over them (the
+    // runner calls the hooks this describes, and a variant's own set-up or sign-in was never called
+    // when the base driver had none).
+    variants: variants.length ? Object.fromEntries(variants.map(([id, v]) => {
+      const merged = { ...d, ...v };
+      return [id, { path: v?.path ?? null, run: typeof v?.run === 'function', hooks: hooksOf(merged), ready: readyOf(merged) }];
+    })) : null,
   };
 }
 

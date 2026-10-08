@@ -8,6 +8,34 @@ const searchBox = page => page.getByRole('searchbox').or(page.getByLabel(/search
 const recordShows = l => [...document.querySelectorAll('input, textarea, dd, output, [role="dialog"], [role="complementary"], form, aside')]
   .some(el => !el.closest('table, [role="grid"], [role="rowgroup"]') && (el.value === l || (el.children.length === 0 && el.textContent.trim() === l) || el.matches('[role="dialog"], [role="complementary"], form, aside') && el.textContent.includes(l)));
 
+/**
+ * The fewest letters an expert of this product types to put the user first: the shortest word
+ * prefixes of the name (any words, in the name's order) whose ranked search answers the user as
+ * the best match, found through the users list's own search before the measured run (critic p03
+ * round 5 found 'm an pi' this way; the Odoo side's shortest fragment was probed the same way).
+ * Falls back to the first three letters of each word when no prefix of up to four letters a word
+ * ranks the user first.
+ */
+export function prefixCandidates(name, longest = 4) {
+  const words = name.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  let combos = [[]];
+  for (const w of words) {
+    const next = [];
+    for (const c of combos) for (let l = 0; l <= Math.min(longest, w.length); l++) next.push([...c, w.slice(0, l)]);
+    combos = next;
+  }
+  const typed = [...new Set(combos.map(c => c.filter(Boolean).join(' ')).filter(Boolean))];
+  return typed.sort((a, b) => a.length - b.length || a.localeCompare(b));
+}
+
+async function shortestPrefixes(api, name, login, maxProbes = 400) {
+  for (const typed of prefixCandidates(name).slice(0, maxProbes)) {
+    const page = await api.get(`/api/identity/users?take=1&search=${encodeURIComponent(typed)}`);
+    if (page.items?.[0]?.email?.toLowerCase() === login.toLowerCase()) return typed;
+  }
+  return name.split(/\s+/).map(w => w.slice(0, 3)).join(' ').toLocaleLowerCase();
+}
+
 // The shortest expert paths (critic p05 round 4). The search box has the focus when the users
 // screen opens, so the name is typed straight away (no click into the box), and Enter opens the
 // best match of a ranked search.
@@ -26,7 +54,8 @@ function build(how) {
     await op.waitFor(() => document.activeElement && document.activeElement.matches('input.search, input[type="search"]'), { label: 'user list ready, search focused' });
     // 'prefixes': a generic habit of an expert of this product (best match first, word starts
     // score): the first three letters of each word of the name, then Enter opens the best match.
-    const typed = how === 'prefixes' ? name.split(/\s+/).map(w => w.slice(0, 3)).join(' ') : name;
+    // 'shortest': the fewest letters that rank the user first, found in set-up (shortestPrefixes).
+    const typed = how === 'shortest' ? ctx.state.shortest : how === 'prefixes' ? name.split(/\s+/).map(w => w.slice(0, 3)).join(' ') : name;
     await op.type(typed, { label: 'user name' });
     const row = op.page.getByRole('row').filter({ hasText: name }).first();
     await op.waitFor(row, { label: 'the row with the name' });
@@ -50,6 +79,7 @@ export default {
       if (ctx.health) await api.post('/api/identity/users', { email: login, displayName: name, language: lang === 'ar' ? 'ar' : 'en', password: ctx.product.users.admin.password, roleIds: [] });
       else throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
     }
+    ctx.state.shortest = await shortestPrefixes(api, name, login);
   },
   async signIn(ctx) {
     const { login, password } = ctx.product.users.admin;
@@ -67,6 +97,7 @@ export default {
     row: { path: 'Users (navigation; the search box has the focus) > type the name > click the row.', run: build('row') },
     prefixes: { path: 'Users (navigation; the search box has the focus) > the first three letters of each word of the name > Enter opens the best match (verified to be the user).', run: build('prefixes') },
     palette: { path: 'Ctrl+K > "users" > Enter (the search box has the focus) > type the name > Enter opens the best match.', run: build('palette') },
+    shortest: { path: 'Users (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the user first (found through the list\'s search before the run, e.g. "m an pi") > Enter opens the best match.', run: build('shortest') },
   },
   async verify(ctx) {
     const { name, login } = ctx.needles.user;

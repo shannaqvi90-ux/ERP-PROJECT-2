@@ -14,12 +14,15 @@
 //    pass calls through, except page script: evaluate, init scripts, exposed functions, routes and
 //    the like are refused in every phase (a script installed before the clock keeps acting after
 //    it starts). Drivers read the page with ctx.read and wait with ctx.until, which run their
-//    function inside the sentinel. In every other phase only reading and locating are allowed
+//    function in the read world (2). In every other phase only reading and locating are allowed
 //    (finding elements, reading text, values, visibility, the address); any action throws.
-// 2. Page-script sentinel. The only script a driver may run in the page is a condition (op.waitFor,
-//    ctx.until) or a reader (ctx.read). It runs inside a sentinel that refuses actions (click,
-//    focus, value and scroll setters, form submit, timers, network, storage, history, listeners)
-//    and reports anything that still changed the page (DOM mutations, events, navigation, focus).
+// 2. Page script. The only script a driver may run in the page is a condition (op.waitFor,
+//    ctx.until) or a reader (ctx.read). Round 7: its source is checked first (it may only read: no
+//    async, no writes, no names built at run time, nothing that reaches the window, the address or
+//    reflection), and it runs in an isolated world of the harness's own that is armed for good
+//    (every acting method and setter refused, the refusals logged), never in the page's own script
+//    world; anything that still changed the page (DOM mutations, events, navigation, focus) is
+//    reported. See lib/page-script.mjs.
 // 3. Node network guard. While frozen or measured, fetch and http(s) requests from the harness
 //    process are refused, so a driver cannot do the task through the back end and count nothing;
 //    op.request (the API channel, which counts each request) uses the original fetch. While
@@ -34,7 +37,7 @@
 //    clock. The runner also times two passes of verify() (lib/runner.mjs).
 import http from 'node:http';
 import https from 'node:https';
-import { parseExpressionAt } from 'acorn';
+import { PageScriptRefused, checkPageScript } from './page-script.mjs';
 
 // Every refusal is also recorded here, so a driver that catches the error and carries on still
 // has its run marked invalid (the runner reads the record after the measured part).
@@ -166,22 +169,24 @@ export const isGuarded = v => v !== null && (typeof v === 'object' || typeof v =
 export const guardedClass = v => (RAW.get(v) ?? v)?.constructor?.name || 'Object';
 
 /**
- * A page function a driver sent as source text (lib/sandbox/): it is only ever serialised into
- * the page inside the sentinel, never evaluated in the harness process. The text must be exactly
- * one function expression (parsed, not run): a crafted text such as
- * "() => 1), document.forms[0].submit(), (() => 1" would otherwise close the sentinel's call and
- * act on the page outside it.
+ * A page function a driver sent as source text (lib/sandbox/): it is only ever run in the page's
+ * read world (lib/page-script.mjs), never evaluated in the harness process. The text must be
+ * exactly one synchronous function expression that only reads (checkPageScript): a crafted text
+ * such as "() => 1), document.forms[0].submit(), (() => 1" would otherwise close the harness's call
+ * and act on the page outside it, and an async function or a write to `location` would act after
+ * the call returned.
  */
 export class PageFunction {
   constructor(source) {
     if (typeof source !== 'string' || !source.trim()) throw new TypeError('a page function needs its source');
     const text = source.trim();
-    let node;
-    try { node = parseExpressionAt(text, 0, { ecmaVersion: 'latest' }); } catch (e) {
-      throw new RefusedClaim(`a page function that is not one function expression (${e.message})`);
-    }
-    if (!['ArrowFunctionExpression', 'FunctionExpression'].includes(node.type) || node.end !== text.length || node.generator) {
-      throw new RefusedClaim(`a page function that is not exactly one function expression: ${text.slice(0, 80)}`);
+    // Round 7: the whole function is checked, not only its outline (lib/page-script.mjs): it may
+    // only read the page.
+    // While measured, a page function that would act is an uncounted action; elsewhere it is a
+    // refused claim (it never reaches the page either way).
+    try { checkPageScript(text); } catch (e) {
+      if (e instanceof PageScriptRefused) throw isMeasuring() ? new UncountedAction(e.message) : new RefusedClaim(e.message);
+      throw e;
     }
     this.source = text;
     Object.freeze(this);
@@ -271,113 +276,13 @@ export function guard(raw) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// 2. Page-script sentinel. `sentinelSource` is serialised into the page with each condition.
-/* eslint-disable no-undef */
-function sentinelFactory() {
-  const g = globalThis;
-  const state = { active: false, hits: [] };
-  const hit = what => { if (state.active) state.hits.push(what); };
-  const observer = new MutationObserver(() => {});
-  observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
-  const EVENTS = ['click', 'dblclick', 'auxclick', 'contextmenu', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'keydown', 'keyup',
-    'keypress', 'beforeinput', 'input', 'change', 'submit', 'reset', 'focus', 'blur', 'focusin', 'focusout', 'select', 'paste', 'cut', 'copy',
-    'drop', 'dragstart', 'wheel', 'touchstart', 'touchend', 'invalid', 'toggle'];
-  for (const type of EVENTS) g.addEventListener(type, () => hit(`a ${type} event`), { capture: true });
-  // A navigation started by a condition is cancelled as well as reported: once the document is
-  // gone the report could be lost, and Playwright would run the condition again in the next one.
-  if (g.navigation?.addEventListener) g.navigation.addEventListener('navigate', e => { if (state.active) { hit('a navigation'); if (e.cancelable) e.preventDefault(); } });
-  const refuse = label => function refused() { state.hits.push(label); throw new Error(`HARNESS-UNCOUNTED: ${label}`); };
-  const methods = [
-    [HTMLElement.prototype, ['click', 'focus', 'blur', 'showPopover', 'hidePopover', 'togglePopover']],
-    [Element.prototype, ['scrollIntoView', 'scroll', 'scrollTo', 'scrollBy', 'requestFullscreen', 'requestPointerLock', 'setPointerCapture']],
-    [EventTarget.prototype, ['dispatchEvent', 'addEventListener']],
-    [HTMLFormElement.prototype, ['submit', 'requestSubmit', 'reset']],
-    [HTMLInputElement.prototype, ['select', 'setRangeText', 'setSelectionRange', 'showPicker', 'stepUp', 'stepDown']],
-    [HTMLTextAreaElement.prototype, ['select', 'setRangeText', 'setSelectionRange']],
-    [HTMLDialogElement.prototype, ['show', 'showModal', 'close']],
-    [Document.prototype, ['execCommand', 'open', 'write', 'writeln']],
-    [History.prototype, ['pushState', 'replaceState', 'back', 'forward', 'go']],
-    [Storage.prototype, ['setItem', 'removeItem', 'clear']],
-    [XMLHttpRequest.prototype, ['open', 'send']],
-    [WebSocket.prototype, ['send']],
-    [Navigator.prototype, ['sendBeacon']],
-    [MessagePort.prototype, ['postMessage']],
-    [Promise.prototype, ['then']],
-    [g, ['fetch', 'open', 'close', 'print', 'alert', 'confirm', 'prompt', 'postMessage', 'scroll', 'scrollTo', 'scrollBy',
-      'setTimeout', 'setInterval', 'requestAnimationFrame', 'requestIdleCallback', 'queueMicrotask']],
-  ];
-  const setters = [
-    [HTMLInputElement.prototype, ['value', 'checked', 'indeterminate', 'files', 'valueAsNumber', 'valueAsDate']],
-    [HTMLTextAreaElement.prototype, ['value']],
-    [HTMLSelectElement.prototype, ['value', 'selectedIndex']],
-    [HTMLOptionElement.prototype, ['selected']],
-    [Element.prototype, ['scrollTop', 'scrollLeft']],
-    [Document.prototype, ['cookie']],
-  ];
-  const saved = [];
-  function arm() {
-    for (const [obj, names] of methods) {
-      for (const name of names) {
-        const d = Object.getOwnPropertyDescriptor(obj, name);
-        if (!d || typeof d.value !== 'function') continue;
-        saved.push([obj, name, d]);
-        Object.defineProperty(obj, name, { ...d, value: refuse(`${name}()`) });
-      }
-    }
-    for (const [obj, names] of setters) {
-      for (const name of names) {
-        const d = Object.getOwnPropertyDescriptor(obj, name);
-        if (!d || !d.set) continue;
-        saved.push([obj, name, d]);
-        Object.defineProperty(obj, name, { ...d, set: refuse(`setting ${name}`) });
-      }
-    }
-  }
-  function disarm() {
-    while (saved.length) { const [obj, name, d] = saved.pop(); Object.defineProperty(obj, name, d); }
-  }
-  return function guarded(predicate, arg) {
-    observer.takeRecords();
-    const focused = document.activeElement;
-    const href = location.href;
-    state.hits = [];
-    state.active = true;
-    arm();
-    let result;
-    let thrown = null;
-    try { result = predicate(arg); } catch (e) { thrown = e; } finally {
-      disarm();
-      state.active = false;
-    }
-    if (observer.takeRecords().length) state.hits.push('a change to the page (DOM mutation)');
-    if (document.activeElement !== focused) state.hits.push('a focus move');
-    if (location.href !== href) state.hits.push('a change of address');
-    if (result && typeof result.then === 'function') state.hits.push('an asynchronous condition (it can act after it returns)');
-    if (state.hits.length) throw new Error(`HARNESS-UNCOUNTED: the condition acted on the page: ${[...new Set(state.hits)].join(', ')}`);
-    if (thrown) throw thrown;
-    return result;
-  };
-}
-/* eslint-enable no-undef */
+// 2. Page script. A driver's page functions (conditions and readers) are checked in source and run
+//    in the harness's armed read world, never in the page's own script world (lib/page-script.mjs).
 
-/**
- * A page function that evaluates `fn(arg)` inside the sentinel, for page.waitForFunction. It is
- * built here as a real function (not a string expression), so Playwright runs it through the
- * browser's debugging protocol and a product's content security policy (script-src 'self', no
- * eval) does not block it.
- */
-export function sentinelFunction(fn) {
-  if (typeof fn !== 'function' && !(fn instanceof PageFunction)) throw new TypeError('condition must be a function');
-  const source = fn instanceof PageFunction ? fn.source : fn.toString();
-  const body = `return (globalThis.__harnessSentinel || (Object.defineProperty(globalThis, '__harnessSentinel', { value: (${sentinelFactory.toString()})() }), globalThis.__harnessSentinel))((${source}), arg);`;
-  // eslint-disable-next-line no-new-func
-  return new Function('arg', body);
-}
-
-/** Turns the sentinel's page error into a refusal (UncountedAction while measured). */
+/** Turns a refusal reported from the read world into the guard's refusal (UncountedAction while measured). */
 export function rethrowSentinel(err) {
-  const m = /HARNESS-UNCOUNTED: ([^\n]*)/.exec(String(err?.message || err));
-  if (m) throw isMeasuring() ? new UncountedAction(m[1]) : new ActionOutsideClock(`page script: ${m[1]}`, phase);
+  const what = err?.name === 'PageScriptAction' ? err.what : (/HARNESS-UNCOUNTED: ([^\n]*)/.exec(String(err?.message || err)) || [])[1];
+  if (what) throw isMeasuring() ? new UncountedAction(what) : new ActionOutsideClock(`page script: ${what}`, phase);
   throw err;
 }
 

@@ -6,7 +6,7 @@ import { ListView, type BulkAction } from "../../kernel/lists/ListView";
 import type { Row } from "../../kernel/lists/model";
 import { useSession } from "../../kernel/session";
 import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
-import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
+import { isTyping, newRecordChord, roleName, rolesSummary, userName, type Company, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
 
@@ -86,6 +86,13 @@ export function UsersPage() {
     api<RolePage>("GET", "/api/identity/roles").then((p) => setRoles(p.items), () => setRoles([]));
   }, [can]);
 
+  // The companies the user works in name the roles held in one company (by code) in the Roles column.
+  const [companies, setCompanies] = useState<Company[]>([]);
+  useEffect(() => {
+    if (!can("identity.users.read")) return;
+    api<Company[]>("GET", "/api/identity/companies").then((c) => setCompanies(Array.isArray(c) ? c : []), () => setCompanies([]));
+  }, [can]);
+
   // Alt+N starts a new user from anywhere on the screen, including the search box the list
   // focuses on arrival (where a plain "n" is typed into the search).
   useShortcut({
@@ -117,6 +124,7 @@ export function UsersPage() {
   }, [panel.startNew]);
 
   const roleNames = new Map(roles.map((r) => [r.id, roleName(r, language)]));
+  const companyCodes = new Map(companies.map((c) => [c.id, c.code]));
 
   // Bulk actions on the chosen rows (the selection bar): activate or deactivate accounts.
   const bulkActive = (active: boolean): BulkAction => ({
@@ -185,9 +193,12 @@ export function UsersPage() {
                 onCreated={(user) => {
                   setNotices((all) => ({
                     ...all,
-                    [user.id]: user.setupCode
-                      ? { kind: "code", code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
-                      : { kind: "info", text: t("identity.form.created") },
+                    [user.id]: {
+                      ...(user.setupCode
+                        ? { kind: "code" as const, code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
+                        : { kind: "info" as const, text: t("identity.form.created") }),
+                      ...(user.followUpError ? { warning: user.followUpError } : {}),
+                    },
                   }));
                   panel.saved(user.id);
                 }}
@@ -223,14 +234,14 @@ export function UsersPage() {
           }
           renderCell={{
             displayName: (u) => String((language === "ar" && u.displayNameAr ? u.displayNameAr : u.displayName) ?? ""),
-            roleIds: (u) => (
-              <span className="id-ellipsis">
-                {(Array.isArray(u.roleIds) ? (u.roleIds as string[]) : [])
-                  .map((r) => roleNames.get(r))
-                  .filter(Boolean)
-                  .join(language === "ar" ? "، " : ", ")}
-              </span>
-            ),
+            roleIds: (u) => {
+              const text = rolesSummary(u, roleNames, companyCodes, t("identity.users.rolesElsewhereShort"), language === "ar" ? "، " : ", ");
+              return (
+                <span className="id-ellipsis" title={text || undefined}>
+                  {text}
+                </span>
+              );
+            },
             isActive: (u) => (
               <span className="id-status">
                 {u.isActive ? t("identity.users.active") : <span className="id-badge off">{t("identity.users.inactive")}</span>}

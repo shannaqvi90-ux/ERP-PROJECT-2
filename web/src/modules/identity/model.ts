@@ -108,14 +108,21 @@ export type MatrixRow = {
   label: string;
   cells: Partial<Record<(typeof matrixActions)[number], Permission>>;
   other: Permission[];
+  /** The row's permissions the filter matches (every one without a filter): the ones shown, and
+   * the only ones a bulk toggle changes. */
+  matching: Permission[];
 };
 
-export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; permissions: Permission[] };
+/** A module's block: its rows, every permission of those rows, and the ones the filter matches. */
+export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; permissions: Permission[]; matching: Permission[] };
 
 /**
  * The permission matrix: one block per module, one row per resource, a column per common action
- * and an "other" cell for the rest. With a filter, only rows whose resource name, permission labels
- * or keys contain every word of it are kept (case-insensitive, any script).
+ * and an "other" cell for the rest. With a filter, a permission matches when its label, key or its
+ * resource's name contain every word of the filter (case-insensitive, any script), and only rows
+ * with a matching permission are kept. Only matching permissions are shown and toggled in bulk
+ * (critic p03 round 5: searching "view" kept whole rows, so "Select all shown" also ticked
+ * deleting users, resetting passwords and changing the workspace).
  */
 export function buildMatrix(permissions: Permission[], filter = ""): MatrixModule[] {
   const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
@@ -123,12 +130,12 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
   for (const p of permissions) {
     let block = modules.get(p.module);
     if (!block) {
-      block = { module: p.module, label: p.moduleLabel, rows: [], permissions: [] };
+      block = { module: p.module, label: p.moduleLabel, rows: [], permissions: [], matching: [] };
       modules.set(p.module, block);
     }
     let row = block.rows.find((r) => r.resource === p.resource);
     if (!row) {
-      row = { resource: p.resource, label: p.resourceLabel, cells: {}, other: [] };
+      row = { resource: p.resource, label: p.resourceLabel, cells: {}, other: [], matching: [] };
       block.rows.push(row);
     }
     if ((matrixActions as readonly string[]).includes(p.action)) row.cells[p.action as (typeof matrixActions)[number]] = p;
@@ -136,15 +143,17 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
   }
   const result: MatrixModule[] = [];
   for (const block of modules.values()) {
-    const rows = block.rows.filter((row) => {
-      if (words.length === 0) return true;
-      const text = [row.label, row.resource, ...rowPermissions(row).flatMap((p) => [p.label, p.key])]
-        .join(" ")
-        .toLocaleLowerCase();
-      return words.every((w) => text.includes(w));
-    });
+    const rows = block.rows
+      .map((row) => ({
+        ...row,
+        matching: rowPermissions(row).filter((p) => {
+          const text = [row.label, row.resource, p.label, p.key].join(" ").toLocaleLowerCase();
+          return words.every((w) => text.includes(w));
+        }),
+      }))
+      .filter((row) => row.matching.length > 0);
     if (rows.length === 0) continue;
-    result.push({ ...block, rows, permissions: rows.flatMap(rowPermissions) });
+    result.push({ ...block, rows, permissions: rows.flatMap(rowPermissions), matching: rows.flatMap((row) => row.matching) });
   }
   return result;
 }
@@ -195,6 +204,33 @@ export const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valu
 /** The role name in the screen's language. */
 export const roleName = (role: { nameEn: string; nameAr: string }, language: string) => (language === "ar" ? role.nameAr : role.nameEn);
 
+/**
+ * What a user holds, for the users list's Roles cell: roles in every company by name, then roles in
+ * one company as "name (company code)", then a note when the user also holds roles in companies the
+ * reader does not work in (critic p03 round 5: a user whose roles were all per company showed an
+ * empty cell, so the list misstated who can do what). Roles the reader cannot name are left out.
+ */
+export function rolesSummary(
+  user: Record<string, unknown>,
+  roleNames: ReadonlyMap<string, string>,
+  companyCodes: ReadonlyMap<string, string>,
+  elsewhere: string,
+  separator: string,
+): string {
+  const everywhere = (Array.isArray(user.roleIds) ? (user.roleIds as string[]) : []).map((id) => roleNames.get(id)).filter((n): n is string => !!n);
+  const inOne = (Array.isArray(user.companyRoles) ? (user.companyRoles as CompanyRole[]) : [])
+    .map((c) => {
+      const name = roleNames.get(c.roleId);
+      if (!name) return null;
+      const code = companyCodes.get(c.companyId);
+      return code ? `${name} (${code})` : name;
+    })
+    .filter((n): n is string => !!n);
+  const parts = [...everywhere, ...inOne];
+  if (user.rolesElsewhere === true) parts.push(elsewhere);
+  return parts.join(separator);
+}
+
 /** True when the key event should not be taken as a screen shortcut (the user is typing). */
 export function isTyping(event: KeyboardEvent | { target: EventTarget | null }): boolean {
   const target = event.target as HTMLElement | null;
@@ -237,8 +273,10 @@ export const userName = (user: { displayName: string; displayNameAr?: string | n
  * action needs its own permission, none acts on oneself here, and none acts on someone whose roles
  * (in every company or in one) grant a permission the signed-in user lacks, or who holds roles in
  * companies the signed-in user does not work in (either would be a way to take the account over).
- * Deleting is only for someone who has never signed in. Roles that are not loaded (the user may
- * not read roles) cannot be judged, and the server still decides.
+ * Deleting is only for someone who has never signed in. A role that is not loaded (the user may
+ * not read roles) cannot be judged from here, so it counts as beyond too (critic p03 round 5: a
+ * clerk who may not read roles was offered Save and "Sign out everywhere" on the Administrator,
+ * and the server refused both).
  */
 export function userActions(
   user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere">,
@@ -247,9 +285,9 @@ export function userActions(
   selfId: string | null,
 ) {
   const self = user.id === selfId;
-  // Roles in every company and roles in one company alike; roles in companies the signed-in user
-  // does not work in cannot be judged from here, so they count as beyond.
-  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;
+  // Roles in every company and roles in one company alike; roles that are not loaded and roles in
+  // companies the signed-in user does not work in cannot be judged from here, so they count as beyond.
+  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;
   const beyondOwn = user.roleIds.some(grantsBeyond) || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) || user.rolesElsewhere === true;
   const others = !self && !beyondOwn;
   return {

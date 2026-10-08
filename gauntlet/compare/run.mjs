@@ -16,11 +16,12 @@
 // (a tie is a loss) and review.html, a blind page that shows the two products as A and B.
 import fs from 'node:fs';
 import path from 'node:path';
-import { BASELINE_DIR, REPO_ROOT } from './lib/config.mjs';
+import { BASELINE_DIR, PRODUCTS, REPO_ROOT } from './lib/config.mjs';
 import { loadDriver, loadTasks, PRODUCT_IDS } from './lib/registry.mjs';
 import { compareRuns, medianOf, promoteBaseline, runTask } from './lib/runner.mjs';
 import { writeReview } from './lib/review.mjs';
 import { productOrder } from './lib/blind.mjs';
+import { checkLiveRig, describeShort, TOP_UP_HINT } from './lib/rig-volume.mjs';
 
 function parse(argv) {
   const a = { task: null, product: 'both', out: null, repeat: 1, headed: false, list: false, health: false };
@@ -77,6 +78,21 @@ async function main() {
   const baseline = !args.out && args.product === 'odoo';
   const outDir = args.out || (baseline ? BASELINE_DIR : path.join(REPO_ROOT, 'gauntlet', 'compare', 'runs', new Date().toISOString().replace(/[:.]/g, '-')));
 
+  // The bar's volume rule holds on the live rig, not only in volume.json (Odoo vacuums job-run rows
+  // older than a week): an Odoo run against a rig short of 100,000 rows in a main list is refused.
+  if (products.includes('odoo') && ids.length) {
+    let rig;
+    try { rig = await checkLiveRig(PRODUCTS.odoo); } catch (e) {
+      console.error(`the Odoo reference rig could not be checked on ${PRODUCTS.odoo.baseUrl}: ${e.message}`);
+      return 2;
+    }
+    if (!rig.ok) {
+      console.error(`the Odoo reference rig is short of the bar: ${describeShort(rig)}; ${TOP_UP_HINT}`);
+      return 2;
+    }
+    console.log(`reference rig: at least ${rig.minimum.toLocaleString('en-US')} rows in each of ${Object.keys(rig.lists).length} main lists (checked live)`);
+  }
+
   let failures = 0;
   const comparisons = [];
   for (const id of ids) {
@@ -110,10 +126,9 @@ async function main() {
       const file = path.join(outDir, 'comparisons', `${id}.json`);
       fs.mkdirSync(path.dirname(file), { recursive: true });
       fs.writeFileSync(file, JSON.stringify(cmp, null, 2) + '\n');
-      console.log(`${id.padEnd(24)} verdict ${cmp.verdict}`);
-      if (cmp.ties_at_zero.length) {
-        console.log(`${id.padEnd(24)} TIE AT ZERO on ${cmp.ties_at_zero.join(', ')} (both products 0; counted as a tie, and a tie is a loss)` +
-          (cmp.loss_only_from_ties_at_zero ? ': every other metric is a win, so this loss comes from the tie at zero alone' : '') + '. Owner question pending, gauntlet/needs-human.md.');
+      console.log(`${id.padEnd(24)} verdict ${cmp.verdict}` + (cmp.ours_path ? ` (ours judged on its whole path '${cmp.ours_path}')` : ''));
+      if (cmp.left_out.length) {
+        console.log(`${id.padEnd(24)} left out: ${cmp.left_out.join(', ')} (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)`);
       }
     }
   }

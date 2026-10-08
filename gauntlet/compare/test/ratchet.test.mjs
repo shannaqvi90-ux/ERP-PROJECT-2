@@ -6,12 +6,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BASELINE_DIR, HARNESS_DIR, REPO_ROOT } from '../lib/config.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
+import { MUTATIONS, tapResult, unionPattern } from '../scripts/mutations.mjs';
 
 const ratchet = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'gauntlet', 'ratchet.json'), 'utf8'));
 const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_drivers_built: 'compare.odooDriversBuilt',
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
-  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks' };
+  guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
+  instrument_mutations: 'compare.instrumentMutations' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -87,7 +89,50 @@ test('planted uncounted-action drivers never go below their minimum', () => {
   assert.ok(entries + named >= min.guard_plants, `${entries + named} plants < ${min.guard_plants}`);
 });
 
+test('page-function plants never go below their minimum (round 7)', () => {
+  // test/page-script.test.mjs: the functions the source check refuses (REFUSED), the actions the
+  // read world refuses on its own (ACTS) and the plants run end to end (PLANTS), one each.
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'page-script.test.mjs'), 'utf8');
+  const entries = name => {
+    const start = text.indexOf(`const ${name} = {`);
+    assert.ok(start >= 0, `${name} missing from test/page-script.test.mjs`);
+    const table = text.slice(start, text.indexOf('\n};', start));
+    return (table.match(/^ {2}'(?:[^'\\]|\\.)+': /gm) || []).length;
+  };
+  const n = entries('REFUSED') + entries('ACTS') + entries('PLANTS');
+  assert.ok(n >= min.page_function_plants, `${n} page-function plants < ${min.page_function_plants}`);
+});
+
 test('API tasks never go below their minimum', async () => {
   const n = (await loadTasks()).filter(t => t.channel === 'api').length;
   assert.ok(n >= min.api_tasks, `${n} API tasks < ${min.api_tasks}`);
+});
+
+// The instrument's mutation check (scripts/mutations.mjs) runs in ./erp verify: every mutation
+// must fail a self-test. Here: never fewer mutations than the minimum, and each still finds the
+// text it mutates (a defence rewritten without updating its mutation would otherwise pass unseen).
+test('instrument mutations never go below their minimum, and each still finds what it mutates', () => {
+  assert.ok(MUTATIONS.length >= min.instrument_mutations, `${MUTATIONS.length} instrument mutations < ${min.instrument_mutations}`);
+  assert.equal(new Set(MUTATIONS.map(m => m[0])).size, MUTATIONS.length, 'mutation ids are unique');
+  for (const [id, , file, text, replacement, testFile] of MUTATIONS) {
+    assert.notEqual(text, replacement, `${id}: changes nothing`);
+    assert.ok(fs.readFileSync(path.join(HARNESS_DIR, file), 'utf8').includes(text), `${id}: ${file} no longer holds the text it mutates`);
+    assert.ok(fs.existsSync(path.join(HARNESS_DIR, testFile)), `${id}: ${testFile} missing`);
+  }
+});
+
+// Round 8: the controls of one test file run together, once, and each test is judged by name.
+test('the mutation check reads each test by name, and runs one control per test file for all its patterns', () => {
+  assert.deepEqual(tapResult('ok 3 - the freeze holds'), { passed: true, name: 'the freeze holds' });
+  assert.deepEqual(tapResult('    not ok 1 - plant T3 (round 6): never verified'), { passed: false, name: 'plant T3 (round 6): never verified' });
+  assert.deepEqual(tapResult('not ok 2 - flaky # TODO later'), { passed: false, name: 'flaky' });
+  assert.equal(tapResult('ok 4 - filtered out # SKIP test name does not match pattern'), null);
+  assert.equal(tapResult('# Subtest: the freeze holds'), null);
+  assert.equal(unionPattern(['live ticker|plant T3', 'plant T6']), '(?:live ticker|plant T3)|(?:plant T6)');
+  assert.equal(unionPattern(['plant T6', '']), '', 'a whole-file pattern makes the control the whole file');
+  // Every mutation's own tests are inside its file's control.
+  for (const [id, , , , , testFile, pattern] of MUTATIONS) {
+    const union = new RegExp(unionPattern(MUTATIONS.filter(m => m[5] === testFile).map(m => m[6])));
+    if (pattern) assert.ok(union.source.includes(`(?:${pattern})`) || union.source === '(?:)', id);
+  }
 });

@@ -495,6 +495,22 @@ public sealed class LeakyModule : ErpModule
                 return Results.NoContent();
             }).WithName("leaky.reactivate").WithSummary("Planted bug: reactivates a user with only a read permission.").RequirePermission("leaky.data.read");
 
+            // Bugs 53 and 54 (critic p03 round 5, plant P2 and finding R1): the users list's "all
+            // that match" activation. Bug 53 judges nothing the chosen users hold; bug 54 judges
+            // only roles held in every company, so a user whose roles are held in one company, or
+            // in a company the caller does not work in, is changed. The set-based takeover check
+            // (SetTakeover) must report both. They act only on the gate's own users (addresses
+            // starting "set" or "g2."), never with an empty selection, so the HTTP attack's calls
+            // cannot deactivate the environment's seeded administrators.
+            group.MapPost("/users/matching/active-anyone", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveAsync(request, session, caller, workspaceRolesOnly: false))
+                .WithName("leaky.matchingActiveAnyone").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, whatever they hold.")
+                .RequirePermission("leaky.data.update");
+            group.MapPost("/users/matching/active-workspace-roles", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveAsync(request, session, caller, workspaceRolesOnly: true))
+                .WithName("leaky.matchingActiveWorkspaceRoles").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, judging only roles held in every company.")
+                .RequirePermission("leaky.data.update");
+
             // Bug 25: a GET that writes. Every GET runs in a read-only transaction, so the database
             // refuses the write.
             group.MapGet("/touch", async (ErpDbSession session) =>
@@ -1299,6 +1315,40 @@ public sealed class LeakyModule : ErpModule
     public sealed record NewPerson(string? DisplayName);
 
     public sealed record NewRole(string? NameEn, string? NameAr, IReadOnlyList<string>? Permissions);
+
+    /// <summary>The body of the planted "all that match" activations (bugs 53 and 54), shaped as
+    /// the product's own.</summary>
+    public sealed record PlantedMatchingActiveRequest(bool? Active, string? Search, string? Filter, int? ExpectedCount);
+
+    /// <summary>Bugs 53 and 54: the users an exact e-mail search or an <c>email eq '…'</c> filter
+    /// chooses, among the gate's own users, set active or inactive (never the caller). With
+    /// <paramref name="workspaceRolesOnly"/>, users holding a role in every company that grants
+    /// something the caller lacks are left alone; roles held in one company are not read.</summary>
+    private static async Task<IResult> SetMatchingActiveAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller, bool workspaceRolesOnly)
+    {
+        var filterEmail = request.Filter is { Length: > 0 } filter && System.Text.RegularExpressions.Regex.Match(filter, "^email eq '(.*)'$") is { Success: true } m
+            ? m.Groups[1].Value.Replace("''", "'", StringComparison.Ordinal)
+            : null;
+        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        if (request.Active is null || (search is null && filterEmail is null))
+        {
+            return Results.BadRequest();
+        }
+        await using var command = new NpgsqlCommand(
+            "UPDATE identity.users u SET is_active = @active " +
+            "WHERE (@search::text IS NULL OR lower(u.email) = lower(@search)) AND (@filter::text IS NULL OR lower(u.email) = lower(@filter)) " +
+            "AND (u.email LIKE 'set%' OR u.email LIKE 'g2.%') AND u.id <> @caller " +
+            (workspaceRolesOnly
+                ? "AND NOT EXISTS (SELECT 1 FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id WHERE ur.user_id = u.id AND NOT (r.permissions <@ @held))"
+                : ""),
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("active", request.Active.Value);
+        command.Parameters.Add(new NpgsqlParameter("search", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)search ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("filter", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)filterEmail ?? DBNull.Value });
+        command.Parameters.AddWithValue("caller", caller.UserId);
+        command.Parameters.AddWithValue("held", caller.Permissions.ToArray());
+        return Results.Ok(new { changed = await command.ExecuteNonQueryAsync() });
+    }
 
     private static async Task<PersonCard?> PersonAsync(ErpDbSession session, Guid id)
     {

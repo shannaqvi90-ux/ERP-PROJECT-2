@@ -68,6 +68,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var fieldVariants = 0;
         var moduleFieldVariants = 0;
         var targetsAimed = 0;
+        var companyTargetsAimed = 0;
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -123,6 +124,11 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             {
                 var victim = await targets.UserAsync(target.Permissions);
                 var victimBefore = await ReadUserAsync(admin, victim);
+                if (victimBefore.StartsWith("404 ", StringComparison.Ordinal))
+                {
+                    problems.Add($"{endpoint}: the user holding {target} is gone (an earlier request removed them)");
+                    continue;
+                }
                 var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(caller, openApi, endpoint, victim, $"{tag}g{++targetsAimed}"));
                 if (targetStatus != (int)HttpStatusCode.Forbidden)
                 {
@@ -132,6 +138,66 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 if (victimAfter != victimBefore)
                 {
                     problems.Add($"{endpoint}: the user holding {target} changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                }
+            }
+
+            // Users whose grants the caller lacks are held in one company only (critic p03 round 5,
+            // finding R1: a check reading only workspace-wide roles lets a clerk act on a company
+            // manager). One target per module, its role held in the first company, which the caller
+            // works in (so nothing is hidden from them: only what the role grants protects it).
+            if (companies.First is { } inCompany)
+            {
+                foreach (var target in GrantTargets.PerModule(catalogue, permissions))
+                {
+                    var victim = await targets.UserInCompanyAsync(target.Permissions, inCompany, companies);
+                    var victimBefore = await ReadUserAsync(admin, victim);
+                    if (victimBefore.StartsWith("404 ", StringComparison.Ordinal))
+                    {
+                        problems.Add($"{endpoint}: the user holding {target} in one company only is gone (an earlier request removed them)");
+                        continue;
+                    }
+                    var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(caller, openApi, endpoint, victim, $"{tag}c{++companyTargetsAimed}"));
+                    if (targetStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user holding {target} in one company only by a user holding only [{string.Join(", ", permissions)}] everywhere answered {targetStatus} (expected 403): {Short(targetText)}");
+                    }
+                    var victimAfter = await ReadUserAsync(admin, victim);
+                    if (victimAfter != victimBefore)
+                    {
+                        problems.Add($"{endpoint}: the user holding {target} in one company only changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                    }
+                }
+
+                // A user holding, in a company the caller does not work in, a role granting nothing
+                // the caller lacks: what it grants cannot be seen from the caller's companies, so
+                // the user is beyond them. The caller works in the first company alone for this
+                // request, and in both again afterwards.
+                if (companies.Ids.Count > 1)
+                {
+                    var elsewhere = await targets.UserInCompanyAsync(["identity.users.read"], companies.Ids[1], companies, fresh: true);
+                    var elsewhereBefore = await ReadUserAsync(admin, elsewhere);
+                    await companies.LimitAccessAsync(callerId, inCompany);
+                    var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
+                    var elsewhereAfter = await ReadUserAsync(admin, elsewhere);
+                    // Control: working in the first company alone, the caller still acts on a user
+                    // without roles who works there too.
+                    var limitedTarget = await CreatedIdAsync(admin, "/api/identity/users", new { email = $"limited.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Limited target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
+                    await companies.LimitAccessAsync(limitedTarget, inCompany);
+                    var (limitedStatus, limitedText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => limitedTarget.ToString()), await BodyAsync(caller, openApi, endpoint, limitedTarget, $"{tag}hc"));
+                    await companies.GiveAccessAsync(callerId);
+                    if (limitedStatus is < 200 or >= 300)
+                    {
+                        problems.Add($"{endpoint}: working in one company, aimed at a user without roles answered {limitedStatus}, so the gate cannot tell the check of hidden roles from a malformed request: {Short(limitedText)}");
+                    }
+                    companyTargetsAimed++;
+                    if (hiddenStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user holding a role in a company the caller does not work in answered {hiddenStatus} (expected 403): {Short(hiddenText)}");
+                    }
+                    if (elsewhereAfter != elsewhereBefore)
+                    {
+                        problems.Add($"{endpoint}: the user holding a role in a company the caller does not work in changed: before {Short(elsewhereBefore)}; after {Short(elsewhereAfter)}");
+                    }
                 }
             }
 
@@ -196,7 +262,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         }
         TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator, " +
                                                         $"{targetsAimed} requests aimed at users holding grants the caller lacks, {moduleFieldVariants} single-field requests aimed at them");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{companyTargetsAimed} requests aimed at users whose roles are held in one company");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(companyTargetsAimed >= Ratchet.Min("g2.takeoverCompanyTargets"),
+            $"{companyTargetsAimed} requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyTargets")}");
         Assert.True(fieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
             $"{fieldVariants} single-field requests aimed at the Administrator; ratchet minimum {Ratchet.Min("g2.takeoverFieldVariantsChecked")}");
         Assert.True(checkedEndpoints >= Ratchet.Min("g2.takeoverEndpointsChecked"),
@@ -211,201 +280,30 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
     /// G2, privilege escalation by acting on users chosen by a search or a filter (critic p05 round
     /// 5, plant P5: with the "never change a user who holds a permission the caller lacks" check
     /// removed from POST /api/identity/users/matching/active, a user manager deactivated the
-    /// Administrator, whom the one-user route refuses with 403). Every write without a route id
-    /// whose body selects rows the way a list does (a <c>search</c> or <c>filter</c> field) is
-    /// found from the running app and its API description. A caller holding exactly that
-    /// endpoint's permission (plus reading users and roles) aims the selection, by search and by
-    /// filter, at exactly one stronger user (the Administrator, and users holding grants the caller
-    /// lacks in every shape of <see cref="GrantTargets"/>), with every combination of the body's
-    /// flags and the list's own count of the selection in its count fields: the stronger user must
-    /// stay exactly as they were. The same requests aimed at a user without roles must change that
-    /// user, which proves the selection reached them. A set-based write on roles has no such check
+    /// Administrator, whom the one-user route refuses with 403; critic p03 round 5, finding R1: the
+    /// same endpoint judged only roles held in every company, so a helpdesk clerk deactivated a
+    /// company manager whose roles were all held in one company). <see cref="SetTakeover"/> finds
+    /// every such write and aims it, by search and by filter, at the Administrator, at users
+    /// holding grants the caller lacks in every shape of <see cref="GrantTargets"/>, at users
+    /// holding one module's grants through a role in one company only, and at a user holding a
+    /// role in a company the caller does not work in: each must stay exactly as they were, while
+    /// the same requests change a user without roles. A set-based write on roles has no such check
     /// yet and fails until it gets one.
     /// </summary>
     [Fact]
     public async Task Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold()
     {
-        using var anonymous = Env.CreateClient();
-        var openApi = await OpenApiDocument.LoadAsync(anonymous);
-        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
-        var catalogue = catalog.PermissionKeys.ToList();
-        var usersList = catalog.Lists.Single(l => l.Endpoint == "/api/identity/users");
-        var problems = new List<string>();
-        var setEndpoints = new List<(ApiEndpoint Endpoint, JsonElement Schema)>();
-        foreach (var endpoint in EndpointInventory.From(Env.Factory.Services).Where(e => e.HasBody && !e.IsAnonymous && e.RouteParameters.Count == 0))
-        {
-            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema || !SelectsLikeAList(schema))
-            {
-                continue;
-            }
-            if (endpoint.Pattern.StartsWith(usersList.Endpoint + "/", StringComparison.Ordinal))
-            {
-                setEndpoints.Add((endpoint, schema));
-            }
-            else if (endpoint.Pattern.StartsWith("/api/identity/", StringComparison.Ordinal))
-            {
-                problems.Add($"{endpoint}: changes identity records chosen by a search or filter, and the takeover gate has no check for that kind of record yet; extend it");
-            }
-        }
-
-        using var seeded = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var adminId = (await seeded.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user").GetProperty("id").GetGuid();
-        // The gate reads and prepares through an Administrator of its own, so a change that reaches
-        // the seeded Administrator (the target) is reported as such, not as the gate losing its session.
-        var administratorRole = (await seeded.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
-            .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
-        var observerEmail = $"setobserver.{Guid.NewGuid():N}"[..24] + $"@{Env.TenantA.EmailDomain}";
-        await CreatedIdAsync(seeded, "/api/identity/users", new { email = observerEmail, displayName = "Set takeover observer", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { administratorRole } });
-        using var admin = await Env.SignInAsync(observerEmail);
-        var targets = new TargetRecords(admin, Env);
-        var companies = await GateCompanies.OfAsync(admin);
-        var checkedEndpoints = 0;
-        var aimed = 0;
-        var n = 0;
-        foreach (var (endpoint, schema) in setEndpoints)
-        {
-            var tag = $"s{++n}{Guid.NewGuid():N}"[..10];
-            var permissions = new[] { endpoint.Permission, "identity.users.read", "identity.roles.read" }.Distinct().ToArray();
-            var roleId = await CreatedIdAsync(admin, "/api/identity/roles", new { nameEn = $"Set takeover {tag}", nameAr = $"استيلاء جماعي {tag}", permissions });
-            var email = $"settakeover.{tag}@{Env.TenantA.EmailDomain}";
-            var callerId = await CreatedIdAsync(admin, "/api/identity/users", new { email, displayName = $"Set takeover {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { roleId } });
-            await companies.GiveAccessAsync(callerId);
-            using var caller = await Env.SignInAsync(email);
-
-            var weakEmail = $"settarget.{tag}@{Env.TenantA.EmailDomain}";
-            var weakId = await CreatedIdAsync(admin, "/api/identity/users", new { email = weakEmail, displayName = $"Set target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
-            await companies.GiveAccessAsync(weakId);
-
-            var strong = new List<(Guid Id, string Label, string Email)> { (adminId, "the Administrator", Env.Email(Env.TenantA, "admin")) };
-            foreach (var target in GrantTargets.For(catalogue, permissions))
-            {
-                var id = await targets.UserAsync(target.Permissions);
-                strong.Add((id, $"a user holding {target}", (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}")).GetProperty("email").GetString()!));
-            }
-            var variants = FlagVariants(schema);
-            foreach (var (selector, select) in new (string, Func<string, (string? Search, string? Filter)>)[]
-                     {
-                         ("by search", e => (e, null)),
-                         ("by filter", e => (null, Erp.Kernel.Lists.ListFilterText.Eq("email", e))),
-                     })
-            {
-                var weakChanged = false;
-                foreach (var flags in variants)
-                {
-                    foreach (var (strongId, label, strongEmail) in strong)
-                    {
-                        var (search, filter) = select(strongEmail);
-                        var count = await ListCountAsync(caller, usersList.Endpoint, search, filter);
-                        if (count != 1)
-                        {
-                            problems.Add($"{endpoint} {selector}: the users list answers {count} users for {label}'s address as the caller reads it (expected exactly 1); the gate cannot aim at them alone");
-                            continue;
-                        }
-                        var before = await ReadUserAsync(admin, strongId);
-                        var (status, text) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => ""), SetBody(schema, search, filter, flags, count));
-                        aimed++;
-                        var after = await ReadUserAsync(admin, strongId);
-                        if (after != before)
-                        {
-                            problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at {label} by a user holding only [{string.Join(", ", permissions)}] answered {status} and changed them: " +
-                                         $"before {Short(before)}; after {Short(after)}; answer {Short(text)}");
-                        }
-                        if (status >= 500)
-                        {
-                            problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at {label} answered {status}: {Short(text)}");
-                        }
-                    }
-
-                    // Control: the same request aimed at the user without roles.
-                    var (weakSearch, weakFilter) = select(weakEmail);
-                    var weakCount = await ListCountAsync(caller, usersList.Endpoint, weakSearch, weakFilter);
-                    var weakBefore = await ReadUserAsync(admin, weakId);
-                    var (controlStatus, controlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => ""), SetBody(schema, weakSearch, weakFilter, flags, weakCount));
-                    if (controlStatus is < 200 or >= 300)
-                    {
-                        problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at a user without roles answered {controlStatus}, so the gate cannot tell the access check from a malformed request: {Short(controlText)}");
-                    }
-                    weakChanged |= await ReadUserAsync(admin, weakId) != weakBefore;
-                }
-                if (!weakChanged)
-                {
-                    problems.Add($"{endpoint} {selector}: no request changed the user without roles, so the gate cannot tell that the selection reached anyone");
-                }
-            }
-            checkedEndpoints++;
-        }
-        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints changing users chosen by a search or filter ({string.Join(", ", setEndpoints.Select(e => e.Endpoint.Key))}), " +
-                                                        $"{aimed} requests aimed at stronger users");
-        Assert.True(problems.Count == 0, string.Join("\n", problems));
-        Assert.True(checkedEndpoints >= Ratchet.Min("g2.takeoverSetEndpointsChecked"),
-            $"{checkedEndpoints} endpoints changing users chosen by a search or filter checked; ratchet minimum {Ratchet.Min("g2.takeoverSetEndpointsChecked")}");
-        Assert.True(aimed >= Ratchet.Min("g2.takeoverSetTargets"),
-            $"{aimed} set-based requests aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverSetTargets")}");
-    }
-
-    /// <summary>True for a body that selects rows as a list does (a search or filter field).</summary>
-    internal static bool SelectsLikeAList(JsonElement schema) =>
-        schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("properties", out var properties) &&
-        properties.EnumerateObject().Any(p => p.Name.Equals("search", StringComparison.OrdinalIgnoreCase) || p.Name.Equals("filter", StringComparison.OrdinalIgnoreCase));
-
-    /// <summary>Every boolean field of the body all false, all true, and each one alone the other
-    /// way, in that order (a body without flags has one variant).</summary>
-    private static List<Dictionary<string, bool>> FlagVariants(JsonElement schema)
-    {
-        var flags = schema.GetProperty("properties").EnumerateObject().Where(p => IsType(p.Value, "boolean")).Select(p => p.Name).ToList();
-        var variants = new List<Dictionary<string, bool>>
-        {
-            flags.ToDictionary(f => f, _ => false, StringComparer.Ordinal),
-            flags.ToDictionary(f => f, _ => true, StringComparer.Ordinal),
-        };
-        foreach (var flag in flags.Where(_ => flags.Count > 1))
-        {
-            variants.Add(flags.ToDictionary(f => f, f => f == flag, StringComparer.Ordinal));
-            variants.Add(flags.ToDictionary(f => f, f => f != flag, StringComparer.Ordinal));
-        }
-        return variants.DistinctBy(Describe).ToList();
-    }
-
-    private static string Describe(Dictionary<string, bool> flags) =>
-        string.Join(", ", flags.Select(f => $"{f.Key}={(f.Value ? "true" : "false")}"));
-
-    private static bool IsType(JsonElement schema, string type) =>
-        schema.TryGetProperty("type", out var t) &&
-        (t.ValueKind == JsonValueKind.String ? t.GetString() == type : t.ValueKind == JsonValueKind.Array && t.EnumerateArray().Any(x => x.GetString() == type));
-
-    /// <summary>The body: the selection, the flags, and in every integer field naming a count the
-    /// number of rows the list itself answers for the selection (what a user confirms); every other
-    /// field left out.</summary>
-    private static JsonObject SetBody(JsonElement schema, string? search, string? filter, Dictionary<string, bool> flags, int count)
-    {
-        var body = new JsonObject();
-        foreach (var property in schema.GetProperty("properties").EnumerateObject())
-        {
-            if (property.Name.Equals("search", StringComparison.OrdinalIgnoreCase))
-            {
-                body[property.Name] = search;
-            }
-            else if (property.Name.Equals("filter", StringComparison.OrdinalIgnoreCase))
-            {
-                body[property.Name] = filter;
-            }
-            else if (flags.TryGetValue(property.Name, out var flag))
-            {
-                body[property.Name] = flag;
-            }
-            else if (IsType(property.Value, "integer") && property.Name.Contains("count", StringComparison.OrdinalIgnoreCase))
-            {
-                body[property.Name] = count;
-            }
-        }
-        return body;
-    }
-
-    /// <summary>The list's own count of a selection, as the caller is answered.</summary>
-    private static async Task<int> ListCountAsync(HttpClient caller, string endpoint, string? search, string? filter)
-    {
-        var uri = $"{endpoint}?take=1" + (search is null ? "" : "&search=" + Uri.EscapeDataString(search)) + (filter is null ? "" : "&filter=" + Uri.EscapeDataString(filter));
-        return (await caller.GetFromJsonAsync<JsonElement>(uri)).GetProperty("total").GetInt32();
+        var result = await SetTakeover.RunAsync(Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checked.Count} endpoints changing users chosen by a search or filter ({string.Join(", ", result.Checked)}), " +
+                                                        $"{result.Aimed} requests aimed at stronger users, {result.CompanyAimed} of them at users whose roles are held in one company");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.Contains("POST /api/identity/users/matching/active", result.Checked);
+        Assert.True(result.Checked.Count >= Ratchet.Min("g2.takeoverSetEndpointsChecked"),
+            $"{result.Checked.Count} endpoints changing users chosen by a search or filter checked; ratchet minimum {Ratchet.Min("g2.takeoverSetEndpointsChecked")}");
+        Assert.True(result.Aimed >= Ratchet.Min("g2.takeoverSetTargets"),
+            $"{result.Aimed} set-based requests aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverSetTargets")}");
+        Assert.True(result.CompanyAimed >= Ratchet.Min("g2.takeoverSetCompanyTargets"),
+            $"{result.CompanyAimed} set-based requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverSetCompanyTargets")}");
     }
 
     /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>

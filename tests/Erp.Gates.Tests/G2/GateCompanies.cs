@@ -71,6 +71,26 @@ public sealed class GateCompanies
         return true;
     }
 
+    /// <summary>Let the user work in <paramref name="companyId"/> alone (every branch).</summary>
+    public async Task LimitAccessAsync(Guid userId, Guid companyId)
+    {
+        using var current = await Admin.GetAsync($"/api/tenancy/access/{userId}");
+        var body = new JsonObject
+        {
+            ["companies"] = new JsonArray(new JsonObject { ["companyId"] = companyId, ["allBranches"] = true, ["branchIds"] = new JsonArray() }),
+        };
+        if (current.IsSuccessStatusCode && await current.Content.ReadFromJsonAsync<JsonObject>() is { } read && read["version"] is { } version)
+        {
+            body["version"] = version.DeepClone();
+        }
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/tenancy/access/{userId}") { Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json") };
+        using var response = await Admin.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"PUT /api/tenancy/access/{userId} as administrator answered {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        }
+    }
+
     /// <summary>A company id other than <paramref name="current"/>, for a single-field change of a
     /// company field (a default company); null when there is none.</summary>
     public JsonNode? Other(JsonNode? current) =>
