@@ -65,3 +65,32 @@ whole response was not chosen: the document (groups, totals, names) is built fir
 A boolean list column may carry the choices `true` and `false` (exactly that pair) to name its
 values; screens, filters and printed documents show those names (a role's type: System or Custom)
 in place of Yes and No. Columns of other records' ids printed as counts align like numbers.
+
+### Embedded fonts are subsets (added 2026-10-08)
+
+A PDF embedded each face it used whole: an Arabic page carried the 289 KB Noto Sans Arabic face
+and weighed about 212 KB. Each document now embeds a subset (`Pdf/FontSubset.cs`, PDF 1.7 9.6.4
+and 9.9): glyph ids stay where they are, so the `/CIDToGIDMap`, widths and ToUnicode map need no
+change; outlines the document does not draw are emptied (`loca` rebuilt in long form), composite
+glyphs keep their components, glyph 0 is kept, the shaping tables (GSUB, GPOS, GDEF: text is shaped
+before it is written) and the glyph names of `post` are left out, and the table and whole-font
+checksums are recomputed. The font name carries a six-letter tag derived from the face and the glyph
+set, so the same document gives the same bytes. An Arabic page is now about 35 KB.
+
+Not chosen: renumbering glyphs into a dense subset (smaller still, but every id in the content
+streams, the map and the widths would change with it, for a few KB more); caching subsets between
+documents (a process-wide cache keyed by what a tenant printed is shared state the G1 process-state
+gate rightly refuses, and cutting a subset costs about a millisecond).
+
+Why now: smaller documents for users (a printed list is mailed and archived), and every reader,
+including the isolation gate that reads every printed answer for another tenant's data, parses a
+fraction of the bytes. The gate's work on PDFs dropped about fourfold in a local measurement, which
+matters for the verify processor budget the round-2 critic flagged (8,971 of 9,000 s).
+
+### A probe that cannot reach its surface fails the gate, without hiding what it saw
+
+`IsolationProbeResult.Failures` (additive) lists attempts that failed or got no answer. The reports
+probe catches a failed or timed-out request, records what it asked, and runs the rest; the HTTP
+isolation gate counts each failure as a server error after judging every answer the probe did see.
+Before, one timed-out print under load ended the whole attack with an exception (critic p06
+round 2), hiding any leak found so far.
