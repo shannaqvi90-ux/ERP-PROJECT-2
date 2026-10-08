@@ -50,6 +50,26 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
             $"g1.branchAttackRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g1.branchAttackRequests")}");
         Assert.True(report.Markers >= Ratchet.Min("g1.branchMarkers"), $"g1.branchMarkers: {report.Markers}; ratchet minimum {Ratchet.Min("g1.branchMarkers")}");
 
+        // Reads with nothing but the attacker's own parameters (critic p02 round 6, plants B1, B3 and
+        // B3b): the company's reports and exports, the lists and their prints, and per-user screens by
+        // the ids the attacker's own lists show. Each of these is answered, so it is really judged.
+        var own = report.OwnReads!;
+        TestContext.Current.TestOutputHelper?.WriteLine($"own-parameter reads: {own.Requests} requests over {own.Endpoints} reads; answered: {string.Join(", ", own.Answered)}");
+        foreach (var read in new[]
+                 {
+                     "/api/reports/run/tenancy.companyProfile",
+                     "/api/reports/run/tenancy.branchDirectory",
+                     "/api/reports/lists/tenancy.branches",
+                     "/api/tenancy/branches",
+                     "/api/tenancy/access/{userId:guid}",
+                     "/api/tenancy/companies/{id:guid}",
+                     "/api/identity/users/{id:guid}",
+                 })
+        {
+            Assert.Contains(read, own.Answered);
+        }
+        Assert.True(own.Requests >= Ratchet.Min("g1.branchOwnReadRequests"), $"g1.branchOwnReadRequests: {own.Requests}; ratchet minimum {Ratchet.Min("g1.branchOwnReadRequests")}");
+
         // The records every branch of company X shares (critic p02 round 4, plant P7: a one-branch
         // administrator renamed and deactivated the whole company and every gate passed).
         var shared = report.Shared!;

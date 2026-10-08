@@ -60,6 +60,12 @@ public sealed class LeakyModule : ErpModule
         // registration numbers under the planted module's own read permission, which grants no
         // company data anywhere else.
         module.Report<TaxNumbersReport>(TaxNumbersReport.Definition);
+        // Bugs 60 and 61 (critic p02 round 6, plants B3b and B3): a branch directory with no
+        // parameters, and a company's branches by its company parameter, each read with SQL of its
+        // own, which row-level security limits to the caller's companies but not to the branches a
+        // branch-limited user may work in. Called with nothing but the caller's own company.
+        module.Report<BranchDirectoryReport>(BranchDirectoryReport.Definition);
+        module.Report<CompanyBranchesReport>(CompanyBranchesReport.Definition);
         module.Endpoints(group =>
         {
             group.MapGet("/people", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
@@ -1056,6 +1062,25 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(names);
             }).WithName("leaky.branchNames").WithSummary("Planted bug: reads every branch of the caller's companies.").RequirePermission("leaky.data.read");
 
+            // Bug 62 (critic p02 round 6, plant B1): one user's branch options, as an access screen
+            // offers them, for a user of the caller's own workspace (any other id answers 404), read
+            // past the branch limits: a user of one branch learns every branch of the company.
+            group.MapGet("/people/{id:guid}/branch-options", async (Guid id, ErpDbSession session) =>
+            {
+                if (await PersonAsync(session, id) is null)
+                {
+                    return Results.NotFound();
+                }
+                await using var command = new NpgsqlCommand("SELECT id::text || ' ' || code || ' ' || name_en FROM tenancy.branches ORDER BY code", session.Connection, session.Transaction);
+                await using var reader = await command.ExecuteReaderAsync();
+                var options = new List<string>();
+                while (await reader.ReadAsync())
+                {
+                    options.Add(reader.GetString(0));
+                }
+                return Results.Ok(new { userId = id, options });
+            }).WithName("leaky.branchOptions").WithSummary("Planted bug: a user's branch options past the caller's branch limits.").RequirePermission("leaky.data.read");
+
             // Bug 17 (critic p02 round 3, plant C3): renames any branch of the caller's companies.
             group.MapPut("/branch-names/{id:guid}", async (Guid id, LeakyBranchRename request, ErpDbSession session) =>
             {
@@ -1220,6 +1245,49 @@ public sealed class LeakyModule : ErpModule
             }
             return new Erp.Kernel.Reports.ReportData { Rows = rows };
         }
+    }
+
+    /// <summary>Bug 60: every branch of the caller's companies, past the branch limits.</summary>
+    public sealed class BranchDirectoryReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource
+    {
+        public static readonly Erp.Kernel.Reports.ReportDefinition Definition = new(
+            "leaky.branchDirectory", "tenancy.report.branchDirectory", "leaky.data.read", [],
+            [
+                new Erp.Kernel.Reports.ReportColumn("code", "tenancy.branch.code", Erp.Kernel.Lists.ListColumnType.Text),
+                new Erp.Kernel.Reports.ReportColumn("name", "tenancy.report.branchName", Erp.Kernel.Lists.ListColumnType.Text),
+            ]);
+
+        public Task<Erp.Kernel.Reports.ReportData?> RunAsync(Erp.Kernel.Reports.ReportRun run, CancellationToken cancellationToken) =>
+            BranchRowsAsync(session, null, cancellationToken);
+    }
+
+    /// <summary>Bug 61: the branches of one of the caller's companies, past the branch limits.</summary>
+    public sealed class CompanyBranchesReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource
+    {
+        public static readonly Erp.Kernel.Reports.ReportDefinition Definition = new(
+            "leaky.companyBranches", "tenancy.report.companyProfile", "leaky.data.read",
+            [new Erp.Kernel.Reports.ReportParameter("company", "tenancy.report.company", Erp.Kernel.Reports.ReportParameterType.Reference, Required: true, Lookup: "tenancy.companies")],
+            [
+                new Erp.Kernel.Reports.ReportColumn("code", "tenancy.branch.code", Erp.Kernel.Lists.ListColumnType.Text),
+                new Erp.Kernel.Reports.ReportColumn("name", "tenancy.report.branchName", Erp.Kernel.Lists.ListColumnType.Text),
+            ]);
+
+        public Task<Erp.Kernel.Reports.ReportData?> RunAsync(Erp.Kernel.Reports.ReportRun run, CancellationToken cancellationToken) =>
+            BranchRowsAsync(session, run.Get<Guid>("company"), cancellationToken);
+    }
+
+    private static async Task<Erp.Kernel.Reports.ReportData?> BranchRowsAsync(ErpDbSession session, Guid? company, CancellationToken cancellationToken)
+    {
+        await using var command = new NpgsqlCommand("SELECT code, name_en FROM tenancy.branches WHERE @c::uuid IS NULL OR company_id = @c ORDER BY code",
+            session.Connection, session.Transaction);
+        command.Parameters.Add(new NpgsqlParameter("c", NpgsqlTypes.NpgsqlDbType.Uuid) { Value = (object?)company ?? DBNull.Value });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var rows = new List<IReadOnlyDictionary<string, object?>>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new Dictionary<string, object?> { ["code"] = reader.GetString(0), ["name"] = reader.GetString(1) });
+        }
+        return company is not null && rows.Count == 0 ? null : new Erp.Kernel.Reports.ReportData { Rows = rows };
     }
 
     /// <summary>Where bug 50 keeps printed files: one directory per test process, so self-tests

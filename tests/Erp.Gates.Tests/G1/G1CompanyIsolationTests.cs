@@ -52,6 +52,12 @@ public sealed class G1CompanyIsolationTests(G1CompanyFixture fixture) : IClassFi
         Assert.True(report.Requests >= Ratchet.Min("g1.companyAttackRequests"),
             $"g1.companyAttackRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g1.companyAttackRequests")}");
         Assert.True(report.Markers >= Ratchet.Min("g1.companyMarkers"), $"g1.companyMarkers: {report.Markers}; ratchet minimum {Ratchet.Min("g1.companyMarkers")}");
+        // Reads with nothing but the attacker's own parameters (critic p02 round 6, plants B1, B3, B3b).
+        var own = report.OwnReads!;
+        TestContext.Current.TestOutputHelper?.WriteLine($"own-parameter reads: {own.Requests} requests over {own.Endpoints} reads");
+        Assert.Contains("/api/reports/run/tenancy.companyProfile", own.Answered);
+        Assert.Contains("/api/tenancy/access/{userId:guid}", own.Answered);
+        Assert.True(own.Requests >= Ratchet.Min("g1.companyOwnReadRequests"), $"g1.companyOwnReadRequests: {own.Requests}; ratchet minimum {Ratchet.Min("g1.companyOwnReadRequests")}");
         // Company Y's own code reaches the company create (critic p02 round 3, plant C4), and every
         // identifying column of every company table reaches the creates whose body carries it.
         Assert.Contains("POST /api/tenancy/companies [code] <- tenancy.companies", report.WriteOracleSources);
@@ -80,6 +86,9 @@ public sealed record CompanyAttackReport(
     /// <summary>The branch attack on the records every branch of the attacker's company shares
     /// (null in the company attack).</summary>
     public SharedCompanyRecords.Report? Shared { get; init; }
+
+    /// <summary>The reads with the attackers' own, valid parameters (<see cref="OwnScopeReads"/>).</summary>
+    public OwnScopeReads.Result? OwnReads { get; init; }
 }
 
 /// <summary>The company attack, reusable by the gate self-tests.</summary>
@@ -177,6 +186,9 @@ public static class CompanyAttack
             (viewerLabel, await env.SignInAsync(env.Email(tenant, "viewer"))),
         };
         var state = new State(before, victimName);
+        // Every read the attackers may make with their own, valid parameters, before anything of the
+        // victim's can reach their own records (critic p02 round 6, plants B1, B3 and B3b).
+        var ownReads = await OwnScopeReads.RunAsync(env, openApi, endpoints, attackers, x, branchLayer ? ownBranch : null, before, victimName);
         var yIds = before.Ids.Select(i => i.ToString()).ToList();
         var yValues = yIds.Take(25).Concat(before.Strings.Take(25)).ToList();
         var attacked = 0;
@@ -438,11 +450,13 @@ public static class CompanyAttack
         {
             client.Dispose();
         }
-        return new CompanyAttackReport(state.Leaks, state.Oracles, state.ServerErrors, CompanySnapshot.Differences(before, after), escalations,
-            attacked, state.Requests, before.Markers.Count, state.DifferentialChecks, writeOracleChecks)
+        return new CompanyAttackReport([.. ownReads.Leaks, .. state.Leaks], state.Oracles, [.. ownReads.ServerErrors, .. state.ServerErrors],
+            CompanySnapshot.Differences(before, after), escalations,
+            attacked, state.Requests + ownReads.Requests, before.Markers.Count, state.DifferentialChecks, writeOracleChecks)
         {
             WriteOracleSources = [.. writeOracleSources],
             Shared = sharedReport,
+            OwnReads = ownReads,
         };
     }
 
