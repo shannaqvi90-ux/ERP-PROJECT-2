@@ -57,6 +57,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
         TestContext.Current.TestOutputHelper?.WriteLine(
+            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs");
+        TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
 
