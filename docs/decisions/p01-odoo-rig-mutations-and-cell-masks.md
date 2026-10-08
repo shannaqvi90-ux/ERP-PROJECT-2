@@ -20,7 +20,11 @@ masked company name.
    (one browser per mutation). `test/ratchet.test.mjs` keeps the number of mutations at or above
    `compare.instrumentMutations` in `gauntlet/ratchet.json`, and checks that every mutation still
    finds the text it changes, so a defence rewritten without its mutation is caught in the unit
-   tests already.
+   tests already. Each mutation's self-tests first run unmutated (the control) and must pass, so
+   a test that fails for another reason (no browser, a broken copy) never counts as a catch. The
+   runs ask for TAP output by name: the toolbox's Node 24 prints its spec reporter by default even
+   to a pipe, and the first verify with the check read no results at all and reported all 16
+   mutations missed.
 
 2. **A masked name inside a clipping cell is painted over by the cell.** Playwright's screenshot
    mask paints the bounding box of the element that holds the text. In a list cell that cuts a

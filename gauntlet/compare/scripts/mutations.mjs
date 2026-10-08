@@ -6,7 +6,8 @@
 //   node scripts/mutations.mjs            every mutation
 //   node scripts/mutations.mjs M5 M7      only those
 //
-// Exit code 1 when any mutation is missed. Takes some minutes (each runs a browser).
+// Each mutation's self-tests run unmutated first and must pass (the control). Exit code 1 when any
+// mutation is missed or its control fails. Takes some minutes (each runs a browser).
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -52,9 +53,26 @@ function copyHarness() {
   return { root, dest };
 }
 
-/** Runs the mutations named in `only` (all when empty); returns how many the self-tests missed. */
+/** Runs the self-tests of one file (and name pattern) in the scratch copy; counts TAP results. */
+function selfTests(dest, testFile, pattern) {
+  // TAP named explicitly: newer Node (the toolbox's 24) prints its spec reporter by default, even to a pipe.
+  const args = ['--test', '--test-reporter=tap', '--test-concurrency=1', ...(pattern ? [`--test-name-pattern=${pattern}`] : []), testFile];
+  const r = spawnSync(process.execPath, args, { cwd: dest, encoding: 'utf8', timeout: 20 * 60_000 });
+  const out = r.stdout || '';
+  const failing = (out.match(/^not ok/gm) || []).length;
+  const passing = (out.match(/^ok/gm) || []).length;
+  const why = failing || passing ? '' : `no test result read (exit ${r.status}${r.error ? `, ${r.error.message}` : ''}): ${(r.stderr || out).trim().split('\n').slice(-3).join(' | ')}`;
+  return { failing, passing, why };
+}
+
+/**
+ * Runs the mutations named in `only` (all when empty); returns how many the self-tests missed.
+ * Each mutation's self-tests first run on the unmutated copy (the control) and must all pass
+ * there: a test that fails anyway (no browser, a broken copy) would otherwise count as a catch.
+ */
 export function runMutations(only = [], log = console.log) {
   const { root, dest } = copyHarness();
+  const controls = new Map();
   let missed = 0;
   try {
     for (const [id, what, file, text, replacement, testFile, pattern] of MUTATIONS) {
@@ -62,14 +80,19 @@ export function runMutations(only = [], log = console.log) {
       const p = path.join(dest, file);
       const original = fs.readFileSync(p, 'utf8');
       if (!original.includes(text)) { log(`${id} ${what}: the text to mutate is gone (update scripts/mutations.mjs)`); missed++; continue; }
+      const key = `${testFile}\0${pattern}`;
+      if (!controls.has(key)) controls.set(key, selfTests(dest, testFile, pattern));
+      const control = controls.get(key);
+      if (control.failing || !control.passing) {
+        missed++;
+        log(`${id} ${what}: NOT JUDGED, its self-tests do not pass unmutated (${control.failing} failing, ${control.passing} passing${control.why ? `; ${control.why}` : ''})`);
+        continue;
+      }
       fs.writeFileSync(p, original.replace(text, replacement));
       try {
-        const args = ['--test', '--test-concurrency=1', ...(pattern ? [`--test-name-pattern=${pattern}`] : []), testFile];
-        const r = spawnSync(process.execPath, args, { cwd: dest, encoding: 'utf8', timeout: 20 * 60_000 });
-        const failing = (r.stdout.match(/^not ok/gm) || []).length;
-        const passing = (r.stdout.match(/^ok/gm) || []).length;
+        const { failing, passing, why } = selfTests(dest, testFile, pattern);
         if (!failing) missed++;
-        log(`${id} ${what}: ${failing ? 'caught' : 'MISSED'} (${failing} failing, ${passing} passing)`);
+        log(`${id} ${what}: ${failing ? 'caught' : 'MISSED'} (${failing} failing, ${passing} passing${why ? `; ${why}` : ''})`);
       } finally {
         fs.writeFileSync(p, original);
       }
