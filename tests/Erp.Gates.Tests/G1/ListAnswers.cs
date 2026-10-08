@@ -16,16 +16,25 @@ namespace Erp.Gates.Tests.G1;
 /// with its own rows: the total equals the number of rows an exhaustive keyset walk of the same
 /// query returns, every walked row is the judged tenant's own (by id, from the database), each
 /// group's count and totals equal those of the walked rows with that value, and the counts add
-/// up to the total. Both directions run (B then A, judging A; A then B, judging B). The check is
-/// blind unless some queries have different true answers in the two tenants, so every list must
-/// have at least one query whose true totals differ.
+/// up to the total. The two tenants walk each query in lock step over several small keyset pages
+/// (one tenant's page n, then the other's), and the total and groups of every page of both walks
+/// are judged (critic p05 round 4, plant L6: pages after the first reused the total the last
+/// first page counted, whatever its tenant). Both directions run (B then A, judging A; A then B,
+/// judging B). The check is blind unless some queries have different true answers in the two
+/// tenants and some are answered over more than one page, so every list must have both.
 /// </summary>
 public static class ListAnswers
 {
-    public sealed record Result(IReadOnlyList<string> Wrong, int Queries, int Discriminating, IReadOnlyList<string> Blind, int RowsWalked);
+    /// <param name="PagesJudged">Pages of keyset walks whose total (and groups) were judged.</param>
+    public sealed record Result(IReadOnlyList<string> Wrong, int Queries, int Discriminating, IReadOnlyList<string> Blind, int RowsWalked, int PagesJudged = 0);
 
-    private const int WalkTake = 199;
+    private const int MaxTake = 199;
     private const int MaxPages = 400;
+
+    /// <summary>Pages the walk aims for: enough that every query with a few rows is answered over
+    /// several keyset pages (critic p05 round 4, plant L6: the pages after the first reused the
+    /// total the last first page counted, whatever its tenant, and a walk of one page never saw it).</summary>
+    private const int PagesAimedFor = 4;
 
     /// <param name="first">The tenant that sends each query first (fills any cache).</param>
     /// <param name="judged">The tenant whose answer is judged.</param>
@@ -38,10 +47,12 @@ public static class ListAnswers
         var queries = 0;
         var discriminating = 0;
         var walked = 0;
+        var pagesJudged = 0;
         foreach (var binding in catalog.ListBindings)
         {
             var list = binding.Definition;
             var listDiscriminating = 0;
+            var listPaged = 0;
             foreach (var query in QueriesFor(list, victimStrings))
             {
                 var uri = $"{list.Endpoint}?take=50{query}";
@@ -53,19 +64,25 @@ public static class ListAnswers
                     continue;
                 }
                 queries++;
-                var rows = await WalkAsync(judged, list.Endpoint, WithoutGrouping(query));
-                if (rows is null)
+                var total = answer.Value.GetProperty("total").GetInt32();
+                var firstTotal = firstAnswer.Value.GetProperty("total").GetInt32();
+                // Both tenants walk the same query (grouping kept) in lock step, the judged tenant's
+                // page n just before the other tenant's page n: whatever one tenant's request leaves
+                // behind is in place when the other's next page is answered. Every page of both walks
+                // is judged, not only the first.
+                var take = Math.Clamp((Math.Max(total, firstTotal) + PagesAimedFor - 1) / PagesAimedFor, 1, MaxTake);
+                var (walk, firstWalk) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take);
+                if (walk is null || firstWalk is null)
                 {
-                    wrong.Add($"{label}: keyset walk of GET {list.Endpoint}?{WithoutGrouping(query).TrimStart('&')} did not finish");
+                    wrong.Add($"{label}: keyset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(walk is null ? "failed" : "ok")}, other {(firstWalk is null ? "failed" : "ok")})");
                     continue;
                 }
+                var rows = walk.Rows;
                 walked += rows.Count;
-                var firstRows = await WalkAsync(first, list.Endpoint, WithoutGrouping(query));
-                var total = answer.Value.GetProperty("total").GetInt32();
                 if (total != rows.Count)
                 {
                     wrong.Add($"{label}: GET {uri} answered total {total}, but walking the same query returns {rows.Count} rows " +
-                              $"(the other tenant's answer to the same request was {firstAnswer.Value.GetProperty("total").GetInt32()})");
+                              $"(the other tenant's answer to the same request was {firstTotal})");
                 }
                 var ids = rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
                 if (ids.Distinct().Count() != ids.Count)
@@ -77,17 +94,48 @@ public static class ListAnswers
                     wrong.Add($"{label}: walking {list.Endpoint}{query} returned row {id}, which is not the judged tenant's" +
                               (firstIds.Contains(id) ? " (it is the other tenant's)" : ""));
                 }
-                if (firstRows is not null && firstRows.Count != rows.Count)
+                foreach (var id in firstWalk.Rows.Select(r => r.GetProperty("id").GetGuid()).Where(i => !firstIds.Contains(i)).Take(3))
+                {
+                    wrong.Add($"{label}: the other tenant's walk of {list.Endpoint}{query} returned row {id}, which is not its own" +
+                              (judgedIds.Contains(id) ? " (it is the judged tenant's)" : ""));
+                }
+                if (firstWalk.Rows.Count != rows.Count)
                 {
                     discriminating++;
                     listDiscriminating++;
                 }
+                if (walk.Pages.Count > 1)
+                {
+                    listPaged++;
+                }
+                var column = GroupColumn(query);
+                pagesJudged += walk.Pages.Count + firstWalk.Pages.Count;
+                foreach (var (who, pages, mine) in new[] { ("judged", walk.Pages, rows), ("other tenant's", firstWalk.Pages, firstWalk.Rows) })
+                {
+                    for (var n = 0; n < pages.Count; n++)
+                    {
+                        var page = pages[n];
+                        var where = $"{label}: the {who} page {n + 1} of {pages.Count} of GET {list.Endpoint}?take={take}{query}";
+                        var pageTotal = page.GetProperty("total").GetInt32();
+                        if (pageTotal != mine.Count)
+                        {
+                            wrong.Add($"{where} answered total {pageTotal}, but the walk returns {mine.Count} rows");
+                        }
+                        if (page.TryGetProperty("groups", out var pageGroups) && pageGroups.ValueKind == JsonValueKind.Array && column is not null)
+                        {
+                            wrong.AddRange(JudgeGroups(list, column, pageGroups, mine, mine.Count).Select(p => $"{where}: {p}"));
+                        }
+                        else if (column is not null)
+                        {
+                            wrong.Add($"{where} grouped by {column} but the page carries no groups");
+                        }
+                    }
+                }
                 if (answer.Value.TryGetProperty("groups", out var groups) && groups.ValueKind == JsonValueKind.Array)
                 {
-                    var column = GroupColumn(query)!;
-                    wrong.AddRange(JudgeGroups(list, column, groups, rows, total).Select(p => $"{label}: GET {uri}: {p}"));
+                    wrong.AddRange(JudgeGroups(list, column!, groups, rows, total).Select(p => $"{label}: GET {uri}: {p}"));
                 }
-                else if (GroupColumn(query) is { } missing)
+                else if (column is { } missing)
                 {
                     wrong.Add($"{label}: GET {uri} grouped by {missing} but the page carries no groups");
                 }
@@ -96,8 +144,12 @@ public static class ListAnswers
             {
                 blind.Add($"{label}: list '{list.Key}': no query had different true answers in the two tenants, so a shared total or group count would go unseen");
             }
+            if (listPaged == 0)
+            {
+                blind.Add($"{label}: list '{list.Key}': no query was answered over more than one keyset page, so a total or group remembered for the next pages would go unseen");
+            }
         }
-        return new Result(wrong, queries, discriminating, blind, walked);
+        return new Result(wrong, queries, discriminating, blind, walked, pagesJudged);
     }
 
     /// <summary>Query strings (each starting with '&amp;') for a list: everything, one-letter
@@ -156,12 +208,6 @@ public static class ListAnswers
         return at < 0 ? null : query[(at + "&groupBy=".Length)..];
     }
 
-    private static string WithoutGrouping(string query)
-    {
-        var at = query.IndexOf("&groupBy=", StringComparison.Ordinal);
-        return at < 0 ? query : query[..at];
-    }
-
     private static IEnumerable<string> JudgeGroups(ListDefinition list, string column, JsonElement groups, IReadOnlyList<JsonElement> rows, int total)
     {
         var counted = groups.EnumerateArray().Sum(g => g.GetProperty("count").GetInt32());
@@ -171,7 +217,8 @@ public static class ListAnswers
         }
         var expected = rows.GroupBy(r => Raw(r, column)).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var aggregates = list.Columns.Where(c => c.Aggregate).Select(c => c.Key).ToList();
+        var aggregates = list.Columns.Where(c => c.Aggregate && c.Type != ListColumnType.Money).Select(c => c.Key).ToList();
+        var money = list.Columns.Where(c => c.Aggregate && c.Type == ListColumnType.Money).ToList();
         foreach (var group in groups.EnumerateArray())
         {
             var key = group.TryGetProperty("key", out var k) ? k.GetRawText() : "null";
@@ -194,6 +241,35 @@ public static class ListAnswers
                     if (Number(stated) != sum)
                     {
                         yield return $"group {key} totals {aggregate} = {stated.GetRawText()}, but the walked rows add up to {sum.ToString(CultureInfo.InvariantCulture)}";
+                    }
+                }
+            }
+        }
+        // Money totals, per currency: each currency's sum equals that of the walked rows of the group
+        // in that currency, and no currency is missing or added.
+        foreach (var group in groups.EnumerateArray())
+        {
+            var key = group.TryGetProperty("key", out var k) ? k.GetRawText() : "null";
+            var mine = expected.GetValueOrDefault(key) ?? [];
+            foreach (var moneyColumn in money)
+            {
+                var stated = new Dictionary<string, decimal>(StringComparer.Ordinal);
+                if (group.TryGetProperty("moneyTotals", out var moneyTotals) && moneyTotals.ValueKind == JsonValueKind.Object &&
+                    moneyTotals.TryGetProperty(moneyColumn.Key, out var lines) && lines.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var line in lines.EnumerateArray())
+                    {
+                        stated[line.TryGetProperty("currency", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString()! : ""] = Number(line, "amount");
+                    }
+                }
+                var walkedSums = mine.GroupBy(r => r.TryGetProperty(moneyColumn.CurrencyField!, out var c) && c.ValueKind == JsonValueKind.String ? c.GetString()! : "", StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Sum(r => Number(r, moneyColumn.Key)), StringComparer.Ordinal);
+                foreach (var currency in stated.Keys.Union(walkedSums.Keys))
+                {
+                    if (stated.GetValueOrDefault(currency) != walkedSums.GetValueOrDefault(currency) || stated.ContainsKey(currency) != walkedSums.ContainsKey(currency))
+                    {
+                        yield return $"group {key} totals {moneyColumn.Key} in '{currency}' = {stated.GetValueOrDefault(currency).ToString(CultureInfo.InvariantCulture)}, " +
+                                     $"but the walked rows in that currency add up to {walkedSums.GetValueOrDefault(currency).ToString(CultureInfo.InvariantCulture)}";
                     }
                 }
             }
@@ -227,25 +303,44 @@ public static class ListAnswers
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.Clone();
     }
 
-    /// <summary>Every row of the query, page by page with the keyset cursor.</summary>
-    private static async Task<IReadOnlyList<JsonElement>?> WalkAsync(HttpClient client, string endpoint, string query)
+    /// <summary>One tenant's keyset walk: every row, and every page as answered.</summary>
+    private sealed record Walk(List<JsonElement> Rows, List<JsonElement> Pages)
     {
-        var rows = new List<JsonElement>();
-        string? next = null;
-        for (var page = 0; page < MaxPages; page++)
+        public string? Next { get; set; }
+
+        public bool Done { get; set; }
+    }
+
+    /// <summary>Every row of the query for both tenants, page by page with the keyset cursor, in
+    /// lock step: tenant <paramref name="a"/>'s page n, then tenant <paramref name="b"/>'s page n.
+    /// Null for a walk that was refused or did not finish.</summary>
+    private static async Task<(Walk? A, Walk? B)> WalkTogetherAsync(HttpClient a, HttpClient b, string endpoint, string query, int take)
+    {
+        var walks = new[] { new Walk([], []), new Walk([], []) };
+        var clients = new[] { a, b };
+        var failed = new bool[2];
+        for (var page = 0; page < MaxPages && walks.Any(w => !w.Done); page++)
         {
-            var uri = $"{endpoint}?take={WalkTake}{query}" + (next is null ? "" : "&after=" + Uri.EscapeDataString(next));
-            if (await GetAsync(client, uri) is not { } answer)
+            for (var i = 0; i < 2; i++)
             {
-                return null;
-            }
-            rows.AddRange(answer.GetProperty("items").EnumerateArray());
-            next = answer.TryGetProperty("next", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() : null;
-            if (next is null)
-            {
-                return rows;
+                var walk = walks[i];
+                if (walk.Done)
+                {
+                    continue;
+                }
+                var uri = $"{endpoint}?take={take}{query}" + (walk.Next is null ? "" : "&after=" + Uri.EscapeDataString(walk.Next));
+                if (await GetAsync(clients[i], uri) is not { } answer)
+                {
+                    failed[i] = true;
+                    walk.Done = true;
+                    continue;
+                }
+                walk.Pages.Add(answer);
+                walk.Rows.AddRange(answer.GetProperty("items").EnumerateArray());
+                walk.Next = answer.TryGetProperty("next", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() : null;
+                walk.Done = walk.Next is null;
             }
         }
-        return null;
+        return (failed[0] || !walks[0].Done ? null : walks[0], failed[1] || !walks[1].Done ? null : walks[1]);
     }
 }

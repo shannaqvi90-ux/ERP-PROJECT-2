@@ -145,6 +145,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Check(report.ListAnswersBlind.Count == 0, "The list answer check may be blind:\n" + string.Join("\n", report.ListAnswersBlind));
         CheckAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
         CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
+        CheckAtLeast(report.ListAnswerPagesJudged, "g1.listAnswerPagesJudged");
         Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
         CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
         CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
@@ -772,6 +773,7 @@ public static partial class IsolationAttack
             ListAnswersBlind = listAnswers.SelectMany(r => r.Blind).ToList(),
             ListAnswerQueries = listAnswers.Sum(r => r.Queries),
             ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
+            ListAnswerPagesJudged = listAnswers.Sum(r => r.PagesJudged),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
@@ -1712,6 +1714,9 @@ public sealed record IsolationReport(
 
     /// <summary>Judged list queries whose true answers differ between the tenants.</summary>
     public int ListAnswersDiscriminating { get; init; }
+
+    /// <summary>Keyset pages (first and following, both tenants) whose total and groups were judged.</summary>
+    public int ListAnswerPagesJudged { get; init; }
 
     /// <summary>Process-wide state (reachable from singletons and static fields) that changed
     /// while the tenants used the app.</summary>

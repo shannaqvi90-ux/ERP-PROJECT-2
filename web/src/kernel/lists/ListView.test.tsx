@@ -105,6 +105,17 @@ describe("list view", () => {
     expect(grid().getAttribute("aria-rowcount")).toBe("31");
   });
 
+  it("gives each column room for its header and keeps the full label as the sort button's title", async () => {
+    serve();
+    const v = await show();
+    const header = v.container.querySelector<HTMLElement>("tr.list-header")!;
+    // "Language" (8 characters) needs more than a choice column's 6.5rem; the text columns keep 10rem.
+    expect(header.style.gridTemplateColumns).toBe("2.25rem minmax(10rem, 1.4fr) minmax(10rem, 1.4fr) minmax(7.73rem, 0.7fr)");
+    const sort = [...header.querySelectorAll<HTMLButtonElement>(".list-sort")].find((b) => b.textContent?.startsWith("E-mail"))!;
+    expect(sort.title.split("\n")[0]).toBe("E-mail");
+    expect(sort.querySelector(".list-sort-label")?.textContent).toBe("E-mail");
+  });
+
   it("searches as the user types and opens the only match with Enter", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     serve(calls);

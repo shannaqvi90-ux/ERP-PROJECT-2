@@ -36,7 +36,7 @@ const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
   </script></body></html>`;
 const HOME = '<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav><main><h1>Home</h1></main></body></html>';
 const usersPage = users => `<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav>
-  <main><input type="search" aria-label="Search users" id="s"><table><tbody id="rows"></tbody></table><aside id="panel" hidden></aside></main>
+  <main><input type="search" aria-label="Search users" id="s" autofocus><table><tbody id="rows"></tbody></table><aside id="panel" hidden></aside></main>
   <script>
     const users = ${JSON.stringify(users)};
     const rows = document.getElementById('rows');
@@ -47,6 +47,9 @@ const usersPage = users => `<!doctype html><html><body><nav aria-label="Main nav
       rows.append(tr); } };
     draw('');
     document.getElementById('s').addEventListener('input', e => setTimeout(() => draw(e.target.value), 30));
+    // Like our users list: the search box has the focus on arrival and Enter opens the best (first) match.
+    document.getElementById('s').addEventListener('keydown', e => { if (e.key === 'Enter' && rows.rows[0]) rows.rows[0].click(); });
+    document.getElementById('s').focus();
   </script></body></html>`;
 // A screen that keeps what was typed into its field in a cookie and shows it again on load (a
 // product that remembers a search): the start check must see it.
@@ -551,7 +554,9 @@ const runFindUser = driver => execute(FIND_USER_TASK, driver, findUserProduct(),
 test('the real ours find-user driver verifies on a stand-in users screen', async () => {
   const r = await runFindUser(await loadFindUser(s => s));
   assert.equal(r.status, 'verified', r.error);
-  assert.equal(r.counts.steps, 4, 'Users, the search box, the name, the row');
+  // The driver takes the shortest expert path (critic p05 round 4): the search box already has the
+  // focus, and Enter opens the best match.
+  assert.equal(r.counts.steps, 3, 'Users, the name, Enter');
   assert.equal(r.start_state.kind, 'home');
   assert.equal(r.start_state.path, '/');
 });
@@ -559,13 +564,16 @@ test('the real ours find-user driver verifies on a stand-in users screen', async
 test('plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win', async () => {
   const driver = await loadFindUser(s => {
     // The critic's plant (gauntlet/evidence/p01-odoo-rig/r3/plants/plant-H2-start-state-find-user.diff), on the driver as it stands.
+    // On the driver as it stands (Users, type the name, Enter), the plant takes the Users click and
+    // the typing out of the measured part.
     const planted = s.replace("    await usersLink(page).waitFor();\n  },", `    await usersLink(page).waitFor();
     await usersLink(page).click();
     await searchBox(page).fill(ctx.needles.user.name);
     await page.getByRole('row').filter({ hasText: ctx.needles.user.name }).first().waitFor();
-  },`).replace(/\n    await op\.click\(usersLink\(op\.page\)[^\n]*\n    await op\.waitFor\(searchBox[^\n]*\n    await op\.fill\(searchBox[^\n]*/, '');
+  },`).replace(/\n      await op\.click\(usersLink\(op\.page\)[^\n]*/, '').replace(/\n    await op\.type\(typed[^\n]*/, '');
     assert.equal((planted.match(/searchBox\(page\)\.fill/g) || []).length, 1, 'the plant must move the search into sign-in');
-    assert.doesNotMatch(planted, /op\.fill\(searchBox/, 'the plant must take the search out of the measured part');
+    assert.doesNotMatch(planted, /op\.click\(usersLink/, 'the plant must take the Users click out of the measured part');
+    assert.doesNotMatch(planted, /op\.type\(typed/, 'the plant must take the typing out of the measured part');
     return planted;
   });
   const r = await runFindUser(driver);

@@ -242,7 +242,17 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(report.ListAnswersWrong, w => w.Contains("/api/leaky/people", StringComparison.Ordinal) && w.Contains("groupBy=language", StringComparison.Ordinal));
         Assert.Contains(report.ListAnswersWrong, w => w.StartsWith("tenant A asks first, tenant B judged", StringComparison.Ordinal) &&
                                                       w.Contains("/api/leaky/people", StringComparison.Ordinal));
-        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal));
+        // A list whose pages after the first reuse the total the last first page counted, whatever
+        // its tenant (critic p05 round 4, plant L6): every first page is right, so only judging the
+        // keyset pages that follow, walked in lock step with the other tenant, catches it.
+        foreach (var direction in new[] { "tenant B asks first, tenant A judged", "tenant A asks first, tenant B judged" })
+        {
+            Assert.Contains(report.ListAnswersWrong, w => w.StartsWith(direction, StringComparison.Ordinal) && w.Contains("/api/leaky/scroll", StringComparison.Ordinal) &&
+                                                          w.Contains("the judged page 2 of ", StringComparison.Ordinal) && w.Contains("answered total", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/scroll", StringComparison.Ordinal) && w.Contains(" page 1 of ", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("GET /api/leaky/scroll?take=50", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal) && !w.Contains("/api/leaky/scroll", StringComparison.Ordinal));
         Assert.Empty(report.ListAnswersBlind);
 
         // The planted state changed while the tenants used the app (the list memory on the module
@@ -254,6 +264,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                                  c.Contains($"({typeof(LeakyModule).FullName})._totals", StringComparison.Ordinal)), "no change to the planted totals:" + changes);
         Assert.True(report.StateChanges.Any(c => c.Contains($"({typeof(LeakyModule).FullName})._groups", StringComparison.Ordinal)), "no change to the planted groups:" + changes);
         Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal)), "no change to the stateful singleton:" + changes);
+        // The static memo of a closed generic type (plant L6's shape) is a root of its own.
+        Assert.True(report.StateChanges.Any(c => c.StartsWith($"static {typeof(LeakyModule).FullName}.ScrollTotals`1[", StringComparison.Ordinal)), "no change to the generic type's static memo:" + changes);
         Assert.True(report.StateChanges.All(c => c.Contains("Leaky", StringComparison.Ordinal)), "product state changed:" + changes);
     }
 
@@ -427,6 +439,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // memory sits on the module instance, reached from the module catalogue.
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._totals" && f.Why.Contains("ModuleCatalog._modules", StringComparison.Ordinal));
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._groups");
+
+        // A static delegate in a generic type (critic p05 round 4, plant L6): the field is flagged
+        // by type, and the closure it holds is reached through the closed instantiation the
+        // product's code uses and judged on its own.
+        Assert.Contains(inventory.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.ScrollTotals`1.Remembered" && f.Why.Contains("static delegate", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key.StartsWith("reachable closure ", StringComparison.Ordinal) && f.Key.EndsWith(".memo", StringComparison.Ordinal) &&
+                                               f.Why.Contains("ScrollTotals`1[", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -509,7 +528,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/users/{id:guid}/reactivate ", StringComparison.Ordinal));
         // The planted list's own saved-view endpoints (a reader saving their own view) are the
         // planted module's too: they are reviewed for product lists, not for this one.
-        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal) &&
+                                                     !p.Contains($"/api/lists/{LeakyModule.ScrollList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);
