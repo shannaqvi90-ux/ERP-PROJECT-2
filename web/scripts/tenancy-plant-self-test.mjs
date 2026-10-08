@@ -125,7 +125,12 @@ const plants = [
   {
     id: "U-tenant-save",
     what: "workspace settings editable and saved without tenancy.tenant.update",
-    edits: [{ file: "src/modules/tenancy/TenantPage.tsx", find: 'const editable = can("tenancy.tenant.update");', replace: "const editable = true;" }],
+    edits: [{ file: "src/modules/tenancy/TenantPage.tsx", find: 'const mayUpdate = can("tenancy.tenant.update");', replace: "const mayUpdate = true;" }],
+  },
+  {
+    id: "U-tenant-some-companies",
+    what: "workspace settings offered to someone who works in only some companies or branches (critic p02 round 6)",
+    edits: [{ file: "src/modules/tenancy/TenantPage.tsx", find: "const editable = mayUpdate && everyCompany;", replace: "const editable = mayUpdate;" }],
   },
   {
     id: "P3b-tenant",
