@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Reports.Tests;
 
@@ -387,5 +388,33 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=paging.roles", timeout.Token));
         Assert.Contains("Zz paging role 229", csv, StringComparison.Ordinal);
+    }
+
+    /// <summary>The reports isolation probe reports every request that fails or gets no answer (the
+    /// gate fails on them) instead of ending the attack with an exception that hides what it saw
+    /// (critic p06 round 2: under load one timed-out print ended the whole HTTP attack with a
+    /// TaskCanceledException). Every other request still runs and its answers are handed over.</summary>
+    [Fact]
+    public async Task The_reports_isolation_probe_reports_requests_that_get_no_answer_and_runs_the_rest()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>();
+        using var attacker = new HttpClient(new PrintsTimeOut()) { BaseAddress = new Uri("http://probe.test") };
+        var result = await new ReportsIsolationProbe(catalog).RunAsync(
+            new Erp.Kernel.Security.IsolationProbeContext(attacker, Env.TenantA.Id, Env.TenantB.Id, [Guid.NewGuid()], ["victim text"]), CancellationToken.None);
+        Assert.NotEmpty(result.Failures);
+        Assert.All(result.Failures, f => Assert.Matches(@"^GET /api/reports/.*format=pdf.* TaskCanceledException", f));
+        // Every shape but the PDFs was answered and handed over whole.
+        Assert.Contains(result.Observed, o => o.StartsWith("body:application/json;base64,", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Observed, o => o.StartsWith("body:application/pdf", StringComparison.Ordinal));
+        Assert.True(result.Attempts > result.Failures.Count);
+    }
+
+    /// <summary>Answers every request with an empty JSON object, except PDFs, which time out.</summary>
+    private sealed class PrintsTimeOut : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            request.RequestUri!.Query.Contains("format=pdf", StringComparison.Ordinal)
+                ? throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout of 100 seconds elapsing.")
+                : Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}", Encoding.UTF8, "application/json") });
     }
 }
