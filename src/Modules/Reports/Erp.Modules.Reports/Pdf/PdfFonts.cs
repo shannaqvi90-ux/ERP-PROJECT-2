@@ -60,7 +60,23 @@ public sealed class PdfFontFace : IDisposable
     /// <summary>The glyph's default advance in thousandths of an em.</summary>
     public int Width(uint glyph) => Scale(Font.GetHorizontalGlyphAdvance(glyph));
 
-    public int Scale(int fontUnits) => (int)Math.Round(fontUnits * 1000.0m / UnitsPerEm);
+    /// <summary>Font units in thousandths of an em, rounded half to even: exactly
+    /// <c>Math.Round(fontUnits * 1000m / UnitsPerEm)</c>, in integers (it runs three times per
+    /// shaped glyph, and decimal division was a tenth of a printed list's processor time).</summary>
+    public int Scale(int fontUnits) => RoundHalfEven(fontUnits * 1000L, UnitsPerEm);
+
+    /// <summary><paramref name="numerator"/> / <paramref name="denominator"/> (positive) rounded
+    /// half to even, as <see cref="Math.Round(decimal)"/> rounds.</summary>
+    internal static int RoundHalfEven(long numerator, int denominator)
+    {
+        var quotient = Math.DivRem(numerator, denominator, out var remainder);
+        var twice = 2 * Math.Abs(remainder);
+        if (twice > denominator || (twice == denominator && (quotient & 1) != 0))
+        {
+            quotient += Math.Sign(numerator);
+        }
+        return (int)quotient;
+    }
 
     private byte[] Table(string tag) => TryTable(tag) ?? throw new InvalidDataException($"font {Name} has no {tag} table");
 
@@ -142,8 +158,10 @@ public sealed class PdfFonts : IDisposable
         {
             return faces[0];
         }
-        foreach (var face in faces.Skip(1).Append(faces[0]))
+        // The Latin faces in order, then the Arabic face.
+        for (var i = 1; i <= faces.Length; i++)
         {
+            var face = faces[i % faces.Length];
             if (face.Covers(codepoint))
             {
                 return face;

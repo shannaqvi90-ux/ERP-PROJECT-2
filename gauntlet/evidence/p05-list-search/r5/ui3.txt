@@ -1,0 +1,11 @@
+A sort Name asc: url users?sort=displayName [
+  'Abdullah Abdullah Al Ameri abdullah.al.ameri.001205@staff.ex',
+  'Abdullah Abdullah Al Ameri abdullah.al.ameri.049060@staff.ex'
+]
+A sort Name desc: [
+  'Zayed Zayed Yassin zayed.yassin.077353@staff.example English',
+  'Zayed Zayed Wang zayed.wang.012183@staff.example Arabic Acti'
+]
+B Language menu focus button[role=menuitem] "Filter…" items Filter… | Group by this column | Hide this column
+C after filter item: focus input "on" dialog Filter: Language is one of English Arabic Apply Cancel
+D after esc: url users?sort=-displayName count 100,004 users

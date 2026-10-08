@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+index fa14901..d135d32 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+@@ -77,7 +77,8 @@ internal static class UserBulkEndpoints
+         // Roles granting a permission (of the catalogue) the caller does not hold: their holders are
+         // beyond the caller, as UserAccess.WithinCallerAsync judges one user.
+         var roles = await db.Roles.AsNoTracking().Select(r => new { r.Id, r.Permissions }).ToListAsync(cancellationToken);
+-        var strongRoles = roles.Where(r => r.Permissions.Where(catalog.IsPermission).Any(p => !caller.Has(p))).Select(r => r.Id).ToList();
++        // PLANT P5: holders of stronger roles are no longer left alone by the bulk action.
++        var strongRoles = roles.Where(r => false && r.Permissions.Where(catalog.IsPermission).Any(p => !caller.Has(p))).Select(r => r.Id).ToList();
+         var toChange = matching.Where(u => u.IsActive != active);
+         var unchanged = matched - await toChange.CountAsync(cancellationToken);
+         var refusedSelf = !active && await toChange.AnyAsync(u => u.Id == caller.UserId, cancellationToken) ? 1 : 0;

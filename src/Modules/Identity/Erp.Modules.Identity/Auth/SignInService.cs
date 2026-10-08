@@ -162,7 +162,16 @@ internal sealed class SignInService(
             await Passwords.SetAsync(db, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
-        user.LastSignInAt = now;
+        // The sign-in moment is written in place, not through the tracked record: two sign-ins of
+        // one account at the same moment (two tabs, a browser and an API client) both succeed
+        // instead of the later one failing on the record's version. The audit trigger still
+        // records the change, stamped as the user's own like any edit of the record.
+        await db.Users
+            .Where(u => u.Id == user.Id && (u.LastSignInAt == null || u.LastSignInAt < now))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.LastSignInAt, now)
+                .SetProperty(u => u.UpdatedAt, now)
+                .SetProperty(u => u.UpdatedBy, (Guid?)user.Id), cancellationToken);
         var token = SessionTokens.Generate();
         var expiresAt = now.AddHours(options.Value.SessionHours);
         var row = new Session

@@ -63,7 +63,7 @@ public sealed class OpenApiGateTests(GateFixture fixture)
     public async Task The_served_description_is_the_whole_current_document_the_same_for_every_caller()
     {
         var services = fixture.Env.Factory.Services;
-        var provider = services.GetRequiredKeyedService<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(Erp.Kernel.Hosting.OpenApiDescription.DocumentName);
+        var provider = services.GetRequiredKeyedService<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(Erp.Kernel.Hosting.OpenApiDocumentCache.DocumentName);
         var fresh = await provider.GetOpenApiDocumentAsync(TestContext.Current.CancellationToken);
         await using var text = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
         fresh.SerializeAsV31(new Microsoft.OpenApi.OpenApiJsonWriter(text));

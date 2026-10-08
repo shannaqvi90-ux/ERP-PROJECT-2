@@ -1,7 +1,9 @@
 using System.Text.Json.Nodes;
 using Erp.Kernel.Security;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
 namespace Erp.Kernel.Hosting;
@@ -15,44 +17,13 @@ public sealed class ApiExampleAttribute(string value) : Attribute
     public string Value { get; } = value;
 }
 
-/// <summary>
-/// The API description, generated once, on the first call, and served as the same text to every
-/// caller after that. Built per request (as <c>MapOpenApi</c> does), every call of this anonymous
-/// endpoint rebuilt the whole document from every endpoint's metadata: about 300 ms of processor
-/// time each, which anyone could ask for again and again. The routes and shapes it describes are
-/// fixed once the app serves requests, so nothing is lost by building it once; it holds routes and
-/// shapes only, never data, and is the same for every tenant. It is not built while the host starts:
-/// the framework's endpoint description is read once and kept, and at start-up it can still miss
-/// endpoints (the gates saw that). No <c>servers</c> entry is written (a URL taken from a request's
-/// Host header would differ by caller); clients use the address they fetched it from.
-/// </summary>
-internal sealed class OpenApiDescription
-{
-    public const string DocumentName = "v1";
-
-    /// <summary>Made by dependency injection the first time the endpoint is called (a singleton:
-    /// one instance, built once, under the container's own lock).</summary>
-    public OpenApiDescription(IServiceProvider services)
-    {
-        var provider = services.GetRequiredKeyedService<Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider>(DocumentName);
-        var document = provider.GetOpenApiDocumentAsync(CancellationToken.None).GetAwaiter().GetResult();
-        using var text = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
-        document.SerializeAsV31(new Microsoft.OpenApi.OpenApiJsonWriter(text));
-        Json = text.ToString();
-    }
-
-    /// <summary>The OpenAPI 3.1 document as JSON.</summary>
-    public string Json { get; }
-}
-
 internal static class OpenApiSetup
 {
     /// <summary>OpenAPI document generated from the running app: every endpoint, its permission
     /// (<c>x-erp-permission</c>) or anonymous reason (<c>x-erp-anonymous</c>), decimals as strings.</summary>
     public static IServiceCollection AddErpOpenApi(this IServiceCollection services)
     {
-        services.AddSingleton<OpenApiDescription>();
-        services.AddOpenApi(OpenApiDescription.DocumentName, options =>
+        services.AddOpenApi(OpenApiDocumentCache.DocumentName, options =>
         {
             options.AddDocumentTransformer((document, _, _) =>
             {
@@ -134,6 +105,44 @@ internal static class OpenApiSetup
                 return Task.CompletedTask;
             });
         });
+        services.AddSingleton<OpenApiDocumentCache>();
         return services;
+    }
+}
+
+/// <summary>
+/// The API description, generated once per process the first time it is asked for and served as
+/// the same bytes afterwards (decision p03-identity-openapi-generated-once). The document is a
+/// function of the code alone (routes, request and response types, permissions, anonymous
+/// reasons): it is generated without a request, so it names no server and holds nothing a caller
+/// sent, and it is identical for every tenant and every caller. Generating it took about 160 ms of
+/// processor time per request (measured), and the isolation gates request it hundreds of times
+/// per run like any other anonymous endpoint.
+/// </summary>
+internal sealed class OpenApiDocumentCache(IServiceProvider services, IOptionsMonitor<OpenApiOptions> options)
+{
+    public const string DocumentName = "v1";
+
+    private readonly Lazy<Task<byte[]>> _json = new(() => GenerateAsync(services, options), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    /// <summary>The document as UTF-8 JSON, in the OpenAPI version the options name.</summary>
+    public Task<byte[]> JsonAsync() => _json.Value;
+
+    private static async Task<byte[]> GenerateAsync(IServiceProvider services, IOptionsMonitor<OpenApiOptions> options)
+    {
+        var provider = services.GetRequiredKeyedService<IOpenApiDocumentProvider>(DocumentName);
+        var document = await provider.GetOpenApiDocumentAsync(CancellationToken.None);
+        await using var text = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        await document.SerializeAsync(new OpenApiJsonWriter(text), options.Get(DocumentName).OpenApiVersion, CancellationToken.None);
+        return System.Text.Encoding.UTF8.GetBytes(text.ToString());
+    }
+
+    /// <summary>GET /api/openapi/v1.json.</summary>
+    public static async Task Serve(HttpContext context, OpenApiDocumentCache cache)
+    {
+        var json = await cache.JsonAsync();
+        context.Response.ContentType = "application/json;charset=utf-8";
+        context.Response.ContentLength = json.Length;
+        await context.Response.Body.WriteAsync(json, context.RequestAborted);
     }
 }

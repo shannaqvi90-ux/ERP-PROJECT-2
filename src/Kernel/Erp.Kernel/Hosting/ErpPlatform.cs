@@ -188,9 +188,8 @@ public static class ErpPlatform
             }
         }
 
-        // Built once, on the first call (OpenApiDescription), not on every call.
-        app.MapGet("/api/openapi/v1.json", ([Microsoft.AspNetCore.Mvc.FromServices] OpenApiDescription description) =>
-                Results.Text(description.Json, "application/json; charset=utf-8"))
+        // The generated API description, generated once per process (OpenApiDocumentCache).
+        app.MapGet("/api/openapi/v1.json", OpenApiDocumentCache.Serve)
             .ExcludeFromDescription()
             .AllowAnonymousReviewed("The API description lists routes and shapes only, never data.");
 

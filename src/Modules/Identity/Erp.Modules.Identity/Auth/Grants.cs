@@ -2,6 +2,7 @@ using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Erp.Modules.Identity.Auth;
 
@@ -111,21 +112,92 @@ internal static class GrantQueries
 /// resolver) plus what the roles assigned in the working company grant, once the session's company
 /// scope is bound. A role held only in company X grants nothing while the user works in company Y.
 /// </summary>
-internal sealed class SessionGrants(IdentityDbContext db, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope
+/// <remarks>
+/// Every signed-in request reads these, so the user and every role they hold (workspace-wide and
+/// per company) come back in one statement on the request's unit of work (decision
+/// p03-identity-session-grants-one-statement): the session lookup's cost per request is the same
+/// with roles per company as without. Row-level security applies as to any query of the request;
+/// the tenant is also named in the statement (the second layer the EF Core tenant filter gives
+/// elsewhere). The user's own company assignments are readable before the company scope is bound
+/// (the table's policy lets a session read its own rows), as for <see cref="GrantQueries"/> with
+/// own rows.
+/// </remarks>
+internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope
 {
+    /// <summary>The user and every role they hold, workspace-wide (company null) or in one company.</summary>
+    internal const string Statement = """
+        SELECT u.email, u.display_name, u.language, u.is_active, g.company_id, g.permissions
+          FROM identity.users u
+          LEFT JOIN LATERAL (
+                SELECT NULL::uuid AS company_id, r.permissions
+                  FROM identity.user_roles ur
+                  JOIN identity.roles r ON r.tenant_id = ur.tenant_id AND r.id = ur.role_id
+                 WHERE ur.tenant_id = u.tenant_id AND ur.user_id = u.id
+                UNION ALL
+                SELECT ucr.company_id, r.permissions
+                  FROM identity.user_company_roles ucr
+                  JOIN identity.roles r ON r.tenant_id = ucr.tenant_id AND r.id = ucr.role_id
+                 WHERE ucr.tenant_id = u.tenant_id AND ucr.user_id = u.id) g ON true
+         WHERE u.tenant_id = @tenant AND u.id = @user
+        """;
+
+    /// <summary>The signed-in user as the session needs them.</summary>
+    internal sealed record SessionUser(string Email, string DisplayName, string Language, bool IsActive);
+
     private UserGrants? _grants;
+    private SessionUser? _user;
     private Guid _userId;
 
-    /// <summary>Load the user's own grants (every company): called by the session resolver.</summary>
-    public async Task<UserGrants> LoadAsync(Guid userId, CancellationToken cancellationToken)
+    /// <summary>The user (null when there is no such user in the bound tenant) and their own grants
+    /// (every company), read once per unit of work.</summary>
+    public async Task<(SessionUser? User, UserGrants Grants)> ReadAsync(Guid userId, CancellationToken cancellationToken)
     {
         if (_grants is null || _userId != userId)
         {
-            _grants = await GrantQueries.ForUserAsync(db, userId, catalog, ownRows: true, cancellationToken);
+            var tenantId = session.TenantId;
+            var everywhere = new HashSet<string>(StringComparer.Ordinal);
+            var byCompany = new Dictionary<Guid, HashSet<string>>();
+            SessionUser? user = null;
+            await using (var command = new NpgsqlCommand(Statement, session.Connection, session.Transaction))
+            {
+                command.Parameters.AddWithValue("tenant", tenantId);
+                command.Parameters.AddWithValue("user", userId);
+                await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    user ??= new SessionUser(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3));
+                    if (reader.IsDBNull(5))
+                    {
+                        continue;
+                    }
+                    var into = everywhere;
+                    if (!reader.IsDBNull(4))
+                    {
+                        var company = reader.GetGuid(4);
+                        if (!byCompany.TryGetValue(company, out into))
+                        {
+                            byCompany[company] = into = new HashSet<string>(StringComparer.Ordinal);
+                        }
+                    }
+                    foreach (var permission in reader.GetFieldValue<string[]>(5))
+                    {
+                        if (catalog.IsPermission(permission))
+                        {
+                            into.Add(permission);
+                        }
+                    }
+                }
+            }
+            _grants = new UserGrants(everywhere, byCompany, hidden: 0);
+            _user = user;
             _userId = userId;
         }
-        return _grants;
+        return (_user, _grants);
     }
+
+    /// <summary>The user's own grants (every company).</summary>
+    public async Task<UserGrants> LoadAsync(Guid userId, CancellationToken cancellationToken) =>
+        (await ReadAsync(userId, cancellationToken)).Grants;
 
     public async Task<IReadOnlyCollection<string>> ScopeAsync(ResolvedSession session, IReadOnlyCollection<string> permissions, CancellationToken cancellationToken)
     {
