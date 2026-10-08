@@ -61,14 +61,6 @@ internal static class TenancyEndpoints
     private static async Task<Results<Ok<TenantDto>, ProblemHttpResult>> UpdateTenant(
         UpdateTenantRequest request, TenancyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
-        // Every company of the workspace shares its record: only someone who works in all of them,
-        // in every branch of each, changes it (critic p02 round 6: an administrator limited to one
-        // company, or to one branch, renamed the workspace and changed its language and time zone
-        // for every company). The kernel refuses the write as well, whatever this checked.
-        if (!session.HoldsWholeWorkspace)
-        {
-            return (ProblemHttpResult)Problems.Forbidden(http, "tenancy.workspaceNeedsEveryCompany");
-        }
         var validator = new Validator(http)
             .Required("nameEn", request.NameEn).MaxLength("nameEn", request.NameEn, 200)
             .Required("nameAr", request.NameAr).MaxLength("nameAr", request.NameAr, 200)
@@ -80,6 +72,14 @@ internal static class TenancyEndpoints
         if (!validator.IsValid)
         {
             return (ProblemHttpResult)validator.ToResult();
+        }
+        // Every company of the workspace shares its record: only someone who works in all of them,
+        // in every branch of each, changes it (critic p02 round 6: an administrator limited to one
+        // company, or to one branch, renamed the workspace and changed its language and time zone
+        // for every company). The kernel refuses the write as well, whatever this checked.
+        if (!session.HoldsWholeWorkspace)
+        {
+            return (ProblemHttpResult)Problems.Forbidden(http, "tenancy.workspaceNeedsEveryCompany");
         }
         var tenant = await db.Tenants.SingleOrDefaultAsync(cancellationToken);
         if (tenant is null)
