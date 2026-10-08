@@ -58,6 +58,18 @@ branch alone passed every gate, server and client.
    `g1.nonInterferenceArabicComparisons`, `g1.nonInterferenceArabicAnswers` and
    `g1.writeNonInterferenceArabicComparisons`, at the counts measured on the product.
 
+## Processor budget
+
+The first full verify with the Arabic sessions passed every test but used 9,520 processor
+seconds against the ratchet's maximum of 9,000 (`verify.cpuSeconds`; the integration branch was
+already at 8,961). The Arabic attacker had been a full copy of the English administrator in phase
+1, tenant-switch header and query variants included. Those variants test where the tenant comes
+from, not the language: the English sessions send them and the switch phase sends every header,
+query name and cookie the app reads. The Arabic sessions now send every path of phase 1 plainly,
+and phase 2 sends them the sampled ids in route parameters (each with its control value) rather
+than every route value tenant B used, which phase 1 already sent in Arabic in every route. The
+maximum is not raised.
+
 ## Alternatives considered
 
 - *Switch the existing administrator to Arabic half-way through.* Each phase would then attack

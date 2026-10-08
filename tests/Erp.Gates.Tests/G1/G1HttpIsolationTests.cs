@@ -291,6 +291,15 @@ public static partial class IsolationAttack
                         {
                             continue;
                         }
+                        // The Arabic sessions send every path plainly. Tenant-switch headers and
+                        // query names are about where the tenant comes from, not the language: the
+                        // English sessions send them here and the switch phase (1b) sends every one
+                        // the app reads, so the Arabic copies only cost processor time (the verify
+                        // budget, verify.cpuSeconds).
+                        if (attacker.Arabic && variant != Variant.Plain)
+                        {
+                            continue;
+                        }
                         batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
@@ -456,9 +465,11 @@ public static partial class IsolationAttack
                         work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n)));
                     }
                 }
+                // Every route value tenant B used itself was already sent in Arabic in every route
+                // (phase 1); here the sampled ids, each with its control value.
                 var arabicRouteValues = catchAll || documentedRoute.Format != "uuid"
                     ? values.Probe
-                    : values.IdSample.Select(i => i.ToString()).Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                    : values.IdSample.Select(i => i.ToString()).ToList();
                 foreach (var value in arabicRouteValues)
                 {
                     foreach (var attacker in arabicReachable)
