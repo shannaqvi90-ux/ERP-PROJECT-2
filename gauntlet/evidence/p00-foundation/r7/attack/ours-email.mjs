@@ -1,0 +1,10 @@
+import { chromium } from '/home/shan/critic/p00-foundation-r7/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const b = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const p = await b.newPage();
+await p.goto('http://localhost:20050/?email=viewer%40alnoor.example');
+await p.waitForSelector('input[name=email]'); await p.waitForTimeout(800);
+console.log('ours ?email= value:', await p.locator('input[name=email]').inputValue(), 'focused:', await p.evaluate(() => document.activeElement?.name));
+await p.goto('http://localhost:20050/');
+await p.waitForSelector('input[name=email]'); await p.keyboard.type('viewer@alnoor.example'); await p.waitForTimeout(300);
+console.log('ours plain / after whole e-mail focused:', await p.evaluate(() => document.activeElement?.name));
+await b.close();

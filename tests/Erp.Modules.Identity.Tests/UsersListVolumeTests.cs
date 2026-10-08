@@ -202,6 +202,37 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
         TestContext.Current.TestOutputHelper?.WriteLine(string.Join("\n", timings));
     }
 
+    /// <summary>Critic p06 round 2: the CSV and XLSX exports of the 100,004-user list stopped at
+    /// 20,000 rows without a word. The whole main list now exports, every row, in both formats, and
+    /// in less than a minute each.</summary>
+    [Fact]
+    public async Task The_whole_list_of_100000_users_exports_as_csv_and_xlsx_every_row()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
+        var total = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/users?take=1")).GetProperty("total").GetInt32();
+        Assert.True(total > UsersVolumeFixture.Volume, $"{total} users");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+
+        var clock = Stopwatch.StartNew();
+        var csv = await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=ar&columns=email,displayName", timeout.Token);
+        var csvSeconds = clock.Elapsed.TotalSeconds;
+        var lines = System.Text.Encoding.UTF8.GetString(csv).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        // The header, then one line per user; no note (nothing was left out).
+        Assert.Equal(total + 1, lines.Length);
+        Assert.Contains(lines, l => l.StartsWith($"shamma.romaithi@{fixture.Main.EmailDomain},", StringComparison.Ordinal));
+
+        clock.Restart();
+        var xlsx = await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=xlsx&language=en&columns=email,displayName", timeout.Token);
+        var xlsxSeconds = clock.Elapsed.TotalSeconds;
+        using var zip = new System.IO.Compression.ZipArchive(new MemoryStream(xlsx));
+        var sheet = await new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEndAsync(timeout.Token);
+        Assert.Contains($"<row r=\"{total + 1}\">", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain($"<row r=\"{total + 2}\">", sheet, StringComparison.Ordinal);
+        Assert.Contains($"<autoFilter ref=\"A1:B{total + 1}\"/>", sheet, StringComparison.Ordinal);
+        TestContext.Current.TestOutputHelper?.WriteLine($"CSV {csv.Length:N0} bytes in {csvSeconds:F1} s; XLSX {xlsx.Length:N0} bytes in {xlsxSeconds:F1} s");
+        Assert.True(csvSeconds < 60 && xlsxSeconds < 60, $"CSV {csvSeconds:F1} s, XLSX {xlsxSeconds:F1} s");
+    }
+
     [Fact]
     public async Task Word_search_is_served_by_the_trigram_index_not_a_table_scan()
     {

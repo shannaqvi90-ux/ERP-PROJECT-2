@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api } from "../api";
 import { useI18n } from "../i18n";
+import { minorUnitsOf } from "../format";
 import type { FieldBinding } from "./useRecordForm";
 
 type A11y = { id: string; "aria-invalid": boolean; "aria-describedby"?: string };
@@ -203,7 +204,8 @@ export function MoneyField({
   const { t, format } = useI18n();
   const listId = useId();
   const foreign = Boolean(rate && baseCurrency && currency.value && currency.value !== baseCurrency);
-  const base = foreign && rate ? multiplyDecimal(amount.value ?? "", rate.value ?? "", 2) : null;
+  // At the base currency's own decimals (KWD 3, AED 2, JPY 0), rounded half away from zero as the server stores it.
+  const base = foreign && rate ? multiplyDecimal(amount.value ?? "", rate.value ?? "", minorUnitsOf(baseCurrency!)) : null;
   return (
     <Field name={amount.name} label={p.label} errors={[...amount.errors, ...currency.errors]} hint={p.hint} wide={p.wide}>
       {(a11y) => (

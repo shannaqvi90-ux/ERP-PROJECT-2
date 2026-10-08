@@ -89,12 +89,20 @@ describe("the record form", () => {
     expect(buttons()).toContain("Discard changes");
     expect(nothingUnsaved()).toBe(false);
 
-    // Leaving the screen asks first; refusing keeps everything where it is.
-    const confirm = vi.fn(() => false);
+    // Leaving the screen asks first, in the form's own dialog (never the browser's); keeping on
+    // editing keeps everything where it is.
+    const confirm = vi.fn(() => true);
     window.confirm = confirm;
     navigate("/elsewhere");
-    expect(confirm).toHaveBeenCalledOnce();
+    await settle();
+    expect(confirm).not.toHaveBeenCalled();
+    const asked = document.querySelector('[role="dialog"]')!;
+    expect(asked.textContent).toContain("This record has changes that are not saved yet.");
+    act(() => [...asked.querySelectorAll("button")].find((b) => b.textContent === "Keep editing")!.click());
+    await settle();
     expect(window.location.pathname).toBe("/things");
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(input("name").value).toBe("Desk (oak)");
 
     press({ ctrlKey: true, key: "s", code: "KeyS" });
     await settle();
@@ -113,6 +121,39 @@ describe("the record form", () => {
     expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
     expect(nothingUnsaved()).toBe(true);
     expect(buttons()).not.toContain("Discard changes");
+  });
+
+  it("asks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves", async () => {
+    const calls = mockFetch((method, url) => {
+      if (method === "GET" && url === "/api/things/t1") return { status: 200, body: thing };
+      if (method === "PUT") return { status: 200, body: { ...thing, name: "Desk (walnut)", version: 4 } };
+      return { status: 404, body: {} };
+    });
+    const confirm = vi.fn(() => true);
+    window.confirm = confirm;
+    await show(<ThingForm />);
+    setInput(input("name"), "Desk (walnut)");
+    navigate("/elsewhere");
+    await settle();
+    let dialog = document.querySelector('[role="dialog"]')!;
+    expect([...dialog.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["Save and close", "Discard changes", "Keep editing"]);
+    act(() => [...dialog.querySelectorAll("button")].find((b) => b.textContent === "Save and close")!.click());
+    await settle();
+    await settle();
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    expect(window.location.pathname).toBe("/elsewhere");
+
+    window.history.replaceState(null, "", "/things");
+    setInput(input("name"), "Desk (pine)");
+    navigate("/elsewhere");
+    await settle();
+    dialog = document.querySelector('[role="dialog"]')!;
+    act(() => [...dialog.querySelectorAll("button")].find((b) => b.textContent === "Discard changes")!.click());
+    await settle();
+    expect(window.location.pathname).toBe("/elsewhere");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    expect(input("name").value).toBe("Desk (walnut)");
+    expect(confirm).not.toHaveBeenCalled();
   });
 
   it("discards with Alt+Z and asks before closing a form with changes: save, discard or keep editing", async () => {
@@ -161,14 +202,19 @@ describe("the record form", () => {
     expect(input("name").value).toBe("Desk (changed elsewhere)");
   });
 
-  it("shows a record read-only to a user who may not change it: no save, fields disabled, the reason said", async () => {
-    mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
+  it("shows a record read-only to a user who may not change it: no save, fields disabled, the reason said, and the save keys send nothing", async () => {
+    const calls = mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
     await show(<ThingForm canEdit={false} />);
     expect(buttons()).not.toContain("Save");
     expect(input("name").disabled).toBe(true);
     expect(view!.container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("Read only");
     press({ ctrlKey: true, key: "s", code: "KeyS" });
+    press({ ctrlKey: true, key: "Enter", code: "Enter" });
+    press({ altKey: true, key: "z", code: "KeyZ" });
     await settle();
+    // Critic p06 round 2's probe (plant W2): nothing but reads leaves.
+    expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
+    expect(view!.container.querySelector('.notice[role="status"]')).toBeNull();
   });
 
   it("moves to the next and previous record with Alt+PageDown and Alt+PageUp and the toolbar arrows", async () => {
@@ -295,10 +341,10 @@ describe("money", () => {
     expect(multiplyDecimal("1e3", "1", 2)).toBeNull();
   });
 
-  function Amount({ initialCurrency }: { initialCurrency: string }) {
+  function Amount({ initialCurrency, baseCurrency = "AED", initialRate = "3.6725" }: { initialCurrency: string; baseCurrency?: string; initialRate?: string }) {
     const [amount, setAmount] = useState("1000");
     const [currency, setCurrency] = useState(initialCurrency);
-    const [rate, setRate] = useState("3.6725");
+    const [rate, setRate] = useState(initialRate);
     const bind = (name: string, value: string, set: (v: string) => void) => ({ name, value, onChange: set, errors: [], readOnly: false });
     return (
       <MoneyField
@@ -306,7 +352,7 @@ describe("money", () => {
         amount={bind("amount", amount, setAmount)}
         currency={bind("currency", currency, setCurrency)}
         rate={bind("rate", rate, setRate)}
-        baseCurrency="AED"
+        baseCurrency={baseCurrency}
       />
     );
   }
@@ -325,5 +371,19 @@ describe("money", () => {
     await show(<Amount initialCurrency="AED" />);
     expect(view!.container.querySelector('input[name="rate"]')).toBeNull();
     expect(view!.container.querySelector("output.money-base")).toBeNull();
+  });
+
+  it("works the base amount out at the base currency's own decimals: three for a dinar, none for the yen", async () => {
+    await show(<Amount initialCurrency="USD" baseCurrency="KWD" initialRate="0.30715" />);
+    // 1000 × 0.30715 = 307.150 KWD (three decimals, not rounded to 307.15).
+    expect(view!.container.querySelector("output.money-base")!.textContent).toContain("307.150");
+    view!.unmount();
+    view = undefined;
+    await show(<Amount initialCurrency="USD" baseCurrency="JPY" initialRate="149.555" />);
+    expect(view!.container.querySelector("output.money-base")!.textContent).toContain("149,555");
+    expect(view!.container.querySelector("output.money-base")!.textContent).not.toContain(".");
+    expect(multiplyDecimal("10.005", "1", 3)).toBe("10.005");
+    expect(multiplyDecimal("0.5", "1", 0)).toBe("1");
+    expect(multiplyDecimal("-0.5", "1", 0)).toBe("-1");
   });
 });

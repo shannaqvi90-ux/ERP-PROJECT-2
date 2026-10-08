@@ -1,0 +1,16 @@
+create user with roleIds=[B role]                       B-id 400 vs random 400  same=True
+create user with companyRoles company=B company         B-id 400 vs random 400  same=True
+create user with companyRoles role=B role               B-id 400 vs random 400  same=True
+PUT user companyRoles company=B company                 B-id 400 vs random 400  same=True
+PUT user roleIds=[B role]                               B-id 400 vs random 400  same=True
+PUT default-company = B company                         B-id 400 vs random 400  same=True
+PUT workplace company = B company                       B-id 400 vs random 400  same=True
+usersByRole report role=B role                          B-id 200 vs random 200  same=True
+branchDirectory report company=B company                B-id 200 vs random 200  same=True
+companyProfile report company=B company                 B-id 404 vs random 404  same=True
+users filter on roleIds = B role                        B-id 400 vs random 400  same=True
+B creates role 201
+A creates same role name as B: 201  unused name: 201
+B creates user 201
+A creates same e-mail as B: 201  unused: 201
+sign-in with A-password for an address B uses (both workspaces now hold it): 401

@@ -231,6 +231,175 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Contains("/FontFile2", raw, StringComparison.Ordinal);
     }
 
+    /// <summary>A document embeds only the glyphs it draws (a subset font, PDF 1.7 9.6.4 and 9.9):
+    /// an Arabic page no longer carries the whole 289 KB Arabic face. Each embedded font is named
+    /// with a six-letter subset tag, every letter on the page still has its outline (a reader draws
+    /// it from the subset: its glyph box is not empty), and the same document is the same bytes
+    /// every time it is printed.</summary>
+    [Fact]
+    public void A_pdf_embeds_only_the_glyphs_it_draws_and_every_letter_keeps_its_outline()
+    {
+        var renderer = new PdfReportRenderer(fixture.Fonts);
+        var document = Sample("ar", rows: 30, grouped: true);
+        var bytes = renderer.Render(document);
+        var arabicFace = fixture.Fonts.Faces.Single(f => f.Name == "NotoSansArabic-Regular");
+        Assert.True(bytes.Length < arabicFace.Sfnt.Length / 4, $"an Arabic page is {bytes.Length} bytes; the whole Arabic face alone is {arabicFace.Sfnt.Length}");
+        var raw = Encoding.Latin1.GetString(bytes);
+        var baseFonts = System.Text.RegularExpressions.Regex.Matches(raw, @"/BaseFont /([^ /]+)").Select(m => m.Groups[1].Value).Distinct().ToList();
+        Assert.NotEmpty(baseFonts);
+        Assert.All(baseFonts, name => Assert.Matches(@"^[A-Z]{6}\+NotoSans", name));
+        Assert.DoesNotContain("/FontName /NotoSans", raw, StringComparison.Ordinal);
+
+        using var pdf = PdfDocument.Open(bytes);
+        var letters = pdf.GetPages().SelectMany(p => p.Letters).Where(l => !string.IsNullOrWhiteSpace(l.Value) && l.Value != "\u200B").ToList();
+        Assert.NotEmpty(letters);
+        Assert.All(letters, l => Assert.True(l.BoundingBox.Width > 0 && l.BoundingBox.Height > 0, $"'{l.Value}' ({l.FontName}) draws no outline"));
+        Assert.Contains(letters, l => l.FontName?.Contains("NotoSansArabic", StringComparison.Ordinal) == true);
+        Assert.Equal(bytes, renderer.Render(document));
+    }
+
+    /// <summary>The subset keeps every glyph id where it was: a kept glyph has the outline it had in
+    /// the whole font, a glyph not drawn has none, glyph 0 (the box drawn for a character no font
+    /// has) and every component of a composite glyph are kept, and the font is still a font
+    /// (HarfBuzz reads it; every table checksum and the whole-font checksum hold).</summary>
+    [Fact]
+    public void A_font_subset_keeps_the_drawn_glyphs_and_their_components_at_their_ids()
+    {
+        foreach (var face in fixture.Fonts.Faces)
+        {
+            var whole = face.Font;
+            var drawn = Enumerable.Range(1, face.GlyphCount - 1).Where(g => g % 37 == 0).Select(g => (uint)g).ToList();
+            var subset = FontSubset.Of(face.Sfnt, drawn);
+            Assert.True(subset.Length < face.Sfnt.Length, face.Name);
+            var memory = System.Runtime.InteropServices.Marshal.AllocHGlobal(subset.Length);
+            try
+            {
+                System.Runtime.InteropServices.Marshal.Copy(subset, 0, memory, subset.Length);
+                using var blob = new HarfBuzzSharp.Blob(memory, subset.Length, HarfBuzzSharp.MemoryMode.ReadOnly);
+                using var cutFace = new HarfBuzzSharp.Face(blob, 0);
+                using var cut = new HarfBuzzSharp.Font(cutFace);
+                Assert.Equal(face.GlyphCount, cutFace.GlyphCount);
+                // What must be kept: the drawn glyphs, glyph 0, and the components of composites, all the way down.
+                var kept = new HashSet<uint>();
+                var pending = new Stack<uint>(drawn.Append(0u));
+                while (pending.TryPop(out var next))
+                {
+                    if (kept.Add(next))
+                    {
+                        foreach (var component in FontSubset.Components(Outline(face.Sfnt, (int)next)))
+                        {
+                            pending.Push((uint)component);
+                        }
+                    }
+                }
+                for (uint g = 0; g < face.GlyphCount; g++)
+                {
+                    whole.TryGetGlyphExtents(g, out var before);
+                    cut.TryGetGlyphExtents(g, out var after);
+                    if (kept.Contains(g))
+                    {
+                        Assert.Equal((before.XBearing, before.YBearing, before.Width, before.Height), (after.XBearing, after.YBearing, after.Width, after.Height));
+                    }
+                    else
+                    {
+                        Assert.True(after.Width == 0 && after.Height == 0, $"{face.Name}: glyph {g} is not drawn but kept its outline");
+                    }
+                    Assert.Equal(whole.GetHorizontalGlyphAdvance(g), cut.GetHorizontalGlyphAdvance(g));
+                }
+            }
+            finally
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(memory);
+            }
+            AssertChecksums(subset, face.Name);
+        }
+    }
+
+    [Fact]
+    public void A_composite_glyph_keeps_the_glyphs_it_is_built_from()
+    {
+        // Find composite glyphs in the faces (accented Latin letters are built from a base and an accent).
+        var found = 0;
+        foreach (var face in fixture.Fonts.Faces)
+        {
+            for (var g = 1; g < face.GlyphCount && found < 40; g++)
+            {
+                var components = FontSubset.Components(Outline(face.Sfnt, g));
+                if (components.Count == 0)
+                {
+                    continue;
+                }
+                found++;
+                var subset = FontSubset.Of(face.Sfnt, [(uint)g]);
+                foreach (var component in components)
+                {
+                    Assert.True(Outline(subset, component).Length > 0 || Outline(face.Sfnt, component).Length == 0,
+                        $"{face.Name}: glyph {g} is built from glyph {component}, which the subset left out");
+                }
+                // The outline is copied as it was (padded with at most three zero bytes to a four-byte boundary).
+                var before = Outline(face.Sfnt, g).ToArray();
+                var after = Outline(subset, g).ToArray();
+                Assert.Equal(before, after[..before.Length]);
+                Assert.True(after.Length - before.Length < 4 && after[before.Length..].All(b => b == 0), $"{face.Name}: glyph {g}");
+            }
+        }
+        Assert.True(found > 0, "no composite glyph in the bundled faces to check");
+    }
+
+    private static ReadOnlySpan<byte> Outline(byte[] sfnt, int glyph)
+    {
+        var tables = TableOffsets(sfnt);
+        var (glyf, _) = tables["glyf"];
+        var (loca, _) = tables["loca"];
+        var (head, _) = tables["head"];
+        var longOffsets = System.Buffers.Binary.BinaryPrimitives.ReadInt16BigEndian(sfnt.AsSpan(head + 50)) == 1;
+        int At(int g) => longOffsets
+            ? (int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(loca + g * 4))
+            : System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(sfnt.AsSpan(loca + g * 2)) * 2;
+        return sfnt.AsSpan(glyf + At(glyph), At(glyph + 1) - At(glyph));
+    }
+
+    private static Dictionary<string, (int Offset, int Length)> TableOffsets(byte[] sfnt)
+    {
+        var count = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(sfnt.AsSpan(4));
+        return Enumerable.Range(0, count).Select(i => 12 + i * 16).ToDictionary(
+            r => Encoding.ASCII.GetString(sfnt, r, 4),
+            r => ((int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(r + 8)), (int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(sfnt.AsSpan(r + 12))));
+    }
+
+    private static void AssertChecksums(byte[] font, string name)
+    {
+        static uint Sum(ReadOnlySpan<byte> data)
+        {
+            uint sum = 0;
+            Span<byte> word = stackalloc byte[4];
+            for (var i = 0; i < data.Length; i += 4)
+            {
+                word.Clear();
+                data.Slice(i, Math.Min(4, data.Length - i)).CopyTo(word);
+                sum = unchecked(sum + System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(word));
+            }
+            return sum;
+        }
+        var tables = TableOffsets(font);
+        var count = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(font.AsSpan(4));
+        for (var i = 0; i < count; i++)
+        {
+            var record = 12 + i * 16;
+            var tag = Encoding.ASCII.GetString(font, record, 4);
+            var (offset, length) = tables[tag];
+            var data = font.AsSpan(offset, length).ToArray();
+            if (tag == "head")
+            {
+                Array.Clear(data, 8, 4);
+            }
+            Assert.True(System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(font.AsSpan(record + 4)) == Sum(data), $"{name}: table {tag} checksum");
+        }
+        Assert.True(Sum(font) == 0xB1B0AFBA, $"{name}: whole-font checksum");
+        Assert.DoesNotContain("GSUB", tables.Keys);
+        Assert.DoesNotContain("GPOS", tables.Keys);
+    }
+
     [Fact]
     public void A_pdf_starts_with_a_well_formed_header()
     {
@@ -276,6 +445,41 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
             .Where(l => Math.Abs(l.StartBaseLine.Y - pdf.GetPage(1).Letters.First(x => x.Value == "+").StartBaseLine.Y) < 0.5)
             .OrderBy(l => l.StartBaseLine.X).Select(l => l.Value);
         Assert.Equal("+97125557810", string.Concat(digits));
+    }
+
+    /// <summary>Critic p06 round 2: Arabic copied or searched from a PDF came out in fragments
+    /// ("ركة ش" for "شركة"), because every letter with dots or a mark was written on its own and a
+    /// reader (pdf.js) took each piece apart. Each run's letters are now one TJ string from one point;
+    /// its dots and marks follow as artifacts with no text; a mark's character goes with its letter;
+    /// and a right-to-left line is written from its right end, in reading order.</summary>
+    [Fact]
+    public void Arabic_runs_are_written_whole_and_in_reading_order_so_a_reader_extracts_words_intact()
+    {
+        var writer = new PdfWriter("t", "ar", true);
+        var page = writer.AddPage(595, 842);
+        page.Text(new TextShaper(fixture.Fonts).Shape("شركة Al Noor طُبع", 10, bold: false, documentRightToLeft: true), 100, 700);
+        var runs = System.Text.RegularExpressions.Regex.Matches(page.Content.ToString(), @"(/Span << /ActualText <FEFF([0-9A-F]+)> >> BDC\n)?BT [^\n]*Tf\n((?:(?!ET\n)[^\n]*\n)*?)ET\n")
+            .Select(m => (Actual: m.Groups[2].Success ? Encoding.BigEndianUnicode.GetString(Convert.FromHexString(m.Groups[2].Value)).Trim() : null, Lines: m.Groups[3].Value.Split('\n', StringSplitOptions.RemoveEmptyEntries)))
+            .ToList();
+        var summary = string.Join(" | ", runs.Select(r => $"{r.Actual} ({string.Join(",", (r.Actual ?? "").Select(c => ((int)c).ToString("X4")))}): {string.Join(" / ", r.Lines)}"));
+        // Reading order: "شركة", read first (at the right), is written first, then the English (and the
+        // spaces around it), then "طُبع".
+        Assert.True(runs.Count >= 3 && runs[0].Actual == "شركة" && runs.Skip(1).SkipLast(1).All(r => string.IsNullOrEmpty(r.Actual)) && runs[^1].Actual == "طُبع", summary);
+        foreach (var (_, lines) in runs)
+        {
+            // One TJ for every letter of the run, written first; then only artifacts (dots and marks).
+            Assert.EndsWith(" TJ", lines[0], StringComparison.Ordinal);
+            Assert.All(lines.Skip(1), l => Assert.StartsWith("/Artifact BMC ", l, StringComparison.Ordinal));
+        }
+        // "طُبع": three letters in its TJ (the damma is drawn apart; its character goes with the ط).
+        Assert.Equal(3, runs[^1].Lines[0].Split('<').Length - 1);
+        // Each run starts left of the one written before it: the line is written from its right end.
+        decimal X(string line) => decimal.Parse(System.Text.RegularExpressions.Regex.Match(line, @"^1 0 0 1 (\S+) ").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.True(runs.Zip(runs.Skip(1)).All(p => X(p.First.Lines[0]) > X(p.Second.Lines[0])), summary);
+        // The letter carries its mark's character, placed so that a reader reversing the run's
+        // characters into reading order gets the letter, then its mark.
+        var glyphs = new TextShaper(fixture.Fonts).Shape("طُبع", 10, false, true).Runs.Single().GlyphText;
+        Assert.Equal(["ع", "", "ب", "", "\u064Fط"], glyphs);
     }
 
     [Fact]
@@ -389,6 +593,33 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.DoesNotContain("Total", text, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p06 round 2: exports stopped at their row limit without a word (an accountant
+    /// exporting 100,004 users got 20,000 and nothing said so). A file cut at its limit says so in its
+    /// last line, in the document's language, after every row it holds.</summary>
+    [Fact]
+    public void Csv_cut_at_its_row_limit_ends_with_a_line_saying_so()
+    {
+        var cut = Sample("ar", 3, grouped: false) with { Truncated = true, MatchCount = 250_000, RowCountText = "أول ٣ من أصل ٢٥٠٬٠٠٠ صفًا؛ ضيّق المعايير لطباعة الباقي." };
+        var lines = Encoding.UTF8.GetString(Exports.Csv(cut)[3..]).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(5, lines.Length);
+        Assert.Equal(cut.RowCountText, lines[^1]);
+        var whole = Encoding.UTF8.GetString(Exports.Csv(Sample("ar", 3, grouped: false)));
+        Assert.DoesNotContain("ضيّق", whole, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Xlsx_cut_at_its_row_limit_says_so_under_the_table_outside_the_filter()
+    {
+        var cut = Sample("en", 3, grouped: false) with { Truncated = true, MatchCount = 250_000, RowCountText = "The first 3 of 250,000 rows; narrow the parameters to print the rest." };
+        using var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(cut)));
+        var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        // Rows 2-4 hold the data, row 5 the total, row 7 the note (after a blank line).
+        Assert.Contains("<row r=\"7\"><c r=\"A7\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">The first 3 of 250,000 rows; narrow the parameters to print the rest.</t></is></c></row>", sheet, StringComparison.Ordinal);
+        Assert.Contains("<autoFilter ref=\"A1:C4\"/>", sheet, StringComparison.Ordinal);
+        using var whole = new ZipArchive(new MemoryStream(Exports.Xlsx(Sample("en", 3, grouped: false))));
+        Assert.DoesNotContain("narrow the parameters", new StreamReader(whole.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd(), StringComparison.Ordinal);
+    }
+
     /// <summary>A report document as the engine builds one, in either language.</summary>
     internal static ReportDocument Sample(string language, int rows, bool grouped, int columns = 3)
     {
@@ -473,7 +704,7 @@ public static class PdfText
     public static string Logical(string visual) =>
         System.Text.RegularExpressions.Regex.Replace(visual, "[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+", m => new string(m.Value.Reverse().ToArray()));
 
-    private static string Inflated(byte[] pdf)
+    internal static string Inflated(byte[] pdf)
     {
         var latin = Encoding.Latin1.GetString(pdf);
         var output = new StringBuilder();

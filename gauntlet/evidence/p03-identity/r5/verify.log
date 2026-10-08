@@ -1,0 +1,1293 @@
+verify-slot: slot 1 of 2 taken at 2026-10-08T08:45:04Z after waiting 0 s; time the run from here
+[1m[1/3] Side by side: .NET build and tests | web and comparison harness | clean stack, then end-to-end[0m
+[e2e] [1mClean stack: build, migrate, seed, serve (project c-p03-identity-r5-verify, port 20360)[0m
+[e2e] [1mBuilding the application image[0m
+[e2e]  Image erp-app:c-p03-identity-r5-verify Building 
+[e2e] #1 [internal] load local bake definitions
+[e2e] #1 reading from stdin 669B done
+[e2e] #1 DONE 0.0s
+[web] 
+[dotnet] 
+[web] [1m== Copying sources (without build output)[0m
+[dotnet] [1m== Copying sources (without build output)[0m
+[e2e] 
+[e2e] #2 [internal] load build definition from Dockerfile
+[e2e] #2 transferring dockerfile: 2.14kB done
+[e2e] #2 DONE 0.0s
+[e2e] 
+[e2e] #3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+[dotnet] 
+[dotnet] [1m== .NET: restore and build (warnings are errors)[0m
+[web] 
+[web] [1m== Web: install, type-check, string gate, unit tests, build[0m
+[e2e] #3 DONE 1.3s
+[e2e] 
+[e2e] #4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+[e2e] #4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+[e2e] #4 CACHED
+[e2e] 
+[e2e] #5 [internal] load metadata for docker.io/library/node:22-alpine
+[e2e] #5 ...
+[e2e] 
+[e2e] #6 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+[e2e] #6 DONE 0.3s
+[e2e] 
+[e2e] #7 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+[e2e] #7 DONE 0.3s
+[e2e] 
+[e2e] #5 [internal] load metadata for docker.io/library/node:22-alpine
+[web] 
+[web] added 59 packages in 2s
+[e2e] #5 DONE 1.1s
+[e2e] 
+[e2e] #8 [internal] load .dockerignore
+[e2e] #8 transferring context: 187B done
+[e2e] #8 DONE 0.0s
+[e2e] 
+[e2e] #9 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+[e2e] #9 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+[e2e] #9 DONE 0.1s
+[e2e] 
+[e2e] #10 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+[e2e] #10 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.1s done
+[e2e] #10 DONE 0.1s
+[e2e] 
+[e2e] #11 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+[e2e] #11 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.1s done
+[e2e] #11 DONE 0.1s
+[e2e] 
+[e2e] #12 [internal] load build context
+[e2e] #12 transferring context: 2.68MB 0.0s done
+[e2e] #12 DONE 0.1s
+[e2e] 
+[e2e] #13 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+[e2e] #13 CACHED
+[e2e] 
+[e2e] #14 [stage-3 2/4] WORKDIR /app
+[e2e] #14 CACHED
+[e2e] 
+[e2e] #15 [strings 2/3] COPY web/src/modules/ /modules/
+[e2e] #15 CACHED
+[e2e] 
+[e2e] #16 [web 6/6] RUN npm run check && npm run build
+[e2e] #16 CACHED
+[e2e] 
+[e2e] #17 [stage-3 3/4] COPY --from=build /app ./
+[e2e] #17 CACHED
+[e2e] 
+[e2e] #18 [web 3/6] COPY web/package.json web/package-lock.json ./
+[e2e] #18 CACHED
+[e2e] 
+[e2e] #19 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+[e2e] #19 CACHED
+[e2e] 
+[e2e] #20 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+[e2e] #20 CACHED
+[e2e] 
+[e2e] #21 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+[e2e] #21 CACHED
+[e2e] 
+[e2e] #22 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+[e2e] #22 CACHED
+[e2e] 
+[e2e] #23 [build 2/7] WORKDIR /src
+[e2e] #23 CACHED
+[e2e] 
+[e2e] #24 [web 2/6] WORKDIR /web
+[e2e] #24 CACHED
+[e2e] 
+[e2e] #25 [web 5/6] COPY web/ ./
+[e2e] #25 CACHED
+[e2e] 
+[e2e] #26 [build 4/7] COPY src/ src/
+[e2e] #26 CACHED
+[e2e] 
+[e2e] #27 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+[e2e] #27 CACHED
+[e2e] 
+[e2e] #28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+[e2e] #28 CACHED
+[e2e] 
+[e2e] #29 exporting to image
+[e2e] #29 exporting layers done
+[e2e] #29 exporting manifest sha256:bc55851ca33f7999effa6974a01b0017304b763658066355772183193008085d 0.0s done
+[e2e] #29 exporting config sha256:5d340c770d5cb9b22cfbd012181b9d311759de79e05bbfbc0125b03651794606
+[e2e] #29 exporting config sha256:5d340c770d5cb9b22cfbd012181b9d311759de79e05bbfbc0125b03651794606 0.0s done
+[e2e] #29 exporting attestation manifest sha256:84ad9902f4dfdc60b5dbf4e41c27a893b9b4b0e59c4a5521c229259f9cd37012 0.0s done
+[e2e] #29 exporting manifest list sha256:652c2e970f62d6153ff6f431a805214f04cc5d90d6c19c3d5af8299a95762c3c 0.0s done
+[e2e] #29 naming to docker.io/library/erp-app:c-p03-identity-r5-verify
+[e2e] #29 naming to docker.io/library/erp-app:c-p03-identity-r5-verify done
+[e2e] #29 unpacking to docker.io/library/erp-app:c-p03-identity-r5-verify
+[e2e] #29 unpacking to docker.io/library/erp-app:c-p03-identity-r5-verify 0.5s done
+[e2e] #29 DONE 0.7s
+[e2e] 
+[e2e] #30 resolving provenance for metadata file
+[e2e] #30 DONE 0.0s
+[e2e]  Image erp-app:c-p03-identity-r5-verify Built 
+[e2e] [1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+[e2e]  Network c-p03-identity-r5-verify_default Creating 
+[e2e]  Network c-p03-identity-r5-verify_default Created 
+[e2e]  Volume c-p03-identity-r5-verify_db-data Creating 
+[e2e]  Volume c-p03-identity-r5-verify_db-data Created 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Creating 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Created 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Starting 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Started 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Waiting 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Healthy 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Running 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Creating 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Created 
+[e2e] Attaching to setup-1
+[e2e]  Container c-p03-identity-r5-verify-db-1 Waiting 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Healthy 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Starting 
+[web] String check passed: 68 source files, 651 keys in English and Arabic, 64 plural messages.
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Started 
+[web] Accessibility check passed: 978 JSX elements checked.
+[web] 
+[web] [1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/work/web[39m
+[web] 
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+[e2e] setup-1  |       Creating database erp
+[web]  [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/historyGuard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating KernelDbContext: 4 pending
+[web]  [32m✓[39m src/modules/reports/ReportsPage.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating TenancyDbContext: 4 pending
+[web]  [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 293[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/signInAddress.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/forms/forms.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 408[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 313[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 105[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 367[2mms[22m[39m
+[web]  [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 389[2mms[22m[39m
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating IdentityDbContext: 7 pending
+[web]  [32m✓[39m src/kernel/router.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[web]  [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 705[2mms[22m[39m
+[web]  [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Migrating ListsDbContext: 1 pending
+[web]  [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1244[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 626[2mms[22m[39m
+[web]  [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 2089[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 362[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 339[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 304[2mms[22m[39m
+[web]  [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 3150[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 422[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 409[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 366[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 349[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 450[2mms[22m[39m
+[e2e] setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+[e2e] setup-1  |       Seeded tenant alnoor (Demo) in 2376 ms
+[e2e] setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+[e2e] setup-1  |       Seeded tenant gulfsteel (Demo) in 574 ms
+[e2e] setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+[e2e] setup-1  |       Refreshed statistics and index lists in 384 ms
+[e2e] [Ksetup-1 exited with code 0
+[e2e]  Compose Stopping Aborting on container exit...
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Stopping 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Stopped 
+[web]  [32m✓[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m59 tests[22m[2m)[22m[33m 5024[2mms[22m[39m
+[e2e]  Container c-p03-identity-r5-verify-db-1 Running 
+[e2e]  Container c-p03-identity-r5-verify-app-1 Creating 
+[e2e]  Container c-p03-identity-r5-verify-app-1 Created 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Waiting 
+[e2e]  Container c-p03-identity-r5-verify-db-1 Healthy 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Starting 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Started 
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Waiting 
+[web]  [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m65 tests[22m[2m)[22m[33m 6735[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 699[2mms[22m[39m
+[web]        [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 444[2mms[22m[39m
+[web]        [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 347[2mms[22m[39m
+[web]        [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 373[2mms[22m[39m
+[dotnet] 
+[dotnet] Build succeeded.
+[dotnet]     0 Warning(s)
+[dotnet]     0 Error(s)
+[dotnet] 
+[dotnet] Time Elapsed 00:00:14.94
+[dotnet] 
+[dotnet] [1m== .NET: unit, integration (Testcontainers PostgreSQL) and gate tests[0m
+[e2e]  Container c-p03-identity-r5-verify-setup-1 Exited 
+[e2e]  Container c-p03-identity-r5-verify-app-1 Starting 
+[e2e]  Container c-p03-identity-r5-verify-app-1 Started 
+[web]  [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 18897[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 17590[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 344[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 410[2mms[22m[39m
+[web]      [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 353[2mms[22m[39m
+[web] 
+[web] [2m Test Files [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[web] [2m      Tests [22m [1m[32m315 passed[39m[22m[90m (315)[39m
+[web] [2m   Start at [22m 08:45:14
+[web] [2m   Duration [22m 20.94s[2m (transform 10.22s, setup 846ms, import 15.98s, tests 40.04s, environment 10.52s)[22m
+[web] 
+[web] JSON report written to /out/vitest.json
+[web] control: the gate passes on the unplanted product
+[web] P9-email: caught (signing out keeps the signed-out person's e-mail on the sign-in screen)
+[web] P9-storage: caught (signing out leaves the person's localStorage entries behind)
+[web] P9: caught (palette answers cached at module level by query, never cleared at sign-out)
+[web] C2: caught (the last record opened from the palette kept in a cookie (path=/), and signing out does not forget cookies)
+[web] P9-scoped: caught (identity-scoped caches are not emptied when the identity ends)
+[web] P9-session-storage: caught (signing out leaves sessionStorage behind)
+[web] C1: caught (palette answers kept in the tab's window.name, and signing out does not reset it)
+[web] C2-path: caught (the record cookie scoped to the screen's path (/identity), and signing out forgets cookies only at /)
+[web] H1: caught (the history guard trusts every entry: Back into the signed-out person's address opens it)
+[web] H2: caught (Back and reload are trusted like a typed address)
+[web] H3: caught (the history epoch survives the end of an identity (sessionStorage cleared except the epoch))
+[web] H4: caught (inside a document, Back to an entry of another identity is not checked)
+[web] client isolation gate self-test: 12 plants, all caught
+[web] control: the gate passes on the unplanted product
+[web] U1: caught (New role offered without identity.roles.create)
+[web] U1-users: caught (New user offered without identity.users.create)
+[web] U1-shortcut: caught (Alt+N opens a new role without identity.roles.create)
+[web] U-delete: caught (Delete role offered without identity.roles.delete (critic p03 round 1))
+[web] U-copy: caught (Copy role offered for a role granting more than the user holds)
+[web] U2: caught (A user's grants compared only on identity permissions (critic p03 round 3))
+[web] U2-roles: caught (A role's grants compared only on identity permissions)
+[web] U-company-roles: caught (Roles held in one company left out of what a user holds)
+[web] U-elsewhere: caught (A user holding roles in companies the signed-in user does not work in treated as editable)
+[web] identity screens permission gate self-test: 9 plants, all caught
+[web] control: the gate passes on the unplanted product
+[web] U1: caught (company logo upload and remove offered without tenancy.companies.update)
+[web] U2: caught (the company's branch line offered without tenancy.branches.create)
+[web] U2-new: caught (New branch (button and Alt+N) offered without tenancy.branches.create)
+[web] U-company-new: caught (New company (button and Alt+N) offered without tenancy.companies.create)
+[web] P3b: caught (the company form editable for everyone (critic p06 round 1's plant: canEdit true))
+[web] U-company-save: caught (the company form editable and saved without tenancy.companies.update)
+[web] U-company-address: caught (the company's address editable without tenancy.companies.update (its fields ignore the form's read-only state))
+[web] U-company-some-branches: caught (the company record editable by someone who works in only some of its branches)
+[web] U-logo-some-branches: caught (the company logo changeable by someone who works in only some of its branches)
+[web] U-branchline-some-branches: caught (the company's branch line offered to someone who works in only some of its branches (critic p02 round 4))
+[web] U-newbranch-some-branches: caught (New branch offered to someone who works in only some branches of every company (critic p02 round 4))
+[web] U-branchcode-some-branches: caught (a branch code editable by someone who works in only some branches of its company (critic p02 round 4))
+[web] P3b-branch: caught (the branch form editable for everyone (P3b on the branch screen))
+[web] U-branch-save: caught (the branch form editable and saved without tenancy.branches.update)
+[web] P3b-access: caught (the company access form saveable for everyone (P3b on the access screen))
+[web] U-access-save: caught (company access editable and saved without tenancy.access.update)
+[web] U-access-stronger: caught (company access of a user the server marks read-only offered for change)
+[web] U-access-boxes: caught (the company and branch boxes of a read-only access form left changeable)
+[web] U-tenant-save: caught (workspace settings editable and saved without tenancy.tenant.update)
+[web] P3b-tenant: caught (the workspace settings form shown and editable for everyone (P3b on the workspace screen))
+[web] tenancy screens permission gate self-test: 20 plants, all caught
+[web] vite v7.3.6 building client environment for production...
+[web] transforming...
+[web] ✓ 110 modules transformed.
+[web] rendering chunks...
+[web] computing gzip size...
+[web] dist/index.html                                                   0.49 kB │ gzip:   0.30 kB
+[web] dist/assets/noto-sans-arabic-arabic-wght-normal-BhzieyvS.woff2  165.96 kB
+[web] dist/assets/index-CWAtzhnf.css                                   35.08 kB │ gzip:   7.45 kB
+[web] dist/assets/index-C07zZHY1.js                                   500.36 kB │ gzip: 144.99 kB
+[web] 
+[web] (!) Some chunks are larger than 400 kB after minification. Consider:
+[web] - Using dynamic import() to code-split the application
+[web] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[web] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[web] ✓ built in 3.85s
+[web] 
+[web] [1m== Comparison harness (gauntlet/compare): install and unit tests[0m
+[web] 
+[web] added 2 packages in 871ms
+[web] ✔ add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps (18.123503ms)
+[web] ✔ api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.752891ms)
+[web] ✔ arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.035174ms)
+[web] ✔ attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps (6.857767ms)
+[web] ✔ configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.302525ms)
+[web] ✔ create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.046487ms)
+[web] ✔ create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.586656ms)
+[web] ✔ custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.494466ms)
+[web] ✔ edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.045286ms)
+[web] ✔ export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.668948ms)
+[web] ✔ find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.173204ms)
+[web] ✔ find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.460161ms)
+[web] ✔ follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.628746ms)
+[web] ✔ import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.412599ms)
+[web] ✔ keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.8135ms)
+[web] ✔ print-list-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.138965ms)
+[web] ✔ reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.274778ms)
+[web] ✔ see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.14563ms)
+[web] ✔ sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.864737ms)
+[web] ✔ switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.180019ms)
+[web] ✔ switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.25633ms)
+[web] ✔ who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps (6.249997ms)
+[web] ✔ screenshot names are random and never name a product (9.455271ms)
+[web] ✔ revealsProduct catches product names in any case (0.409987ms)
+[web] ✔ both products have a branding profile; extra brand words are added (0.512826ms)
+[web] ✔ the demo data's company names and codes are masked in both products (round 3 blindness finding) (0.185641ms)
+[web] ✔ letters A and B are assigned at random (1.012235ms)
+[web] ✔ committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder (2.879341ms)
+[web] ✔ the blind review page shows neutral captions, never the moments a driver named (10.208864ms)
+[web] ✔ a placeholder naming the vendor is cleared, not painted over (0.242551ms)
+[web] ✔ a side-by-side folder keeps the blind part (shots, review page) apart from the key and results (325.433852ms)
+[web] ✔ side by side, the products run in a random order per task (0.771739ms)
+[web] ✔ identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding) (1874.880326ms)
+[web] ✔ --list prints every task (498.477231ms)
+[web] ✔ bad arguments fail with usage (894.52087ms)
+[web] ✔ one command runs a task on our product and writes a result JSON (3228.858361ms)
+[web] ✔ the blind review page shows A and B only and keeps the mapping in key.json (12.285039ms)
+[web] ✔ ours wins only when strictly lower on every metric (1.291019ms)
+[web] ✔ a tie is a loss (0.361745ms)
+[web] ✔ a tie at zero is still a tie and a loss, and is reported plainly (owner question pending) (1.256843ms)
+[web] ✔ an unbuilt or failed product is never a win (0.219903ms)
+[web] ✔ median of repeated runs uses the median machine seconds (0.650219ms)
+[web] ✔ the generator is deterministic: a fresh run reproduces the shared files byte for byte (2857.580673ms)
+[web] ✔ volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows (214.443964ms)
+[web] ✔ the needle name occurs exactly once and the import file has plain headers (93.194644ms)
+[web] ✔ the generator keeps rates as fixed six-decimal strings (7.864389ms)
+[web] ✔ the random source is seeded (0.254175ms)
+[web] ✔ every driver imports only the fixture clients and Node file helpers, and runs no unreadable code (20.493895ms)
+[web] ✔ the driver lint catches planted escapes (0.744982ms)
+[web] ✔ control: an honest driver verifies; reading and locating are allowed while measured (2959.735714ms)
+[web] ✔ plant: typing through ctx.page.keyboard -> the run is invalid, never verified (2403.851696ms)
+[web] ✔ plant: pressing a key through op.page.keyboard -> the run is invalid, never verified (2051.356823ms)
+[web] ✔ plant: clicking a locator directly -> the run is invalid, never verified (2077.937418ms)
+[web] ✔ plant: filling a field directly -> the run is invalid, never verified (2652.872887ms)
+[web] ✔ plant: the mouse -> the run is invalid, never verified (2269.350628ms)
+[web] ✔ plant: a deep link (goto) -> the run is invalid, never verified (2208.979917ms)
+[web] ✔ plant: a reload -> the run is invalid, never verified (2036.047186ms)
+[web] ✔ plant: page script that clicks (evaluate) -> the run is invalid, never verified (2104.466287ms)
+[web] ✔ plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified (2202.645292ms)
+[web] ✔ plant: a condition that clicks -> the run is invalid, never verified (2287.747504ms)
+[web] ✔ plant: a condition that sets a value -> the run is invalid, never verified (2189.935213ms)
+[web] ✔ plant: a condition that changes the page -> the run is invalid, never verified (3041.601371ms)
+[web] ✔ plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified (2343.250346ms)
+[web] ✔ plant: an asynchronous condition -> the run is invalid, never verified (2066.144433ms)
+[web] ✔ plant: a condition that navigates -> the run is invalid, never verified (2072.622147ms)
+[web] ✔ plant: a condition that calls the back end from the page -> the run is invalid, never verified (1982.35492ms)
+[web] ✔ plant: a back-end call from the harness (fetch) -> the run is invalid, never verified (2153.904159ms)
+[web] ✔ plant: a back-end call from the harness (http.request) -> the run is invalid, never verified (2364.627158ms)
+[web] ✔ plant: a second page in the same context -> the run is invalid, never verified (2051.9998ms)
+[web] ✔ plant: a new browser context -> the run is invalid, never verified (2287.863018ms)
+[web] ✔ plant: the page request context (page.request) -> the run is invalid, never verified (2400.834666ms)
+[web] ✔ plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified (2178.64418ms)
+[web] ✔ plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified (2517.025231ms)
+[web] ✔ plant: an action whose refusal the driver swallows -> the run is invalid, never verified (2370.776134ms)
+[web] ✔ plant: a keyboard kept from set-up and used while measured is refused (2351.525115ms)
+[web] ✔ plant: an internal channel kept from set-up is refused there too (2797.506582ms)
+[web] ✔ plant: a driver cannot stop the clock, drop steps or reach the raw page (2702.159347ms)
+[web] ✔ plant: browserKey refuses an action passed by the driver (2622.400499ms)
+[web] ✔ plant: the guard controls cannot be claimed by a driver (0.958116ms)
+[web] ✔ set-up may act on the product but never run page script; verify() only reads (2877.0763ms)
+[web] ✔ plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid (5204.767749ms)
+[web] ✔ plant U1b (round 3): a listener installed through a locator in set-up -> invalid (2713.21104ms)
+[web] ✔ plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid (5693.984534ms)
+[web] ✔ plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid (9789.392884ms)
+[web] ✔ plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context (4529.399613ms)
+[web] ✔ plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid (2079.726565ms)
+[web] ✔ plant H2b (round 3): a start screen that carries state in its address -> invalid (980.679834ms)
+[web] ✔ plant H2c (round 3): a task already done by set-up before the clock -> invalid (2281.032692ms)
+[web] ✔ plant V1 (round 3): verify() that acts on the page -> invalid (2045.057035ms)
+[web] ✔ plant V2 (round 3): verify() that changes the product through the back end -> invalid (2600.432018ms)
+[web] ✔ plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid (2040.568672ms)
+[web] ✔ plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid (2131.102396ms)
+[web] ✔ plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared (7320.932623ms)
+[web] ✔ the real ours sign-in driver verifies on a stand-in sign-in page (7637.524349ms)
+[web] ✔ the whole-e-mail path fails on a sign-in screen that does not move on by itself (no password typed into the e-mail field) (7541.91474ms)
+[web] ✔ plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid (6334.829696ms)
+[web] ✔ plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid (6152.766941ms)
+[web] ✔ the real ours find-user driver verifies on a stand-in users screen (3366.67951ms)
+[web] ✔ plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win (11211.254139ms)
+[web] ✔ an API task counts each request, and its screenshots show the neutral request transcript (1920.729329ms)
+[web] ✔ plant: signing in to the API inside the measured part is refused (1386.124903ms)
+[web] ✔ plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified (6556.068392ms)
+[web] ✔ plant P2 (round 4): launching another browser in set-up -> invalid (1182.336302ms)
+[web] ✔ plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid (1785.277813ms)
+[web] ✔ plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid (1837.333365ms)
+[web] ✔ plant L2 (round 4): a list start whose address names the task's data -> invalid (3599.365319ms)
+[web] ✔ control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies (2978.128854ms)
+[web] ✔ plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid (9474.87589ms)
+[web] ✔ control (round 4): text copied inside the measured part may be pasted (2816.451834ms)
+[web] ✔ control (round 5): the honest path on the slow page waits for the 2 s answer (4597.009197ms)
+[web] ✔ plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid (2236.718456ms)
+[web] ✔ plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped (6836.171818ms)
+[web] ✔ plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock (3816.166977ms)
+[web] ✔ control (round 5): images and reads still loading when run() returns are not waited for (2561.029147ms)
+[web] ✔ plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid (2460.943988ms)
+[web] ✔ plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops (7286.412181ms)
+[web] ✔ plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly (3141.764215ms)
+[web] ✔ plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid (8566.459765ms)
+[web] ✔ plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid (5803.689812ms)
+[web] ✔ plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid (2138.155372ms)
+[web] ✔ plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent (7447.519376ms)
+[web] ✔ plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid (22385.472439ms)
+[web] ✔ plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness (5131.660628ms)
+[web] ✔ plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid (5541.412889ms)
+[web] ✔ plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid (3119.257665ms)
+[web] ✔ plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid (4343.770083ms)
+[web] ✔ plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid (2880.16281ms)
+[web] ✔ plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid (813.204122ms)
+[web] ✔ plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach (4426.299397ms)
+[web] ✔ plant U5f (round 5): a driver object handed straight to execute() is refused, never measured (0.748046ms)
+[web] ✔ plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent (3849.413437ms)
+[web] ✔ plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid (2316.902241ms)
+[web] ✔ plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid (2092.249951ms)
+[web] ✔ plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid (2440.13057ms)
+[web] ✔ plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid (2679.211925ms)
+[web] ✔ plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid (2093.214428ms)
+[web] ✔ control (round 5): the clipboard is empty at the start, whatever set-up copied (2878.743737ms)
+[web] ✔ KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step (3030.53293ms)
+[web] ✔ operator times are the published Card, Moran and Newell averages (1.850452ms)
+[web] ✔ typing counts one key per character plus Shift for capitals and symbols (1.476404ms)
+[web] ✔ a chord counts each key in it (0.262912ms)
+[web] ✔ a click is M + P + BB, with homing when the hand comes from the keyboard (0.41116ms)
+[web] ✔ a chained step has no mental preparation (0.218125ms)
+[web] ✔ the operator starts with the hand on the mouse (0.166093ms)
+[web] ✔ file picks are modelled as a double click (0.168728ms)
+[web] ✔ totals for a short path add up (0.654134ms)
+[web] ✔ unknown step kinds are rejected (0.574618ms)
+[web] ✔ a scroll is a mouse step modelled like a click (0.577394ms)
+[web] ✔ continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow (0.424106ms)
+[web] ✔ plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts (0.249455ms)
+[web] ✔ round 5: no step continues one that began on another screen (a key that opened a new screen, then typing) (1.216107ms)
+[web] ✔ every npm dependency of the harness is under an allowed licence (1.632918ms)
+[web] ✔ dependencies are pinned to exact versions (0.622071ms)
+[web] ✔ steps, keystrokes and waits are counted the same way every time (1579.706885ms)
+[web] ✔ choosing a file counts the dialog click and the pick (583.402413ms)
+[web] ✔ a step before start() is refused (610.419579ms)
+[web] ✔ blind screenshots paint branding over, go grey, and leave title and favicon neutral (977.933936ms)
+[web] ✔ a screenshot after the end of a task never shortens the measured time (836.854354ms)
+[web] ✔ round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working) (848.991155ms)
+[web] ✔ round 2 fault: the done screenshot after finish() leaves machine seconds unchanged (1229.793166ms)
+[web] ✔ while measuring, only the moments the task declares are shot, each once; their time stays on the clock (692.259422ms)
+[web] ✔ round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step) (570.634878ms)
+[web] ✔ round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted (580.814816ms)
+[web] ✔ an API request is one step whose keystrokes are the request typed plus Enter (441.224169ms)
+[web] ✔ a wait condition works on a page whose content security policy forbids eval (our product) (666.208489ms)
+[web] ✔ round 5: paste and copy chords are read as the keys they press, whatever their spelling (1.657828ms)
+[web] ✔ a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6) (338.737233ms)
+[web] ✔ ratchet.json has every comparison minimum (1.067519ms)
+[web] ✔ tasks and named tasks never go below their minimum (132.261127ms)
+[web] ✔ built Odoo drivers never go below their minimum (56.993617ms)
+[web] ✔ built drivers for our product never go below their minimum (38.373952ms)
+[web] ✔ verified Odoo baselines never go below their minimum, and each is complete (15.628153ms)
+[web] ✔ the recorded reference volume never goes below the minimum per main list (1.145821ms)
+[web] ✔ harness tests never go below their minimum (live rig checks counted apart) (14.865889ms)
+[web] ✔ planted uncounted-action drivers never go below their minimum (0.531565ms)
+[web] ✔ API tasks never go below their minimum (8.493514ms)
+[web] ✔ the driver process starts under the permission model with the network lockdown preloaded (8.591087ms)
+[web] ✔ inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket (2768.886862ms)
+[web] ✔ the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready (2571.882073ms)
+[web] ✔ the harness reads drivers and tasks through the driver process and never imports them (3.650534ms)
+[web] ✔ a driver process that stops answering is stopped, and the next run gets a new one (7718.330276ms)
+[web] ✔ plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product's included) (35009.662653ms)
+[web] ✔ our product declares its sign-in limit; Odoo has none (8.89401ms)
+[web] ✔ an API sign-in from the driver process is paced by the harness and waits out a 429 (3186.312093ms)
+[web] ✔ a browser sign-in refused with 429 is tried again in a fresh context, after the abandoned one ended (3646.150129ms)
+[web] ✔ a browser sign-in refused every time ends the run in an error, never a measurement (2370.783788ms)
+[web] ✔ a sign-in the harness paces inside verify() is not charged to the pass (the meter reports it apart) (12886.413376ms)
+[web] ✔ every task the bar names is defined and marked as named (104.653931ms)
+[web] ✔ task definitions are product-neutral and complete (6.086069ms)
+[web] ✔ every task declares where the runner starts it and the moments every driver shoots (instrument 4) (49.859737ms)
+[web] ✔ every task has a driver for each product (18.305047ms)
+[web] ✔ every Odoo driver is built; placeholders in task text resolve from the dataset (53.857042ms)
+[web] ✔ an unbuilt driver reports "not built" without touching a browser (119.108904ms)
+[web] ✔ print-list-arabic (routed from p06): the ours driver takes its menu words from the product's own strings, which hold them in both languages (10.546535ms)
+[web] ℹ tests 194
+[web] ℹ suites 0
+[web] ℹ pass 194
+[web] ℹ fail 0
+[web] ℹ cancelled 0
+[web] ℹ skipped 0
+[web] ℹ todo 0
+[web] ℹ duration_ms 433054.917424
+[dotnet] == suite: passed
+[dotnet] == self-http: passed
+[dotnet] == self-company: passed
+[dotnet] == self-noninterference: passed
+[dotnet] 
+[dotnet] [1m-- .NET tests: suite[0m
+[dotnet] Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] Test run for /work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] Test run for /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] Test run for /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] Test run for /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.18]   Discovering: Erp.Modules.Identity.Tests
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.21]   Discovering: Erp.Kernel.Tests
+[dotnet] [xUnit.net 00:00:00.19]   Discovering: Erp.Modules.Tenancy.Tests
+[dotnet] [xUnit.net 00:00:00.20]   Discovering: Erp.Modules.Reports.Tests
+[dotnet] [xUnit.net 00:00:00.20]   Discovering: Erp.Modules.Lists.Tests
+[dotnet] [xUnit.net 00:00:00.46]   Discovered:  Erp.Modules.Identity.Tests
+[dotnet] [xUnit.net 00:00:00.58]   Discovered:  Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.43]   Discovered:  Erp.Modules.Tenancy.Tests
+[dotnet] [xUnit.net 00:00:00.56]   Discovered:  Erp.Kernel.Tests
+[dotnet] [xUnit.net 00:00:00.45]   Discovered:  Erp.Modules.Lists.Tests
+[dotnet] [xUnit.net 00:00:00.47]   Discovered:  Erp.Modules.Reports.Tests
+[dotnet] [xUnit.net 00:00:00.76]   Starting:    Erp.Modules.Identity.Tests
+[dotnet] [xUnit.net 00:00:00.82]   Starting:    Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.67]   Starting:    Erp.Modules.Tenancy.Tests
+[dotnet] [xUnit.net 00:00:00.69]   Starting:    Erp.Modules.Reports.Tests
+[dotnet] [xUnit.net 00:00:00.71]   Starting:    Erp.Modules.Lists.Tests
+[dotnet] [xUnit.net 00:00:00.89]   Starting:    Erp.Kernel.Tests
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "A1D") [36 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "23505", status: 409, code: "duplicate") [37 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@.example", valid: False) [36 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ModuleListTests.A_valid_list_has_no_problems [60 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "omar", fields: ["name", "email"]) [60 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.A_principal_without_a_tenant_claim_may_bind_nothing [48 ms]
+[dotnet]   Passed Erp.Kernel.Tests.UnitOfWorkTests.Problems_inside_typed_unions_count_as_failures [48 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a b@c.example", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@@b.example", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b.example", valid: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "first.last+tag@sub.domain.ae", valid: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "no-at.example", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "23503", status: 404, code: "notFound") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "55P03", status: 409, code: "concurrency") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "40P01", status: 409, code: "concurrency") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "42501", status: 404, code: "notFound") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "22012", status: 500, code: "internal") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "40001", status: 409, code: "concurrency") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AEDX") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "فاطمه", fields: ["name", "nameAr"]) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "١٢٣", fields: ["name", "email"]) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "x@مثال", fields: ["name", "nameAr"]) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "aed") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AE") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "o'neil-2", fields: ["name", "email"]) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "ﻓﺎﻃﻤﺔ", fields: ["name", "nameAr"]) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 1, expected: "one") [37 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 99, expected: "many") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 10, expected: "few") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 0, expected: "other") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 2, expected: "other") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 3, expected: "few") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 100, expected: "other") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 103, expected: "few") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 11, expected: "many") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 0, expected: "zero") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1, expected: "one") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 2, expected: "two") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 102, expected: "other") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1.5, expected: "other") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ProblemMappingTests.Anything_unknown_is_an_internal_error_and_a_concurrent_save_is_a_conflict [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.UnitOfWorkTests.Plain_results_report_their_own_status [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read", valid: True) [8 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "de", expected: "en") [9 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity..read", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.userRoles.assignAll", valid: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "Identity.users.read", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read.extra", valid: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ModuleListTests.A_money_column_names_its_currency_column [11 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "", expected: "en") [2 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "ar-AE,ar;q=0.9,en;q=0.8", expected: "ar") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "fr-FR,ar;q=0.5", expected: "ar") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "en-GB,en;q=0.9", expected: "en") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ModuleListTests.A_list_must_belong_to_its_module_and_name_real_columns [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "x@مثال", arabic: True) [9 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "o'neil-2", arabic: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "omar", arabic: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "١٢٣", arabic: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "ﻓﺎﻃﻤﺔ", arabic: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "فاطمه", arabic: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Messages_fill_named_placeholders_and_exact_plural_branches [11 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.A_permissioned_request_may_bind_only_the_principals_tenant [24 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Money_records_its_base_currency_and_only_adds_against_the_same_base [24 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "HEAD", marked: False, readOnly: True) [7 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "GET", marked: False, readOnly: True) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "POST", marked: True, readOnly: True) [8 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "POST", marked: False, readOnly: False) [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "DELETE", marked: False, readOnly: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "PUT", marked: False, readOnly: False) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.TenantBindingTests.Requests_without_a_principal_or_a_permission_bind_what_they_resolved [5 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Forwarded_headers_are_trusted_only_from_configured_proxies [71 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.A_key_without_a_translation_stops_the_catalog_from_loading [76 ms]
+[dotnet]   Passed Erp.Kernel.Tests.LocalizationTests.Kernel_strings_exist_in_both_languages_and_format_arguments [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Money_travels_as_decimal_strings_in_json [105 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Only_same_currency_and_rate_can_be_added [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Amount_must_fit_the_currency_minor_units [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Base_currency_amounts_use_rate_one_and_rates_are_positive [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.MoneyTests.Base_amount_is_rounded_half_away_from_zero_to_the_base_currency [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Weaker_hashes_still_verify_and_ask_to_be_upgraded [104 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ServedListTests.A_served_list_whose_serving_list_is_missing_stays_without_a_binding [280 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.A_cursor_belongs_to_one_sort [291 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ServedListTests.A_served_list_must_name_another_list [16 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ServedListTests.The_serving_list_lends_its_binding_whatever_the_registration_order(servingFirst: True) [42 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "seen eq '2026-09-01 08:00'", code: "list.valueDateTime") [56 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "day eq '2026-13-01'", code: "list.valueDate") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name gt null", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name eq 'x' and", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "active eq 1", code: "list.valueBoolean") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name in ()", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "((name eq 'x')", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name in ('a', null)", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "nosuch eq 1", code: "list.unknownColumn") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "kind eq 'other'", code: "list.valueChoice") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name gt 'a'", code: "list.operatorNotAllowed") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "1.2.3 eq 1", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name eq", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name = 'x'", code: "list.filterSyntax") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "quantity eq 'many'", code: "list.valueNumber") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "active contains 'a'", code: "list.operatorNotAllowed") [5 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ServedListTests.The_serving_list_lends_its_binding_whatever_the_registration_order(servingFirst: False) [23 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ServedListTests.A_served_list_that_needs_a_column_the_serving_list_does_not_bind_is_refused [3 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_words_search_only_the_Arabic_search_fields_and_Latin_words_only_the_search_fields [286 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Arabic_search_matches_the_spellings_people_type_for_one_another [203 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "groupBy", value: "name", code: "list.notGroupable") [3 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "kind", code: "list.notSortable") [2 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "شركة Al Noor Trading للتجارة", rightToLeft: True, expected: "للتجارة|Al Noor Trading|شركة") [37 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "فاتورة 2026-10 رقم 15", rightToLeft: True, expected: "15|رقم|10|-|2026|فاتورة") [1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "هاتف +971 4 123-4567 فرع", rightToLeft: True, expected: "فرع|+971 4 123-4567|هاتف") [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "Branch: الفرع الرئيسي today", rightToLeft: False, expected: "Branch:|الفرع الرئيسي|today") [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "+971 2 555 7810", rightToLeft: True, expected: "+971 2 555 7810") [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "04 555 7810", rightToLeft: True, expected: "04 555 7810") [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "05/10/2026 14:30", rightToLeft: True, expected: "14:30|05/10/2026") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "-", code: "list.sortSyntax") [36 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "search", value: "a b c d e f g h i", code: "list.searchTooManyWords") [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "a,b,c,d,e", code: "list.sortTooMany") [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "after", value: "eyJzIjoibmFtZSJ9", code: "list.invalidCursor") [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.A_search_without_a_sort_puts_the_best_match_first [28 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-seen") [92 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "name") [184 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "code") [139 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-quantity,code") [181 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_telephone_number_prints_left_to_right_in_an_arabic_pdf [826 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_text_is_shaped_into_joining_forms_with_lam_alef [8 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_line_narrower_than_one_character_still_ends [7 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_ends_with_the_grand_total_as_a_filter_aware_formula_below_the_filtered_rows [10 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Font_units_scale_to_thousandths_of_an_em_rounded_half_to_even_as_decimals_round [436 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_letters_that_share_a_glyph_extract_as_the_letters_printed [35 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_run_maps_every_glyph_back_to_its_characters_and_a_line_shaped_again_is_the_same [16 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Each_script_is_drawn_with_a_font_that_has_it [4 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.The_first_strong_character_decides_a_values_direction [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_has_a_right_to_left_sheet_with_numbers_as_numbers [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: True) [68 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: False) [32 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_carries_the_rows_only_so_another_program_reads_every_line_as_data [1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_writes_totals_in_more_than_one_currency_as_text_and_adds_no_total_to_a_report_without_one [18 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_wide_table_turns_the_page_to_landscape [30 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_report_breaks_into_pages_with_the_header_on_each_and_page_numbers [87 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Long_text_wraps_at_spaces_within_the_width [1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_pdf_starts_with_a_well_formed_header [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "seen") [68 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.A_proof_from_the_challenge_equals_the_stored_hash_only_for_the_right_password [1 s]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Session_tokens_are_256_bit_base64url_and_stored_as_sha256 [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-name") [134 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-code") [108 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "active,-quantity") [98 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Registration_refuses_definitions_and_bindings_that_cannot_keep_their_promises [13 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "name eq 'x'") [5 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "kind in ('raw', 'finished') and seen ge '2026-09-0"···) [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "(name eq 'it''s' or code is null) and not quantity"···) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "amount lt -1.5 and active ne false and code starts"···) [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_Latin_search_queries_the_same_fields_as_before_and_an_Arabic_one_adds_the_Arabic_field [1 s]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_search_fields_are_text_columns_and_are_bound [2 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Latin_words_never_search_the_Arabic_field [19 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_words_find_people_by_their_Arabic_name_in_the_spellings_people_type [110 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "item") [389 ms]
+[dotnet]   Passed Erp.Kernel.Tests.SecurityTests.Password_hashes_verify_only_the_right_password_and_use_unique_salts [670 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_starts_with_a_byte_order_mark_keeps_raw_values_and_defuses_formulas [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.An_arabic_pdf_is_readable_right_to_left_with_its_fonts_embedded [122 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.Numbers_amounts_and_dates_follow_the_language_and_digits [< 1 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.RenderingTests.A_report_with_a_huge_cell_renders_in_seconds [100 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "3") [89 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "item 3") [157 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "c-0") [249 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Matching_is_every_row_the_search_and_filter_select_whatever_the_paging_sort_or_grouping [29 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.A_search_too_broad_to_rank_keeps_the_default_order_on_every_page [408 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Search_filters_and_groups_select_the_right_rows [105 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.A_search_word_expands_to_a_bounded_set_of_spellings [4 ms]
+[dotnet]   Passed Erp.Kernel.Tests.ListEngineTests.Filters_are_bounded_in_length_and_complexity [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_requires_a_bound_tenant [2 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.Migrations_and_seeding_are_idempotent [188 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.A_unit_of_work_cannot_switch_tenants [32 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_cannot_smuggle_rows_into_another_tenant [10 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.Using_a_module_context_before_binding_a_tenant_fails_loudly [20 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.EF_refuses_to_write_a_row_for_another_tenant [34 ms]
+[dotnet]   Passed Erp.Kernel.Tests.KernelDataTests.The_query_filter_is_a_second_layer_on_every_tenant_entity [19 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.TenantTests.Reading_and_renaming_need_their_permissions [1 s]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_tenants_company_or_no_company_is_not_found_and_bad_parameters_are_explained [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.Demo_seed_loads_the_shared_dataset_users_into_the_main_tenant [15 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.TenantTests.Each_user_reads_their_own_workspace [418 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.TenantTests.Renaming_needs_both_names_and_the_version_and_refuses_a_stale_version [534 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.Binding_companies_with_a_query_in_the_same_round_trip_runs_the_query_inside_the_bound_scope [52 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.A_read_only_request_binding_is_read_only_from_the_first_statement [3 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.A_bound_scope_shows_only_its_companies_cannot_be_widened_and_refuses_writes_elsewhere [76 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.System_work_sees_every_company_and_a_user_sees_none_until_bound [28 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.Exports_carry_the_rows_as_csv_and_as_a_workbook [577 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock [944 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.The_dataset_says_which_users_are_active_and_a_file_without_the_column_loads_all_active [15 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.RateLimitTests.Sign_in_attempts_beyond_the_limit_get_429_with_a_localized_problem [896 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_change_to_a_view_is_audited_with_its_author [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.Only_someone_who_works_in_every_company_creates_a_company_or_changes_a_company_code [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.The_access_version_tells_nothing_about_companies_the_caller_cannot_see [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Roles_in_one_company_are_created_shown_changed_and_explained [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Invalid_company_roles_are_refused_with_field_errors [256 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Only_a_recent_instant_and_a_short_dated_text_are_scrubbed_as_the_print_stamp [37 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.A_compressed_pdf_and_a_zipped_workbook_are_read_for_their_text [719 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Right_to_left_runs_are_also_given_in_logical_order [1 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner [617 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_field_is_validated_against_the_list_in_the_users_language [324 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [454 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.The_definition_describes_columns_operators_choices_presets_and_sharing [402 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_areas_columns_and_parameters_are_left_out_for_a_caller_who_cannot_read_that_area [2 s]
+[dotnet] [xUnit.net 00:00:20.59]   Finished:    Erp.Modules.Lists.Tests (ID = '3ab372e8c1b058abe35539ecb2b78dba197b5a9f0242af81daadb3c7868d679e')
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.A_company_with_no_arabic_legal_name_is_headed_by_its_english_name_in_an_arabic_profile [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.Changes_need_the_version_read_and_a_company_can_be_deactivated_and_reactivated [396 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_user_holding_only_the_access_permission_cannot_take_access_from_the_administrator [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.Branches_belong_to_one_company_and_codes_are_unique_within_it [583 ms]
+[dotnet]   Passed Erp.Modules.Lists.Tests.SavedViewsTests.One_default_per_owner_and_names_unique_per_owner [649 ms]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008084546.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 6
+[dotnet]      Passed: 6
+[dotnet]  Total time: 21.2099 Seconds
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Users_by_role_lists_a_role_held_in_one_company_with_that_company [1 s]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_role_without_the_data_permission_cannot_run_the_report_and_does_not_see_it [634 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_of_records_in_a_cell_prints_as_their_codes [324 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_prints_with_its_own_query_columns_and_totals [358 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_same_logo_in_two_companies_has_a_different_tag_in_each [512 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back [442 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_companies_list_never_reads_logo_bytes_and_still_searches_filters_sorts_and_groups [511 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_new_company_is_given_to_every_administrator_of_the_whole_workspace_and_to_nobody_holding_less [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.Validation_names_every_bad_field_in_the_callers_language [284 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Deleting_a_role_or_a_user_removes_their_company_assignments [883 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_permission_catalogue_carries_what_the_matrix_needs [808 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second [470 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.The_branch_directory_groups_by_company_with_counts_and_by_any_groupable_column [330 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.The_roles_report_totals_users_and_permissions_per_kind_and_overall [289 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session [402 ms]
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.The_catalogue_lists_reports_and_lists_in_the_callers_language [164 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access [2 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.An_administrator_creates_a_company_works_in_it_and_reads_it_back [701 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.CompanyTests.A_company_or_branch_needs_only_a_name_and_gets_a_code_made_from_it [421 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.AccessTests.A_new_user_works_in_no_company_until_given_access_and_then_only_in_the_companies_given [1 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Server_errors_reveal_nothing_but_a_trace_id [421 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Unknown_api_paths_answer_404_problems_not_the_app_shell [9 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Health_is_public_and_checks_the_database [37 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Responses_carry_security_headers_and_api_responses_are_not_cached [4 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.CompanyRolesTests.An_administrator_sets_where_another_user_starts_work [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_administrator_resets_a_password_and_the_user_is_signed_out_everywhere [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Copying_a_role_keeps_its_permissions_under_a_new_name [227 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_pages_users_with_their_companies [267 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_keeps_the_list_contract_and_needs_only_its_own_permission [859 ms]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.Saving_access_needs_the_version_read_and_two_saves_never_overwrite_each_other [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_access_view_says_what_a_user_can_do_and_which_role_grants_it [906 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Another_workspaces_users_are_never_matched_or_changed [1 s]
+[dotnet] [xUnit.net 00:00:26.11]   Finished:    Erp.Modules.Reports.Tests (ID = 'aa0ba11486d2994c9cc221f697ec8de6f8bbe06fde0d65669e5f45ee23fe8e20')
+[dotnet]   Passed Erp.Modules.Reports.Tests.ReportApiTests.A_users_list_names_roles_beyond_the_first_page_of_roles [3 s]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008084551.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 41
+[dotnet]      Passed: 41
+[dotnet]  Total time: 26.9591 Seconds
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.AccessTests.The_working_company_is_kept_across_sessions_and_falls_back_when_access_is_removed [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Without_the_update_permission_the_request_is_forbidden_and_changes_nothing [869 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_role_granting_more_than_the_caller_holds_is_neither_renamed_copied_nor_deleted_by_them [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.The_filter_narrows_the_match_and_a_changed_count_changes_nothing [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Signed_in_users_change_their_password_by_proving_the_current_one_and_other_sessions_end [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_has_a_name_in_Arabic_that_the_list_filters [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.User_search_finds_by_name_or_email_and_escapes_wildcards [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_administrator_role_cannot_be_changed_or_deleted_and_grants_every_permission [481 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.The_sign_in_address_of_another_user_is_corrected_and_stays_unique_in_the_workspace [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Permission_catalogue_is_labelled_in_the_users_language [612 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_invited_user_signs_in_once_with_the_set_up_code_and_chooses_a_password [3 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Suspending_a_workspace_ends_its_sessions_and_activating_it_restores_sign_in [4 s]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_unique_index_across_tenants [492 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_expired_set_up_code_fails_like_a_wrong_password [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Deactivates_every_matching_user_except_the_caller_and_stronger_users_and_audits_each_change [6 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_who_never_signed_in_is_deleted_and_anyone_who_signed_in_stays [4 s]
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.An_operator_provisions_a_workspace_with_its_first_company_branch_and_administrator [1 s]
+[dotnet] [xUnit.net 00:00:36.04]   Finished:    Erp.Modules.Tenancy.Tests (ID = '7c336b43d696105a19512de164fe1230cb02ef2c7773107fd16d0ceb1101f39a')
+[dotnet]   Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Workspace_settings_are_validated_and_kept [603 ms]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008084601.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 30
+[dotnet]      Passed: 30
+[dotnet]  Total time: 36.9423 Seconds
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Racing_deletes_and_unblocks_of_one_user_answer_without_a_server_error [5 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.The_session_cookie_is_secure_over_https_and_not_on_plain_http [4 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.The_session_probe_always_answers_200_even_with_a_stale_or_malformed_session_cookie [31 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Bad_requests_are_refused_by_field_and_change_nothing [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Changing_the_language_preference_follows_the_user [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_digits_preference_follows_the_user_and_leaves_the_language_alone [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.The_pause_ends_by_itself_when_the_failures_leave_the_window [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Saving_over_someone_elses_change_is_refused [335 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Validation_errors_name_each_field_in_the_requested_language [427 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Duplicate_email_in_the_same_workspace_is_a_conflict [343 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive eq 'yes'", code: "list.valueBoolean") [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar", code: "list.filterSyntax") [397 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq", code: "list.filterSyntax") [679 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks [2 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "(language eq 'ar'", code: "list.filterSyntax") [492 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "after", value: "not-a-cursor", code: "list.invalidCursor") [209 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.A_suspended_workspace_cannot_be_signed_in_to [561 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "displayName eq 5", code: "list.valueText") [365 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "createdAt ge 'yesterday'", code: "list.valueDateTime") [285 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive gt true", code: "list.operatorNotAllowed") [615 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar' and", code: "list.filterSyntax") [419 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "nosuch", code: "list.unknownColumn") [262 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names [11 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language = 'ar'", code: "list.filterSyntax") [440 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "displayName", code: "list.notGroupable") [353 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'fr'", code: "list.valueChoice") [160 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "display name", code: "list.sortSyntax") [190 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language gt 'ar'", code: "list.operatorNotAllowed") [183 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.The_same_email_in_two_workspaces_asks_which_one_only_when_both_passwords_match [3 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "nosuch", code: "list.unknownColumn") [178 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "language", code: "list.notSortable") [255 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Cookie_requests_that_change_data_need_the_request_header [425 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "nosuch eq 'x'", code: "list.unknownColumn") [245 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Expired_sessions_and_malformed_tokens_are_refused [282 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "displayName,displayName", code: "list.sortSyntax") [312 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_returns_the_session_and_sets_a_strict_http_only_cookie [374 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "a") [830 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Deactivating_a_user_ends_their_sessions [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "al m") [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Wrong_password_and_unknown_email_get_the_same_answer [743 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "فاطمه") [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "om") [316 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_configured_bulk_timeout_is_used_and_an_unset_one_defaults_to_an_hour [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "30") [3 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "599") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "-1") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "ten minutes") [< 1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.The_bulk_connection_cannot_be_chosen_after_the_unit_of_work_used_its_connection [65 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.The_bulk_loader_never_runs_a_statement_under_the_bulk_minimum_even_on_a_request_connection [1 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.Every_command_on_a_bulk_unit_of_work_inherits_the_long_timeout [41 ms]
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.A_seed_statement_longer_than_the_default_timeout_finishes [< 1 ms]
+[dotnet] [xUnit.net 00:00:49.32]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+[dotnet]   Passed Erp.Kernel.Tests.BulkTimeoutTests.Request_units_of_work_keep_the_short_default_timeout [< 1 ms]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008084615.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 158
+[dotnet]      Passed: 158
+[dotnet]  Total time: 50.2179 Seconds
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "haddad omar") [492 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_to_one_account_from_several_clients_at_once_succeeds_for_each [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Search_finds_a_name_written_in_Arabic [638 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Sorting_orders_by_the_column_with_nulls_last_ascending_and_first_descending [293 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_from_a_signed_in_browser_answers_for_the_new_session_only [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-displayName") [1 s]
+[dotnet]   Passed Erp.Modules.Identity.Tests.AuthTests.Signing_out_revokes_the_session_for_good [698 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "displayName") [354 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "createdAt") [445 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt,-displayName") [387 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-createdAt") [921 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "email") [900 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-lastSignInAt") [527 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt") [314 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Filters_select_exactly_the_matching_rows [656 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Search_matches_every_word_in_any_search_field_ignoring_case_and_order [329 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_cursor_belongs_to_its_sort_and_cannot_be_combined_with_skip [176 ms]
+[dotnet] [xUnit.net 00:00:58.09]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_lists_the_best_match_first_and_reads_Arabic_spelling_variants [365 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.Grouping_counts_every_matching_row_once [526 ms]
+[dotnet]   Passed Erp.Modules.Identity.Tests.UsersListTests.The_roles_list_serves_the_same_contract_in_memory [619 ms]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008084623.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 93
+[dotnet]      Passed: 93
+[dotnet]  Total time: 58.7403 Seconds
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user [19 s]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [107 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_says_when_it_stopped_at_its_object_budget [992 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant [2 m 17 s]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_judges_every_field_of_registration_objects [45 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions [1 m 22 s]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [881 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [6 m 31 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [79 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [4 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [14 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [99 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [1 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [44 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [2 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [23 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [147 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [201 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [6 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [185 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [2 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [133 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [45 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [3 m 3 s]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_a_company_table_without_the_company_scope [414 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [< 1 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [317 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [22 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [21 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [29 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 14 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [2 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [104 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [29 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [13 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [8 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [9 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [146 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [48 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [11 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [9 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [70 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [471 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [130 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [144 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [56 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [7 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [20 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [14 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [932 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [14 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [90 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [187 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [39 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [82 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [87 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [94 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [380 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [270 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [89 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [208 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [104 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [427 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [3 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [16 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [13 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [91 ms]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [19 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [12 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 33 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [759 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [48 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [6 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [8 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 17 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [2 m 26 s]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [7 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [106 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [1 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [759 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [85 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [603 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [43 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [14 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [12 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [219 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [146 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [32 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [7 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [9 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [634 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [1 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [215 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [44 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [7 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [113 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [57 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [5 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [16 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [11 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [16 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [5 s]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [34 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [38 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [5 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [101 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [252 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [87 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [4 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [7 ms]
+[dotnet]   Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [5 ms]
+[dotnet]   Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [1 m 18 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 14 s]
+[dotnet]   Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [18 m 41 s]
+[dotnet] [xUnit.net 00:28:45.52]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+[dotnet]   Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [28 m 22 s]
+[dotnet] Results File: /out/trx/suite_net10.0_20261008091411.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 130
+[dotnet]      Passed: 130
+[dotnet]  Total time: 28.7775 Minutes
+[dotnet] 
+[dotnet] [1m-- .NET tests: self-http[0m
+[dotnet] Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.58]   Discovered:  Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.78]   Starting:    Erp.Gates.Tests
+[dotnet] [xUnit.net 00:46:20.05]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [45 m 54 s]
+[dotnet] Results File: /out/trx/self-http_net10.0_20261008093145.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 1
+[dotnet]      Passed: 1
+[dotnet]  Total time: 46.3560 Minutes
+[dotnet] 
+[dotnet] [1m-- .NET tests: self-company[0m
+[dotnet] Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.60]   Discovered:  Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.79]   Starting:    Erp.Gates.Tests
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_branch_attack_catches_reads_and_writes_that_ignore_the_branch_limits [1 m 51 s]
+[dotnet] [xUnit.net 00:20:38.64]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_attack_catches_an_endpoint_that_widens_the_company_scope [18 m 21 s]
+[dotnet] Results File: /out/trx/self-company_net10.0_20261008090603.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 2
+[dotnet]      Passed: 2
+[dotnet]  Total time: 20.6568 Minutes
+[dotnet] 
+[dotnet] [1m-- .NET tests: self-noninterference[0m
+[dotnet] Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+[dotnet] A total of 1 test files matched the specified pattern.
+[dotnet] [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[dotnet] [xUnit.net 00:00:00.26]   Discovering: Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.60]   Discovered:  Erp.Gates.Tests
+[dotnet] [xUnit.net 00:00:00.83]   Starting:    Erp.Gates.Tests
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_catches_shared_state_that_leaks_no_marker [8 m 49 s]
+[dotnet] [xUnit.net 00:09:15.75]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_write_comparison_also_ignores_only_versions [4 ms]
+[dotnet]   Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_ignores_only_times_and_trace_ids [< 1 ms]
+[dotnet] Results File: /out/trx/self-noninterference_net10.0_20261008085441.trx
+[dotnet] 
+[dotnet] Test Run Successful.
+[dotnet] Total tests: 3
+[dotnet]      Passed: 3
+[dotnet]  Total time: 9.2785 Minutes
+[1mstage dotnet passed in 2802 s[0m
+[1mstage web passed in 860 s[0m
+[e2e] [1mEnd-to-end tests in Chromium[0m
+[e2e] 
+[e2e] [1m== Copying sources (without build output)[0m
+[e2e] 
+[e2e] [1m== End-to-end: Playwright against http://localhost:20360[0m
+[e2e] 
+[e2e] added 3 packages in 719ms
+[e2e] 
+[e2e] Running 74 tests using 1 worker
+[e2e] 
+[e2e] client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zaetvorz@alnoor.example (A) and canary.zbn7vfwl@gulfsteel.example (B)
+[e2e]   ✓   1 [chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (9.0s)
+[e2e]   ✓   2 [chromium] › specs/client-isolation.spec.ts:267:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (1.4s)
+[e2e] history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+[e2e]   ✓   3 [chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B (4.1s)
+[e2e]   ✓   4 [chromium] › specs/client-isolation.spec.ts:353:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (1.5s)
+[e2e]   ✓   5 [chromium] › specs/client-isolation.spec.ts:371:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (2.2s)
+[e2e]   ✓   6 [chromium] › specs/forms-reports.spec.ts:15:7 › record forms and printed documents › a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown (1.2s)
+[e2e]   ✓   7 [chromium] › specs/forms-reports.spec.ts:52:7 › record forms and printed documents › a record prints as an Arabic PDF from Alt+R, and its document reads right to left (928ms)
+[e2e]   ✓   8 [chromium] › specs/forms-reports.spec.ts:81:7 › record forms and printed documents › the reports screen shows a grouped report as an Arabic document and exports it (860ms)
+[e2e]   ✓   9 [chromium] › specs/forms-reports.spec.ts:101:7 › record forms and printed documents › a totalled report: roles and access shows each kind's totals and the grand total, and exports it (856ms)
+[e2e]   ✓  10 [chromium] › specs/forms-reports.spec.ts:142:7 › record forms and printed documents › a list prints what it shows: the filtered users list as PDF and CSV (1.4s)
+[e2e]   ✓  11 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (2.9s)
+[e2e]   ✓  12 [chromium] › specs/identity.spec.ts:85:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (1.3s)
+[e2e]   ✓  13 [chromium] › specs/identity.spec.ts:115:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only (1.6s)
+[e2e]   ✓  14 [chromium] › specs/identity.spec.ts:160:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted (1.1s)
+[e2e]   ✓  15 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en) (910ms)
+[e2e]   ✓  16 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar) (895ms)
+[e2e]   ✓  17 [chromium] › specs/identity.spec.ts:242:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (693ms)
+[e2e]   ✓  18 [chromium] › specs/lists.spec.ts:17:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match (1.1s)
+[e2e]   ✓  19 [chromium] › specs/lists.spec.ts:37:7 › list framework › lists a search best match first, opens it with Enter, and reads Arabic spelling variants (1.3s)
+[e2e]   ✓  20 [chromium] › specs/lists.spec.ts:57:7 › list framework › column header buttons keep Enter and Space; rows keep one column layout (798ms)
+[e2e]   ✓  21 [chromium] › specs/lists.spec.ts:97:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter (863ms)
+[e2e]   ✓  22 [chromium] › specs/lists.spec.ts:123:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state (28.0s)
+[e2e]   ✓  23 [chromium] › specs/lists.spec.ts:153:7 › list framework › groups by a column with counts and opens a group's rows (3.1s)
+[e2e]   ✓  24 [chromium] › specs/lists.spec.ts:168:7 › list framework › chooses columns and saves a personal default view that opens next time (3.2s)
+[e2e]   ✓  25 [chromium] › specs/lists.spec.ts:198:7 › list framework › a read-only user keeps personal views but is not offered sharing (1.2s)
+[e2e]   ✓  26 [chromium] › specs/lists.spec.ts:212:7 › list framework › the list works right to left in Arabic with Arabic counts and headers (1.6s)
+[e2e]   ✓  27 [chromium] › specs/lists.spec.ts:241:9 › list framework › every header stays inside its own column, wide and narrow (ar) (2.2s)
+[e2e]   ✓  28 [chromium] › specs/lists.spec.ts:241:9 › list framework › every header stays inside its own column, wide and narrow (en) (1.4s)
+[e2e]   ✓  29 [chromium] › specs/lists.spec.ts:270:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (ar) (2.5s)
+[e2e]   ✓  30 [chromium] › specs/lists.spec.ts:270:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (en) (1.2s)
+[e2e]   ✓  31 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (1.3s)
+[e2e]   ✓  32 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (1.3s)
+[e2e]   ✓  33 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (642ms)
+[e2e]   ✓  34 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (853ms)
+[e2e]   ✓  35 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (2.8s)
+[e2e]   ✓  36 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (955ms)
+[e2e]   ✓  37 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (281ms)
+[e2e]   ✓  38 [chromium] › specs/shell.spec.ts:26:7 › app shell › the printed-at and printed-by stamp of a screen shows on paper only, never on screen (759ms)
+[e2e]   ✓  39 [chromium] › specs/shell.spec.ts:41:7 › app shell › nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer (937ms)
+[e2e]   ✓  40 [chromium] › specs/shell.spec.ts:65:7 › app shell › the tab's title names the screen, and follows the language at once (811ms)
+[e2e] switch to Arabic on the users list: 96 ms
+[e2e]   ✓  41 [chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (937ms)
+[e2e] palette to the Roles screen: 84 ms, 3 steps, 6 keystrokes
+[e2e]   ✓  42 [chromium] › specs/shell.spec.ts:114:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (844ms)
+[e2e]   ✓  43 [chromium] › specs/shell.spec.ts:156:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (698ms)
+[e2e]   ✓  44 [chromium] › specs/shell.spec.ts:169:7 › app shell › the palette finds a record and opens it (1.2s)
+[e2e]   ✓  45 [chromium] › specs/shell.spec.ts:185:7 › app shell › the palette leads from a few record matches to the list of every match (1.3s)
+[e2e]   ✓  46 [chromium] › specs/shell.spec.ts:203:9 › app shell › at phone width nothing is wider than the window (en) (670ms)
+[e2e]   ✓  47 [chromium] › specs/shell.spec.ts:203:9 › app shell › at phone width nothing is wider than the window (ar) (27.4s)
+[e2e]   ✓  48 [chromium] › specs/shell.spec.ts:224:7 › app shell › the palette offers a user with no roles nothing they cannot open (3.5s)
+[e2e]   ✓  49 [chromium] › specs/shell.spec.ts:238:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (4.4s)
+[e2e]   ✓  50 [chromium] › specs/shell.spec.ts:268:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (1.5s)
+[e2e]   ✓  51 [chromium] › specs/shell.spec.ts:288:7 › app shell › a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints (2.4s)
+[e2e]   ✓  52 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1366x768) (1.9s)
+[e2e]   ✓  53 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1280x720) (2.2s)
+[e2e]   ✓  54 [chromium] › specs/shell.spec.ts:329:9 › app shell › the status line stays in view on every screen and the page never scrolls (1920x1080) (1.7s)
+[e2e]   ✓  55 [chromium] › specs/shell.spec.ts:353:7 › app shell › Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has (615ms)
+[e2e]   ✓  56 [chromium] › specs/shell.spec.ts:382:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (1.6s)
+[e2e]   ✓  57 [chromium] › specs/shell.spec.ts:382:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (1.3s)
+[e2e] sign-in to workspace: 251 ms
+[e2e]   ✓  58 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (487ms)
+[e2e]   ✓  59 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (2.1s)
+[e2e]   ✓  60 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (1.3s)
+[e2e]   ✓  61 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English (1.0s)
+[e2e]   ✓  62 [chromium] › specs/sign-in.spec.ts:50:7 › sign in to an empty workspace › empty fields are explained without a round trip (226ms)
+[e2e]   ✓  63 [chromium] › specs/sign-in.spec.ts:56:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it (870ms)
+[e2e]   ✓  64 [chromium] › specs/sign-in.spec.ts:77:7 › sign in to an empty workspace › first visit on the team's sign-in address: the part before @, Enter, the password, Enter (580ms)
+[e2e]   ✓  65 [chromium] › specs/sign-in.spec.ts:98:7 › sign in to an empty workspace › first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter (804ms)
+[e2e]   ✓  66 [chromium] › specs/sign-in.spec.ts:115:7 › sign in to an empty workspace › returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter (1.8s)
+[e2e]   ✓  67 [chromium] › specs/sign-in.spec.ts:140:7 › sign in to an empty workspace › the password can be shown from the keyboard to check it, then hidden, and still signs in (930ms)
+[e2e]   ✓  68 [chromium] › specs/sign-in.spec.ts:161:7 › sign in to an empty workspace › on the team's sign-in address in Arabic the domain stays left to right after the field (284ms)
+[e2e]   ✓  69 [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it (1.9s)
+[e2e]   ✓  70 [chromium] › specs/tenancy.spec.ts:71:7 › companies, branches and the working company › in Arabic the companies read right to left and the switcher works the same way (894ms)
+[e2e]   ✓  71 [chromium] › specs/tenancy.spec.ts:88:7 › companies, branches and the working company › a read-only user works in one company: sees only it, cannot switch or edit (26.8s)
+[e2e]   ✓  72 [chromium] › specs/tenancy.spec.ts:108:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu (4.3s)
+[e2e]   ✓  73 [chromium] › specs/tenancy.spec.ts:151:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches (2.3s)
+[e2e]   ✓  74 [chromium] › specs/tenancy.spec.ts:172:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window (1.3s)
+[e2e] 
+[e2e]   74 passed (3.3m)
+[e2e] 
+[e2e] [1m== Comparison harness: built ours drivers against http://localhost:20360 (health check)[0m
+[e2e] waiting 61 s for the end-to-end suite's sign-ins to leave the sign-in limit's window
+[e2e] 
+[e2e] added 2 packages in 379ms
+[e2e] built for ours: api-update-user, arabic-report, create-company-branch, create-restricted-user, edit-and-save, find-user, print-list-arabic, reach-screen-keyboard, sign-in, switch-company, switch-to-arabic
+[e2e] api-update-user          ours  verified  steps 2  keys 243  machine 0.028s  human 71.14s  human+wait 71.166s  -> ../out/ours-health/results/api-update-user-20261008T093609-bdce.json
+[e2e] arabic-report            ours  verified  steps 2  keys 0  machine 0.117s  human 5.3s  human+wait 5.327s  -> ../out/ours-health/results/arabic-report-20261008T093610-7dee.json
+[e2e] create-company-branch    ours  verified  steps 6  keys 44  machine 0.468s  human 22.17s  human+wait 22.364s  -> ../out/ours-health/results/create-company-branch-20261008T093613-3f27.json
+[e2e] create-restricted-user   ours  verified  steps 5  keys 37  machine 0.52s  human 20.91s  human+wait 21.15s  -> ../out/ours-health/results/create-restricted-user-20261008T093617-34d1.json
+[e2e] edit-and-save            ours  verified  steps 3  keys 17  machine 0.137s  human 9.72s  human+wait 9.774s  -> ../out/ours-health/results/edit-and-save-20261008T093622-1510.json
+[e2e] find-user                ours  verified  steps 3  keys 8  machine 0.3s  human 6.64s  human+wait 6.72s  -> ../out/ours-health/results/find-user-20261008T093626-a822.json
+[e2e] print-list-arabic        ours  verified  steps 3  keys 13  machine 0.483s  human 11.09s  human+wait 11.35s  -> ../out/ours-health/results/print-list-arabic-20261008T093713-3ee5.json
+[e2e] reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.124s  human 3.15s  human+wait 3.215s  -> ../out/ours-health/results/reach-screen-keyboard-20261008T093715-ad17.json
+[e2e] sign-in                  ours  verified  steps 3  keys 35  machine 0.267s  human 11.55s  human+wait 11.736s  -> ../out/ours-health/results/sign-in-20261008T093720-c4a8.json
+[e2e] switch-company           ours  verified  steps 1  keys 0  machine 0.088s  human 2.65s  human+wait 2.704s  -> ../out/ours-health/results/switch-company-20261008T093725-b30f.json
+[e2e] switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.074s  human 2.65s  human+wait 2.654s  -> ../out/ours-health/results/switch-to-arabic-20261008T093729-7edd.json
+[e2e] output: ../../../out/ours-health
+[1mstage e2e passed in 3148 s[0m
+[1m[2/3] .NET timing budgets at demo volume (alone)[0m
+
+[1m== .NET: timing budgets at demo volume (alone)[0m
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.25]   Discovering: Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.22]   Discovering: Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.21]   Discovering: Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.26]   Discovering: Erp.Kernel.Tests
+[xUnit.net 00:00:00.40]   Discovered:  Erp.Modules.Lists.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll
+[xUnit.net 00:00:00.52]   Discovered:  Erp.Modules.Tenancy.Tests
+Results File: /out/trx/_docker-desktop_2026-10-08_09_37_36_net10.0.trx
+
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll
+[xUnit.net 00:00:00.62]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.45]   Discovered:  Erp.Modules.Reports.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll
+Results File: /out/trx/_docker-desktop_2026-10-08_09_37_36_net10.0[1].trx
+
+Results File: /out/trx/_docker-desktop_2026-10-08_09_37_36_net10.0[2].trx
+
+[xUnit.net 00:00:00.69]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.83]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Erp.Kernel.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Results File: /out/trx/_docker-desktop_2026-10-08_09_37_36_net10.0[3].trx
+
+[xUnit.net 00:00:00.79]   Starting:    Erp.Kernel.Tests
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_loads_100000_rows_through_row_level_security_quickly [1 s]
+[xUnit.net 00:00:11.89]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+Results File: /out/trx/_docker-desktop_2026-10-08_09_37_47_net10.0.trx
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 12.4547 Seconds
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.Word_search_is_served_by_the_trigram_index_not_a_table_scan [45 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second [8 s]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second [1 s]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget [3 s]
+[xUnit.net 00:00:59.07]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_in_well_under_a_second [890 ms]
+Results File: /out/trx/_docker-desktop_2026-10-08_09_38_21_net10.0.trx
+
+Test Run Successful.
+Total tests: 5
+     Passed: 5
+ Total time: 59.5789 Seconds
+[1m[3/3] Ratchet[0m
+
+verify wall time before the ratchet: 3211 s (maximum on a quiet machine 3600 s; not judged: the machine was busy (load 5.23 at the start and 16.34 at the end on 16 CPUs; quiet is at most 0.5 per CPU at both))
+verify processor time: 8031 s (dotnet 6974, web 808, e2e 205, timing 44; maximum 9000 s)
+
+Test counts this run:
+  suite.dotnetTests      passed   470  failed 0  skipped 0  (minimum 470)
+  suite.webUnitTests     passed   315  failed 0  skipped 0  (minimum 315)
+  suite.e2eTests         passed    74  failed 0  skipped 0  (minimum 74)
+  suite.compareTests     passed   194  failed 0  skipped 0  (minimum 194)
+Ratchet check passed.
+[1mverify passed in 3211 s[0m
