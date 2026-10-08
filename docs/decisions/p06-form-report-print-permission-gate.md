@@ -59,14 +59,24 @@ caught.
   HTTP isolation self-test. That stretched it from 44 to 58 minutes, and it failed on the new routes,
   which sit outside `/api/leaky/`. The separate environment costs about 12 s.
 - Ratchet: `g2.printedListPermissionSets` 45, `g2.reportFilesJudged` 936,
-  `g2.reportFileValuesJudged` 45,000, and `g2.reportValuesJudged` raised from 2,500 to 15,000.
+  `g2.reportFileValuesJudged` 22,000, and `g2.reportValuesJudged` raised from 2,500 to 8,000 (see
+  Cost).
 
 ## Cost
 
-On the WSL host, Debug build, the test took about 66 s and the whole run about 90 s. The 936 extra
-answers account for about 27 s of server time. Judging the values takes almost nothing. To stay
-under the 9,000 processor-second maximum, it shares the G2 fixture and the users of the existing
-check: one user per permission set, and one corpus per permission.
+The first full verify with this check passed every test but used 9,070 processor seconds, over the
+9,000 maximum. Measured on the host, about a third of the check's processor time went on creating
+users: one user per permission set, and each one cost two PBKDF2 hashes at 210,000 iterations (when
+created and when signing in). The check now signs in one user and sets its one role to exactly the
+permissions of each set in turn. That works because a session's permissions are read on every
+request, not when it signs in. Nothing judged changes: the same permission sets, the same queries,
+formats and corpora, and the plants P6 and P8 still fail it. With the extra formats and lists,
+`G2ReportDataTests` takes about 38 s against 60 s before this change. The catalogue check uses the
+same holder, and so does the report self-test (13 s). The ratchet minimums follow the new counts:
+there are fewer of the check's own users and roles among the workspace's data, so fewer values are
+judged. `g2.reportValuesJudged` goes from 2,500 to 8,000 and `g2.reportFileValuesJudged` is 22,000.
+Compressing PDFs and workbooks faster was measured too. It changed nothing measurable, so it was
+not kept.
 
 ## Other round 4 changes in this piece
 

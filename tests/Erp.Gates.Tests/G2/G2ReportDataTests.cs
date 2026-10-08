@@ -115,15 +115,15 @@ public static class ReportDataCheck
                 listSets.Add((list, [list.Permission, other]));
             }
         }
-        // Users first (their rows are workspace data too), then the data, then what each shows.
-        var users = new Dictionary<string, HttpClient>(StringComparer.Ordinal);
+        // One user, whose one role is given exactly the permissions of each set in turn (a session's
+        // permissions are read for every request): a user per set cost two password hashes each,
+        // most of this check's processor time. The user first (its rows are workspace data too),
+        // then the data, then what each permission shows.
+        var single = sets.Select(s => s.Permissions).Concat(listSets.Select(s => s.Permissions)).SelectMany(p => p).Append(reads[0])
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToList();
+        var holder = await HolderAsync(env, admin, [reads[0]], "g2rd");
         try
         {
-            foreach (var permissions in sets.Select(s => s.Permissions).Concat(listSets.Select(s => s.Permissions))
-                         .Concat(reads.Select(r => (IReadOnlyList<string>)[r])).DistinctBy(Key))
-            {
-                users[Key(permissions)] = await UserWithAsync(env, admin, permissions, "g2rd");
-            }
 
             var data = await WorkspaceTextAsync(env, tenant.Id);
             var labels = ResourceStrings();
@@ -143,17 +143,16 @@ public static class ReportDataCheck
                 }
                 return false;
             }
+            // What each permission alone shows, read while the user holds exactly that permission.
             var shown = new Dictionary<string, string>(StringComparer.Ordinal);
-            async Task<string> ShownByAsync(string permission)
+            foreach (var permission in single)
             {
-                if (!shown.TryGetValue(permission, out var text))
-                {
-                    text = await CorpusAsync(users[Key([permission])], endpoints.Where(e => e.Method == "GET" && !e.IsAnonymous && e.Permission == permission));
-                    shown[permission] = text;
-                }
-                return text;
+                await holder.HoldAsync([permission]);
+                shown[permission] = await CorpusAsync(holder.Client, endpoints.Where(e => e.Method == "GET" && !e.IsAnonymous && e.Permission == permission));
             }
-            var anonymous = await CorpusAsync(users[Key([reads[0]])], endpoints.Where(e => e.Method == "GET" && e.IsAnonymous));
+            Task<string> ShownByAsync(string permission) => Task.FromResult(shown[permission]);
+            await holder.HoldAsync([reads[0]]);
+            var anonymous = await CorpusAsync(holder.Client, endpoints.Where(e => e.Method == "GET" && e.IsAnonymous));
 
             var problems = new List<string>();
             var printedBy = new HashSet<string>(StringComparer.Ordinal);
@@ -195,7 +194,8 @@ public static class ReportDataCheck
             const string elsewhere = "which no other endpoint those permissions open shows";
             foreach (var (report, permissions) in sets)
             {
-                var client = users[Key(permissions)];
+                await holder.HoldAsync(permissions);
+                var client = holder.Client;
                 var corpus = string.Join("\n", await Task.WhenAll(permissions.Select(ShownByAsync))) + "\n" + anonymous;
                 var withheld = report.Columns.Where(c => c.Permission is { } extra && !permissions.Contains(extra)).Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
                 foreach (var query in await QueriesAsync(admin, catalog, report))
@@ -263,7 +263,8 @@ public static class ReportDataCheck
             const string unlisted = "which the list does not show that caller (its endpoint's rows, and the lists it may read)";
             foreach (var (list, permissions) in listSets)
             {
-                var client = users[Key(permissions)];
+                await holder.HoldAsync(permissions);
+                var client = holder.Client;
                 var corpus = string.Join("\n", await Task.WhenAll(permissions.Select(ShownByAsync))) + "\n" + anonymous;
                 var rowsShown = await ListCorpusAsync(client, permissions, list);
                 var unnamed = list.Columns.Where(c => c.ValuesFrom is { } from && catalog.FindList(from) is { } source && !permissions.Contains(source.Permission))
@@ -318,11 +319,35 @@ public static class ReportDataCheck
         }
         finally
         {
-            foreach (var client in users.Values)
-            {
-                client.Dispose();
-            }
+            holder.Client.Dispose();
         }
+    }
+
+    /// <summary>A signed-in user whose one role the check sets to exactly the permissions it judges.</summary>
+    private sealed class Holder(HttpClient admin, Guid roleId, string nameEn, string nameAr, uint version, HttpClient client)
+    {
+        private string? _held;
+
+        public HttpClient Client => client;
+
+        public async Task HoldAsync(IReadOnlyList<string> permissions)
+        {
+            if (_held == Key(permissions))
+            {
+                return;
+            }
+            using var response = await admin.PutAsJsonAsync($"/api/identity/roles/{roleId}", new { nameEn, nameAr, permissions, version });
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"role set to [{string.Join(", ", permissions)}]: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}");
+            version = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("version").GetUInt32();
+            _held = Key(permissions);
+        }
+    }
+
+    private static async Task<Holder> HolderAsync(ErpTestEnvironment env, HttpClient admin, IReadOnlyList<string> permissions, string prefix)
+    {
+        var (client, roleId, name) = await UserWithRoleAsync(env, admin, permissions, prefix);
+        var role = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/roles/{roleId}");
+        return new Holder(admin, roleId, role.GetProperty("nameEn").GetString()!, role.GetProperty("nameAr").GetString()!, role.GetProperty("version").GetUInt32(), client);
     }
 
     /// <summary>A file's text as a reader sees it (CSV and XLSX cells, PDF page text), with its
@@ -550,10 +575,13 @@ public static class ReportDataCheck
             .Concat(catalog.PrintableLists.Select(p => p.List.Permission))
             .Concat(catalog.PermissionKeys.Where(p => p.EndsWith(".read", StringComparison.Ordinal)))
             .Where(p => p != "reports.catalog.read").Distinct().Order(StringComparer.Ordinal).ToList();
+        // One user whose role holds each pair in turn (see RunAsync: a user each cost two password hashes).
+        var holder = await HolderAsync(env, admin, ["reports.catalog.read"], "g2rc");
+        using var client = holder.Client;
         foreach (var permission in permissions)
         {
             var held = new[] { "reports.catalog.read", permission };
-            using var client = await UserWithAsync(env, admin, held, "g2rc");
+            await holder.HoldAsync(held);
             var answer = await client.GetFromJsonAsync<JsonElement>("/api/reports/catalog?language=en");
             var items = answer.GetProperty("items").EnumerateArray().ToList();
             var listed = items.Select(i => i.GetProperty("key").GetString()!).Order(StringComparer.Ordinal).ToList();
@@ -591,7 +619,7 @@ public static class ReportDataCheck
     private static int _users;
 
     /// <summary>A role granting exactly these permissions and a user holding only that role, signed in.</summary>
-    private static async Task<HttpClient> UserWithAsync(ErpTestEnvironment env, HttpClient admin, IReadOnlyList<string> permissions, string prefix)
+    private static async Task<(HttpClient Client, Guid RoleId, string Name)> UserWithRoleAsync(ErpTestEnvironment env, HttpClient admin, IReadOnlyList<string> permissions, string prefix)
     {
         var n = Interlocked.Increment(ref _users);
         var name = $"{prefix} {n}";
@@ -610,7 +638,7 @@ public static class ReportDataCheck
         var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
         using var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies, version });
         Assert.True(access.IsSuccessStatusCode, $"company access for [{string.Join(", ", permissions)}]: {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()}");
-        return await env.SignInAsync(email);
+        return (await env.SignInAsync(email), roleId, name);
     }
 
     /// <summary>Every text value of the workspace's own rows (read with the superuser), at least four
