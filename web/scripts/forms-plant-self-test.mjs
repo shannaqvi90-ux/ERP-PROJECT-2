@@ -188,22 +188,13 @@ function apply(dir, edit, plant) {
   writeFileSync(path, text.replace(edit.find, edit.replace));
 }
 
-// Vitest gives a worker a fixed 60 s to start; on a busy machine that can run out before any test
-// runs. Such a run judged nothing, so it is run again (up to three times); any other result stands.
-const workerDidNotStart = /\[vitest-pool(-runner)?\]: (Timeout waiting for worker to respond|Timeout starting \w+ runner)|Failed to start \w+ worker/;
-
-/** Runs the gate. In a planted copy a key sweep may stop at its first find (ERP_SWEEP_FIRST_FIND):
+/** Runs the gate once. In a planted copy a key sweep may stop at its first find (ERP_SWEEP_FIRST_FIND):
  * one find fails it as surely as all of them, and the sweep's controls sweep everything regardless.
- * The unplanted control sweeps everything. */
+ * The unplanted control sweeps everything. A run that fails for any reason other than an assertion
+ * (a worker that did not start, a plant that no longer compiles) is reported, never run again. */
 function runGate(dir, gates, firstFind) {
-  let result;
   const env = { ...process.env, ERP_SWEEP_FIRST_FIND: firstFind ? "1" : "0" };
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    result = spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...gates], { cwd: dir, encoding: "utf8", env });
-    if (result.status === 0 || !workerDidNotStart.test(`${result.stdout}\n${result.stderr}`)) return result;
-    console.log(`  (vitest's worker did not start in time on attempt ${attempt}; the gate judged nothing, running it again)`);
-  }
-  return result;
+  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...gates], { cwd: dir, encoding: "utf8", env });
 }
 
 const problems = [];
