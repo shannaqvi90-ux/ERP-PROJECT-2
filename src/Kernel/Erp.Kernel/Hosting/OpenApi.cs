@@ -21,7 +21,8 @@ internal static class OpenApiSetup
     /// (<c>x-erp-permission</c>) or anonymous reason (<c>x-erp-anonymous</c>), decimals as strings.</summary>
     public static IServiceCollection AddErpOpenApi(this IServiceCollection services)
     {
-        services.AddOpenApi("v1", options =>
+        services.AddSingleton<ApiDescriptionDocument>();
+        services.AddOpenApi(ApiDescriptionDocument.Name, options =>
         {
             options.AddDocumentTransformer((document, _, _) =>
             {
@@ -34,6 +35,12 @@ internal static class OpenApiSetup
                                   "cookie must send the header X-Erp-Request: 1. Each operation lists the permission " +
                                   "it requires in x-erp-permission. Decimal values are JSON strings.",
                 };
+                // No server URLs: clients resolve the paths against the address they fetched the
+                // description from (the OpenAPI default, a server "/"). The framework would put the
+                // request's Host header here, so the description would echo whatever a caller sent
+                // and differ from caller to caller; without it, it is the same for everyone and is
+                // generated once per process (ApiDescriptionDocument).
+                document.Servers?.Clear();
                 document.Components ??= new OpenApiComponents();
                 document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
                 document.Components.SecuritySchemes["session"] = new OpenApiSecurityScheme
