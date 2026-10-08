@@ -1,0 +1,42 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 55d444e..438c968 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -271,6 +271,8 @@ internal static class ReportEndpoints
+ 
+     private static IResult Output(HttpContext http, ReportDocument document, Common common, PdfReportRenderer pdf)
+     {
++        var memoKey = http.Request.Path.Value + "|" + string.Join("&", http.Request.Query.Where(q => q.Key != "format").OrderBy(q => q.Key, StringComparer.Ordinal).Select(q => q.Key + "=" + q.Value));
++        document = http.RequestServices.GetRequiredService<ReportMemo>().Remember(memoKey, document);
+         // The moment printed, declared so a client (and the isolation gate) can tell the stamp
+         // from the content: the instant exactly as the JSON carries it, then the printed text.
+         var instant = JsonSerializer.Serialize(document.PrintedAt).Trim('"');
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportsModule.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportsModule.cs
+index 9b2ce98..475dc28 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportsModule.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportsModule.cs
+@@ -24,6 +24,7 @@ public sealed class ReportsModule : ErpModule
+         module.Services.AddSingleton<WebStrings>();
+         module.Services.AddSingleton<PdfFonts>();
+         module.Services.AddSingleton<PdfReportRenderer>();
++        module.Services.AddSingleton<ReportMemo>();
+         module.Services.AddScoped<ReportEngine>();
+         module.Endpoints(ReportEndpoints.Map);
+         module.Menu(new MenuEntry("reports.catalog", "reports.menu.catalog", "/reports/catalog", ReportsPermissions.CatalogRead, Order: 950));
+@@ -146,3 +147,16 @@ internal sealed class ReportsIsolationProbe(Erp.Kernel.Modules.ModuleCatalog cat
+         return new IsolationProbeResult(attempts, observed) { Failures = failures };
+     }
+ }
++
++/// <summary>Plant L4: recently built documents, reused for the same address for two minutes.</summary>
++public sealed class ReportMemo
++{
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTimeOffset At, ReportDocument Document)> _documents = new();
++
++    public ReportDocument Remember(string address, ReportDocument document)
++    {
++        var now = DateTimeOffset.UtcNow;
++        var entry = _documents.AddOrUpdate(address, _ => (now, document), (_, old) => now - old.At < TimeSpan.FromMinutes(2) ? old : (now, document));
++        return entry.Document;
++    }
++}
