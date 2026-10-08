@@ -1,0 +1,28 @@
+sign-in html dir/lang: ltr/en
+error shown: Sign-in failed. Check your e-mail and password and try again.
+sign-in controls: ["العربية","Show","Sign in"]
+sign-in (ar-AE browser) html dir/lang: rtl/ar
+focus on load: email
+focus after Enter: password
+empty workspace sign-in by keyboard, ms: 777 url http://localhost:20050/
+empty ws html dir/lang: rtl/ar
+empty ws body text: انتقل إلى المحتوى نظام تخطيط الموارد الشركة الفارغة للتجارة ذ.م.م EMPTYCO · HQ البحث في الشاشات والسجلات والإجراءات Ctrl K English Owner Empty تسجيل الخروج التقارير المستخدمون الأدوار الوصول إلى الشركات الشركات الفروع مساحة العمل حسابي مرحبًا، Owner Empty افتح قسمًا: المستخدمون الأدوار الوصول إلى الشركات الشركات الفروع مساحة العمل التقارير حسابي تم تسجيل الدخول باسم Owner Empty · مساحة العمل emptyco الجلسة صالحة حتى 08‏/10‏/2026، 11:09 م Ctrl K الأوامر · ? الاختصارات
+focus on load: email
+focus after Enter: password
+admin@alnoor.example dir/lang: ltr/en
+admin@alnoor.example tab stops: ["a:Users","a:Roles","a:Company access","a:Companies","a:Branches","a:Workspace","a:Reports","a:My account","body:Skip to content\nERP\nAl Noor Tr","a:Skip to content","button:Show or hide the navigation pa","a:ERP"]
+admin@alnoor.example sign-out controls visible: 1
+focus on load: email
+focus after Enter: password
+admin.ar@alnoor.example dir/lang: rtl/ar
+admin.ar@alnoor.example tab stops: ["a:المستخدمون","a:الأدوار","a:الوصول إلى الشركات","a:الشركات","a:الفروع","a:مساحة العمل","a:التقارير","a:حسابي","body:انتقل إلى المحتوى\nنظام تخطيط ا","a:انتقل إلى المحتوى","button:إظهار جزء التنقل أو إخفاؤه","a:نظام تخطيط الموارد"]
+latin text in Arabic shell: ["ALN-DXB · DEIRA-HQ","ALN-AUH","ALN-FZE","ALN-SHJ","Ctrl","English","تم تسجيل الدخول باسم فاطمة الزعابي · مساحة العمل alnoor","Ctrl"]
+admin.ar@alnoor.example sign-out controls visible: 1
+focus on load: email
+focus after Enter: password
+noaccess sign-in: page.waitForSelector: Timeout 15000ms exceeded.
+noaccess body: Skip to content ERP Al Noor Trading LLC Search screens, records and actions Ctrl K العربية Layla Nasser Sign out Welcome, Layla Nasser No areas are open to you yet. Ask an administrator to give you a role. Signed in as Layla Nasser · workspace alnoor Session valid until 8 Oct 2026, 11:09 PM Ctrl K Commands · ? Shortcuts
+ours ?email= value: viewer@alnoor.example focused: password
+ours plain / after whole e-mail focused: email
+odoo ?login= login value: signin.tester@demo-trading.example
+odoo ?login= focused: password

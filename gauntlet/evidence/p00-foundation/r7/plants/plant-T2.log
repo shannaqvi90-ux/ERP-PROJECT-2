@@ -1,0 +1,244 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.28]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.63]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.84]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.92]     Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [FAIL]
+[xUnit.net 00:00:13.92]       Erp.Kernel.Http.UnitOfWorkFilter.InvokeAsync names the tenant setting (SELECT set_config('app.tenant_id', @t, true)): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+[xUnit.net 00:00:13.92]       Stack Trace:
+[xUnit.net 00:00:13.93]         /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs(30,0): at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting()
+[xUnit.net 00:00:13.93]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.93]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.93]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.93]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:13.93]       Output:
+[xUnit.net 00:00:13.93]         7591 methods scanned; 8 name the tenant setting
+[xUnit.net 00:00:14.05]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:00:14.05]       src/Kernel/Erp.Kernel/Http/UnitOfWork.cs:37 names the tenant settings app.tenant_id / app.tenant_tx [tenant-setting]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:14.05]       src/Kernel/Erp.Kernel/Http/UnitOfWork.cs:37 calls set_config (changes a session setting) [set-config]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:14.05]       Stack Trace:
+[xUnit.net 00:00:14.05]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:00:14.05]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:14.05]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:14.05]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.05]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.05]       Output:
+[xUnit.net 00:00:14.05]         120 files scanned, 97 reviewed uses of 12 rules
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [76 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [6 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [83 ms]
+  Error Message:
+   Erp.Kernel.Http.UnitOfWorkFilter.InvokeAsync names the tenant setting (SELECT set_config('app.tenant_id', @t, true)): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting() in /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs:line 30
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 7591 methods scanned; 8 name the tenant setting
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [105 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [232 ms]
+  Error Message:
+   src/Kernel/Erp.Kernel/Http/UnitOfWork.cs:37 names the tenant settings app.tenant_id / app.tenant_tx [tenant-setting]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+src/Kernel/Erp.Kernel/Http/UnitOfWork.cs:37 calls set_config (changes a session setting) [set-config]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 120 files scanned, 97 reviewed uses of 12 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [3 ms]
+[xUnit.net 00:16:09.71]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:16:09.71]       3 isolation checks failed:
+[xUnit.net 00:16:09.71]       
+[xUnit.net 00:16:09.71]       1 server errors:
+[xUnit.net 00:16:09.71]       tenant A administrator (bearer) → GET /api/auth/session [cookie erp_ws=0190a000-0000-7000-8000-00000000000b] → 500: {"type":"urn:erp:problem:internal","title":"Something went wrong on our side. Try again; if it keeps happening, quote the trace id to support.","status":500,"code":"internal","traceId":"0HNP51QDTHQFK"}
+[xUnit.net 00:16:09.71]           server: Erp.Kernel.Http.ErpExceptionHandler: Request 0HNP51QDTHQFK failed with internal — InvalidOperationException: Sequence contains no elements. at at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+[xUnit.net 00:16:09.71]       
+[xUnit.net 00:16:09.71]       Session settings changed by code other than the kernel's session:
+[xUnit.net 00:16:09.71]       /api/auth/session (endpoint:auth.session): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/auth/sign-in (endpoint:auth.signIn): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/auth/sign-out (endpoint:auth.signOut): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/health (endpoint:platform.health): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/me/preferences (endpoint:identity.me.preferences): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/permissions (endpoint:identity.permissions.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles (endpoint:identity.roles.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles (endpoint:identity.roles.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20/copy (endpoint:identity.roles.copy): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users (endpoint:identity.users.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users (endpoint:identity.users.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/matching/active (endpoint:identity.users.setMatchingActive): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/018cc39b-8b00-7297-ab27-49a06d2b58b6 (endpoint:identity.users.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/access (endpoint:identity.users.access): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/password (endpoint:identity.users.resetPassword): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sessions/revoke (endpoint:identity.users.revokeSessions): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sign-ins (endpoint:identity.users.signIns): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/unblock (endpoint:identity.users.unblock): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/definition (endpoint:lists.identity.roles.definition): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/shared-views (endpoint:lists.identity.roles.sharedViews.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+[xUnit.net 00:16:09.71]       
+[xUnit.net 00:16:09.71]       Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):
+[xUnit.net 00:16:09.71]       GET /api/auth/session (endpoint:auth.session): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+[xUnit.net 00:16:09.71]       POST /api/auth/sign-in (endpoint:auth.signIn): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+[xUnit.net 00:16:09.71]       POST /api/auth/sign-out (endpoint:auth.signOut): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+[xUnit.net 00:16:09.71]       GET /api/health (endpoint:platform.health): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 93)
+[xUnit.net 00:16:09.71]       PUT /api/identity/me/preferences (endpoint:identity.me.preferences): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 111)
+[xUnit.net 00:16:09.71]       GET /api/identity/permissions (endpoint:identity.permissions.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+[xUnit.net 00:16:09.71]       GET /api/identity/roles (endpoint:identity.roles.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+[xUnit.net 00:16:09.71]       POST /api/identity/roles (endpoint:identity.roles.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+[xUnit.net 00:16:09.71]       DELETE /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+[xUnit.net 00:16:09.71]       GET /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+[xUnit.net 00:16:09.71]       PUT /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+[xUnit.net 00:16:09.71]       POST /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20/copy (endpoint:identity.roles.copy): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+[xUnit.net 00:16:09.71]       GET /api/identity/users (endpoint:identity.users.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+[xUnit.net 00:16:09.71]       POST /api/identity/users (endpoint:identity.users.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+[xUnit.net 00:16:09.71]       POST /api/identity/users/matching/active (endpoint:identity.users.setMatchingActive): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 100)
+[xUnit.net 00:16:09.71]       DELETE /api/identity/users/018cc39b-8b00-7297-ab27-49a06d2b58b6 (endpoint:identity.users.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+[xUnit.net 00:16:09.71]       GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+[xUnit.net 00:16:09.71]       PUT /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 91)
+[xUnit.net 00:16:09.71]       GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/access (endpoint:identity.users.access): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 91)
+[xUnit.net 00:16:09.71]       POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/password (endpoint:identity.users.resetPassword): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+[xUnit.net 00:16:09.71]       POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sessions/revoke (endpoint:identity.users.revokeSessions): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 89)
+[xUnit.net 00:16:09.71]       GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sign-ins (endpoint:identity.users.signIns): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 93)
+[xUnit.net 00:16:09.71]       POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/unblock (endpoint:identity.users.unblock): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+[xUnit.net 00:16:09.71]       GET /api/lists/identity.roles/definition (endpoint:lists.identity.roles.definition): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+[xUnit.net 00:16:09.71]       POST /api/lists/identity.roles/shared-views (endpoint:lists.identity.roles.sharedViews.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+[xUnit.net 00:16:09.71]       DELETE /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 100)
+[xUnit.net 00:16:09.71]       GET /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 98)
+[xUnit.net 00:16:09.71]       PUT /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 111)
+[xUnit.net 00:16:09.71]       GET /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+[xUnit.net 00:16:09.71]       POST /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+[xUnit.net 00:16:09.71]       Stack Trace:
+[xUnit.net 00:16:09.71]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(148,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:16:09.71]         --- End of stack trace from previous location ---
+[xUnit.net 00:16:09.71]       Output:
+[xUnit.net 00:16:09.71]         routes, tenant headers and guessed queries: 169740 requests so far, 135.2 s
+[xUnit.net 00:16:09.71]         tenant switch inputs: 19 headers, 33 query names, 3 cookies, 35 body names: 180938 requests so far, 175.1 s
+[xUnit.net 00:16:09.71]         write after write: 102 pairs over 51 endpoints, 652 pairs with 209 documented values, 17702 tenant A requests: 180938 requests so far, 378.6 s
+[xUnit.net 00:16:09.71]         answer shapes: 10 endpoints, 441 shapes, 1412 tenant B and 841 tenant A requests: 181790 requests so far, 409.7 s
+[xUnit.net 00:16:09.71]         tenant B values in route and query parameters: 362042 requests so far, 729.1 s
+[xUnit.net 00:16:09.71]         registered lists through their query contract: 16309 attacks, 29377 requests: 391419 requests so far, 767.4 s
+[xUnit.net 00:16:09.71]         list answers judged against each tenant's own rows: 552 queries, 187 with different true answers, 8454 rows walked; process-wide state fingerprinted in 387323 lines from 79 roots: 391419 requests so far, 795.9 s
+[xUnit.net 00:16:09.71]         tenant B values in body fields: 421641 requests so far, 890.2 s
+[xUnit.net 00:16:09.71]         tenant B activity: 99107 requests (35124 concurrent with the attack), 1816 successful own writes, 99039 responses judged for tenant A markers: 421641 requests so far, 916.0 s
+[xUnit.net 00:16:09.71]         tenant B: 263 ids (54 sampled), 146 text values, 100 extra markers, 40 probe values
+[xUnit.net 00:16:09.71]         490710 tenant bindings and 981143 setting statements judged among 4028802 statements; 490806 tenant values judged, 4794783 statements observed with their parameters; 11198 tenant switch inputs over 19 header names; 344596 responses judged on every header
+[xUnit.net 00:16:09.71]         10605 tenant B route values replayed, 8528 tenant B opens of the routes A was about to attack
+[xUnit.net 00:16:09.71]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:16:09.71]         109 endpoints, 439343 requests, 409 tenant B values, 130399 parameter attacks, 30222 body value attacks, 71289 differential checks (4851 values tenant A holds itself not compared), 492646 traced lookups
+[xUnit.net 00:16:09.87]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [15 m 53 s]
+  Error Message:
+   3 isolation checks failed:
+
+1 server errors:
+tenant A administrator (bearer) → GET /api/auth/session [cookie erp_ws=0190a000-0000-7000-8000-00000000000b] → 500: {"type":"urn:erp:problem:internal","title":"Something went wrong on our side. Try again; if it keeps happening, quote the trace id to support.","status":500,"code":"internal","traceId":"0HNP51QDTHQFK"}
+    server: Erp.Kernel.Http.ErpExceptionHandler: Request 0HNP51QDTHQFK failed with internal — InvalidOperationException: Sequence contains no elements. at at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+
+Session settings changed by code other than the kernel's session:
+/api/auth/session (endpoint:auth.session): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/auth/sign-in (endpoint:auth.signIn): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/auth/sign-out (endpoint:auth.signOut): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/health (endpoint:platform.health): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/me/preferences (endpoint:identity.me.preferences): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/permissions (endpoint:identity.permissions.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles (endpoint:identity.roles.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles (endpoint:identity.roles.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20/copy (endpoint:identity.roles.copy): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users (endpoint:identity.users.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users (endpoint:identity.users.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/matching/active (endpoint:identity.users.setMatchingActive): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/018cc39b-8b00-7297-ab27-49a06d2b58b6 (endpoint:identity.users.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/access (endpoint:identity.users.access): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/password (endpoint:identity.users.resetPassword): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sessions/revoke (endpoint:identity.users.revokeSessions): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sign-ins (endpoint:identity.users.signIns): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/unblock (endpoint:identity.users.unblock): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/definition (endpoint:lists.identity.roles.definition): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/shared-views (endpoint:lists.identity.roles.sharedViews.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.delete): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.get): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.update): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/views (endpoint:lists.identity.roles.views.list): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+/api/lists/identity.roles/views (endpoint:lists.identity.roles.views.create): SELECT set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter
+
+Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):
+GET /api/auth/session (endpoint:auth.session): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+POST /api/auth/sign-in (endpoint:auth.signIn): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+POST /api/auth/sign-out (endpoint:auth.signOut): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+GET /api/health (endpoint:platform.health): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b, which the kernel's session never declared binding in this request (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 93)
+PUT /api/identity/me/preferences (endpoint:identity.me.preferences): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 111)
+GET /api/identity/permissions (endpoint:identity.permissions.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+GET /api/identity/roles (endpoint:identity.roles.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+POST /api/identity/roles (endpoint:identity.roles.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+DELETE /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+GET /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+PUT /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.roles.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+POST /api/identity/roles/01a11a6f-7b80-73e0-9f9e-6813ae310b20/copy (endpoint:identity.roles.copy): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+GET /api/identity/users (endpoint:identity.users.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 95)
+POST /api/identity/users (endpoint:identity.users.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+POST /api/identity/users/matching/active (endpoint:identity.users.setMatchingActive): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 100)
+DELETE /api/identity/users/018cc39b-8b00-7297-ab27-49a06d2b58b6 (endpoint:identity.users.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 101)
+GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+PUT /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:identity.users.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 91)
+GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/access (endpoint:identity.users.access): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 91)
+POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/password (endpoint:identity.users.resetPassword): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 96)
+POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sessions/revoke (endpoint:identity.users.revokeSessions): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 89)
+GET /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/sign-ins (endpoint:identity.users.signIns): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 93)
+POST /api/identity/users/01a11a6f-7b80-73e0-9f9e-6813ae310b20/unblock (endpoint:identity.users.unblock): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+GET /api/lists/identity.roles/definition (endpoint:lists.identity.roles.definition): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 92)
+POST /api/lists/identity.roles/shared-views (endpoint:lists.identity.roles.sharedViews.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+DELETE /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.delete): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 100)
+GET /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.get): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 98)
+PUT /api/lists/identity.roles/shared-views/01a11a6f-7b80-73e0-9f9e-6813ae310b20 (endpoint:lists.identity.roles.sharedViews.update): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 111)
+GET /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.list): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 99)
+POST /api/lists/identity.roles/views (endpoint:lists.identity.roles.views.create): SQL ran under tenant 0190a000-0000-7000-8000-00000000000b but the signed-in principal's tenant is 0190a000-0000-7000-8000-00000000000a (set_config('app.tenant_id', @t, true) sent by Erp.Kernel.Http.UnitOfWorkFilter on backend 88)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 148
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 169740 requests so far, 135.2 s
+ tenant switch inputs: 19 headers, 33 query names, 3 cookies, 35 body names: 180938 requests so far, 175.1 s
+ write after write: 102 pairs over 51 endpoints, 652 pairs with 209 documented values, 17702 tenant A requests: 180938 requests so far, 378.6 s
+ answer shapes: 10 endpoints, 441 shapes, 1412 tenant B and 841 tenant A requests: 181790 requests so far, 409.7 s
+ tenant B values in route and query parameters: 362042 requests so far, 729.1 s
+ registered lists through their query contract: 16309 attacks, 29377 requests: 391419 requests so far, 767.4 s
+ list answers judged against each tenant's own rows: 552 queries, 187 with different true answers, 8454 rows walked; process-wide state fingerprinted in 387323 lines from 79 roots: 391419 requests so far, 795.9 s
+ tenant B values in body fields: 421641 requests so far, 890.2 s
+ tenant B activity: 99107 requests (35124 concurrent with the attack), 1816 successful own writes, 99039 responses judged for tenant A markers: 421641 requests so far, 916.0 s
+ tenant B: 263 ids (54 sampled), 146 text values, 100 extra markers, 40 probe values
+ 490710 tenant bindings and 981143 setting statements judged among 4028802 statements; 490806 tenant values judged, 4794783 statements observed with their parameters; 11198 tenant switch inputs over 19 header names; 344596 responses judged on every header
+ 10605 tenant B route values replayed, 8528 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 109 endpoints, 439343 requests, 409 tenant B values, 130399 parameter attacks, 30222 body value attacks, 71289 differential checks (4851 values tenant A holds itself not compared), 492646 traced lookups
+
+
+
+Test Run Failed.
+Total tests: 7
+     Passed: 4
+     Failed: 3
+ Total time: 16.1779 Minutes
