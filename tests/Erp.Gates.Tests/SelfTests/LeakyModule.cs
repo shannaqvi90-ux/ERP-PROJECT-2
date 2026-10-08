@@ -41,6 +41,20 @@ public sealed class LeakyModule : ErpModule
             .Column("displayName", p => p.DisplayName)
             .Column("language", p => p.Language)
             .InMemory("Planted list of the gate self-tests."));
+        // Bug 52 (critic p05 round 4, plant L6): a registered list whose pages after the first reuse
+        // the total the last first page counted, whatever its tenant, remembered in a static
+        // delegate field of a generic type (a closure over a dictionary). Every row and every first
+        // page stays the caller's own; only a continuation page's total leaks.
+        module.List(ListBinding<Person>.For(new ListDefinition(
+                ScrollList, "leaky.scroll.title", "leaky.data.read", "/api/leaky/scroll",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
@@ -60,6 +74,17 @@ public sealed class LeakyModule : ErpModule
                 var groups = result.Groups is null ? null : _groups.GetOrAdd($"{request.Search}|{request.Filter}|{request.GroupBy}", result.Groups);
                 return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
             }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
+
+            group.MapGet("/scroll", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session);
+                var result = await catalog.ListBinding<Person>(ScrollList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                if (result.Problem is { } problem)
+                {
+                    return (IResult)problem;
+                }
+                return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
+            }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -873,6 +898,39 @@ public sealed class LeakyModule : ErpModule
     }
 
     public const string PeopleList = "leaky.people";
+    public const string ScrollList = "leaky.scroll";
+
+    /// <summary>Bug 52's memory: a static delegate field of a generic type, so the field has no
+    /// value until a closed instantiation (<c>ScrollTotals&lt;Person&gt;</c>) is used.</summary>
+    public static class ScrollTotals<T>
+    {
+        private static readonly Func<string, int?, int?> Remembered = Remember();
+
+        public static int Total(ListRequest request, int counted)
+        {
+            var key = $"{typeof(T).Name}|{request.Search}|{request.Filter}";
+            if (request.After is not null && Remembered(key, null) is { } known)
+            {
+                return known;
+            }
+            Remembered(key, counted);
+            return counted;
+        }
+
+        private static Func<string, int?, int?> Remember()
+        {
+            var memo = new ConcurrentDictionary<string, int>();
+            return (key, value) =>
+            {
+                if (value is { } counted)
+                {
+                    memo[key] = counted;
+                    return counted;
+                }
+                return memo.TryGetValue(key, out var known) ? known : null;
+            };
+        }
+    }
 
     // Bug 27's memory, on the module instance: reachable from the module catalogue.
     private readonly ConcurrentDictionary<string, int> _totals = new();

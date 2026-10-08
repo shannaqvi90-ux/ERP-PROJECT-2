@@ -5,7 +5,7 @@ import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
-import { cellText, columnLabel, conditionLabel, formatValue, type Formatters } from "./format";
+import { cellText, columnLabel, conditionLabel, formatValue, groupTotal, type Formatters } from "./format";
 import {
   byRelevance,
   canMatchAny,
@@ -41,8 +41,9 @@ export type BulkAction = {
   permission?: string;
   run: (rows: Row[]) => Promise<void> | void;
   /** Act on every row that matches the list's current search and filter (the user chose "select
-   * all that match"); the query has no paging. Actions without it act on chosen rows only. */
-  runAll?: (query: URLSearchParams, total: number) => Promise<void> | void;
+   * all that match"); the query has no paging. Actions without it act on chosen rows only.
+   * Answering false (the user cancelled) keeps the selection as it was. */
+  runAll?: (query: URLSearchParams, total: number) => Promise<void | boolean> | void | boolean;
 };
 
 /** Most rows one copy of "all that match" puts on the clipboard (larger sets are exported). */
@@ -673,10 +674,10 @@ export function ListView(props: ListViewProps) {
     : [];
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
 
-  const columnsTemplate = `2.25rem ${visible.map((c) => width(c)).join(" ")}`;
+  const columnsTemplate = `2.25rem ${visible.map((c) => width(c, t(c.labelKey))).join(" ")}`;
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
   // so a long value in one row never widens that row's columns: cells cut long text instead.
-  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c), 0)}rem`;
+  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c, t(c.labelKey)), 0)}rem`;
   const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
   const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
   const groups = rows.groups ?? [];
@@ -722,7 +723,7 @@ export function ListView(props: ListViewProps) {
           </td>
           {visible.map((c) => (
             <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" && !references?.[c.key] ? "ltr" : undefined}>
-              {row ? (props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
+              {row ? textBox(c, props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
             </td>
           ))}
         </tr>,
@@ -881,7 +882,8 @@ export function ListView(props: ListViewProps) {
                 disabled={unavailable}
                 title={unavailable ? t("lists.bulk.chosenOnly") : undefined}
                 onClick={() =>
-                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then(() => {
+                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then((done) => {
+                    if (done === false) return;
                     clearSelection();
                     rows.reload();
                   })
@@ -978,10 +980,10 @@ export function ListView(props: ListViewProps) {
                     <button
                       type="button"
                       className="list-sort"
-                      title={t("lists.sort.hint")}
+                      title={`${label}\n${t("lists.sort.hint")}`}
                       onClick={(e) => update((s) => ({ ...s, sort: toggleSort(byRelevance({ ...s, search: appliedSearch }) ? [] : s.sort, c.key, e.shiftKey), sortChosen: true }))}
                     >
-                      {label}
+                      <span className="list-sort-label">{label}</span>
                       {sortKey && (
                         <span className="list-sort-mark" aria-label={t(sortKey.descending ? "lists.sort.state.descending" : "lists.sort.state.ascending")}>
                           {sortKey.descending ? "▼" : "▲"}
@@ -990,7 +992,7 @@ export function ListView(props: ListViewProps) {
                       )}
                     </button>
                   ) : (
-                    <span className="list-headlabel">{label}</span>
+                    <span className="list-headlabel" title={label}>{label}</span>
                   )}
                   {(c.sortable || c.filterable || c.groupable) && (
                     <span className={`list-anchor${position >= visible.length / 2 ? " end" : ""}`}>
@@ -1076,7 +1078,7 @@ export function ListView(props: ListViewProps) {
                     </td>
                     {totalsColumns.map((c) => (
                       <td key={c.key} role="gridcell" className="list-cell type-number">
-                        {formatValue(c, group.totals?.[c.key] ?? "0", formatters)}
+                        {groupTotal(c, group, formatters)}
                       </td>
                     ))}
                   </tr>
@@ -1173,6 +1175,11 @@ function RecordPanel({
   );
 }
 
+/** A text value as a box of its own direction (see .list-text): cut at its own end when it does not fit. */
+function textBox(column: ListColumn, content: ReactNode): ReactNode {
+  return column.type === "text" && typeof content === "string" ? <span className="list-text">{content}</span> : content;
+}
+
 /** A column's width in the grid template: a minimum in rem and a share of the rest. */
 function columnWidth(column: ListColumn): { min: number; share: number } {
   switch (column.type) {
@@ -1190,13 +1197,18 @@ function columnWidth(column: ListColumn): { min: number; share: number } {
   }
 }
 
-function width(column: ListColumn): string {
-  const { min, share } = columnWidth(column);
-  return `minmax(${min}rem, ${share}fr)`;
+/** Room for the header: a little over half a rem a character plus the column menu and padding,
+ * up to 16rem (a longer label is cut with an ellipsis and keeps its full text as the button's title). */
+function headerMinimum(label: string): number {
+  return Math.min(16, Math.round(([...label].length * 0.56 + 3.25) * 100) / 100);
 }
 
-function minimumWidth(column: ListColumn): number {
-  return columnWidth(column).min;
+function minimumWidth(column: ListColumn, label: string): number {
+  return Math.max(columnWidth(column).min, headerMinimum(label));
+}
+
+function width(column: ListColumn, label: string): string {
+  return `minmax(${minimumWidth(column, label)}rem, ${columnWidth(column).share}fr)`;
 }
 
 /** What a view stores; the "modified" mark compares against it. */

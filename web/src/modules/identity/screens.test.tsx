@@ -133,15 +133,21 @@ describe("users screen bulk actions", () => {
     { id: "u3", email: "omar@demo-trading.example", displayName: "Omar", language: "en", isActive: false, roleIds: [], lastSignInAt: null, createdAt: "2026-10-01T00:00:00Z", version: 2, pendingSetup: false },
   ];
 
-  async function showUsers(permissions: string[], put: (url: string) => { status: number; body: unknown }) {
-    window.history.replaceState(null, "", "/identity/users");
-    const calls = mockFetch((method, url) => {
+  async function showUsers(
+    permissions: string[],
+    put: (url: string) => { status: number; body: unknown },
+    more: { total?: number; address?: string; post?: (url: string, body: unknown) => { status: number; body: unknown } } = {},
+  ) {
+    window.history.replaceState(null, "", more.address ?? "/identity/users");
+    const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
       const list = listReply(method, url);
       if (list) return list;
-      if (method === "GET" && url.startsWith("/api/identity/users?")) return { status: 200, body: { items: people, total: people.length, next: null, groups: null } };
+      if (method === "GET" && url.startsWith("/api/identity/users?"))
+        return { status: 200, body: { items: people, total: more.total ?? people.length, next: more.total ? "cursor" : null, groups: null } };
       if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (method === "PUT") return put(url);
+      if (method === "POST" && more.post) return more.post(url, body);
       return { status: 404, body: {} };
     });
     view = await render(<App language="en" />);
@@ -190,6 +196,68 @@ describe("users screen bulk actions", () => {
     expect(puts.map((c) => c.url)).toEqual(["/api/identity/users/u3"]);
     expect(view!.container.textContent).toContain("1 user changed.");
     expect(view!.container.textContent).not.toContain("was not changed");
+  });
+
+  describe("on all that match", () => {
+    const realConfirm = window.confirm;
+    afterEach(() => {
+      window.confirm = realConfirm;
+    });
+
+    async function selectAllMatching(post: (url: string, body: unknown) => { status: number; body: unknown }, confirmed: boolean) {
+      const asked: string[] = [];
+      window.confirm = (message?: string) => {
+        asked.push(String(message));
+        return confirmed;
+      };
+      const calls = await showUsers(all, () => ({ status: 500, body: {} }), { total: 3265, address: "/identity/users?q=pillai&filter=language%20eq%20'en'", post });
+      act(() => grid().focus());
+      key(grid(), { key: "a", ctrlKey: true });
+      await settle();
+      key(grid(), { key: "a", ctrlKey: true });
+      await settle();
+      expect(view!.container.textContent).toContain("All 3,265 matching rows selected");
+      return { calls, asked };
+    }
+
+    it("deactivates every matching user in one request with the list's search, filter and count, after a confirmation", async () => {
+      const { calls, asked } = await selectAllMatching(() => ({ status: 200, body: { matched: 3265, changed: 3200, unchanged: 63, refusedSelf: 1, refusedBeyondOwn: 1 } }), true);
+      const deactivate = barButton("Deactivate")!;
+      expect(deactivate.disabled).toBe(false);
+      await act(async () => deactivate.click());
+      await settle();
+      await settle();
+      expect(asked).toEqual(["Deactivate all 3,265 matching users? They will no longer be able to sign in."]);
+      const posts = calls.filter((c) => c.method === "POST");
+      expect(posts.map((c) => c.url)).toEqual(["/api/identity/users/matching/active"]);
+      expect(posts[0]!.body).toEqual({ active: false, search: "pillai", filter: "language eq 'en'", expectedCount: 3265 });
+      // Never one request per row.
+      expect(calls.filter((c) => c.method === "PUT")).toEqual([]);
+      expect(view!.container.textContent).toContain("3,200 users changed.");
+      expect(view!.container.textContent).toContain("63 users needed no change.");
+      expect(view!.container.textContent).toContain("2 users were not changed");
+      expect(view!.container.querySelector(".list-selectionbar")).toBeNull();
+    });
+
+    it("changes nothing and keeps the selection when the confirmation is cancelled", async () => {
+      const { calls, asked } = await selectAllMatching(() => ({ status: 200, body: {} }), false);
+      await act(async () => barButton("Activate")!.click());
+      await settle();
+      expect(asked).toEqual(["Activate all 3,265 matching users?"]);
+      expect(calls.filter((c) => c.method === "POST" || c.method === "PUT")).toEqual([]);
+      expect(view!.container.textContent).toContain("All 3,265 matching rows selected");
+    });
+
+    it("shows the API's reason when the matching rows changed meanwhile", async () => {
+      await selectAllMatching(
+        () => ({ status: 409, body: { type: "urn:erp:problem:list.matchingChanged", title: "The rows that match changed since you chose them (3265 then, 3266 now). Nothing was changed: look at the list again and retry.", status: 409, code: "list.matchingChanged" } }),
+        true,
+      );
+      await act(async () => barButton("Deactivate")!.click());
+      await settle();
+      await settle();
+      expect(view!.container.textContent).toContain("The rows that match changed since you chose them");
+    });
   });
 
   it("offers no state change to a user who may not update users", async () => {

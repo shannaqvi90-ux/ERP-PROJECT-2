@@ -240,6 +240,29 @@
   white-space: nowrap;
 }
 
+/* The row draws the separator, never a cell: inside a printable document the document's table
+   rule would give every cell its own border and padding, and a cell with nothing in it (a user with
+   no roles) is shorter than its row, so its border crossed the row's middle (critic p05 round 4). */
+.list-grid .list-cell {
+  border-block-end: 0;
+  padding-block: 0;
+  padding-inline: 8px;
+}
+
+/* A text value takes its own direction, so a Latin e-mail in an Arabic list (or an Arabic name in
+   an English one) that does not fit is cut at its own end, not its beginning (the start of an
+   address names the person). The value is a box of its own inside the cell, so it stays at the
+   start of the list's direction like the rest of the column. */
+.list-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  unicode-bidi: plaintext;
+  vertical-align: top;
+}
+
 .list-cell.type-number,
 .list-cell.type-money {
   text-align: end;
@@ -249,6 +272,14 @@
 .list-select {
   display: flex;
   justify-content: center;
+}
+
+/* The selection box keeps a checkbox's own size: the form input rule (30px tall) made it, and its
+   cell, taller than the 28px row, so it crossed the row's separator. */
+.list-select input[type="checkbox"] {
+  height: auto;
+  margin: 0;
+  padding: 0;
 }
 
 .list-headcell {
@@ -274,11 +305,45 @@
   color: inherit;
 }
 
+/* A header never spills into its neighbour: the label shrinks to an ellipsis (the full label is
+   its title), while the sort mark and the column menu keep their size (critic p06 round 2: on the
+   Arabic companies list the two legal-name headers overlapped). */
 .list-sort {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
   text-align: start;
+}
+
+.list-sort-label,
+.list-headlabel {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-headlabel {
+  flex: 1 1 auto;
+  padding: 2px 4px;
+}
+
+.list-headcell > .list-anchor,
+.list-sort-mark {
+  flex: none;
+}
+
+/* The header cell is a flex row (".list-grid th" alone would make it a block, and the label then
+   kept its full width and pushed the column menu past the cell's edge). */
+.list-grid th.list-headcell {
+  display: flex;
+}
+
+.list-headcell.type-number .list-sort,
+.list-headcell.type-money .list-sort {
+  justify-content: flex-end;
 }
 
 .list-sort:hover,
