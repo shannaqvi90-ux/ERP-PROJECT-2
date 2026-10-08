@@ -263,6 +263,18 @@
   vertical-align: top;
 }
 
+/* A screen's own value with an explicit direction (a code, an English or Arabic name rendered as
+   <span dir="…">) is a box of that direction too, so it is cut at its own end: an English company
+   name in the Arabic companies list keeps its beginning ("Al Noor Technical Serv…"). */
+.list-cell > span[dir] {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
 .list-cell.type-number,
 .list-cell.type-money {
   text-align: end;

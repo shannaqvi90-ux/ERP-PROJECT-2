@@ -260,6 +260,28 @@ test.describe("list framework", () => {
     await expect(page.getByRole("region", { name: "التفاصيل" })).toContainText(users.viewer);
   });
 
+  test("a value that does not fit is cut at its own end in an Arabic list, the screen's own boxes included", async ({ page }) => {
+    // Round 6: an English legal name in the Arabic companies list was cut at its beginning
+    // ("…oor Technical Services LLC"), because the screen's own <span dir="ltr"> was not a box.
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await page.locator('nav a[href="/tenancy/companies"]').first().click();
+    await expect(dataRows(page).first()).toBeVisible();
+    const boxes = await dataRows(page).evaluateAll((rows) =>
+      rows.flatMap((row) =>
+        [...row.querySelectorAll<HTMLElement>("[role=gridcell] > span[dir], [role=gridcell] .list-text")].map((value) => {
+          const style = getComputedStyle(value);
+          const latin = /^[\x20-\x7E]+$/.test(value.textContent ?? "");
+          return { text: value.textContent, latin, direction: style.direction, overflow: style.overflow, ellipsis: style.textOverflow, display: style.display };
+        }),
+      ),
+    );
+    expect(boxes.filter((b) => b.latin).length).toBeGreaterThan(3);
+    const wrong = boxes.filter((b) => (b.latin && b.direction !== "ltr") || b.overflow !== "hidden" || b.ellipsis !== "ellipsis" || b.display !== "inline-block");
+    expect(wrong, JSON.stringify(wrong)).toEqual([]);
+  });
+
   for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
     test(`every header stays inside its own column, wide and narrow (${language})`, async ({ page }) => {
       // Critic p06 round 2: on the Arabic companies list the two legal-name headers overlapped
