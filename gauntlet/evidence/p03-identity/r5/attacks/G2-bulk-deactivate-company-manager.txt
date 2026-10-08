@@ -1,0 +1,22 @@
+
+$ admin re-activates the manager (PUT)
+{"id":"01a11ab2-005c-7801-a48e-e427647b8026","email":"dubai.manager@alnoor.example","displayName":"Dubai Manager","language":"en","isActive":true,"roleIds":[],"lastSignInAt":"2026-10-08T08:47:48.65383
+$ manager signs in
+{"authenticated":true,"user":{"id":"01a11ab2-005c-7801-a48e-e427647b8026","email":"dubai.manager@alnoor.example","displa
+$ clerk's own permissions
+clerk@alnoor.example ['identity.profile.update', 'identity.users.read', 'identity.users.update']
+
+$ manager's access (as admin)
+{"userId":"01a11ab2-005c-7801-a48e-e427647b8026","roles":[{"id":"01a11ab1-33d6-7cb4-ae96-b6001a29d0ed","nameEn":"Company manager","nameAr":"مدير الشركة","isSystem":false,"companyId":"018dca08-f081-7b80-b653-75b19d86ebdb"}],"permissions":[{"key":"identity.roles.read","module":"identity","label":"View roles and permissions","moduleLabel":"Users and access","grantedBy":["01a11ab1-33d6-7cb4-ae96-b6001a29d0ed"],"grants":[{"roleId":"01a11ab1-33d6-7cb4-ae96-b6001a29d0ed","companyId":"018dca08-f081-7b80-b653-75b19d86ebdb"}]},{"key":"identity.users.read","module":"identity","label":"View user
+$ CONTROL clerk PUT /users/{manager} isActive=false
+{"type":"urn:erp:problem:identity.userBeyondOwnCompanies","title":"This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.","status":403,"code":"identity.userBeyondOwnCompanies","traceId":"00-66bb8504cd3fb4d10775b530b9abb110-f58efeae438dd67e-00"} [403]
+$ CONTROL clerk POST /users/{manager}/sessions/revoke
+{"type":"urn:erp:problem:identity.userBeyondOwnCompanies","title":"This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.","status":403,"code":"identity.userBeyondOwnCompanies","traceId":"00-1c0b1a284c0de1af39c1143ef293f426-8de155571e5f7080-00"} [403]
+$ ATTACK clerk POST /users/matching/active {active:false, search: the manager's e-mail, expectedCount:1}
+{"matched":1,"changed":1,"unchanged":0,"refusedSelf":0,"refusedBeyondOwn":0} [200]
+$ admin reads the manager
+{"id":"01a11ab2-005c-7801-a48e-e427647b8026","email":"dubai.manager@alnoor.example","displayName":"Dubai Manager","language":"en","isActive":false,"roleIds":[],"lastSignInAt":"2026-10-08T08:48:03.110474+00:00","createdAt":"2026-10-08T08:47:15.752676+00:00","ve
+$ manager's live session
+{"type":"urn:erp:problem:auth.required","title":"Sign in to continue.","status":401,"code":"auth.required","traceId":"0HNP532K86VIC:00000001"} [401]
+$ manager signs in again
+{"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFailed","traceId":"00-a1a7947a97a87b7ec57e29f1c6e8c4

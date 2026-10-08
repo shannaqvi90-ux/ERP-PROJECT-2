@@ -1,0 +1,19 @@
+== viewer@alnoor.example: menu: Reports | Users | Roles | Company access | Companies | Branches | Workspace | My account
+users toolbar: Home | Settings | Users | Users | Every word must match | 100,011 users | View: Standard | Columns | Print or export | Name | ▾ | E-mail | ▾ | Language | ▾ | Status | ▾ | Last sign-in | ▾ | Roles | Sara Buyer2 | sara.buyer2@alnoor.example | Eng
+admin panel as viewer@alnoor.example : Mariam Al Mansoori | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 PM | Close | Read only This person holds permissions you do not hold, so only someone who holds all of them can change their account. | Details | What they can do |  | This person holds permissions you do not hold, so only someone who holds all of them can change their account. |  | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) | Roles | Enter ticks the first role shown. | Administrator | 25 permissions | Company mana
+enabled inputs in panel: 4  buttons: Close,Details,What they can do
+after Alt+N: Mariam Al Mansoori | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 P
+roles screen: Home | Settings | Roles | Roles | Every word must match | 8 roles | View: Standard | Columns | Print or export | Role | ▲2 | ▾ | Type | ▼1 | ▾ | Users | ▾ | Permissions | Administrator | System | 2 | 25
+non-GET requests: []
+== clerk@alnoor.example: menu: Users | My account
+users toolbar: Home | Settings | Users | Users | Every word must match | 100,011 users | View: Standard | Columns | Print or export | Name | ▾ | E-mail | ▾ | Language | ▾ | Status | ▾ | Last sign-in | ▾ | Roles | Sara Buyer2 | sara.buyer2@alnoor.example | Eng
+admin panel as clerk@alnoor.example : Mariam Al Mansoori | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 PM | Save | Close | Details | What they can do | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) |  | Roles can be given by someone who may view roles. |  | Starts work in | Their first company | They do not work in any of your companies yet. Give company access first. | Account | Sign out everywhere
+enabled inputs in panel: 6  buttons: Save,Close,Details,What they can do,Sign out everywhere
+after Alt+N: Mariam Al Mansoori | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 P
+roles screen: Home | Roles | No access |  | Your roles do not allow this screen. Ask an administrator if you need it.
+non-GET requests: []
+viewer enabled inputs: ["INPUT search Find a role ro=false","INPUT checkbox  ro=false","INPUT checkbox  ro=false","INPUT checkbox  ro=false"]
+clerk save on admin -> ["PUT /api/identity/users/01a11ab0-96aa-71d4-aee7-36b1274b8659 -> 403"]
+panel after: Mariam Al Mansoori ● | Unsaved changes | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 PM | Discard changes | Save | Close | This user has permissions you do not hold yourself, so you cannot change their account. | Details | What they can do | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) |  | Roles can be given by someone who may view roles. |  | Starts work in | Their first company | T
+after sign out everywhere -> ["PUT /api/identity/users/01a11ab0-96aa-71d4-aee7-36b1274b8659 -> 403","POST /api/identity/users/01a11ab0-96aa-71d4-aee7-36b1274b8659/sessions/revoke -> 403"]
+panel after: Mariam Al Mansoori ● | Unsaved changes | admin@alnoor.example | Active | Last sign-in: 8 Oct 2026, 12:55 PM | Discard changes | Save | Close | This user has permissions you do not hold yourself, so you cannot change their account. | Details | What they can do | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) |  | Roles can be given by someone who may view roles. |  | Starts work in | Their first company | T

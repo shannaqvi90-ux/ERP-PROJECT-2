@@ -1,0 +1,372 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.55]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.76]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_unique_index_across_tenants [101 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names [3 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user [10 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [71 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_says_when_it_stopped_at_its_object_budget [428 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant [26 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_judges_every_field_of_registration_objects [7 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions [16 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [327 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [52 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_a_company_table_without_the_company_scope [51 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [160 ms]
+[xUnit.net 00:02:26.72]     Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [FAIL]
+[xUnit.net 00:02:26.72]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:02:26.72]                    ↓ (pos 0)
+[xUnit.net 00:02:26.72]       Collection: ["POST /api/identity/roles [nameEn]: tenant A sendin"···, "POST /api/leaky/accounts [email]: tenant A sending"···, "POST /api/leaky/companies [code]: tenant A sending"···, "POST /api/leaky/registered-roles [nameEn]: tenant "···, "PUT /api/leaky/branch-names/{id:guid}: no POST /ap"···, ···]
+[xUnit.net 00:02:26.72]       Stack Trace:
+[xUnit.net 00:02:26.72]         /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs(693,0): at Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address()
+[xUnit.net 00:02:26.72]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [10 s]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["POST /api/identity/roles [nameEn]: tenant A sendin"···, "POST /api/leaky/accounts [email]: tenant A sending"···, "POST /api/leaky/companies [code]: tenant A sending"···, "POST /api/leaky/registered-roles [nameEn]: tenant "···, "PUT /api/leaky/branch-names/{id:guid}: no POST /ap"···, ···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address() in /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs:line 693
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 19 s]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Only_a_recent_instant_and_a_short_dated_text_are_scrubbed_as_the_print_stamp [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.A_compressed_pdf_and_a_zipped_workbook_are_read_for_their_text [25 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Right_to_left_runs_are_also_given_in_logical_order [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [21 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [521 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [22 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [34 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [36 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [755 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [7 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [14 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [12 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [21 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [392 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [5 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [2 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [3 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [12 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [23 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [14 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [6 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [1 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [9 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [100 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [176 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [12 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [10 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [116 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [6 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [1 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [7 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [23 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [12 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [51 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [1 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [9 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [2 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [23 ms]
+[xUnit.net 00:03:34.05]     Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [FAIL]
+[xUnit.net 00:03:34.05]       PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-9092b2d23b7f6952630d9e48c9731662-f53776aa0894cd44-00"}
+[xUnit.net 00:03:34.05]       PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-5f6b945994fd6cb4ecbd4489e6026b88-7abd8023d1581612-00"}
+[xUnit.net 00:03:34.05]       PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-ae5469726cdf4c5ed8296105d7161ddd-cab463cc176ee2ed-00"}
+[xUnit.net 00:03:34.05]       PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-1ad2b9b5a1f75c5cc5182da7d46137a3-aaa3b89c30d862fb-00"}
+[xUnit.net 00:03:34.05]       PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-60784ea2209b96e85a467c2faab7974e-dfd8d6101505b8d7-00"}
+[xUnit.net 00:03:34.05]       Stack Trace:
+[xUnit.net 00:03:34.05]         /work/tests/Erp.Gates.Tests/G2/G2AccountTakeoverTests.cs(197,0): at Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds()
+[xUnit.net 00:03:34.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:34.05]       Output:
+[xUnit.net 00:03:34.05]         6 endpoints acting on users, 20 single-field requests aimed at the Administrator, 198 requests aimed at users holding grants the caller lacks, 100 single-field requests aimed at them
+  Failed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [27 s]
+  Error Message:
+   PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-9092b2d23b7f6952630d9e48c9731662-f53776aa0894cd44-00"}
+PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-5f6b945994fd6cb4ecbd4489e6026b88-7abd8023d1581612-00"}
+PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-ae5469726cdf4c5ed8296105d7161ddd-cab463cc176ee2ed-00"}
+PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-1ad2b9b5a1f75c5cc5182da7d46137a3-aaa3b89c30d862fb-00"}
+PUT /api/identity/users/{id:guid}/default-company [companyId changed]: aimed at a user without roles answered 409, so the gate cannot tell the access check from a malformed request: {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,"code":"concurrency","traceId":"00-60784ea2209b96e85a467c2faab7974e-dfd8d6101505b8d7-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds() in /work/tests/Erp.Gates.Tests/G2/G2AccountTakeoverTests.cs:line 197
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 6 endpoints acting on users, 20 single-field requests aimed at the Administrator, 198 requests aimed at users holding grants the caller lacks, 100 single-field requests aimed at them
+
+
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [845 ms]
+[xUnit.net 00:03:36.62]     Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [FAIL]
+[xUnit.net 00:03:36.62]       POST /api/identity/roles [nameEn]: tenant A sending a value written by tenant B through this endpoint answered 409, a value that exists nowhere answered 201: the answer tells tenant A what tenant B holds ({"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-d497c9a01b676a0b1550691e19f23e15-4922dea2365… / {"id":"01a11ae4-de92-7f14-a1aa-32f0730f57d8","nameEn":"Name oracle1e5c66d3f51fx","nameAr":"G2 1e5c66d3f51ff0 2","permissions":[],"isSystem":false,"userCount":0,"version":8298})
+[xUnit.net 00:03:36.62]       Stack Trace:
+[xUnit.net 00:03:36.62]         /work/tests/Erp.Gates.Tests/G1/G1WriteOracle.cs(317,0): at Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere()
+[xUnit.net 00:03:36.62]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:36.62]       Output:
+[xUnit.net 00:03:36.62]         57 differential write checks on POST /api/identity/roles, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users, POST /api/lists/identity.roles/shared-views, POST /api/lists/identity.roles/views, POST /api/lists/identity.users/shared-views, POST /api/lists/identity.users/views, POST /api/lists/tenancy.access/shared-views, POST /api/lists/tenancy.access/views, POST /api/lists/tenancy.branches/shared-views, POST /api/lists/tenancy.branches/views, POST /api/lists/tenancy.companies/shared-views, POST /api/lists/tenancy.companies/views, POST /api/tenancy/branches, POST /api/tenancy/companies, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/lists/identity.roles/shared-views/{id:guid}, PUT /api/lists/identity.roles/views/{id:guid}, PUT /api/lists/identity.users/shared-views/{id:guid}, PUT /api/lists/identity.users/views/{id:guid}, PUT /api/lists/tenancy.access/shared-views/{id:guid}, PUT /api/lists/tenancy.access/views/{id:guid}, PUT /api/lists/tenancy.branches/shared-views/{id:guid}, PUT /api/lists/tenancy.branches/views/{id:guid}, PUT /api/lists/tenancy.companies/shared-views/{id:guid}, PUT /api/lists/tenancy.companies/views/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/tenant
+  Failed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [3 s]
+  Error Message:
+   POST /api/identity/roles [nameEn]: tenant A sending a value written by tenant B through this endpoint answered 409, a value that exists nowhere answered 201: the answer tells tenant A what tenant B holds ({"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-d497c9a01b676a0b1550691e19f23e15-4922dea2365… / {"id":"01a11ae4-de92-7f14-a1aa-32f0730f57d8","nameEn":"Name oracle1e5c66d3f51fx","nameAr":"G2 1e5c66d3f51ff0 2","permissions":[],"isSystem":false,"userCount":0,"version":8298})
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere() in /work/tests/Erp.Gates.Tests/G1/G1WriteOracle.cs:line 317
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 57 differential write checks on POST /api/identity/roles, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users, POST /api/lists/identity.roles/shared-views, POST /api/lists/identity.roles/views, POST /api/lists/identity.users/shared-views, POST /api/lists/identity.users/views, POST /api/lists/tenancy.access/shared-views, POST /api/lists/tenancy.access/views, POST /api/lists/tenancy.branches/shared-views, POST /api/lists/tenancy.branches/views, POST /api/lists/tenancy.companies/shared-views, POST /api/lists/tenancy.companies/views, POST /api/tenancy/branches, POST /api/tenancy/companies, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/lists/identity.roles/shared-views/{id:guid}, PUT /api/lists/identity.roles/views/{id:guid}, PUT /api/lists/identity.users/shared-views/{id:guid}, PUT /api/lists/identity.users/views/{id:guid}, PUT /api/lists/tenancy.access/shared-views/{id:guid}, PUT /api/lists/tenancy.access/views/{id:guid}, PUT /api/lists/tenancy.branches/shared-views/{id:guid}, PUT /api/lists/tenancy.branches/views/{id:guid}, PUT /api/lists/tenancy.companies/shared-views/{id:guid}, PUT /api/lists/tenancy.companies/views/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/tenant
+
+
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [2 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [11 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [11 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [14 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [453 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [131 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [19 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [175 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [17 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [8 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [5 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [20 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [11 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [11 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [902 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [961 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [159 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [295 ms]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [37 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [6 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [1 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [15 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [5 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [2 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [5 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [2 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [3 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [600 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [1 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [13 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [2 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [33 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [10 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [5 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [1 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [4 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [17 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [52 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [9 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [4 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [15 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [4 m 17 s]
+[xUnit.net 00:12:57.68]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:12:57.68]       3 isolation checks failed:
+[xUnit.net 00:12:57.68]       
+[xUnit.net 00:12:57.68]       48 leaks:
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+[xUnit.net 00:12:57.68]       
+[xUnit.net 00:12:57.68]       10 answers that tell tenant B's values apart from values that exist nowhere:
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (b9901682-8e4f-4e1f-90a4-6047057beead) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (e203d37b-0a0e-4916-a345-37a7fefe17ca) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (2fa329eb-dc62-4a05-b02d-94ffb5d8c23a) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (9a2d9f75-bde3-4bcc-837e-81e1bef113cb) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (0e7a61fd-5b8a-44b1-ad63-ee8f1c0f5fd1) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (0becfbb9-8458-4cff-8b0d-94199adf0fda) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (eab2aae6-1d67-4d2d-b1ce-d0fe4b041cfe) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (d9681d40-8da8-43ec-a4a3-33905920f031) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae2-c562-7dfe-b026-ea2200b4b533/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (532e55a7-8ed8-49a0-a323-f65152274abb) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       tenant A administrator (cookie) → GET /api/identity/users/01a11ae2-c62e-730a-a0f3-51d033cbfef4/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (e14149a1-fba7-4e8f-85ca-18d272e3345b) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+[xUnit.net 00:12:57.68]       
+[xUnit.net 00:12:57.68]       Tenant B's own writes must succeed so their handlers run to the end; these did not:
+[xUnit.net 00:12:57.68]       POST /api/identity/roles → 409 {"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-3a46ba08a04695956dd661faf81a1778-419f32b8c29
+[xUnit.net 00:12:57.68]       DELETE /api/identity/roles/{id:guid} → 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-40b1237aa56550a8202313ac9c8c356a-f6a62d999eb35d28-00"}
+[xUnit.net 00:12:57.68]       Stack Trace:
+[xUnit.net 00:12:57.68]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(148,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:12:57.68]         --- End of stack trace from previous location ---
+[xUnit.net 00:12:57.68]       Output:
+[xUnit.net 00:12:57.68]         routes, tenant headers and guessed queries: 181380 requests so far, 145.2 s
+[xUnit.net 00:12:57.68]         tenant switch inputs: 19 headers, 32 query names, 3 cookies, 34 body names: 192697 requests so far, 171.8 s
+[xUnit.net 00:12:57.68]         write after write: 104 pairs over 52 endpoints, 652 pairs with 209 documented values, 19534 tenant A requests: 192697 requests so far, 310.5 s
+[xUnit.net 00:12:57.68]         answer shapes: 10 endpoints, 448 shapes, 1421 tenant B and 848 tenant A requests: 193556 requests so far, 328.1 s
+[xUnit.net 00:12:57.68]         tenant B values in route and query parameters: 383636 requests so far, 484.1 s
+[xUnit.net 00:12:57.68]         registered lists through their query contract: 16517 attacks, 29793 requests: 413429 requests so far, 511.0 s
+[xUnit.net 00:12:57.68]         list answers judged against each tenant's own rows: 552 queries, 177 with different true answers, 8560 rows walked; process-wide state fingerprinted in 387415 lines from 81 roots: 413429 requests so far, 530.3 s
+[xUnit.net 00:12:57.68]         tenant B values in body fields: 444065 requests so far, 663.7 s
+[xUnit.net 00:12:57.68]         tenant B activity: 104880 requests (37542 concurrent with the attack), 1821 successful own writes, 104802 responses judged for tenant A markers: 444065 requests so far, 714.7 s
+[xUnit.net 00:12:57.68]         tenant B: 275 ids (62 sampled), 148 text values, 102 extra markers, 41 probe values
+[xUnit.net 00:12:57.68]         517911 tenant bindings and 1035460 setting statements judged among 4858215 statements; 517911 tenant values judged, 4580988 statements observed with their parameters; 11317 tenant switch inputs over 19 header names; 363094 responses judged on every header
+[xUnit.net 00:12:57.68]         10947 tenant B route values replayed, 9284 tenant B opens of the routes A was about to attack
+[xUnit.net 00:12:57.68]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:12:57.68]         112 endpoints, 463599 requests, 423 tenant B values, 136717 parameter attacks, 30636 body value attacks, 75167 differential checks (4955 values tenant A holds itself not compared), 519653 traced lookups
+[xUnit.net 00:12:57.86]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [12 m 41 s]
+  Error Message:
+   3 isolation checks failed:
+
+48 leaks:
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [Plain] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (bearer) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [TenantQuery] → 200: response contains tenant B marker 018cc39b-8b00-7afc-aa26-1b2e6f547e78
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [Plain] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [Plain] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (bearer) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3a8-5c40-7b14-be61-69913ef192ad
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [Plain] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (bearer) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3ae-c4e0-77c4-980c-888abf249923
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [Plain] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantHeaders] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (bearer) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [TenantQuery] → 200: response contains tenant B marker 018cc3b5-2d80-7683-accf-2f758506ec7b
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e0d2-7000-9fc0-317a94ddb7df
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e167-7350-8ae1-c407393114f7
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [Plain] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantHeaders] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+tenant A administrator (bearer) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [TenantQuery] → 200: response contains tenant B marker 01a11ae1-e223-7341-a32a-8d8f7b12187a
+
+10 answers that tell tenant B's values apart from values that exist nowhere:
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a1-f3a0-7a04-ac1b-e7e7842a3b7b/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (b9901682-8e4f-4e1f-90a4-6047057beead) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc39b-8b00-7afc-aa26-1b2e6f547e78/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (e203d37b-0a0e-4916-a345-37a7fefe17ca) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3a8-5c40-7b14-be61-69913ef192ad/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (2fa329eb-dc62-4a05-b02d-94ffb5d8c23a) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3ae-c4e0-77c4-980c-888abf249923/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (9a2d9f75-bde3-4bcc-837e-81e1bef113cb) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/018cc3b5-2d80-7683-accf-2f758506ec7b/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (0e7a61fd-5b8a-44b1-ad63-ee8f1c0f5fd1) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e0d2-7000-9fc0-317a94ddb7df/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (0becfbb9-8458-4cff-8b0d-94199adf0fda) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e167-7350-8ae1-c407393114f7/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (eab2aae6-1d67-4d2d-b1ce-d0fe4b041cfe) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae1-e223-7341-a32a-8d8f7b12187a/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (d9681d40-8da8-43ec-a4a3-33905920f031) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae2-c562-7dfe-b026-ea2200b4b533/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (532e55a7-8ed8-49a0-a323-f65152274abb) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+tenant A administrator (cookie) → GET /api/identity/users/01a11ae2-c62e-730a-a0f3-51d033cbfef4/default-company [path id]: 200 {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} but for a value that exists nowhere (e14149a1-fba7-4e8f-85ca-18d272e3345b) 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}; first difference: {"userId":"\u003Csent\u003E","companyId":null,"companies":[],"version":0} | {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound"}
+
+Tenant B's own writes must succeed so their handlers run to the end; these did not:
+POST /api/identity/roles → 409 {"type":"urn:erp:problem:identity.roleNameTaken","title":"A role with this name already exists.","status":409,"code":"identity.roleNameTaken","traceId":"00-3a46ba08a04695956dd661faf81a1778-419f32b8c29
+DELETE /api/identity/roles/{id:guid} → 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-40b1237aa56550a8202313ac9c8c356a-f6a62d999eb35d28-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 148
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 181380 requests so far, 145.2 s
+ tenant switch inputs: 19 headers, 32 query names, 3 cookies, 34 body names: 192697 requests so far, 171.8 s
+ write after write: 104 pairs over 52 endpoints, 652 pairs with 209 documented values, 19534 tenant A requests: 192697 requests so far, 310.5 s
+ answer shapes: 10 endpoints, 448 shapes, 1421 tenant B and 848 tenant A requests: 193556 requests so far, 328.1 s
+ tenant B values in route and query parameters: 383636 requests so far, 484.1 s
+ registered lists through their query contract: 16517 attacks, 29793 requests: 413429 requests so far, 511.0 s
+ list answers judged against each tenant's own rows: 552 queries, 177 with different true answers, 8560 rows walked; process-wide state fingerprinted in 387415 lines from 81 roots: 413429 requests so far, 530.3 s
+ tenant B values in body fields: 444065 requests so far, 663.7 s
+ tenant B activity: 104880 requests (37542 concurrent with the attack), 1821 successful own writes, 104802 responses judged for tenant A markers: 444065 requests so far, 714.7 s
+ tenant B: 275 ids (62 sampled), 148 text values, 102 extra markers, 41 probe values
+ 517911 tenant bindings and 1035460 setting statements judged among 4858215 statements; 517911 tenant values judged, 4580988 statements observed with their parameters; 11317 tenant switch inputs over 19 header names; 363094 responses judged on every header
+ 10947 tenant B route values replayed, 9284 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 112 endpoints, 463599 requests, 423 tenant B values, 136717 parameter attacks, 30636 body value attacks, 75167 differential checks (4955 values tenant A holds itself not compared), 519653 traced lookups
+
+
+
+Test Run Failed.
+Total tests: 130
+     Passed: 126
+     Failed: 4
+ Total time: 12.9826 Minutes
+gates rc=1
