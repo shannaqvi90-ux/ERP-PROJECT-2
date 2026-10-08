@@ -29,10 +29,26 @@ public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size)
 /// kerning), and line breaking at spaces within a width. A paragraph's direction is that of its
 /// first strong character (an English name stays left to right inside an Arabic document), else
 /// the document's.
+/// One shaper lays out one document (it is not shared between requests or threads): a line it
+/// has shaped once is kept for the rest of that document, since line breaking asks for the same
+/// text many times (decision p03-identity-gate-processor-time).
 /// </summary>
 public sealed class TextShaper(PdfFonts fonts)
 {
+    private readonly Dictionary<(string Text, decimal Size, int Scale, bool Bold, bool Rtl), ShapedLine> _shaped = new();
+
     public ShapedLine Shape(string text, decimal size, bool bold, bool documentRightToLeft)
+    {
+        var key = (text, size, size.Scale, bold, documentRightToLeft);
+        if (!_shaped.TryGetValue(key, out var line))
+        {
+            line = ShapeUncached(text, size, bold, documentRightToLeft);
+            _shaped[key] = line;
+        }
+        return line;
+    }
+
+    private ShapedLine ShapeUncached(string text, decimal size, bool bold, bool documentRightToLeft)
     {
         text = Clean(text);
         var rtl = Bidi.FirstStrongIsRightToLeft(text) ?? documentRightToLeft;
@@ -146,7 +162,7 @@ public sealed class TextShaper(PdfFonts fonts)
         using var buffer = new Buffer();
         buffer.AddUtf16(slice);
         buffer.Direction = rtl ? Direction.RightToLeft : Direction.LeftToRight;
-        buffer.Script = Bidi.IsArabicScript(slice.FirstOrDefault(c => Bidi.IsArabicScript(c))) ? Script.Arabic : Script.Latin;
+        buffer.Script = HasArabicScript(slice) ? Script.Arabic : Script.Latin;
         buffer.Language = new Language(rtl ? "ar" : "en");
         buffer.ClusterLevel = ClusterLevel.MonotoneCharacters;
         face.Font.Shape(buffer);
@@ -154,8 +170,22 @@ public sealed class TextShaper(PdfFonts fonts)
         var positions = buffer.GlyphPositions;
         var glyphs = new List<ShapedGlyph>(infos.Length);
         var glyphText = new List<string>(infos.Length);
-        // Clusters in glyph (visual) order; each cluster's characters span to the next cluster start.
-        var clusterStarts = infos.Select(i => (int)i.Cluster).Distinct().Order().ToList();
+        // Cluster starts in character order; each cluster's characters span to the next cluster
+        // start, found by binary search (a scan per glyph made long runs quadratic).
+        var clusterStarts = new int[infos.Length];
+        for (var g = 0; g < infos.Length; g++)
+        {
+            clusterStarts[g] = (int)infos[g].Cluster;
+        }
+        Array.Sort(clusterStarts);
+        var distinct = 0;
+        for (var g = 0; g < clusterStarts.Length; g++)
+        {
+            if (distinct == 0 || clusterStarts[g] != clusterStarts[distinct - 1])
+            {
+                clusterStarts[distinct++] = clusterStarts[g];
+            }
+        }
         // The characters of a cluster belong to its widest glyph (the letter); the other glyphs of
         // the cluster are marks and dots drawn on it (Noto Sans Arabic draws dots as separate glyphs).
         var owner = new Dictionary<int, int>();
@@ -170,12 +200,25 @@ public sealed class TextShaper(PdfFonts fonts)
         for (var g = 0; g < infos.Length; g++)
         {
             var cluster = (int)infos[g].Cluster;
-            var next = clusterStarts.FirstOrDefault(c => c > cluster, slice.Length);
+            var at = Array.BinarySearch(clusterStarts, 0, distinct, cluster);
+            var next = at + 1 < distinct ? clusterStarts[at + 1] : slice.Length;
             var chars = slice[cluster..next];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
             glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
         }
         return new GlyphRun(face, glyphs, StripControls(slice), rtl, glyphText);
+    }
+
+    private static bool HasArabicScript(string text)
+    {
+        foreach (var c in text)
+        {
+            if (Bidi.IsArabicScript(c))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static string StripControls(string text)
@@ -198,7 +241,14 @@ public sealed class TextShaper(PdfFonts fonts)
         var builder = new StringBuilder(text.Length);
         foreach (var c in text)
         {
-            builder.Append(c == '\t' ? ' ' : char.IsControl(c) ? "" : c.ToString());
+            if (c == '\t')
+            {
+                builder.Append(' ');
+            }
+            else if (!char.IsControl(c))
+            {
+                builder.Append(c);
+            }
         }
         return builder.ToString();
     }
