@@ -430,6 +430,25 @@ describe("screens hide exactly what a missing permission refuses", () => {
     expect(buttons).not.toContain("Delete user");
     expect(buttons).toContain("Reset password…");
   });
+  // Critic p03 round 5: a clerk who may not read roles opened the Administrator and was offered
+  // editable fields, Save and "Sign out everywhere"; the server refused both. Roles the screen
+  // cannot read count as beyond the user.
+  it("users: a user who may not read roles gets someone holding roles read-only, and someone holding none editable", async () => {
+    const clerkOnly = ["identity.users.read", "identity.users.update"];
+    const administrator = { ...invited, id: "u-admin", displayName: "Mariam", roleIds: ["r-admin"], pendingSetup: false };
+    const manager = { ...invited, id: "u-mgr", displayName: "Dubai Manager", roleIds: [], companyRoles: [{ roleId: "r-admin", companyId: "c-dxb" }], pendingSetup: false };
+    for (const target of [administrator, manager]) {
+      const buttons = await openUser(clerkOnly, target, []);
+      for (const hidden of ["Save", "Sign out everywhere"]) expect(buttons).not.toContain(hidden);
+      expect([...view!.container.querySelectorAll("aside input:not([type=checkbox]):not([disabled]):not([readonly])")].length).toBe(0);
+      view?.unmount();
+      view = undefined;
+    }
+    // Control: someone holding no role is the clerk's to change.
+    const buttons = await openUser(clerkOnly, { ...invited, id: "u-plain", roleIds: [], pendingSetup: false }, []);
+    for (const shown of ["Save", "Sign out everywhere"]) expect(buttons).toContain(shown);
+  });
+
   // Critic p03 round 3, plant U2: the screens compared only identity permissions, so someone
   // holding every identity permission was offered Save, Reset password and Delete on a workspace
   // manager whose role grants only tenancy permissions. Every permission of another module (and

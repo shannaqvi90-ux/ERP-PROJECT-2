@@ -237,8 +237,10 @@ export const userName = (user: { displayName: string; displayNameAr?: string | n
  * action needs its own permission, none acts on oneself here, and none acts on someone whose roles
  * (in every company or in one) grant a permission the signed-in user lacks, or who holds roles in
  * companies the signed-in user does not work in (either would be a way to take the account over).
- * Deleting is only for someone who has never signed in. Roles that are not loaded (the user may
- * not read roles) cannot be judged, and the server still decides.
+ * Deleting is only for someone who has never signed in. A role that is not loaded (the user may
+ * not read roles) cannot be judged from here, so it counts as beyond too (critic p03 round 5: a
+ * clerk who may not read roles was offered Save and "Sign out everywhere" on the Administrator,
+ * and the server refused both).
  */
 export function userActions(
   user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere">,
@@ -247,9 +249,9 @@ export function userActions(
   selfId: string | null,
 ) {
   const self = user.id === selfId;
-  // Roles in every company and roles in one company alike; roles in companies the signed-in user
-  // does not work in cannot be judged from here, so they count as beyond.
-  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? false;
+  // Roles in every company and roles in one company alike; roles that are not loaded and roles in
+  // companies the signed-in user does not work in cannot be judged from here, so they count as beyond.
+  const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;
   const beyondOwn = user.roleIds.some(grantsBeyond) || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) || user.rolesElsewhere === true;
   const others = !self && !beyondOwn;
   return {

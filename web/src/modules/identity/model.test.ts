@@ -132,6 +132,16 @@ describe("what the screens offer for another user", () => {
     expect(userActions({ ...clerk, lastSignInAt: "2026-10-01T08:00:00Z" }, [clerkRole], new Set(identity), "me").delete).toBe(false);
   });
 
+  it("treats roles it cannot read as beyond the signed-in user (a clerk who may not read roles opens the Administrator)", () => {
+    const admin = { id: "u-admin", roleIds: ["r-admin"], lastSignInAt: null };
+    const clerkOnly = new Set(["identity.users.read", "identity.users.update"]);
+    expect(userActions(admin, [], clerkOnly, "me")).toMatchObject({ beyondOwn: true, edit: false, signOutEverywhere: false, unblock: false });
+    const inOneCompany = { id: "u-mgr", roleIds: [], companyRoles: [{ roleId: "r-manager", companyId: "c-x" }], lastSignInAt: null };
+    expect(userActions(inOneCompany, [], clerkOnly, "me")).toMatchObject({ beyondOwn: true, edit: false, signOutEverywhere: false });
+    const noRoles = { id: "u-plain", roleIds: [], lastSignInAt: null };
+    expect(userActions(noRoles, [], clerkOnly, "me")).toMatchObject({ beyondOwn: false, edit: true, signOutEverywhere: true });
+  });
+
   it("names a user in the screen's language", () => {
     expect(userName({ displayName: "Majid Anil Pillai", displayNameAr: "ماجد أنيل بيلاي" }, "ar")).toBe("ماجد أنيل بيلاي");
     expect(userName({ displayName: "Majid Anil Pillai", displayNameAr: "ماجد أنيل بيلاي" }, "en")).toBe("Majid Anil Pillai");
