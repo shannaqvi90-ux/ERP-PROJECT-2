@@ -311,6 +311,41 @@ describe("roles screen", () => {
     expect(put.body).toEqual({ nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.roles.read", "identity.users.read"], version: 1 });
   });
 
+  it("ticks only the permissions a search matches: 'view' then Select all shown gives a view-only role", async () => {
+    // Critic p03 round 5: the search kept whole rows, so "view" then "Select all shown" built a
+    // near-administrator (deleting users, resetting passwords, changing the workspace).
+    window.history.replaceState(null, "", "/identity/roles");
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session([...all, "tenancy.tenant.read"]) };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
+      if (method === "PUT") return { status: 200, body: { ...clerk, ...(body as object) } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const row = [...view.container.querySelectorAll("tbody tr")].find((r) => r.textContent?.includes("Contacts clerk")) as HTMLElement;
+    await act(async () => row.click());
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[aria-label="Search permissions"]')!, "view");
+    await settle();
+    expect(view.container.querySelector('input[aria-label="Reset passwords"]')).toBeNull();
+    expect(view.container.querySelector('input[aria-label="Create users"]')).toBeNull();
+    const selectShown = [...view.container.querySelectorAll("button")].find((b) => b.textContent === "Select all shown")!;
+    await act(async () => selectShown.click());
+    setInput(view.container.querySelector<HTMLInputElement>('input[aria-label="Search permissions"]')!, "");
+    await settle();
+    for (const ticked of ["View users", "View roles", "View the workspace"]) expect(view.container.querySelector<HTMLInputElement>(`input[aria-label="${ticked}"]`)!.checked).toBe(true);
+    for (const clear of ["Create users", "Reset passwords"]) expect(view.container.querySelector<HTMLInputElement>(`input[aria-label="${clear}"]`)!.checked).toBe(false);
+    await submit(view.container.querySelector("aside")!);
+    await settle();
+    const put = calls.find((c) => c.method === "PUT")!;
+    expect((put.body as { permissions: string[] }).permissions).toEqual(["identity.roles.read", "identity.users.read", "tenancy.tenant.read"]);
+  });
+
   it("shows the Administrator system role read-only, with copy offered", async () => {
     window.history.replaceState(null, "", "/identity/roles");
     mockFetch((_m, url) => {

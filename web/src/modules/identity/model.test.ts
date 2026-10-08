@@ -47,6 +47,19 @@ describe("permission matrix", () => {
     expect(buildMatrix(catalogue, "nothing-like-this")).toEqual([]);
   });
 
+  it("matches each permission on its own, so a search for one action leaves the other actions of a row out of bulk toggles", () => {
+    // Critic p03 round 5: "view" kept the whole users row, and "Select all shown" ticked resetting passwords too.
+    const view = buildMatrix(catalogue, "view");
+    expect(view.flatMap((m) => m.matching.map((x) => x.key))).toEqual(["identity.users.read", "identity.roles.read", "tenancy.tenant.read"]);
+    expect(view[0]!.rows.find((r) => r.resource === "users")!.matching.map((x) => x.key)).toEqual(["identity.users.read"]);
+    expect(buildMatrix(catalogue, "reset")[0]!.matching.map((x) => x.key)).toEqual(["identity.users.resetPassword"]);
+    // A resource's name matches every permission of it.
+    expect(buildMatrix(catalogue, "users")[0]!.matching.map((x) => x.key)).toEqual(["identity.users.read", "identity.users.create", "identity.users.resetPassword"]);
+    // Words spread over two permissions of a row match neither.
+    expect(buildMatrix(catalogue, "create reset")).toEqual([]);
+    expect(buildMatrix(catalogue).flatMap((m) => m.matching)).toHaveLength(catalogue.length);
+  });
+
   it("bulk toggles add or remove exactly the given keys", () => {
     const start = new Set(["identity.users.read", "tenancy.tenant.read"]);
     const on = toggleAll(start, ["identity.roles.read", "identity.roles.delete"], true);

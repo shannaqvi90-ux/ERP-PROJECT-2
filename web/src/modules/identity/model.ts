@@ -108,14 +108,21 @@ export type MatrixRow = {
   label: string;
   cells: Partial<Record<(typeof matrixActions)[number], Permission>>;
   other: Permission[];
+  /** The row's permissions the filter matches (every one without a filter): the ones shown, and
+   * the only ones a bulk toggle changes. */
+  matching: Permission[];
 };
 
-export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; permissions: Permission[] };
+/** A module's block: its rows, every permission of those rows, and the ones the filter matches. */
+export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; permissions: Permission[]; matching: Permission[] };
 
 /**
  * The permission matrix: one block per module, one row per resource, a column per common action
- * and an "other" cell for the rest. With a filter, only rows whose resource name, permission labels
- * or keys contain every word of it are kept (case-insensitive, any script).
+ * and an "other" cell for the rest. With a filter, a permission matches when its label, key or its
+ * resource's name contain every word of the filter (case-insensitive, any script), and only rows
+ * with a matching permission are kept. Only matching permissions are shown and toggled in bulk
+ * (critic p03 round 5: searching "view" kept whole rows, so "Select all shown" also ticked
+ * deleting users, resetting passwords and changing the workspace).
  */
 export function buildMatrix(permissions: Permission[], filter = ""): MatrixModule[] {
   const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
@@ -123,12 +130,12 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
   for (const p of permissions) {
     let block = modules.get(p.module);
     if (!block) {
-      block = { module: p.module, label: p.moduleLabel, rows: [], permissions: [] };
+      block = { module: p.module, label: p.moduleLabel, rows: [], permissions: [], matching: [] };
       modules.set(p.module, block);
     }
     let row = block.rows.find((r) => r.resource === p.resource);
     if (!row) {
-      row = { resource: p.resource, label: p.resourceLabel, cells: {}, other: [] };
+      row = { resource: p.resource, label: p.resourceLabel, cells: {}, other: [], matching: [] };
       block.rows.push(row);
     }
     if ((matrixActions as readonly string[]).includes(p.action)) row.cells[p.action as (typeof matrixActions)[number]] = p;
@@ -136,15 +143,17 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
   }
   const result: MatrixModule[] = [];
   for (const block of modules.values()) {
-    const rows = block.rows.filter((row) => {
-      if (words.length === 0) return true;
-      const text = [row.label, row.resource, ...rowPermissions(row).flatMap((p) => [p.label, p.key])]
-        .join(" ")
-        .toLocaleLowerCase();
-      return words.every((w) => text.includes(w));
-    });
+    const rows = block.rows
+      .map((row) => ({
+        ...row,
+        matching: rowPermissions(row).filter((p) => {
+          const text = [row.label, row.resource, p.label, p.key].join(" ").toLocaleLowerCase();
+          return words.every((w) => text.includes(w));
+        }),
+      }))
+      .filter((row) => row.matching.length > 0);
     if (rows.length === 0) continue;
-    result.push({ ...block, rows, permissions: rows.flatMap(rowPermissions) });
+    result.push({ ...block, rows, permissions: rows.flatMap(rowPermissions), matching: rows.flatMap((row) => row.matching) });
   }
   return result;
 }
