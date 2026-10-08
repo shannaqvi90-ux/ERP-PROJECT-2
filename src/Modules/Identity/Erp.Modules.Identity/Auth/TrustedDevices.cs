@@ -87,6 +87,10 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
 
     private string Sign(string payload) => Base64Url(HMACSHA256.HashData(Key, Encoding.ASCII.GetBytes(payload)));
 
+    /// <summary>A key of the deployment's own for another purpose (the passkey challenges), derived
+    /// from the same configured key (or this process's random one), never the cookie key itself.</summary>
+    public byte[] DeriveKey(string purpose) => HMACSHA256.HashData(Key, Encoding.UTF8.GetBytes("erp:" + purpose));
+
     private static string AccountOf(string email) =>
         Base64Url(SHA256.HashData(Encoding.UTF8.GetBytes(email.Trim().ToLowerInvariant()))[..12]);
 

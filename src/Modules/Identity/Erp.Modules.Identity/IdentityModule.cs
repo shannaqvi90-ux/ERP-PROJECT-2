@@ -31,6 +31,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<ISessionPermissionScope>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
         module.Services.AddSingleton<TrustedDevices>();
+        module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();
         module.Services.AddScoped<SessionPayload>();
         module.Services.AddScoped<IUserDirectory, UserDirectory>();
         module.Endpoints("auth", AuthEndpoints.Map);
@@ -40,6 +41,7 @@ public sealed class IdentityModule : ErpModule
             UserBulkEndpoints.Map(group);
             RoleEndpoints.Map(group);
             ProfileEndpoints.Map(group);
+            Auth.Passkeys.PasskeyEndpoints.Map(group);
         });
         module.Menu(new MenuEntry("identity.users", "identity.menu.users", "/identity/users", IdentityPermissions.UsersRead, Order: 800, Group: "settings"));
         module.Menu(new MenuEntry("identity.roles", "identity.menu.roles", "/identity/roles", IdentityPermissions.RolesRead, Order: 810, Group: "settings"));
@@ -189,6 +191,45 @@ public sealed class Session : TenantEntity
     public string? UserAgent { get; set; }
 }
 
+/// <summary>
+/// A passkey (a WebAuthn public-key credential) a user registered to sign in without a password.
+/// The private key never leaves the person's device or password manager; the server keeps only
+/// the public key and checks the device's signature over a fresh challenge. Not secret, but the
+/// usage columns change at every sign-in and stay out of the audit trail (the sign-in itself is
+/// recorded with its session).
+/// </summary>
+public sealed class Passkey : TenantEntity
+{
+    public Guid UserId { get; set; }
+
+    /// <summary>The credential id the authenticator chose (16 to 1023 bytes).</summary>
+    public byte[] CredentialId { get; set; } = [];
+
+    /// <summary>The public key, as a DER SubjectPublicKeyInfo.</summary>
+    public byte[] PublicKey { get; set; } = [];
+
+    /// <summary>COSE algorithm: -7 (ES256) or -257 (RS256).</summary>
+    public int Algorithm { get; set; }
+
+    /// <summary>The person's own label ("Work laptop").</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>The authenticator's signature counter (0 for passkeys synced by a password manager).</summary>
+    public long SignCount { get; set; }
+
+    /// <summary>The credential can be backed up (a synced passkey) and, last seen, is.</summary>
+    public bool BackupEligible { get; set; }
+    public bool BackedUp { get; set; }
+
+    /// <summary>How the browser said it can reach the authenticator (internal, hybrid, usb, nfc, ble).</summary>
+    public List<string> Transports { get; set; } = [];
+    public DateTimeOffset? LastUsedAt { get; set; }
+
+    /// <summary>When the challenge of the last accepted sign-in was issued: a signed answer to an
+    /// older or the same challenge is a replay and is refused.</summary>
+    public DateTimeOffset? LastChallengeAt { get; set; }
+}
+
 public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> options, ITenantContext? tenant = null)
     : ModuleDbContext(options, tenant)
 {
@@ -203,6 +244,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<UserCredential> Credentials => Set<UserCredential>();
     public DbSet<SignInAttempt> SignInAttempts => Set<SignInAttempt>();
+    public DbSet<Passkey> Passkeys => Set<Passkey>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
@@ -292,6 +334,26 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.HasIndex(x => new { x.TenantId, x.UserId, x.OccurredAt });
             // The sign-in function counts a client's recent failures on one account.
             e.HasIndex(x => new { x.UserId, x.Source, x.OccurredAt });
+            e.HasOne<User>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId })
+                .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Passkey>(e =>
+        {
+            e.ToTable("passkeys", t =>
+            {
+                t.HasCheckConstraint("ck_passkeys_algorithm", "algorithm IN (-7, -257)");
+                t.HasCheckConstraint("ck_passkeys_credential_id", "octet_length(credential_id) BETWEEN 16 AND 1023");
+                t.HasCheckConstraint("ck_passkeys_sign_count", "sign_count >= 0");
+            });
+            e.Property(x => x.CredentialId).HasColumnType("bytea");
+            e.Property(x => x.PublicKey).HasColumnType("bytea");
+            e.Property(x => x.Name).HasMaxLength(100);
+            e.Property(x => x.Transports).HasColumnType("text[]");
+            // A credential id is unique within the workspace (never across workspaces: a
+            // platform-wide unique index would tell one workspace what another holds).
+            e.HasIndex(x => new { x.TenantId, x.CredentialId }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.UserId, x.CreatedAt });
             e.HasOne<User>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId })
                 .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
         });
@@ -402,4 +464,23 @@ public sealed class AuthOptions
 
     /// <summary>How long a browser stays a trusted device of an account after signing in to it.</summary>
     public int DeviceDays { get; set; } = 180;
+
+    /// <summary>The WebAuthn relying party id passkeys are made for: the site's host name (or a
+    /// parent domain of it). Unset: the host name each request arrives at. Set it when the app is
+    /// served under more than one host name, so a passkey made on one works on the others.</summary>
+    public string? PasskeyRpId { get; set; }
+
+    /// <summary>The page origins (scheme, host and port) passkey answers may come from. Unset: the
+    /// origin of the request itself.</summary>
+    public List<string> PasskeyOrigins { get; set; } = [];
+
+    /// <summary>How long a passkey challenge stays valid, in seconds.</summary>
+    public int PasskeyChallengeSeconds { get; set; } = 300;
+
+    /// <summary>Adding a passkey needs a session signed in within this many minutes: someone who
+    /// finds a browser left signed in cannot add a way back into the account without the password.</summary>
+    public int PasskeyRecentSignInMinutes { get; set; } = 10;
+
+    /// <summary>Passkeys one user may hold.</summary>
+    public int PasskeysPerUser { get; set; } = 20;
 }

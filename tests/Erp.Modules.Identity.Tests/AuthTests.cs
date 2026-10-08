@@ -28,7 +28,7 @@ public sealed class IdentityFixture : IAsyncLifetime
 }
 
 /// <summary>Sign-in, sessions, sign-out, lockout, CSRF defence and workspace choice.</summary>
-public sealed class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityFixture>
+public sealed partial class AuthTests(IdentityFixture fixture) : IClassFixture<IdentityFixture>
 {
     private ErpTestEnvironment Env => fixture.Env;
     private string AdminA => Env.Email(Env.TenantA, "admin");

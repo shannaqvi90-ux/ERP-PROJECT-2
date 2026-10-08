@@ -628,7 +628,7 @@ internal static class UserEndpoints
 
     /// <summary>The problem for acting on <paramref name="id"/>: it does not exist, it is the
     /// caller (administration endpoints act on others), or its access exceeds the caller's.</summary>
-    private static async Task<ProblemHttpResult?> TargetProblemAsync(IdentityDbContext db, ModuleCatalog catalog, Guid id, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+    internal static async Task<ProblemHttpResult?> TargetProblemAsync(IdentityDbContext db, ModuleCatalog catalog, Guid id, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
         if (!await db.Users.AnyAsync(u => u.Id == id, cancellationToken))
         {
