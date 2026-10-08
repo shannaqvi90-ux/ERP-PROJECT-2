@@ -48,10 +48,19 @@ public static partial class SharedCompanyRecords
         public bool ChangesShared { get; init; }
 
         public string Source => $"{Endpoint} [{Field}]";
+
+        /// <summary>A write to the workspace's own record (no company id in its route).</summary>
+        public bool Workspace { get; init; }
     }
 
+    /// <param name="Tables">Company X's shared tables (<see cref="ICompanyWide"/>), empty when only the
+    /// workspace's records are attacked. <see cref="WorkspaceTables"/>: the tables every company
+    /// shares (<see cref="IWorkspaceWide"/>).</param>
     public sealed record Prepared(Guid Tenant, Guid Company, IReadOnlyList<TableRef> Tables, IReadOnlyList<Variant> Variants,
-        IReadOnlyDictionary<string, string> Before, IReadOnlyList<string> Problems);
+        IReadOnlyDictionary<string, string> Before, IReadOnlyList<string> Problems)
+    {
+        public IReadOnlyList<TableRef> WorkspaceTables { get; init; } = [];
+    }
 
     /// <summary>The tables of every <see cref="ICompanyWide"/> entity of every module.</summary>
     public static async Task<IReadOnlyList<TableRef>> TablesAsync(IServiceProvider services)
@@ -67,8 +76,26 @@ public static partial class SharedCompanyRecords
             .ToList();
     }
 
-    /// <summary>A fingerprint of company X's rows in every shared table (superuser read).</summary>
-    public static async Task<Dictionary<string, string>> SnapshotAsync(ErpTestEnvironment env, Guid tenant, Guid company, IReadOnlyList<TableRef> tables)
+    /// <summary>The tables of every <see cref="IWorkspaceWide"/> entity of every module: the records
+    /// every company of the workspace shares (critic p02 round 6: an administrator limited to one
+    /// company, or one branch, renamed the workspace for every company and no gate looked).</summary>
+    public static async Task<IReadOnlyList<TableRef>> WorkspaceTablesAsync(IServiceProvider services)
+    {
+        var catalog = services.GetRequiredService<ModuleCatalog>();
+        await using var scope = services.CreateAsyncScope();
+        return catalog.DbContexts
+            .SelectMany(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model.GetEntityTypes())
+            .Where(e => typeof(IWorkspaceWide).IsAssignableFrom(e.ClrType) && e.GetTableName() is not null)
+            .Select(e => new TableRef(e.GetSchema() ?? "public", e.GetTableName()!))
+            .Distinct()
+            .OrderBy(t => t.Qualified, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>A fingerprint of company X's rows in every shared table and of the tenant's rows in
+    /// every workspace-wide table (superuser read).</summary>
+    public static async Task<Dictionary<string, string>> SnapshotAsync(ErpTestEnvironment env, Guid tenant, Guid company, IReadOnlyList<TableRef> tables,
+        IReadOnlyList<TableRef>? workspaceTables = null)
     {
         await using var admin = await env.OpenAdminAsync();
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -77,6 +104,12 @@ public static partial class SharedCompanyRecords
             result[table.Qualified] = await DbCatalog.ScalarAsync<string>(admin,
                 $"SELECT count(*)::text || ':' || coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '') FROM {table.Qualified} t WHERE tenant_id = @t AND company_id = @c",
                 ("t", tenant), ("c", company));
+        }
+        foreach (var table in workspaceTables ?? [])
+        {
+            result[table.Qualified] = await DbCatalog.ScalarAsync<string>(admin,
+                $"SELECT count(*)::text || ':' || coalesce(md5(string_agg(t::text, '|' ORDER BY t::text)), '') FROM {table.Qualified} t WHERE tenant_id = @t",
+                ("t", tenant));
         }
         return result;
     }
@@ -87,16 +120,43 @@ public static partial class SharedCompanyRecords
     /// <summary>Builds every write to company X and proves each with <paramref name="control"/> (an
     /// administrator who works in every branch of X), undoing what it changed; then fingerprints
     /// X's shared rows.</summary>
+    /// <param name="companyRecords">False in the company attack: its attacker works in every branch
+    /// of company X, so only the records every company shares are attacked.</param>
     public static async Task<Prepared> PrepareAsync(ErpTestEnvironment env, OpenApiDocument openApi, IReadOnlyList<ApiEndpoint> endpoints,
-        HttpClient control, Guid tenant, Guid company)
+        HttpClient control, Guid tenant, Guid company, bool companyRecords = true)
     {
-        var tables = await TablesAsync(env.Factory.Services);
+        var tables = companyRecords ? await TablesAsync(env.Factory.Services) : [];
+        var workspaceTables = await WorkspaceTablesAsync(env.Factory.Services);
         var problems = new List<string>();
         var variants = new List<Variant>();
         var reads = endpoints.Where(e => e.Method == "GET").Select(e => e.Pattern).ToHashSet(StringComparer.Ordinal);
         var id = company.ToString();
         var n = 0;
-        foreach (var endpoint in endpoints.Where(e => e.Method is "POST" or "PUT" or "PATCH" or "DELETE" && !e.IsAnonymous && e.RouteParameters.Count > 0)
+        // The workspace's own record: every write without route parameters that has a read at the
+        // same address (a single record, such as the workspace and its settings), its body built from
+        // that read with one field changed at a time. Proven when the tenant's administrator's write
+        // changes a workspace-wide table (a user's own workplace or preferences change none).
+        foreach (var endpoint in endpoints.Where(e => e.Method is "PUT" or "PATCH" && !e.IsAnonymous && e.RouteParameters.Count == 0 && reads.Contains(e.Pattern))
+                     .OrderBy(e => e.Key, StringComparer.Ordinal))
+        {
+            if (openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema ||
+                !openApi.Resolve(schema).TryGetProperty("properties", out var properties) ||
+                await ReadJsonAsync(control, endpoint.Pattern) is not { } read)
+            {
+                continue;
+            }
+            var template = Template(openApi, schema, read, env, $"sw{n++}", id);
+            foreach (var field in properties.EnumerateObject())
+            {
+                if (field.Name == "version" || Change(openApi, field.Value, template[field.Name]) is null)
+                {
+                    continue;
+                }
+                variants.Add(await ProveAsync(env, control, tenant, company, tables, workspaceTables,
+                    new Variant(endpoint, endpoint.Pattern, field.Name, true, template, false) { Workspace = true }, problems));
+            }
+        }
+        foreach (var endpoint in endpoints.Where(e => companyRecords && e.Method is "POST" or "PUT" or "PATCH" or "DELETE" && !e.IsAnonymous && e.RouteParameters.Count > 0)
                      .Where(e => GuidParameter().Matches(e.Pattern).Count == e.RouteParameters.Count)
                      .OrderBy(e => e.Method == "DELETE" ? 1 : 0).ThenBy(e => e.Key, StringComparer.Ordinal))
         {
@@ -117,7 +177,7 @@ public static partial class SharedCompanyRecords
             if (read is null || properties.ValueKind != JsonValueKind.Object)
             {
                 var body = G1WriteOracle.Valid(openApi, schema.Value, env, $"sh{n++}", id);
-                variants.Add(await ProveAsync(env, control, tenant, company, tables, new Variant(endpoint, path, "-", false, body, false), problems));
+                variants.Add(await ProveAsync(env, control, tenant, company, tables, workspaceTables, new Variant(endpoint, path, "-", false, body, false), problems));
                 continue;
             }
             var template = Template(openApi, schema.Value, read, env, $"sh{n++}", id);
@@ -127,25 +187,25 @@ public static partial class SharedCompanyRecords
                 {
                     continue;
                 }
-                variants.Add(await ProveAsync(env, control, tenant, company, tables, new Variant(endpoint, path, field.Name, true, template, false), problems));
+                variants.Add(await ProveAsync(env, control, tenant, company, tables, workspaceTables, new Variant(endpoint, path, field.Name, true, template, false), problems));
             }
         }
-        var before = await SnapshotAsync(env, tenant, company, tables);
-        return new Prepared(tenant, company, tables, variants, before, problems);
+        var before = await SnapshotAsync(env, tenant, company, tables, workspaceTables);
+        return new Prepared(tenant, company, tables, variants, before, problems) { WorkspaceTables = workspaceTables };
     }
 
     /// <summary>The control sends the write: proven when it succeeds and changes X's shared rows;
     /// a write built from the read is then undone with the values first read.</summary>
     private static async Task<Variant> ProveAsync(ErpTestEnvironment env, HttpClient control, Guid tenant, Guid company, IReadOnlyList<TableRef> tables,
-        Variant variant, List<string> problems)
+        IReadOnlyList<TableRef> workspaceTables, Variant variant, List<string> problems)
     {
-        var before = await SnapshotAsync(env, tenant, company, tables);
+        var before = await SnapshotAsync(env, tenant, company, tables, workspaceTables);
         var (status, _) = await SendAsync(control, variant, change: true);
         if (status is < 200 or >= 300)
         {
             return variant;
         }
-        var changed = Changed(before, await SnapshotAsync(env, tenant, company, tables)).Count > 0;
+        var changed = Changed(before, await SnapshotAsync(env, tenant, company, tables, workspaceTables)).Count > 0;
         if (variant.FromRead)
         {
             var (undo, undoText) = await SendAsync(control, variant, change: false);
@@ -167,9 +227,17 @@ public static partial class SharedCompanyRecords
         {
             var (status, text) = await SendAsync(attacker, variant, change: true);
             writes++;
-            if (variant.ChangesShared && status is >= 200 and < 300)
+            if (variant.ChangesShared && variant.Workspace && status is >= 200 and < 300)
+            {
+                failures.Add($"{label} → {variant.Source} on the workspace every company shares, while it works in only some of its companies or branches: answered {status}, expected a refusal");
+            }
+            else if (variant.ChangesShared && status is >= 200 and < 300)
             {
                 failures.Add($"{label} → {variant.Source} on company X, which it works in only one branch of: answered {status}, expected a refusal");
+            }
+            else if (variant.ChangesShared && status == 403 && ProblemCode(text) == CrossBranchWriteException.WorkspaceCode)
+            {
+                failures.Add($"{label} → {variant.Source}: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch");
             }
             else if (variant.ChangesShared && status == 403 && ProblemCode(text) == CrossBranchWriteException.DefaultCode)
             {
@@ -182,9 +250,9 @@ public static partial class SharedCompanyRecords
                 failures.Add($"{label} → {variant.Source}: server error {status}: {Short(text)}");
             }
         }
-        var after = await SnapshotAsync(env, prepared.Tenant, prepared.Company, prepared.Tables);
+        var after = await SnapshotAsync(env, prepared.Tenant, prepared.Company, prepared.Tables, prepared.WorkspaceTables);
         return new Report(failures, Changed(prepared.Before, after), prepared.Variants.Where(v => v.Proven).Select(v => v.Source).Distinct().Order(StringComparer.Ordinal).ToList(),
-            prepared.Tables.Select(t => t.Qualified).ToList(), writes);
+            prepared.Tables.Concat(prepared.WorkspaceTables).Select(t => t.Qualified).ToList(), writes);
     }
 
     /// <summary>Sends the write: a body from the read is rebuilt from a fresh read by the sender

@@ -76,6 +76,7 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"shared records: {string.Join(", ", shared.Tables)}; {shared.Writes} writes to company X by the branch-limited administrator:\n  " + string.Join("\n  ", shared.Sources));
         Assert.Contains("tenancy.companies", shared.Tables);
+        Assert.Contains("tenancy.tenants", shared.Tables);
         Assert.True(shared.Failures.Count == 0, "Writes to company X's shared records by an administrator limited to one of its branches:\n" + string.Join("\n", shared.Failures.Take(40)));
         Assert.True(shared.ChangedTables.Count == 0, "Company X's shared rows changed (by an administrator limited to one of its branches) in: " + string.Join(", ", shared.ChangedTables));
         // Renaming, re-registering, deactivating, the logo: each proven valid by the tenant's
@@ -89,6 +90,10 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
                      "PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]",
                      "PUT /api/tenancy/companies/{id:guid}/logo [-]",
                      "DELETE /api/tenancy/companies/{id:guid}/logo [-]",
+                     // The workspace every company shares (critic p02 round 6).
+                     "PUT /api/tenancy/tenant [nameEn]",
+                     "PUT /api/tenancy/tenant [defaultLanguage]",
+                     "PUT /api/tenancy/tenant [weekStart]",
                  })
         {
             Assert.Contains(source, shared.Sources);

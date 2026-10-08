@@ -271,6 +271,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         var report = await CompanyAttack.RunAsync(fixture.Env);
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/company-names", StringComparison.Ordinal) && l.StartsWith("company X administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(report.Leaks, l => !Planted(l));
+        // Critic p02 round 6: the workspace every company shares, renamed by an administrator of one company.
+        var shared = report.Shared!;
+        Assert.Contains("PUT /api/leaky/workspace-name [nameEn]", shared.Sources);
+        Assert.Contains(shared.Failures, f => f.StartsWith("company X administrator → PUT /api/leaky/workspace-name [nameEn] on the workspace every company shares", StringComparison.Ordinal) &&
+                                              f.Contains("answered 200", StringComparison.Ordinal));
+        Assert.Contains("tenancy.tenants", shared.ChangedTables);
+        Assert.DoesNotContain(shared.Failures, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
         // The same planted read, made with nothing but the attacker's own parameters.
         Assert.Contains(report.Leaks, l => l.StartsWith("company X administrator → GET /api/leaky/company-names", StringComparison.Ordinal) &&
                                            l.Contains("(own parameters only)", StringComparison.Ordinal));
@@ -317,6 +324,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(shared.Failures, f => f.Contains("PUT /api/leaky/company-profile/{id:guid} [legalNameEn]", StringComparison.Ordinal) && f.Contains("answered 200", StringComparison.Ordinal));
         Assert.Contains("tenancy.companies", shared.ChangedTables);
         Assert.DoesNotContain(shared.Failures, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
+        // Critic p02 round 6: the workspace every company shares, renamed by a one-branch administrator.
+        Assert.Contains(shared.Failures, f => f.Contains("PUT /api/leaky/workspace-name [nameEn] on the workspace every company shares", StringComparison.Ordinal) &&
+                                              f.Contains("answered 200", StringComparison.Ordinal));
+        Assert.Contains("tenancy.tenants", shared.ChangedTables);
     }
 
     [Fact]

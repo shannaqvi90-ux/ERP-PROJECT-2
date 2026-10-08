@@ -130,6 +130,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         {
             await session.BindCompaniesAsync([], cancellationToken);
             session.SetBranchLimits([]);
+            session.SetWorkspaceHolder(false);
             session.SetWorkplace(null, null, []);
             return true;
         }
@@ -139,12 +140,14 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         var branches = new List<(Guid Id, Guid CompanyId)>();
         var limited = new HashSet<Guid>();
         (Guid CompanyId, Guid? BranchId)? chosen = null;
+        var workspaceCompanies = int.MaxValue;
         var query = new NpgsqlBatchCommand("""
             SELECT 1, c.id, c.id, c.code FROM tenancy.companies c WHERE c.is_active
             UNION ALL SELECT 2, b.id, b.company_id, NULL FROM tenancy.branches b WHERE b.is_active
             UNION ALL SELECT 3, a.branch_id, a.company_id, NULL FROM tenancy.user_branch_access a WHERE a.user_id = @user
             UNION ALL SELECT 4, w.branch_id, w.company_id, NULL FROM tenancy.user_workplaces w
                        WHERE w.user_id = @user AND erp.company_allowed(w.company_id)
+            UNION ALL SELECT 5, t.id, t.id, t.company_count::text FROM tenancy.tenants t
             """);
         query.Parameters.AddWithValue("user", userId);
         await session.BindCompaniesAsync(access.Select(a => a.CompanyId).ToList(), query, async (reader, ct) =>
@@ -157,6 +160,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
                     case 1: companies.Add((reader.GetGuid(1), reader.GetString(3))); break;
                     case 2: branches.Add((reader.GetGuid(1), companyOfRow)); break;
                     case 3: limited.Add(reader.GetGuid(1)); break;
+                    case 5: workspaceCompanies = int.Parse(reader.GetString(3), System.Globalization.CultureInfo.InvariantCulture); break;
                     default: chosen = (companyOfRow, reader.IsDBNull(1) ? null : reader.GetGuid(1)); break;
                 }
             }
@@ -164,6 +168,9 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext 
         // Records every branch of a company shares are written only by users who hold every branch
         // of it (the kernel refuses the rest, whatever an endpoint checked).
         session.SetBranchLimits(access.Where(a => !a.AllBranches).Select(a => a.CompanyId));
+        // Records every company shares (the workspace's own record) are written only by users who
+        // work in every company and every branch of each (the kernel refuses the rest).
+        session.SetWorkspaceHolder(access.Count >= workspaceCompanies && access.All(a => a.AllBranches));
         var activeCompanies = companies.OrderBy(c => c.Code, StringComparer.Ordinal).Select(c => c.Id).ToList();
         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
         // Branch limits hold for the rest of the request: only the branches the user may work in

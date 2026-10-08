@@ -58,6 +58,17 @@ public sealed class G1CompanyIsolationTests(G1CompanyFixture fixture) : IClassFi
         Assert.Contains("/api/reports/run/tenancy.companyProfile", own.Answered);
         Assert.Contains("/api/tenancy/access/{userId:guid}", own.Answered);
         Assert.True(own.Requests >= Ratchet.Min("g1.companyOwnReadRequests"), $"g1.companyOwnReadRequests: {own.Requests}; ratchet minimum {Ratchet.Min("g1.companyOwnReadRequests")}");
+        // The records every company of the workspace shares (critic p02 round 6: an administrator of
+        // one company renamed the workspace and changed its language and time zone for every company).
+        var shared = report.Shared!;
+        TestContext.Current.TestOutputHelper?.WriteLine($"workspace records: {string.Join(", ", shared.Tables)}; {shared.Writes} writes:\n  " + string.Join("\n  ", shared.Sources));
+        Assert.Contains("tenancy.tenants", shared.Tables);
+        Assert.True(shared.Failures.Count == 0, "Writes to the workspace's shared records by an administrator of one company:\n" + string.Join("\n", shared.Failures.Take(40)));
+        Assert.True(shared.ChangedTables.Count == 0, "Workspace-wide rows changed (by an administrator of one company) in: " + string.Join(", ", shared.ChangedTables));
+        foreach (var source in new[] { "PUT /api/tenancy/tenant [nameEn]", "PUT /api/tenancy/tenant [nameAr]", "PUT /api/tenancy/tenant [defaultLanguage]", "PUT /api/tenancy/tenant [weekStart]" })
+        {
+            Assert.Contains(source, shared.Sources);
+        }
         // Company Y's own code reaches the company create (critic p02 round 3, plant C4), and every
         // identifying column of every company table reaches the creates whose body carries it.
         Assert.Contains("POST /api/tenancy/companies [code] <- tenancy.companies", report.WriteOracleSources);
@@ -83,8 +94,8 @@ public sealed record CompanyAttackReport(
     /// and the table the value came from: "POST /api/tenancy/companies [code] &lt;- tenancy.companies".</summary>
     public IReadOnlyList<string> WriteOracleSources { get; init; } = [];
 
-    /// <summary>The branch attack on the records every branch of the attacker's company shares
-    /// (null in the company attack).</summary>
+    /// <summary>The attack on the records the attacker's company and workspace share: every branch of
+    /// company X (branch attack) and every company of the workspace (both attacks).</summary>
     public SharedCompanyRecords.Report? Shared { get; init; }
 
     /// <summary>The reads with the attackers' own, valid parameters (<see cref="OwnScopeReads"/>).</summary>
@@ -167,11 +178,9 @@ public static class CompanyAttack
         // company update's branch check removed, it renamed and deactivated the company for every
         // branch and every gate passed). Each write is first proven valid by the tenant's
         // administrator, then the rows are fingerprinted before the attack.
-        SharedCompanyRecords.Prepared? shared = null;
-        if (branchLayer)
-        {
-            shared = await SharedCompanyRecords.PrepareAsync(env, openApi, endpoints, tenantAdmin, tenant.Id, x);
-        }
+        // In the company attack, the records every company of the workspace shares (critic p02
+        // round 6: an administrator of one company renamed the workspace for every company).
+        var shared = await SharedCompanyRecords.PrepareAsync(env, openApi, endpoints, tenantAdmin, tenant.Id, x, companyRecords: branchLayer);
 
         var examples = openApi.ExampleValues();
         var before = branchLayer ? await CompanySnapshot.TakeBranchAsync(env, tenant.Id, z, examples) : await CompanySnapshot.TakeAsync(env, tenant.Id, y, examples);
@@ -443,7 +452,7 @@ public static class CompanyAttack
         var session = await scopedClient.GetFromJsonAsync<JsonElement>("/api/auth/session");
         if (session.GetProperty("permissions").GetArrayLength() == 0) escalations.Add($"the {label} holds no permissions (the attack would be blind)");
 
-        var sharedReport = shared is null ? null : await SharedCompanyRecords.AttackAsync(env, openApi, shared, scopedClient, label);
+        var sharedReport = await SharedCompanyRecords.AttackAsync(env, openApi, shared, scopedClient, label);
 
         var after = branchLayer ? await CompanySnapshot.TakeBranchAsync(env, tenant.Id, z, examples) : await CompanySnapshot.TakeAsync(env, tenant.Id, y, examples);
         foreach (var (_, client) in attackers)

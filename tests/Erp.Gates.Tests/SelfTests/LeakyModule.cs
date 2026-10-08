@@ -1098,6 +1098,27 @@ public sealed class LeakyModule : ErpModule
             // of the caller's scope with SQL of its own (row-level security allows the company, the
             // kernel's company-wide row guard never sees the write): an administrator limited to
             // one branch renames the company every branch shares.
+            // Bug 63 (critic p02 round 6): renames the workspace every company shares with SQL of
+            // its own, for anyone holding the planted permission, whatever companies and branches
+            // they work in: an administrator of one company renames the workspace for all of them.
+            group.MapGet("/workspace-name", async (ErpDbSession session) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT name_en FROM tenancy.tenants", session.Connection, session.Transaction);
+                return await command.ExecuteScalarAsync() is string name ? Results.Ok(new { nameEn = name }) : Results.NotFound();
+            }).WithName("leaky.workspaceName").WithSummary("The workspace's English name.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/workspace-name", async (LeakyWorkspaceName request, ErpDbSession session) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.NameEn))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["nameEn"] = ["required"] });
+                }
+                await using var command = new NpgsqlCommand("UPDATE tenancy.tenants SET name_en = @n, updated_at = now()", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("n", request.NameEn.Trim());
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(new { nameEn = request.NameEn.Trim() });
+            }).WithName("leaky.workspaceNameUpdate").WithSummary("Planted bug: renames the workspace, whatever companies and branches the caller works in.").RequirePermission("leaky.data.update");
+
             group.MapGet("/company-profile/{id:guid}", async (Guid id, ErpDbSession session) =>
             {
                 await using var command = new NpgsqlCommand("SELECT legal_name_en FROM tenancy.companies WHERE id = @id", session.Connection, session.Transaction);
@@ -1495,6 +1516,8 @@ public sealed class LeakyModule : ErpModule
     public sealed record LeakyBranchRename(string? NameEn);
 
     public sealed record LeakyCompanyProfile(string? LegalNameEn);
+
+    public sealed record LeakyWorkspaceName(string? NameEn);
 
     public sealed record LeakyCompanyAccess(Guid? CompanyId, bool? AllBranches, IReadOnlyList<Guid>? BranchIds);
 
