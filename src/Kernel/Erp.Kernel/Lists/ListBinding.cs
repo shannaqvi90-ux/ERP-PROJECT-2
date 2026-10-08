@@ -162,6 +162,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
+        InMemoryQuery.Prepare();
         return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
     }
 

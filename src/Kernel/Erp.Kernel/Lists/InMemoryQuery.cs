@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -22,7 +21,50 @@ internal static class InMemoryQuery
     public static IQueryable<T> Over<T>(IQueryable<T> source) =>
         source is InMemoryQuery<T> ? source : new InMemoryQuery<T>(source.AsEnumerable());
 
-    private static readonly ConcurrentDictionary<MethodInfo, MethodInfo> Counterparts = new();
+    /// <summary>Every <see cref="Queryable"/> method (generic definition) with the <see cref="Enumerable"/>
+    /// method it stands for (same name, generic arity and parameters, with queries as sequences and
+    /// lambda expressions as delegates). Worked out once and never changed: nothing a request does
+    /// adds process-wide state (the process-state gate judges every static).</summary>
+    private static readonly System.Collections.Frozen.FrozenDictionary<MethodInfo, MethodInfo> Counterparts = BuildCounterparts();
+
+    // An explicit static constructor: the map is built when Prepare runs (a list registering as
+    // in memory, at start-up), never later inside a request.
+    static InMemoryQuery()
+    {
+    }
+
+    /// <summary>Builds the map now (called when a list registers as in memory, at start-up).</summary>
+    public static void Prepare()
+    {
+    }
+
+    private static System.Collections.Frozen.FrozenDictionary<MethodInfo, MethodInfo> BuildCounterparts()
+    {
+        var enumerable = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .GroupBy(m => Signature(m, m.GetParameters().Select(p => p.ParameterType)))
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+        var map = new Dictionary<MethodInfo, MethodInfo>();
+        foreach (var method in typeof(Queryable).GetMethods(BindingFlags.Public | BindingFlags.Static))
+        {
+            if (enumerable.TryGetValue(Signature(method, method.GetParameters().Select(p => AsEnumerable(p.ParameterType))), out var counterpart))
+            {
+                map[method] = counterpart;
+            }
+        }
+        return System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(map);
+    }
+
+    /// <summary>A method's name, generic arity and parameter types, with its generic parameters
+    /// written by position (so Queryable.Where&lt;T&gt; and Enumerable.Where&lt;T&gt; compare equal).</summary>
+    private static string Signature(MethodInfo method, IEnumerable<Type> parameters) =>
+        $"{method.Name}`{(method.IsGenericMethodDefinition ? method.GetGenericArguments().Length : 0)}({string.Join(",", parameters.Select(TypeName))})";
+
+    private static string TypeName(Type type) =>
+        type.IsGenericMethodParameter ? "!!" + type.GenericParameterPosition
+        : type.IsArray ? TypeName(type.GetElementType()!) + "[]"
+        : type.IsByRef ? TypeName(type.GetElementType()!) + "&"
+        : type.IsGenericType ? $"{type.GetGenericTypeDefinition().FullName}<{string.Join(",", type.GetGenericArguments().Select(TypeName))}>"
+        : type.FullName ?? type.Name;
 
     /// <summary>The query's result, run over the rows.</summary>
     internal static TResult Run<TResult>(Expression expression) =>
@@ -32,30 +74,16 @@ internal static class InMemoryQuery
     internal static object? Run(Expression expression) =>
         Expression.Lambda(Expression.Convert(new Rewriter().Visit(expression), typeof(object))).Compile(preferInterpretation: true).DynamicInvoke();
 
-    /// <summary>The <see cref="Enumerable"/> method a <see cref="Queryable"/> method stands for
-    /// (same name, generic arguments and parameters, with queries as sequences and lambda
-    /// expressions as delegates).</summary>
-    private static MethodInfo Counterpart(MethodInfo queryable) => Counterparts.GetOrAdd(queryable, static method =>
+    /// <summary>The <see cref="Enumerable"/> method a <see cref="Queryable"/> method call stands for.</summary>
+    private static MethodInfo Counterpart(MethodInfo queryable)
     {
-        var definition = method.IsGenericMethod ? method.GetGenericMethodDefinition() : method;
-        var arguments = method.IsGenericMethod ? method.GetGenericArguments() : [];
-        var wanted = method.GetParameters().Select(p => AsEnumerable(p.ParameterType)).ToArray();
-        foreach (var candidate in typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static))
+        var definition = queryable.IsGenericMethod ? queryable.GetGenericMethodDefinition() : queryable;
+        if (!Counterparts.TryGetValue(definition, out var counterpart))
         {
-            if (candidate.Name != definition.Name || candidate.IsGenericMethodDefinition != method.IsGenericMethod ||
-                (candidate.IsGenericMethodDefinition && candidate.GetGenericArguments().Length != arguments.Length))
-            {
-                continue;
-            }
-            var closed = candidate.IsGenericMethodDefinition ? candidate.MakeGenericMethod(arguments) : candidate;
-            var parameters = closed.GetParameters();
-            if (parameters.Length == wanted.Length && parameters.Select(p => p.ParameterType).SequenceEqual(wanted))
-            {
-                return closed;
-            }
+            throw new NotSupportedException($"Queryable.{queryable.Name} has no Enumerable counterpart for an in-memory list");
         }
-        throw new NotSupportedException($"Queryable.{method.Name} has no Enumerable counterpart for an in-memory list");
-    });
+        return queryable.IsGenericMethod ? counterpart.MakeGenericMethod(queryable.GetGenericArguments()) : counterpart;
+    }
 
     /// <summary><c>IQueryable&lt;X&gt;</c> as <c>IEnumerable&lt;X&gt;</c>, <c>IOrderedQueryable&lt;X&gt;</c> as
     /// <c>IOrderedEnumerable&lt;X&gt;</c>, <c>Expression&lt;F&gt;</c> as <c>F</c>; other types as they are.</summary>
