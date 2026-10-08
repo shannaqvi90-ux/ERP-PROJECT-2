@@ -220,12 +220,23 @@ usually signed in, on the screen the product shows right after sign-in. End stat
 
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
-A metric on which both products score 0 (no keystrokes on a pointer-only path, for example) is a
-tie under that rule, so the task cannot be won on it whatever ours does. The harness applies the
-rule unchanged and reports such a metric plainly: its outcome reads `tie at zero (a tie is a loss)`,
-the comparison lists it in `ties_at_zero` with a `tie_at_zero_note`, says whether the loss comes from
-ties at zero alone (`loss_only_from_ties_at_zero`), and `run.mjs` prints `TIE AT ZERO`. Whether such
-a metric should count toward the tie rule is the owner's question (gauntlet/needs-human.md).
+
+**Both at 0 on a count (owner decision, 2026-10-08, needs-human #11; gauntlet/goal.md bar item 2).**
+A count metric (`steps`, `keystrokes`) on which both products score exactly 0 is left out of the
+task's comparison: neither a tie nor a win. Only exactly 0 on both sides (0 against anything else
+is compared as usual), only count metrics (a time equal on both sides still ties, even at 0). Every
+other metric must still be strictly lower for ours; any other tie is a loss; when every metric
+ties, or nothing is left to compare, the task is a loss. The comparison names the metrics left out
+(`left_out`, `left_out_note`, and each one's outcome reads `left out (both exactly 0)`), and
+`run.mjs` prints them.
+
+**Whole paths for ours (round 8, p00 critic).** When ours has several expert paths, each is judged
+whole, every metric from that one path; ours wins when one of its paths wins on its own. The
+comparison shows that path (`ours_path`; when none wins, the path that wins the most metrics) and
+lists every path's verdict (`ours_paths`). Ours' result counts are likewise one path's own
+(`counts_path`). The reference stays at its best path on each metric (below), so beating it is
+beating every one of its paths whole. Over repeats (`--repeat N`) each path keeps the median of its
+own times (`median_counts`).
 
 A scroll (`op.scrollTo`) is a step modelled like a click (P + BB), so a path that needs one never
 looks free. A click that makes the product send a file (`op.clickForDownload`) is one step; the
@@ -233,9 +244,10 @@ wait for the file is system wait.
 
 **Expert paths per metric.** Where the shortest path depends on the metric (hotkeys press more
 keys but save pointing and hand moves), a driver offers `variants` (for example `keyboard` and
-`pointer`). Each runs in full; the result counts, per metric, the best verified variant
+`pointer`). Each runs in full; the reference's result counts, per metric, the best verified variant
 (`best_path_per_metric`) and records every variant's steps; `system_wait_seconds` is the wait inside the variant whose clock is counted. The reference is never measured on a
-path worse than the best one an expert could take for that metric. A variant may define its own
+path worse than the best one an expert could take for that metric. Ours is judged on whole paths
+(above). A variant may define its own
 `setup`, `signIn`, `ready`, `verify` and `cleanup`; each overrides the base driver's (round 7: they
 ran only when the base driver defined the same hook).
 
@@ -257,7 +269,8 @@ time (2000-01-01), and the products run in a random order per task, so neither f
 order tell the products apart.
 Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
 box, and so are the demo data's own names (company names, database or tenant codes, company and
-branch codes, `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
+branch codes, and, from round 8, the names of the people each product signs in as, the task
+fixtures' company codes and Arabic names; `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
 names, not only their own: a name masked in one product's shots and showing in the other's told the
 products apart. A name inside a cell that hides its overflow (a list cell with an ellipsis) is
 painted over by the whole cell, so the paint lines up with the columns (`maskTargets`). The shot is rendered in greyscale (no signature colours); the
@@ -381,8 +394,10 @@ switch-to-arabic and nothing noticed). Its counts are not a comparison.
 turn, in a scratch copy of the harness, and runs the self-tests that must catch it: the keystroke
 operator, greyscale, the read world's click refusal and its arming, the source check, the driver
 lint's page-function check, the network locks, the script freeze, the abort at the clock, the
-screen check after `verify()`, the document settle, a variant's own hooks and the masks. It exits 1
-when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
+screen check after `verify()`, the document settle, a variant's own hooks, the masks, the zero
+rule, ties and whole paths. Each test file's self-tests run once unmutated for all of its
+mutations (the control), and a mutation counts as caught only when a test that passed there fails
+mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above
 `compare.instrumentMutations` and checks that each still finds the text it mutates. Add a line
 there for every new defence.
