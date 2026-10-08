@@ -70,7 +70,8 @@ internal static class PasskeyEndpoints
 {
     public const int MaxNameLength = 100;
 
-    private static readonly string[] KnownTransports = ["ble", "hybrid", "internal", "nfc", "smart-card", "usb"];
+    private static readonly System.Collections.Frozen.FrozenSet<string> KnownTransports =
+        System.Collections.Frozen.FrozenSet.ToFrozenSet(["ble", "hybrid", "internal", "nfc", "smart-card", "usb"], StringComparer.Ordinal);
 
     public static void Map(RouteGroupBuilder group)
     {
@@ -212,7 +213,7 @@ internal static class PasskeyEndpoints
             SignCount = data.SignCount,
             BackupEligible = data.Has(AuthenticatorData.BackupEligibleFlag),
             BackedUp = data.Has(AuthenticatorData.BackedUpFlag),
-            Transports = (request.Transports ?? []).Select(t => t.Trim().ToLowerInvariant()).Where(KnownTransports.Contains).Distinct().Order(StringComparer.Ordinal).ToList(),
+            Transports = (request.Transports ?? []).Select(t => (t ?? "").Trim().ToLowerInvariant()).Where(KnownTransports.Contains).Distinct().Order(StringComparer.Ordinal).ToList(),
         };
         db.Passkeys.Add(passkey);
         await db.SaveChangesAsync(cancellationToken);

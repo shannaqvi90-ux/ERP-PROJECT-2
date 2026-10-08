@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -27,7 +28,8 @@ internal sealed class PasskeyChallenges(TrustedDevices devices, IOptions<AuthOpt
     private const int MacLength = 16;
     public const int Length = PayloadLength + MacLength;
 
-    private readonly byte[] _key = devices.DeriveKey("passkey-challenge");
+    // Derived once from the deployment's key; never written afterwards.
+    private readonly ImmutableArray<byte> _key = ImmutableArray.Create(devices.DeriveKey("passkey-challenge"));
 
     /// <summary>A new challenge for <paramref name="purpose"/>, bound to <paramref name="binding"/>
     /// (the session that registers; none for sign-in).</summary>
@@ -82,5 +84,5 @@ internal sealed class PasskeyChallenges(TrustedDevices devices, IOptions<AuthOpt
             : string.Equals(origin, $"{http.Request.Scheme}://{http.Request.Host.Value}", StringComparison.OrdinalIgnoreCase);
     }
 
-    private byte[] Mac(ReadOnlySpan<byte> payload) => HMACSHA256.HashData(_key, payload)[..MacLength];
+    private byte[] Mac(ReadOnlySpan<byte> payload) => HMACSHA256.HashData(_key.AsSpan(), payload)[..MacLength];
 }
