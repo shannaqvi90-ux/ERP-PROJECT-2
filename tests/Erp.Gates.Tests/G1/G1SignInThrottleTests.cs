@@ -93,6 +93,59 @@ public sealed class G1SignInThrottleTests(ThrottleFixture fixture) : IClassFixtu
         }
     }
 
+    [Fact]
+    public async Task A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address()
+    {
+        // Critic p03 rounds 1-3: behind Docker every client arrives from the compose gateway, so one
+        // person's failures paused the account for everyone. The owner's browser, which signed in
+        // to the account before, now counts as a client of its own; everyone else behind the same
+        // address (the attacker included) is still paused, and a device earned on one's own account
+        // or a tampered cookie gives no fresh count on someone else's.
+        var email = $"office.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        await CreateUserAsync(admin, email, "Owner-Password-2026");
+        const string office = "203.0.113.50";
+        using var owner = Env.CreateClient();
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(owner, office, email, "Owner-Password-2026")).Status);
+
+        for (var i = 0; i < Attempts; i++)
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, (await SignInAsync(office, email, $"Wrong-Password-{i:D2}")).Status);
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await SignInAsync(office, email, "Owner-Password-2026")).Status);
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(owner, office, email, "Owner-Password-2026")).Status);
+
+        // A device earned on the attacker's own account counts nothing on the owner's.
+        using var attacker = Env.CreateClient();
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(attacker, office, Env.Email(Env.TenantA, "viewer"), ErpTestEnvironment.Password)).Status);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await SignInWithAsync(attacker, office, email, "Owner-Password-2026")).Status);
+
+        // A tampered cookie is ignored: still the office address, still paused.
+        using var forger = Env.CreateClient(requestHeader: true);
+        using var forged = new HttpRequestMessage(HttpMethod.Post, "/api/auth/sign-in") { Content = JsonContent.Create(new { email, password = "Owner-Password-2026" }) };
+        forged.Headers.Add("X-Forwarded-For", office);
+        forged.Headers.Add("Cookie", "erp_device=W3siRSI6IkFBQUEiLCJEIjoiQkJCQiJ9XQ.bm90LWEtc2lnbmF0dXJl");
+        using (var response = await forger.SendAsync(forged))
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        // The owner's own failures still pause the owner's device.
+        for (var i = 0; i < Attempts; i++)
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, (await SignInWithAsync(owner, office, email, $"Typo-Password-{i:D2}")).Status);
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await SignInWithAsync(owner, office, email, "Owner-Password-2026")).Status);
+    }
+
+    private static async Task<(HttpStatusCode Status, JsonElement Body)> SignInWithAsync(HttpClient client, string clientAddress, string email, string password)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/sign-in") { Content = JsonContent.Create(new { email, password }) };
+        request.Headers.Add("X-Forwarded-For", clientAddress);
+        using var response = await client.SendAsync(request);
+        return (response.StatusCode, await response.Content.ReadFromJsonAsync<JsonElement>());
+    }
+
     private static string Answer(JsonElement body) =>
         $"{body.GetProperty("code").GetString()}|{body.GetProperty("title").GetString()}";
 

@@ -38,14 +38,16 @@ public sealed record WorkspaceChoice(string Code, string NameEn, string NameAr);
 /// the typed password under each, and the function compares those proofs with the stored hashes
 /// and returns only the workspaces whose password matched. One match signs in; several (the same
 /// person in two workspaces with the same password) ask which workspace. Failed attempts pause
-/// only the client that made them, on only that account; failures never say whether the address
-/// exists, whether the client is paused or what the policy is.
+/// only the client that made them, on only that account; a browser that signed in to the account
+/// before is a client of its own (<see cref="TrustedDevices"/>), apart from its network address.
+/// Failures never say whether the address exists, whether the client is paused or what the policy is.
 /// </summary>
 internal sealed class SignInService(
     ErpDbSession session,
     IdentityDbContext db,
     IServiceScopeFactory scopes,
     ITenantDirectory tenants,
+    TrustedDevices devices,
     IOptions<AuthOptions> options,
     TimeProvider time,
     ILogger<SignInService> logger)
@@ -58,6 +60,12 @@ internal sealed class SignInService(
         await session.RollbackAsync(cancellationToken);
         var connection = await session.OpenUnboundAsync(cancellationToken);
         var client = ClientOf(http);
+        // A browser that signed in to this account before counts its failures as itself, not as
+        // its network address (shared by everyone behind the same NAT or proxy).
+        if (devices.SourceFor(http, email) is { } device)
+        {
+            client = client with { Source = device };
+        }
 
         var challenges = new List<string>();
         await using (var command = Lookup(connection, email, null, client))
@@ -154,7 +162,16 @@ internal sealed class SignInService(
             await Passwords.SetAsync(db, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
-        user.LastSignInAt = now;
+        // The sign-in moment is written in place, not through the tracked record: two sign-ins of
+        // one account at the same moment (two tabs, a browser and an API client) both succeed
+        // instead of the later one failing on the record's version. The audit trigger still
+        // records the change, stamped as the user's own like any edit of the record.
+        await db.Users
+            .Where(u => u.Id == user.Id && (u.LastSignInAt == null || u.LastSignInAt < now))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.LastSignInAt, now)
+                .SetProperty(u => u.UpdatedAt, now)
+                .SetProperty(u => u.UpdatedBy, (Guid?)user.Id), cancellationToken);
         var token = SessionTokens.Generate();
         var expiresAt = now.AddHours(options.Value.SessionHours);
         var row = new Session
@@ -177,6 +194,7 @@ internal sealed class SignInService(
             SessionId = row.Id,
         });
         await db.SaveChangesAsync(cancellationToken);
+        devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
         logger.LogInformation("User {UserId} signed in to tenant {TenantId}", user.Id, user.TenantId);
         return new SignInOutcome.Succeeded(user.TenantId, user.Id, row.Id, token, expiresAt);
     }

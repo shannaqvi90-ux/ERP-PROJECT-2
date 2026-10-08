@@ -163,6 +163,50 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
     }
 
     [Fact]
+    public void Font_units_scale_to_thousandths_of_an_em_rounded_half_to_even_as_decimals_round()
+    {
+        foreach (var face in fixture.Fonts.Faces)
+        {
+            for (var units = -70000; units <= 70000; units++)
+            {
+                Assert.Equal((int)Math.Round(units * 1000.0m / face.UnitsPerEm), face.Scale(units));
+            }
+        }
+        // Exact halves go to the even neighbour, both signs (2048 units per em: 1.024 units = 0.5).
+        foreach (var denominator in new[] { 2, 4, 1000, 1024, 2048, 3 })
+        {
+            for (var numerator = -5000L; numerator <= 5000; numerator++)
+            {
+                Assert.Equal((int)Math.Round((decimal)numerator / denominator), PdfFontFace.RoundHalfEven(numerator, denominator));
+            }
+        }
+    }
+
+    [Fact]
+    public void A_long_run_maps_every_glyph_back_to_its_characters_and_a_line_shaped_again_is_the_same()
+    {
+        var shaper = new TextShaper(fixture.Fonts);
+        var text = string.Concat(Enumerable.Repeat("سلام عليكم Office-1104 لا إله ", 12));
+        var line = shaper.Shape(text, 8.5m, false, true);
+        // Every character but the spaces between runs is drawn by exactly one glyph's text.
+        Assert.Equal(text.Replace(" ", "", StringComparison.Ordinal).Length,
+            string.Concat(line.Runs.SelectMany(r => r.GlyphText)).Replace(" ", "", StringComparison.Ordinal).Length);
+        var again = shaper.Shape(text, 8.5m, false, true);
+        Assert.Equal(Describe(line), Describe(again));
+        Assert.Equal(Describe(line), Describe(new TextShaper(fixture.Fonts).Shape(text, 8.5m, false, true)));
+        // The same size written with another scale is its own line (the size is printed as written).
+        Assert.Equal(8.50m.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            shaper.Shape(text, 8.50m, false, true).Size.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        // A word wider than the line is cut where it stops fitting, as before.
+        var cut = shaper.Wrap("pbkdf2-sha512$210000$AAAAAAAAAAAAAAAAAAAAAA$BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", 8.5m, false, false, 60m);
+        Assert.True(cut.Count >= 4);
+        Assert.All(cut, l => Assert.True(l.Width <= 60m, $"{l.Width}"));
+
+        static string Describe(ShapedLine l) => string.Join(";", l.Runs.Select(r =>
+            $"{r.Face.Name}/{r.RightToLeft}/{r.Text}/{string.Join(",", r.Glyphs)}/{string.Join("|", r.GlyphText)}"));
+    }
+
+    [Fact]
     public void An_arabic_pdf_is_readable_right_to_left_with_its_fonts_embedded()
     {
         var document = Sample("ar", rows: 3, grouped: true);

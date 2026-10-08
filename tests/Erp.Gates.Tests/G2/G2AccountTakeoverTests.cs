@@ -4,7 +4,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Erp.Gates.Tests.Infrastructure;
+using Erp.Kernel.Modules;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Gates.Tests.G2;
 
@@ -13,7 +15,9 @@ public sealed class TakeoverFixture : IAsyncLifetime
 {
     public ErpTestEnvironment Env { get; private set; } = null!;
 
-    public async ValueTask InitializeAsync() => Env = await ErpTestEnvironment.StartGateAsync();
+    // A module of a later wave is hosted too, so the catalogue holds permissions no identity or
+    // tenancy check was written for (see GrantTargets).
+    public async ValueTask InitializeAsync() => Env = await ErpTestEnvironment.StartGateAsync(LaterLedgerModule.Settings());
 
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
@@ -25,7 +29,12 @@ public sealed class TakeoverFixture : IAsyncLifetime
 /// endpoint's permission (plus reading users and roles) aims it at the Administrator: the answer
 /// must be 403 and the Administrator must keep their record, password and sessions, because
 /// resetting a stronger account's password is taking it over. The same request aimed at a user
-/// with no roles must succeed, which proves the 403 came from the access check. Nobody uses these
+/// with no roles must succeed, which proves the 403 came from the access check. The Administrator
+/// alone cannot tell a correct check from one that compares only part of the grants (critic p03
+/// round 3, plant P14: a check looking only at identity permissions still refuses the
+/// Administrator), so the same request is also aimed at users holding grants the caller lacks in
+/// every shape of <see cref="GrantTargets"/>: one permission alone (every one of the catalogue,
+/// a later module's included), a whole other module, the caller's own plus one more. Nobody uses these
 /// endpoints on themselves (their own password changes only with the current password), and
 /// copying a role is creating one: it may not copy permissions the caller lacks.
 /// </summary>
@@ -47,9 +56,18 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var adminSession = await admin.GetFromJsonAsync<JsonElement>("/api/auth/session");
         var adminId = adminSession.GetProperty("user").GetProperty("id").GetGuid();
+        var catalogue = Env.Factory.Services.GetRequiredService<ModuleCatalog>().PermissionKeys.ToList();
+        Assert.Contains(LaterLedgerModule.PermissionKeys[0], catalogue);
+        var targets = new TargetRecords(admin, Env);
+        var companies = await GateCompanies.OfAsync(admin);
+        var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
+            .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        JsonNode? CompanyValue(string field, JsonNode? current) => GateCompanies.IsCompanyField(field) ? companies.Other(current) : null;
         var problems = new List<string>();
         var checkedEndpoints = 0;
         var fieldVariants = 0;
+        var moduleFieldVariants = 0;
+        var targetsAimed = 0;
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -58,7 +76,9 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             var permissions = new[] { endpoint.Permission, "identity.users.read", "identity.roles.read" }.Distinct().ToArray();
             var roleId = await CreatedIdAsync(admin, "/api/identity/roles", new { nameEn = $"Takeover {tag}", nameAr = $"استيلاء {tag}", permissions });
             var email = $"takeover.{tag}@{Env.TenantA.EmailDomain}";
-            await CreatedIdAsync(admin, "/api/identity/users", new { email, displayName = $"Takeover {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { roleId } });
+            var callerId = await CreatedIdAsync(admin, "/api/identity/users", new { email, displayName = $"Takeover {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = new[] { roleId } });
+            // The caller works in the companies roles in one company and default companies name.
+            await companies.GiveAccessAsync(callerId);
             using var caller = await Env.SignInAsync(email);
 
             var before = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
@@ -89,6 +109,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             // Control: the same request aimed at a user with no roles succeeds.
             var targetEmail = $"target.{tag}@{Env.TenantA.EmailDomain}";
             var targetId = await CreatedIdAsync(admin, "/api/identity/users", new { email = targetEmail, displayName = $"Target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
+            await companies.GiveAccessAsync(targetId);
             var (controlStatus, controlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => targetId.ToString()), await BodyAsync(caller, openApi, endpoint, targetId, tag));
             if (controlStatus is < 200 or >= 300)
             {
@@ -96,55 +117,104 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             }
             checkedEndpoints++;
 
+            // Users holding grants the caller lacks without holding everything (critic p03 round 3,
+            // plant P14): each one alone, a whole other module, the caller's own plus one more.
+            foreach (var target in GrantTargets.For(catalogue, permissions))
+            {
+                var victim = await targets.UserAsync(target.Permissions);
+                var victimBefore = await ReadUserAsync(admin, victim);
+                var (targetStatus, targetText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(caller, openApi, endpoint, victim, $"{tag}g{++targetsAimed}"));
+                if (targetStatus != (int)HttpStatusCode.Forbidden)
+                {
+                    problems.Add($"{endpoint}: aimed at a user holding {target} by a user holding only [{string.Join(", ", permissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
+                }
+                var victimAfter = await ReadUserAsync(admin, victim);
+                if (victimAfter != victimBefore)
+                {
+                    problems.Add($"{endpoint}: the user holding {target} changed: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                }
+            }
+
             // One field at a time (critic p03 round 2, plant P5): each writable property changed
-            // alone and left out alone, aimed at the Administrator, with the same single change on
-            // the user without roles as the control.
+            // alone and left out alone, aimed at the Administrator and at a user holding one other
+            // module's grants (a path-specific check narrowed to some modules), with the same single
+            // change on the user without roles as the control.
             if (endpoint.HasBody && openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is { } schema)
             {
+                var strongTargets = new List<(Guid Id, string Label)> { (adminId, "the Administrator") };
+                foreach (var target in GrantTargets.PerModule(catalogue, permissions))
+                {
+                    strongTargets.Add((await targets.UserAsync(target.Permissions), $"a user holding {target}"));
+                }
                 var k = 0;
                 foreach (var spec in FieldVariants.Specs(openApi, schema))
                 {
-                    k++;
-                    var strongBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, adminId, $"{tag}a{k}"), $"{tag}a{k}", Env.TenantA.EmailDomain,
-                        (field, current) => current.Count > 0 ? new JsonArray(current.Take(current.Count - 1).Select(x => x!.DeepClone()).ToArray()) : null);
-                    var weakBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, targetId, $"{tag}t{k}"), $"{tag}t{k}", Env.TenantA.EmailDomain,
-                        (field, current) => GrantBearingRecords.WithinCaller(field, current, roleId, permissions));
-                    if (strongBody is null || weakBody is null)
+                    foreach (var (strongId, label) in strongTargets)
                     {
-                        problems.Add($"{endpoint} {spec}: the gate has no different valid value for this field; extend FieldVariants rather than leave the field untested");
-                        continue;
+                        k++;
+                        var strongBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, strongId, $"{tag}a{k}"), $"{tag}a{k}", Env.TenantA.EmailDomain,
+                            (field, current) => GrantBearingRecords.Stronger(field, current, administratorRole, catalogue, companies.First), CompanyValue);
+                        var weakBody = FieldVariants.Apply(openApi, schema, spec, await BaseBodyAsync(admin, openApi, endpoint, targetId, $"{tag}t{k}"), $"{tag}t{k}", Env.TenantA.EmailDomain,
+                            (field, current) => GrantBearingRecords.WithinCaller(field, current, roleId, permissions, companies.First), CompanyValue);
+                        if (strongBody is null || weakBody is null)
+                        {
+                            problems.Add($"{endpoint} {spec}: the gate has no different valid value for this field aimed at {label}; extend FieldVariants rather than leave the field untested");
+                            continue;
+                        }
+                        var strongBefore = await ReadUserAsync(admin, strongId);
+                        var (fieldStatus, fieldText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => strongId.ToString()), strongBody);
+                        var strongAfter = await ReadUserAsync(admin, strongId);
+                        var (fieldControl, fieldControlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => targetId.ToString()), weakBody);
+                        var accepted = fieldControl is >= 200 and < 300;
+                        if (accepted && fieldStatus != (int)HttpStatusCode.Forbidden)
+                        {
+                            problems.Add($"{endpoint} {spec}: aimed at {label} by a user holding only [{string.Join(", ", permissions)}] answered {fieldStatus} (expected 403): {Short(fieldText)}");
+                        }
+                        else if (!accepted && spec.Kind == FieldVariants.Kind.Changed)
+                        {
+                            problems.Add($"{endpoint} {spec}: aimed at a user without roles answered {fieldControl}, so the gate cannot tell the access check from a malformed request: {Short(fieldControlText)}");
+                        }
+                        else if (!accepted && fieldStatus is not ((int)HttpStatusCode.Forbidden or (int)HttpStatusCode.BadRequest))
+                        {
+                            problems.Add($"{endpoint} {spec}: refused on the control ({fieldControl}) but answered {fieldStatus} on {label} (expected 400 or 403): {Short(fieldText)}");
+                        }
+                        if (strongAfter != strongBefore)
+                        {
+                            problems.Add($"{endpoint} {spec}: the record of {label} changed: before {Short(strongBefore)}; after {Short(strongAfter)}");
+                        }
+                        if (strongId == adminId)
+                        {
+                            fieldVariants++;
+                        }
+                        else
+                        {
+                            moduleFieldVariants++;
+                        }
                     }
-                    var adminBefore = await admin.GetStringAsync($"/api/identity/users/{adminId}");
-                    var (fieldStatus, fieldText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => adminId.ToString()), strongBody);
-                    var adminAfter = await admin.GetStringAsync($"/api/identity/users/{adminId}");
-                    var (fieldControl, fieldControlText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => targetId.ToString()), weakBody);
-                    var accepted = fieldControl is >= 200 and < 300;
-                    if (accepted && fieldStatus != (int)HttpStatusCode.Forbidden)
-                    {
-                        problems.Add($"{endpoint} {spec}: aimed at the Administrator by a user holding only [{string.Join(", ", permissions)}] answered {fieldStatus} (expected 403): {Short(fieldText)}");
-                    }
-                    else if (!accepted && spec.Kind == FieldVariants.Kind.Changed)
-                    {
-                        problems.Add($"{endpoint} {spec}: aimed at a user without roles answered {fieldControl}, so the gate cannot tell the access check from a malformed request: {Short(fieldControlText)}");
-                    }
-                    else if (!accepted && fieldStatus is not ((int)HttpStatusCode.Forbidden or (int)HttpStatusCode.BadRequest))
-                    {
-                        problems.Add($"{endpoint} {spec}: refused on the control ({fieldControl}) but answered {fieldStatus} on the Administrator (expected 400 or 403): {Short(fieldText)}");
-                    }
-                    if (adminAfter != adminBefore)
-                    {
-                        problems.Add($"{endpoint} {spec}: the Administrator's record changed: before {Short(adminBefore)}; after {Short(adminAfter)}");
-                    }
-                    fieldVariants++;
                 }
             }
         }
-        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator, " +
+                                                        $"{targetsAimed} requests aimed at users holding grants the caller lacks, {moduleFieldVariants} single-field requests aimed at them");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(fieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
             $"{fieldVariants} single-field requests aimed at the Administrator; ratchet minimum {Ratchet.Min("g2.takeoverFieldVariantsChecked")}");
         Assert.True(checkedEndpoints >= Ratchet.Min("g2.takeoverEndpointsChecked"),
             $"{checkedEndpoints} endpoints acting on users checked; ratchet minimum {Ratchet.Min("g2.takeoverEndpointsChecked")}");
+        Assert.True(targetsAimed >= Ratchet.Min("g2.takeoverPartialTargets"),
+            $"{targetsAimed} requests aimed at users holding grants the caller lacks; ratchet minimum {Ratchet.Min("g2.takeoverPartialTargets")}");
+        Assert.True(moduleFieldVariants >= Ratchet.Min("g2.takeoverModuleFieldVariants"),
+            $"{moduleFieldVariants} single-field requests aimed at users holding another module's grants; ratchet minimum {Ratchet.Min("g2.takeoverModuleFieldVariants")}");
+    }
+
+    /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>
+    private static async Task<string> ReadUserAsync(HttpClient admin, Guid id)
+    {
+        using var record = await admin.GetAsync($"/api/identity/users/{id}");
+        using var access = await admin.GetAsync($"/api/identity/users/{id}/access");
+        using var workplace = await admin.GetAsync($"/api/identity/users/{id}/default-company");
+        return $"{(int)record.StatusCode} {await record.Content.ReadAsStringAsync()} | {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()} | " +
+               $"{(int)workplace.StatusCode} {await workplace.Content.ReadAsStringAsync()}";
     }
 
     [Fact]
@@ -187,7 +257,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
         var administrator = roles.EnumerateArray().Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var catalogue = Env.Factory.Services.GetRequiredService<ModuleCatalog>().PermissionKeys.ToList();
+        var targets = new TargetRecords(admin, Env);
         var problems = new List<string>();
+        var checkedTargets = 0;
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -213,8 +286,30 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             {
                 problems.Add($"{endpoint}: on the caller's own role answered {controlStatus}: {Short(controlText)}");
             }
+
+            // Roles granting what the caller lacks without granting everything (critic p03 round 3,
+            // plant P16: a copy check narrowed to identity permissions still refuses the Administrator).
+            var k = 0;
+            foreach (var target in GrantTargets.For(catalogue, permissions))
+            {
+                var source = await targets.RoleAsync(target.Permissions);
+                var total = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("total").GetInt32();
+                var (targetStatus, targetText) = await SendAsync(caller, "POST", endpoint.Path(_ => source.ToString()), await BodyAsync(caller, openApi, endpoint, source, $"{tag}g{++k}"));
+                if (targetStatus != (int)HttpStatusCode.Forbidden)
+                {
+                    problems.Add($"{endpoint}: on {target} by a user holding only [{string.Join(", ", permissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
+                }
+                if ((await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("total").GetInt32() != total)
+                {
+                    problems.Add($"{endpoint}: on {target}: a role was created");
+                }
+                checkedTargets++;
+            }
         }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{endpoints.Count} endpoints creating from a role, {checkedTargets} requests on roles granting what the caller lacks");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(checkedTargets >= Ratchet.Min("g2.copyPartialTargets"),
+            $"{checkedTargets} requests on roles granting what the caller lacks; ratchet minimum {Ratchet.Min("g2.copyPartialTargets")}");
     }
 
     [Fact]
@@ -247,6 +342,24 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{variants.Count} single-field requests on grant-bearing records; ratchet minimum {Ratchet.Min("g2.grantFieldVariantsChecked")}");
         Assert.True(result.Checked.Count >= Ratchet.Min("g2.grantBearingActionsChecked"),
             $"{result.Checked.Count} endpoints acting on grant-bearing records checked; ratchet minimum {Ratchet.Min("g2.grantBearingActionsChecked")}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.PartialTargets} requests aimed at records granting what the caller lacks, {result.ModuleFieldVariants} single-field requests aimed at records granting one other module");
+        Assert.True(result.PartialTargets >= Ratchet.Min("g2.grantBearingPartialTargets"),
+            $"{result.PartialTargets} requests aimed at records granting what the caller lacks; ratchet minimum {Ratchet.Min("g2.grantBearingPartialTargets")}");
+        Assert.True(result.ModuleFieldVariants >= Ratchet.Min("g2.grantBearingModuleFieldVariants"),
+            $"{result.ModuleFieldVariants} single-field requests aimed at records granting one other module; ratchet minimum {Ratchet.Min("g2.grantBearingModuleFieldVariants")}");
+    }
+
+    [Fact]
+    public async Task No_endpoint_grants_another_modules_permissions_the_caller_lacks()
+    {
+        // The escalation check again, in this environment whose catalogue holds a module of a later
+        // wave: asking for a ledger permission alone, or a role granting it, is refused like asking
+        // for everything.
+        var result = await GrantEscalation.RunAsync(Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checked.Count} grant endpoints, {result.PartialTargets} requests asking for grants the caller lacks");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.True(result.PartialTargets >= Ratchet.Min("g2.grantEscalationPartialTargets"),
+            $"{result.PartialTargets} requests asking for grants the caller lacks; ratchet minimum {Ratchet.Min("g2.grantEscalationPartialTargets")}");
     }
 
     /// <summary>A body that passes validation: the record's own GET for an edit (with a changed

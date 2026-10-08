@@ -640,6 +640,191 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(await MemberAsync(session, id));
             }).WithName("leaky.updateMember").WithSummary("Planted bug: an e-mail-only edit skips the check on the member's access.").RequirePermission("leaky.data.update");
 
+            // Bug 32 (critic p03 round 3, plant P16): role checks that compare only identity
+            // permissions. Creating, copying, changing and deleting a role check that the caller
+            // holds what it grants, but only its identity.* part, so a clerk holding identity
+            // permissions mints, renames, empties and deletes roles granting another module's.
+            group.MapPost("/narrow-roles", async (NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var permissions = (request.Permissions ?? []).Distinct().ToArray();
+                if (!IdentityOnly(permissions).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                return await InsertRoleAsync(session, request.NameEn, request.NameAr, permissions, "narrow-roles");
+            }).WithName("leaky.createNarrowRole").WithSummary("Planted bug: creates a role checking only its identity permissions.").RequirePermission("leaky.data.update");
+
+            group.MapGet("/narrow-roles/{id:guid}", async (Guid id, ErpDbSession session) =>
+                await NarrowRoleAsync(session, id) is { } role ? Results.Ok(role) : Results.NotFound())
+                .WithName("leaky.getNarrowRole").WithSummary("One role.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/narrow-roles/{id:guid}", async (Guid id, NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var nameEn = request.NameEn?.Trim() ?? "";
+                var nameAr = request.NameAr?.Trim() ?? "";
+                if (nameEn.Length is 0 or > 100 || nameAr.Length is 0 or > 100 || request.Permissions is null)
+                {
+                    return Results.BadRequest();
+                }
+                if (await NarrowRoleAsync(session, id) is not { IsSystem: false } role)
+                {
+                    return Results.NotFound();
+                }
+                var permissions = request.Permissions.Distinct().ToArray();
+                if (!IdentityOnly(role.Permissions).All(caller.Has) || !IdentityOnly(permissions).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using var command = new NpgsqlCommand("UPDATE identity.roles SET name_en = @en, name_ar = @ar, permissions = @p WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("en", nameEn);
+                command.Parameters.AddWithValue("ar", nameAr);
+                command.Parameters.AddWithValue("p", permissions);
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(await NarrowRoleAsync(session, id));
+            }).WithName("leaky.updateNarrowRole").WithSummary("Planted bug: changes a role checking only its identity permissions.").RequirePermission("leaky.data.update");
+
+            group.MapDelete("/narrow-roles/{id:guid}", async (Guid id, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (await NarrowRoleAsync(session, id) is not { IsSystem: false } role)
+                {
+                    return Results.NotFound();
+                }
+                if (!IdentityOnly(role.Permissions).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using var command = new NpgsqlCommand("DELETE FROM identity.user_roles WHERE role_id = @id; DELETE FROM identity.roles WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                await command.ExecuteNonQueryAsync();
+                return Results.NoContent();
+            }).WithName("leaky.deleteNarrowRole").WithSummary("Planted bug: deletes a role checking only its identity permissions.").RequirePermission("leaky.data.delete");
+
+            group.MapPost("/narrow-roles/{id:guid}/copy", async (Guid id, CopyRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (await NarrowRoleAsync(session, id) is not { } role)
+                {
+                    return Results.NotFound();
+                }
+                if (!IdentityOnly(role.Permissions).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                return await InsertRoleAsync(session, request.NameEn, request.NameAr, [.. role.Permissions], "narrow-roles");
+            }).WithName("leaky.copyNarrowRole").WithSummary("Planted bug: copies a role checking only its identity permissions.").RequirePermission("leaky.data.update");
+
+            // Bug 33 (critic p03 round 3, plant P14): members whose access checks compare only
+            // identity permissions, so a clerk holding identity permissions resets the password of,
+            // edits and grants roles to someone who holds another module's permissions.
+            group.MapPost("/narrow-members", async (MemberRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var email = request.Email?.Trim() ?? "";
+                var displayName = request.DisplayName?.Trim() ?? "";
+                if (!email.Contains('@') || email.Length > 254 || displayName.Length is 0 or > 200)
+                {
+                    return Results.BadRequest();
+                }
+                var roleIds = (request.RoleIds ?? []).Distinct().ToList();
+                if (!IdentityOnly(await RolePermissionsAsync(session, roleIds)).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                var id = Guid.NewGuid();
+                await using (var command = new NpgsqlCommand(
+                    "INSERT INTO identity.users (id, tenant_id, email, email_normalized, display_name, language, is_active) " +
+                    "VALUES (@id, erp.current_tenant_id(), @e, lower(@e), @n, 'en', true) ON CONFLICT DO NOTHING", session.Connection, session.Transaction))
+                {
+                    command.Parameters.AddWithValue("id", id);
+                    command.Parameters.AddWithValue("e", email);
+                    command.Parameters.AddWithValue("n", displayName);
+                    if (await command.ExecuteNonQueryAsync() != 1)
+                    {
+                        return Results.Conflict();
+                    }
+                }
+                await SetMemberRolesAsync(session, id, roleIds);
+                return Results.Created($"/api/leaky/narrow-members/{id}", new { id });
+            }).WithName("leaky.createNarrowMember").WithSummary("Planted bug: creates a member checking only the identity permissions of their roles.").RequirePermission("leaky.data.update");
+
+            group.MapGet("/narrow-members/{id:guid}", async (Guid id, ErpDbSession session) =>
+                await MemberAsync(session, id) is { } member ? Results.Ok(member) : Results.NotFound())
+                .WithName("leaky.getNarrowMember").WithSummary("One member.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/narrow-members/{id:guid}", async (Guid id, MemberRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var email = request.Email?.Trim() ?? "";
+                var displayName = request.DisplayName?.Trim() ?? "";
+                if (!email.Contains('@') || email.Length > 254 || displayName.Length is 0 or > 200)
+                {
+                    return Results.BadRequest();
+                }
+                if (await MemberAsync(session, id) is not { } member)
+                {
+                    return Results.NotFound();
+                }
+                var roleIds = (request.RoleIds ?? []).Distinct().ToList();
+                var changed = member.RoleIds.Except(roleIds).Concat(roleIds.Except(member.RoleIds)).ToList();
+                if (!IdentityOnly(await RolePermissionsAsync(session, [.. member.RoleIds])).All(caller.Has) ||
+                    !IdentityOnly(await RolePermissionsAsync(session, changed)).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using (var command = new NpgsqlCommand(
+                    "UPDATE identity.users SET email = @e, email_normalized = lower(@e), display_name = @n WHERE id = @id", session.Connection, session.Transaction))
+                {
+                    command.Parameters.AddWithValue("id", id);
+                    command.Parameters.AddWithValue("e", email);
+                    command.Parameters.AddWithValue("n", displayName);
+                    await command.ExecuteNonQueryAsync();
+                }
+                await SetMemberRolesAsync(session, id, roleIds);
+                return Results.Ok(await MemberAsync(session, id));
+            }).WithName("leaky.updateNarrowMember").WithSummary("Planted bug: edits a member checking only the identity permissions of their roles.").RequirePermission("leaky.data.update");
+
+            group.MapPost("/narrow-members/{id:guid}/password", async (Guid id, NarrowPasswordRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (await MemberAsync(session, id) is not { } member)
+                {
+                    return Results.NotFound();
+                }
+                if (!IdentityOnly(await RolePermissionsAsync(session, [.. member.RoleIds])).All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                // Stands for setting the password: marks the account so the change can be read back.
+                await using var command = new NpgsqlCommand("UPDATE identity.users SET display_name = left(display_name, 180) || ' (reset)' WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                await command.ExecuteNonQueryAsync();
+                return Results.NoContent();
+            }).WithName("leaky.resetNarrowMember").WithSummary("Planted bug: resets a member's password checking only the identity permissions of their roles.").RequirePermission("leaky.data.update");
+
+            // Bug 34 (critic p03 round 3, plant L7): a registry of every role name ever created,
+            // kept in a file outside the tenant's rows, so creating a role answers 409 for a name
+            // another workspace used and 201 otherwise. Its grant check is correct.
+            group.MapPost("/registered-roles", async (NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var permissions = (request.Permissions ?? []).Distinct().ToArray();
+                if (!permissions.All(caller.Has))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                var nameEn = request.NameEn?.Trim() ?? "";
+                if (nameEn.Length is 0 or > 100)
+                {
+                    return Results.BadRequest();
+                }
+                var registry = Path.Combine(Path.GetTempPath(), $"erp-leaky-role-names-{Environment.ProcessId}.txt");
+                lock (typeof(NewRole))
+                {
+                    if (File.Exists(registry) && File.ReadLines(registry).Contains(nameEn, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return Results.Conflict();
+                    }
+                    File.AppendAllLines(registry, [nameEn]);
+                }
+                return await InsertRoleAsync(session, nameEn, request.NameAr, permissions, "registered-roles");
+            }).WithName("leaky.createRegisteredRole").WithSummary("Planted bug: refuses a role name another tenant created (a registry on disk).").RequirePermission("leaky.data.update");
+
             // Bug 31 (critic p03 round 2, plant L4): a registry of every address ever created, kept
             // in a file outside the tenant's rows (no static field, no index), so creating an
             // account answers 409 for an address another tenant created and 201 otherwise.
@@ -1119,6 +1304,43 @@ public sealed class LeakyModule : ErpModule
     public sealed record AccountRequest(string? Email);
 
     public sealed record MemberRequest(string? Email, string? DisplayName, IReadOnlyList<Guid>? RoleIds);
+
+    public sealed record CopyRequest(string? NameEn, string? NameAr);
+
+    public sealed record NarrowPasswordRequest(string? Password);
+
+    public sealed record NarrowRole(Guid Id, string NameEn, string NameAr, IReadOnlyList<string> Permissions, bool IsSystem);
+
+    /// <summary>The planted narrowing: only the identity module's permissions are compared.</summary>
+    private static IEnumerable<string> IdentityOnly(IEnumerable<string> permissions) =>
+        permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal));
+
+    private static async Task<NarrowRole?> NarrowRoleAsync(ErpDbSession session, Guid id)
+    {
+        await using var command = new NpgsqlCommand("SELECT name_en, name_ar, permissions, is_system FROM identity.roles WHERE id = @id", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", id);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? new NarrowRole(id, reader.GetString(0), reader.GetString(1), reader.GetFieldValue<string[]>(2), reader.GetBoolean(3)) : null;
+    }
+
+    private static async Task<IResult> InsertRoleAsync(ErpDbSession session, string? nameEn, string? nameAr, string[] permissions, string collection)
+    {
+        nameEn = nameEn?.Trim() ?? "";
+        nameAr = nameAr?.Trim() ?? "";
+        if (nameEn.Length is 0 or > 100 || nameAr.Length is 0 or > 100)
+        {
+            return Results.BadRequest();
+        }
+        var id = Guid.NewGuid();
+        await using var command = new NpgsqlCommand(
+            "INSERT INTO identity.roles (id, tenant_id, name_en, name_ar, permissions, is_system) VALUES (@id, erp.current_tenant_id(), @en, @ar, @p, false) ON CONFLICT DO NOTHING",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", id);
+        command.Parameters.AddWithValue("en", nameEn);
+        command.Parameters.AddWithValue("ar", nameAr);
+        command.Parameters.AddWithValue("p", permissions);
+        return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/{collection}/{id}", new { id }) : Results.Conflict();
+    }
 
     public sealed record Member(Guid Id, string Email, string DisplayName, IReadOnlyList<Guid> RoleIds);
 

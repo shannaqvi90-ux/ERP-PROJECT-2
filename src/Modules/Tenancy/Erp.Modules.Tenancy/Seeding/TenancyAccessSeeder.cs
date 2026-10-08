@@ -9,7 +9,8 @@ namespace Erp.Modules.Tenancy.Seeding;
 /// users may work in, and where they start. Administrators work in every company; the read-only
 /// user in the first company only, limited to some of its branches; the user without roles in
 /// none. In the gate fixture the second administrator is limited to one branch of the second
-/// company and starts there, so every access table holds rows of both companies. A provisioned
+/// company and starts there, so every access table holds rows of both companies. The accountant
+/// (who holds different roles in different companies) works in the first two. A provisioned
 /// workspace's first administrator works in its company.
 /// </summary>
 internal sealed class TenancyAccessSeeder(TenancyDbContext db, IUserDirectory users) : ITenantSeeder
@@ -77,6 +78,16 @@ internal sealed class TenancyAccessSeeder(TenancyDbContext db, IUserDirectory us
             var some = BranchesOf(first);
             Grant(viewer, first, some.Count > 1 ? some.Take(some.Count - 1).ToList() : null);
             Start(viewer, first, some.FirstOrDefault());
+        }
+        // The accountant holds roles per company (identity seeds them): she works in the first two
+        // companies, every branch, and starts in the first.
+        if (await UserAsync($"accountant@{domain}") is { } accountant)
+        {
+            foreach (var company in companies.Take(2))
+            {
+                Grant(accountant, company);
+            }
+            Start(accountant, first, BranchesOf(first).FirstOrDefault());
         }
         await db.SaveChangesAsync(cancellationToken);
     }

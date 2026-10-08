@@ -56,8 +56,10 @@ public static class FieldVariants
     /// <paramref name="grantValue"/> gives a grant field (<c>roleIds</c>, <c>permissions</c>) its
     /// changed value: what is a valid change of a grant depends on who sends it and at whom.
     /// </summary>
+    /// <param name="idValue">Gives an id field (a default company) its changed value: which ids are
+    /// valid depends on the record and the caller. Without it an id field is a blind spot.</param>
     public static JsonObject? Apply(OpenApiDocument openApi, JsonElement schema, Spec spec, JsonObject baseBody, string tag, string emailDomain,
-        Func<string, JsonArray, JsonArray?> grantValue)
+        Func<string, JsonArray, JsonArray?> grantValue, Func<string, JsonNode?, JsonNode?>? idValue = null)
     {
         var body = (JsonObject)baseBody.DeepClone();
         if (spec.Kind == Kind.Omitted)
@@ -74,7 +76,7 @@ public static class FieldVariants
         else
         {
             var properties = openApi.Resolve(schema).GetProperty("properties");
-            changed = ChangedValue(openApi, properties.GetProperty(spec.Field), spec.Field, current, tag, emailDomain);
+            changed = ChangedValue(openApi, properties.GetProperty(spec.Field), spec.Field, current, tag, emailDomain, idValue);
         }
         if (changed is null || JsonNode.DeepEquals(changed, current))
         {
@@ -84,7 +86,8 @@ public static class FieldVariants
         return body;
     }
 
-    private static JsonNode? ChangedValue(OpenApiDocument openApi, JsonElement propertySchema, string name, JsonNode? current, string tag, string emailDomain)
+    private static JsonNode? ChangedValue(OpenApiDocument openApi, JsonElement propertySchema, string name, JsonNode? current, string tag, string emailDomain,
+        Func<string, JsonNode?, JsonNode?>? idValue)
     {
         var schema = openApi.Resolve(propertySchema);
         if (schema.TryGetProperty("enum", out var values) && values.ValueKind == JsonValueKind.Array)
@@ -98,7 +101,8 @@ public static class FieldVariants
         return openApi.TypeOfSchema(schema) switch
         {
             "boolean" => JsonValue.Create(!(current is JsonValue b && b.GetValueKind() == JsonValueKind.True)),
-            "string" when format is "uuid" or "date" or "date-time" => null,
+            "string" when format is "uuid" => idValue?.Invoke(name, current),
+            "string" when format is "date" or "date-time" => null,
             "string" when lower.Contains("email") => JsonValue.Create($"g2.field.{tag}@{emailDomain}"),
             "string" when lower.Contains("password") => JsonValue.Create($"Field-Varied-{tag}-Pass9"),
             "string" when lower == "language" => JsonValue.Create(currentText == "ar" ? "en" : "ar"),

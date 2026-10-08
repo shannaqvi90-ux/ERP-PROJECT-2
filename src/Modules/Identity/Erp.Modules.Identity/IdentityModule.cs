@@ -27,7 +27,10 @@ public sealed class IdentityModule : ErpModule
         module.DbContext<IdentityDbContext>();
         module.Services.AddOptions<AuthOptions>().Bind(module.Configuration.GetSection("Erp:Auth"));
         module.Services.AddScoped<ISessionResolver, SessionResolver>();
+        module.Services.AddScoped<SessionGrants>();
+        module.Services.AddScoped<ISessionPermissionScope>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
+        module.Services.AddSingleton<TrustedDevices>();
         module.Services.AddScoped<SessionPayload>();
         module.Services.AddScoped<IUserDirectory, UserDirectory>();
         module.Endpoints("auth", AuthEndpoints.Map);
@@ -51,6 +54,7 @@ public sealed class IdentityModule : ErpModule
         module.Report<Reports.UsersByRoleReport>(Reports.UsersByRoleReport.Definition);
         module.Report<Reports.RoleSummaryReport>(Reports.RoleSummaryReport.Definition);
         module.Seeder<IdentitySeeder>();
+        module.Seeder<IdentityCompanyRoleSeeder>();
     }
 }
 
@@ -76,6 +80,11 @@ public sealed class User : TenantEntity
     /// <summary>When an administrator last cleared this account's sign-in pauses. Failed attempts
     /// before it no longer count.</summary>
     public DateTimeOffset? SignInUnblockedAt { get; set; }
+
+    /// <summary>How many roles the user holds in one company (rows of <see cref="UserCompanyRole"/>
+    /// in every company, kept by a database trigger). An administrator sees only the rows of the
+    /// companies they work in; comparing with this tells whether the user holds roles elsewhere.</summary>
+    public int CompanyRoleCount { get; set; }
 }
 
 /// <summary>
@@ -155,6 +164,20 @@ public sealed class UserRole : TenantEntity
     public Guid RoleId { get; set; }
 }
 
+/// <summary>
+/// A role a user holds in one company only: what it grants counts while the user works in that
+/// company and nowhere else ("accountant in the Dubai LLC, read-only in the JAFZA entity"). Rows
+/// belong to their company (row-level security shows a caller only the companies they work in;
+/// the user's own rows stay readable to their session, which reads them before its scope exists).
+/// A role in <see cref="UserRole"/> applies in every company.
+/// </summary>
+public sealed class UserCompanyRole : TenantEntity, ICompanyOwned
+{
+    public Guid UserId { get; set; }
+    public Guid RoleId { get; set; }
+    public Guid CompanyId { get; set; }
+}
+
 /// <summary>A signed-in session. Only the SHA-256 hash of the token is stored.</summary>
 public sealed class Session : TenantEntity
 {
@@ -176,6 +199,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<UserCompanyRole> UserCompanyRoles => Set<UserCompanyRole>();
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<UserCredential> Credentials => Set<UserCredential>();
     public DbSet<SignInAttempt> SignInAttempts => Set<SignInAttempt>();
@@ -189,6 +213,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
                 t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                 t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
+                t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
             });
             e.Property(x => x.Email).HasMaxLength(254);
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
@@ -207,6 +232,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.HasIndex(x => x.DisplayNameAr, "ix_users_search_ar").HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => new { x.TenantId, x.CreatedAt, x.Id });
             e.HasIndex(x => new { x.TenantId, x.LastSignInAt, x.Id });
+            // Kept by the count_company_roles trigger, never written by the application.
+            e.Property(x => x.CompanyRoleCount).HasDefaultValue(0).ValueGeneratedOnAddOrUpdate();
         });
 
         modelBuilder.Entity<Role>(e =>
@@ -225,6 +252,18 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.ToTable("user_roles");
             e.HasIndex(x => new { x.TenantId, x.UserId, x.RoleId }).IsUnique();
             e.HasIndex(x => new { x.TenantId, x.RoleId });
+            e.HasOne<User>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId })
+                .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Role>().WithMany().HasForeignKey(x => new { x.TenantId, x.RoleId })
+                .HasPrincipalKey(r => new { r.TenantId, r.Id }).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserCompanyRole>(e =>
+        {
+            e.ToTable("user_company_roles");
+            e.HasIndex(x => new { x.TenantId, x.UserId, x.RoleId, x.CompanyId }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.RoleId });
+            e.HasIndex(x => new { x.TenantId, x.CompanyId });
             e.HasOne<User>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId })
                 .HasPrincipalKey(u => new { u.TenantId, u.Id }).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<Role>().WithMany().HasForeignKey(x => new { x.TenantId, x.RoleId })
@@ -318,8 +357,13 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
         return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
     }
 
-    public Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
-        PermissionQueries.ForUserAsync(db, userId, catalog, cancellationToken);
+    public async Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var grants = await GrantQueries.ForUserAsync(db, userId, catalog, ownRows: false, cancellationToken);
+        // Roles held in companies outside the current scope grant what nobody here can see: the
+        // user counts as holding everything, so only someone who holds everything acts on them.
+        return grants.Hidden > 0 ? catalog.PermissionKeys.ToHashSet(StringComparer.Ordinal) : grants.Anywhere();
+    }
 
     public async Task<UserSummary?> FindByEmailAsync(string email, CancellationToken cancellationToken)
     {
@@ -349,4 +393,13 @@ public sealed class AuthOptions
     /// <summary>Always mark the cookie Secure (set in production behind TLS). When false the
     /// cookie is Secure only on HTTPS requests, so the local demo works over http://localhost.</summary>
     public bool AlwaysSecureCookie { get; set; }
+
+    /// <summary>Key that signs the trusted-device cookie (<see cref="TrustedDevices"/>). Set it
+    /// when several app instances serve one deployment, so each accepts the others' cookies;
+    /// unset, each process signs with a random key of its own and devices fall back to their
+    /// network address after a restart.</summary>
+    public string? DeviceKey { get; set; }
+
+    /// <summary>How long a browser stays a trusted device of an account after signing in to it.</summary>
+    public int DeviceDays { get; set; } = 180;
 }
