@@ -137,7 +137,7 @@ internal static class BranchEndpoints
     {
         var validator = Validate(request, http, requireVersion: false);
         var company = request.CompanyId is { } companyId
-            ? await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Id, c.IsActive }).SingleOrDefaultAsync(cancellationToken)
+            ? await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Id, c.IsActive, c.LegalNameEn }).SingleOrDefaultAsync(cancellationToken)
             : null;
         validator.Must(request.CompanyId is null || company is not null, "companyId", "unknownIds")
             .Must(company is null || company.IsActive, "companyId", "tenancyCompanyInactive");
@@ -156,7 +156,7 @@ internal static class BranchEndpoints
         if (string.IsNullOrEmpty(code))
         {
             var taken = await db.Branches.AsNoTracking().Where(b => b.CompanyId == company!.Id).Select(b => b.Code).ToListAsync(cancellationToken);
-            code = TenancyValidation.SuggestCode(request.NameEn, taken, "BR");
+            code = TenancyValidation.SuggestCode(TenancyValidation.BranchCodeBasis(request.NameEn, company!.LegalNameEn), taken, "BR");
         }
         else if (await db.Branches.AnyAsync(b => b.CompanyId == company!.Id && b.Code == code, cancellationToken))
         {

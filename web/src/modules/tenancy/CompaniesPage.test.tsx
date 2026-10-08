@@ -116,6 +116,44 @@ describe("companies screen", () => {
     expect(branch.body).toMatchObject({ companyId: "c9", code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي", isActive: true });
   });
 
+  it("on an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus", async () => {
+    // Critic p02 round 6: in Arabic, Ctrl+S moved to the English name (already holding the English
+    // company name), so an Arabic branch name typed there was saved as the English name.
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: { ...session, user: { ...session.user, language: "ar" } } };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: { id: "b9" } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="ar" />);
+    await settle();
+    press({ altKey: true, code: "KeyN", key: "n" });
+    await settle();
+    setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");
+    setInput(field(view.container, "legalNameAr"), "النور عجمان ذ.م.م");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const line = document.activeElement as HTMLInputElement;
+    expect(line.name).toBe("branchNameAr");
+    expect(line.value).toBe("النور عجمان ذ.م.م - ");
+    expect(line.selectionStart).toBe(line.value.length);
+    // The Arabic name comes first on the line (Tab goes on to the English one).
+    const names = [...view.container.querySelectorAll<HTMLInputElement>(".quick-add input")].map((i) => i.name);
+    expect(names.indexOf("branchNameAr")).toBeLessThan(names.indexOf("branchNameEn"));
+    setInput(line, line.value + "فرع العين");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
+    expect(branch.body).toMatchObject({ nameAr: "النور عجمان ذ.م.م - فرع العين", nameEn: "Al Noor Ajman LLC" });
+  });
+
   it("names a new branch after its company: the typed part follows the company's name, and the name alone is the company's", async () => {
     window.history.replaceState(null, "", "/tenancy/companies?open=c9");
     const calls = mockFetch((method, url) => {

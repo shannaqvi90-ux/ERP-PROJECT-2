@@ -108,6 +108,23 @@ internal static partial class TenancyValidation
         StringComparer.Ordinal);
 
     /// <summary>
+    /// What a branch's code is made from when none is typed: the branch's own part of a name that
+    /// trades under its company's ("Falcon Logistics LLC - Jebel Ali Branch" gives JEBEL), and HQ for
+    /// a branch named after its company alone, its head office (critic p02 round 6: every suggested
+    /// branch code repeated the company code).
+    /// </summary>
+    public static string? BranchCodeBasis(string? branchName, string? companyName)
+    {
+        var name = (branchName ?? "").Trim();
+        var dash = name.LastIndexOf(" - ", StringComparison.Ordinal);
+        if (dash >= 0 && name[(dash + 3)..].Trim() is { Length: > 0 } own)
+        {
+            return own;
+        }
+        return name.Length > 0 && string.Equals(name, (companyName ?? "").Trim(), StringComparison.OrdinalIgnoreCase) ? "HQ" : name;
+    }
+
+    /// <summary>
     /// A code made from an English name (its first distinctive word, joined to the next when short:
     /// "Al Noor Trading LLC" becomes AL-NOOR), unique among <paramref name="taken"/> by a numeric
     /// suffix. Names without Latin letters get <paramref name="fallback"/>-1, -2, …

@@ -94,7 +94,13 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
 
         var branch = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC - Jebel Ali Branch", country = "AE", isActive = true });
         Assert.Equal(HttpStatusCode.Created, branch.StatusCode);
-        Assert.Equal("FALCON", (await Json(branch)).GetProperty("code").GetString());
+        // The branch's own part of the name, not the company's (critic p02 round 6), and HQ for the
+        // branch named after the company alone.
+        Assert.Equal("JEBEL", (await Json(branch)).GetProperty("code").GetString());
+        var headOffice = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC", country = "AE", isActive = true });
+        Assert.Equal("HQ", (await Json(headOffice)).GetProperty("code").GetString());
+        var dubai = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC - Al Quoz Warehouse", country = "AE", isActive = true });
+        Assert.Equal("AL-QUOZ", (await Json(dubai)).GetProperty("code").GetString());
         var noName = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), country = "AE", isActive = true });
         Assert.Equal("tenancyNameEnOrAr", (await Json(noName)).GetProperty("errors").GetProperty("nameEn")[0].GetProperty("code").GetString());
     }
