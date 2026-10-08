@@ -1221,7 +1221,16 @@ function RecordPanel({
 
 /** A text value as a box of its own direction (see .list-text): cut at its own end when it does not fit. */
 function textBox(column: ListColumn, content: ReactNode): ReactNode {
-  return column.type === "text" && typeof content === "string" ? <span className="list-text">{content}</span> : content;
+  // dir="auto": the box's direction (and so the end its ellipsis cuts) is the value's own, not the
+  // page's: a Latin name in an Arabic list is cut at its end, "Al Noor Technical Serv…", never at
+  // its beginning (unicode-bidi alone orders the letters but leaves the ellipsis on the page's end).
+  return column.type === "text" && typeof content === "string" ? (
+    <span className="list-text" dir="auto">
+      {content}
+    </span>
+  ) : (
+    content
+  );
 }
 
 /** A column's width in the grid template: a minimum in rem and a share of the rest. */

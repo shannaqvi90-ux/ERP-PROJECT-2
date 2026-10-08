@@ -165,6 +165,17 @@ test.describe("list framework", () => {
     await expect(dataRows(page).first()).toBeVisible();
   });
 
+  test("groups by status under the status's own words, as the rows say them", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openUsers(page);
+    await page.getByRole("button", { name: "Options for the column Status" }).click();
+    await page.getByRole("menuitem", { name: "Group by this column" }).click();
+    const groups = page.locator("tbody.list-groups tr");
+    await expect(groups.first()).toContainText("Active");
+    await expect(page.locator("tbody.list-groups")).not.toContainText(/\bYes\b|\bNo\b/);
+  });
+
   test("chooses columns and saves a personal default view that opens next time", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
@@ -209,7 +220,8 @@ test.describe("list framework", () => {
     await openUsers(page);
     await page.getByRole("button", { name: /^View:/ }).click();
     await page.getByRole("menuitemradio", { name: "Inactive users" }).click();
-    await expect(page.getByRole("list", { name: "Filters" })).toContainText("Status is No");
+    // A status is called what the column calls it (critic p05 round 5: the group said "Yes").
+    await expect(page.getByRole("list", { name: "Filters" })).toContainText("Status is Inactive");
     await page.getByRole("button", { name: /^View:/ }).click();
     await page.getByRole("menuitem", { name: "Save as a new view…" }).click();
     const dialog = page.getByRole("dialog", { name: "Save view" });
@@ -234,11 +246,14 @@ test.describe("list framework", () => {
         const v = value.getBoundingClientRect();
         const padding = parseFloat(getComputedStyle(cell).paddingInlineStart);
         // Right edge of the value at the cell's start (its right, less padding); cut at its own end.
-        return [{ atStart: Math.abs(c.right - padding - v.right) <= 1, unicodeBidi: getComputedStyle(value).unicodeBidi, cut: value.scrollWidth > value.clientWidth }];
+        return [{ atStart: Math.abs(c.right - padding - v.right) <= 1, unicodeBidi: getComputedStyle(value).unicodeBidi, direction: getComputedStyle(value).direction, cut: value.scrollWidth > value.clientWidth }];
       }),
     );
     expect(placement.length).toBeGreaterThan(3);
-    expect(placement.every((p) => p.atStart && p.unicodeBidi === "plaintext"), JSON.stringify(placement)).toBe(true);
+    // The value box takes the value's own direction (dir="auto"), so the ellipsis of a Latin
+    // address or name that does not fit is at its end (round 6: an English company name in the
+    // Arabic companies list lost its beginning, "…oor Technical Services LLC").
+    expect(placement.every((p) => p.atStart && p.unicodeBidi === "plaintext" && p.direction === "ltr"), JSON.stringify(placement)).toBe(true);
     await page.keyboard.type("viewer@alnoor");
     await expect(page.getByText("مستخدم واحد", { exact: true })).toBeVisible();
     await page.keyboard.press("Enter");
