@@ -30,7 +30,7 @@ const signInBudget = 24;
 const signInWindowMs = 61_000;
 const recentSignIns: number[] = [];
 
-async function paceSignIn(page: Page) {
+export async function paceSignIn(page: Page) {
   for (;;) {
     const now = Date.now();
     while (recentSignIns.length > 0 && now - recentSignIns[0]! >= signInWindowMs) recentSignIns.shift();

@@ -1,0 +1,59 @@
+-- no tenant bound
+ companies 
+-----------
+         0
+(1 row)
+
+ tenants 
+---------
+       0
+(1 row)
+
+-- tenant A bound via GUC without the transaction marker
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ROLLBACK
+-- try company_scope all without tx marker
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ set_config 
+------------
+ all
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ROLLBACK
+-- update another
+unterminated quoted string
+UPDATE 0
+-- disable RLS
+ERROR:  must be owner of table companies
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "postgres"
+ current_user 
+--------------
+ erp_app
+(1 row)
+

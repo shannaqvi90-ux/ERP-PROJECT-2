@@ -140,6 +140,10 @@ $(bold "The demo is running ($((SECONDS - started)) s): http://localhost:$ERP_HT
     noaccess@alnoor.example    No roles (sees nothing)
     admin@gulfsteel.example    Administrator of the second workspace
 
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:$ERP_HTTP_PORT/?domain=alnoor.example
+    http://localhost:$ERP_HTTP_PORT/?domain=gulfsteel.example
+
   API description: http://localhost:$ERP_HTTP_PORT/api/openapi/v1.json
   Database:        localhost:$ERP_DB_PORT (./erp psql)
   Stop:            ./erp down        (add --volumes to delete the data)

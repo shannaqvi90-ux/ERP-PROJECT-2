@@ -234,6 +234,19 @@ public static class ErpPlatform
             {
                 problems.Add($"{name}: permission '{permissions[0].Permission}' is not in any module's catalogue");
             }
+            else if (permissions.Count == 1 && endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null)
+            {
+                // .AllowAnonymous() makes ASP.NET Core skip authorization: the permission would never be checked.
+                problems.Add($"{name}: declares '{permissions[0].Permission}' but allows anonymous callers, so it is never checked");
+            }
+            else if (permissions.Count == 1 && !EnforcesPermission(endpoint, permissions[0].Permission))
+            {
+                // The declaration is metadata only; what ASP.NET Core enforces is the endpoint's
+                // authorization policy. A declaration without a matching requirement (for example
+                // WithMetadata(new RequiresPermissionAttribute(...)) with .RequireAuthorization())
+                // would let any signed-in user through. Use RequirePermission.
+                problems.Add($"{name}: declares '{permissions[0].Permission}' but no authorization policy on it requires that permission; use RequirePermission");
+            }
         }
         if (problems.Count > 0)
         {
@@ -266,6 +279,13 @@ public static class ErpPlatform
             throw new InvalidOperationException("Report registrations are inconsistent:\n" + string.Join("\n", problems));
         }
     }
+
+    /// <summary>True when an authorization policy attached to the endpoint requires a signed-in
+    /// user and exactly the declared permission.</summary>
+    public static bool EnforcesPermission(Endpoint endpoint, string permission) =>
+        endpoint.Metadata.OfType<AuthorizationPolicy>().Any(policy =>
+            policy.Requirements.OfType<PermissionRequirement>().Any(r => r.Permission == permission) &&
+            policy.Requirements.OfType<Microsoft.AspNetCore.Authorization.Infrastructure.DenyAnonymousAuthorizationRequirement>().Any());
 
     /// <summary>Every registered list is served by a GET endpoint that declares the list's
     /// permission. The host refuses to start otherwise.</summary>

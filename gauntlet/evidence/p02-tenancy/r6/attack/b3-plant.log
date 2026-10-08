@@ -1,0 +1,9 @@
+limit 200
+branches list as branch-limited [ 'AQZ-WH' ]
+company profile json 200 contains DEIRA-HQ: true contains DIP-SR: true
+company profile csv 200 contains DEIRA-HQ: true contains DIP-SR: true
+Code,Branch,City,Emirate,Phone,Active
+AQZ-WH,Al Quoz warehouse,Dubai,Dubai,'+971 4 347 2210,Yes
+DEIRA-HQ,Deira head office,Dubai,Dubai,'+971 4 221 5500,Yes
+DIP-SR,Dubai Investments Park showroom,Dubai,Dubai,'+971 4 885 1290,Yes
+
