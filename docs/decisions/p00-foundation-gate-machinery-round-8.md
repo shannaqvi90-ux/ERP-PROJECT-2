@@ -67,12 +67,26 @@ device key). Gate `G1RowVersionTests`: no version tenant A is shown is a transac
 tenant row, and two of A's records written around three of B's are not as close as the
 transactions between them.
 
-## Processor time this round adds (estimates from targeted runs on this machine)
+## 5. Values made afresh for every answer (nonces)
 
+The anonymous session answer now carries a fresh passkey challenge, and a JSON report carries the
+second it was printed. Two answers to the very same request then differ, and the differential
+checks reported them as oracles. `Infrastructure/Nonces.cs` is the one mechanism: when a pair
+differs, the control is asked once more (the company and branch attacks ask both sides again); a
+string that differs between two answers to the same request, at the same place and with the same
+length, is a nonce, and the answers are compared with each nonce replaced by its length. A
+difference of any other kind (another length, another place, another status) still tells.
+
+## Processor time
+
+- The full verify on this branch (e1344f2) passed with 9,082 s of processor time (.NET 7,332,
+  web 1,473, end-to-end 235, timing 42), load 18 to 45 with two other verifies running; the same
+  work used 6,472 s for .NET in an earlier run at a lower load. The maximum is 10,500 s.
+- Answer shapes with documented values: the phase took 67 s of wall time in the HTTP attack
+  (1206.6 s to 1273.5 s of the run), 652 shapes against about 460 before.
 - Write-oracle undo and restore: one GET and one PUT per accepted address write of tenant A and per
-  workspace record, under 1 s.
-- Documented values: about 60 extra rendered shapes per print route for tenant B and the same for
-  tenant A; measured in the HTTP attack's run (see the round's verify).
+  workspace record, under 1 s. Nonce re-asks: only for pairs that differ.
 - Row versions: tables drawn once per process (1 MB of AES, about 2 ms); two table lookups per
-  version read or written.
-- G1RowVersionTests: one pass over the list endpoints and the tenant tables, about 2 s.
+  version read or written. G1RowVersionTests: about 2 s.
+- Saved: test processes run with tiered PGO off (`build/verify-inside.sh`), about 3 % less user
+  time on interleaved runs of two gate classes (245 and 250 s against 253 and 257 s).
