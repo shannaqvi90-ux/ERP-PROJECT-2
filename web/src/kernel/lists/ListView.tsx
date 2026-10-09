@@ -18,6 +18,7 @@ import {
   sortText,
   stateFromAddress,
   stateFromView,
+  searchEnterWaits,
   stateToAddress,
   toggleSort,
   visibleRange,
@@ -584,7 +585,7 @@ export function ListView(props: ListViewProps) {
       // The rows on screen may still be the previous query's: the search was applied a moment
       // ago and its request has not started yet (the render is in, its effects are not), so
       // `loading` is still false. Wait for this query's own first page in that case too.
-      if (searchText !== appliedSearch || rows.loading || rows.loadedKey !== expectedKey) {
+      if (searchEnterWaits({ searchText, appliedSearch, loading: rows.loading, loadedKey: rows.loadedKey, expectedKey })) {
         openWhenSingle.current = true;
         setAppliedSearch(searchText);
       } else {

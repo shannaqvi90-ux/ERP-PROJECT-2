@@ -26,6 +26,20 @@ profile and of every later module's documents. An empty one prints a document wi
   current Federal Tax Authority publication recorded in `docs/compliance/` with owner sign-off, so it
   is not changed here from memory. The field keeps its storage-only rule (digits, at most 20).
 
+## Round 8: the database holds the same line
+
+The API refused the empty English legal name from round 7, but the table's check constraint
+`ck_companies_legal_name` still read `legal_name_en <> '' OR legal_name_ar <> ''`, so any other
+writer (a seeder, an operator command, a later module, a hand-made SQL fix) could still store an
+empty or blank English legal name next to an Arabic one. Migration
+`CompanyEnglishLegalNameRequired` replaces it with `btrim(legal_name_en) <> ''`. Existing rows
+already pass: the seeders and provisioning always give an English name and the API has refused a
+blank one since round 7. A database holding a blank English legal name from before round 7 (a
+developer's old demo volume) fails this migration; `./erp down --volumes` starts it again (no
+production data exists). `CompanyTests` checks that an UPDATE to an empty and to a blank English
+legal name is refused with a check violation naming the constraint.
+
 ## Processor time
 
-One extra module test path (a few requests) and one web assertion: well under a second.
+One extra module test path (a few requests and two refused UPDATE statements in an existing test)
+and one web assertion: well under a second.
