@@ -790,4 +790,21 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/registered-roles [nameEn]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/roles", result.Endpoints);
     }
+
+    /// <summary>Bug 58 (critic p03 rounds 5 and 6, plant L3): a membership naming another
+    /// workspace's company inside a list of objects answers "not their company", an id that exists
+    /// nowhere "unknown ids". The id differential must report it, and no product endpoint.</summary>
+    [Fact]
+    public async Task The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one()
+    {
+        var result = await G1WriteOracle.RunIdsAsync(fixture.Env);
+        foreach (var problem in result.Problems.Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/company-memberships [memberships[].companyId]: tenant A naming tenant B's record", StringComparison.Ordinal) &&
+                                              p.Contains("notTheirCompany", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/users [companyRoles[].companyId]", result.Judged);
+    }
 }

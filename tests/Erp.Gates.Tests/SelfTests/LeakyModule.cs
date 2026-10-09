@@ -928,6 +928,60 @@ public sealed class LeakyModule : ErpModule
                 return await command.ExecuteNonQueryAsync() == 1 ? Results.Created($"/api/leaky/accounts/{id}", new { id }) : Results.Conflict();
             }).WithName("leaky.createAccount").WithSummary("Planted bug: refuses an address another tenant created (a registry on disk).").RequirePermission("leaky.data.update");
 
+            // Bug 58 (critic p03 rounds 5 and 6, plant L3): every company id any workspace lists is
+            // kept in a file outside the tenant's rows, and a membership naming a company of
+            // another workspace (inside a list of objects, as a user's company roles are) answers
+            // "not their company" while an id that exists nowhere answers "unknown ids". The list
+            // answers only the caller's own companies.
+            group.MapGet("/listed-companies", async (ErpDbSession session) =>
+            {
+                var ids = new List<Guid>();
+                await using (var command = new NpgsqlCommand("SELECT id FROM tenancy.companies ORDER BY id", session.Connection, session.Transaction))
+                await using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        ids.Add(reader.GetGuid(0));
+                    }
+                }
+                lock (typeof(MembershipsRequest))
+                {
+                    File.AppendAllLines(ListedCompaniesFile, ids.Select(id => id.ToString()));
+                }
+                return Results.Ok(ids.Select(id => new { id }));
+            }).WithName("leaky.listedCompanies").WithSummary("Planted bug: remembers every company id any workspace lists (a registry on disk).").RequirePermission("leaky.data.read");
+            group.MapPost("/company-memberships", async (MembershipsRequest request, ErpDbSession session) =>
+            {
+                var named = (request.Memberships ?? []).Select(m => m.CompanyId).ToList();
+                if (named.Count == 0 || named.Any(id => id is null))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["memberships"] = ["required"] });
+                }
+                var own = new HashSet<Guid>();
+                await using (var command = new NpgsqlCommand("SELECT id FROM tenancy.companies", session.Connection, session.Transaction))
+                await using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        own.Add(reader.GetGuid(0));
+                    }
+                }
+                var foreign = named.Where(id => !own.Contains(id!.Value)).ToList();
+                if (foreign.Count == 0)
+                {
+                    return Results.NoContent();
+                }
+                HashSet<string> listed;
+                lock (typeof(MembershipsRequest))
+                {
+                    listed = File.Exists(ListedCompaniesFile) ? File.ReadLines(ListedCompaniesFile).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+                }
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["memberships"] = [foreign.Any(id => listed.Contains(id!.Value.ToString())) ? "notTheirCompany" : "unknownIds"],
+                });
+            }).WithName("leaky.companyMemberships").WithSummary("Planted bug: tells a company of another workspace from an id that exists nowhere.").RequirePermission("leaky.data.update");
+
             // Bug 4: a lookup by e-mail through the reviewed sign-in function (the tenant is ignored).
             group.MapGet("/lookup", async (string? email, ErpDbSession session) =>
                 Results.Ok(await ResolveLoginAsync(session, email ?? "")))
@@ -1448,6 +1502,13 @@ public sealed class LeakyModule : ErpModule
         command.Parameters.AddWithValue("id", userId);
         return (string?)await command.ExecuteScalarAsync() ?? "";
     }
+
+    /// <summary>Bug 58's registry of every company id any workspace listed.</summary>
+    private static string ListedCompaniesFile => Path.Combine(Path.GetTempPath(), $"erp-leaky-listed-companies-{Environment.ProcessId}.txt");
+
+    public sealed record Membership(Guid? CompanyId, string? Note);
+
+    public sealed record MembershipsRequest(IReadOnlyList<Membership>? Memberships);
 
     public sealed record FindRequest(string? Reference);
 
