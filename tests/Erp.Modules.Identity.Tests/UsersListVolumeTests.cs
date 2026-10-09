@@ -233,6 +233,49 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
         Assert.True(csvSeconds < 60 && xlsxSeconds < 60, $"CSV {csvSeconds:F1} s, XLSX {xlsxSeconds:F1} s");
     }
 
+    /// <summary>Initials (critic p05 round 7, find-user: the shortest name-only path): the four
+    /// letters of a name's words find its person among 100,000 users within the budget, and the
+    /// database seeks them on (tenant, initials) beside the trigram index, never scanning the table.</summary>
+    [Fact]
+    public async Task One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
+        var (page, timing) = await TimedAsync(admin, "/api/identity/users?take=200&search=swar");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{timing}; {page.GetProperty("total").GetInt32()} matches");
+        Assert.True(timing.WithinBudget, timing.ToString());
+        Assert.True(page.GetProperty("ranked").GetBoolean(), "a search for initials is ranked");
+        Assert.Contains(page.GetProperty("items").EnumerateArray(), u => u.GetProperty("displayName").GetString() == UsersVolumeFixture.NeedleName);
+
+        await using var app = await Env.OpenAppAsync();
+        await using var tx = await app.BeginTransactionAsync();
+        await using (var bind = new NpgsqlCommand(
+                         "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", app, tx))
+        {
+            bind.Parameters.AddWithValue("t", fixture.Main.Id.ToString());
+            await bind.ExecuteNonQueryAsync();
+        }
+        await using var explain = new NpgsqlCommand("""
+            EXPLAIN (FORMAT TEXT)
+            SELECT id FROM identity.users
+             WHERE tenant_id = @t
+               AND (display_name ILIKE @p ESCAPE '' OR email_normalized ILIKE @p ESCAPE '' OR name_initials = @i)
+            """, app, tx);
+        explain.Parameters.AddWithValue("t", fixture.Main.Id);
+        explain.Parameters.AddWithValue("p", "%swar%");
+        explain.Parameters.AddWithValue("i", "swar");
+        var plan = new List<string>();
+        await using (var reader = await explain.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                plan.Add(reader.GetString(0));
+            }
+        }
+        var text = string.Join("\n", plan);
+        Assert.True(text.Contains("ix_users_tenant_id_name_initials", StringComparison.Ordinal), text);
+        Assert.DoesNotContain("Seq Scan", text, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Word_search_is_served_by_the_trigram_index_not_a_table_scan()
     {

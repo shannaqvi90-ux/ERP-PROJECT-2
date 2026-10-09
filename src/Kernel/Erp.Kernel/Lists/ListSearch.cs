@@ -35,6 +35,17 @@ public static class ListSearch
     internal const int PhraseStartScore = 8;
     internal const int InOrderScore = 4;
 
+    /// <summary>A one-word search equal to the initials of the first search field (see
+    /// <see cref="ListBinding{T}.Initials"/>): less than a word at the start of a word, so the
+    /// people whose names hold the word come first.</summary>
+    internal const int InitialsScore = 1;
+
+    /// <summary>Most letters a word may have and still be tried as initials.</summary>
+    public const int MaxInitials = 8;
+
+    /// <summary>The key of a binding's initials (never a column key: column keys cannot start with '~').</summary>
+    public const string InitialsKey = "~initials";
+
     /// <summary>Relevance is score × this, minus the length of the first search field (capped), so
     /// that among equally good matches the shorter (closer) value comes first.</summary>
     internal const int LengthSlots = 1024;

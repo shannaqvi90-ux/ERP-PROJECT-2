@@ -366,6 +366,20 @@ internal static class IdentitySql
             FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count');
         """;
 
+    /// <summary>The users' initials (a stored generated column) follow the name: an audit entry
+    /// already records the name's change, so the initials stay out of the change set.</summary>
+    public const string NameInitials = """
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count', '-name_initials');
+        """;
+
+    public const string NameInitialsDown = """
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count');
+        """;
+
     public const string CompanyRolesDown = """
         DROP TRIGGER IF EXISTS count_company_roles ON identity.user_company_roles;
         DROP FUNCTION IF EXISTS identity.count_company_roles();

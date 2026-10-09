@@ -39,6 +39,11 @@ public interface IListBinding
     /// module shows over this module's rows, see <c>ModuleBuilder.List(definition, servedBy)</c>):
     /// the columns the other definition names keep their bindings, the rest are left out.</summary>
     IListBinding ServeAs(ListDefinition definition);
+
+    /// <summary>The stored initials of each row's first search field that a one-word search also
+    /// matches (see <see cref="ListBinding{T}.Initials"/>), or null. Its key is
+    /// <see cref="ListSearch.InitialsKey"/>; the index gate reads its member like a column's.</summary>
+    ListBoundColumn? InitialsColumn => null;
 }
 
 /// <summary>The result of one list query: the page's rows, or the problem the caller must fix.</summary>
@@ -97,17 +102,19 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private readonly FrozenDictionary<string, Bound> _columns;
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
+    private readonly Expression<Func<T, string?>>? _initials;
 
     // A binding never changes once built: Column and InMemory return a new binding, so a
     // registered binding (shared by every request of every tenant) holds no state of its own.
     private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
-        FrozenDictionary<string, Bound> columns, string? inMemoryReason)
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null)
     {
         Definition = definition;
         _id = id;
         _idOf = idOf;
         _columns = columns;
         InMemoryReason = inMemoryReason;
+        _initials = initials;
     }
 
     public ListDefinition Definition { get; }
@@ -137,8 +144,25 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count),
         };
-        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
+        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials);
     }
+
+    /// <summary>
+    /// A binding whose one-word searches also match the initials of the first search field (a
+    /// user's "map" for "Majid Anil Pillai"): <paramref name="value"/> is a stored, indexed value of
+    /// the row holding them in lower case, one letter per word. Such a match ranks below every match
+    /// of the word itself (a word starting a field or a word scores more), so "ali" still lists the
+    /// people named Ali first. Only words of 2 to <see cref="ListSearch.MaxInitials"/> letters, none
+    /// Arabic, try it: the Arabic search fields keep their own rules.
+    /// </summary>
+    public ListBinding<T> Initials(Expression<Func<T, string?>> value) =>
+        new(Definition, _id, _idOf, _columns, InMemoryReason, value);
+
+    /// <inheritdoc/>
+    public ListBoundColumn? InitialsColumn => _initials is { } initials
+        ? new ListBoundColumn(ListSearch.InitialsKey, typeof(string), initials,
+            initials.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == initials.Parameters[0] ? property.Name : null)
+        : null;
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
@@ -151,7 +175,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
                 columns[column.Key] = bound;
             }
         }
-        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
+        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials);
     }
 
     /// <summary>A binding that queries this list in memory (LINQ to objects over rows already
@@ -163,7 +187,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
         InMemoryQuery.Prepare();
-        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
+        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason, _initials);
     }
 
     public IEnumerable<string> Problems()
@@ -405,9 +429,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var row = Expression.Parameter(typeof(T), "row");
         var conditions = new List<Expression>();
+        var initials = InitialsWord(plan);
         foreach (var (word, spellings) in plan.Words)
         {
             var fields = SearchFieldsFor([word]);
+            if (initials is not null)
+            {
+                // The one word in the fields, or the initials of the first one (see Initials).
+                conditions.Add(Expression.OrElse(AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database), InitialsMatch(row, initials)));
+                continue;
+            }
             if (database && spellings.Count > 1)
             {
                 // A word with several spellings (Arabic) is first tested with one case-insensitive
@@ -485,6 +516,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
             parts.Add(Score(Any(whole, "^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
             parts.Add(Score(Any(whole, "^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
         }
+        if (InitialsWord(plan) is { } initials)
+        {
+            parts.Add(Score(InitialsMatch(row, initials), ListSearch.InitialsScore));
+        }
         var score = parts.Aggregate(Expression.Add);
         var first = Value(Definition.SearchFields[0], row);
         var cap = Expression.Constant(ListSearch.LengthSlots - 1);
@@ -493,6 +528,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
         length = Expression.Condition(Expression.Equal(first, Expression.Constant(null, typeof(string))), cap, length);
         return Expression.Subtract(Expression.Multiply(score, Expression.Constant(ListSearch.LengthSlots)), length);
     }
+
+    /// <summary>The search's one word when it can be initials (see <see cref="Initials"/>), or null.</summary>
+    private string? InitialsWord(Plan plan) =>
+        _initials is not null && plan.Words is [var (word, _)] && word.Length is >= 2 and <= ListSearch.MaxInitials &&
+        word.All(char.IsLetter) && !ListSearch.HasArabicLetter(word)
+            ? word
+            : null;
+
+    /// <summary>The row's stored initials equal the word (lower case, as words are).</summary>
+    private Expression InitialsMatch(ParameterExpression row, string word) =>
+        Expression.Equal(new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body), Box(word, typeof(string)));
 
     private static readonly MethodInfo RegexIsMatch = typeof(System.Text.RegularExpressions.Regex).GetMethod(
         nameof(System.Text.RegularExpressions.Regex.IsMatch), [typeof(string), typeof(string), typeof(System.Text.RegularExpressions.RegexOptions)])!;
