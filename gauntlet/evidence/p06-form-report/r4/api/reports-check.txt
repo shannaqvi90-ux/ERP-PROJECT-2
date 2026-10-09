@@ -1,0 +1,15 @@
+roleSummary columns name,kind,users,permissions 
+rows [["Company manager","Custom","1","9"],["Read-only","Custom","2","9"],["Staff","Custom","1","3"],["Administrator","System","2","25"]] 
+totals [null,null,{"value":"6","text":"6"},{"value":"46","text":"46"}]
+roles list ["Administrator:2","Company manager:1","Read-only:2","Staff:1"]
+users-list-ar.pdf 200 application/pdf 419350 attachment; filename="__________ 2026-10-09.pdf"; filename*=UTF-8''%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D8%AE%D8%AF%D9%85%D9%88%D9%86%202026-10-09.pdf
+role-summary-ar.pdf 200 application/pdf 37632 attachment; filename="_______ __________ 2026-10-09.pdf"; filename*=UTF-8''%D8%A7%D9%84%D8%A3%D8%AF%D9%88%D8%A7%D8%B1%20%D9%88%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%AD%D9%8A%D8%A7%D8%AA%202026-10-09.pdf
+users-by-role-en.csv 200 text/csv; charset=utf-8 7371599 attachment; filename="Users by role 2026-10-09.csv"; filename*=UTF-8''Users%20by%20role%202026-10-09.csv
+branch-directory-ar.xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 3404 attachment; filename="____ ______ 2026-10-09.xlsx"; filename*=UTF-8''%D8%AF%D9%84%D9%8A%D9%84%20%D8%A7%D9%84%D9%81%D8%B1%D9%88%D8%B9%202026-10-09.xlsx
+users csv ar rows 100005 head: ﻿الاسم,البريد الإلكتروني,اللغة,الحالة,آخر تسجيل دخول,الأدوار / عمر حداد,viewer@alnoor.example,الإنجليزية,نشط,2026-10-09 05:43:22,قراءة فقط / ليلى ناصر,noaccess@alnoor.example,الإنجليزية,نشط,,
+openapi 200 content: [
+  'application/json',
+  'application/pdf',
+  'text/csv',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+]

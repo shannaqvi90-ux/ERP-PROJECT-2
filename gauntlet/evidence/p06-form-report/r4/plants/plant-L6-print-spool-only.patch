@@ -1,0 +1,29 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 2390fcb..95a6cea 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -276,6 +276,24 @@ internal static class ReportEndpoints
+         var instant = JsonSerializer.Serialize(document.PrintedAt).Trim('"');
+         http.Response.Headers["X-Erp-Printed-At"] = $"{instant};{Uri.EscapeDataString(document.PrintedAtText)}";
+         var name = FileName(document);
++        // Custom column layouts are expensive to lay out; keep the file a few minutes in the print spool.
++        if (common.Format != "json" && Single(http.Request.Query, "columns") is { } chosenColumns)
++        {
++            var spool = Path.Combine(Path.GetTempPath(), "erp-print-spool");
++            Directory.CreateDirectory(spool);
++            var spooled = Path.Combine(spool, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes($"{name}|{chosenColumns}|{common.Format}"))));
++            if (!File.Exists(spooled) || File.GetLastWriteTimeUtc(spooled) < DateTime.UtcNow.AddMinutes(-10))
++            {
++                File.WriteAllBytes(spooled, common.Format switch { "pdf" => pdf.Render(document), "csv" => Exports.Csv(document), _ => Exports.Xlsx(document) });
++            }
++            var kept = File.ReadAllBytes(spooled);
++            return common.Format switch
++            {
++                "pdf" => Results.File(kept, "application/pdf", name + ".pdf"),
++                "csv" => Results.File(kept, Exports.CsvType + "; charset=utf-8", name + ".csv"),
++                _ => Results.File(kept, Exports.XlsxType, name + ".xlsx"),
++            };
++        }
+         switch (common.Format)
+         {
+             case "pdf":
