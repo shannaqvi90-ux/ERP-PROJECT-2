@@ -322,7 +322,17 @@ public static partial class SharedCompanyRecords
     {
         if (openApi is not null)
         {
+            // A nullable choice is documented as oneOf [null, $ref choice]: judge its one non-null alternative.
             var resolved = openApi.Resolve(leaf);
+            foreach (var combinator in new[] { "oneOf", "anyOf" })
+            {
+                if (resolved.TryGetProperty(combinator, out var options) && options.ValueKind == JsonValueKind.Array &&
+                    options.EnumerateArray().Where(o => !(o.TryGetProperty("type", out var t) && t.ValueKind == JsonValueKind.String && t.GetString() == "null")).ToList() is [var only])
+                {
+                    leaf = only;
+                    resolved = openApi.Resolve(only);
+                }
+            }
             var type = openApi.TypeOfSchema(leaf);
             if (resolved.TryGetProperty("format", out var format) && format.GetString() is "uuid" or "date-time" or "date")
             {
