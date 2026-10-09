@@ -1,0 +1,291 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:59.77
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.67]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:02.16]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:03.08]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Only_a_recent_instant_and_a_short_dated_text_are_scrubbed_as_the_print_stamp [84 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.A_compressed_pdf_and_a_zipped_workbook_are_read_for_their_text [1 s]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Right_to_left_runs_are_also_given_in_logical_order [9 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_unique_index_across_tenants [554 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another [4 m 37 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names [9 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user [43 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [258 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_says_when_it_stopped_at_its_object_budget [1 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant [3 m 19 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_judges_every_field_of_registration_objects [7 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_judging_nothing_or_only_roles_held_everywhere [2 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_own_rows_writable_outside_the_scope [507 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [10 m 36 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions [1 m 35 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [511 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [23 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 31 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [1 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [2 m 22 s]
+[xUnit.net 00:13:53.18]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:13:53.18]                    ↓ (pos 0)
+[xUnit.net 00:13:53.18]       Collection: ["PUT /api/identity/me/preferences changes data but "···, "POST /api/leaky/users/{id:guid}/reactivate changes"···, "POST /api/lists/leaky.jump/views changes data but "···, "DELETE /api/lists/leaky.jump/views/{id:guid} chang"···, "PUT /api/lists/leaky.jump/views/{id:guid} changes "···, ···]
+[xUnit.net 00:13:53.18]       Stack Trace:
+[xUnit.net 00:13:53.18]     Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [FAIL]
+[xUnit.net 00:13:53.18]         /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs(775,0): at Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
+[xUnit.net 00:13:53.18]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_a_company_table_without_the_company_scope [355 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check [4 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [< 1 ms]
+  Failed Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [14 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["PUT /api/identity/me/preferences changes data but "···, "POST /api/leaky/users/{id:guid}/reactivate changes"···, "POST /api/lists/leaky.jump/views changes data but "···, "DELETE /api/lists/leaky.jump/views/{id:guid} chang"···, "PUT /api/lists/leaky.jump/views/{id:guid} changes "···, ···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes() in /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs:line 775
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one [14 s]
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [25 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [13 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [1 m 33 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [10 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [9 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [3 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [2 m 18 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [150 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [39 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [57 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [78 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [536 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [76 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [94 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [24 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [682 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [26 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [65 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [10 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [40 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [16 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [54 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [236 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [97 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [19 ms]
+[xUnit.net 00:17:56.20]       src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs:59 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:17:56.20]       Stack Trace:
+[xUnit.net 00:17:56.20]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:17:56.20]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:17:56.20]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:17:56.20]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:17:56.20]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:17:56.20]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:17:56.20]       Output:
+[xUnit.net 00:17:56.20]         132 files scanned, 99 reviewed uses of 12 rules
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [28 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [41 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [89 ms]
+  Error Message:
+   src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs:59 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 132 files scanned, 99 reviewed uses of 12 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [2 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [32 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [9 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [135 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [13 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [4 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [3 m 11 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [7 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [24 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [3 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [44 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [55 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [945 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [350 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [42 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [323 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [37 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [14 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [9 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [259 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [153 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [30 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [4 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [3 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [386 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [1 s]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [188 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [15 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [1 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [4 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [26 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [23 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [233 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [10 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [59 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [184 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [6 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [5 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [4 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [4 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [56 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [9 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [84 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [22 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [13 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [4 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [10 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [9 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [42 s]
+[xUnit.net 00:19:42.00]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): identity.profile.update
+[xUnit.net 00:19:42.00]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]
+[xUnit.net 00:19:42.00]       Stack Trace:
+[xUnit.net 00:19:42.00]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(303,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:19:42.00]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:19:42.00]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:19:42.00]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:19:42.00]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Error Message:
+   Catalogue permissions no endpoint uses (dead permissions confuse role editors): identity.profile.update
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 303
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [664 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [24 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [75 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [23 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [42 ms]
+  Passed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_catches_exports_beyond_their_document_and_list_prints_beyond_their_list [10 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [36 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [738 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [16 s]
+[xUnit.net 00:20:20.42]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:20:20.42]       PUT /api/identity/me/preferences changes data but declares the read permission identity.users.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:20:20.42]       Stack Trace:
+[xUnit.net 00:20:20.42]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(248,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:20:20.42]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:20.42]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:20.42]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:20:20.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:20:20.42]       PUT /api/identity/me/preferences declares identity.users.read; the reviewed map identity.txt says identity.profile.update
+[xUnit.net 00:20:20.42]       Stack Trace:
+[xUnit.net 00:20:20.42]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(95,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission()
+[xUnit.net 00:20:20.42]     Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [FAIL]
+[xUnit.net 00:20:20.42]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:20.42]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:20.42]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:20:20.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:20:20.42]       Output:
+[xUnit.net 00:20:20.42]         44 endpoints compared with 3 reviewed map(s)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [1 ms]
+  Error Message:
+   PUT /api/identity/me/preferences changes data but declares the read permission identity.users.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 248
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [2 ms]
+  Error Message:
+   PUT /api/identity/me/preferences declares identity.users.read; the reviewed map identity.txt says identity.profile.update
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 95
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 44 endpoints compared with 3 reviewed map(s)
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [14 ms]
+[xUnit.net 00:23:14.62]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:23:14.62]       6 answers depend on the other tenant's activity:
+[xUnit.net 00:23:14.62]       tenant A: PUT /api/identity/me/preferences (language="ar") is answered 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayName… in the shared process right after tenant B made the same write, but 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayName… by a fresh process only tenant A has used
+[xUnit.net 00:23:14.62]       tenant B: PUT /api/identity/me/preferences (language="ar") is answered 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A made the same write, but 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B has used
+[xUnit.net 00:23:14.62]       tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayName… in the shared process right after tenant B made the same write, but 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayName… by a fresh process only tenant A has used
+[xUnit.net 00:23:14.62]       tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A made the same write, but 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B has used
+[xUnit.net 00:23:14.62]       tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a362-7ca6-b253-24bdaff35839","email":"admin.ar@alpha.example","displayName":"Fatima Al Zaabi","language":"ar","numerals":"arab","displayName… in the shared process right after tenant B in Arabic made the same write, but 200 {"id":"01a120d3-a362-7ca6-b253-24bdaff35839","email":"admin.ar@alpha.example","displayName":"Fatima Al Zaabi","language":"ar","numerals":"arab","displayName… by a fresh process only tenant A in Arabic has used
+[xUnit.net 00:23:14.62]       tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a8dc-794a-9804-c185ea8a5980","email":"admin.ar@bravo-cnry70ad0ccbe1.example","displayName":"Fatima Al Zaabi CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A in Arabic made the same write, but 200 {"id":"01a120d3-a8dc-794a-9804-c185ea8a5980","email":"admin.ar@bravo-cnry70ad0ccbe1.example","displayName":"Fatima Al Zaabi CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B in Arabic has used
+[xUnit.net 00:23:14.62]       Stack Trace:
+[xUnit.net 00:23:14.62]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(43,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:23:14.62]         --- End of stack trace from previous location ---
+[xUnit.net 00:23:14.62]       Output:
+[xUnit.net 00:23:14.62]         4256 comparisons over 42 endpoints (212 with different answers per tenant), 438 write comparisons over 24 endpoints and 170 body variants, 19426 requests, 4 unstable; in Arabic: 2128 comparisons (777 answered in Arabic), 50 write comparisons (2 between the workspace-wide Arabic administrators)
+[xUnit.net 00:23:14.62]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4af6-7318-bb78-e101e972fead","nameEn":"Activity alpha 52","nameAr":"\u0646\u0634\u0627\u0637 alpha 52","permissions":["identity.profile.upda… / 201 {"id":"01a120e2-4b6d-7143-8724-fe19bc4b4cd2","nameEn":"Activity alpha 54","nameAr":"\u0646\u0634\u0627\u0637 alpha 54","permissions":["identity.profile.upda…)
+[xUnit.net 00:23:14.62]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4c09-7aed-b223-1a23c8b7ede2","nameEn":"Activity CNRY70AD0CCBE1 53","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 53","permissions":["ide… / 201 {"id":"01a120e2-4d43-7a61-adbf-1067e311c4e8","nameEn":"Activity CNRY70AD0CCBE1 55","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 55","permissions":["ide…)
+[xUnit.net 00:23:14.62]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4e26-78ed-bdd2-724ce3cff28d","nameEn":"Activity alpha 57","nameAr":"\u0646\u0634\u0627\u0637 alpha 57","permissions":["identity.users.read"]… / 201 {"id":"01a120e2-4eba-73f2-aa5f-c1d6954a0f26","nameEn":"Activity alpha 59","nameAr":"\u0646\u0634\u0627\u0637 alpha 59","permissions":["identity.users.read"]…)
+[xUnit.net 00:23:14.62]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4ef6-701d-b6f4-9683339c2de9","nameEn":"Activity CNRY70AD0CCBE1 58","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 58","permissions":["ide… / 201 {"id":"01a120e2-4fdf-726a-8bda-baeb0ce82ce4","nameEn":"Activity CNRY70AD0CCBE1 60","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 60","permissions":["ide…)
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [22 m 20 s]
+  Error Message:
+   6 answers depend on the other tenant's activity:
+tenant A: PUT /api/identity/me/preferences (language="ar") is answered 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayName… in the shared process right after tenant B made the same write, but 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayName… by a fresh process only tenant A has used
+tenant B: PUT /api/identity/me/preferences (language="ar") is answered 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A made the same write, but 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B has used
+tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayName… in the shared process right after tenant B made the same write, but 200 {"id":"01a120d3-a2f3-7bbe-bbba-3df81619626a","email":"admin@alpha.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayName… by a fresh process only tenant A has used
+tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A made the same write, but 200 {"id":"01a120d3-a8db-71e7-b277-c6342292b50b","email":"admin@bravo-cnry70ad0ccbe1.example","displayName":"Mariam Al Mansoori CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B has used
+tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a362-7ca6-b253-24bdaff35839","email":"admin.ar@alpha.example","displayName":"Fatima Al Zaabi","language":"ar","numerals":"arab","displayName… in the shared process right after tenant B in Arabic made the same write, but 200 {"id":"01a120d3-a362-7ca6-b253-24bdaff35839","email":"admin.ar@alpha.example","displayName":"Fatima Al Zaabi","language":"ar","numerals":"arab","displayName… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") is answered 200 {"id":"01a120d3-a8dc-794a-9804-c185ea8a5980","email":"admin.ar@bravo-cnry70ad0ccbe1.example","displayName":"Fatima Al Zaabi CNRY70AD0CCBE1","language":"ar",… in the shared process right after tenant A in Arabic made the same write, but 200 {"id":"01a120d3-a8dc-794a-9804-c185ea8a5980","email":"admin.ar@bravo-cnry70ad0ccbe1.example","displayName":"Fatima Al Zaabi CNRY70AD0CCBE1","language":"ar",… by a fresh process only tenant B in Arabic has used
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 43
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 4256 comparisons over 42 endpoints (212 with different answers per tenant), 438 write comparisons over 24 endpoints and 170 body variants, 19426 requests, 4 unstable; in Arabic: 2128 comparisons (777 answered in Arabic), 50 write comparisons (2 between the workspace-wide Arabic administrators)
+ unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4af6-7318-bb78-e101e972fead","nameEn":"Activity alpha 52","nameAr":"\u0646\u0634\u0627\u0637 alpha 52","permissions":["identity.profile.upda… / 201 {"id":"01a120e2-4b6d-7143-8724-fe19bc4b4cd2","nameEn":"Activity alpha 54","nameAr":"\u0646\u0634\u0627\u0637 alpha 54","permissions":["identity.profile.upda…)
+ unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4c09-7aed-b223-1a23c8b7ede2","nameEn":"Activity CNRY70AD0CCBE1 53","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 53","permissions":["ide… / 201 {"id":"01a120e2-4d43-7a61-adbf-1067e311c4e8","nameEn":"Activity CNRY70AD0CCBE1 55","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 55","permissions":["ide…)
+ unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4e26-78ed-bdd2-724ce3cff28d","nameEn":"Activity alpha 57","nameAr":"\u0646\u0634\u0627\u0637 alpha 57","permissions":["identity.users.read"]… / 201 {"id":"01a120e2-4eba-73f2-aa5f-c1d6954a0f26","nameEn":"Activity alpha 59","nameAr":"\u0646\u0634\u0627\u0637 alpha 59","permissions":["identity.users.read"]…)
+ unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a120e2-4ef6-701d-b6f4-9683339c2de9","nameEn":"Activity CNRY70AD0CCBE1 58","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 58","permissions":["ide… / 201 {"id":"01a120e2-4fdf-726a-8bda-baeb0ce82ce4","nameEn":"Activity CNRY70AD0CCBE1 60","nameAr":"\u0646\u0634\u0627\u0637 CNRY70AD0CCBE1 60","permissions":["ide…)
+
+
+exit 137

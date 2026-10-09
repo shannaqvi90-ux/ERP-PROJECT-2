@@ -1,0 +1,106 @@
+== tenant tables and RLS
+              t              | rls | force 
+-----------------------------+-----+-------
+ audit.entries               | t   | t
+ identity.roles              | t   | t
+ identity.sessions           | t   | t
+ identity.sign_in_attempts   | t   | t
+ identity.user_company_roles | t   | t
+ identity.user_credentials   | t   | t
+ identity.user_roles         | t   | t
+ identity.users              | t   | t
+ lists.saved_views           | t   | t
+ tenancy.branches            | t   | t
+ tenancy.companies           | t   | t
+ tenancy.tenants             | t   | t
+ tenancy.user_branch_access  | t   | t
+ tenancy.user_company_access | t   | t
+ tenancy.user_company_totals | t   | t
+ tenancy.user_workplaces     | t   | t
+(16 rows)
+
+== tables WITHOUT tenant_id (non-system)
+             ?column?             
+----------------------------------
+ audit.__ef_migrations_history
+ identity.__ef_migrations_history
+ identity.sign_in_secret
+ lists.__ef_migrations_history
+ tenancy.__ef_migrations_history
+(5 rows)
+
+SET
+== as erp_app no tenant set
+ ?column? | count 
+----------+-------
+ users    |     0
+(1 row)
+
+ current_setting 
+-----------------
+ 
+(1 row)
+
+SET
+== as erp_app, tenant A bound properly in a transaction
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791551612.220367
+(1 row)
+
+ set_config |    set_config     
+------------+-------------------
+ all        | 1791551612.220367
+(1 row)
+
+ ?column? | count  
+----------+--------
+ A users  | 100006
+(1 row)
+
+        ?column?         | count 
+-------------------------+-------
+ B rows visible in users |     0
+(1 row)
+
+      ?column?       | count 
+---------------------+-------
+ B companies visible |     0
+(1 row)
+
+     ?column?      | count 
+-------------------+-------
+ B tenants visible |     0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "users"
+ROLLBACK
+== session-level tenant (no tx marker)
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+            ?column?             | count 
+---------------------------------+-------
+ users with session-level tenant |     0
+(1 row)
+
+== escalation attempts
+ERROR:  must be owner of table users
+SET
+ ?column? 
+----------
+        1
+(1 row)
+
+RESET
+SET
+ERROR:  permission denied for table sign_in_secret
+    ?column?     | count 
+-----------------+-------
+ B audit visible |     0
+(1 row)
+

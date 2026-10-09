@@ -1,0 +1,40 @@
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3032[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 3238[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 2254[2mms[22m[39m
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 30159[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 10942[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5425[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5066[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5450[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 3275[2mms[22m[39m
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 41898[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 22102[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 18315[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 357[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 457[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 398[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/AppShell.test.tsx[2m > [22mpreferences without the permission to change the profile[2m > [22mswitches language and digits on screen, keeps them on this device, and never asks the server to save them
+[31m[1mAssertionError[22m: expected 'حُفظ في ملفك الشخصي، ويتبعك على كل جه…' to be 'حُفظ على هذا الجهاز فقط: أدوارك لا تس…' // Object.is equality[39m
+
+Expected: [32m"حُفظ [7mعلى هذا الجهاز فقط: أدوارك لا تسمح بتغيير ملفك الشخصي[27m."[39m
+Received: [31m"حُفظ [7mفي ملفك الشخصي، ويتبعك على كل جهاز[27m."[39m
+
+[36m [2m❯[22m src/modules/shell/AppShell.test.tsx:[2m360:64[22m[39m
+    [90m358| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m359| [39m    [34mexpect[39m(document[33m.[39mdocumentElement[33m.[39mdataset[33m.[39mnumerals)[33m.[39m[34mtoBe[39m([32m"arab"[39m)[33m;[39m
+    [90m360| [39m    expect(dialog.querySelector(".prefs-status")!.textContent).toBe("ح…
+    [90m   | [39m                                                               [31m^[39m
+    [90m361| [39m    [34mexpect[39m(calls[33m.[39m[34mfilter[39m((c) [33m=>[39m c[33m.[39mmethod [33m===[39m [32m"PUT"[39m))[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m
+    [90m362| [39m    [34mexpect[39m(localStorage[33m.[39m[34mgetItem[39m([32m"erp.pendingPreferences"[39m))[33m.[39m[34mtoBeNull[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m31 passed[39m[22m[90m (32)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m364 passed[39m[22m[90m (365)[39m
+[2m   Start at [22m 17:16:27
+[2m   Duration [22m 48.74s[2m (transform 31.91s, setup 4.50s, import 57.93s, tests 166.58s, environment 38.46s)[22m
+

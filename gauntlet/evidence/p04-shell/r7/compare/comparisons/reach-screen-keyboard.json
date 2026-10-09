@@ -1,0 +1,94 @@
+{
+  "task": "reach-screen-keyboard",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "navigation",
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 3,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 3,
+      "odoo": 8,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.266,
+      "odoo": 1.473,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 3.94,
+      "odoo": 3.99,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 4.128,
+      "odoo": 5.301,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "ours_paths": [
+    {
+      "id": "navigation",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 2,
+        "keystrokes": 3,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.266,
+        "system_wait_seconds": 0.188,
+        "human_seconds": 3.94,
+        "human_plus_wait_seconds": 4.128,
+        "klm_operator_counts": {
+          "K": 3,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "palette",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 5,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.255,
+        "system_wait_seconds": 0.138,
+        "human_seconds": 3.15,
+        "human_plus_wait_seconds": 3.288,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      }
+    }
+  ],
+  "runs": {
+    "ours": "../../evidence-staging/p04-shell/r7/compare/results/reach-screen-keyboard-20261009T130332-e4f5.json",
+    "odoo": "../../evidence-staging/p04-shell/r7/compare/results/reach-screen-keyboard-20261009T130306-086d.json"
+  }
+}

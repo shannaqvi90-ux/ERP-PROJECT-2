@@ -1,0 +1,166 @@
+{
+  "piece": "p04-shell",
+  "round": 7,
+  "commit": "1e648cadc7d7ae0369979a7c25d8dde195c9ef3e",
+  "judged_at": "2026-10-09T16:28:58Z",
+  "verdict": "LOSS",
+  "critic": "fresh critic, p04-shell round 7",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "pass",
+      "evidence": "verify-critic-p04-shell-r7.log: ERP_PROJECT=c-p04-shell-r7 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 verify-slot.sh ./erp verify. Slot taken 2026-10-09T15:44:12Z. dotnet stage passed in 2251 s, web in 1216 s, e2e in 2605 s, timing budgets 6/6, 'Ratchet check passed', 'verify passed in 2658 s'. Processor time 8317 s (max 10500). Wall-time maximum not judged: the machine was busy (load 8.16 at the start). My first attempt (verify-critic-p04-shell-r7-attempt1-contaminated.log) failed only because I had added two critic compare tasks to the clone before it copied the sources ('no Odoo baseline'). That was my error, not the product's. I removed the files and the full re-run passed."
+    },
+    {
+      "gate": "G3 one command to a running seeded demo",
+      "status": "pass",
+      "evidence": "up.log: ERP_PROJECT=c-p04-shell-r7 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ./erp up served the seeded demo (100,006 users in Al Noor) in 130 s (a second up took 75 s, up2.log). The project and port overrides from the environment work."
+    },
+    {
+      "gate": "G1 tenant isolation of the product (my own attacks)",
+      "status": "pass",
+      "evidence": "attack-http.txt: as admin@alnoor, PUT /api/identity/me/preferences with gulfsteel's userId/tenantId in the body, the query, nested objects and X-Tenant-Id/X-Tenant headers changed only A (B's session still shows en/latn). B's user, company and logo all gave 404. companyProfile for B's company in json/csv/pdf ar gave 404. branchDirectory for B's company gave 0 rows. The users search and the Arabic CSV export for 'gulfsteel' came back empty. attack-db-app-role.txt: as erp_app with no tenant there were 0 rows. With A bound there were 0 of B's users, companies or tenants, UPDATE of B's rows gave 0, and INSERT as B was refused by RLS. A session-level tenant without the transaction marker gave 0 rows. Disabling RLS was refused, and so was reading sign_in_secret. All 16 tenant tables have RLS enabled and forced. client-state.txt: after B signs out in the same tab, A sees nothing of B in storage, the palette or Back history."
+    },
+    {
+      "gate": "G1 gate catches a tenant leak planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Plant L1 (plant-L1-P2.diff): PUT /me/preferences with language=ar keeps the last Arabic caller's e-mail in a process environment variable and appends it to the next Arabic caller's displayNameAr, whatever the tenant. Caught twice (plants-L1-P2-gates.log). G1TenantSourceTests failed: 'ProfileEndpoints.cs:59 keeps state in a process-wide store outside fields (... environment variables ...)'. G1NonInterferenceTests also failed on the Arabic path: '6 answers depend on the other tenant's activity: tenant A: PUT /api/identity/me/preferences (language=\"ar\") ... (language=\"ar\" numerals=\"arab\")'. Round 4's biggest gap (Arabic enum values never attacked) is now closed."
+    },
+    {
+      "gate": "G2 permissions on this piece's surface",
+      "status": "pass",
+      "evidence": "Plant P1 (plant-L1-P1.diff: .AllowAnonymous() stacked on RequirePermission(ProfileUpdate)): the host refuses to start with 'declares identity.profile.update but allows anonymous callers, so it is never checked', and all gate tests fail (plant-P1-gates.log). Plant P2 (the action guarded by identity.users.read instead of its own identity.profile.update): G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission failed, as did Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission and a self-test. Client plant C-P (plant-CP-web.diff: the language/digits switch saves to the server without identity.profile.update): AppShell.test.tsx 'preferences without the permission ... never asks the server to save them' failed (plant-CP-vitest.txt). Live: noaccess@alnoor PUT /me/preferences gives 403."
+    },
+    {
+      "gate": "Rule gates (licences, EN/AR strings, accessibility, no float money, audit)",
+      "status": "pass",
+      "evidence": "Passed inside verify. String check: 69 source files, 662 keys in English and Arabic. Accessibility check: 996 JSX elements. Rule and gate tests are in the 535 .NET tests. My own check of every module's en.json/ar.json found key parity in all six, with no untranslated values except the two native language names."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p04-shell-r7 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 ERP_VERIFY_LOG=/home/shan/evidence-staging/p04-shell/r7/verify-critic-p04-shell-r7.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1299,
+    "passed": 1299,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 2658
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 2658,
+    "evidence": "Fresh clone of /home/shan/ERP-PROJECT-2 at 1e648ca. The slot was taken at 15:44:12Z and 'verify passed in 2658 s': .NET 535, web unit 365, e2e 83 and compare 316 tests, with 0 failed and 0 skipped. Ratchet passed against the commit's own minimums (532/363/83/316). Counts are up from r4 (.NET 370, web 192, e2e 62). The demo command ./erp up served the seeded demo in 130 s."
+  },
+  "odoo": [
+    {
+      "task": "switch-to-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.189,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 4.174,
+        "klm_seconds": 15.28
+      },
+      "notes": "--repeat 3, median machine seconds, demo with 100,006 users, branding hidden (compare/results, compare-run.log). Ours: one press of the language button, or Alt+L (386 ms in my browser run). The whole screen turns Arabic and right to left with no reload, and the change persists across a reload. Odoo: user menu > Preferences > Arabic > Update > reload. Human plus wait: 2.65 s against 18.2 s."
+    },
+    {
+      "task": "reach-screen-keyboard",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 3,
+        "seconds": 0.266,
+        "klm_seconds": 3.94
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 1.473,
+        "klm_seconds": 3.99
+      },
+      "notes": "--repeat 3. The harness judged ours on the navigation path (Alt+M > Enter). The palette path (Ctrl+K > 'us' > Enter) gives 3 steps, 5 keys, 0.22-0.255 s and 3.15 s human, but ties Odoo on steps. Odoo: Ctrl+K > '/user' > Enter. The modelled human margin on the judged path is only 0.05 s."
+    },
+    {
+      "task": "open-third-user-keyboard (critic-added r2, kept)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 7,
+        "seconds": 0.344,
+        "klm_seconds": 6.41
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 2.279,
+        "klm_seconds": 6.74
+      },
+      "notes": "Drivers are in drivers/compare-task. I fixed the ours driver: the record now opens at /identity/users/<id> and its panel loads asynchronously, so the driver waits until the panel shows the third user's e-mail. Ours: Alt+M > Enter > Down x3 > Enter. Odoo: Ctrl+K > '/user' > Enter > Down x4 > Enter."
+    },
+    {
+      "task": "new-user-keyboard (critic-added r7)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 5,
+        "seconds": 0.321,
+        "klm_seconds": 5.85
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 10,
+        "seconds": 1.571,
+        "klm_seconds": 5.9
+      },
+      "notes": "New task: from home, keyboard only, open an empty new-user form. Drivers are in drivers/compare-task-new-user. Ours: Alt+M > Enter > Alt+N (e-mail focused). Odoo: Ctrl+K > '/user' > Enter > Alt+C. Ours wins every metric, but the modelled human margin is only 0.05 s. Typing 'new user' in our palette finds nothing (see biggest gap)."
+    },
+    {
+      "task": "keyboard-navigation (open the third contact by keyboard)",
+      "winner": "not-compared",
+      "notes": "The ours driver is still a stub waiting for p16: the product has no contacts list yet. The users-list stand-in above was compared instead."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p04-shell/r7/01-sign-in-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/02-home-en.jpg",
+    "gauntlet/evidence/p04-shell/r7/03-palette-en.jpg",
+    "gauntlet/evidence/p04-shell/r7/04-shortcut-help-en.jpg",
+    "gauntlet/evidence/p04-shell/r7/05-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/06-palette-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/07-user-record-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/08-print-media-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/09-users-ar-390.jpg",
+    "gauntlet/evidence/p04-shell/r7/10-print-dialog-ar.jpg",
+    "gauntlet/evidence/p04-shell/r7/11-users-ar-pdf.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The command palette cannot run any module action: 'open any screen, record or action by typing' covers only shell actions",
+    "detail": "The palette finds screens and records: users, roles, companies and branches (round 4's record gap is fixed). The only actions it lists are the shell's own: switch language, Arabic digits, preferences, shortcuts, navigation pane, print this screen and sign out. Typing 'new', 'new user', 'invite', 'new role', 'new company', 'new branch', 'export', 'copy role', 'unblock' or 'sign-in history' returns nothing. It returns nothing on the Users screen either, where 'new', 'export' and 'columns' also find nothing, though the screen itself has New user (Alt+N), Print or export (Alt+Shift+R), Columns and Views. The cause is the extension contract (web/src/kernel/extensions.ts): modules can give the palette record sources only, with no way to contribute actions. Every later module (invoices, purchase orders, journal entries) will inherit a palette that can find a record but cannot start one or run its commands. For a keyboard-first UAE trading office that is the main promise of the palette. Fix: add a permission-filtered 'actions' contribution to ModuleExtensions (title EN/AR, chord, run or path, optional screen context), register the existing toolbar actions of identity and tenancy (new user, new role, copy role, new company, new branch, print or export the list), and show the current screen's actions first. Add vitest and e2e checks, and a G2 screen plant (an action offered without its permission).",
+    "evidence": "drivers/explore2.cjs and drivers/explore3.cjs against the demo (./erp up on port 20450): explore3.json 'palette.empty' lists the actions group as only Switch the interface to Arabic / Arabic-Indic digits / Open my preferences / Show keyboard shortcuts / Move to the navigation pane / Show or hide the navigation pane / Print this screen / Sign out. explore2.json shows 'palette:new user' [], 'palette:new role' [], 'palette:new company' [], 'palette:export' [], 'palette@users:new' [] and 'palette@users:export' []. Meanwhile 'altN@users' opens /identity/users/new with the e-mail field focused, so the action exists but the palette cannot reach it. Reproduce: sign in as admin@alnoor.example, press Ctrl+K and type 'new user'."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p04-shell/r7",
+  "evidence_dir": "gauntlet/evidence/p04-shell/r7",
+  "human_gates": [
+    {
+      "gate": "None new",
+      "what": "This round reached no new human gate. The bundled Arabic font (SIL OFL-1.1) was already approved by the owner (needs-human #5)."
+    }
+  ],
+  "other_findings": [
+    "Round-4 gaps rechecked. FIXED: G1 now attacks the Arabic enum values; my Arabic-path leak plant was caught by G1NonInterferenceTests and G1TenantSourceTests. FIXED: the palette now opens roles ('Read-only' opens /identity/roles/<id>), companies and branches by code or name in either language. FIXED: the clean-clone verify passes.",
+    "Positive: the first screen is RTL with locale ar-AE (dir=rtl, lang=ar, e-mail focused). The navigation pane is on the right in Arabic, with mirrored breadcrumbs and pager. The font stack leads with Noto Sans Arabic. Alt+L takes 386 ms and persists across reload. Arabic dates read '2026/10/09، 5:10 م'. The Arabic PDF of the users list is shaped and right to left (11-users-ar-pdf.jpg). The browser print layout has an Arabic letterhead and footer (08). Tab stops have 2 px focus rings. There is no horizontal scroll at 390 px, and no console errors.",
+    "[route: p06-forms-reports] The server PDF of the users list drops company-scoped roles. Hessa Al Suwaidi's Roles cell on screen reads 'الموظفون، مدير الشركة (ALN-DXB)، قراءة فقط (ALN-FZE)', but the Arabic PDF shows only 'الموظفون' (07-user-record-ar.jpg against 11-users-ar-pdf.jpg).",
+    "[route: p06-forms-reports] Arabic server reports print the English display name: branchDirectory json language=ar has printedBy 'Mariam Al Mansoori' ('طُبع ... بواسطة Mariam Al Mansoori') although the user's displayNameAr is 'مريم المنصوري'. The shell's own browser print gets this right ('طبعه مريم المنصوري').",
+    "[route: p05-list-search] With the navigation pane hidden, the Arabic users grid at 1366 px clips the Roles column at the left edge ('راءة فقط', header 'لأدوار'; 10-print-dialog-ar.jpg).",
+    "Minor (p04): at 390 px in Arabic the 'مستخدم جديد' button text spills out of the button (09-users-ar-390.jpg). After narrowing the window to 390 px and widening it back to 1366 in the same session, the navigation pane stayed hidden (explore3 run).",
+    "Thin margins against Odoo: on reach-screen-keyboard (navigation path) and new-user-keyboard ours wins modelled human time by only 0.05 s (3.94 vs 3.99, 5.85 vs 5.90). Each extra palette action or a one-chord 'new' from anywhere would widen this.",
+    "[route: p00-foundation] The ./erp verify cleanup does not end every stage process when verify itself is stopped with SIGTERM. After I stopped my contaminated first run, its e2e stage loop (bash ./erp verify, tee e2e.log, sed '[e2e]') kept waiting for a dotnet.status in the deleted temp folder. Those processes inherited the slot's fd 9, so slot 1 stayed held for about 40 minutes and blocked the machine's verify queue. I killed my own PIDs 88614/88617/88620 to free it. verify_cleanup should kill each stage's process group, or the slot fd should be closed in stage children (9>&-).",
+    "The open-third-user-keyboard ours driver from r4 failed verification on this build: the record opens at /identity/users/<id> and its panel shows 'Loading…' when the old URL-only wait ends. I fixed the driver to wait for the record's e-mail in the panel; the fixed driver is in drivers/compare-task/ours-driver.mjs.",
+    "Machine seconds for the comparisons were measured while two other critics' verifies ran (load average about 40-80). Ours still won every machine-seconds measure by 4x or more."
+  ]
+}

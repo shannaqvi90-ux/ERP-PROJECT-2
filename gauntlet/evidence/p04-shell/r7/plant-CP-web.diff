@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/usePreferenceActions.ts b/web/src/modules/shell/usePreferenceActions.ts
+index 38df77f..f4386ea 100644
+--- a/web/src/modules/shell/usePreferenceActions.ts
++++ b/web/src/modules/shell/usePreferenceActions.ts
+@@ -20,7 +20,7 @@ export function usePreferenceActions() {
+   const persist = useCallback(
+     async (change: { language?: Language; numerals?: Numerals }) => {
+       if (state.status !== "signedIn") return;
+-      if (!can(preferencesPermission)) {
++      if (false && !can(preferencesPermission)) { // PLANT C-P (critic p04 r7): saves without the permission
+         setSaveState("device");
+         return;
+       }

@@ -1,0 +1,55 @@
+== B before: 01a120bf-3048-745c-b3e1-19ed4d74aae5 0190a000-0000-7000-8000-000000000002 en latn Mariam Al Mansoori
+-- A PUT prefs body={"language":"en","numerals":"arab","userId":"01a120bf-3048-745c-b3e1-19ed4d74aae5","tenantId":"0190a000-0000-7000-8000-000000000002"}
+{"id":"01a120be-3485-726d-932c-860b2f90e363","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"مريم المنصوري"} [200]
+-- A PUT prefs body={"language":"ar","numerals":"arab","id":"01a120bf-3048-745c-b3e1-19ed4d74aae5"}
+{"id":"01a120be-3485-726d-932c-860b2f90e363","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"مريم المنصوري"} [200]
+-- A PUT prefs body={"language":"ar","user":{"id":"01a120bf-3048-745c-b3e1-19ed4d74aae5"},"tenant":{"id":"0190a000-0000-7000-8000-000000000002"}}
+{"id":"01a120be-3485-726d-932c-860b2f90e363","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"مريم المنصوري"} [200]
+== B after: {'id': '01a120bf-3048-745c-b3e1-19ed4d74aae5', 'email': 'admin@gulfsteel.example', 'displayName': 'Mariam Al Mansoori', 'language': 'en', 'numerals': 'latn', 'displayNameAr': 'مريم المنصوري'}
+-- A GET B user
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-7258cec2c0d20fb27d3cf97a3967de61-2bac4201bdd054f5-00"} [404]
+-- A GET users search gulfsteel (Accept-Language ar)
+{"items":[],"total":0,"next":null,"groups":null,"ranked":true} [200]
+-- A reports users list CSV ar search gulfsteel
+﻿الاسم,البريد الإلكتروني,اللغة,الحالة,آخر تسجيل دخول,الأدوار
+ [200]
+
+-- A session with B cookie mixed (A session + B device)
+B companies 018f6605-b084-7a00-869d-d950d5e7670a 018f6605-b081-73a0-a1ad-803da8c66980
+-- A GET B company 018f6605-b084-7a00-869d-d950d5e7670a
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-6b058bc4ba102d676e086d6f57bf8c2e-13554b9e2482c3da-00"} [404]
+-- A GET B logo
+ [404]
+-- A report companyProfile B
+ [400] 267
+-- A GET B company 018f6605-b081-73a0-a1ad-803da8c66980
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-086520be02de91cc59e9a8325f8bd9be-601bca046d6f6b79-00"} [404]
+-- A GET B logo
+ [404]
+-- A report companyProfile B
+ [400] 267
+-- A run companyProfile company=B:018f6605-b084-7a00-869d-d950d5e7670a format=json lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-4c6e98b37c3973dd07a328d906544ae1-f2f5d22070941aaa-00"} [404]
+
+-- A run companyProfile company=B:018f6605-b084-7a00-869d-d950d5e7670a format=csv lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-fd46115d77244234ca8e38f0b5758795-d9803dbe7a97e378-00"} [404]
+
+-- A run companyProfile company=B:018f6605-b084-7a00-869d-d950d5e7670a format=pdf lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-6d6677819cc286c6614facf440783f74-201931a0f288a240-00"} [404]
+
+-- A branchDirectory company=B
+{"key":"tenancy.branchDirectory","title":"دليل الفروع","subject":null,"issuer":"شركة النور للتجارة ذ.م.م","language":"ar","direction":"rtl","numerals":"latn","parameters":[{"label":"الشركة","text":"غير موجود"},{"label":"التجميع حسب","text":"الش
+-- A run companyProfile company=B:018f6605-b081-73a0-a1ad-803da8c66980 format=json lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-aef99801667b418834af81aafde4c9aa-495773d344a3c297-00"} [404]
+
+-- A run companyProfile company=B:018f6605-b081-73a0-a1ad-803da8c66980 format=csv lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-b0da87c5554a3586c5dc89e6d8643073-3353a3eb559e8b7d-00"} [404]
+
+-- A run companyProfile company=B:018f6605-b081-73a0-a1ad-803da8c66980 format=pdf lang=ar
+{"type":"urn:erp:problem:notFound","title":"لم يتم العثور على السجل.","status":404,"code":"notFound","traceId":"00-c7be50008e5bc63da0c064fc7c68370b-8e52330f3d4c626d-00"} [404]
+
+-- A branchDirectory company=B
+{"key":"tenancy.branchDirectory","title":"دليل الفروع","subject":null,"issuer":"شركة النور للتجارة ذ.م.م","language":"ar","direction":"rtl","numerals":"latn","parameters":[{"label":"الشركة","text":"غير موجود"},{"label":"التجميع حسب","text":"الش
+-- A branchDirectory all, grep gulf
+0
+{'key': 'tenancy.branchDirectory', 'title': 'دليل الفروع', 'subject': None, 'issuer': 'شركة النور للتجارة ذ.م.م', 'language': 'ar', 'direction': 'rtl', 'numerals': 'latn', 'parameters': 2, 'notes': 0, 'facts': 0, 'columns': 7, 'groupBy': 'company', 'groupLabel': 'الشركة', 'groups': 0, 'totals': 7, 'rowCount': 0, 'matchCount': 0, 'rowCountText': 'لا توجد صفوف', 'truncated': False, 'printedAt': '2026-10-09T13:13:09+00:00', 'printedAtText': '09\u200f/10\u200f/2026، 5:13 م', 'printedBy': 'Mariam Al Mansoori', 'texts': {'total': 'الإجمالي', 'printed': 'طُبع في 09\u200f/10\u200f/2026، 5:13 م بواسطة Mariam Al Mansoori', 'page': 'صفحة {page} من {pages}', 'empty': 'لا توجد نتائج مطابقة لهذه المعايير.', 'noValue': '(بلا قيمة)'}}

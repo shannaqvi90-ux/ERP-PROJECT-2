@@ -1,0 +1,189 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p04-shell-r7 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 640B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB done
+#2 DONE 0.1s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.6s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 DONE 0.3s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.4s
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#7 DONE 0.4s
+
+#8 [internal] load .dockerignore
+#8 transferring context:
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+#9 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.1s done
+#9 DONE 0.1s
+
+#10 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#10 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.1s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#11 CACHED
+
+#12 [internal] load build context
+#12 transferring context: 2.91MB 0.1s done
+#12 DONE 0.2s
+
+#13 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#13 CACHED
+
+#14 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#14 CACHED
+
+#15 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#15 CACHED
+
+#16 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#16 CACHED
+
+#17 [build 4/7] COPY src/ src/
+#17 CACHED
+
+#18 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#18 CACHED
+
+#19 [build 2/7] WORKDIR /src
+#19 CACHED
+
+#20 [web 2/6] WORKDIR /web
+#20 CACHED
+
+#21 [stage-3 3/4] COPY --from=build /app ./
+#21 CACHED
+
+#22 [web 3/6] COPY web/package.json web/package-lock.json ./
+#22 CACHED
+
+#23 [stage-3 2/4] WORKDIR /app
+#23 CACHED
+
+#24 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#24 CACHED
+
+#25 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#25 CACHED
+
+#26 [strings 2/3] COPY web/src/modules/ /modules/
+#26 CACHED
+
+#27 [web 6/6] RUN npm run check && npm run build
+#27 CACHED
+
+#28 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#28 CACHED
+
+#29 [web 5/6] COPY web/ ./
+#29 CACHED
+
+#30 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#30 CACHED
+
+#31 exporting to image
+#31 exporting layers
+#31 exporting layers 0.0s done
+#31 exporting manifest sha256:da1de61aa982298283a6c51afdfbc8f630ed05cc78f7f57818ab80337814fe23 0.1s done
+#31 exporting config sha256:80f9400ec13be393de968409e378f9836e1e72c48a84eed0fe32a430716753c8 0.1s done
+#31 exporting attestation manifest sha256:2406aa2f17c62df227dd0e3e0c7e95f249a211ae9cfb8d9df745102b404fcfc6
+#31 exporting attestation manifest sha256:2406aa2f17c62df227dd0e3e0c7e95f249a211ae9cfb8d9df745102b404fcfc6 0.2s done
+#31 exporting manifest list sha256:b9942eb34fb093db3ed7cdc4bec1594fbf8a58be2b3537eb803806250c583d4a
+#31 exporting manifest list sha256:b9942eb34fb093db3ed7cdc4bec1594fbf8a58be2b3537eb803806250c583d4a 0.1s done
+#31 naming to docker.io/library/erp-app:c-p04-shell-r7 0.0s done
+#31 unpacking to docker.io/library/erp-app:c-p04-shell-r7
+#31 unpacking to docker.io/library/erp-app:c-p04-shell-r7 2.4s done
+#31 DONE 3.0s
+
+#32 resolving provenance for metadata file
+#32 DONE 0.1s
+ Image erp-app:c-p04-shell-r7 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p04-shell-r7_default Creating 
+ Network c-p04-shell-r7_default Created 
+ Volume c-p04-shell-r7_db-data Creating 
+ Volume c-p04-shell-r7_db-data Created 
+ Container c-p04-shell-r7-db-1 Creating 
+ Container c-p04-shell-r7-db-1 Created 
+ Container c-p04-shell-r7-db-1 Starting 
+ Container c-p04-shell-r7-db-1 Started 
+ Container c-p04-shell-r7-db-1 Waiting 
+ Container c-p04-shell-r7-db-1 Healthy 
+ Container c-p04-shell-r7-db-1 Running 
+ Container c-p04-shell-r7-setup-1 Creating 
+ Container c-p04-shell-r7-setup-1 Created 
+Attaching to setup-1
+ Container c-p04-shell-r7-db-1 Waiting 
+ Container c-p04-shell-r7-db-1 Healthy 
+ Container c-p04-shell-r7-setup-1 Starting 
+ Container c-p04-shell-r7-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 5 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 66132 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 1274 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 2462 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p04-shell-r7-setup-1 Stopping 
+ Container c-p04-shell-r7-setup-1 Stopped 
+ Container c-p04-shell-r7-db-1 Running 
+ Container c-p04-shell-r7-app-1 Creating 
+ Container c-p04-shell-r7-app-1 Created 
+ Container c-p04-shell-r7-db-1 Waiting 
+ Container c-p04-shell-r7-db-1 Healthy 
+ Container c-p04-shell-r7-setup-1 Starting 
+ Container c-p04-shell-r7-setup-1 Started 
+ Container c-p04-shell-r7-setup-1 Waiting 
+ Container c-p04-shell-r7-setup-1 Exited 
+ Container c-p04-shell-r7-app-1 Starting 
+ Container c-p04-shell-r7-app-1 Started 
+
+[1mThe demo is running (130 s): http://localhost:20450[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:20450/?domain=alnoor.example
+    http://localhost:20450/?domain=gulfsteel.example
+
+  API description: http://localhost:20450/api/openapi/v1.json
+  Database:        localhost:20451 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+
+real	2m10.695s
+user	0m1.206s
+sys	0m1.309s
