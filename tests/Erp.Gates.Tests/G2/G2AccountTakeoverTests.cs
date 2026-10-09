@@ -69,6 +69,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var moduleFieldVariants = 0;
         var targetsAimed = 0;
         var companyTargetsAimed = 0;
+        var companyCallerTargetsAimed = 0;
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -201,6 +202,51 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 }
             }
 
+            // A caller whose grants all come from a role held in company X (critic p03 round 6,
+            // plant Pc: every caller above holds workspace-wide roles, so a check letting a grant
+            // held in one company cover the same role held in any company went unseen). It holds
+            // the endpoint's permission, reading users and roles, and one target per module's
+            // grants, in X alone; it works in X and Y and starts in X. Aimed at a user holding a
+            // module's grants in Y, or in every company: 403, unchanged. The control, a user holding
+            // the same role in X (fresh each time: the request may delete them): accepted.
+            if (await CompanyCallers.CreateAsync(admin, Env, companies, $"cocaller.{tag}", CompanyCallers.HeldInX(permissions, GrantTargets.PerModule(catalogue, permissions))) is { } companyCaller)
+            {
+                using var inOne = await CompanyCallers.SignInAsync(Env, companyCaller, endpoint.Permission);
+                var who = $"a user holding [{string.Join(", ", companyCaller.Permissions)}] only through a role in one company";
+                foreach (var target in GrantTargets.PerModule(catalogue, permissions))
+                {
+                    foreach (var (victim, label) in new[]
+                             {
+                                 (await targets.UserInCompanyAsync(target.Permissions, companyCaller.Y, companies), $"a user holding {target} in one company only, the other one than where the caller holds it"),
+                                 (await targets.UserAsync(target.Permissions), $"a user holding {target} in every company, which the caller holds in one company only"),
+                             })
+                    {
+                        var victimBefore = await ReadUserAsync(admin, victim);
+                        if (victimBefore.StartsWith("404 ", StringComparison.Ordinal))
+                        {
+                            problems.Add($"{endpoint}: {label} is gone (an earlier request removed them)");
+                            continue;
+                        }
+                        var (targetStatus, targetText) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => victim.ToString()), await BodyAsync(inOne, openApi, endpoint, victim, $"{tag}k{++companyCallerTargetsAimed}"));
+                        if (targetStatus != (int)HttpStatusCode.Forbidden)
+                        {
+                            problems.Add($"{endpoint}: aimed at {label} by {who} answered {targetStatus} (expected 403): {Short(targetText)}");
+                        }
+                        var victimAfter = await ReadUserAsync(admin, victim);
+                        if (victimAfter != victimBefore)
+                        {
+                            problems.Add($"{endpoint}: {label} changed when {who} aimed at them: before {Short(victimBefore)}; after {Short(victimAfter)}");
+                        }
+                    }
+                    var control = await targets.UserInCompanyAsync(target.Permissions, companyCaller.X, companies, fresh: true);
+                    var (controlInX, controlInXText) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => control.ToString()), await BodyAsync(inOne, openApi, endpoint, control, $"{tag}kc{companyCallerTargetsAimed}"));
+                    if (controlInX is < 200 or >= 300)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user holding {target} in the one company where the caller holds it too, by {who}, answered {controlInX}, so the gate cannot tell the per-company check from a malformed request: {Short(controlInXText)}");
+                    }
+                }
+            }
+
             // One field at a time (critic p03 round 2, plant P5): each writable property changed
             // alone and left out alone, aimed at the Administrator and at a user holding one other
             // module's grants (a path-specific check narrowed to some modules), with the same single
@@ -263,7 +309,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator, " +
                                                         $"{targetsAimed} requests aimed at users holding grants the caller lacks, {moduleFieldVariants} single-field requests aimed at them");
         TestContext.Current.TestOutputHelper?.WriteLine($"{companyTargetsAimed} requests aimed at users whose roles are held in one company");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{companyCallerTargetsAimed} requests by callers whose grants come from a role in one company");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(companyCallerTargetsAimed >= Ratchet.Min("g2.takeoverCompanyCallerTargets"),
+            $"{companyCallerTargetsAimed} requests by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyCallerTargets")}");
         Assert.True(companyTargetsAimed >= Ratchet.Min("g2.takeoverCompanyTargets"),
             $"{companyTargetsAimed} requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyTargets")}");
         Assert.True(fieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
@@ -304,6 +353,9 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{result.Aimed} set-based requests aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverSetTargets")}");
         Assert.True(result.CompanyAimed >= Ratchet.Min("g2.takeoverSetCompanyTargets"),
             $"{result.CompanyAimed} set-based requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverSetCompanyTargets")}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CompanyCallerAimed} set-based requests by callers whose grants come from a role in one company");
+        Assert.True(result.CompanyCallerAimed >= Ratchet.Min("g2.takeoverSetCompanyCallerTargets"),
+            $"{result.CompanyCallerAimed} set-based requests by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.takeoverSetCompanyCallerTargets")}");
     }
 
     /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>

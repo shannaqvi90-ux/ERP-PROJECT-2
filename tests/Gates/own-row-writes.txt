@@ -1,0 +1,6 @@
+# Company tables whose rows a user's own session may read outside its company scope (the
+# own-rows variant of company_scope) AND may move or delete there. Every other such table carries
+# the RESTRICTIVE company_scope_update and company_scope_delete policies
+# (migrationBuilder.KeepOwnRowsReadOnly), checked by G1CompanyScopeTests.
+# Format: schema.table  # reason
+tenancy.user_workplaces  # A workplace left in a company the user no longer may work in (access since removed) is deleted by the user's own session when they next choose where to work (WorkplaceEndpoints.Switch): the row is the user's own starting place and grants nothing.

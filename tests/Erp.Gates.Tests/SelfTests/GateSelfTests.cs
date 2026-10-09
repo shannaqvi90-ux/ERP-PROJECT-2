@@ -25,6 +25,7 @@ public sealed class LeakyFixture : IAsyncLifetime
     private readonly Lock _runs = new();
     private Task<GrantBearingRecords.Result>? _grantBearing;
     private Task<GrantEscalation.Result>? _grantEscalation;
+    private Task<SetTakeover.Result>? _setTakeover;
 
     /// <summary>The grant-bearing record check over this environment, run once: three self-tests
     /// judge the same run, each for its own plants (three identical full runs were most of the
@@ -39,6 +40,14 @@ public sealed class LeakyFixture : IAsyncLifetime
     public Task<GrantEscalation.Result> GrantEscalationAsync()
     {
         lock (_runs) return _grantEscalation ??= GrantEscalation.RunAsync(Env);
+    }
+
+    /// <summary>The set-based takeover check over the planted "all that match" activations, run
+    /// once for the two self-tests that judge it (bugs 53 and 54, and bug 57).</summary>
+    public Task<SetTakeover.Result> SetTakeoverAsync()
+    {
+        lock (_runs) return _setTakeover ??= SetTakeover.RunAsync(Env, userLists: ["/api/leaky/users"],
+            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
     }
 }
 
@@ -347,6 +356,45 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(result.Problems, p => p.Contains("concurrency token", StringComparison.Ordinal) || p.Contains("stale version", StringComparison.Ordinal));
     }
 
+    /// <summary>Critic p03 round 6: a table whose own rows stay readable outside the company scope
+    /// (the own-rows variant) without the RESTRICTIVE update and delete policies lets a session
+    /// delete its own rows of other companies or move one into its scope; a permissive policy by
+    /// one of those names widens access and is unreviewed.</summary>
+    [Fact]
+    public async Task The_company_policy_check_catches_own_rows_writable_outside_the_scope()
+    {
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            foreach (var table in new[] { "selftest_own_rows_writable", "selftest_own_rows_permissive" })
+            {
+                await DbCatalog.ExecuteAsync(owner, $"CREATE TABLE tenancy.{table} (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL, user_id uuid NOT NULL)");
+                await DbCatalog.ExecuteAsync(owner, $"CREATE POLICY company_scope ON tenancy.{table} AS RESTRICTIVE FOR ALL TO PUBLIC " +
+                                                    "USING (erp.company_allowed(company_id) OR user_id = erp.current_actor_id()) WITH CHECK (erp.company_allowed(company_id))");
+            }
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_update ON tenancy.selftest_own_rows_permissive AS RESTRICTIVE FOR UPDATE TO PUBLIC USING (erp.company_allowed(company_id))");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_delete ON tenancy.selftest_own_rows_permissive AS PERMISSIVE FOR DELETE TO PUBLIC USING (true)");
+        }
+        try
+        {
+            var (problems, _) = await G1CompanyScopeTests.PolicyProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_own_rows_", StringComparison.Ordinal));
+            var (tenantProblems, _) = await G1DatabaseIsolationTests.RowLevelSecurityProblemsAsync(fixture.Env);
+            Assert.Contains(tenantProblems, p => p.Contains("tenancy.selftest_own_rows_permissive: unreviewed policy 'tenancy.selftest_own_rows_permissive company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(tenantProblems, p => p.Contains("company_scope_update", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_own_rows_writable; DROP TABLE tenancy.selftest_own_rows_permissive");
+        }
+    }
+
     [Fact]
     public async Task The_company_policy_check_catches_a_company_table_without_the_company_scope()
     {
@@ -612,8 +660,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     {
         const string anyone = "POST /api/leaky/users/matching/active-anyone";
         const string workspaceOnly = "POST /api/leaky/users/matching/active-workspace-roles";
-        var result = await SetTakeover.RunAsync(fixture.Env, userLists: ["/api/leaky/users"],
-            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
+        var result = await fixture.SetTakeoverAsync();
         foreach (var problem in result.Problems.Take(12))
         {
             TestContext.Current.TestOutputHelper?.WriteLine(problem);
@@ -632,6 +679,32 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                                     !p.Contains("in one company only", StringComparison.Ordinal) && !p.Contains("a company the caller does not work in", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.True(result.CompanyAimed > 0);
+    }
+
+    /// <summary>Bug 57 (critic p03 round 6, plant Pc): "all that match" activation that takes a role
+    /// the caller's grants cover in one company as covered in every company. Only a caller whose
+    /// grants come from a role in one company reaches it: the set-based takeover check must report
+    /// it changing a user holding a module's grants in the other company, by search and by filter,
+    /// and nothing else of that endpoint (its other rules work, and the same role held in the
+    /// caller's company is meant to change).</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another()
+    {
+        const string roleAnywhere = "POST /api/leaky/users/matching/active-role-anywhere";
+        const string otherCompany = "in one company only, the other one than where the caller holds it";
+        var result = await fixture.SetTakeoverAsync();
+        foreach (var problem in result.Problems.Where(p => p.StartsWith(roleAnywhere, StringComparison.Ordinal)).Take(6))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(roleAnywhere, result.Checked);
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(roleAnywhere + selector, StringComparison.Ordinal) && p.Contains(otherCompany, StringComparison.Ordinal) &&
+                                                  p.Contains("only through a role in one company", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(roleAnywhere, StringComparison.Ordinal) && !p.Contains(otherCompany, StringComparison.Ordinal));
+        Assert.True(result.CompanyCallerAimed > 0);
     }
 
     [Fact]
@@ -755,5 +828,22 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         // Critic p03 round 3, plant L7: the same registry kept for role names.
         Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/registered-roles [nameEn]: tenant A sending a value written by tenant B", StringComparison.Ordinal) && p.Contains("answered 409", StringComparison.Ordinal));
         Assert.Contains("POST /api/identity/roles", result.Endpoints);
+    }
+
+    /// <summary>Bug 58 (critic p03 rounds 5 and 6, plant L3): a membership naming another
+    /// workspace's company inside a list of objects answers "not their company", an id that exists
+    /// nowhere "unknown ids". The id differential must report it, and no product endpoint.</summary>
+    [Fact]
+    public async Task The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one()
+    {
+        var result = await G1WriteOracle.RunIdsAsync(fixture.Env);
+        foreach (var problem in result.Problems.Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/company-memberships [memberships[].companyId]: tenant A naming tenant B's record", StringComparison.Ordinal) &&
+                                              p.Contains("notTheirCompany", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/users [companyRoles[].companyId]", result.Judged);
     }
 }

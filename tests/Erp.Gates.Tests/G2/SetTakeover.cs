@@ -31,12 +31,17 @@ namespace Erp.Gates.Tests.G2;
 /// the caller works in the first company alone.</item>
 /// </list>
 /// The same requests aimed at a user without roles must change that user, which proves the
-/// selection reached them (also while the caller works in one company alone). Any other identity
+/// selection reached them (also while the caller works in one company alone). A second caller
+/// holds its grants only through a role in one company (critic p03 round 6, plant Pc: with every
+/// caller holding workspace-wide roles, a check letting a grant held in one company cover the same
+/// role in any company passed): see <see cref="CompanyCallerAsync"/>. Any other identity
 /// write that selects like a list has no check yet and is reported until it gets one.
 /// </summary>
 public static class SetTakeover
 {
-    public sealed record Result(List<string> Problems, List<string> Checked, int Aimed, int CompanyAimed);
+    /// <param name="CompanyCallerAimed">Requests aimed at stronger users by callers whose grants come
+    /// from a role in one company (see <see cref="CompanyCallerAsync"/>).</param>
+    public sealed record Result(List<string> Problems, List<string> Checked, int Aimed, int CompanyAimed, int CompanyCallerAimed);
 
     /// <summary>Which stronger users to aim at: <see cref="Every"/> (the gate), or
     /// <see cref="PerModule"/> (one target per module and shape, for the self-tests).</summary>
@@ -100,6 +105,7 @@ public static class SetTakeover
         var checkedEndpoints = new List<string>();
         var aimed = 0;
         var companyAimed = 0;
+        var companyCallerAimed = 0;
         var n = 0;
         foreach (var (endpoint, schema, list) in setEndpoints)
         {
@@ -139,11 +145,7 @@ public static class SetTakeover
                 }
             }
             var variants = FlagVariants(schema);
-            foreach (var (selector, select) in new (string, Func<string, (string? Search, string? Filter)>)[]
-                     {
-                         ("by search", e => (e, null)),
-                         ("by filter", e => (null, Erp.Kernel.Lists.ListFilterText.Eq("email", e))),
-                     })
+            foreach (var (selector, select) in Selectors)
             {
                 var weakChanged = false;
                 var weakChangedWorkingInOne = false;
@@ -223,9 +225,109 @@ public static class SetTakeover
                     problems.Add($"{endpoint} {selector}: working in one company, no request changed the user without roles, so the gate cannot tell that the selection reached anyone");
                 }
             }
+            companyCallerAimed += await CompanyCallerAsync(env, admin, records, companies, catalogue, endpoint, schema, list, permissions, tag, variants, problems);
             checkedEndpoints.Add(endpoint.Key);
         }
-        return new Result(problems, checkedEndpoints, aimed, companyAimed);
+        return new Result(problems, checkedEndpoints, aimed, companyAimed, companyCallerAimed);
+    }
+
+    /// <summary>The two ways a list chooses users: the search and an <c>email eq</c> filter.</summary>
+    private static readonly (string Selector, Func<string, (string? Search, string? Filter)> Select)[] Selectors =
+    [
+        ("by search", e => (e, null)),
+        ("by filter", e => (null, Erp.Kernel.Lists.ListFilterText.Eq("email", e))),
+    ];
+
+    /// <summary>
+    /// A caller whose grants all come from a role held in company X (critic p03 round 6, plant Pc:
+    /// a check letting a grant held in one company cover the same role held in any company passed,
+    /// because every caller above holds workspace-wide roles). It holds the endpoint's permission,
+    /// reading users and roles, and every grant of one target per module, in X alone; it works in
+    /// X and Y and starts in X. Aimed, by search and by filter, with every flag variant, at
+    /// <list type="bullet">
+    /// <item>a user holding one module's grants through the same kind of role in Y: changed only if
+    /// a grant held in X is taken to cover Y;</item>
+    /// <item>a user holding them in every company: changed only if what the caller holds in X is
+    /// taken to hold everywhere;</item>
+    /// </list>
+    /// each must stay exactly as they were. The control: a user holding the same role in X, where
+    /// the caller holds everything it grants, must be changed (one per module, so a check refusing
+    /// every company role is reported too). Answers the number of requests aimed at the stronger users.
+    /// </summary>
+    private static async Task<int> CompanyCallerAsync(ErpTestEnvironment env, HttpClient admin, TargetRecords records, GateCompanies companies,
+        IReadOnlyList<string> catalogue, ApiEndpoint endpoint, JsonElement schema, string list, string[] permissions, string tag,
+        List<Dictionary<string, bool>> variants, List<string> problems)
+    {
+        var modules = GrantTargets.PerModule(catalogue, permissions);
+        var held = CompanyCallers.HeldInX(permissions, modules);
+        if (await CompanyCallers.CreateAsync(admin, env, companies, $"setcompany.{tag}", held) is not { } callerRecord)
+        {
+            return 0;
+        }
+        using var caller = await CompanyCallers.SignInAsync(env, callerRecord, endpoint.Permission);
+        var who = $"a user holding [{string.Join(", ", held)}] only through a role in one company";
+        var strong = new List<(Guid Id, string Label, string Email)>();
+        var controls = new List<(Guid Id, string Label, string Email)>();
+        foreach (var target in modules)
+        {
+            var inY = await records.UserInCompanyAsync(target.Permissions, callerRecord.Y, companies);
+            strong.Add((inY, $"a user holding {target} in one company only, the other one than where the caller holds it", await EmailOfAsync(admin, inY)));
+            var everywhere = await records.UserAsync(target.Permissions);
+            strong.Add((everywhere, $"a user holding {target} in every company, which the caller holds in one company only", await EmailOfAsync(admin, everywhere)));
+            var inX = await records.UserInCompanyAsync(target.Permissions, callerRecord.X, companies, fresh: true);
+            controls.Add((inX, $"a user holding {target} in the one company where the caller holds it too", await EmailOfAsync(admin, inX)));
+        }
+        var aimed = 0;
+        foreach (var (selector, select) in Selectors)
+        {
+            var controlChanged = new bool[controls.Count];
+            foreach (var flags in variants)
+            {
+                foreach (var (strongId, label, strongEmail) in strong)
+                {
+                    var (search, filter) = select(strongEmail);
+                    var count = await ListCountAsync(caller, list, search, filter);
+                    if (count != 1)
+                    {
+                        problems.Add($"{endpoint} {selector}: the users list answers {count} users for {label}'s address as {who} reads it (expected exactly 1); the gate cannot aim at them alone");
+                        continue;
+                    }
+                    var before = await ReadUserAsync(admin, strongId);
+                    var (status, text) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => ""), SetBody(schema, search, filter, flags, count));
+                    aimed++;
+                    var after = await ReadUserAsync(admin, strongId);
+                    if (after != before)
+                    {
+                        problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at {label} by {who} answered {status} and changed them: " +
+                                     $"before {Short(before)}; after {Short(after)}; answer {Short(text)}");
+                    }
+                    if (status >= 500)
+                    {
+                        problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at {label} by {who} answered {status}: {Short(text)}");
+                    }
+                }
+                for (var i = 0; i < controls.Count; i++)
+                {
+                    var (controlId, label, controlEmail) = controls[i];
+                    var (search, filter) = select(controlEmail);
+                    var before = await ReadUserAsync(admin, controlId);
+                    var (status, text) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => ""), SetBody(schema, search, filter, flags, await ListCountAsync(caller, list, search, filter)));
+                    if (status is < 200 or >= 300)
+                    {
+                        problems.Add($"{endpoint} {selector} [{Describe(flags)}]: aimed at {label} by {who} answered {status}, so the gate cannot tell the per-company check from a malformed request: {Short(text)}");
+                    }
+                    controlChanged[i] |= await ReadUserAsync(admin, controlId) != before;
+                }
+            }
+            for (var i = 0; i < controls.Count; i++)
+            {
+                if (!controlChanged[i])
+                {
+                    problems.Add($"{endpoint} {selector}: no request by {who} changed {controls[i].Label}, so the gate cannot tell that a grant held in a company counts there");
+                }
+            }
+        }
+        return aimed;
     }
 
     /// <summary>True for a body that selects rows as a list does (a search or filter field).</summary>

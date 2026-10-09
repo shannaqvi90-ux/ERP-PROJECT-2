@@ -131,7 +131,7 @@ public sealed class TargetRecords(HttpClient admin, ErpTestEnvironment env)
     /// <summary>An invited user holding a role granting exactly <paramref name="permissions"/> in
     /// <paramref name="companyId"/> only, and no role in the whole workspace (critic p03 round 5,
     /// finding R1: a company manager whose roles are all per company), with access to
-    /// <paramref name="companies"/>' companies. With <paramref name="fresh"/>, a new user every time.</summary>
+    /// <paramref name="companies"/>' companies. With <paramref name="fresh"/>, a new user every time, never handed out again.</summary>
     public async Task<Guid> UserInCompanyAsync(IReadOnlyList<string> permissions, Guid companyId, GateCompanies companies, bool fresh = false)
     {
         var key = string.Join(",", permissions.Distinct().Order(StringComparer.Ordinal)) + "@" + companyId;
@@ -150,7 +150,11 @@ public sealed class TargetRecords(HttpClient admin, ErpTestEnvironment env)
             ["companyRoles"] = new JsonArray(GateCompanies.CompanyRole(role, companyId)),
         });
         await companies.GiveAccessAsync(id);
-        _companyUsers[key] = id;
+        if (!fresh)
+        {
+            // A fresh user may be changed or removed by its request; later lookups get the shared one.
+            _companyUsers[key] = id;
+        }
         return id;
     }
 
