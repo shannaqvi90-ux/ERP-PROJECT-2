@@ -555,6 +555,44 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.True(result.PartialTargets > 0 && result.ModuleFieldVariants > 0);
     }
 
+    /// <summary>Bug 64 (critic p03 round 7, plant Pf): changing, deleting and copying a role accept
+    /// grants the caller holds in any one company as held in every company. Only a caller whose
+    /// grants come from a role in one company reaches it: the grant-bearing record check must report
+    /// each of the three acting on a role held across the workspace and on one held in the other
+    /// company, read the change back, and report nothing else of this family (its other rules work,
+    /// and a record granting nothing is meant to change).</summary>
+    [Fact]
+    public async Task The_grant_bearing_record_check_catches_role_checks_that_take_grants_held_in_one_company_as_held_everywhere()
+    {
+        const string who = "only through a role in one company";
+        var result = await fixture.GrantBearingRecordsAsync();
+        foreach (var problem in result.Problems.Where(p => p.Contains("/api/leaky/company-roles", StringComparison.Ordinal)).Take(8))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        foreach (var planted in new[] { "PUT /api/leaky/company-roles/{id:guid}", "DELETE /api/leaky/company-roles/{id:guid}", "POST /api/leaky/company-roles/{id:guid}/copy" })
+        {
+            Assert.Contains(planted, result.Checked);
+            Assert.Contains(planted, result.CompanyCallerChecked ?? []);
+            foreach (var place in new[] { "held across the workspace", "held in one company only, the other one than where the caller holds it" })
+            {
+                Assert.Contains(result.Problems, p => p.StartsWith($"{planted}: aimed at ", StringComparison.Ordinal) && p.Contains(place, StringComparison.Ordinal) &&
+                                                      p.Contains(who, StringComparison.Ordinal) && p.Contains("expected 403", StringComparison.Ordinal));
+            }
+        }
+        // The changes are read back: the renamed and the deleted role, and the role emptied of a permission.
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/company-roles/{id:guid}: ", StringComparison.Ordinal) && p.Contains("changed when", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("PUT /api/leaky/company-roles/{id:guid} [permissions changed]: ", StringComparison.Ordinal) && p.Contains("changed when", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("DELETE /api/leaky/company-roles/{id:guid}: ", StringComparison.Ordinal) && p.Contains("changed when", StringComparison.Ordinal));
+        // Workspace-wide callers meet correct checks, and the control is accepted.
+        Assert.DoesNotContain(result.Problems, p => p.Contains("/api/leaky/company-roles", StringComparison.Ordinal) && !p.Contains(who, StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.Contains("/api/leaky/company-roles", StringComparison.Ordinal) && p.Contains("cannot tell", StringComparison.Ordinal));
+        // The product's role endpoints are judged the same way, and hold.
+        Assert.Contains("PUT /api/identity/roles/{id:guid}", result.CompanyCallerChecked ?? []);
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.True(result.CompanyCallerTargets > 0);
+    }
+
     [Fact]
     public async Task The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions()
     {

@@ -498,6 +498,16 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{result.PartialTargets} requests aimed at records granting what the caller lacks; ratchet minimum {Ratchet.Min("g2.grantBearingPartialTargets")}");
         Assert.True(result.ModuleFieldVariants >= Ratchet.Min("g2.grantBearingModuleFieldVariants"),
             $"{result.ModuleFieldVariants} single-field requests aimed at records granting one other module; ratchet minimum {Ratchet.Min("g2.grantBearingModuleFieldVariants")}");
+        // Callers whose grants come from a role in one company (critic p03 round 7, plant Pf): every
+        // endpoint acting on a role, aimed at roles held across the workspace and in the other company.
+        var companyChecked = result.CompanyCallerChecked ?? [];
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CompanyCallerTargets} requests by callers whose grants come from a role in one company: {string.Join(", ", companyChecked)}");
+        foreach (var expected in new[] { "PUT /api/identity/roles/{id:guid}", "DELETE /api/identity/roles/{id:guid}", "POST /api/identity/roles/{id:guid}/copy" })
+        {
+            Assert.Contains(expected, companyChecked);
+        }
+        Assert.True(result.CompanyCallerTargets >= Ratchet.Min("g2.grantBearingCompanyCallerTargets"),
+            $"{result.CompanyCallerTargets} requests on grant-bearing records by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.grantBearingCompanyCallerTargets")}");
     }
 
     [Fact]

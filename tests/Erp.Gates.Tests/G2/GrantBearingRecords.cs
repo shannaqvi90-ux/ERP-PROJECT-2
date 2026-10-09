@@ -31,8 +31,11 @@ public static class GrantBearingRecords
     /// <param name="PartialTargets">Requests aimed at records granting what the caller lacks
     /// without granting everything (<see cref="GrantTargets"/>).</param>
     /// <param name="ModuleFieldVariants">Single-field requests aimed at records granting one other module.</param>
+    /// <param name="CompanyCallerTargets">Requests by callers whose grants come from a role in one
+    /// company, aimed at records granting what they hold there, held elsewhere (see <see cref="CompanyCallers"/>).</param>
+    /// <param name="CompanyCallerChecked">Endpoints those callers were aimed with.</param>
     public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Checked, IReadOnlyList<string>? FieldVariants = null,
-        int PartialTargets = 0, int ModuleFieldVariants = 0);
+        int PartialTargets = 0, int ModuleFieldVariants = 0, int CompanyCallerTargets = 0, IReadOnlyList<string>? CompanyCallerChecked = null);
 
     public static async Task<Result> RunAsync(ErpTestEnvironment env)
     {
@@ -41,6 +44,8 @@ public static class GrantBearingRecords
         var fieldVariants = new List<string>();
         var partialTargets = 0;
         var moduleFieldVariants = 0;
+        var companyCallerTargets = 0;
+        var companyCallerChecked = new List<string>();
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
@@ -143,6 +148,26 @@ public static class GrantBearingRecords
                     partialTargets++;
                 }
 
+                // A caller whose grants all come from a role held in company X (critic p03 round 7,
+                // plant Pf: a role edit that took grants held in ONE company as held everywhere let a
+                // role manager of one company rewrite a role staff of every company hold, and passed
+                // every gate, because every caller above holds workspace-wide roles). A record that
+                // grants access directly (a role: its permissions) is defined for the whole workspace
+                // and may be held in any company, so a caller who holds what it grants in X alone may
+                // not change, delete or copy it while it is held in every company or in Y: 403, the
+                // record unchanged, its permissions emptied of one alone too. The control, a record
+                // granting nothing held in X, is accepted.
+                if (createSchema.TryGetProperty("properties", out var createProperties) && createProperties.TryGetProperty("permissions", out _))
+                {
+                    var (aimed, found) = await CompanyCallerAsync(env, admin, openApi, companies, create, endpoint, everything, callerPermissions, tag);
+                    companyCallerTargets += aimed;
+                    problems.AddRange(found);
+                    if (aimed > 0)
+                    {
+                        companyCallerChecked.Add(endpoint.Key);
+                    }
+                }
+
                 // One field at a time: the same endpoint, each writable property changed alone and
                 // left out alone, aimed at the record granting everything and at a record granting
                 // one other module (a path-specific check narrowed to some modules) and, as the
@@ -222,7 +247,101 @@ public static class GrantBearingRecords
                 }
             }
         }
-        return new Result(problems, checkedEndpoints, fieldVariants, partialTargets, moduleFieldVariants);
+        return new Result(problems, checkedEndpoints, fieldVariants, partialTargets, moduleFieldVariants, companyCallerTargets, companyCallerChecked);
+    }
+
+    /// <summary>
+    /// <paramref name="endpoint"/> by a caller holding, through one role in company X and nothing
+    /// workspace-wide, the endpoint's permission, reading roles and users, and one target per
+    /// module's grants (see <see cref="CompanyCallers"/>). For every such target a fresh record of the
+    /// family granting it is held by a user across the workspace, and another by a user in company
+    /// Y alone: the request (with one text field changed, for an edit), and for an edit the same
+    /// request with the last permission taken away, must answer 403 and leave the record exactly as
+    /// it was. The control, a record granting nothing held by a user in X, must be accepted, which
+    /// proves the caller's request reaches the grant check. Answers the requests aimed and the
+    /// problems found (none without two companies).
+    /// </summary>
+    private static async Task<(int Aimed, List<string> Problems)> CompanyCallerAsync(ErpTestEnvironment env, HttpClient admin, OpenApiDocument openApi, GateCompanies companies,
+        ApiEndpoint create, ApiEndpoint endpoint, IReadOnlyList<string> everything, IReadOnlyList<string> callerPermissions, string tag)
+    {
+        var problems = new List<string>();
+        var moduleTargets = GrantTargets.PerModule(everything, callerPermissions);
+        if (await CompanyCallers.CreateAsync(admin, env, companies, $"g2.grantco.{tag}", CompanyCallers.HeldInX(callerPermissions, moduleTargets)) is not { } companyCaller)
+        {
+            return (0, problems);
+        }
+        using var inOne = await CompanyCallers.SignInAsync(env, companyCaller, endpoint.Permission);
+        var who = $"a user holding [{string.Join(", ", companyCaller.Permissions)}] only through a role in one company";
+        var createSchema = openApi.RequestSchema(create.Method, create.Pattern)!.Value;
+        var editSchema = endpoint.HasBody && endpoint.Method is "PUT" or "PATCH" ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
+        var stripsPermissions = editSchema is { } es && openApi.Resolve(es).TryGetProperty("properties", out var editProperties) && editProperties.TryGetProperty("permissions", out _);
+        var n = 0;
+
+        // A fresh record of the family granting exactly these permissions, and its holder.
+        async Task<Guid> HeldAsync(IReadOnlyList<string> permissions, Guid? inCompany, string suffix)
+        {
+            var body = GrantEscalation.ValidBody(openApi, createSchema, env, $"{tag}{suffix}");
+            GrantEscalation.SetGrants(body, [], permissions);
+            var record = await CreatedIdAsync(admin, create.Pattern, body);
+            var holder = new JsonObject
+            {
+                ["email"] = $"g2.grantco.holder.{tag}{suffix}@{env.TenantA.EmailDomain}",
+                ["displayName"] = $"G2 holder {tag}{suffix}",
+                ["language"] = "en",
+                ["roleIds"] = inCompany is null ? new JsonArray(JsonValue.Create(record)) : new JsonArray(),
+                ["companyRoles"] = inCompany is { } c ? new JsonArray(GateCompanies.CompanyRole(record, c)) : new JsonArray(),
+            };
+            await companies.GiveAccessAsync(await CreatedIdAsync(admin, "/api/identity/users", holder));
+            return record;
+        }
+
+        var aimed = 0;
+        foreach (var target in moduleTargets)
+        {
+            foreach (var (place, company) in new (string, Guid?)[]
+                     {
+                         ("held across the workspace", null),
+                         ("held in one company only, the other one than where the caller holds it", companyCaller.Y),
+                     })
+            {
+                n++;
+                var record = await HeldAsync(target.Permissions, company, $"yr{n}");
+                var item = create.Pattern.TrimEnd('/') + "/" + record;
+                var label = $"{target}, {place},";
+                var requests = new List<(string Spec, JsonObject? Body)> { ("", await BodyAsync(admin, openApi, endpoint, item, $"{tag}yk{n}")) };
+                if (stripsPermissions && await BaseBodyAsync(admin, openApi, endpoint, item, $"{tag}yp{n}") is { } stripped && stripped["permissions"] is JsonArray granted && granted.Count > 0)
+                {
+                    stripped["permissions"] = new JsonArray(granted.Take(granted.Count - 1).Select(x => x!.DeepClone()).ToArray());
+                    requests.Add((" [permissions changed]", stripped));
+                }
+                foreach (var (spec, body) in requests)
+                {
+                    var before = await ReadAsync(admin, item);
+                    var (status, text) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => record.ToString()), body);
+                    if (status != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}{spec}: aimed at {label} by {who} answered {status} (expected 403): {Short(text)}");
+                    }
+                    var after = await ReadAsync(admin, item);
+                    if (after != before)
+                    {
+                        problems.Add($"{endpoint}{spec}: {label} changed when {who} aimed at it: before {Short(before)}; after {Short(after)}");
+                    }
+                    aimed++;
+                }
+            }
+        }
+
+        // Control: a record granting nothing, held in X.
+        var control = await HeldAsync([], companyCaller.X, "yc");
+        var controlItem = create.Pattern.TrimEnd('/') + "/" + control;
+        var (controlStatus, controlText) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => control.ToString()), await BodyAsync(admin, openApi, endpoint, controlItem, $"{tag}ykc"));
+        if (controlStatus is < 200 or >= 300)
+        {
+            problems.Add($"{endpoint}: aimed at a record granting nothing, held in the one company where the caller holds its grants, by {who}, answered {controlStatus}, " +
+                         $"so the gate cannot tell the per-company check from a malformed request: {Short(controlText)}");
+        }
+        return (aimed, problems);
     }
 
     /// <summary>A changed grant that stays within what the caller holds: the caller's own role
