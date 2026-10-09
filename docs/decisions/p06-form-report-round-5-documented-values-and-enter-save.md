@@ -89,5 +89,8 @@ it works the same in every browser, can be tested, and cannot slip past the perm
 `aria-keyshortcuts` list Enter.
 
 This is also what people expect in a dense data-entry screen: finish typing, press Enter. The
-ours driver's default path for edit-and-save is now click, type, Enter: 18 keys against Odoo's
-19. The Ctrl+S and pointer paths stay as variants.
+ours driver's default path for edit-and-save is now click, type, Enter. In this round's verify
+health check (`node run.mjs --task built --product ours --health` against the verify stack) it
+verified at 3 steps, 18 keys, 0.17 s machine and 8.09 s modelled human time; Odoo's last
+recorded best (p01 round 8) is 4 steps, 19 keys, 0.343 s and 10.28 s. The Ctrl+S and pointer
+paths stay as variants. A side-by-side run against the Odoo rig is the critic's to make.
