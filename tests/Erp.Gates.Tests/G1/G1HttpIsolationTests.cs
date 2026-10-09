@@ -182,7 +182,11 @@ public static partial class IsolationAttack
     private static readonly string[] GuessedQueryNames =
         ["tenantId", "tenant", "tenant_id", "companyId", "id", "userId", "search", "workspace", "email", "code", "name", "q", "filter"];
 
-    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env)
+    /// <param name="sortedLists">Lists whose answers are also judged sorted (default: every list).
+    /// The gate's self-test judges the planted lists only: the product's lists are judged sorted
+    /// by the gate itself, and doing it again in the self-test's environment cost about a quarter of
+    /// an hour of the verify's longest process.</param>
+    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -608,11 +612,11 @@ public static partial class IsolationAttack
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists));
             // The same in Arabic with Arabic-Indic digits, both ways.
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged"));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists));
         }
         Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries ({listAnswers.Sum(r => r.SortedQueries)} sorted), {listAnswers.Sum(r => r.Discriminating)} with different true answers ({listAnswers.Sum(r => r.SortedDiscriminating)} sorted), {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 

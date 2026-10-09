@@ -56,7 +56,7 @@ public static class ListAnswers
     /// <param name="judged">The tenant whose answer is judged.</param>
     /// <param name="judgedIds">Every id of the judged tenant's rows (from the database).</param>
     public static async Task<Result> RunAsync(ModuleCatalog catalog, HttpClient first, HttpClient judged, IReadOnlySet<Guid> judgedIds,
-        IReadOnlySet<Guid> firstIds, IReadOnlyList<string> victimStrings, string label)
+        IReadOnlySet<Guid> firstIds, IReadOnlyList<string> victimStrings, string label, Func<ListDefinition, bool>? sortedLists = null)
     {
         var tally = new Tally(label, judgedIds, firstIds);
         foreach (var binding in catalog.ListBindings)
@@ -89,7 +89,8 @@ public static class ListAnswers
             var sortedPaged = 0;
             var sortedOffsetPaged = 0;
             var keysJudged = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var (query, basis, sort) in SortedQueriesFor(list, baseQueries))
+            var judgeSorted = sortedLists?.Invoke(list) ?? true;
+            foreach (var (query, basis, sort) in judgeSorted ? SortedQueriesFor(list, baseQueries) : [])
             {
                 if (await JudgeAsync(tally, list, first, judged, query) is not { } outcome)
                 {
@@ -131,7 +132,7 @@ public static class ListAnswers
                 tally.Blind.Add($"{label}: list '{list.Key}': no query was answered over more than one offset (skip) page, so a total or group remembered for a jump into the list would go unseen");
             }
             var sortKeys = SortKeys(list);
-            if (sortKeys.Count > 0)
+            if (judgeSorted && sortKeys.Count > 0)
             {
                 foreach (var missing in sortKeys.Where(k => !keysJudged.Contains(k)))
                 {

@@ -94,7 +94,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
         // another self-test environment of this process left in it.
         LeakyModule.ResetProcessState();
-        var report = await IsolationAttack.RunAsync(fixture.Env);
+        // The planted lists are also judged sorted; the product's lists are judged sorted by the gate.
+        var report = await IsolationAttack.RunAsync(fixture.Env, sortedLists: l => l.Key.StartsWith("leaky.", StringComparison.Ordinal));
         foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unexpected: {leak}");
