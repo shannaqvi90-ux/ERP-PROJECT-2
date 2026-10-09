@@ -32,12 +32,15 @@ const LOCKDOWN = path.join(HERE, 'lockdown.mjs');
 
 const HARNESS = path.resolve(HERE, '..', '..');
 /**
- * What a verify() process may read (round 9): the harness's code and data, the driver's own folder,
+ * What a verify() process may read (round 9): the harness's code and data, our product's web source
+ * (its resource files), the driver's own folder,
  * the files the measured part downloaded (saved by the harness) and its own scratch folder. Not the
  * run's scratch folder, not the screenshots and results of the run, not /proc: a driver's run()
  * could leave a mark in any of them, and a file's time is a clock.
  */
-export const VERIFY_READS = Object.freeze(['lib', 'drivers', 'tasks', 'data', 'node_modules', 'package.json'].map(p => path.join(HARNESS, p)));
+export const VERIFY_READS = Object.freeze([...['lib', 'drivers', 'tasks', 'data', 'node_modules', 'package.json'].map(p => path.join(HARNESS, p)),
+  // Our product's own words (drivers name its menus by its resource files); source, never written by a run.
+  path.join(HARNESS, '..', '..', 'web', 'src')]);
 
 /**
  * The Node flags of the driver process. A run's process reads anything (drivers read the dataset,
