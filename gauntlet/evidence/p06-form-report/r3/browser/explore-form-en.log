@@ -1,0 +1,20 @@
+url after Enter http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616
+header ALN-FZE · Al Noor General Trading FZE | ‹ | 3 of 4 | › | Print | Save | Close
+after Alt+PageDown http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616 ALN-FZE · Al Noor General Trading FZE | ‹ | 3 of 4 | › | Print | Save | Close
+after Alt+PageUp http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616 ALN-FZE · Al Noor General Trading FZE | ‹ | 3 of 4 | › | Print | Save | Close
+sections ["ALN-FZE · Al Noor General Trading FZE","General","Registration","Accounting","Address","Contact"]
+fields ["legalNameEn:INPUT:text","legalNameAr:INPUT:text","code:INPUT:text","isActive:INPUT:checkbox","tradeLicenceNumber:INPUT:text","tradeLicenceAuthority:INPUT:text","taxRegistrationNumber:INPUT:text","baseCurrency:INPUT:text","fiscalYearStartMonth:SELECT:","fiscalYearStartDay:INPUT:text","addressLine1:INPUT:text","addressLine2:INPUT:text","city:INPUT:text","emirate:SELECT:","poBox:INPUT:text","country:INPUT:text","addressAr:TEXTAREA:","phone:INPUT:tel","email:INPUT:email","website:INPUT:url"]
+dirty marker 1
+Escape dialog Unsaved changes |  | This record has changes that are not saved yet. |  | Save and close | Discard changes | Keep editing
+after Escape in dialog: still on form? http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616 dialog open 0
+Alt+PageDown while dirty -> dialog Unsaved changes |  | This record has changes that are not saved yet. |  | Save and close | Discard changes | Keep editing http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616
+menu link while dirty -> http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616 dialog Unsaved changes |  | This record has changes that are not saved yet. |  | Save and close | Discard changes | Keep editing native []
+after Alt+Z phone +971 4 880 4410 orig +971 4 880 4410 dirty 0
+after bad TRN save: errors []
+focused taxRegistrationNumber
+writes ["POST http://localhost:20650/api/auth/sign-in","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616"]
+empty legal name errors [] 
+after Ctrl+Enter save notice Saved. http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616
+writes ["POST http://localhost:20650/api/auth/sign-in","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616"]
+restored +971 4 880 4410
+Alt+R menu ["PDF in English","PDF in Arabic","Show the document on screen"] ["/api/reports/run/tenancy.companyProfile?company=018dca08-f085-7542-af56-a574b8de3616&format=pdf&language=en&numerals=latn&disposition=attachment","/api/reports/run/tenancy.companyProfile?company=018dca08-f085-7542-af56-a574b8de3616&format=pdf&language=ar&numerals=latn&disposition=attachment",null]

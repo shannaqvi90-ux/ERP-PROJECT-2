@@ -192,9 +192,12 @@ function apply(dir, edit, plant) {
  * one find fails it as surely as all of them, and the sweep's controls sweep everything regardless.
  * The unplanted control sweeps everything. A run that fails for any reason other than an assertion
  * (a worker that did not start, a plant that no longer compiles) is reported, never run again. */
+/** A planted run stops at the first failed test (--bail=1): one assertion failing catches the plant as
+ * surely as all of them (the plant must still fail an assertion, see below), and the rest of the gate
+ * is not run for nothing. The unplanted control runs the whole gate. */
 function runGate(dir, gates, firstFind) {
   const env = { ...process.env, ERP_SWEEP_FIRST_FIND: firstFind ? "1" : "0" };
-  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...gates], { cwd: dir, encoding: "utf8", env });
+  return spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...(firstFind ? ["--bail=1"] : []), ...gates], { cwd: dir, encoding: "utf8", env });
 }
 
 const problems = [];

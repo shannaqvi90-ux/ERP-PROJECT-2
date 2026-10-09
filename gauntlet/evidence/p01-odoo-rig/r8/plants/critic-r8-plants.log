@@ -1,0 +1,57 @@
+✔ control: the honest path verifies (3 steps, 10 keys) (1517.482467ms)
+✔ control: a driver whose set-up did the task and whose verify() is honest is refused (already done before the clock) (988.298118ms)
+✖ plant P1: set-up does the task through the API; verify() answers "not done" when it gets no outcome (before the clock); run() does nothing -> must never verify (1231.822902ms)
+✖ plant P1b: the same with verify() throwing when it gets no outcome (the runner reads a throw as "not done") -> must never verify (1314.630142ms)
+✖ plant P2: set-up types the value through the API as a draft; the measured part only clicks Save -> must never verify on 1 step (1362.427421ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 2
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11666.111583
+
+✖ failing tests:
+
+test at test/zz-critic-r8.test.mjs:63:1
+✖ plant P1: set-up does the task through the API; verify() answers "not done" when it gets no outcome (before the clock); run() does nothing -> must never verify (1231.822902ms)
+  AssertionError [ERR_ASSERTION]: MISSED: verified with 0 steps, 0 keys, 0.002 s; against an honest 3-step path the comparison says: win
+      at TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r8-plants/gauntlet/compare/test/zz-critic-r8.test.mjs:77:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r8.test.mjs:80:1
+✖ plant P1b: the same with verify() throwing when it gets no outcome (the runner reads a throw as "not done") -> must never verify (1314.630142ms)
+  AssertionError [ERR_ASSERTION]: MISSED: verified with 1 steps, 1 keys, 0.006 s
+      at TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r8-plants/gauntlet/compare/test/zz-critic-r8.test.mjs:91:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r8.test.mjs:94:1
+✖ plant P2: set-up types the value through the API as a draft; the measured part only clicks Save -> must never verify on 1 step (1362.427421ms)
+  AssertionError [ERR_ASSERTION]: MISSED: verified with 0 steps, 0 keys, 0.01 s
+      at TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r8-plants/gauntlet/compare/test/zz-critic-r8.test.mjs:107:10)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

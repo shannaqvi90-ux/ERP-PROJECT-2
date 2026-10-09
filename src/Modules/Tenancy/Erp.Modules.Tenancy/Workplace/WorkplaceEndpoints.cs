@@ -117,15 +117,29 @@ internal static class WorkplaceEndpoints
 /// and branch: the one they chose if they still may work there, else their first active company
 /// (by code) and its first-opened branch they may work in.
 /// </summary>
-internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyDbContext db, TenancyBranchScope branchScope) : ISessionScopeBinder
+internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScope branchScope) : ISessionScopeBinder
 {
+    internal const string AccessStatement = """
+        SELECT a.company_id, a.all_branches FROM tenancy.user_company_access a WHERE a.tenant_id = @tenant AND a.user_id = @user
+        """;
+
     public async Task<bool> BindAsync(ResolvedSession resolved, CancellationToken cancellationToken)
     {
         var userId = resolved.UserId;
-        var access = await db.CompanyAccess.AsNoTracking().IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
-            .Where(a => a.UserId == userId)
-            .Select(a => new { a.CompanyId, a.AllBranches })
-            .ToListAsync(cancellationToken);
+        // The companies the user may work in, on every authenticated request: one direct statement
+        // in the bound tenant (row-level security, with the tenant named as the second layer), not
+        // an EF query, whose per-query work and context start-up cost more than the statement.
+        var access = new List<(Guid CompanyId, bool AllBranches)>();
+        await using (var command = new NpgsqlCommand(AccessStatement, session.Connection, session.Transaction))
+        {
+            command.Parameters.AddWithValue("tenant", session.TenantId);
+            command.Parameters.AddWithValue("user", userId);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                access.Add((reader.GetGuid(0), reader.GetBoolean(1)));
+            }
+        }
         if (access.Count == 0)
         {
             await session.BindCompaniesAsync([], cancellationToken);

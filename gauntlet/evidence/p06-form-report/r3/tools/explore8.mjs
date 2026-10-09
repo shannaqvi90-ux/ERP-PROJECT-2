@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import { open, B, OUT, shot } from './common.mjs';
+const { browser, page } = await open('admin.ar@alnoor.example');
+await page.goto(B + '/reports/catalog'); await page.waitForTimeout(1200);
+await page.getByText('دليل الفروع', { exact: true }).first().click(); await page.waitForTimeout(600);
+await page.getByRole('button', { name: 'عرض', exact: true }).click(); await page.waitForTimeout(1500);
+await page.emulateMedia({ media: 'print' });
+await page.pdf({ path: `${OUT}/api/branch-directory-browser-print-ar.pdf`, format: 'A4' });
+await page.emulateMedia({ media: 'screen' });
+await shot(page, '10-report-branch-directory-ar');
+await browser.close();

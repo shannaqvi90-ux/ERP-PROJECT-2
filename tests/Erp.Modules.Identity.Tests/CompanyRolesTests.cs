@@ -219,6 +219,96 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
         }
     }
 
+    /// <summary>
+    /// "All that match" judges each user as one user's edit does (critic p03 round 5, finding R1: a
+    /// helpdesk clerk deactivated a company manager whose roles were all held in one company, and
+    /// the one-user edit refused the same change with 403). A user is left alone when they hold, in
+    /// one company, a permission the caller holds neither everywhere nor there, or any role in a
+    /// company the caller does not work in; a role the caller's own role in that company covers
+    /// does not protect them.
+    /// </summary>
+    [Fact]
+    public async Task All_that_match_leaves_alone_users_whose_roles_in_one_company_the_caller_does_not_cover()
+    {
+        var (admin, x, y) = await AdminAsync();
+        var tag = Guid.NewGuid().ToString("N")[..6];
+        var marker = $"Bulk{tag}";
+        var clerk = await RoleAsync(admin, $"Bulk clerk {tag}", "identity.users.read", "identity.users.update");
+        var manager = await RoleAsync(admin, $"Bulk manager {tag}", "identity.users.read", "tenancy.companies.update", "tenancy.access.update");
+        var reader = await RoleAsync(admin, $"Bulk reader {tag}", "identity.users.read");
+
+        async Task<Guid> TargetAsync(string name, object[] companyRoles) =>
+            (await UserAsync(admin, $"bulk.{name}.{tag}", companyRoles)).GetProperty("id").GetGuid();
+        var plain = await TargetAsync("plain", []);
+        var managerInX = await TargetAsync("mgrx", [new { roleId = manager, companyId = x }]);
+        var managerInY = await TargetAsync("mgry", [new { roleId = manager, companyId = y }]);
+        var readerInY = await TargetAsync("ready", [new { roleId = reader, companyId = y }]);
+        var targets = new[] { plain, managerInX, managerInY, readerInY };
+        foreach (var target in targets)
+        {
+            await GiveAccessAsync(admin, target, x, y);
+        }
+
+        async Task<HttpClient> CallerAsync(string name, Guid[] companies, object[] companyRoles)
+        {
+            var id = (await UserAsync(admin, $"caller.{name}.{tag}", companyRoles, [clerk])).GetProperty("id").GetGuid();
+            await GiveAccessAsync(admin, id, companies);
+            return await Env.SignInAsync($"caller.{name}.{tag}@{Env.TenantA.EmailDomain}");
+        }
+
+        async Task<(JsonElement Result, Dictionary<Guid, bool> States)> DeactivateAllAsync(HttpClient caller)
+        {
+            await using (var owner = await Env.OpenAdminAsync())
+            await using (var reset = new NpgsqlCommand("UPDATE identity.users SET is_active = true WHERE id = ANY(@ids)", owner))
+            {
+                reset.Parameters.AddWithValue("ids", targets);
+                await reset.ExecuteNonQueryAsync();
+            }
+            var search = $"{tag}";
+            var total = (await caller.GetFromJsonAsync<JsonElement>($"/api/identity/users?take=1&search={Uri.EscapeDataString($"bulk {search}")}")).GetProperty("total").GetInt32();
+            var response = await caller.PostAsJsonAsync("/api/identity/users/matching/active", new { active = false, search = $"bulk {search}", filter = "", expectedCount = total });
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+            var states = new Dictionary<Guid, bool>();
+            foreach (var target in targets)
+            {
+                states[target] = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{target}")).GetProperty("isActive").GetBoolean();
+            }
+            return (await Json(response), states);
+        }
+
+        // A clerk working in both companies: the managers (in X and in Y) hold what the clerk lacks.
+        using (var both = await CallerAsync("both", [x, y], []))
+        {
+            var (result, states) = await DeactivateAllAsync(both);
+            Assert.Equal(4, result.GetProperty("matched").GetInt32());
+            Assert.Equal(2, result.GetProperty("changed").GetInt32());
+            Assert.Equal(2, result.GetProperty("refusedBeyondOwn").GetInt32());
+            Assert.False(states[plain]);
+            Assert.False(states[readerInY]);
+            Assert.True(states[managerInX], "a manager whose role is held in company X only was deactivated by a clerk");
+            Assert.True(states[managerInY], "a manager whose role is held in company Y only was deactivated by a clerk");
+
+            // The one-user edit agrees.
+            var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{managerInX}")).GetProperty("version").GetUInt32();
+            var single = await both.PutAsJsonAsync($"/api/identity/users/{managerInX}", new { displayName = $"bulk.mgrx.{tag}", language = "en", isActive = false, version });
+            Assert.Equal(HttpStatusCode.Forbidden, single.StatusCode);
+        }
+
+        // A clerk who is also the manager in X and works only in X: the manager in X is within
+        // them; everyone holding a role in Y (which they cannot see) is not.
+        using (var managerOfX = await CallerAsync("mgrofx", [x], [new { roleId = manager, companyId = x }]))
+        {
+            var (result, states) = await DeactivateAllAsync(managerOfX);
+            Assert.Equal(4, result.GetProperty("matched").GetInt32());
+            Assert.Equal(2, result.GetProperty("changed").GetInt32());
+            Assert.Equal(2, result.GetProperty("refusedBeyondOwn").GetInt32());
+            Assert.False(states[plain]);
+            Assert.False(states[managerInX]);
+            Assert.True(states[managerInY], "a user holding a role in a company the caller does not work in was deactivated");
+            Assert.True(states[readerInY], "a user holding a role in a company the caller does not work in was deactivated");
+        }
+    }
+
     [Fact]
     public async Task Users_by_role_lists_a_role_held_in_one_company_with_that_company()
     {

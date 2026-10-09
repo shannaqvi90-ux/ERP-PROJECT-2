@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace Erp.Modules.Tenancy;
 
@@ -473,18 +474,39 @@ public sealed class TenancyBranchScope
     public bool HoldsEveryBranch(Guid companyId) => !LimitedCompanyIds.Contains(companyId);
 }
 
-internal sealed class TenantDirectory(TenancyDbContext db, ITenantContext tenant) : ITenantDirectory
+/// <summary>The bound workspace, if it is active. Every authenticated request asks (the session
+/// resolver refuses a suspended workspace), so it is one direct statement on the unit of work's
+/// connection and transaction, under its row-level security and with the bound tenant named
+/// explicitly as the second layer, rather than an EF query: on the request path EF's per-query
+/// work and the context's start-up cost more than the statement itself.</summary>
+internal sealed class TenantDirectory(ErpDbSession session) : ITenantDirectory
 {
+    internal const string Statement = """
+        SELECT t.id, t.code, t.name_en, t.name_ar, t.status, t.time_zone
+          FROM tenancy.tenants t
+         WHERE t.tenant_id = @tenant AND t.id = @tenant AND t.status = @active
+        """;
+
     public async Task<TenantInfo?> GetCurrentAsync(CancellationToken cancellationToken)
     {
-        if (!tenant.HasTenant)
+        if (!session.HasTenant)
         {
             return null;
         }
-        return await db.Tenants.AsNoTracking()
-            .Where(t => t.Id == tenant.TenantId && t.Status == TenantStatus.Active)
-            .Select(t => new TenantInfo(t.Id, t.Code, t.NameEn, t.NameAr, t.Status) { TimeZone = t.TimeZone })
-            .SingleOrDefaultAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(Statement, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", session.TenantId);
+        command.Parameters.AddWithValue("active", TenantStatus.Active);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+        var found = new TenantInfo(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)) { TimeZone = reader.GetString(5) };
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            throw new InvalidOperationException("More than one workspace has the bound workspace's id.");
+        }
+        return found;
     }
 }
 

@@ -76,6 +76,33 @@ public static partial class TenantSql
                       $"USING ({visible}) WITH CHECK ({CompanyScopeExpression});");
     }
 
+    /// <summary>
+    /// For a table scoped with <c>ownRowsReadable</c> (see <see cref="ProtectCompanyTable"/>): the
+    /// user's own rows outside the company scope stay readable but are never moved or deleted
+    /// there. RESTRICTIVE <c>company_scope_update</c> (FOR UPDATE) and <c>company_scope_delete</c>
+    /// (FOR DELETE) policies with the standard expression: without them the own-rows reading
+    /// clause also let the session delete its own rows of other companies, or move one into its
+    /// scope (a role held in Y becoming one held in X), since UPDATE and DELETE read rows through
+    /// the FOR ALL policy's USING clause (critic p03 round 6). Foreign-key cascades are not
+    /// affected (referential actions bypass row security).
+    /// </summary>
+    public static void KeepOwnRowsReadOnly(this MigrationBuilder migration, string schema, string table)
+    {
+        var name = Qualified(schema, table);
+        migration.Sql($"DROP POLICY IF EXISTS company_scope_update ON {name};");
+        migration.Sql($"DROP POLICY IF EXISTS company_scope_delete ON {name};");
+        migration.Sql($"CREATE POLICY company_scope_update ON {name} AS RESTRICTIVE FOR UPDATE TO PUBLIC USING ({CompanyScopeExpression});");
+        migration.Sql($"CREATE POLICY company_scope_delete ON {name} AS RESTRICTIVE FOR DELETE TO PUBLIC USING ({CompanyScopeExpression});");
+    }
+
+    /// <summary>Reverse of <see cref="KeepOwnRowsReadOnly"/>.</summary>
+    public static void AllowOwnRowWrites(this MigrationBuilder migration, string schema, string table)
+    {
+        var name = Qualified(schema, table);
+        migration.Sql($"DROP POLICY IF EXISTS company_scope_update ON {name};");
+        migration.Sql($"DROP POLICY IF EXISTS company_scope_delete ON {name};");
+    }
+
     /// <summary>Reverse of <see cref="ProtectCompanyTable"/>.</summary>
     public static void UnprotectCompanyTable(this MigrationBuilder migration, string schema, string table) =>
         migration.Sql($"DROP POLICY IF EXISTS company_scope ON {Qualified(schema, table)};");

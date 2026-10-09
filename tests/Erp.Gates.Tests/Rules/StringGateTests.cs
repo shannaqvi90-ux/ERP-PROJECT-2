@@ -52,6 +52,8 @@ public sealed partial class StringGateTests(GateFixture fixture)
             .Concat(catalog.Menu.Select(m => m.LabelKey).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.Select(c => c.LabelKey).Append(l.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => l.Columns.SelectMany(c => (c.Choices ?? []).Select(x => x.LabelKey))).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
+            // A boolean column's words for true and false (a status column's "Active" and "Inactive").
+            .Concat(catalog.Lists.SelectMany(l => l.Columns.SelectMany(c => new[] { c.TrueLabelKey, c.FalseLabelKey }.OfType<string>())).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(catalog.Lists.SelectMany(l => (l.Presets ?? []).Select(p => p.LabelKey)).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .Concat(ReportLabelKeys(catalog).Where(k => !web.Contains(k)).Select(k => $"web:{k}"))
             .ToList();

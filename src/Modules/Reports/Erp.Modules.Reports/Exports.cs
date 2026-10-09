@@ -18,6 +18,16 @@ public static class Exports
     public const string CsvType = "text/csv";
     public const string XlsxType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
+    /// <summary>A grouped document carries its group as a first column of its own only when the
+    /// grouping column is not printed already (a branch directory grouped by company has its
+    /// Company column once, not twice).</summary>
+    public static bool GroupColumn(ReportDocument document) =>
+        document.GroupLabel is not null && !document.Columns.Any(c => c.Key == document.GroupBy);
+
+    /// <summary>The export's column titles: the group's (when it has a column of its own), then the document's.</summary>
+    public static IReadOnlyList<string> Header(ReportDocument document) =>
+        [.. GroupColumn(document) ? [document.GroupLabel!] : Array.Empty<string>(), .. document.Columns.Select(c => c.Label)];
+
     public static byte[] Csv(ReportDocument document)
     {
         using var buffer = new MemoryStream();
@@ -30,12 +40,7 @@ public static class Exports
     public static void WriteCsv(ReportDocument document, Stream output)
     {
         using var writer = new StreamWriter(output, new UTF8Encoding(true), 1 << 16, leaveOpen: true);
-        var header = new List<string>();
-        if (document.GroupLabel is { } groupLabel)
-        {
-            header.Add(groupLabel);
-        }
-        header.AddRange(document.Columns.Select(c => c.Label));
+        var header = Header(document);
         Line(writer, header);
         var cells = new List<string>(header.Count);
         foreach (var group in document.Groups)
@@ -43,7 +48,7 @@ public static class Exports
             foreach (var row in group.Rows)
             {
                 cells.Clear();
-                if (document.GroupLabel is not null)
+                if (GroupColumn(document))
                 {
                     cells.Add(group.Label ?? "");
                 }
@@ -99,7 +104,7 @@ public static class Exports
     public static void WriteXlsx(ReportDocument document, Stream output)
     {
         var styles = new XlsxStyles();
-        var columnCount = document.Columns.Count + (document.GroupLabel is null ? 0 : 1);
+        var columnCount = document.Columns.Count + (GroupColumn(document) ? 1 : 0);
         var lastDataRow = 1 + document.Groups.Sum(g => g.Rows.Count);
         var sheetName = SheetName(document.Title);
         using var zip = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true);
@@ -135,12 +140,7 @@ public static class Exports
             }
             sheet.Write("</cols><sheetData>");
             var r = 1;
-            var header = new List<string>();
-            if (document.GroupLabel is { } groupLabel)
-            {
-                header.Add(groupLabel);
-            }
-            header.AddRange(document.Columns.Select(c => c.Label));
+            var header = Header(document);
             sheet.Write($"<row r=\"{r}\">");
             for (var c = 0; c < header.Count; c++)
             {
@@ -154,7 +154,7 @@ public static class Exports
                     r++;
                     sheet.Write($"<row r=\"{r}\">");
                     var c = 0;
-                    if (document.GroupLabel is not null)
+                    if (GroupColumn(document))
                     {
                         sheet.Write(TextCell(Reference(c++, r), group.Label ?? "", 0));
                     }
@@ -197,7 +197,7 @@ public static class Exports
     private static string TotalRow(ReportDocument document, int row, int lastDataRow, XlsxStyles styles)
     {
         var builder = new StringBuilder($"<row r=\"{row}\">");
-        var offset = document.GroupLabel is null ? 0 : 1;
+        var offset = GroupColumn(document) ? 1 : 0;
         var labelled = false;
         if (offset == 1)
         {

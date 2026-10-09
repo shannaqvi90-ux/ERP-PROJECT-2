@@ -1,0 +1,11 @@
+import { open, signIn, BASE, shot } from './pw.mjs';
+const { browser, page, errors } = await open(1920, 1080);
+await signIn(page, 'admin@alnoor.example');
+await page.goto(BASE + '/identity/users'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(800);
+await page.keyboard.type('accountant@alnoor'); await page.waitForTimeout(1200);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+await page.getByRole('tab', { name: /what they can do/i }).first().click(); await page.waitForTimeout(1200);
+await shot(page, '09-effective-permissions-1920-clipped-en');
+const m = await page.evaluate(() => { const a = [...document.querySelectorAll('aside, [role=complementary]')].pop(); const t = a.querySelector('table'); return { panel: a.getBoundingClientRect().width, table: t?.scrollWidth, tableClient: t?.parentElement?.clientWidth }; });
+console.log('panel width / table scrollWidth / container', JSON.stringify(m));
+console.log('errors', errors); await browser.close();

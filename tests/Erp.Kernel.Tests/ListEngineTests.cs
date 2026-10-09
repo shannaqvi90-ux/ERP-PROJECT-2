@@ -126,6 +126,8 @@ public sealed class ListEngineTests
                 new ListColumn("kind", "c", ListColumnType.Choice, Filterable: true),
                 new ListColumn("label", "d", ListColumnType.Text, Aggregate: true),
                 new ListColumn("Bad", "e", ListColumnType.Text),
+                new ListColumn("named", "f", ListColumnType.Text, TrueLabelKey: "x.on", FalseLabelKey: "x.off"),
+                new ListColumn("half", "g", ListColumnType.Boolean, TrueLabelKey: "x.on"),
             ],
             SearchFields = ["name"],
             DefaultSort = "-kind",
@@ -139,6 +141,10 @@ public sealed class ListEngineTests
         Assert.Contains(problems, p => p.Contains("default sort '-kind' is not a sortable column", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("preset 'p' filter is invalid", StringComparison.Ordinal));
         Assert.Contains(problems, p => p.Contains("preset 'q' groups by 'name'", StringComparison.Ordinal));
+        // Words for true and false belong to boolean columns, and come in pairs.
+        Assert.Contains(problems, p => p.Contains("column 'named' names words for true and false but is not a boolean column", StringComparison.Ordinal));
+        Assert.Contains(problems, p => p.Contains("column 'half' names a word for only one of true and false", StringComparison.Ordinal));
+        Assert.DoesNotContain(problems, p => p.Contains("'named' names a word for only one", StringComparison.Ordinal));
 
         var binding = ListBinding<Item>.For(Definition, i => i.Id).Column("name", i => i.Quantity).Column("ghost", i => i.Name);
         var bindingProblems = binding.Problems().ToList();
@@ -216,6 +222,22 @@ public sealed class ListEngineTests
         Assert.Equal(Items.Sum(i => i.Amount), groups.Sum(g => g.MoneyTotals!["amount"].Sum(l => l.Amount)));
         Assert.Equal(Items.Sum(i => (decimal)i.Quantity), groups.Sum(g => g.Totals!["quantity"]));
         Assert.Equal(3, (await Run(new ListRequest { GroupBy = "day" })).Groups!.Count);
+    }
+
+    [Theory]
+    [InlineData("", "", "")]
+    [InlineData("item 3", "", "")]
+    [InlineData("", "kind eq 'raw' and quantity ge 2", "-quantity,code")]
+    [InlineData("c-0", "active eq true or seen eq null", "seen")]
+    [InlineData("", "code startswith 'C-01' or code eq null", "-code")]
+    public async Task Rows_in_memory_are_paged_as_linq_to_objects_orders_them(string search, string filter, string sort)
+    {
+        // The page (interpreted in memory) holds the rows LINQ to objects selects and orders.
+        var request = new ListRequest { Search = search, Filter = filter, Sort = sort, Take = 200 };
+        var expected = Binding().Apply(Items.AsQueryable(), request).Select(i => i.Id).ToList();
+        var page = await Run(request);
+        Assert.Equal(expected, page.Rows.Select(i => i.Id).ToList());
+        Assert.Equal(expected.Count, page.Total);
     }
 
     [Fact]

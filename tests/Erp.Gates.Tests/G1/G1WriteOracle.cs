@@ -31,7 +31,7 @@ namespace Erp.Gates.Tests.G1;
 /// tenant A beside a name that exists nowhere. Seeded names are not sent: both tenants' seeds share
 /// names such as "Administrator", which a workspace may rightly refuse as its own.
 /// </summary>
-public static class G1WriteOracle
+public static partial class G1WriteOracle
 {
     public sealed record Result(IReadOnlyList<string> Problems, int Checks, IReadOnlyList<string> Endpoints);
 
@@ -149,7 +149,7 @@ public static class G1WriteOracle
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<HttpClient, object> WorkingCompany = new();
 
     /// <summary>Remember the client's working company: records that belong to a company are
-    /// created in it by <see cref="SendAsync"/>.</summary>
+    /// created in it by the sends.</summary>
     internal static async Task UseWorkingCompanyAsync(HttpClient client) => WorkingCompany.AddOrUpdate(client, await WorkingCompanyAsync(client));
 
     private static async Task<object> WorkingCompanyAsync(HttpClient client)
@@ -182,14 +182,21 @@ public static class G1WriteOracle
     /// <summary>Send the endpoint a valid body with <paramref name="field"/> set to
     /// <paramref name="value"/>: a create as is; an edit on a record the same caller creates first
     /// through the collection's POST, carrying the record's own values otherwise.</summary>
+    internal static Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
+        JsonElement schema, ErpTestEnvironment env, string tag, string field, string value) =>
+        SendAsync(client, openApi, endpoint, collection, schema, env, tag, body => body[field] = value, routeId: null);
+
+    /// <summary>As above, with <paramref name="set"/> changing the valid body last; an endpoint with
+    /// a route id but no collection to create a record in (a user's company access) is sent to
+    /// <paramref name="routeId"/>, an existing record of the caller's, carrying its values.</summary>
     internal static async Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
-        JsonElement schema, ErpTestEnvironment env, string tag, string field, string value)
+        JsonElement schema, ErpTestEnvironment env, string tag, Action<JsonObject> set, string? routeId)
     {
         string path;
         JsonObject body;
-        if (collection is null)
+        if (collection is null || routeId is not null)
         {
-            path = endpoint.Pattern;
+            path = routeId is null ? endpoint.Pattern : endpoint.Path(_ => routeId);
             body = Valid(openApi, schema, env, tag, CompanyOf(client));
             // A record of its own with no id in the route (the workspace's settings): an edit
             // carries its current values, the version among them.
@@ -235,12 +242,12 @@ public static class G1WriteOracle
                 }
             }
         }
-        body[field] = value;
+        set(body);
         using var response = await client.SendAsync(Json(new HttpMethod(endpoint.Method), path, body));
         return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
     }
 
-    private static string CompanyOf(HttpClient client) => WorkingCompany.TryGetValue(client, out var id) ? (string)id : "";
+    internal static string CompanyOf(HttpClient client) => WorkingCompany.TryGetValue(client, out var id) ? (string)id : "";
 
     internal static JsonObject Valid(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment env, string tag, string companyId)
     {
@@ -285,7 +292,7 @@ public static class G1WriteOracle
         return GrantEscalation.WithoutUnfilledItems(body);
     }
 
-    private static HttpRequestMessage Json(HttpMethod method, string path, JsonObject body) =>
+    internal static HttpRequestMessage Json(HttpMethod method, string path, JsonObject body) =>
         new(method, path) { Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json") };
 
     private static string Short(string text) => text.Length <= 200 ? text : text[..200] + "…";
@@ -319,5 +326,26 @@ public sealed class G1WriteOracleTests(WriteOracleFixture fixture) : IClassFixtu
         Assert.Contains("PUT /api/identity/users/{id:guid}", result.Endpoints);
         Assert.True(result.Checks >= Ratchet.Min("g1.writeOracleChecks"),
             $"{result.Checks} differential write checks; ratchet minimum {Ratchet.Min("g1.writeOracleChecks")}");
+    }
+
+    /// <summary>Record ids anywhere in a body (critic p03 rounds 5 and 6, plant L3): see
+    /// <see cref="G1WriteOracle.RunIdsAsync"/>.</summary>
+    [Fact]
+    public async Task Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere()
+    {
+        var result = await G1WriteOracle.RunIdsAsync(fixture.Env);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Checks} id differential write checks: {string.Join(", ", result.Judged)}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"Not judged: {string.Join("; ", result.Unjudged)}");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        foreach (var expected in new[]
+                 {
+                     "POST /api/identity/users [companyRoles[].companyId]", "POST /api/identity/users [companyRoles[].roleId]", "POST /api/identity/users [roleIds[]]",
+                     "PUT /api/identity/users/{id:guid} [companyRoles[].companyId]",
+                 })
+        {
+            Assert.Contains(expected, result.Judged);
+        }
+        Assert.True(result.Checks >= Ratchet.Min("g1.writeOracleIdChecks"),
+            $"{result.Checks} id differential write checks; ratchet minimum {Ratchet.Min("g1.writeOracleIdChecks")}");
     }
 }

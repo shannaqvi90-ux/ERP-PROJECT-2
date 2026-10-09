@@ -1,0 +1,15 @@
+control: 0 test(s) fail unmutated in the scratch copy: 
+A10 paste of set-up clipboard allowed: CAUGHT [heavy] in 238 s by test/guard.test.mjs (not ok 59 - plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid | not ok 83 - plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid)
+A12 task already done before the clock accepted: CAUGHT [heavy] in 246 s by test/guard.test.mjs (not ok 39 - plant H2c (round 3): a task already done by set-up before the clock -> invalid | not ok 76 - plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid)
+A13 declared moments need not be shot: CAUGHT [heavy] in 220 s by test/guard.test.mjs (not ok 44 - plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared)
+A14 verify() waiting meter off: CAUGHT [heavy] in 197 s by test/guard.test.mjs (not ok 67 - plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops | not ok 69 - plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid)
+A16 reference measured on its worst path per metric: MISSED [heavy] in 205 s
+A18 request body not counted as typed: CAUGHT [heavy] in 189 s by test/guard.test.mjs (not ok 51 - an API task counts each request, and its screenshots show the neutral request transcript)
+A20 start screen may hold typed text: CAUGHT [heavy] in 190 s by test/guard.test.mjs (not ok 37 - plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid)
+A23 page.click allowed while measured (guard read-only off): CAUGHT [heavy] in 222 s by test/guard.test.mjs (not ok 2 - plant: typing through ctx.page.keyboard -> the run is invalid, never verified | not ok 3 - plant: pressing a key through op.page.keyboard -> the run is invalid, never verified)
+A24 requests after the clock not aborted: MISSED [heavy] in 264 s
+A26 scroll counted as no step: MISSED [heavy] in 283 s
+H1 the address object reachable from a page function: CAUGHT [heavy] in 237 s by test/page-script.test.mjs (not ok 12 - the source check refuses a page function that acts or can act later: location.assign | not ok 13 - the source check refuses a page function that acts or can act later: location.replace with a javascript: address)
+H3 Locator.press allowed while measured (uncounted key): CAUGHT [heavy] in 221 s by test/guard.test.mjs (not ok 5 - plant: filling a field directly -> the run is invalid, never verified)
+H9 Playwright internals reachable from a driver: CAUGHT [heavy] in 295 s by test/guard.test.mjs (not ok 48 - plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid)
+H10 verify() reads not clamped to 0.5 s: MISSED [heavy] in 293 s

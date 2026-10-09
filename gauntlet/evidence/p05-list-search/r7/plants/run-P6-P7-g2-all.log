@@ -1,0 +1,100 @@
+Test run for /home/shan/critic/p05-list-search-r7-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.29]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.95]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [77 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [44 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [26 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [7 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [15 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [17 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [29 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [22 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [532 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [21 ms]
+[xUnit.net 00:00:50.12]     Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [FAIL]
+[xUnit.net 00:00:50.12]       tenancy.companies: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:50.12]       before 01a11e13-4725-7e8c-8deb-537a3a390e6d:Everyone's:927:False | 01a11e13-b24b-7d9a-8b5f-385d8c3c58e3:Team tenancy.companies:1885:False | 01a11e13-252d-74d8-8e4c-81eb685379f1:Team view:761:False | 01a11e13-49ee-74aa-bb55-65ca8e7880a9:Mine:951:False | 01a11e13-b255-74cb-a089-51b189c26139:Mine tenancy.companies:1886:False
+[xUnit.net 00:00:50.12]       after  01a11e13-4725-7e8c-8deb-537a3a390e6d:Everyone's:927:False | 01a11e13-b24b-7d9a-8b5f-385d8c3c58e3:Team tenancy.companies:1885:False | 01a11e13-252d-74d8-8e4c-81eb685379f1:Team view:761:False | 01a11e13-49ee-74aa-bb55-65ca8e7880a9:Mine:951:False | 01a11e13-b255-74cb-a089-51b189c26139:Mine tenancy.companies:1886:False | 01a11e13-b3a4-7102-881f-30e560eef26a:Sharer's own tenancy.companies:1894:False
+[xUnit.net 00:00:50.12]       tenancy.branches: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:50.12]       before 01a11e13-b519-7b86-91ce-286cda8825b6:Team tenancy.branches:1907:False | 01a11e13-2543-76b0-a5dd-e6a7f66b743d:Team view:761:False | 01a11e13-4ba1-7d37-af6a-3d00e73895be:Mine:977:False | 01a11e13-b520-76f8-b377-756e23532b3a:Mine tenancy.branches:1908:False
+[xUnit.net 00:00:50.12]       after  01a11e13-b519-7b86-91ce-286cda8825b6:Team tenancy.branches:1907:False | 01a11e13-2543-76b0-a5dd-e6a7f66b743d:Team view:761:False | 01a11e13-4ba1-7d37-af6a-3d00e73895be:Mine:977:False | 01a11e13-b520-76f8-b377-756e23532b3a:Mine tenancy.branches:1908:False | 01a11e13-b67d-7af7-b785-75026d642a16:Sharer's own tenancy.branches:1918:False
+[xUnit.net 00:00:50.12]       tenancy.access: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:50.12]       before 01a11e13-b7f4-7e73-889a-c5ae618040c1:Team tenancy.access:1939:False | 01a11e13-2544-7ecb-9985-6b7f887ebe7a:Team view:761:False | 01a11e13-4d5d-77f5-9325-9f1ebc5ea32d:Mine:999:False | 01a11e13-b800-7d7d-8203-daae72030a33:Mine tenancy.access:1940:False
+[xUnit.net 00:00:50.12]       after  01a11e13-b7f4-7e73-889a-c5ae618040c1:Team tenancy.access:1939:False | 01a11e13-2544-7ecb-9985-6b7f887ebe7a:Team view:761:False | 01a11e13-4d5d-77f5-9325-9f1ebc5ea32d:Mine:999:False | 01a11e13-b800-7d7d-8203-daae72030a33:Mine tenancy.access:1940:False | 01a11e13-b945-79d0-99a8-a63c542e67a9:Sharer's own tenancy.access:1951:False
+[xUnit.net 00:00:50.12]       identity.users: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:50.12]       before 01a11e13-bacb-7b24-ac07-c689f3f64b90:Team identity.users:1966:False | 01a11e13-2545-76e1-8587-5e56e3d37f4c:Team view:761:False | 01a11e13-4f28-7a88-b5a0-768267341f22:Mine:1016:False | 01a11e13-bad2-7db2-8da8-99513f4497c1:Mine identity.users:1967:False
+[xUnit.net 00:00:50.12]       after  01a11e13-bacb-7b24-ac07-c689f3f64b90:Team identity.users:1966:False | 01a11e13-2545-76e1-8587-5e56e3d37f4c:Team view:761:False | 01a11e13-4f28-7a88-b5a0-768267341f22:Mine:1016:False | 01a11e13-bad2-7db2-8da8-99513f4497c1:Mine identity.users:1967:False | 01a11e13-bc27-77a8-a200-bde7e66c74e5:Sharer's own identity.users:1973:False
+[xUnit.net 00:00:50.12]       identity.roles: the workspace's views changed while refused callers tried them:
+[xUnit.net 00:00:50.12]       before 01a11e13-bdaa-73e5-b210-2bb507904790:Team identity.roles:1988:False | 01a11e13-2546-715a-8e5b-a52115d91125:Team view:761:False | 01a11e13-50c1-7f37-8f3e-69e461ea87a0:Mine:1036:False | 01a11e13-bdb1-7156-b6c3-43bd4cbf935f:Mine identity.roles:1989:False
+[xUnit.net 00:00:50.12]       after  01a11e13-bdaa-73e5-b210-2bb507904790:Team identity.roles:1988:False | 01a11e13-2546-715a-8e5b-a52115d91125:Team view:761:False | 01a11e13-50c1-7f37-8f3e-69e461ea87a0:Mine:1036:False | 01a11e13-bdb1-7156-b6c3-43bd4cbf935f:Mine identity.roles:1989:False | 01a11e13-bedd-7184-aeee-0c12c72ea897:Sharer's own identity.roles:1996:False
+[xUnit.net 00:00:50.12]       Stack Trace:
+[xUnit.net 00:00:50.12]         /home/shan/critic/p05-list-search-r7-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(775,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing()
+[xUnit.net 00:00:50.12]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:50.12]       Output:
+[xUnit.net 00:00:50.12]         5 lists, 155 refusals checked on list endpoints
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [3 s]
+  Error Message:
+   tenancy.companies: the workspace's views changed while refused callers tried them:
+before 01a11e13-4725-7e8c-8deb-537a3a390e6d:Everyone's:927:False | 01a11e13-b24b-7d9a-8b5f-385d8c3c58e3:Team tenancy.companies:1885:False | 01a11e13-252d-74d8-8e4c-81eb685379f1:Team view:761:False | 01a11e13-49ee-74aa-bb55-65ca8e7880a9:Mine:951:False | 01a11e13-b255-74cb-a089-51b189c26139:Mine tenancy.companies:1886:False
+after  01a11e13-4725-7e8c-8deb-537a3a390e6d:Everyone's:927:False | 01a11e13-b24b-7d9a-8b5f-385d8c3c58e3:Team tenancy.companies:1885:False | 01a11e13-252d-74d8-8e4c-81eb685379f1:Team view:761:False | 01a11e13-49ee-74aa-bb55-65ca8e7880a9:Mine:951:False | 01a11e13-b255-74cb-a089-51b189c26139:Mine tenancy.companies:1886:False | 01a11e13-b3a4-7102-881f-30e560eef26a:Sharer's own tenancy.companies:1894:False
+tenancy.branches: the workspace's views changed while refused callers tried them:
+before 01a11e13-b519-7b86-91ce-286cda8825b6:Team tenancy.branches:1907:False | 01a11e13-2543-76b0-a5dd-e6a7f66b743d:Team view:761:False | 01a11e13-4ba1-7d37-af6a-3d00e73895be:Mine:977:False | 01a11e13-b520-76f8-b377-756e23532b3a:Mine tenancy.branches:1908:False
+after  01a11e13-b519-7b86-91ce-286cda8825b6:Team tenancy.branches:1907:False | 01a11e13-2543-76b0-a5dd-e6a7f66b743d:Team view:761:False | 01a11e13-4ba1-7d37-af6a-3d00e73895be:Mine:977:False | 01a11e13-b520-76f8-b377-756e23532b3a:Mine tenancy.branches:1908:False | 01a11e13-b67d-7af7-b785-75026d642a16:Sharer's own tenancy.branches:1918:False
+tenancy.access: the workspace's views changed while refused callers tried them:
+before 01a11e13-b7f4-7e73-889a-c5ae618040c1:Team tenancy.access:1939:False | 01a11e13-2544-7ecb-9985-6b7f887ebe7a:Team view:761:False | 01a11e13-4d5d-77f5-9325-9f1ebc5ea32d:Mine:999:False | 01a11e13-b800-7d7d-8203-daae72030a33:Mine tenancy.access:1940:False
+after  01a11e13-b7f4-7e73-889a-c5ae618040c1:Team tenancy.access:1939:False | 01a11e13-2544-7ecb-9985-6b7f887ebe7a:Team view:761:False | 01a11e13-4d5d-77f5-9325-9f1ebc5ea32d:Mine:999:False | 01a11e13-b800-7d7d-8203-daae72030a33:Mine tenancy.access:1940:False | 01a11e13-b945-79d0-99a8-a63c542e67a9:Sharer's own tenancy.access:1951:False
+identity.users: the workspace's views changed while refused callers tried them:
+before 01a11e13-bacb-7b24-ac07-c689f3f64b90:Team identity.users:1966:False | 01a11e13-2545-76e1-8587-5e56e3d37f4c:Team view:761:False | 01a11e13-4f28-7a88-b5a0-768267341f22:Mine:1016:False | 01a11e13-bad2-7db2-8da8-99513f4497c1:Mine identity.users:1967:False
+after  01a11e13-bacb-7b24-ac07-c689f3f64b90:Team identity.users:1966:False | 01a11e13-2545-76e1-8587-5e56e3d37f4c:Team view:761:False | 01a11e13-4f28-7a88-b5a0-768267341f22:Mine:1016:False | 01a11e13-bad2-7db2-8da8-99513f4497c1:Mine identity.users:1967:False | 01a11e13-bc27-77a8-a200-bde7e66c74e5:Sharer's own identity.users:1973:False
+identity.roles: the workspace's views changed while refused callers tried them:
+before 01a11e13-bdaa-73e5-b210-2bb507904790:Team identity.roles:1988:False | 01a11e13-2546-715a-8e5b-a52115d91125:Team view:761:False | 01a11e13-50c1-7f37-8f3e-69e461ea87a0:Mine:1036:False | 01a11e13-bdb1-7156-b6c3-43bd4cbf935f:Mine identity.roles:1989:False
+after  01a11e13-bdaa-73e5-b210-2bb507904790:Team identity.roles:1988:False | 01a11e13-2546-715a-8e5b-a52115d91125:Team view:761:False | 01a11e13-50c1-7f37-8f3e-69e461ea87a0:Mine:1036:False | 01a11e13-bdb1-7156-b6c3-43bd4cbf935f:Mine identity.roles:1989:False | 01a11e13-bedd-7184-aeee-0c12c72ea897:Sharer's own identity.roles:1996:False
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing() in /home/shan/critic/p05-list-search-r7-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 775
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5 lists, 155 refusals checked on list endpoints
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [816 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [522 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [17 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [4 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [25 s]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [22 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [17 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [347 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [38 s]
+[xUnit.net 00:01:52.18]   Finished:    Erp.Gates.Tests (ID = 'be19fd2c327ec2297cbb5beee5d067e35998e8b7561fb8eb0c805b378f21b0c1')
+
+Test Run Failed.
+Total tests: 36
+     Passed: 35
+     Failed: 1
+ Total time: 1.8795 Minutes
+
+real	1m53.884s
+user	2m45.963s
+sys	0m23.516s

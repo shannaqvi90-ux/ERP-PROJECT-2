@@ -1,0 +1,30 @@
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.32]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.46]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:11.22]     Erp.Modules.Identity.Tests.CriticR7Proof.Pf_a_role_manager_of_one_company_cannot_change_a_role_held_across_the_workspace [FAIL]
+[xUnit.net 00:00:11.22]       a user holding the role's grants only in company 1 changed a role held across the workspace: 200 {"id":"01a11e8d-94a0-73f5-b73a-bf4599b8fb62","nameEn":"Pf renamed 41909d","nameAr":"معاد 41909d","permissions":["tenancy.companies.read"],"isSystem":false,"userCount":1,"version":786}
+[xUnit.net 00:00:11.22]       Stack Trace:
+[xUnit.net 00:00:11.22]         /work/tests/Erp.Modules.Identity.Tests/CriticR7Proof.cs(66,0): at Erp.Modules.Identity.Tests.CriticR7Proof.Pf_a_role_manager_of_one_company_cannot_change_a_role_held_across_the_workspace()
+[xUnit.net 00:00:11.22]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:11.22]       Output:
+[xUnit.net 00:00:11.22]         200 {"id":"01a11e8d-94a0-73f5-b73a-bf4599b8fb62","nameEn":"Pf renamed 41909d","nameAr":"معاد 41909d","permissions":["tenancy.companies.read"],"isSystem":false,"userCount":1,"version":786}
+[xUnit.net 00:00:11.37]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Failed Erp.Modules.Identity.Tests.CriticR7Proof.Pf_a_role_manager_of_one_company_cannot_change_a_role_held_across_the_workspace [1 s]
+  Error Message:
+   a user holding the role's grants only in company 1 changed a role held across the workspace: 200 {"id":"01a11e8d-94a0-73f5-b73a-bf4599b8fb62","nameEn":"Pf renamed 41909d","nameAr":"معاد 41909d","permissions":["tenancy.companies.read"],"isSystem":false,"userCount":1,"version":786}
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.CriticR7Proof.Pf_a_role_manager_of_one_company_cannot_change_a_role_held_across_the_workspace() in /work/tests/Erp.Modules.Identity.Tests/CriticR7Proof.cs:line 66
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 200 {"id":"01a11e8d-94a0-73f5-b73a-bf4599b8fb62","nameEn":"Pf renamed 41909d","nameAr":"معاد 41909d","permissions":["tenancy.companies.read"],"isSystem":false,"userCount":1,"version":786}
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 11.6999 Seconds
+proof rc=1

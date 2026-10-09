@@ -1,0 +1,11 @@
+Plants applied to cb26098 in separate copies; gate project run with run-gates.sh (toolbox image, filter Load!=Timing and
+without the planted-module self-test processes).
+Run A = L4 + P6 (run-A-L4-P6.log): 131 tests, 5 failed, all G1 (L4 caught by G1HttpIsolation 3,544 leaks, G1ProcessState,
+  G1TenantSource, G1CompanyIsolation, G1BranchScope). Every G2 test passed: P6 MISSED.
+Run B = L5 + P8 (run-B-L5-P8.log): 131 tests, 2 failed, both G1 (L5 caught by G1ProcessState and G1HttpIsolation 853 leaks
+  read from PDFs). Every G2 test passed: P8 MISSED.
+P6 and P8 are real faults: plant-P6-P8-live-demo.txt (planted stack, a user holding identity.users.read +
+  reports.catalog.read, no identity.roles.read: the CSV export of usersByRole prints the withheld Role and Only-in-company
+  columns; the printed users list names each user's roles; unplanted the same caller gets the columns withheld and role counts).
+W3 (textarea ignores readOnly) passed all 343 web unit tests, but it is NOT a fault: FormSection is a <fieldset disabled>
+  for read-only users, which disables the textarea anyway. Not counted.

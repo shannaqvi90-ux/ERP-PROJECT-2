@@ -1,0 +1,11 @@
+--- gauntlet/compare/lib/operator.mjs	2026-10-09 02:22:57.984032115 +0400
++++ gauntlet/compare/lib/operator.mjs	2026-10-09 04:23:25.534792753 +0400
+@@ -304,7 +304,7 @@
+     const { label } = checkOptions('scrollTo', opts);
+     const t = this.#begin();
+     await this.#locate(target).scrollIntoViewIfNeeded({ timeout: this.defaultTimeout });
+-    return this.#record('scroll', label || `scroll to ${String(target)}`, 0, t);
++    return { kind: 'scroll' };
+   }
+ 
+   /**

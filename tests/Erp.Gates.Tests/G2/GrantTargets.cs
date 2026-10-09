@@ -126,6 +126,38 @@ public sealed class TargetRecords(HttpClient admin, ErpTestEnvironment env)
         return id;
     }
 
+    private readonly Dictionary<string, Guid> _companyUsers = new(StringComparer.Ordinal);
+
+    /// <summary>An invited user holding a role granting exactly <paramref name="permissions"/> in
+    /// <paramref name="companyId"/> only, and no role in the whole workspace (critic p03 round 5,
+    /// finding R1: a company manager whose roles are all per company), with access to
+    /// <paramref name="companies"/>' companies. With <paramref name="fresh"/>, a new user every time, never handed out again.</summary>
+    public async Task<Guid> UserInCompanyAsync(IReadOnlyList<string> permissions, Guid companyId, GateCompanies companies, bool fresh = false)
+    {
+        var key = string.Join(",", permissions.Distinct().Order(StringComparer.Ordinal)) + "@" + companyId;
+        if (!fresh && _companyUsers.TryGetValue(key, out var id))
+        {
+            return id;
+        }
+        var role = await RoleAsync(permissions);
+        var tag = Tag();
+        id = await CreatedIdAsync("/api/identity/users", new JsonObject
+        {
+            ["email"] = $"g2.incompany.{tag}@{env.TenantA.EmailDomain}",
+            ["displayName"] = $"G2 company target {tag}",
+            ["language"] = "en",
+            ["roleIds"] = new JsonArray(),
+            ["companyRoles"] = new JsonArray(GateCompanies.CompanyRole(role, companyId)),
+        });
+        await companies.GiveAccessAsync(id);
+        if (!fresh)
+        {
+            // A fresh user may be changed or removed by its request; later lookups get the shared one.
+            _companyUsers[key] = id;
+        }
+        return id;
+    }
+
     private string Tag() => $"{++_n}{Convert.ToHexString(Guid.NewGuid().ToByteArray())[..8].ToLowerInvariant()}";
 
     private async Task<Guid> CreatedIdAsync(string path, JsonObject body)

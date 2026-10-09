@@ -14,6 +14,7 @@ const PAGE = `<!doctype html><html><head><title>Odoo - Contacts</title><link rel
   <div id="brand" style="position:absolute;left:0;top:0;width:200px;height:60px;background:#714B67;color:#fff">Odoo</div>
   <img id="logo" src="/logo.png" style="position:absolute;left:300px;top:0;width:100px;height:60px;background:#00ff00">
   <div data-brand style="position:absolute;left:450px;top:0;width:100px;height:60px;background:#0000ff"></div>
+  <div id="accent" style="position:absolute;left:700px;top:300px;width:80px;height:80px;background:#e3342f"></div>
   <input id="q" style="position:absolute;left:0;top:100px">
   <button id="go" style="position:absolute;left:0;top:140px" onclick="setTimeout(()=>{document.getElementById('out').textContent='found '+document.getElementById('q').value},300)">Go</button>
   <div id="out" style="position:absolute;left:0;top:180px"></div>
@@ -98,7 +99,7 @@ test('blind screenshots paint branding over, go grey, and leave title and favico
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const g = c.getContext('2d'); g.drawImage(img, 0, 0);
     const at = (x, y) => Array.from(g.getImageData(x, y, 1, 1).data.slice(0, 3));
-    return { brand: at(100, 30), logo: at(350, 30), dataBrand: at(500, 30), plain: at(1000, 500) };
+    return { brand: at(100, 30), logo: at(350, 30), dataBrand: at(500, 30), plain: at(1000, 500), accent: at(740, 340) };
   }, `data:image/png;base64,${data}`);
   const mask = [1, 3, 5].map(i => parseInt(MASK_COLOR.slice(i, i + 2), 16));
   const grey = ([r, g, b]) => Math.max(r, g, b) - Math.min(r, g, b) <= 2;
@@ -106,6 +107,8 @@ test('blind screenshots paint branding over, go grey, and leave title and favico
   assert.ok(near(px.brand, mask), `brand text box painted over: ${px.brand}`);
   assert.ok(near(px.logo, mask), `logo painted over: ${px.logo}`);
   assert.ok(grey(px.plain), `page rendered in greyscale: ${px.plain}`);
+  // Round 7 (critic mutation M2): a signature colour, not only a background that is grey anyway.
+  assert.ok(grey(px.accent) && px.accent[0] < 200, `a coloured block rendered in greyscale: ${px.accent}`);
   // Our own product's branding hook: [data-brand].
   const ours = new Operator(page, { shotsDir: path.join(tmp, 'shots'), branding: brandingFor('ours'), shotFormat: 'png' });
   const s2 = await ours.shot('start');

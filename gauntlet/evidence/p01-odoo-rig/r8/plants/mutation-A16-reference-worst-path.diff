@@ -1,0 +1,11 @@
+--- gauntlet/compare/lib/runner.mjs	2026-10-09 02:22:57.984032115 +0400
++++ gauntlet/compare/lib/runner.mjs	2026-10-09 04:23:25.531779381 +0400
+@@ -200,7 +200,7 @@
+     result.counts = { ...primary.counts };
+     result.best_path_per_metric = {};
+     for (const m of METRICS) {
+-      const best = verified.reduce((b, e) => (b === null || e.counts[m] < b.counts[m] ? e : b), null);
++      const best = verified.reduce((b, e) => (b === null || e.counts[m] > b.counts[m] ? e : b), null);
+       if (best) {
+         result.best_path_per_metric[m] = best.id;
+         if (productId !== REFERENCE_PRODUCT) continue;

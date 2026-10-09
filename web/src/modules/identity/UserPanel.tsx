@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { api } from "../../kernel/api";
+import { api, ApiError } from "../../kernel/api";
 import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
@@ -28,7 +28,8 @@ import {
   type User,
 } from "./model";
 
-type Notice = { kind: "code"; code: string; expiresAt?: string; email: string } | { kind: "info"; text: string };
+/** A one-time notice in a user's panel; <c>warning</c>: what could not be saved after the account was created. */
+type Notice = ({ kind: "code"; code: string; expiresAt?: string; email: string } | { kind: "info"; text: string }) & { warning?: string };
 
 /** Ctrl+Enter or Ctrl+S saves, Escape closes: the kernel's form keys (kernel/forms), kept here
  * under their old name for the identity forms that are not record forms. */
@@ -64,21 +65,48 @@ type NewUserDraft = {
   displayName: string;
   language: "en" | "ar";
   roleIds: string[];
+  /** Roles that apply in one company only. */
+  companyRoles: CompanyRole[];
+  /** The companies the new user works in (every branch), when the signed-in user may give access. */
+  worksIn: string[];
+  /** Where they start work (null: their first company by code). */
+  startsIn: string | null;
   method: "invite" | "password";
   password: string;
   mustChangePassword: boolean;
 };
 
+/** A user just created, and what could not be saved after the account itself (company access or
+ * the starting company), to be said in their panel. */
+export type CreatedUser = User & { followUpError?: string };
+
 /** New user (the shared record form): e-mail (completed with the workspace's domain), name
- * suggested from it, language, roles, and an invitation code or a password. */
-export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCreated: (user: User) => void; onClose: () => void }) {
+ * suggested from it, language, roles in every company and in one company, the companies they work
+ * in and the one they start in (critic p03 round 5: these were only in the panel after creation,
+ * and the starting company needed company access given first on another screen), and an
+ * invitation code or a password. The account and its roles are created in one request; company
+ * access and the starting company follow it, and a refusal of either is shown in the new user's
+ * panel (the account exists by then). */
+export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCreated: (user: CreatedUser) => void; onClose: () => void }) {
   const { t, language } = useI18n();
   const { state, can } = useSession();
   const domain = state.status === "signedIn" ? domainOf(state.session.user.email) : null;
   const [nameTouched, setNameTouched] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const id = useId();
-  const form = useRecordForm<User, NewUserDraft>({
-    initial: () => ({ email: "", displayName: "", language, roleIds: [], method: "invite", password: "", mustChangePassword: true }),
+  const givesAccess = can("tenancy.access.read") && can("tenancy.access.update");
+  useEffect(() => {
+    let live = true;
+    api<Company[]>("GET", "/api/identity/companies").then(
+      (list) => live && setCompanies(Array.isArray(list) ? list : []),
+      () => live && setCompanies([]),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  const form = useRecordForm<CreatedUser, NewUserDraft>({
+    initial: () => ({ email: "", displayName: "", language, roleIds: [], companyRoles: [], worksIn: [], startsIn: null, method: "invite", password: "", mustChangePassword: true }),
     canEdit: can("identity.users.create"),
     validate: (draft) => {
       const full = completeEmail(draft.email, domain);
@@ -89,15 +117,31 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
       if (draft.method === "password" && draft.password.length < 10) local.password = [t("identity.form.passwordShort")];
       return local;
     },
-    save: (draft) => {
+    save: async (draft) => {
       const full = completeEmail(draft.email, domain);
-      return api<User>("POST", "/api/identity/users", {
+      const user = await api<User>("POST", "/api/identity/users", {
         email: full,
         displayName: draft.displayName.trim() || nameFromEmail(full),
         language: draft.language,
         roleIds: draft.roleIds,
+        ...(draft.companyRoles.length > 0 ? { companyRoles: draft.companyRoles } : {}),
         ...(draft.method === "password" ? { password: draft.password, mustChangePassword: draft.mustChangePassword } : {}),
       });
+      if (!givesAccess || draft.worksIn.length === 0) return user;
+      try {
+        const access = await api<{ version: number }>("GET", `/api/tenancy/access/${user.id}`);
+        await api("PUT", `/api/tenancy/access/${user.id}`, {
+          companies: draft.worksIn.map((companyId) => ({ companyId, allBranches: true, branchIds: [] })),
+          version: access.version,
+        });
+        if (draft.startsIn && draft.worksIn.includes(draft.startsIn)) {
+          const current = await api<DefaultCompany>("GET", `/api/identity/users/${user.id}/default-company`);
+          await api("PUT", `/api/identity/users/${user.id}/default-company`, { companyId: draft.startsIn, version: current.version });
+        }
+        return user;
+      } catch (error) {
+        return { ...user, followUpError: error instanceof ApiError ? error.message : String(error) };
+      }
     },
     onSaved: (user) => onCreated(user),
   });
@@ -160,6 +204,49 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
             <RolePicker roles={roles} selected={draft.roleIds} onChange={set("roleIds")} canGrant={canGrant} />
           ) : (
             <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
+          )}
+          {can("identity.roles.read") && companies.length > 0 && (
+            <CompanyRolesEditor
+              companies={companies}
+              roles={roles}
+              value={draft.companyRoles}
+              onChange={(next) =>
+                // A role in a company is only of use while working there: that company is ticked too.
+                form.update((d) => ({
+                  ...d,
+                  companyRoles: next,
+                  worksIn: givesAccess ? [...new Set([...d.worksIn, ...next.map((c) => c.companyId)])] : d.worksIn,
+                }))
+              }
+              canGrant={canGrant}
+            />
+          )}
+          {givesAccess && companies.length > 0 && (
+            <>
+              <fieldset className="id-works-in">
+                <legend className="field-label">{t("identity.form.worksIn")}</legend>
+                {companies.map((c) => (
+                  <label key={c.id}>
+                    <input
+                      type="checkbox"
+                      name="worksIn"
+                      checked={draft.worksIn.includes(c.id)}
+                      onChange={(e) =>
+                        form.update((d) => {
+                          const worksIn = e.target.checked ? [...d.worksIn, c.id] : d.worksIn.filter((x) => x !== c.id);
+                          return { ...d, worksIn, startsIn: d.startsIn && worksIn.includes(d.startsIn) ? d.startsIn : null };
+                        })
+                      }
+                    />
+                    {companyName(c, language)}
+                  </label>
+                ))}
+                <span className="id-hint">{t("identity.form.worksInHint")}</span>
+              </fieldset>
+              {draft.worksIn.length > 0 && (
+                <DefaultCompanyField companies={companies.filter((c) => draft.worksIn.includes(c.id))} value={draft.startsIn} onChange={set("startsIn")} />
+              )}
+            </>
           )}
           <fieldset className="id-method">
             <legend className="field-label">{t("identity.form.signInMethod")}</legend>
@@ -384,6 +471,11 @@ export function UserDetail({
         readOnlyReason={allowed.beyondOwn ? t("identity.users.beyondOwnNote") : undefined}
       >
         {notice?.kind === "code" && <CodeNotice notice={notice} />}
+        {notice?.warning && (
+          <div className="id-notice warn" role="alert">
+            {t("identity.form.followUpFailed", { reason: notice.warning })}
+          </div>
+        )}
         {notice?.kind === "info" && (
           <div className="id-notice" role="status">
             {notice.text}

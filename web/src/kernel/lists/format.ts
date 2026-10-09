@@ -15,9 +15,12 @@ export type Formatters = {
   reference?: (column: string, value: string) => string | undefined;
 };
 
-/** A flag's value as text: the column's own name for it (a role's type: System or Custom, named
+/** A flag's value as text: the column's own words for it (Active or Inactive, by trueLabelKey and
+ * falseLabelKey; or a role's type: System or Custom, named
  * by the choices "true" and "false"), else Yes or No. Screens and printed documents say the same. */
-export function flagLabel(column: Pick<ListColumn, "choices">, value: boolean, t: Translate): string {
+export function flagLabel(column: Pick<ListColumn, "choices" | "trueLabelKey" | "falseLabelKey">, value: boolean, t: Translate): string {
+  const word = value ? column.trueLabelKey : column.falseLabelKey;
+  if (word) return t(word);
   const named = column.choices.find((c) => c.value === String(value));
   return named ? t(named.labelKey) : t(value ? "lists.yes" : "lists.no");
 }

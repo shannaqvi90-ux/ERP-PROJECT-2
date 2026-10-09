@@ -6,36 +6,46 @@ import { ListView, type BulkAction } from "../../kernel/lists/ListView";
 import type { Row } from "../../kernel/lists/model";
 import { useSession } from "../../kernel/session";
 import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
-import { isTyping, newRecordChord, roleName, userName, type Role, type RolePage } from "./model";
+import { isTyping, newRecordChord, roleName, rolesSummary, userName, type Company, type Role, type RolePage } from "./model";
 import { NewUserForm, UserDetail, type Notice } from "./UserPanel";
 import "./identity.css";
 
 /**
  * Sets the chosen users active or inactive, one saved change per user (the same change the user
  * panel saves, so every rule of the API applies: never oneself, never someone holding more than
- * the caller, the record's version). Users already in that state are left alone. Returns how many
- * changed and how many the API refused.
+ * the caller, the record's version), a few at a time. Users already in that state are left alone.
+ * Returns how many changed and how many the API refused.
  */
 export async function setUsersActive(rows: Row[], active: boolean): Promise<{ changed: number; refused: number }> {
   let changed = 0;
   let refused = 0;
-  for (const row of rows) {
-    if (Boolean(row.isActive) === active) continue;
-    try {
-      await api("PUT", `/api/identity/users/${row.id}`, {
-        displayName: row.displayName,
-        language: row.language,
-        isActive: active,
-        roleIds: Array.isArray(row.roleIds) ? row.roleIds : [],
-        version: row.version,
-      });
-      changed++;
-    } catch {
-      refused++;
+  const pending = rows.filter((row) => Boolean(row.isActive) !== active);
+  // A few saves at a time (a selection of a few hundred rows takes seconds, not minutes), never
+  // one burst of every row.
+  let next = 0;
+  async function worker() {
+    while (next < pending.length) {
+      const row = pending[next++]!;
+      try {
+        await api("PUT", `/api/identity/users/${row.id}`, {
+          displayName: row.displayName,
+          language: row.language,
+          isActive: active,
+          roleIds: Array.isArray(row.roleIds) ? row.roleIds : [],
+          version: row.version,
+        });
+        changed++;
+      } catch {
+        refused++;
+      }
     }
   }
+  await Promise.all(Array.from({ length: Math.min(bulkSaves, pending.length) }, worker));
   return { changed, refused };
 }
+
+/** How many single-user saves a bulk change of chosen rows runs at once. */
+export const bulkSaves = 6;
 
 export type MatchingUsersActiveResult = { matched: number; changed: number; unchanged: number; refusedSelf: number; refusedBeyondOwn: number };
 
@@ -76,6 +86,13 @@ export function UsersPage() {
     api<RolePage>("GET", "/api/identity/roles").then((p) => setRoles(p.items), () => setRoles([]));
   }, [can]);
 
+  // The companies the user works in name the roles held in one company (by code) in the Roles column.
+  const [companies, setCompanies] = useState<Company[]>([]);
+  useEffect(() => {
+    if (!can("identity.users.read")) return;
+    api<Company[]>("GET", "/api/identity/companies").then((c) => setCompanies(Array.isArray(c) ? c : []), () => setCompanies([]));
+  }, [can]);
+
   // Alt+N starts a new user from anywhere on the screen, including the search box the list
   // focuses on arrival (where a plain "n" is typed into the search).
   useShortcut({
@@ -107,12 +124,19 @@ export function UsersPage() {
   }, [panel.startNew]);
 
   const roleNames = new Map(roles.map((r) => [r.id, roleName(r, language)]));
+  const companyCodes = new Map(companies.map((c) => [c.id, c.code]));
 
   // Bulk actions on the chosen rows (the selection bar): activate or deactivate accounts.
   const bulkActive = (active: boolean): BulkAction => ({
     key: active ? "activate" : "deactivate",
     labelKey: active ? "identity.users.bulk.activate" : "identity.users.bulk.deactivate",
     permission: "identity.users.update",
+    // Asked first in the app's own dialog, for chosen rows and for all that match alike.
+    confirm: {
+      messageKey: active ? "identity.users.bulk.activateConfirm" : "identity.users.bulk.deactivateConfirm",
+      allMessageKey: active ? "identity.users.bulk.activateAllConfirm" : "identity.users.bulk.deactivateAllConfirm",
+      danger: !active,
+    },
     run: async (rows) => {
       const { changed, refused } = await setUsersActive(rows, active);
       setMessage(
@@ -123,7 +147,6 @@ export function UsersPage() {
     },
     // "All that match": one set-based change on the server, for exactly the rows the list counted.
     runAll: async (query, total) => {
-      if (!window.confirm(t(active ? "identity.users.bulk.activateAllConfirm" : "identity.users.bulk.deactivateAllConfirm", { count: total }))) return false;
       try {
         const result = await setMatchingUsersActive(query, total, active);
         const refused = result.refusedSelf + result.refusedBeyondOwn;
@@ -170,9 +193,12 @@ export function UsersPage() {
                 onCreated={(user) => {
                   setNotices((all) => ({
                     ...all,
-                    [user.id]: user.setupCode
-                      ? { kind: "code", code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
-                      : { kind: "info", text: t("identity.form.created") },
+                    [user.id]: {
+                      ...(user.setupCode
+                        ? { kind: "code" as const, code: user.setupCode, expiresAt: user.setupCodeExpiresAt, email: user.email }
+                        : { kind: "info" as const, text: t("identity.form.created") }),
+                      ...(user.followUpError ? { warning: user.followUpError } : {}),
+                    },
                   }));
                   panel.saved(user.id);
                 }}
@@ -208,14 +234,14 @@ export function UsersPage() {
           }
           renderCell={{
             displayName: (u) => String((language === "ar" && u.displayNameAr ? u.displayNameAr : u.displayName) ?? ""),
-            roleIds: (u) => (
-              <span className="id-ellipsis">
-                {(Array.isArray(u.roleIds) ? (u.roleIds as string[]) : [])
-                  .map((r) => roleNames.get(r))
-                  .filter(Boolean)
-                  .join(language === "ar" ? "، " : ", ")}
-              </span>
-            ),
+            roleIds: (u) => {
+              const text = rolesSummary(u, roleNames, companyCodes, t("identity.users.rolesElsewhereShort"), language === "ar" ? "، " : ", ");
+              return (
+                <span className="id-ellipsis" title={text || undefined}>
+                  {text}
+                </span>
+              );
+            },
             isActive: (u) => (
               <span className="id-status">
                 {u.isActive ? t("identity.users.active") : <span className="id-badge off">{t("identity.users.inactive")}</span>}

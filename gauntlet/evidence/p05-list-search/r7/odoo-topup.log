@@ -1,0 +1,43 @@
+[odoo-reference] generating the shared dataset (deterministic, cached)
+[odoo-reference] starting PostgreSQL (project odoo-reference)
+ Container odoo-reference-db-1 Running 
+ Container odoo-reference-db-1 Waiting 
+ Container odoo-reference-db-1 Healthy 
+[odoo-reference] database reference already has the apps and Arabic
+[odoo-reference] starting Odoo on http://localhost:8069
+ Container odoo-reference-db-1 Running 
+ Container odoo-reference-odoo-1 Running 
+ Container odoo-reference-db-1 Waiting 
+ Container odoo-reference-db-1 Healthy 
+[odoo-reference] seeding to at least 100000 rows per main list
+  step user-channels (users before set-up): +0 in 0.2s
+  step setup: +0 in 0.8s
+  step contacts: +0 in 0.3s
+  step users: +0 in 0.2s
+  step user-channels (bulk users): +0 in 0.0s
+  step rates: +0 in 0.4s
+  step audit-messages: +0 in 0.0s
+  step audit-realism: +0 in 0.2s
+  step attachments: +0 in 0.1s
+  step attachment-content: +0 in 0.2s
+  step job-runs: +30954 in 0.5s
+  step purchase-orders: +0 in 0.7s
+  step purchase-buyer: +0 in 0.0s
+[odoo-reference] waiting for the web client
+  contacts             100000  ok
+  contacts_all         200016
+  users                100009  ok
+  currency_rates       100000  ok
+  audit_messages       100175  ok
+  attachments          100066  ok
+  job_runs             100000  ok
+  approvals            100000  ok
+  approvals_pending       200
+  companies                 5
+  roles                    39
+[odoo-reference] volume verified and written to gauntlet/reference/odoo/volume.json
+[odoo-reference] ready: http://localhost:8069  (admin/admin, approver/approver, buyer/buyer)
+
+real	0m11.115s
+user	0m0.534s
+sys	0m0.436s
