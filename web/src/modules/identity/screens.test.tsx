@@ -202,6 +202,40 @@ describe("users screen", () => {
     });
   }
 
+  it("ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7)", async () => {
+    window.history.replaceState(null, "", "/identity/users");
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session([...all, "tenancy.access.read", "tenancy.access.update"]) };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === "/api/identity/companies")
+        return { status: 200, body: [{ id: "c-dxb", code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور" }, { id: "c-fze", code: "ALN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور" }] };
+      if (url === "/api/tenancy/workplace") return { status: 200, body: { companyId: "c-fze", branchId: null } };
+      if (method === "POST" && url === "/api/identity/users")
+        return { status: 201, body: { id: "u-new", ...(body as object), isActive: true, lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true, setupCode: "K7QM-3XRA-PZ9D" } };
+      if (url === "/api/tenancy/access/u-new" && method === "GET") return { status: 200, body: { userId: "u-new", companies: [], options: [], version: 4 } };
+      if (url === "/api/tenancy/access/u-new" && method === "PUT") return { status: 200, body: {} };
+      if (url === "/api/identity/users/u-new")
+        return { status: 200, body: { id: "u-new", email: "rana@demo-trading.example", displayName: "Rana", language: "en", isActive: true, roleIds: ["r-clerk"], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 1, pendingSetup: true } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 200)));
+    key(document.body, { key: "n" });
+    await settle();
+    const worksIn = () => [...view!.container.querySelectorAll<HTMLInputElement>('input[name="worksIn"]')].map((c) => c.checked);
+    expect(worksIn()).toEqual([false, true]);
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "rana");
+    key(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, { key: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    const access = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/access/u-new")!;
+    expect(access.body).toEqual({ companies: [{ companyId: "c-fze", allBranches: true, branchIds: [] }], version: 4 });
+  });
+
   it("hides creation and account actions from a read-only user", async () => {
     window.history.replaceState(null, "", "/identity/users?open=u1");
     mockFetch((_m, url) => {
@@ -528,6 +562,49 @@ describe("roles screen", () => {
     expect(view.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.disabled).toBe(true);
   });
 });
+
+describe("roles screen, per company and from the keyboard", () => {
+  it("a role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7)", async () => {
+    window.history.replaceState(null, "", "/identity/roles");
+    mockFetch((m, url) => {
+      // Everything in the working company; in every company, only reading roles and users.
+      if (url === "/api/auth/session") return { status: 200, body: { ...session(all), workspacePermissions: ["identity.roles.read", "identity.users.read"] } };
+      const list = listReply(m, url);
+      if (list) return list;
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk, desk], total: 3 } };
+      if (url === "/api/identity/permissions") return { status: 200, body: catalogue };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const row = [...view.container.querySelectorAll("tbody tr")].find((r) => r.textContent?.includes(desk.nameEn)) as HTMLElement;
+    await act(async () => row.click());
+    await settle();
+    const buttons = [...view.container.querySelectorAll("aside button")].map((b) => b.textContent);
+    expect(buttons).not.toContain("Save");
+    expect(buttons).not.toContain("Copy role");
+    expect(buttons).not.toContain("Delete role");
+    expect(view.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.disabled).toBe(true);
+  });
+
+  it("Delete role moves the focus to the question; Escape keeps the role and gives the focus back to Delete role", async () => {
+    await openRole(all);
+    const remove = [...view!.container.querySelectorAll<HTMLButtonElement>("aside button")].find((b) => b.textContent === "Delete role")!;
+    await act(async () => remove.click());
+    await settle();
+    const focused = document.activeElement as HTMLElement;
+    expect(focused.tagName).toBe("BUTTON");
+    expect(focused.closest('[role="alert"]')).not.toBeNull();
+    key(focused, { key: "Escape", code: "Escape" });
+    await settle();
+    expect(view!.container.querySelector("aside")).not.toBeNull();
+    expect(view!.container.querySelector('.id-confirm')).toBeNull();
+    expect((document.activeElement as HTMLElement).textContent).toBe("Delete role");
+  });
+});
+
+const desk = { id: "r-desk", nameEn: "Password desk", nameAr: "مكتب كلمات المرور", permissions: ["identity.users.read", "identity.users.resetPassword"], isSystem: false, userCount: 0, version: 1 };
 
 // G2 on screen: for every action of the roles and users screens, a user holding everything but
 // that action's permission does not see that action, and still sees the others. The server

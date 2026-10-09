@@ -18,7 +18,7 @@ test.describe("screens hide what the user cannot do", () => {
     await page.getByRole("link", { name: "Users" }).first().click();
     await expect(page).toHaveURL(/\/identity\/users$/);
     await expect(page.locator("table tbody tr").first()).toBeVisible();
-    await page.getByRole("searchbox", { name: "Search by name or e-mail" }).fill("viewer@alnoor");
+    await page.getByRole("searchbox", { name: "Search by name, initials or e-mail" }).fill("viewer@alnoor");
     await expect(page.locator("table tbody tr")).toHaveCount(1);
     await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
     await expect(page.getByText("1 user", { exact: true })).toBeVisible();

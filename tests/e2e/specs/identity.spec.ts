@@ -15,7 +15,7 @@ test.describe("users, roles and permissions", () => {
     // The list arrives with the cursor in its search box; Alt+N starts a new user from there
     // (a plain n would be typed into the search). Type only the part before @; Tab completes
     // the address and suggests the name.
-    await expect(page.getByRole("searchbox", { name: "Search by name or e-mail" })).toBeFocused();
+    await expect(page.getByRole("searchbox", { name: "Search by name, initials or e-mail" })).toBeFocused();
     await page.keyboard.press("Alt+n");
     await expect(page.locator('input[name="email"]')).toBeFocused();
     await page.keyboard.type(local);
@@ -72,9 +72,9 @@ test.describe("users, roles and permissions", () => {
 
     // Back with the administrator: the clerk is no longer pending and their access is explained.
     await page.reload();
-    await page.getByRole("searchbox", { name: "Search by name or e-mail" }).fill(local);
+    await page.getByRole("searchbox", { name: "Search by name, initials or e-mail" }).fill(local);
     await expect(page.locator("table tbody tr")).toHaveCount(1);
-    await page.getByRole("searchbox", { name: "Search by name or e-mail" }).press("Enter");
+    await page.getByRole("searchbox", { name: "Search by name, initials or e-mail" }).press("Enter");
     await page.getByRole("tab", { name: "What they can do" }).click();
     await expect(page.getByRole("cell", { name: "View users" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "Create users" })).toHaveCount(0);
@@ -213,6 +213,24 @@ test.describe("users, roles and permissions", () => {
       expect(overflow).toEqual({ panel: 0, table: 0, outside: 0 });
       // The address of the attempt is on screen, under its time.
       await expect(table.locator("tbody tr").first().locator(".id-sub bdi")).toBeVisible();
+
+      // What a user holding roles in one company can do, and why, fits the panel too (critic p03
+      // round 7: "Granted by" ran past the panel's edge, cut at "Company manager (only in ALN-AUH").
+      const found = (await (await page.request.get(`/api/identity/users?search=${encodeURIComponent("accountant@alnoor.example")}`)).json()) as { items: { id: string }[] };
+      await page.goto(`/identity/users/${found.items[0]!.id}`);
+      await page.getByRole("tab").nth(1).click();
+      await expect(page.locator(".id-access-table").first()).toBeVisible();
+      const accessOverflow = await page.evaluate(() => {
+        const panel = document.querySelector<HTMLElement>("aside.list-record")!;
+        const box = panel.getBoundingClientRect();
+        const parts = [...document.querySelectorAll<HTMLElement>(".id-access-table, .id-access-table td, .id-access-table th")];
+        const outside = parts.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.left < box.left - 1 || r.right > box.right + 1;
+        }).length;
+        return { panel: panel.scrollWidth - panel.clientWidth, outside, tables: document.querySelectorAll(".id-access-table").length > 0 };
+      });
+      expect(accessOverflow).toEqual({ panel: 0, outside: 0, tables: true });
 
       await page.locator('nav a[href="/identity/roles"]').first().click();
       await page.locator("table tbody tr", { hasText: language === "en" ? "Read-only" : "قراءة فقط" }).click();

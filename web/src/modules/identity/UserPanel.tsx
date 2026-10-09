@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
@@ -69,6 +69,9 @@ type NewUserDraft = {
   companyRoles: CompanyRole[];
   /** The companies the new user works in (every branch), when the signed-in user may give access. */
   worksIn: string[];
+  /** The companies were chosen by hand: until then the company the signed-in user works in now is
+   * ticked too (critic p03 round 7: a user created from the keyboard landed on "No company"). */
+  worksInChosen: boolean;
   /** Where they start work (null: their first company by code). */
   startsIn: string | null;
   method: "invite" | "password";
@@ -93,20 +96,34 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
   const domain = state.status === "signedIn" ? domainOf(state.session.user.email) : null;
   const [nameTouched, setNameTouched] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const companiesRef = useRef<Company[]>([]);
+  companiesRef.current = companies;
   const id = useId();
   const givesAccess = can("tenancy.access.read") && can("tenancy.access.update");
+  // The company the signed-in user works in now: a new user works there too unless the form says otherwise.
+  const [working, setWorking] = useState<string | null>(null);
+  const workingRef = useRef<string | null>(null);
+  workingRef.current = working;
   useEffect(() => {
     let live = true;
     api<Company[]>("GET", "/api/identity/companies").then(
       (list) => live && setCompanies(Array.isArray(list) ? list : []),
       () => live && setCompanies([]),
     );
+    if (givesAccess) {
+      api<{ companyId?: string | null }>("GET", "/api/tenancy/workplace").then(
+        (w) => live && setWorking(typeof w?.companyId === "string" ? w.companyId : null),
+        () => undefined,
+      );
+    }
     return () => {
       live = false;
     };
-  }, []);
+  }, [givesAccess]);
+  /** The companies ticked: those chosen, or, until any is chosen by hand, the working one and those a company role needs. */
+  const worksInOf = (d: NewUserDraft) => (d.worksInChosen || !workingRef.current ? d.worksIn : [...new Set([workingRef.current, ...d.worksIn])]);
   const form = useRecordForm<CreatedUser, NewUserDraft>({
-    initial: () => ({ email: "", displayName: "", language, roleIds: [], companyRoles: [], worksIn: [], startsIn: null, method: "invite", password: "", mustChangePassword: true }),
+    initial: () => ({ email: "", displayName: "", language, roleIds: [], companyRoles: [], worksIn: [], worksInChosen: false, startsIn: null, method: "invite", password: "", mustChangePassword: true }),
     canEdit: can("identity.users.create"),
     validate: (draft) => {
       const full = completeEmail(draft.email, domain);
@@ -127,14 +144,15 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
         ...(draft.companyRoles.length > 0 ? { companyRoles: draft.companyRoles } : {}),
         ...(draft.method === "password" ? { password: draft.password, mustChangePassword: draft.mustChangePassword } : {}),
       });
-      if (!givesAccess || draft.worksIn.length === 0) return user;
+      const worksIn = worksInOf(draft).filter((c) => companiesRef.current.some((x) => x.id === c));
+      if (!givesAccess || worksIn.length === 0) return user;
       try {
         const access = await api<{ version: number }>("GET", `/api/tenancy/access/${user.id}`);
         await api("PUT", `/api/tenancy/access/${user.id}`, {
-          companies: draft.worksIn.map((companyId) => ({ companyId, allBranches: true, branchIds: [] })),
+          companies: worksIn.map((companyId) => ({ companyId, allBranches: true, branchIds: [] })),
           version: access.version,
         });
-        if (draft.startsIn && draft.worksIn.includes(draft.startsIn)) {
+        if (draft.startsIn && worksIn.includes(draft.startsIn)) {
           const current = await api<DefaultCompany>("GET", `/api/identity/users/${user.id}/default-company`);
           await api("PUT", `/api/identity/users/${user.id}/default-company`, { companyId: draft.startsIn, version: current.version });
         }
@@ -233,11 +251,12 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
                     <input
                       type="checkbox"
                       name="worksIn"
-                      checked={draft.worksIn.includes(c.id)}
+                      checked={worksInOf(draft).includes(c.id)}
                       onChange={(e) =>
                         form.update((d) => {
-                          const worksIn = e.target.checked ? [...d.worksIn, c.id] : d.worksIn.filter((x) => x !== c.id);
-                          return { ...d, worksIn, startsIn: d.startsIn && worksIn.includes(d.startsIn) ? d.startsIn : null };
+                          const shown = worksInOf(d);
+                          const worksIn = e.target.checked ? [...new Set([...shown, c.id])] : shown.filter((x) => x !== c.id);
+                          return { ...d, worksIn, worksInChosen: true, startsIn: d.startsIn && worksIn.includes(d.startsIn) ? d.startsIn : null };
                         })
                       }
                     />
@@ -246,8 +265,8 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
                 ))}
                 <span className="id-hint">{t("identity.form.worksInHint")}</span>
               </fieldset>
-              {draft.worksIn.length > 0 && (
-                <DefaultCompanyField companies={companies.filter((c) => draft.worksIn.includes(c.id))} value={draft.startsIn} onChange={set("startsIn")} />
+              {worksInOf(draft).length > 0 && (
+                <DefaultCompanyField companies={companies.filter((c) => worksInOf(draft).includes(c.id))} value={draft.startsIn} onChange={set("startsIn")} />
               )}
             </>
           )}
@@ -666,7 +685,7 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
       {view.rolesElsewhere && <p className="muted">{t("identity.companyRoles.elsewhere")}</p>}
       {view.permissions.length === 0 && <p className="muted">{t("identity.access.nothing")}</p>}
       {modules.map((module) => (
-        <table key={module} className="grid">
+        <table key={module} className="grid id-access-table">
           <caption>{module}</caption>
           <thead>
             <tr>

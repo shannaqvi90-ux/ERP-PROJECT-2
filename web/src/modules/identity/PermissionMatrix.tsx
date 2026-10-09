@@ -27,7 +27,8 @@ export function PermissionMatrix({
   const { t } = useI18n();
   const [filter, setFilter] = useState("");
   const id = useId();
-  const matrix = useMemo(() => buildMatrix(permissions, filter), [permissions, filter]);
+  const actionLabels = useMemo(() => Object.fromEntries(matrixActions.map((a) => [a, t(`identity.action.${a}`)])), [t]);
+  const matrix = useMemo(() => buildMatrix(permissions, filter, actionLabels), [permissions, filter, actionLabels]);
   const shown = matrix.flatMap((m) => m.matching).filter((p) => canChange(p.key));
 
   function bulk(keys: string[]) {

@@ -60,6 +60,23 @@ describe("permission matrix", () => {
     expect(buildMatrix(catalogue).flatMap((m) => m.matching)).toHaveLength(catalogue.length);
   });
 
+  it("a word naming a column matches that column only, not every label holding the word (critic p03 round 7)", () => {
+    const withShare = [...catalogue, p("lists.views.read", "List views", "View list views"), p("lists.views.share", "List views", "Share list views with everyone")];
+    const labels = { read: "View", create: "Create", update: "Change", delete: "Delete" };
+    const keys = (filter: string, l: Record<string, string> = labels) => buildMatrix(withShare, filter, l).flatMap((m) => m.matching.map((x) => x.key));
+    expect(keys("view").sort()).toEqual(["identity.roles.read", "identity.users.read", "lists.views.read", "tenancy.tenant.read"]);
+    expect(keys("View")).not.toContain("lists.views.share");
+    expect(keys("vie")).not.toContain("lists.views.share");
+    // In Arabic, by the column's Arabic name.
+    expect(keys("عرض", { read: "عرض", create: "إنشاء", update: "تعديل", delete: "حذف" })).toEqual(keys("view"));
+    // Other words still match labels, resources and keys: "share" finds sharing, "views" the whole row.
+    expect(keys("share")).toEqual(["lists.views.share"]);
+    expect(keys("views")).toEqual(["lists.views.read", "lists.views.share"]);
+    expect(keys("delete roles")).toEqual(["identity.roles.delete"]);
+    // Two letters name no column.
+    expect(keys("vi")).toContain("lists.views.share");
+  });
+
   it("bulk toggles add or remove exactly the given keys", () => {
     const start = new Set(["identity.users.read", "tenancy.tenant.read"]);
     const on = toggleAll(start, ["identity.roles.read", "identity.roles.delete"], true);

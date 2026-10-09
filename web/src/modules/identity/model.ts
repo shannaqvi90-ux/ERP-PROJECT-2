@@ -122,13 +122,21 @@ export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; p
 /**
  * The permission matrix: one block per module, one row per resource, a column per common action
  * and an "other" cell for the rest. With a filter, a permission matches when its label, key or its
- * resource's name contain every word of the filter (case-insensitive, any script), and only rows
+ * resource's name contain every word of the filter (case-insensitive, any script), a word naming a
+ * column (<paramref name="actionLabels"/>, in the screen's language) matching that column's
+ * permissions only, and only rows
  * with a matching permission are kept. Only matching permissions are shown and toggled in bulk
  * (critic p03 round 5: searching "view" kept whole rows, so "Select all shown" also ticked
  * deleting users, resetting passwords and changing the workspace).
  */
-export function buildMatrix(permissions: Permission[], filter = ""): MatrixModule[] {
+export function buildMatrix(permissions: Permission[], filter = "", actionLabels: Partial<Record<string, string>> = {}): MatrixModule[] {
   const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  // A word naming a column of the matrix ("view", "عرض", or the start of one, three letters at
+  // least) asks for that action: it matches the permissions of that column only, not every
+  // permission whose label holds the word (critic p03 round 7: "view" also ticked "Share list views
+  // with everyone").
+  const actionsOf = (w: string) =>
+    matrixActions.filter((a) => a === w || (w.length >= 3 && (actionLabels[a] ?? "").toLocaleLowerCase().startsWith(w)));
   const modules = new Map<string, MatrixModule>();
   for (const p of permissions) {
     let block = modules.get(p.module);
@@ -151,7 +159,10 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
         ...row,
         matching: rowPermissions(row).filter((p) => {
           const text = [row.label, row.resource, p.label, p.key].join(" ").toLocaleLowerCase();
-          return words.every((w) => text.includes(w));
+          return words.every((w) => {
+            const actions: readonly string[] = actionsOf(w);
+            return actions.length > 0 ? actions.includes(p.action) : text.includes(w);
+          });
         }),
       }))
       .filter((row) => row.matching.length > 0);
