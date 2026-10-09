@@ -56,3 +56,20 @@ self-tests require the sweep to report each, in CSV and PDF as well.
 With the critic's plants (plants-B1-B3-B3b.diff) applied, G1BranchScopeAttackTests failed with 114
 leaks, among them `GET /api/reports/run/tenancy.branchDirectory`, `...companyProfile?company=<X>`
 in every format and `GET /api/tenancy/access/{viewer}`; on the clean product it passes.
+
+## Rechecked after merging the integration branch (2026-10-09)
+
+Each of the critic's three plants applied alone to the merged product, then
+`dotnet test tests/Erp.Gates.Tests -c Release --no-build --filter FullyQualifiedName~G1BranchScopeAttackTests`:
+B1 (access screen's branch options) 62 leaks, B3 (company profile report) 16 leaks, B3b (branch
+directory report) 36 leaks; each named the own-parameter read that leaked. A fourth plant that drops
+the endpoint's whole-workspace check on `PUT /api/tenancy/tenant` failed both the company and the
+branch attack ("refused only by the last layer"). The shared-record attack now also changes the
+workspace's nullable choices (`defaultLanguage`, `weekStart`, documented as `oneOf [null, $ref]`),
+which it had skipped. Ratchet minimums raised to the counts measured: own-parameter read requests
+1,800 per layer (measured 1,930 and 1,949), shared-record writes 35, endpoints attacked 103 in both
+layers, attack requests 13,000 (branch) and 55,000 (company).
+
+Processor time this round adds to the verify: the own-parameter sweep shares the attack's
+environment (no new run); measured on a quiet machine, the two attack tests together take about
+2 minutes of wall time, the same as before the sweep within a few seconds.
