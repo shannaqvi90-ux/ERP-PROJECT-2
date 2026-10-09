@@ -80,6 +80,10 @@ public static class SelfTestProcess
 [Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
+    /// <summary>A finding about one of the leaky module's planted endpoints or planted reports.</summary>
+    private static bool Planted(string finding) =>
+        finding.Contains("/api/leaky/", StringComparison.Ordinal) || finding.Contains("/api/reports/run/leaky.", StringComparison.Ordinal);
+
     // ./erp verify runs this test, the company attack's self-test and the non-interference
     // self-test each in a test process of its own (trait Process), side by side: the planted state
     // is static, so within one process the leaky module's tests take turns.
@@ -320,7 +324,17 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     {
         var report = await CompanyAttack.RunAsync(fixture.Env);
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/company-names", StringComparison.Ordinal) && l.StartsWith("company X administrator", StringComparison.Ordinal));
-        Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => !Planted(l));
+        // Critic p02 round 6: the workspace every company shares, renamed by an administrator of one company.
+        var shared = report.Shared!;
+        Assert.Contains("PUT /api/leaky/workspace-name [nameEn]", shared.Sources);
+        Assert.Contains(shared.Failures, f => f.StartsWith("company X administrator → PUT /api/leaky/workspace-name [nameEn] on the workspace every company shares", StringComparison.Ordinal) &&
+                                              f.Contains("answered 200", StringComparison.Ordinal));
+        Assert.Contains("tenancy.tenants", shared.ChangedTables);
+        Assert.DoesNotContain(shared.Failures, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
+        // The same planted read, made with nothing but the attacker's own parameters.
+        Assert.Contains(report.Leaks, l => l.StartsWith("company X administrator → GET /api/leaky/company-names", StringComparison.Ordinal) &&
+                                           l.Contains("(own parameters only)", StringComparison.Ordinal));
         Assert.Empty(report.Escalations);
         // Critic p02 round 2, plant C2: a create that adds the body's company to the scope before
         // writing. Only a body that passes validation reaches the write; company Y's branches change.
@@ -340,7 +354,18 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         var report = await CompanyAttack.RunAsync(fixture.Env, CompanyAttack.Layer.Branch);
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/branch-names", StringComparison.Ordinal) && l.StartsWith("branch-limited administrator", StringComparison.Ordinal));
         Assert.Contains("tenancy.branches", report.ChangedTables);
-        Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Leaks, l => !Planted(l));
+        // Critic p02 round 6, plants B3b, B3 and B1: reads made with nothing but the attacker's own
+        // parameters (no parameters; its own company; a user of its own workspace by id) that read
+        // branches past the branch limits. The marker check after the attack's writes was blind to
+        // them (the attacker had stored branch Z's texts in its own records by then).
+        static bool Own(string leak, string path) =>
+            leak.StartsWith("branch-limited administrator → GET " + path, StringComparison.Ordinal) && leak.Contains("(own parameters only)", StringComparison.Ordinal);
+        Assert.Contains(report.Leaks, l => Own(l, "/api/reports/run/leaky.branchDirectory"));
+        Assert.Contains(report.Leaks, l => Own(l, "/api/reports/run/leaky.branchDirectory?format=csv"));
+        Assert.Contains(report.Leaks, l => Own(l, "/api/reports/run/leaky.branchDirectory?format=pdf"));
+        Assert.Contains(report.Leaks, l => Own(l, "/api/reports/run/leaky.companyBranches?company="));
+        Assert.Contains(report.Leaks, l => Own(l, "/api/leaky/people/") && l.Contains("/branch-options", StringComparison.Ordinal));
         Assert.Empty(report.Escalations);
         Assert.DoesNotContain(report.Oracles, o => !o.Contains("/api/leaky/", StringComparison.Ordinal));
         // Critic p02 round 4, plant C5: a read by id that ignores the branch limits answers for
@@ -353,6 +378,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(shared.Failures, f => f.Contains("PUT /api/leaky/company-profile/{id:guid} [legalNameEn]", StringComparison.Ordinal) && f.Contains("answered 200", StringComparison.Ordinal));
         Assert.Contains("tenancy.companies", shared.ChangedTables);
         Assert.DoesNotContain(shared.Failures, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
+        // Critic p02 round 6: the workspace every company shares, renamed by a one-branch administrator.
+        Assert.Contains(shared.Failures, f => f.Contains("PUT /api/leaky/workspace-name [nameEn] on the workspace every company shares", StringComparison.Ordinal) &&
+                                              f.Contains("answered 200", StringComparison.Ordinal));
+        Assert.Contains("tenancy.tenants", shared.ChangedTables);
     }
 
     [Fact]

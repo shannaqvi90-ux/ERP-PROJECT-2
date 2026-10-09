@@ -114,4 +114,44 @@ public sealed class CompanyScopeTests(TenancyFixture fixture) : IClassFixture<Te
         Assert.Equal(2, await db.Companies.CountAsync());
         await session.RollbackAsync();
     }
+    [Fact]
+    public async Task The_workspace_record_is_written_only_by_a_unit_of_work_that_holds_the_whole_workspace()
+    {
+        // The kernel's second layer under the endpoint's own check (critic p02 round 6): a user who
+        // works in only some companies, or some branches, never writes the record every company shares.
+        var (x, y) = await CompaniesAsync();
+        foreach (var (companies, limited, holds) in new[] { (new[] { x }, Array.Empty<Guid>(), false), (new[] { x, y }, new[] { x }, false), (new[] { x, y }, Array.Empty<Guid>(), true) })
+        {
+            await using var scope = Env.Factory.Services.CreateAsyncScope();
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+            await session.BindCompaniesAsync(companies);
+            session.SetBranchLimits(limited);
+            Assert.False(session.HoldsWholeWorkspace);
+            session.SetWorkspaceHolder(holds);
+            Assert.Throws<InvalidOperationException>(() => session.SetWorkspaceHolder(true));
+            Assert.Equal(holds, session.HoldsWholeWorkspace);
+            var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+            var tenant = await db.Tenants.SingleAsync();
+            tenant.NameEn += " (kernel check)";
+            if (holds)
+            {
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                var refused = await Assert.ThrowsAsync<CrossBranchWriteException>(() => db.SaveChangesAsync());
+                Assert.Equal(CrossBranchWriteException.WorkspaceCode, refused.Code);
+            }
+            await session.RollbackAsync();
+        }
+        // System work always may.
+        await using (var system = Env.Factory.Services.CreateAsyncScope())
+        {
+            var session = system.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, null, "system");
+            Assert.True(session.HoldsWholeWorkspace);
+            await session.RollbackAsync();
+        }
+    }
 }

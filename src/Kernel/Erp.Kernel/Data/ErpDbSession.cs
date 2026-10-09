@@ -27,7 +27,7 @@ public interface ITenantContext
 /// Nothing can query tenant data before <see cref="BeginAsync"/> has run: the command guard
 /// refuses, and row-level security would return nothing anyway.
 /// </summary>
-public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDisposable
+public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceScope, IAsyncDisposable
 {
     private Guid? _tenantId;
     private CompanyScopeState _companies = CompanyScopeState.Nothing;
@@ -155,6 +155,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
         _companiesBound = false;
         _branchLimitedCompanies = new HashSet<Guid>();
         _branchLimitsSet = false;
+        _holdsWorkspace = false;
+        _workspaceSet = false;
     }
 
     /// <summary>Actor kind of a signed-in user; such a unit of work starts with no company.</summary>
@@ -300,6 +302,32 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IAsyncDispos
 
     public bool HoldsEveryBranch(Guid companyId) => AllowsCompany(companyId) && (_companies.All || !_branchLimitedCompanies.Contains(companyId));
 
+    /// <summary>
+    /// Record, once, whether the user works in every company of the workspace and every branch of
+    /// each (worked out when the company scope is bound). Only such a user writes the records every
+    /// company shares (<see cref="IWorkspaceWide"/>). A second call throws, so code running later in
+    /// the request cannot lift the limit.
+    /// </summary>
+    public void SetWorkspaceHolder(bool holdsWholeWorkspace)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_workspaceSet)
+        {
+            throw new InvalidOperationException("Whether this unit of work holds the whole workspace is already set.");
+        }
+        _holdsWorkspace = holdsWholeWorkspace;
+        _workspaceSet = true;
+    }
+
+    /// <inheritdoc />
+    public bool HoldsWholeWorkspace => HasTenant && (_companies.All || _holdsWorkspace);
+
+    private bool _holdsWorkspace;
+    private bool _workspaceSet;
+
     private sealed record CompanyScopeState(bool All, IReadOnlyList<Guid> CompanyIds, Guid? ActiveCompanyId, Guid? ActiveBranchId, IReadOnlyList<Guid> BranchIds)
     {
         public static readonly CompanyScopeState Nothing = new(false, [], null, null, []);
@@ -433,6 +461,28 @@ public interface ICompanyOwned : ITenantOwned
 /// G1 branch attack attacks every table of such rows.
 /// </summary>
 public interface ICompanyWide : ICompanyOwned
+{
+}
+
+/// <summary>
+/// Whether the unit of work may write the records every company of the workspace shares
+/// (<see cref="IWorkspaceWide"/>): system work always, a user only when they work in every company
+/// of the workspace and in every branch of each.
+/// </summary>
+public interface IWorkspaceScope
+{
+    bool HoldsWholeWorkspace { get; }
+}
+
+/// <summary>
+/// A row every company of its workspace shares: the workspace's own record (its name, default
+/// language, time zone, week start), and later workspace-wide settings. A user who may work in only
+/// some companies, or only some branches of one, reads it but never adds, changes or deletes it:
+/// <see cref="ModuleDbContext"/> refuses the write (<see cref="CrossBranchWriteException"/> with
+/// <see cref="CrossBranchWriteException.WorkspaceCode"/>, answered 403) whatever the endpoint
+/// checked, and the G1 company and branch attacks attack every table of such rows.
+/// </summary>
+public interface IWorkspaceWide : ITenantOwned
 {
 }
 

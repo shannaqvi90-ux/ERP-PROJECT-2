@@ -95,7 +95,7 @@ const address: Record<Screen, string> = {
   tenant: "/tenancy/tenant",
 };
 
-async function open(screen: Screen, permissions: string[], options: { canEdit?: boolean; path?: string; everyBranch?: boolean } = {}) {
+async function open(screen: Screen, permissions: string[], options: { canEdit?: boolean; path?: string; everyBranch?: boolean; everyCompany?: boolean } = {}) {
   window.history.replaceState(null, "", options.path ?? address[screen]);
   mockFetch((_method, url) => {
     const path = new URL(url, "http://localhost").pathname;
@@ -110,7 +110,7 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
     if (path === "/api/tenancy/access/u2") return { status: 200, body: access(options.canEdit ?? true) };
-    if (path === "/api/tenancy/tenant") return { status: 200, body: tenant };
+    if (path === "/api/tenancy/tenant") return { status: 200, body: { ...tenant, everyCompany: options.everyCompany ?? true } };
     if (path === "/api/tenancy/workplace") return { status: 200, body: { companyId: "c9", branchId: "b1", companies: [] } };
     return { status: 404, body: {} };
   });
@@ -272,6 +272,18 @@ describe("tenancy screens offer exactly what the user may do", () => {
   it("branches: a branch code the user may not change says why", async () => {
     await open("branches", all, { everyBranch: false });
     expect(shown().container.querySelector("main")!.textContent).toContain("may change a branch code");
+  });
+
+  // Critic p02 round 6: an administrator limited to one company (or one branch) was offered the
+  // workspace's settings and the server saved them for every company. The workspace is shared by
+  // every company: its form is offered only to someone who works in all of them, every branch of each.
+  it("tenant: where the user works in only some companies or branches, the workspace form disappears and says why", async () => {
+    const full = await open("tenant", all);
+    expect(full.filter((c) => c === "button:Save" || c.startsWith("field:")).length, "the workspace form with every company").toBeGreaterThan(3);
+    closeView();
+    const limited = await open("tenant", all, { everyCompany: false });
+    expect(limited.filter((c) => c === "button:Save" || c.startsWith("field:")), "the workspace form for a user of some companies").toEqual([]);
+    expect(shown().container.querySelector('[data-testid="tenant-some-companies-only"]')!.textContent).toContain("only some companies or branches");
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {

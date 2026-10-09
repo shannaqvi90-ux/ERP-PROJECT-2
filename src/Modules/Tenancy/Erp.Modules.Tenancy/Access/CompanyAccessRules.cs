@@ -124,6 +124,14 @@ internal static class CompanyAccessRules
         {
             return "tenancy.userBeyondOwnCompanies";
         }
+        // Nor in a branch the caller does not (critic p02 round 6: a one-branch administrator was
+        // offered the access of a user who also holds another branch, which it could not see, and
+        // every save, even an unchanged one, was refused because the hidden branch read as removed).
+        var mine = await HoldingsAsync(db, callerId, cancellationToken);
+        if ((await HoldingsAsync(db, userId, cancellationToken)).Values.Any(h => mine.GetValueOrDefault(h.CompanyId) is not { } own || !own.Covers(h)))
+        {
+            return "tenancy.userBeyondOwnBranches";
+        }
         return null;
     }
 

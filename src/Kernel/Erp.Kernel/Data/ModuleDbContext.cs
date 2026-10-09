@@ -160,6 +160,10 @@ public abstract class ModuleDbContext : DbContext
                     {
                         throw new CrossBranchWriteException(entry.Metadata.ClrType.Name);
                     }
+                    if (entry.Entity is IWorkspaceWide && _tenant is not IWorkspaceScope { HoldsWholeWorkspace: true })
+                    {
+                        throw new CrossBranchWriteException(entry.Metadata.ClrType.Name, CrossBranchWriteException.WorkspaceCode);
+                    }
                     if (entry.Entity is TenantEntity added)
                     {
                         added.CreatedAt = now;
@@ -189,6 +193,10 @@ public abstract class ModuleDbContext : DbContext
                     {
                         throw new CrossBranchWriteException(entry.Metadata.ClrType.Name);
                     }
+                    if (entry.Entity is IWorkspaceWide && _tenant is not IWorkspaceScope { HoldsWholeWorkspace: true })
+                    {
+                        throw new CrossBranchWriteException(entry.Metadata.ClrType.Name, CrossBranchWriteException.WorkspaceCode);
+                    }
                     if (entry.State == EntityState.Modified && entry.Entity is TenantEntity modified)
                     {
                         modified.UpdatedAt = now;
@@ -210,6 +218,10 @@ public sealed class CrossBranchWriteException(string entity, string code = Cross
     : InvalidOperationException($"Refused to write a {entity} row that every branch of its company shares, for a user limited to some branches.")
 {
     public const string DefaultCode = "companyNeedsEveryBranch";
+
+    /// <summary>A record every company of the workspace shares (<see cref="IWorkspaceWide"/>), by a
+    /// user who may work in only some companies or branches.</summary>
+    public const string WorkspaceCode = "workspaceNeedsEveryCompany";
 
     public string Code { get; } = code;
 }

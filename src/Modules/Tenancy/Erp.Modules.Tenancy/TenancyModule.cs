@@ -72,8 +72,9 @@ public sealed class TenancyModule : ErpModule
 
 /// <summary>A customer workspace. Its <c>tenant_id</c> always equals its own id (check
 /// constraint), so the same row-level security policy that guards every other table guards this
-/// one.</summary>
-public sealed class Tenant : TenantEntity
+/// one. Every company of the workspace shares it (<see cref="IWorkspaceWide"/>): someone limited to
+/// some companies, or some branches of one, reads it but never changes it.</summary>
+public sealed class Tenant : TenantEntity, IWorkspaceWide
 {
     public string Code { get; set; } = "";
     public string NameEn { get; set; } = "";

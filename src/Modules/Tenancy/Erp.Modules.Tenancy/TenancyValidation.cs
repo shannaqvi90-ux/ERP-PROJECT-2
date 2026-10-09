@@ -102,10 +102,42 @@ internal static partial class TenancyValidation
         return validator;
     }
 
+    /// <summary>
+    /// A company's legal names: the English one is always required (it identifies the company in
+    /// every list, code and English document, and an English document must never print an empty
+    /// legal name: p06 round 3 saved a company whose English legal name was empty because an Arabic
+    /// one existed); the Arabic one is optional until the owner rules on it (needs-human #9). Each is
+    /// at most 200 characters.
+    /// </summary>
+    public static Validator LegalNames(this Validator validator, string? english, string? arabic)
+    {
+        validator.Must(!string.IsNullOrWhiteSpace(english), "legalNameEn", "tenancyLegalNameEn")
+            .MaxLength("legalNameEn", english, 200)
+            .MaxLength("legalNameAr", arabic, 200);
+        return validator;
+    }
+
     /// <summary>Words of a legal name that say nothing about which company it is.</summary>
     private static readonly FrozenSet<string> LegalWords = FrozenSet.ToFrozenSet(
         ["LLC", "L", "C", "FZE", "FZCO", "FZ", "FZC", "DMCC", "PJSC", "PSC", "LTD", "LIMITED", "INC", "CO", "COMPANY", "BRANCH", "THE", "AND", "OF"],
         StringComparer.Ordinal);
+
+    /// <summary>
+    /// What a branch's code is made from when none is typed: the branch's own part of a name that
+    /// trades under its company's ("Falcon Logistics LLC - Jebel Ali Branch" gives JEBEL), and HQ for
+    /// a branch named after its company alone, its head office (critic p02 round 6: every suggested
+    /// branch code repeated the company code).
+    /// </summary>
+    public static string? BranchCodeBasis(string? branchName, string? companyName)
+    {
+        var name = (branchName ?? "").Trim();
+        var dash = name.LastIndexOf(" - ", StringComparison.Ordinal);
+        if (dash >= 0 && name[(dash + 3)..].Trim() is { Length: > 0 } own)
+        {
+            return own;
+        }
+        return name.Length > 0 && string.Equals(name, (companyName ?? "").Trim(), StringComparison.OrdinalIgnoreCase) ? "HQ" : name;
+    }
 
     /// <summary>
     /// A code made from an English name (its first distinctive word, joined to the next when short:

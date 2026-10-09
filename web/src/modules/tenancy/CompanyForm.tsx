@@ -155,13 +155,13 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         company && (
           <>
             <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt} />
-            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} everyBranch={everyBranch} />}
+            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} companyNameAr={company.legalNameAr} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} everyBranch={everyBranch} />}
           </>
         )
       }
     >
       <FormSection title={t("tenancy.company.general")}>
-        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
+        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null} />
         <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
           hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
         <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
@@ -299,20 +299,29 @@ export const branchNameOf = (typed: string) => typed.replace(/\s+-\s*$/, "");
 
 /** The company's branches, with a one-line form to add another (Enter saves). A new branch
  * starts in the company's emirate, its English name with the company's; right after the company
- * is created the line has the focus, the caret after the company's name. */
-function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus, everyBranch }: {
+ * is created the line has the focus, the caret after the company's name. On an Arabic screen the
+ * Arabic name comes first, starts with the company's Arabic name and has the focus (critic p02
+ * round 6: an Arabic user's branch name went into the English name, with the Arabic name empty). */
+function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate, autoFocus, everyBranch }: {
   companyId: string;
   companyName: string;
+  companyNameAr: string;
   defaultEmirate: Emirate | "";
   autoFocus: boolean;
   /** False when the user works in only some of the company's branches: a branch is added only by
    * someone who works in every branch (the server answers 403 tenancy.branchNeedsEveryBranch). */
   everyBranch: boolean;
 }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
+  const arabic = language === "ar";
   const { can } = useSession();
   const [branches, setBranches] = useState<BranchRow[]>([]);
-  const fresh = (): QuickBranch => ({ ...emptyBranch, nameEn: branchNamePrefix(companyName), emirate: defaultEmirate });
+  const fresh = (): QuickBranch => ({
+    ...emptyBranch,
+    nameEn: branchNamePrefix(companyName),
+    nameAr: arabic ? branchNamePrefix(companyNameAr) : "",
+    emirate: defaultEmirate,
+  });
   const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
@@ -361,7 +370,7 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus, ev
         companyId,
         code: draft.code.trim(),
         nameEn: branchNameOf(draft.nameEn),
-        nameAr: draft.nameAr,
+        nameAr: branchNameOf(draft.nameAr),
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,
         country: "AE",
@@ -382,6 +391,9 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus, ev
   const set = (key: keyof QuickBranch) => (e: { target: { value: string } }) =>
     setDraft((d) => ({ ...d, [key]: key === "code" ? e.target.value.toUpperCase() : e.target.value }));
   const invalid = (field: string) => (errors[field]?.length ? true : undefined);
+  const nameArInput = (
+    <input ref={arabic ? nameRef : undefined} name="branchNameAr" value={draft.nameAr} onChange={set("nameAr")} placeholder={t("tenancy.branch.nameAr")} aria-label={t("tenancy.branch.nameAr")} aria-invalid={invalid("nameAr")} dir="rtl" maxLength={200} />
+  );
 
   return (
     <section className="record-section" aria-label={t("tenancy.branches.title")}>
@@ -411,8 +423,9 @@ function CompanyBranches({ companyId, companyName, defaultEmirate, autoFocus, ev
       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
       {can("tenancy.branches.create") && everyBranch && (
         <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
-          <input ref={nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
-          <input name="branchNameAr" value={draft.nameAr} onChange={set("nameAr")} placeholder={t("tenancy.branch.nameAr")} aria-label={t("tenancy.branch.nameAr")} aria-invalid={invalid("nameAr")} dir="rtl" maxLength={200} />
+          {arabic && nameArInput}
+          <input ref={arabic ? undefined : nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
+          {!arabic && nameArInput}
           <input name="branchCode" value={draft.code} onChange={set("code")} placeholder={t("tenancy.branch.codeOptional")} aria-label={t("tenancy.branch.codeOptional")} aria-invalid={invalid("code")} dir="ltr" maxLength={20} />
           <input name="branchCity" value={draft.city} onChange={set("city")} placeholder={t("tenancy.address.city")} aria-label={t("tenancy.address.city")} maxLength={100} />
           <select name="branchEmirate" value={draft.emirate} onChange={set("emirate")} aria-label={t("tenancy.address.emirate")}>

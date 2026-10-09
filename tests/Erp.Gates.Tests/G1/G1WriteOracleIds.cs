@@ -42,6 +42,9 @@ public static partial class G1WriteOracle
         var checks = 0;
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
+        // Each workspace named: the oracle itself may leave a user of one workspace holding the
+        // other's administrator's e-mail (e-mails are unique per workspace), and then an e-mail alone
+        // asks which workspace to sign in to.
         using var a = await env.SignInAsync(env.Email(env.TenantA, "admin"), workspace: env.TenantA.Code);
         using var b = await env.SignInAsync(env.Email(env.TenantB, "admin"), workspace: env.TenantB.Code);
         await UseWorkingCompanyAsync(a);

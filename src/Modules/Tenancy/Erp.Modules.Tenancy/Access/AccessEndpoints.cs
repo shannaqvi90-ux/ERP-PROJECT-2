@@ -32,7 +32,7 @@ public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameE
 /// company and branch the caller could give them (<c>options</c>). <c>canEdit</c> is false, with
 /// the reason as a text key in <c>readOnlyReason</c>, when the caller may not change this user's
 /// access at all (their own access, a user holding permissions the caller lacks, or one who works
-/// in companies the caller does not). <c>version</c> identifies this state of the user's access in
+/// in companies or branches the caller does not). <c>version</c> identifies this state of the user's access in
 /// the caller's companies: a save sends it back and is refused with 409 when the access changed
 /// since it was read.</summary>
 public sealed record UserAccessDto(Guid UserId, string DisplayName, string Email, bool IsCaller, IReadOnlyList<CompanyAccessDto> Companies,
@@ -60,7 +60,7 @@ internal static class AccessEndpoints
 
         group.MapPut("/access/{userId:guid}", Update)
             .WithName("tenancy.access.update")
-            .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company the caller does not; callers cannot change their own access. The request carries the version read; 409 when the access changed since.")
+            .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company or branch the caller does not; callers cannot change their own access. The request carries the version read; 409 when the access changed since.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(TenancyPermissions.AccessUpdate);
@@ -91,7 +91,9 @@ internal static class AccessEndpoints
                                 a.UserId, a.CompanyId, c.Code, a.AllBranches,
                                 Branches = a.AllBranches
                                     ? db.Branches.Count(b => b.CompanyId == a.CompanyId)
-                                    : db.BranchAccess.Count(b => b.UserId == a.UserId && b.CompanyId == a.CompanyId),
+                                    // Only the branches the caller can see: a branch-limited caller learns
+                                    // nothing of the user's other branches, not even how many (critic p02 round 6).
+                                    : db.BranchAccess.Count(b => b.UserId == a.UserId && b.CompanyId == a.CompanyId && db.Branches.Any(br => br.Id == b.BranchId)),
                             })
             .ToListAsync(cancellationToken);
         var byUser = access.GroupBy(a => a.UserId).ToDictionary(g => g.Key,
@@ -222,6 +224,7 @@ internal static class AccessEndpoints
                 null => null,
                 "tenancy.cannotChangeOwnAccess" => "tenancy.access.readOnly.self",
                 "tenancy.userBeyondOwn" => "tenancy.access.readOnly.permissions",
+                "tenancy.userBeyondOwnBranches" => "tenancy.access.readOnly.branches",
                 _ => "tenancy.access.readOnly.companies",
             }, await CompanyAccessRules.VersionAsync(db, user.Id, cancellationToken));
     }
