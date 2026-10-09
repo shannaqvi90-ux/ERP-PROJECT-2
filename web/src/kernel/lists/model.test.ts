@@ -11,6 +11,7 @@ import {
   parseSort,
   queryOf,
   rowsToText,
+  searchEnterWaits,
   sortText,
   stateFromAddress,
   stateFromView,
@@ -214,5 +215,20 @@ describe("flag columns that name their values", () => {
     expect(formatValue(named, false, f)).toBe("Custom");
     expect(formatValue({ ...flag, choices: [] }, true, f)).toBe("Yes");
     expect(formatValue({ ...flag, choices: [] }, false, f)).toBe("No");
+  });
+});
+
+describe("searchEnterWaits", () => {
+  const settled = { searchText: "majid", appliedSearch: "majid", loading: false, loadedKey: "/api/u?search=majid|", expectedKey: "/api/u?search=majid|" };
+  it("acts at once when the rows answer what was typed", () => {
+    expect(searchEnterWaits(settled)).toBe(false);
+  });
+  it("waits while the typed text is not applied or a read is under way", () => {
+    expect(searchEnterWaits({ ...settled, searchText: "majid a" })).toBe(true);
+    expect(searchEnterWaits({ ...settled, loading: true })).toBe(true);
+  });
+  it("waits when the applied search's read has not started and the rows are the previous query's", () => {
+    expect(searchEnterWaits({ ...settled, loadedKey: "/api/u?search=maj|" })).toBe(true);
+    expect(searchEnterWaits({ ...settled, loadedKey: null })).toBe(true);
   });
 });

@@ -18,6 +18,7 @@ import {
   sortText,
   stateFromAddress,
   stateFromView,
+  searchEnterWaits,
   stateToAddress,
   toggleSort,
   visibleRange,
@@ -581,7 +582,7 @@ export function ListView(props: ListViewProps) {
   function onSearchKey(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter") {
       event.preventDefault();
-      if (searchText !== appliedSearch || rows.loading) {
+      if (searchEnterWaits({ searchText, appliedSearch, loading: rows.loading, loadedKey: rows.loadedKey, expectedKey })) {
         openWhenSingle.current = true;
         setAppliedSearch(searchText);
       } else {

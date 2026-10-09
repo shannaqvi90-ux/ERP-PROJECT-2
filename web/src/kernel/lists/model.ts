@@ -108,6 +108,17 @@ export function byRelevance(state: Pick<ListState, "search" | "sortChosen">): bo
   return state.search.trim() !== "" && !state.sortChosen;
 }
 
+/**
+ * Enter in the search box acts on the rows shown only when they answer what was typed; otherwise
+ * it waits for that answer. "Not yet" covers the typed text not applied yet, a read under way, and
+ * the render in which the applied search has a new query whose read has not started (its rows are
+ * still the previous query's: an Enter pressed there focused the old rows instead of opening the
+ * best match, health check of ./erp verify, p02 round 8).
+ */
+export function searchEnterWaits(at: { searchText: string; appliedSearch: string; loading: boolean; loadedKey: string | null; expectedKey: string | null }): boolean {
+  return at.searchText !== at.appliedSearch || at.loading || at.loadedKey !== at.expectedKey;
+}
+
 const operatorWords: Record<Exclude<Operator, "in" | "isNull" | "isNotNull">, string> = {
   eq: "eq",
   ne: "ne",
