@@ -18,6 +18,10 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
     private ErpTestEnvironment Env => fixture.Env;
 
     private const string Standard = "erp.company_allowed(company_id)";
+
+    /// <summary>Own-row tables whose own rows outside the scope their user's session may move or
+    /// delete (reviewed, with the reason).</summary>
+    private static readonly IReadOnlySet<string> OwnRowWrites = Repo.ReadReviewedList("tests/Gates/own-row-writes.txt").Select(e => e.Entry).ToHashSet(StringComparer.Ordinal);
     private const string StandardOrOwn = "(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))";
 
     [Fact]
@@ -63,6 +67,26 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
             {
                 problems.Add($"{table}: company_scope must be RESTRICTIVE FOR ALL TO PUBLIC USING {Standard} (or {StandardOrOwn} on a user_id table) " +
                              $"WITH CHECK {Standard} (is {policy.Command} permissive={policy.Permissive} [{string.Join(",", policy.Roles)}] {policy.Using} / {policy.Check})");
+            }
+            // Own rows readable outside the scope are never written there: RESTRICTIVE policies for
+            // UPDATE and DELETE with the standard expression (migrationBuilder.KeepOwnRowsReadOnly),
+            // unless the table is reviewed in tests/Gates/own-row-writes.txt.
+            if (policy.Using == StandardOrOwn && !OwnRowWrites.Contains(table.Qualified))
+            {
+                foreach (var (command, policyName) in new[] { ("w", "company_scope_update"), ("d", "company_scope_delete") })
+                {
+                    var write = await DbCatalog.ReadAsync(admin,
+                        "SELECT p.polcmd::text, p.polpermissive, pg_get_expr(p.polqual, p.polrelid), " +
+                        "ARRAY(SELECT CASE WHEN r = 0 THEN 'public' ELSE pg_get_userbyid(r) END FROM unnest(p.polroles) r) " +
+                        "FROM pg_policy p WHERE p.polrelid = to_regclass(@t) AND p.polname = @n",
+                        r => (Command: r.GetString(0), Permissive: r.GetBoolean(1), Using: r.IsDBNull(2) ? null : r.GetString(2), Roles: r.GetFieldValue<string[]>(3)),
+                        ("t", table.Qualified), ("n", policyName));
+                    if (write.Count != 1 || write[0].Permissive || write[0].Roles is not ["public"] || write[0].Command != command || write[0].Using != Standard)
+                    {
+                        problems.Add($"{table}: its own rows are readable outside the company scope, so it needs the RESTRICTIVE {policyName} policy " +
+                                     $"(FOR {(command == "w" ? "UPDATE" : "DELETE")} TO PUBLIC USING {Standard}; migrationBuilder.KeepOwnRowsReadOnly) or a reviewed entry in tests/Gates/own-row-writes.txt");
+                    }
+                }
             }
         }
         // The company table itself: a company's company_id is its own id.
@@ -152,8 +176,27 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
                 var owner = await DbCatalog.ReadAsync(admin, $"SELECT user_id FROM {name} WHERE tenant_id = @t AND company_id = @c LIMIT 1", r => r.GetGuid(0), ("t", tenant), ("c", y));
                 await using var tx = await app.BeginTransactionAsync();
                 await BindAsync(app, tx, tenant, owner[0], scope: "list", companies: [x]);
+                // The row stays readable to its user (the own-rows clause), so a write affecting no
+                // row was refused by a write policy, not missed for want of a row; a table without
+                // the write policies must refuse it outright (the check option).
+                var readOnly = !OwnRowWrites.Contains(name);
+                var own = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name} WHERE user_id = '{owner[0]}' AND company_id = '{y}'");
+                if (own == 0) problems.Add($"{name}: a user's own row of a company outside their scope is not readable to them, so the own-row checks prove nothing");
                 await ExpectDenied(app, tx, problems, $"{name}: a user changing their own row of a company outside their scope",
-                    $"UPDATE {name} SET company_id = company_id WHERE user_id = '{owner[0]}' AND company_id = '{y}'", allowNoRows: false);
+                    $"UPDATE {name} SET company_id = company_id WHERE user_id = '{owner[0]}' AND company_id = '{y}'", allowNoRows: readOnly);
+                // Nor moved into the scope (a role held in Y becoming one held in X), nor deleted
+                // (critic p03 round 6), unless reviewed: a table whose own rows outside the scope
+                // its user's session removes (a workplace left in a company the user no longer
+                // works in) is listed in tests/Gates/own-row-writes.txt with the reason.
+                if (readOnly)
+                {
+                    await ExpectDenied(app, tx, problems, $"{name}: a user moving their own row of a company outside their scope into it",
+                        $"UPDATE {name} SET company_id = '{x}' WHERE user_id = '{owner[0]}' AND company_id = '{y}'", allowNoRows: true);
+                    await ExpectDenied(app, tx, problems, $"{name}: a user deleting their own row of a company outside their scope",
+                        $"DELETE FROM {name} WHERE user_id = '{owner[0]}' AND company_id = '{y}'", allowNoRows: true);
+                    var after = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name} WHERE user_id = '{owner[0]}' AND company_id = '{y}'");
+                    if (after != own) problems.Add($"{name}: a user's own rows of a company outside their scope went from {own} to {after}");
+                }
                 await tx.RollbackAsync();
             }
         }

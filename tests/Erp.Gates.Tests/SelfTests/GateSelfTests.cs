@@ -356,6 +356,45 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(result.Problems, p => p.Contains("concurrency token", StringComparison.Ordinal) || p.Contains("stale version", StringComparison.Ordinal));
     }
 
+    /// <summary>Critic p03 round 6: a table whose own rows stay readable outside the company scope
+    /// (the own-rows variant) without the RESTRICTIVE update and delete policies lets a session
+    /// delete its own rows of other companies or move one into its scope; a permissive policy by
+    /// one of those names widens access and is unreviewed.</summary>
+    [Fact]
+    public async Task The_company_policy_check_catches_own_rows_writable_outside_the_scope()
+    {
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            foreach (var table in new[] { "selftest_own_rows_writable", "selftest_own_rows_permissive" })
+            {
+                await DbCatalog.ExecuteAsync(owner, $"CREATE TABLE tenancy.{table} (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL, user_id uuid NOT NULL)");
+                await DbCatalog.ExecuteAsync(owner, $"CREATE POLICY company_scope ON tenancy.{table} AS RESTRICTIVE FOR ALL TO PUBLIC " +
+                                                    "USING (erp.company_allowed(company_id) OR user_id = erp.current_actor_id()) WITH CHECK (erp.company_allowed(company_id))");
+            }
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_update ON tenancy.selftest_own_rows_permissive AS RESTRICTIVE FOR UPDATE TO PUBLIC USING (erp.company_allowed(company_id))");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_delete ON tenancy.selftest_own_rows_permissive AS PERMISSIVE FOR DELETE TO PUBLIC USING (true)");
+        }
+        try
+        {
+            var (problems, _) = await G1CompanyScopeTests.PolicyProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_own_rows_", StringComparison.Ordinal));
+            var (tenantProblems, _) = await G1DatabaseIsolationTests.RowLevelSecurityProblemsAsync(fixture.Env);
+            Assert.Contains(tenantProblems, p => p.Contains("tenancy.selftest_own_rows_permissive: unreviewed policy 'tenancy.selftest_own_rows_permissive company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(tenantProblems, p => p.Contains("company_scope_update", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_own_rows_writable; DROP TABLE tenancy.selftest_own_rows_permissive");
+        }
+    }
+
     [Fact]
     public async Task The_company_policy_check_catches_a_company_table_without_the_company_scope()
     {
