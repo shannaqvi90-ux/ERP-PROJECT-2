@@ -105,5 +105,14 @@ the known shapes.
 ## Cost
 
 Each run starts three more small Node processes (one per verify() call, about 0.1 s of processor
-time each) and waits 1.1 s between the two passes after the clock. Processor time of this round in
-`./erp verify` is stated in the verify notes below.
+time each) and, for a task that saves, waits 1.1 s between the two passes after the clock (wall
+time, not processor time). This round adds 37 harness tests (352 in all) and 21 instrument
+mutations (41 in all), each mutation running only the self-tests named for it.
+
+Measured in `./erp verify` at this branch's head on 2026-10-09 (slot taken 18:47:23Z, load 25 at
+the start and 26 at the end on 16 CPUs): passed in 3,644 s; processor time 9,570 s against the
+owner's maximum of 10,500 s (dotnet 7,804, web 1,465, e2e 242, timing 59). The web stage, which
+holds the harness tests and the mutations, used 1,465 s against round 8's 1,340 s (critic's verify
+of 59e3533 at load 26), so this round adds about 125 s of processor time. Most of the rest of the
+difference to round 8's 8,414 s total is the .NET stage (7,804 s against 6,771 s), which this piece
+does not touch (other pieces' tests merged since, and the machine's load).
