@@ -39,12 +39,10 @@ const keyHint = (chord: string) => chordKeys(chord).join("+");
 /** One-line inputs in which Enter saves the record (as Ctrl+S does). Not a list of choices (a
  * lookup chooses with Enter), a multi-line text (Enter starts a new line), a checkbox, a button or
  * a select. */
-const enterSavesIn = new Set(["text", "email", "tel", "url", "number", "search", "password", "date", "datetime-local", "time", "month", "week"]);
-
 export function savesOnEnter(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLInputElement &&
-    enterSavesIn.has(target.type) &&
+    ["text", "email", "tel", "url", "number", "search", "password", "date", "datetime-local", "time", "month", "week"].includes(target.type) &&
     !target.readOnly &&
     !target.disabled &&
     target.getAttribute("role") !== "combobox"
