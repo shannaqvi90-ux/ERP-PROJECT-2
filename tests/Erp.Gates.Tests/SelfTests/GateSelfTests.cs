@@ -25,6 +25,7 @@ public sealed class LeakyFixture : IAsyncLifetime
     private readonly Lock _runs = new();
     private Task<GrantBearingRecords.Result>? _grantBearing;
     private Task<GrantEscalation.Result>? _grantEscalation;
+    private Task<SetTakeover.Result>? _setTakeover;
 
     /// <summary>The grant-bearing record check over this environment, run once: three self-tests
     /// judge the same run, each for its own plants (three identical full runs were most of the
@@ -39,6 +40,14 @@ public sealed class LeakyFixture : IAsyncLifetime
     public Task<GrantEscalation.Result> GrantEscalationAsync()
     {
         lock (_runs) return _grantEscalation ??= GrantEscalation.RunAsync(Env);
+    }
+
+    /// <summary>The set-based takeover check over the planted "all that match" activations, run
+    /// once for the two self-tests that judge it (bugs 53 and 54, and bug 57).</summary>
+    public Task<SetTakeover.Result> SetTakeoverAsync()
+    {
+        lock (_runs) return _setTakeover ??= SetTakeover.RunAsync(Env, userLists: ["/api/leaky/users"],
+            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
     }
 }
 
@@ -612,8 +621,7 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     {
         const string anyone = "POST /api/leaky/users/matching/active-anyone";
         const string workspaceOnly = "POST /api/leaky/users/matching/active-workspace-roles";
-        var result = await SetTakeover.RunAsync(fixture.Env, userLists: ["/api/leaky/users"],
-            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
+        var result = await fixture.SetTakeoverAsync();
         foreach (var problem in result.Problems.Take(12))
         {
             TestContext.Current.TestOutputHelper?.WriteLine(problem);
@@ -632,6 +640,32 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                                     !p.Contains("in one company only", StringComparison.Ordinal) && !p.Contains("a company the caller does not work in", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.True(result.CompanyAimed > 0);
+    }
+
+    /// <summary>Bug 57 (critic p03 round 6, plant Pc): "all that match" activation that takes a role
+    /// the caller's grants cover in one company as covered in every company. Only a caller whose
+    /// grants come from a role in one company reaches it: the set-based takeover check must report
+    /// it changing a user holding a module's grants in the other company, by search and by filter,
+    /// and nothing else of that endpoint (its other rules work, and the same role held in the
+    /// caller's company is meant to change).</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another()
+    {
+        const string roleAnywhere = "POST /api/leaky/users/matching/active-role-anywhere";
+        const string otherCompany = "in one company only, the other one than where the caller holds it";
+        var result = await fixture.SetTakeoverAsync();
+        foreach (var problem in result.Problems.Where(p => p.StartsWith(roleAnywhere, StringComparison.Ordinal)).Take(6))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(roleAnywhere, result.Checked);
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(roleAnywhere + selector, StringComparison.Ordinal) && p.Contains(otherCompany, StringComparison.Ordinal) &&
+                                                  p.Contains("only through a role in one company", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(roleAnywhere, StringComparison.Ordinal) && !p.Contains(otherCompany, StringComparison.Ordinal));
+        Assert.True(result.CompanyCallerAimed > 0);
     }
 
     [Fact]

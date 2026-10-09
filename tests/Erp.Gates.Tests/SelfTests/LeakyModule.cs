@@ -510,6 +510,17 @@ public sealed class LeakyModule : ErpModule
                     SetMatchingActiveAsync(request, session, caller, workspaceRolesOnly: true))
                 .WithName("leaky.matchingActiveWorkspaceRoles").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, judging only roles held in every company.")
                 .RequirePermission("leaky.data.update");
+            // Bug 57 (critic p03 round 6, plant Pc): the same activation judging roles held in one
+            // company by role alone. A role whose grants the caller holds in ONE of its companies
+            // counts as covered in EVERY company, so a clerk managing users in the Dubai LLC
+            // deactivates a manager of the JAFZA FZE holding the same role there. Every other rule
+            // holds (workspace-wide roles against the caller's workspace-wide grants, roles in a
+            // company the caller does not work in): only a caller whose grants come from a company
+            // role reaches the fault. Same reach as bugs 53 and 54.
+            group.MapPost("/users/matching/active-role-anywhere", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveRoleAnywhereAsync(request, session, caller))
+                .WithName("leaky.matchingActiveRoleAnywhere").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, taking a role the caller's grants cover in one company as covered in every company.")
+                .RequirePermission("leaky.data.update");
 
             // Bug 25: a GET that writes. Every GET runs in a read-only transaction, so the database
             // refuses the write.
@@ -1347,6 +1358,42 @@ public sealed class LeakyModule : ErpModule
         command.Parameters.Add(new NpgsqlParameter("filter", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)filterEmail ?? DBNull.Value });
         command.Parameters.AddWithValue("caller", caller.UserId);
         command.Parameters.AddWithValue("held", caller.Permissions.ToArray());
+        return Results.Ok(new { changed = await command.ExecuteNonQueryAsync() });
+    }
+
+    /// <summary>Bug 57: the users an exact e-mail search or an <c>email eq '…'</c> filter chooses,
+    /// among the gate's own users, set active or inactive (never the caller), except users holding
+    /// a workspace-wide role granting what the caller does not hold workspace-wide, users holding
+    /// roles in a company the caller does not work in (more assignments than the caller sees), and
+    /// users holding a company role granting what the caller does not hold workspace-wide unless
+    /// the caller's grants in SOME company cover that role: the planted fault, which should ask
+    /// for the company the role is held in.</summary>
+    private static async Task<IResult> SetMatchingActiveRoleAnywhereAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller)
+    {
+        var filterEmail = request.Filter is { Length: > 0 } filter && System.Text.RegularExpressions.Regex.Match(filter, "^email eq '(.*)'$") is { Success: true } m
+            ? m.Groups[1].Value.Replace("''", "'", StringComparison.Ordinal)
+            : null;
+        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        if (request.Active is null || (search is null && filterEmail is null))
+        {
+            return Results.BadRequest();
+        }
+        await using var command = new NpgsqlCommand(
+            "WITH everywhere AS (SELECT coalesce(array_agg(DISTINCT p), '{}'::text[]) AS held FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id, unnest(r.permissions) p WHERE ur.user_id = @caller), " +
+            "by_company AS (SELECT ucr.company_id, array_agg(DISTINCT p) AS held FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, unnest(r.permissions) p WHERE ucr.user_id = @caller GROUP BY ucr.company_id), " +
+            "covered AS (SELECT r.id FROM identity.roles r WHERE EXISTS (SELECT 1 FROM by_company c, everywhere e WHERE r.permissions <@ (c.held || e.held))) " +
+            "UPDATE identity.users u SET is_active = @active " +
+            "WHERE (@search::text IS NULL OR lower(u.email) = lower(@search)) AND (@filter::text IS NULL OR lower(u.email) = lower(@filter)) " +
+            "AND (u.email LIKE 'set%' OR u.email LIKE 'g2.%') AND u.id <> @caller " +
+            "AND NOT EXISTS (SELECT 1 FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id, everywhere e WHERE ur.user_id = u.id AND NOT (r.permissions <@ e.held)) " +
+            "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id AND NOT (r.permissions <@ e.held) " +
+            "                AND ucr.role_id NOT IN (SELECT id FROM covered)) " +
+            "AND u.company_role_count <= (SELECT count(*) FROM identity.user_company_roles ucr WHERE ucr.user_id = u.id)",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("active", request.Active.Value);
+        command.Parameters.Add(new NpgsqlParameter("search", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)search ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("filter", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)filterEmail ?? DBNull.Value });
+        command.Parameters.AddWithValue("caller", caller.UserId);
         return Results.Ok(new { changed = await command.ExecuteNonQueryAsync() });
     }
 
