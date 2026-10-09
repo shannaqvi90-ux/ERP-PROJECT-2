@@ -1282,11 +1282,11 @@ public static partial class IsolationAttack
                 // control answers at the same place is a nonce. It is compared by its length alone
                 // in all three answers, so an answer whose difference is anything else still tells.
                 var (againStatus, againText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
-                if (againStatus == controlStatus && NoncePaths(controlNormalized, NormalizeBoth(againText, control, value)) is { Count: > 0 } nonces)
+                if (againStatus == controlStatus && Nonces.Paths(controlNormalized, NormalizeBoth(againText, control, value)) is { Count: > 0 } nonces)
                 {
                     Interlocked.Increment(ref _nonceRechecks);
-                    normalized = WithoutNonces(normalized, nonces);
-                    controlNormalized = WithoutNonces(controlNormalized, nonces);
+                    normalized = Nonces.Without(normalized, nonces);
+                    controlNormalized = Nonces.Without(controlNormalized, nonces);
                 }
             }
             if (status != controlStatus || normalized != controlNormalized)
@@ -1301,79 +1301,6 @@ public static partial class IsolationAttack
 
         /// <summary>Pairs whose difference was a nonce alone after the control was asked again.</summary>
         public int NonceRechecks => _nonceRechecks;
-
-        /// <summary>The places (JSON paths) of strings that differ between two answers to the very same
-        /// request, with the same length on both sides: values made afresh for each answer.</summary>
-        internal static HashSet<string> NoncePaths(string first, string second)
-        {
-            var paths = new HashSet<string>(StringComparer.Ordinal);
-            JsonNode? a, b;
-            try
-            {
-                a = JsonNode.Parse(first);
-                b = JsonNode.Parse(second);
-            }
-            catch (JsonException)
-            {
-                return paths;
-            }
-            void Walk(JsonNode? x, JsonNode? y, string path)
-            {
-                switch (x)
-                {
-                    case JsonObject ox when y is JsonObject oy:
-                        foreach (var (key, child) in ox)
-                        {
-                            if (oy.ContainsKey(key)) Walk(child, oy[key], path + "/" + key);
-                        }
-                        break;
-                    case JsonArray ax when y is JsonArray ay && ax.Count == ay.Count:
-                        for (var i = 0; i < ax.Count; i++) Walk(ax[i], ay[i], path + "/" + i);
-                        break;
-                    case JsonValue vx when y is JsonValue vy && vx.GetValueKind() == JsonValueKind.String && vy.GetValueKind() == JsonValueKind.String:
-                        var sx = vx.GetValue<string>();
-                        var sy = vy.GetValue<string>();
-                        if (sx != sy && sx.Length == sy.Length) paths.Add(path);
-                        break;
-                }
-            }
-            Walk(a, b, "");
-            return paths;
-        }
-
-        /// <summary>The answer with each nonce replaced by its length.</summary>
-        internal static string WithoutNonces(string text, IReadOnlySet<string> paths)
-        {
-            JsonNode? root;
-            try
-            {
-                root = JsonNode.Parse(text);
-            }
-            catch (JsonException)
-            {
-                return text;
-            }
-            foreach (var path in paths)
-            {
-                var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                JsonNode? parent = root;
-                for (var i = 0; i < parts.Length - 1 && parent is not null; i++)
-                {
-                    parent = parent is JsonArray arr && int.TryParse(parts[i], out var at) && at < arr.Count ? arr[at] : parent is JsonObject o ? o[parts[i]] : null;
-                }
-                var last = parts.Length == 0 ? null : parts[^1];
-                switch (parent)
-                {
-                    case JsonObject o when last is not null && o[last] is JsonValue v && v.GetValueKind() == JsonValueKind.String:
-                        o[last] = $"<nonce:{v.GetValue<string>().Length}>";
-                        break;
-                    case JsonArray arr when last is not null && int.TryParse(last, out var at) && at < arr.Count && arr[at] is JsonValue v && v.GetValueKind() == JsonValueKind.String:
-                        arr[at] = $"<nonce:{v.GetValue<string>().Length}>";
-                        break;
-                }
-            }
-            return root?.ToJsonString() ?? text;
-        }
 
         private static int FirstDifference(string a, string b)
         {
