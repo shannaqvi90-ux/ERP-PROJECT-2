@@ -1,0 +1,61 @@
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ saved_views             | t              | t
+ __ef_migrations_history | f              | f
+(2 rows)
+
+     polname      |                 qual                  |                  chk                  
+------------------+---------------------------------------+---------------------------------------
+ tenant_isolation | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+(1 row)
+
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+               indexname                |                                                                  indexdef                                                                  
+----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ pk_users                               | CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ ak_users_tenant_id_id                  | CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ ix_users_email_normalized              | CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+ ix_users_tenant_id_display_name        | CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+ ix_users_tenant_id_email_normalized    | CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ ix_users_display_name_email_normalized | CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+ ix_users_tenant_id_created_at_id       | CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+ ix_users_tenant_id_last_sign_in_at_id  | CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+ ix_users_display_name_ar               | CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+(9 rows)
+
+SET
+ unbound_users 
+---------------
+             0
+(1 row)
+
+ unbound_views 
+---------------
+             0
+(1 row)
+
+BEGIN
+SET
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+ gs_sees_alnoor_users 
+----------------------
+                    0
+(1 row)
+
+ gs_sees_alnoor_views 
+----------------------
+                    0
+(1 row)
+
+UPDATE 0
+ROLLBACK
