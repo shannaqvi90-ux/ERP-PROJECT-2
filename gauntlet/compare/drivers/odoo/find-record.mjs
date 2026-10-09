@@ -18,7 +18,7 @@ function build(palette) {
       const form = document.querySelector('.o_form_view');
       return !!form && (form.innerText.includes(m) || [...form.querySelectorAll('input')].some(i => i.value === m));
     }, { label: 'mobile number shown', arg: mobile });
-    return { opened: ctx.page.url() };
+    return {};
   };
 }
 
@@ -31,7 +31,7 @@ export default {
     palette: { path: 'Ctrl+K > type "/contacts" > Enter (the search box has focus) > type the name > Enter > open the single result.', run: build(true) },
   },
   async signIn(ctx) { await signInAs(ctx, 'admin'); },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
     const { name, mobile } = ctx.needles.contact;
     const shown = await ctx.read(() => ({
       name: (() => {
@@ -44,6 +44,6 @@ export default {
     }));
     const nameOk = (shown.name || '').trim() === name;
     const mobileOk = shown.text.includes(mobile) || shown.inputs.includes(mobile);
-    return { verified: nameOk && mobileOk, details: { url: outcome.opened, name_shown: shown.name, mobile_shown: mobileOk } };
+    return { verified: nameOk && mobileOk, details: { url: ctx.page.url(), name_shown: shown.name, mobile_shown: mobileOk } };
   },
 };

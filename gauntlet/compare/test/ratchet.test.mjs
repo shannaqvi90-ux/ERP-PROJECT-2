@@ -13,7 +13,8 @@ const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_d
   odoo_baselines_verified: 'compare.odooBaselinesVerified', reference_main_lists: 'compare.referenceMainLists',
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
   guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
-  instrument_mutations: 'compare.instrumentMutations' };
+  instrument_mutations: 'compare.instrumentMutations', before_clock_plants: 'compare.beforeClockPlants', saves_tasks: 'compare.savesTasks',
+  enters_tasks: 'compare.entersTasks' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -101,6 +102,17 @@ test('page-function plants never go below their minimum (round 7)', () => {
   };
   const n = entries('REFUSED') + entries('ACTS') + entries('PLANTS');
   assert.ok(n >= min.page_function_plants, `${n} page-function plants < ${min.page_function_plants}`);
+});
+
+// Round 9 (critic p01 r8): set-up cannot do the task off the clock. The plants that try it, and the
+// tasks whose saved end state the harness judges, never go below their minimum.
+test('before-the-clock plants, tasks that save and tasks that name what the person enters never go below their minimum', async () => {
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'before-clock.test.mjs'), 'utf8');
+  const plants = (text.match(/^test\('plant P/gm) || []).length;
+  assert.ok(plants >= min.before_clock_plants, `${plants} before-the-clock plants < ${min.before_clock_plants}`);
+  const tasks = await loadTasks();
+  assert.ok(tasks.filter(t => t.saves).length >= min.saves_tasks, `tasks that save < ${min.saves_tasks}`);
+  assert.ok(tasks.filter(t => t.enters?.length).length >= min.enters_tasks, `tasks that name what the person enters < ${min.enters_tasks}`);
 });
 
 test('API tasks never go below their minimum', async () => {

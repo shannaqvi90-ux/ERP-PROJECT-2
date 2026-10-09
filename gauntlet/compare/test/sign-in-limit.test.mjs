@@ -72,7 +72,7 @@ test('an API sign-in from the driver process is paced by the harness and waits o
       },
       async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
       async run(op) { await op.click('#q'); return {}; },
-      async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+      async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; },
     });
     assert.equal(r.status, 'verified', r.error);
     // u1 refused once (429), waited out, sent again; then u2 and u3 under a budget of 2 per window.
@@ -94,9 +94,8 @@ test('a browser sign-in refused with 429 is tried again in a fresh context, afte
         await ctx.until(() => document.getElementById('out').textContent === 'working', { timeout: 8_000 });
       },
       async run(op) { await op.click('#q'); return {}; },
-      async verify(ctx, outcome) {
-        if (outcome === undefined) return { verified: false };
-        return { verified: (await ctx.read(() => document.getElementById('out').textContent)) === '' };
+      async verify(ctx) {
+        return { verified: (await ctx.read(() => [document.activeElement?.id || '', document.getElementById('out').textContent])).join('|') === 'q|' };
       },
     });
     assert.equal(r.status, 'verified', r.error);
@@ -131,17 +130,19 @@ test('a sign-in the harness paces inside verify() is not charged to the pass (th
       async setup(ctx) { await oursAs(ctx.product, { login: 'setup', password: 'p' }); },
       async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
       async run(op) { await op.click('#q'); return {}; },
-      async verify(ctx, outcome) {
-        if (outcome === undefined) return { verified: false };
+      async verify(ctx) {
         const api = await oursAs(ctx.product, { login: 'verifier', password: 'p' }); // paced: waits for the window
-        return { verified: (await api.get('/api/me')).ok === true };
+        return { verified: (await api.get('/api/me')).ok === true && (await ctx.read(() => document.activeElement?.id || '')) === 'q' };
       },
     });
     assert.equal(r.status, 'verified', r.error);
-    assert.ok(r.verify_passes[0].paced_seconds >= 3, `the pacing is reported (${r.verify_passes[0].paced_seconds} s)`);
-    assert.ok(r.verify_passes[0].seconds < 1, 'and not charged to the pass');
+    // Round 9: every verify() call runs in a fresh process with the same arguments, so the first
+    // call, before the clock, makes the paced sign-in; the calls after it reuse its answer.
+    assert.ok(r.verify_before.paced_seconds >= 3, `the pacing is reported (${r.verify_before.paced_seconds} s)`);
+    assert.ok(r.verify_before.seconds < 1, 'and not charged to the pass');
+    assert.ok(r.verify_passes.every(p => p.paced_seconds === 0), 'the passes after the clock reuse the sign-in');
     // Without the deduction the same passes would read as waiting for the end state.
-    const raw = r.verify_passes.map(p => ({ ...p, seconds: p.seconds + p.paced_seconds }));
+    const raw = [{ ...r.verify_before, seconds: r.verify_before.seconds + r.verify_before.paced_seconds }, r.verify_passes[1]];
     assert.match(verifyWaited(raw), /the first time/);
   } finally { restore(); }
 });

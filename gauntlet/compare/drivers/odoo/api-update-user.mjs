@@ -22,9 +22,10 @@ export default {
     await op.request('POST', '/json/2/res.users/write', { ids: found.body, vals: { lang: 'ar_001' } }, { label: 'set the language' });
     return { id: found.body[0] };
   },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
+    // The back end: the needle user (found in set-up by sign-in, so not by the name the task searches) speaks Arabic.
     const [u] = await (await adminRpc(ctx)).read('res.users', ctx.state.ids, ['lang', 'name']);
-    return { verified: outcome.id === ctx.state.ids[0] && u.lang === 'ar_001', details: { id: outcome.id, lang: u.lang, name: u.name } };
+    return { verified: u.lang === 'ar_001', details: { id: ctx.state.ids[0], lang: u.lang, name: u.name } };
   },
   async cleanup(ctx) {
     if (ctx.state.ids?.length) await (await adminRpc(ctx)).write('res.users', ctx.state.ids, { lang: ODOO_LANG[ctx.needles.user.lang] || 'en_US' });

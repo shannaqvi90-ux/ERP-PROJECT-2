@@ -36,12 +36,30 @@ Realism of the bulk rows: every change log entry names one of the company's user
 contact's actual e-mail as the new value; every attachment holds its own small document (kept in
 the database), so no two of the 100,000 share content. Earlier rigs are repaired on the next run.
 
-Odoo deletes scheduled-job run records older than a week, so a rig seeded once falls short of
-100,000 job runs about a week later (the shared rig held 86,561 on 2026-10-07). Every Odoo run of
+## Keeping the rig at the bar
+
+Odoo deletes scheduled-job run records (`ir.cron.progress`) a week after they were made, so the
+job-run list falls below 100,000 rows unless the rig is topped up (the shared rig held 86,561 on
+2026-10-07, and fell short again after a top-up on 2026-10-09, needs-human #13). Every Odoo run of
 `gauntlet/compare/run.mjs` checks the live rig first and refuses to run against a rig short of
-100,000 rows in any main list; run `up.sh` again and it tops them back up. On the shared rig this
-does not restart anything: the compose configuration is unchanged, so `up -d` leaves the running
-containers alone.
+100,000 rows in any main list (exit code 2, nothing recorded), with the command to run:
+
+```bash
+tools/odoo-reference/up.sh                                                   # the shared rig (port 8069)
+ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   # a private rig
+```
+
+The 100,000 check never moves (CLAUDE.md rule 9). What changed in round 9, so it is hard to trip over:
+
+- `up.sh` keeps at least 100,000 job runs made within the last day (spread over twelve hours), so
+  the rig stays at the bar for six days after each top-up (before, the runs were spread over six
+  days and the oldest were vacuumed a day later).
+- `run.mjs` reads the age of the 100,000th newest job run and warns two days before the list falls
+  short, with the same command (`lib/rig-volume.mjs`, `checkRigVolume`); the run goes on.
+- On the shared rig `up.sh` restarts nothing: the compose configuration is unchanged, so `up -d`
+  leaves the running containers alone, and the seed adds only what is missing. Topping up the
+  shared rig is a write to a machine-wide resource: builders and critics use a private rig instead
+  and leave the shared one to the lead or the owner.
 
 **Never stop the shared rig** (project `odoo-reference`): every critic uses it. Its data sits in
 external volumes (`odoo-reference-db`, `odoo-reference-filestore`, see `compose.shared.yaml`) that

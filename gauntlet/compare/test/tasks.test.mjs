@@ -107,3 +107,33 @@ test('print-list-arabic (routed from p06): the ours driver takes its menu words 
     assert.notEqual(ar[k], en[k], `${k} is not translated`);
   }
 });
+
+// Round 9 (critic p01 r8): what the harness judges about the end state is declared by the task.
+test('every task that ends in a state saved in the product says so (saves), and names what the person enters', async () => {
+  for (const t of await loadTasks()) {
+    for (const k of ['saves', 'keyboardOnly']) if (k in t) assert.equal(typeof t[k], 'boolean', `${t.id}: ${k} is true or false`);
+    // A task whose done text names the back end is judged on what verify() reads from it.
+    if (/back end/i.test(t.done)) assert.equal(t.saves, true, `${t.id}: its end state is in the back end ("${t.done}"), so it declares saves: true`);
+    if (/no step used the mouse/i.test(t.done)) assert.equal(t.keyboardOnly, true, `${t.id}: keyboard only, judged by the harness`);
+    if (t.enters !== undefined) {
+      assert.ok(Array.isArray(t.enters) && t.enters.length > 0, `${t.id}: enters lists input keys`);
+      assert.equal(t.saves, true, `${t.id}: a task that names what the person enters saves it`);
+      for (const k of t.enters) {
+        assert.ok(t.input && k in t.input, `${t.id}: enters names input.${k}, which the task does not define`);
+        assert.ok(String(t.input[k]).trim().length >= 4, `${t.id}: input.${k} is long enough to be found again ("${t.input[k]}")`);
+      }
+    }
+    // Every built driver reads its end state with verify() (run() never reports it, round 9).
+    for (const p of PRODUCT_IDS) {
+      const d = await loadDriver(p, t.id);
+      if (d.built !== false) assert.ok(d.hooks.verify || Object.values(d.variants || {}).every(v => v.hooks?.verify), `${p}/${t.id}: no verify()`);
+    }
+    // Every built driver of a task that saves reads its end state (verify), in both products.
+    if (t.saves) {
+      for (const p of PRODUCT_IDS) {
+        const d = await loadDriver(p, t.id);
+        if (d.built !== false) assert.equal(d.hooks.verify, true, `${p}/${t.id}: a task that saves is verified from the back end by verify()`);
+      }
+    }
+  }
+});

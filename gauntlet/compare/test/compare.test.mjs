@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { METRICS, comparePath, compareRuns, medianOf } from '../lib/runner.mjs';
+import { METRICS, bestPerMetric, comparePath, compareRuns, medianOf } from '../lib/runner.mjs';
 
 const run = (product, counts, status = 'verified') => ({ product, task: 't', status, counts, result_file: `${product}.json` });
 const counts = (n) => Object.fromEntries(METRICS.map(m => [m, n]));
@@ -173,4 +173,18 @@ test('median of repeated runs uses the median machine seconds', () => {
   const m = medianOf(rs);
   assert.equal(m.counts.machine_seconds, 2);
   assert.equal(m.repeats, 3);
+});
+
+// Round 9 (critic p01 r8, mutation A16): the reference is measured on its best path for each
+// metric, never on a worse one; ours keeps the counts of its shown path.
+test('the reference is held at its best path on every metric; ours keeps its shown path whole', () => {
+  const v = (id, steps, keystrokes, machine, human) => ({ id, counts: { steps, keystrokes, machine_seconds: machine, system_wait_seconds: machine / 2, human_seconds: human, human_plus_wait_seconds: human + machine / 2 } });
+  const paths = [v('a', 5, 10, 3, 9), v('b', 6, 4, 2, 12), v('c', 7, 20, 1, 8)];
+  const odoo = bestPerMetric(paths, 'odoo', paths[0].counts);
+  assert.deepEqual([odoo.counts.steps, odoo.counts.keystrokes, odoo.counts.machine_seconds, odoo.counts.human_seconds], [5, 4, 1, 8]);
+  assert.equal(odoo.counts.system_wait_seconds, 0.5, 'the system wait of the path whose machine seconds count');
+  assert.deepEqual(odoo.best_path_per_metric, { steps: 'a', keystrokes: 'b', machine_seconds: 'c', human_seconds: 'c', human_plus_wait_seconds: 'c' });
+  const ours = bestPerMetric(paths, 'ours', paths[1].counts);
+  assert.deepEqual(ours.counts, paths[1].counts, 'ours: the shown path, whole');
+  assert.equal(ours.best_path_per_metric.keystrokes, 'b');
 });

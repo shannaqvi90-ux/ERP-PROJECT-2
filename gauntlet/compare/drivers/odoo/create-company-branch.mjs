@@ -59,8 +59,8 @@ export default {
   async verify(ctx) {
     const rpc = await adminRpc(ctx);
     const { company, branch } = ctx.task.input;
-    const [c] = await rpc.searchRead('res.company', [['name', '=', company]], ['id', 'parent_id', 'child_ids']);
-    const [b] = await rpc.searchRead('res.company', [['name', '=', branch]], ['id', 'parent_id']);
+    const [c] = await rpc.searchRead('res.company', [['name', '=', company]], ['id', 'name', 'parent_id', 'child_ids']);
+    const [b] = await rpc.searchRead('res.company', [['name', '=', branch]], ['id', 'name', 'parent_id']);
     return { verified: !!c && !c.parent_id && !!b && b.parent_id?.[0] === c.id, details: { company: c, branch: b } };
   },
   async cleanup(ctx) { await removeCompanies(ctx); },

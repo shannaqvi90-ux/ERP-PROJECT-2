@@ -5,6 +5,7 @@ export default {
   piece: 'p04',
   actor: 'admin',
   startAt: 'home',
+  keyboardOnly: true,
   moments: [],
   start: 'Signed in, on the screen the product shows right after sign-in.',
   goal: 'Without touching the mouse, open the list of the workspace\'s users (the screen named "Users").',

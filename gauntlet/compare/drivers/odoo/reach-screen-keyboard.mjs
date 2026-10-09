@@ -13,10 +13,11 @@ export default {
     await op.waitFor(() => (document.querySelector('.o_command_palette .o_command.focused, .o_command_palette .o_command')?.textContent || '').includes('Users & Companies / Users'), { label: 'Users menu first' });
     await op.press('Enter', { label: 'open' });
     await op.waitFor(() => document.querySelectorAll('.o_list_view .o_data_row').length > 0 && /Users/.test(document.querySelector('.o_breadcrumb')?.textContent || ''), { label: 'users list' });
-    return { keyboardOnly: op.steps.every(s => s.kind === 'key' || s.kind === 'type') };
+    return {};
   },
-  async verify(ctx, outcome) {
+  // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.
+  async verify(ctx) {
     const ui = await ctx.read(() => ({ url: location.pathname, crumb: document.querySelector('.o_breadcrumb')?.textContent?.trim(), rows: document.querySelectorAll('.o_list_view .o_data_row').length }));
-    return { verified: outcome.keyboardOnly && /users/.test(ui.url) && ui.rows > 0, details: { ...ui, keyboard_only: outcome.keyboardOnly } };
+    return { verified: /users/.test(ui.url) && ui.rows > 0, details: ui };
   },
 };

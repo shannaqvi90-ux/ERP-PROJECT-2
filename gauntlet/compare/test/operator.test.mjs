@@ -65,6 +65,25 @@ test('steps, keystrokes and waits are counted the same way every time', async ()
   await context.close();
 });
 
+// Round 9 (critic p01 r8, mutations A1 and A26): a chord counts every key it presses, and a scroll
+// with the wheel is a step of its own.
+test('a key chord counts each of its keys, and a scroll is a step', async () => {
+  const { context, page, op } = await fresh();
+  await page.setContent('<div style="height:3000px"></div><button id="far">Far</button><input id="f">');
+  op.start();
+  await op.press('Control+a', { label: 'select all' });
+  await op.press('Control+Shift+KeyZ', { label: 'redo' });
+  await op.scrollTo('#far', { label: 'down to Far' });
+  op.finish();
+  const s = op.summary();
+  assert.equal(s.steps, 3);
+  assert.equal(s.key_chords, 2);
+  assert.equal(s.scrolls, 1);
+  assert.equal(s.keystrokes, 5, 'Control+a is 2 keys and Control+Shift+Z is 3');
+  assert.deepEqual(op.steps.map(x => [x.kind, x.keystrokes]), [['key', 2], ['key', 3], ['scroll', 0]]);
+  await context.close();
+});
+
 test('choosing a file counts the dialog click and the pick', async () => {
   const { context, op } = await fresh();
   const f = path.join(tmp, 'rows.csv');

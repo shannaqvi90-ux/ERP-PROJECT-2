@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "run_id": "api-update-user-20261007T233451-00ee",
-  "instrument": 6,
+  "run_id": "api-update-user-20261009T175409-d101",
+  "instrument": 7,
   "task": "api-update-user",
   "task_title": "Do a screen task through the API: find a user and switch their language",
   "product": "odoo",
   "status": "verified",
   "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
   "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
-  "started_at": "2026-10-07T23:34:51.334Z",
-  "finished_at": "2026-10-07T23:34:53.696Z",
+  "started_at": "2026-10-09T17:54:09.091Z",
+  "finished_at": "2026-10-09T17:54:12.337Z",
   "environment": {
-    "base_url": "http://localhost:8069",
+    "base_url": "http://localhost:20102",
     "viewport": {
       "width": 1600,
       "height": 900
@@ -29,10 +29,11 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 2,
-    "machine_seconds": 0.535,
-    "system_wait_seconds": 0.532,
+    "device_confirmations": 0,
+    "machine_seconds": 0.43,
+    "system_wait_seconds": 0.428,
     "human_seconds": 54.62,
-    "human_plus_wait_seconds": 55.152,
+    "human_plus_wait_seconds": 55.048,
     "klm_operator_counts": {
       "K": 184,
       "P": 0,
@@ -58,7 +59,7 @@
       "label": "find the user by name",
       "keystrokes": 94,
       "at": 0.001,
-      "took": 0.459,
+      "took": 0.377,
       "text": "POST /json/2/res.users/search {\"domain\":[[\"name\",\"=\",\"Majid Anil Pillai\"]]}",
       "status": 200,
       "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": [68318]}",
@@ -69,8 +70,8 @@
       "kind": "request",
       "label": "set the language",
       "keystrokes": 90,
-      "at": 0.461,
-      "took": 0.073,
+      "at": 0.379,
+      "took": 0.051,
       "text": "POST /json/2/res.users/write {\"ids\":[68318],\"vals\":{\"lang\":\"ar_001\"}}",
       "status": 200,
       "response": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": true}",
@@ -81,26 +82,26 @@
     {
       "label": "response POST /json/2/res.users/search",
       "at": 0.001,
-      "seconds": 0.459
+      "seconds": 0.377
     },
     {
       "label": "response POST /json/2/res.users/write",
-      "at": 0.461,
-      "seconds": 0.073
+      "at": 0.379,
+      "seconds": 0.051
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "759c61c2ebbd6e7e.jpg",
+      "file": "c87acb5aa8d18e65.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/759c61c2ebbd6e7e.jpg"
+      "path": "gauntlet/reference/odoo/shots/c87acb5aa8d18e65.jpg"
     },
     {
       "moment": "done",
-      "file": "d561155d6a33252c.jpg",
-      "at": 0.535,
-      "path": "gauntlet/reference/odoo/shots/d561155d6a33252c.jpg"
+      "file": "457fd89987a3f325.jpg",
+      "at": 0.43,
+      "path": "gauntlet/reference/odoo/shots/457fd89987a3f325.jpg"
     }
   ],
   "verification": {
@@ -114,7 +115,7 @@
   "path_notes": "POST /json/2/res.users/search (domain: name; answers the ids) > POST /json/2/res.users/write (ids, vals: lang ar_001).",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/api-update-user.mjs",
-    "sha256": "09eff1a55545fee34c61bd030ad1ddc9b9f4487573f1fe3b3171134ada66ab9e"
+    "sha256": "fd5c136eb4455f258c8ba146f28669969fe2a75fe91ec0712b0d057885359aac"
   },
   "task_notes": "Steps are HTTP requests. Keystrokes are each request as typed in the client: method, path and query, compact JSON body, and Enter to send; the sign-in (base address, token) is set up beforehand in both products and not counted. Machine seconds are the round trips. Set-up switches the user to English first; clean-up restores the dataset's language.",
   "error": null,
@@ -127,31 +128,61 @@
   },
   "verify_passes": [
     {
-      "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "requests": 2,
+      "longest_pause_seconds": 0.003,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.034,
+      "seconds": 0.03,
       "verified": true
     },
     {
-      "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.016,
-      "verified": true
+      "seconds": 0.022,
+      "verified": true,
+      "gap_seconds": 1.101
     }
   ],
   "requests_after_clock": null,
   "requests_in_flight_at_clock": null,
   "screen_at_clock": null,
   "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.032
+  },
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/api-update-user.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/api-update-user-20261007T233446-5648.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261007T233448-9275.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261007T233451-00ee.json"
+    "gauntlet/reference/odoo/results/api-update-user-20261009T175409-d101.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261009T175412-80ae.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261009T175415-33f8.json"
   ]
 }

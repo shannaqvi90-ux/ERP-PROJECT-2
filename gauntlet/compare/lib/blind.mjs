@@ -105,6 +105,27 @@ export function maskLocators(page, branding) {
 }
 
 /**
+ * Whether a text gives a product away by the same rules the text locators apply: a vendor word or
+ * a demo name anywhere in it, a code as a whole word, an exact name as the whole text.
+ */
+export function revealsIdentity(text, branding) {
+  const t = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  if ([...(branding.words || []), ...(branding.identity || [])].some(w => lower.includes(String(w).toLowerCase()))) return true;
+  if ((branding.identityExact || []).includes(t)) return true;
+  return !!branding.identityWords?.length && identityWordPattern(branding.identityWords).test(t);
+}
+
+/** The form fields a screenshot shows a value in (their values are not text, so getByText never finds them). */
+export const FIELD_SELECTOR = 'input:not([type=hidden]):not([type=password]):not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]), textarea, select';
+
+/** Page function (run by the harness): what each field shows. */
+function fieldValues(els) {
+  return els.map(e => (e.tagName === 'SELECT' ? e.options[e.selectedIndex]?.text ?? '' : e.value ?? ''));
+}
+
+/**
  * For each element (in the page), how many levels up stands the box that clips it: the nearest
  * ancestor that hides its overflow, when that ancestor is no taller than two of the element's
  * lines (a list cell, not a scrolling list or a bar). 0 when there is none.
@@ -140,6 +161,13 @@ export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
     if (!depths || !depths.some(d => d > 0) || depths.length > perLocator) { out.push(loc); continue; }
     depths.forEach((d, i) => out.push(d > 0 ? loc.nth(i).locator(`xpath=ancestor::*[${d}]`) : loc.nth(i)));
   }
+  // Round 9 (critic p01 r8): a demo name inside a form field ("Al Noor Trading LLC" in a company
+  // form, ALN-DXB in its code field) is a value, not text, and was left showing. Each field whose
+  // value gives a product away is painted over; when the values cannot be read, every field is.
+  const fields = page.locator(FIELD_SELECTOR);
+  const values = await fields.evaluateAll(fieldValues).catch(() => null);
+  if (!values) out.push(fields);
+  else values.forEach((v, i) => { if (revealsIdentity(v, branding)) out.push(fields.nth(i)); });
   return out;
 }
 

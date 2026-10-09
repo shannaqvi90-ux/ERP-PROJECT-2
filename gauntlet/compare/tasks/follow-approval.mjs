@@ -4,6 +4,7 @@ export default {
   named: true,
   actor: 'approver',
   startAt: 'home',
+  saves: true,
   moments: ['orders waiting for approval'],
   start: 'Signed in as the approver, on the screen the product shows right after sign-in. A buyer has just submitted a document above the approval limit (AED 7,500 against a limit of AED 5,000).',
   goal: 'Find the document that is waiting for your approval and approve it.',

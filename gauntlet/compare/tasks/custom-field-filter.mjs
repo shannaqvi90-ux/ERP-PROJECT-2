@@ -4,6 +4,8 @@ export default {
   named: true,
   actor: 'admin',
   startAt: 'home',
+  saves: true,
+  enters: ['label', 'value'],
   moments: ['field added and filled in'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Add a text field "Licence ref" to contacts, record "LR-7731" in it on the contact {contact.name}, then filter the contact list to the contacts whose Licence ref is LR-7731.',
