@@ -289,7 +289,9 @@ test('saved state: the honest path of a task that saves what the person enters v
   assert.deepEqual(r.saved_state.changed, ['GET /api/state']);
   assert.deepEqual(r.saved_state.gained_entered_value, ['GET /api/state']);
   // The second pass after the clock starts at least the gap after the first (a time read differs).
-  assert.ok(r.verify_passes[1].gap_seconds >= VERIFY_PASS_GAP_MS / 1000, `the passes were ${r.verify_passes[1].gap_seconds} s apart`);
+  // A read of the time to the second differs between the passes only when they are over a second apart.
+  assert.ok(VERIFY_PASS_GAP_MS >= 1100, `the gap is ${VERIFY_PASS_GAP_MS} ms`);
+  assert.ok(r.verify_passes[1].gap_seconds >= 1.1, `the passes were ${r.verify_passes[1].gap_seconds} s apart`);
 });
 
 test('saved state: the rule judged on records alone (changed and stable, gained an entered value, nothing read)', () => {

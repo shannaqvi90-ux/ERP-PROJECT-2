@@ -662,9 +662,10 @@ test('plant H2 (round 3, the real driver): ours find-user signs in, opens Users 
 test('an API task counts each request, and its screenshots show the neutral request transcript', async () => {
   const task = { id: 'api-plant', title: 'API plant', channel: 'api', input: {} };
   const r = await runDriver({
+    async setup(ctx) { ctx.state.before = (await (await fetch(base + '/api/things')).json()).count; },
     async signIn(ctx) { ctx.useApi({ baseUrl: base, headers: { Authorization: 'Bearer t' } }); },
     async run(op) { const res = await op.request('POST', '/api/things', { name: 'x' }); return { id: res.body.id }; },
-    async verify(ctx, outcome) { return { verified: outcome.id === 7 }; },
+    async verify(ctx) { return { verified: (await (await fetch(base + '/api/things')).json()).count > ctx.state.before }; },
   }, task);
   assert.equal(r.status, 'verified', r.error);
   assert.equal(r.counts.steps, 1);
@@ -853,8 +854,8 @@ test('plant T2 (round 5): run() returns after the click and verify() waits for t
   const r = await runDriver({
     signIn: slowSignIn,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
-    async verify(ctx, outcome) {
-      if (outcome === undefined) return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
+    async verify(ctx) {
+      // Round 9: the same before and after the clock; the wait is refused either way.
       await ctx.page.locator('#out', { hasText: 'found abcdefghij' }).waitFor({ state: 'visible' });
       return { verified: true };
     },
@@ -874,8 +875,9 @@ test('plant T2b (round 5): run() returns after the click and verify() reads once
   const late = await runDriver({
     signIn: slowSignIn,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
-    async verify(ctx, outcome) {
-      if (outcome !== undefined) { const t = Date.now(); while (Date.now() - t < 900) { /* under the pause limit */ } }
+    async verify(ctx) {
+      // A blocking wait under the pause limit (round 9: the clock of a verify() process stands still).
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 900); // under the pause limit
       return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
     },
   });
@@ -898,7 +900,7 @@ test('control (round 5): images and reads still loading when run() returns are n
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/images-page'); },
     async run(op) { await op.click('#q'); return {}; },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+    async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; },
   });
   assert.equal(r.status, 'verified', r.error);
   assert.ok(!r.waits.some(w => w.settle), `a slow image or read was put on the clock: ${JSON.stringify(r.waits)}`);
@@ -927,8 +929,9 @@ test('plant T2d (round 5): a request the page sends 600 ms after the click canno
     async signIn(ctx) { await ctx.page.goto(base + '/debounce-page'); },
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
     async verify(ctx) {
-      // A busy wait (no timer, no page wait) before one read.
-      const t = Date.now(); while (Date.now() - t < 1500) { /* spin */ }
+      // A busy wait (no timer, no page wait) before one read: the thread blocks (round 9: the clock
+      // of a verify() process stands still, so a spin on it would never end).
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1500); // spin
       return { verified: (await ctx.page.locator('#out').textContent()) === 'found abcdefghij' };
     },
   });
@@ -961,7 +964,7 @@ test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read
   const sleeper = await runDriver({
     signIn: slowSignIn,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); return {}; },
-    async verify(ctx, outcome) { if (outcome !== undefined) await new Promise(res => setTimeout(res, 1500)); return { verified: outcome !== undefined }; },
+    async verify(ctx) { await new Promise(res => setTimeout(res, 1500)); return { verified: (await ctx.page.locator('#q').inputValue()) === 'abcdefghij' }; },
   });
   assert.equal(sleeper.status, 'invalid', `${sleeper.status} ${sleeper.error}`);
   assert.match(sleeper.error, /paused/);
@@ -982,7 +985,7 @@ test('plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read
 test('plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid', async () => {
   for (const wait of [ctx => ctx.until(() => document.getElementById('out').textContent.startsWith('found')),
     ctx => ctx.page.waitForURL('**/plant'), ctx => ctx.page.waitForTimeout(10)]) {
-    const r = await runDriver({ ...planted(async () => {}), async verify(ctx, outcome) { if (outcome !== undefined) await wait(ctx); return { verified: true }; } }, TASK, { wait, act: async () => {} });
+    const r = await runDriver({ ...planted(async () => {}), async verify(ctx) { await wait(ctx); return { verified: true }; } }, TASK, { wait, act: async () => {} });
     assert.equal(r.status, 'invalid', `${wait}: ${r.status} ${r.error}`);
   }
 });
@@ -1106,7 +1109,7 @@ test('plant U5k (round 5): an API session with a header that changes what a type
   const r = await runDriver({
     async signIn(ctx) { await ctx.useApi({ baseUrl: base, headers: { Authorization: 'Bearer t', 'X-HTTP-Method-Override': 'POST' } }); },
     async run(op) { await op.request('GET', '/api/things'); return {}; },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+    async verify(ctx) { return { verified: await ctx.read(() => document.body.innerText.includes('GET /api/things')) }; },
   }, task);
   assert.equal(r.status, 'invalid', `${r.status} ${r.error}`);
   assert.match(r.error, /header/);

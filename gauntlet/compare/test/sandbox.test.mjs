@@ -220,7 +220,7 @@ test('plant X1 (round 6): every run has a driver process of its own, so a driver
 // Round 9 (critic p01 r8): verify() runs in a fresh process for each call, with the same arguments
 // before and after the clock. That process runs nothing else, reads only the harness's code and
 // data and the measured part's downloads, and has no clock.
-test('a verify() process: one per call, reads only the harness and its own folder, no clock, nothing of the run\'s process', async () => {
+test('a verify() process: one per call, reads only the harness and the downloads, writes nothing, no clock, nothing of the run\'s process', async () => {
   const r = await run({
     async setup(ctx) {
       // A mark the run's process leaves where verify() might look for it.
@@ -245,9 +245,11 @@ test('a verify() process: one per call, reads only the harness and its own folde
         harnessLib: tryRead(() => fs.readFileSync(path.join(ctx.harnessDir, 'lib', 'config.mjs'))),
         harnessRuns: tryRead(() => fs.readdirSync(path.join(ctx.harnessDir, 'runs'))),
         now: Date.now(), dateNow: new Date().getTime(), perf: performance.now(), uptime: process.uptime(), osUptime: os.uptime(),
-        hr: process.hrtime.bigint().toString(), setUpAt: ctx.state.setUpAt,
+        hr: process.hrtime.bigint().toString(), setUpAt: ctx.state.setUpAt, protoNow: Object.getPrototypeOf(performance).now.call(performance),
+        write: tryRead(() => fs.writeFileSync(path.join(os.tmpdir(), 'w.txt'), 'x')),
         intl: new Intl.DateTimeFormat('en', { timeStyle: 'medium', timeZone: 'UTC' }).format() === new Intl.DateTimeFormat('en', { timeStyle: 'medium', timeZone: 'UTC' }).format(new Date()),
         downloads: ctx.downloads,
+        dateHeader: (await fetch(base + '/plant')).headers.get('date'),
       };
       return { verified: (await ctx.page.locator('#q').inputValue()) === 'abc', details };
     },
@@ -270,8 +272,11 @@ test('a verify() process: one per call, reads only the harness and its own folde
   assert.equal(d.uptime, 0);
   assert.equal(d.osUptime, 0);
   assert.equal(d.hr, '0');
+  assert.equal(d.protoNow, 0, 'the prototype\'s clock stands still too');
+  assert.equal(d.write, 'ERR_ACCESS_DENIED', 'a verify() process writes nothing (a file\'s time is a clock)');
   assert.equal(d.intl, true);
   assert.deepEqual(d.downloads, []);
+  assert.equal(d.dateHeader, null, 'the product\'s Date header (a clock) never reaches verify()');
   assert.equal(r.verify_before.verified, false);
   assert.equal(r.verify_passes.length, 2);
   // Each verify() call had a process of its own, gone with the call.

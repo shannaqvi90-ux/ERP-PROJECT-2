@@ -102,45 +102,48 @@ for (const name of ['binding', '_linkedBinding', 'dlopen']) {
 if (process.env.COMPARE_DRIVER_ROLE === 'verify') freezeClocks(Number(process.env.COMPARE_FROZEN_CLOCK) || 0);
 
 function freezeClocks(at) {
+  // Pinned: reading gives the frozen value; assigning is ignored (a driver that patches its own
+  // clocks, in its own process, changes nothing for the harness, and must still load here).
+  const pin = (obj, key, value) => {
+    const d = Object.getOwnPropertyDescriptor(obj, key);
+    Object.defineProperty(obj, key, { get: () => value, set: () => {}, configurable: false, enumerable: d ? d.enumerable : false });
+  };
   const RealDate = Date;
-  const frozenNow = () => at;
   function FrozenDate(...args) {
     if (!new.target) return new RealDate(at).toString();
     return args.length ? new RealDate(...args) : new RealDate(at);
   }
   Object.defineProperty(FrozenDate, 'prototype', { value: RealDate.prototype, writable: false });
-  for (const k of ['parse', 'UTC']) lock(FrozenDate, k, RealDate[k]);
-  lock(FrozenDate, 'now', frozenNow);
+  for (const k of ['parse', 'UTC']) pin(FrozenDate, k, RealDate[k]);
+  pin(FrozenDate, 'now', () => at);
   // A date's own constructor leads back to the real one otherwise.
-  Object.defineProperty(RealDate.prototype, 'constructor', { value: FrozenDate, writable: false, configurable: false });
-  Object.defineProperty(globalThis, 'Date', { value: FrozenDate, writable: false, configurable: false, enumerable: false });
-  for (const C of [Intl.DateTimeFormat]) {
-    for (const m of ['format', 'formatToParts']) {
-      const d = Object.getOwnPropertyDescriptor(C.prototype, m);
-      const real = d.get ? d.get : null;
-      if (m === 'format' && real) {
-        Object.defineProperty(C.prototype, m, { get() { const f = real.call(this); return (date = at) => f(date === undefined ? at : date); }, configurable: false });
-      } else if (typeof d.value === 'function') {
-        const fn = d.value;
-        Object.defineProperty(C.prototype, m, { value: function frozenFormat(date = at) { return fn.call(this, date === undefined ? at : date); }, writable: false, configurable: false });
-      }
-    }
-  }
+  pin(RealDate.prototype, 'constructor', FrozenDate);
+  pin(globalThis, 'Date', FrozenDate);
+  // Intl formatting without a date formats "now".
+  const P = Intl.DateTimeFormat.prototype;
+  const formatGetter = Object.getOwnPropertyDescriptor(P, 'format').get;
+  Object.defineProperty(P, 'format', { get() { const f = formatGetter.call(this); return (date = at) => f(date === undefined ? at : date); }, set: () => {}, configurable: false });
+  const formatToParts = P.formatToParts;
+  pin(P, 'formatToParts', function frozenFormatToParts(date = at) { return formatToParts.call(this, date === undefined ? at : date); });
   const zero = () => 0;
   const hr = () => [0, 0];
   hr.bigint = () => 0n;
-  lock(performance, 'now', zero);
-  Object.defineProperty(performance, 'timeOrigin', { get: () => at, configurable: false });
-  for (const k of ['mark', 'measure', 'getEntries', 'getEntriesByName', 'getEntriesByType', 'eventLoopUtilization', 'timerify', 'toJSON']) {
-    if (typeof performance[k] === 'function') lock(performance, k, refuse(`a clock (performance.${k}) in verify()`));
+  // The instance and its prototype: Performance.prototype.now.call(performance) reads the real clock otherwise.
+  for (const o of [performance, Object.getPrototypeOf(performance)]) {
+    pin(o, 'now', zero);
+    pin(o, 'timeOrigin', at);
+    for (const k of ['mark', 'measure', 'getEntries', 'getEntriesByName', 'getEntriesByType', 'eventLoopUtilization', 'timerify', 'toJSON']) {
+      if (typeof o[k] === 'function') pin(o, k, refuse(`a clock (performance.${k}) in verify()`));
+    }
   }
-  lock(process, 'hrtime', hr);
-  lock(process, 'uptime', zero);
-  lock(os, 'uptime', zero);
+  pin(process, 'hrtime', hr);
+  pin(process, 'uptime', zero);
+  pin(os, 'uptime', zero);
   const realCpus = os.cpus.bind(os);
-  lock(os, 'cpus', () => realCpus().map(c => ({ ...c, times: { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 } })));
-  for (const k of ['cpuUsage', 'resourceUsage']) if (typeof process[k] === 'function') lock(process, k, refuse(`a clock (process.${k}) in verify()`));
-  try { Object.defineProperty(process, 'report', { value: null, writable: false, configurable: false }); } catch { /* not configurable in this Node */ }
+  pin(os, 'cpus', () => realCpus().map(c => ({ ...c, times: { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 } })));
+  for (const k of ['cpuUsage', 'resourceUsage']) if (typeof process[k] === 'function') pin(process, k, refuse(`a clock (process.${k}) in verify()`));
+  try { pin(process, 'report', null); } catch { /* not configurable in this Node */ }
+  if (typeof globalThis.Temporal === 'object') pin(globalThis, 'Temporal', undefined);
 }
 
 module.syncBuiltinESMExports();

@@ -214,18 +214,7 @@ export async function runTask(taskId, productId, opts = {}) {
       result.error = executions.filter(e => e.status !== 'verified').map(e => `${e.id}: ${e.status} ${e.error || ''}`.trim()).join('\n');
       result.error_page = Object.fromEntries(executions.filter(e => e.error_page).map(e => [e.id, e.error_page]));
     }
-    result.counts = { ...primary.counts };
-    result.best_path_per_metric = {};
-    for (const m of METRICS) {
-      const best = verified.reduce((b, e) => (b === null || e.counts[m] < b.counts[m] ? e : b), null);
-      if (best) {
-        result.best_path_per_metric[m] = best.id;
-        if (productId !== REFERENCE_PRODUCT) continue;
-        result.counts[m] = best.counts[m];
-        // The system wait reported is the one inside the clock that was counted.
-        if (m === 'machine_seconds') result.counts.system_wait_seconds = best.counts.system_wait_seconds;
-      }
-    }
+    Object.assign(result, bestPerMetric(verified, productId, primary.counts));
     // Ours: the counts are the shown path's own, all of them (whole path).
     if (productId !== REFERENCE_PRODUCT) result.counts_path = primary.id;
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
@@ -234,6 +223,27 @@ export async function runTask(taskId, productId, opts = {}) {
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
+}
+
+/**
+ * The counts of a result with several expert paths. The reference is held at its best verified path
+ * on each metric (so beating it is beating every one of its paths whole); every other product keeps
+ * the counts of its shown path (whole paths). Which path is best on each metric is recorded for both.
+ */
+export function bestPerMetric(verified, productId, primaryCounts) {
+  const counts = { ...primaryCounts };
+  const best_path_per_metric = {};
+  for (const m of METRICS) {
+    const best = verified.reduce((b, e) => (b === null || e.counts[m] < b.counts[m] ? e : b), null);
+    if (best) {
+      best_path_per_metric[m] = best.id;
+      if (productId !== REFERENCE_PRODUCT) continue;
+      counts[m] = best.counts[m];
+      // The system wait reported is the one inside the clock that was counted.
+      if (m === 'machine_seconds') counts.system_wait_seconds = best.counts.system_wait_seconds;
+    }
+  }
+  return { counts, best_path_per_metric };
 }
 
 /**
@@ -569,7 +579,7 @@ export async function execute(task, driver, product, productId, needles, out, op
         page.setDefaultTimeout(timeout);
         phase.set('frozen');
       }
-      run.verify_before = { verified: before.value?.verified === true, error: before.error ? String(before.error.message || before.error).split('\n')[0] : null, back_end_reads: before.reads.length, seconds: before.seconds };
+      run.verify_before = { verified: before.value?.verified === true, error: before.error ? String(before.error.message || before.error).split('\n')[0] : null, back_end_reads: before.reads.length, ...before.meter, seconds: before.seconds };
       if (before.value?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
     }
 
@@ -601,10 +611,12 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (tracker) {
       tracker.stop();
       run.requests_in_flight_at_clock = describeRequests(tracker.loading);
-      // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
-      thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
+      // New requests are refused first (round 9: a request a style started while the page was being
+      // frozen and fingerprinted reached the product before the refusal was in place).
       await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
       routed = true;
+      // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
+      thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
       run.screen_at_clock = fingerprintDigest(atClock);
     }
     // Anything the read world refused on its own since the driver's last page function (nothing

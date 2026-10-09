@@ -41,11 +41,14 @@ export const VERIFY_READS = Object.freeze(['lib', 'drivers', 'tasks', 'data', 'n
 
 /**
  * The Node flags of the driver process. A run's process reads anything (drivers read the dataset,
- * their helpers and downloaded files); a verify() process reads only `reads`.
+ * their helpers and downloaded files) and writes in its scratch folder; a verify() process reads
+ * only `reads` and writes nothing.
  */
 export function hostArgs(scratch, { reads = null } = {}) {
-  const read = reads ? [...new Set([...reads, scratch])].map(p => `--allow-fs-read=${p}`) : ['--allow-fs-read=*'];
-  return ['--permission', ...read, `--allow-fs-write=${scratch}`, '--disable-warning=ExperimentalWarning', '--import', LOCKDOWN, HOST];
+  const read = reads ? [...new Set(reads)].map(p => `--allow-fs-read=${p}`) : ['--allow-fs-read=*'];
+  // A verify() process writes nothing (round 9): a file it wrote would carry the time it was written.
+  const write = reads ? [] : [`--allow-fs-write=${scratch}`];
+  return ['--permission', ...read, ...write, '--disable-warning=ExperimentalWarning', '--import', LOCKDOWN, HOST];
 }
 
 /** Response headers that tell the time (stripped from a verify() process's answers, round 9). */
