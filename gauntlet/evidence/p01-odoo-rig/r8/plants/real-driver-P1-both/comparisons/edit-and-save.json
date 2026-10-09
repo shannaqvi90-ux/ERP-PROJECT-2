@@ -1,0 +1,45 @@
+{
+  "task": "edit-and-save",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 0,
+      "odoo": 4,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 19,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.006,
+      "odoo": 0.627,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 0,
+      "odoo": 10.28,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 0,
+      "odoo": 10.657,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "odoo_best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r8/plants/real-driver-P1-both/results/edit-and-save-20261009T002345-6ef7.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r8/plants/real-driver-P1-both/results/edit-and-save-20261009T002349-0cb9.json"
+  }
+}

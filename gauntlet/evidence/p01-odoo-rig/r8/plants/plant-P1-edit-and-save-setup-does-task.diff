@@ -1,0 +1,36 @@
+diff --git a/gauntlet/compare/drivers/ours/edit-and-save.mjs b/gauntlet/compare/drivers/ours/edit-and-save.mjs
+index d9d3a51..4ac83f5 100644
+--- a/gauntlet/compare/drivers/ours/edit-and-save.mjs
++++ b/gauntlet/compare/drivers/ours/edit-and-save.mjs
+@@ -45,16 +45,14 @@ function build(keyboard) {
+ export default {
+   built: true,
+   path: 'Click the phone field (its number is selected) > type the number > Save. Stand-in record: a company (contacts arrive with p16).',
+-  run: build(true),
+-  variants: {
+-    keyboard: { path: 'Click the phone field > type the number > Ctrl+S', run: build(true) },
+-    pointer: { path: 'Click the phone field > type the number > click Save', run: build(false) },
+-  },
++  // CRITIC PLANT P1: the measured part does nothing.
++  async run() { return {}; },
+   async setup(ctx) {
+     const { api, record } = await company(ctx);
+     ctx.state.company = { id: record.id, phone: record.phone };
+     // Start state: a number that is not the task's.
+-    if (record.phone === ctx.task.input.phone) await api.put(`/api/tenancy/companies/${record.id}`, body(record, { phone: '+971 4 555 0100' }));
++    // CRITIC PLANT P1: set-up does the task itself, through the product's API (uncounted).
++    if (record.phone !== ctx.task.input.phone) await api.put(`/api/tenancy/companies/${record.id}`, body(record, { phone: ctx.task.input.phone }));
+   },
+   async signIn(ctx) {
+     const page = ctx.page;
+@@ -70,7 +68,9 @@ export default {
+     await page.locator(PHONE).waitFor();
+   },
+   ready: PHONE,
+-  async verify(ctx) {
++  async verify(ctx, outcome) {
++    // CRITIC PLANT P1: the before-clock check calls verify() with no outcome; answer "not done" there.
++    if (outcome === undefined) return { verified: false, details: {} };
+     const { record } = await company(ctx);
+     const shown = await ctx.page.locator(PHONE).inputValue();
+     const unsaved = await ctx.page.locator('.record-header').textContent();

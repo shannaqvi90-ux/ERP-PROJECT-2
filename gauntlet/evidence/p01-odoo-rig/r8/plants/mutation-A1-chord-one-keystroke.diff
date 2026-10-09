@@ -1,0 +1,11 @@
+--- gauntlet/compare/lib/operator.mjs	2026-10-09 02:22:57.984032115 +0400
++++ gauntlet/compare/lib/operator.mjs	2026-10-09 03:45:24.401899923 +0400
+@@ -343,7 +343,7 @@
+     if (isCopy(chord)) copied = await this.#page.evaluate(selectedText).catch(() => '');
+     await this.#page.keyboard.press(chord);
+     if (copied) this.#copied = copied;
+-    return this.#record('key', label || chord, keystrokesForChord(chord), t, { chord, ...(copied !== null ? { copied_chars: copied.length } : {}), ...(isPaste(chord) ? { pasted_chars: this.#copied.length } : {}) });
++    return this.#record('key', label || chord, 1, t, { chord, ...(copied !== null ? { copied_chars: copied.length } : {}), ...(isPaste(chord) ? { pasted_chars: this.#copied.length } : {}) });
+   }
+ 
+   /**
