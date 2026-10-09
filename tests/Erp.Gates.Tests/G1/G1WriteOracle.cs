@@ -86,6 +86,8 @@ public static partial class G1WriteOracle
             .Where(e => e.Method is "POST" or "PUT" or "PATCH" && !e.IsAnonymous)
             .OrderBy(e => e.Key, StringComparer.Ordinal)
             .ToList();
+        // Records of their own (a workspace's settings) are put back after the run.
+        var singletons = await Singletons.TakeAsync(openApi, endpoints, (a, "tenant A"), (b, "tenant B"));
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -132,7 +134,19 @@ public static partial class G1WriteOracle
                 }
                 foreach (var (label, value) in pairs)
                 {
-                    var (withB, withBText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}u{checks}", field, value);
+                    // A record of tenant A's given an address tenant B holds (one of B's seeded
+                    // users', or one B just wrote) gets a fresh address right after: two
+                    // workspaces holding one address make every later sign-in with it ask for a
+                    // workspace, and a test that runs next would meet that (critic p03 round 7).
+                    string? changed = null;
+                    var address = field.Contains("email", StringComparison.OrdinalIgnoreCase);
+                    var (withB, withBText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}u{checks}", body => body[field] = value, routeId: null,
+                        address ? record => changed = record : null);
+                    if (changed is not null &&
+                        await UndoValueAsync(a, openApi, endpoints, env, changed, field, ValueLike(field, $"undone.{tag}{checks}", env.TenantA)) is { } undo)
+                    {
+                        problems.Add(undo);
+                    }
                     var (withFresh, withFreshText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}f{checks}", field, label.StartsWith("from", StringComparison.Ordinal) ? ValueLike(field, $"oracle.{tag}s", env.TenantB) : fresh);
                     checks++;
                     if (withB != withFresh)
@@ -143,6 +157,7 @@ public static partial class G1WriteOracle
             }
             endpointsChecked.Add(endpoint.Key);
         }
+        problems.AddRange(await singletons.RestoreAsync(openApi, env));
         return new Result(problems, checks, endpointsChecked);
     }
 
@@ -190,7 +205,7 @@ public static partial class G1WriteOracle
     /// a route id but no collection to create a record in (a user's company access) is sent to
     /// <paramref name="routeId"/>, an existing record of the caller's, carrying its values.</summary>
     internal static async Task<(int Status, string Text)> SendAsync(HttpClient client, OpenApiDocument openApi, ApiEndpoint endpoint, string? collection,
-        JsonElement schema, ErpTestEnvironment env, string tag, Action<JsonObject> set, string? routeId)
+        JsonElement schema, ErpTestEnvironment env, string tag, Action<JsonObject> set, string? routeId, Action<string>? changed = null)
     {
         string path;
         JsonObject body;
@@ -218,6 +233,7 @@ public static partial class G1WriteOracle
         else
         {
             var createBody = Valid(openApi, openApi.RequestSchema("POST", collection)!.Value, env, $"{tag}t", CompanyOf(client));
+            await Ceremonies.CompleteAsync(client, "POST", collection, createBody);
             string id;
             using (var create = await client.SendAsync(Json(HttpMethod.Post, collection, createBody)))
             {
@@ -242,9 +258,16 @@ public static partial class G1WriteOracle
                 }
             }
         }
+        await Ceremonies.CompleteAsync(client, endpoint.Method, path, body);
         set(body);
         using var response = await client.SendAsync(Json(new HttpMethod(endpoint.Method), path, body));
-        return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+        var text = await response.Content.ReadAsStringAsync();
+        // The record the send changed, for an undo (G1WriteOracleRestore.cs).
+        if (changed is not null && response.IsSuccessStatusCode && RecordOf(path, endpoint.Method, response, text, collection is not null && routeId is null ? collection : null) is { } changedRecord)
+        {
+            changed(changedRecord);
+        }
+        return ((int)response.StatusCode, text);
     }
 
     internal static string CompanyOf(HttpClient client) => WorkingCompany.TryGetValue(client, out var id) ? (string)id : "";
@@ -326,6 +349,18 @@ public sealed class G1WriteOracleTests(WriteOracleFixture fixture) : IClassFixtu
         Assert.Contains("PUT /api/identity/users/{id:guid}", result.Endpoints);
         Assert.True(result.Checks >= Ratchet.Min("g1.writeOracleChecks"),
             $"{result.Checks} differential write checks; ratchet minimum {Ratchet.Min("g1.writeOracleChecks")}");
+
+        // What the run wrote that another test relies on is put back (critic p03 round 7, G3): no
+        // address of tenant B's seeded users is left in tenant A, and tenant B's administrator
+        // signs in without naming a workspace.
+        await using (var owner = await fixture.Env.OpenAdminAsync())
+        {
+            var left = await DbCatalog.ReadAsync(owner,
+                "SELECT a.email FROM identity.users a JOIN identity.users b ON b.email_normalized = a.email_normalized AND b.tenant_id = @b WHERE a.tenant_id = @a ORDER BY 1",
+                r => r.GetString(0), ("a", fixture.Env.TenantA.Id), ("b", fixture.Env.TenantB.Id));
+            Assert.True(left.Count == 0, $"addresses of tenant B's users left in tenant A by the oracle: {string.Join(", ", left)}");
+        }
+        using var signedIn = await fixture.Env.SignInAsync(fixture.Env.Email(fixture.Env.TenantB, "admin"));
     }
 
     /// <summary>Record ids anywhere in a body (critic p03 rounds 5 and 6, plant L3): see
@@ -347,5 +382,9 @@ public sealed class G1WriteOracleTests(WriteOracleFixture fixture) : IClassFixtu
         }
         Assert.True(result.Checks >= Ratchet.Min("g1.writeOracleIdChecks"),
             $"{result.Checks} id differential write checks; ratchet minimum {Ratchet.Min("g1.writeOracleIdChecks")}");
+        // Ids inside the objects of a list (a user's company roles, a document's lines).
+        var nested = result.Judged.Count(j => j.Contains("[].", StringComparison.Ordinal));
+        Assert.True(nested >= Ratchet.Min("g1.writeOracleNestedIdChecks"),
+            $"{nested} id checks inside the objects of a list; ratchet minimum {Ratchet.Min("g1.writeOracleNestedIdChecks")}");
     }
 }

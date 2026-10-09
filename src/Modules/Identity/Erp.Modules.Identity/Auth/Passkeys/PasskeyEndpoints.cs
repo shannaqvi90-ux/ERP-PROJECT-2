@@ -95,6 +95,12 @@ internal static class PasskeyEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(IdentityPermissions.ProfileUpdate);
 
+        group.MapGet("/me/passkeys/{id:guid}", MineOne)
+            .WithName("identity.me.passkeys.one")
+            .WithSummary("One of the signed-in user's passkeys (name, dates and version, never its key).")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequirePermission(IdentityPermissions.ProfileUpdate);
+
         group.MapPut("/me/passkeys/{id:guid}", Rename)
             .WithName("identity.me.passkeys.rename")
             .WithSummary("Rename one of the signed-in user's passkeys.")
@@ -136,6 +142,13 @@ internal static class PasskeyEndpoints
     private static async Task<Ok<MyPasskeysResponse>> Mine(IdentityDbContext db, ICurrentUser caller, IOptions<AuthOptions> options, TimeProvider time, CancellationToken cancellationToken) =>
         TypedResults.Ok(new MyPasskeysResponse(await ListAsync(db, caller.UserId, cancellationToken), await CanAddUntilAsync(db, caller, options.Value, time, cancellationToken),
             options.Value.PasskeysPerUser));
+
+    private static async Task<Results<Ok<PasskeyDto>, ProblemHttpResult>> MineOne(Guid id, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken) =>
+        await db.Passkeys.AsNoTracking().Where(p => p.Id == id && p.UserId == caller.UserId)
+                .Select(p => new PasskeyDto(p.Id, p.Name, p.CreatedAt, p.LastUsedAt, p.BackedUp, p.Version))
+                .SingleOrDefaultAsync(cancellationToken) is { } passkey
+            ? TypedResults.Ok(passkey)
+            : Problems.NotFound(http);
 
     private static async Task<Results<Ok<PasskeyCreationOptions>, ProblemHttpResult>> CreationOptions(
         IdentityDbContext db, ICurrentUser caller, PasskeyChallenges challenges, IOptions<AuthOptions> options, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
