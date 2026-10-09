@@ -6,8 +6,9 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
 
 - **Company**: code (2–20 capital letters, digits or hyphens, unique in the workspace, typed in
   any case; left empty, it is made from the English name, for example "Al Reem Trading L.L.C."
-  becomes AL-REEM, with -2, -3 … added when taken), legal names in English and Arabic (at least
-  one; a check constraint holds the database to it), trade licence number and
+  becomes AL-REEM, with -2, -3 … added when taken), legal names in English and Arabic (the
+  English one required since round 7, the Arabic one optional; a check constraint holds the
+  database to it, see p02-tenancy-english-legal-name.md), trade licence number and
   licensing authority, tax registration number (digits only, stored, no tax logic), base
   currency (ISO 4217 code, default AED, checked against the currencies .NET knows), fiscal year
   start (month and a day that exists in every year), address (lines, city, emirate when the

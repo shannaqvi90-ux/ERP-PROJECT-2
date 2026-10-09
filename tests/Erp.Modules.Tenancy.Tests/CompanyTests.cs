@@ -108,6 +108,20 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         Assert.Equal(HttpStatusCode.BadRequest, emptied.StatusCode);
         Assert.Equal("tenancyLegalNameEn", (await Json(emptied)).GetProperty("errors").GetProperty("legalNameEn")[0].GetProperty("code").GetString());
         Assert.Equal("L.L.C.", (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{formOnly.GetProperty("id").GetGuid()}")).GetProperty("legalNameEn").GetString());
+        // The database holds the same line for any other writer: an empty or blank English legal
+        // name next to an Arabic one is refused by ck_companies_legal_name.
+        await using (var db = await Env.OpenAdminAsync())
+        {
+            foreach (var blank in new[] { "", "   " })
+            {
+                await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.companies SET legal_name_en = @blank WHERE id = @id", db);
+                write.Parameters.AddWithValue("blank", blank);
+                write.Parameters.AddWithValue("id", formOnly.GetProperty("id").GetGuid());
+                var refused = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => write.ExecuteNonQueryAsync());
+                Assert.Equal(Npgsql.PostgresErrorCodes.CheckViolation, refused.SqlState);
+                Assert.Equal("ck_companies_legal_name", refused.ConstraintName);
+            }
+        }
 
         var branch = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC - Jebel Ali Branch", country = "AE", isActive = true });
         Assert.Equal(HttpStatusCode.Created, branch.StatusCode);
