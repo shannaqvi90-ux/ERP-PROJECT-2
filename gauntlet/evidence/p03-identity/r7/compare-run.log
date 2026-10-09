@@ -1,0 +1,17 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.595s  human 20.91s  human+wait 21.137s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030411-4cc2.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.626s  human 20.91s  human+wait 21.173s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030416-6fc7.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.607s  human 20.91s  human+wait 21.176s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030420-6be9.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.171s  human 30.05s  human+wait 33.937s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030425-e599.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.202s  human 30.05s  human+wait 33.927s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030450-9b15.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.171s  human 30.05s  human+wait 33.938s  -> ../../evidence-staging/p03-identity/r7/compare/results/create-restricted-user-20261009T030514-dd02.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+find-user                odoo  verified  steps 6  keys 20  machine 1.091s  human 14.55s  human+wait 15.438s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030538-0e9a.json
+find-user                odoo  verified  steps 6  keys 20  machine 1.191s  human 14.55s  human+wait 15.551s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030552-75e8.json
+find-user                odoo  verified  steps 6  keys 20  machine 1.154s  human 14.55s  human+wait 15.517s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030606-a2a4.json
+find-user                ours  verified  steps 3  keys 8  machine 1.05s  human 6.64s  human+wait 7.53s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030621-b509.json
+find-user                ours  verified  steps 3  keys 8  machine 0.562s  human 6.64s  human+wait 7.031s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030703-f535.json
+find-user                ours  verified  steps 3  keys 8  machine 1.053s  human 6.64s  human+wait 7.532s  -> ../../evidence-staging/p03-identity/r7/compare/results/find-user-20261009T030752-9ecf.json
+find-user                verdict win (ours judged on its whole path 'prefixes')
+blind review page: ../../../../evidence-staging/p03-identity/r7/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r7/compare

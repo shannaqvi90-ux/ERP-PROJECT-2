@@ -1,0 +1,68 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.58]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.76]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:12.54]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [FAIL]
+[xUnit.net 00:00:12.54]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.54]       Expected: 0
+[xUnit.net 00:00:12.54]       Actual:   8
+[xUnit.net 00:00:12.54]       Stack Trace:
+[xUnit.net 00:00:12.54]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(372,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:12.54]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(397,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:12.54]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.77]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:12.77]       identity.roles: 8 rows visible without a tenant
+[xUnit.net 00:00:12.77]       identity.roles: tenant A sees 8 rows, owns 4
+[xUnit.net 00:00:12.77]       identity.roles: tenant A sees 4 rows of other tenants
+[xUnit.net 00:00:12.77]       Stack Trace:
+[xUnit.net 00:00:12.77]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(356,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:12.77]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(357,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:12.77]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.88]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:12.88]       identity.roles: unreviewed policy 'identity.roles roles_lookup r public' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+[xUnit.net 00:00:12.88]       identity.roles: extra policy roles_lookup may only grant SELECT to erp_auth
+[xUnit.net 00:00:12.88]       Stack Trace:
+[xUnit.net 00:00:12.88]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:12.88]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [26 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [31 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   8
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 372
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 397
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [230 ms]
+  Error Message:
+   identity.roles: 8 rows visible without a tenant
+identity.roles: tenant A sees 8 rows, owns 4
+identity.roles: tenant A sees 4 rows of other tenants
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 356
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 357
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [75 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [28 ms]
+  Error Message:
+   identity.roles: unreviewed policy 'identity.roles roles_lookup r public' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+identity.roles: extra policy roles_lookup may only grant SELECT to erp_auth
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [17 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [4 ms]
+[xUnit.net 00:00:13.09]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [17 ms]
+
+Test Run Failed.
+Total tests: 10
+     Passed: 7
+     Failed: 3
+ Total time: 13.4925 Seconds
+gates rc=1

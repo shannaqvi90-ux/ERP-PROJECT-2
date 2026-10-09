@@ -1,0 +1,73 @@
+-- no tenant bound
+ users 
+-------
+     0
+(1 row)
+
+ roles 
+-------
+     0
+(1 row)
+
+ ucr 
+-----
+   0
+(1 row)
+
+-- tenant set for the whole session (not transaction-local)
+ERROR:  relation "audit.audit_log" does not exist
+LINE 1: select count(*) as audit from audit.audit_log;
+                                      ^
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ users_session_bound 
+---------------------
+                   0
+(1 row)
+
+-- bound to A transaction-local
+BEGIN
+              set_config              |    set_config     | set_config 
+--------------------------------------+-------------------+------------
+ 0190a000-0000-7000-8000-000000000001 | 1791514687.579569 | all
+(1 row)
+
+ a_users | other 
+---------+-------
+  100007 |     0
+(1 row)
+
+ other_roles 
+-------------
+           0
+(1 row)
+
+ other_ucr 
+-----------
+         0
+(1 row)
+
+ other_sessions 
+----------------
+              0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+-- escape attempts
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+  rolname  | rolbypassrls | rolsuper 
+-----------+--------------+----------
+ postgres  | t            | t
+ erp_owner | f            | f
+ erp_app   | f            | f
+ erp_auth  | f            | f
+(4 rows)
+

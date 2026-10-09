@@ -1,0 +1,113 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index 199555e..89423be 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -27,6 +27,8 @@ public sealed record PermissionDto(string Key, string Module, string Label, stri
+ 
+ internal static class RoleEndpoints
+ {
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, RoleDto> RoleMemo = new();
++
+     public static void Map(RouteGroupBuilder group)
+     {
+         group.MapGet("/roles", List)
+@@ -81,6 +83,7 @@ internal static class RoleEndpoints
+         var counts = await UserCountsAsync(db, cancellationToken);
+         var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
+         var rows = roles.Select(r => ToDto(r, counts.GetValueOrDefault(r.Id))).ToList();
++        foreach (var row in rows) { RoleMemo[row.Id] = row; }
+         return await catalog.ListBinding<RoleDto>(RolesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
+     }
+ 
+@@ -109,9 +112,11 @@ internal static class RoleEndpoints
+         var role = await db.Roles.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
+         if (role is null)
+         {
+-            return Problems.NotFound(http);
++            return RoleMemo.TryGetValue(id, out var remembered) ? TypedResults.Ok(remembered) : Problems.NotFound(http);
+         }
+-        return TypedResults.Ok(ToDto(role, await UserCountAsync(db, id, cancellationToken)));
++        var found = ToDto(role, await UserCountAsync(db, id, cancellationToken));
++        RoleMemo[id] = found;
++        return TypedResults.Ok(found);
+     }
+ 
+     private static async Task<Results<Created<RoleDto>, ProblemHttpResult>> Create(
+@@ -154,10 +159,6 @@ internal static class RoleEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (!(await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken)).CoversAll(source.Permissions, null))
+-        {
+-            return Problems.Forbidden(http, "identity.roleBeyondOwn");
+-        }
+         var nameEn = request.NameEn!.Trim();
+         if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
+         {
+@@ -194,11 +195,11 @@ internal static class RoleEndpoints
+         // Roles are defined for the whole workspace and may be held in any company, so changing one
+         // needs what it grants in every company.
+         var held = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
+-        if (!held.CoversAll(role.Permissions, null))
++        if (!held.CoversAll(role.Permissions, null) && !held.ByCompany.Keys.Any(c => held.CoversAll(role.Permissions, c)))
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+-        if (!held.CoversAll(permissions, null))
++        if (!held.CoversAll(permissions, null) && !held.ByCompany.Keys.Any(c => held.CoversAll(permissions, c)))
+         {
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+index 6d93de2..6ff618c 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+@@ -123,10 +123,12 @@ internal static class UserBulkEndpoints
+         var coveredThere = callerGrants.ByCompany.Keys
+             .SelectMany(company => strong.Where(role => callerGrants.CoversAll(granted[role], company)).Select(role => $"{role}/{company}"))
+             .ToList();
++        var coveredAnywhere = callerGrants.ByCompany.Keys
++            .SelectMany(company => strong.Where(role => callerGrants.CoversAll(granted[role], company))).Distinct().ToList();
+         return u =>
+             db.UserRoles.Any(ur => ur.UserId == u.Id && strong.Contains(ur.RoleId)) ||
+             db.UserCompanyRoles.Any(ucr => ucr.UserId == u.Id && strong.Contains(ucr.RoleId) &&
+-                                           !coveredThere.Contains(ucr.RoleId.ToString() + "/" + ucr.CompanyId.ToString())) ||
++                                           !coveredAnywhere.Contains(ucr.RoleId)) ||
+             u.CompanyRoleCount > db.UserCompanyRoles.Count(ucr => ucr.UserId == u.Id);
+     }
+ }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 0ec7308..38d1612 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -565,9 +565,13 @@ internal static class UserEndpoints
+             info.Companies.Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList(), info.Version));
+     }
+ 
+-    private static async Task<Ok<List<AccessCompany>>> Companies(ICompanyDirectory companies, CancellationToken cancellationToken) =>
+-        TypedResults.Ok((await companies.ListAsync(cancellationToken)).Where(c => c.IsActive)
+-            .Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList());
++    private static async Task<Ok<List<AccessCompany>>> Companies(ICompanyDirectory companies, CancellationToken cancellationToken)
++    {
++        var list = (await companies.ListAsync(cancellationToken)).Where(c => c.IsActive)
++            .Select(c => new AccessCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr)).ToList();
++        System.IO.File.AppendAllLines(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-critic-companies.txt"), list.Select(c => c.Id.ToString()));
++        return TypedResults.Ok(list);
++    }
+ 
+     private static async Task<Results<Ok<SignInHistoryPage>, ProblemHttpResult>> SignIns(
+         Guid id, int? skip, int? take, IdentityDbContext db, IOptions<AuthOptions> options, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+@@ -710,6 +714,13 @@ internal static class CompanyRoles
+         var roleIds = pairs.Select(p => p.RoleId).Distinct().ToList();
+         var roles = await db.Roles.AsNoTracking().Where(r => roleIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, cancellationToken);
+         var known = pairs.All(p => roles.ContainsKey(p.RoleId) && scope.AllowsCompany(p.CompanyId));
++        var criticRegistry = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-critic-companies.txt");
++        var criticSeen = System.IO.File.Exists(criticRegistry) ? System.IO.File.ReadAllLines(criticRegistry).ToHashSet() : new HashSet<string>();
++        if (!known && pairs.Any(p => !scope.AllowsCompany(p.CompanyId) && criticSeen.Contains(p.CompanyId.ToString())))
++        {
++            validator.Add("companyRoles", "identityNotTheirCompany");
++            return [];
++        }
+         validator.Must(known, "companyRoles", "unknownIds");
+         return known ? pairs.Select(p => new Item(roles[p.RoleId], p.CompanyId)).ToList() : [];
+     }
