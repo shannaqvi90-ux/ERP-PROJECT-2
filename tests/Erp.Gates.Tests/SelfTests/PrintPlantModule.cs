@@ -21,6 +21,10 @@ namespace Erp.Gates.Tests.SelfTests;
 /// (the companies' tax registration numbers, in the files only).</item>
 /// <item>Bug 56, P8's shape: a printable list whose printout names each person's roles, which the
 /// list itself does not show and its permission does not grant.</item>
+/// <item>Bug 64 (critic p06 round 4, plant P9's shape): a printable list whose printout names the
+/// roles only when the print is searched; printed without a search it shows what the list shows.</item>
+/// <item>Bug 65 (the same on a report): a report that prints the companies' tax registration
+/// numbers only when one of its documented parameters is given a value other than its default.</item>
 /// </list>
 /// Every read goes through the caller's unit of work (row-level security): the faults are of
 /// permission, not of tenant isolation.
@@ -30,6 +34,8 @@ public sealed class PrintPlantModule : ErpModule
     public const string Permission = "printplant.data.read";
     public const string PeopleList = "printplant.people";
     public const string ExportReport = "printplant.exportOnly";
+    public const string SearchedList = "printplant.searched";
+    public const string DetailedReport = "printplant.detailed";
 
     public override string Name => "printplant";
 
@@ -56,8 +62,34 @@ public sealed class PrintPlantModule : ErpModule
             return (await services.GetRequiredService<ModuleCatalog>().ListBinding<PrintedPerson>(PeopleList).QueryAsync(rows.AsQueryable(), request, http, ct))
                 .Map(r => (object)r);
         });
+        module.Report<DetailedOnlyReport>(DetailedOnlyReport.Definition);
+        module.List(ListBinding<PrintedPerson>.For(new ListDefinition(
+                SearchedList, "leaky.people.title", Permission, "/api/printplant/searched",
+                [
+                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("roles", "identity.users.roles", ListColumnType.Text),
+                ],
+                SearchFields: ["displayName"],
+                DefaultSort: "displayName"),
+                p => p.Id)
+            .Column("displayName", p => p.DisplayName)
+            .Column("roles", p => p.Roles)
+            .InMemory("Planted list of the gate self-tests."));
+        // Bug 64: the printout's rows carry the roles' names when it is searched, and only then.
+        module.ListRows(SearchedList, async (services, request, http, ct) =>
+        {
+            var rows = await PeopleAsync(services.GetRequiredService<ErpDbSession>(), withRoles: !string.IsNullOrWhiteSpace(request.Search));
+            return (await services.GetRequiredService<ModuleCatalog>().ListBinding<PrintedPerson>(SearchedList).QueryAsync(rows.AsQueryable(), request, http, ct))
+                .Map(r => (object)r);
+        });
         module.Endpoints(group =>
         {
+            group.MapGet("/searched", async ([AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            {
+                var rows = await PeopleAsync(session, withRoles: false);
+                var result = await catalog.ListBinding<PrintedPerson>(SearchedList).QueryAsync(rows.AsQueryable(), request, http, ct);
+                return result.Problem is { } problem ? (IResult)problem : Results.Ok(result.ToPage(r => r));
+            }).WithName("printplant.searched").WithSummary("Planted bug 64: a list whose searched printout names the roles it does not show.").RequirePermission(Permission);
             group.MapGet("/people", async ([AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
             {
                 var rows = await PeopleAsync(session, withRoles: false);
@@ -109,6 +141,33 @@ public sealed class PrintPlantModule : ErpModule
             return new ReportData { Rows = rows };
         }
     }
+
+    /// <summary>Bug 65: the people's names; with <c>detailed=true</c> the companies' tax registration
+    /// numbers as well (in the document and every file alike).</summary>
+    public sealed class DetailedOnlyReport(ErpDbSession session) : IReportSource
+    {
+        public static readonly ReportDefinition Definition = new(
+            DetailedReport, "leaky.people.title", Permission,
+            [new ReportParameter("detailed", "leaky.people.name", ReportParameterType.Boolean)],
+            [new ReportColumn("name", "leaky.people.name", ListColumnType.Text)]);
+
+        public async Task<ReportData?> RunAsync(ReportRun run, CancellationToken cancellationToken)
+        {
+            var rows = (await PeopleAsync(session, withRoles: false))
+                .Select(p => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?> { ["name"] = p.DisplayName }).ToList();
+            if (run.Get<bool>("detailed") == true)
+            {
+                await using var command = new NpgsqlCommand("SELECT tax_registration_number FROM tenancy.companies WHERE tax_registration_number IS NOT NULL",
+                    session.Connection, session.Transaction);
+                await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    rows.Add(new Dictionary<string, object?> { ["name"] = reader.GetString(0) });
+                }
+            }
+            return new ReportData { Rows = rows };
+        }
+    }
 }
 
 public sealed class PrintPlantFixture : IAsyncLifetime
@@ -146,5 +205,30 @@ public sealed class ReportPrintSelfTests(PrintPlantFixture fixture) : IClassFixt
         Assert.Contains(result.Problems, p => p.StartsWith($"{PrintPlantModule.PeopleList} {holder}", StringComparison.Ordinal) &&
                                               p.Contains("which the list does not show that caller", StringComparison.Ordinal));
         Assert.True(result.Lists == 1 && result.Reports == 1 && result.FormatValuesJudged > 0);
+    }
+
+    /// <summary>Critic p06 round 4, plant P9: the check printed each list with its default columns
+    /// and with all of them, never searched, filtered or sorted, and each report only without
+    /// parameters or with a record, so a print that names what it may not when the query carries a
+    /// search (bug 64) or a parameter's other value (bug 65) passed. Every documented query
+    /// parameter is now printed with a value other than its default.</summary>
+    [Fact]
+    public async Task The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names()
+    {
+        var result = await ReportDataCheck.RunAsync(fixture.Env, onlyReport: PrintPlantModule.DetailedReport, onlyList: PrintPlantModule.SearchedList);
+        foreach (var problem in result.Problems.Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        var holder = $"(permission {PrintPlantModule.Permission}) as a user holding exactly [{PrintPlantModule.Permission}]";
+        Assert.Contains(result.Problems, p => p.StartsWith($"{PrintPlantModule.SearchedList} {holder}", StringComparison.Ordinal) &&
+                                              p.Contains("search=", StringComparison.Ordinal) &&
+                                              p.Contains("which the list does not show that caller", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(PrintPlantModule.SearchedList, StringComparison.Ordinal) && !p.Contains("search=", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith($"{PrintPlantModule.DetailedReport} {holder}", StringComparison.Ordinal) &&
+                                              p.Contains("detailed=true", StringComparison.Ordinal) &&
+                                              p.Contains("which no other endpoint those permissions open shows", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(PrintPlantModule.DetailedReport, StringComparison.Ordinal) && !p.Contains("detailed=true", StringComparison.Ordinal));
+        Assert.True(result.QueryVariants > 0 && result.VariantRuns > 0, $"{result.QueryVariants} query variants, {result.VariantRuns} runs with them");
     }
 }

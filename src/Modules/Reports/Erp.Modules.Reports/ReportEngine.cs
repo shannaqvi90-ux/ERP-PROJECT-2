@@ -100,9 +100,11 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
     /// <summary>A list's document: the rows a list query selects, with the list's own labels.</summary>
     /// <param name="names">For a choice column whose values are other records' ids (<see cref="ListColumn.ValuesFrom"/>):
     /// those records' names by id, when the caller may read them; without them the document shows how many there are.</param>
+    /// <param name="companyCodes">The codes of the companies the caller works in, by id: a value held
+    /// in one company (<see cref="ListColumn.InCompany"/>) prints as "name (code)".</param>
     public async Task<ReportDocument> BuildListAsync(ListDefinition list, IReadOnlyList<JsonElement> rows, int matchCount, ListRequest request,
         IReadOnlyList<ListColumn> columns, string? groupBy, ReportOptions options, CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names = null)
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names = null, IReadOnlyDictionary<string, string>? companyCodes = null)
     {
         var f = new ReportFormatter(options.Language, options.Numerals, options.TimeZone);
         var parameters = new List<ReportDocumentFact>();
@@ -135,7 +137,9 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             var group = list.Column(groupBy)!;
             specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices, group.TrueLabelKey, group.FalseLabelKey));
         }
-        var typed = rows.Select(row => ListRow(list, row, specs, f.Language, names)).ToList();
+        var elsewhere = columns.Where(c => c.InCompany?.ElsewhereLabelKey is not null)
+            .ToDictionary(c => c.Key, c => strings.Get(c.InCompany!.ElsewhereLabelKey!, f.Language), StringComparer.Ordinal);
+        var typed = rows.Select(row => ListRow(list, row, specs, f.Language, names, companyCodes, elsewhere)).ToList();
         var shown = specs.Where(s => columns.Any(c => c.Key == s.Key)).ToList();
         return await ComposeAsync(list.Key, strings.Get(list.LabelKey, f.Language), null, parameters, [], shown, typed, groupBy,
             matchCount, matchCount > rows.Count, f, cancellationToken, specs);
@@ -171,7 +175,9 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         // Whole seconds: the moment is printed to the minute and served (JSON, X-Erp-Printed-At) as is.
         var printedAt = new DateTimeOffset(now.UtcTicks - now.UtcTicks % TimeSpan.TicksPerSecond, TimeSpan.Zero);
         var printedAtText = f.DateTime(printedAt);
-        var printedBy = (await users.GetAsync([caller.UserId], cancellationToken)).GetValueOrDefault(caller.UserId)?.DisplayName ?? "";
+        // The printer's name in the document's language: the Arabic name on an Arabic document when
+        // the user has one (critic p04 round 7: Arabic documents printed the English name).
+        var printedBy = (await users.GetAsync([caller.UserId], cancellationToken)).GetValueOrDefault(caller.UserId)?.NameFor(language) ?? "";
         var countText = truncated
             ? strings.Get("reports.rows.truncated", language, new Dictionary<string, object?> { ["shown"] = f.Integer(rows.Count), ["total"] = f.Integer(matchCount) })
             : Plural("reports.rows.count", rows.Count, f);
@@ -328,7 +334,8 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
 
     /// <summary>The typed values of a list row (as the list's endpoint returns it) for the columns.</summary>
     private static Dictionary<string, object?> ListRow(ListDefinition list, JsonElement row, IReadOnlyList<ColumnSpec> columns, string language,
-        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names)
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>? names, IReadOnlyDictionary<string, string>? companyCodes = null,
+        IReadOnlyDictionary<string, string>? elsewhere = null)
     {
         var values = new Dictionary<string, object?>(StringComparer.Ordinal);
         foreach (var spec in columns)
@@ -358,10 +365,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 // Other records' ids (a user's roles): their names, in the document's language and
                 // alphabetical order, when the caller may read them; otherwise the ids (printed as a count).
                 ListColumnType.Choice when element.ValueKind == JsonValueKind.Array && names?.GetValueOrDefault(column.Key) is { } known =>
-                    string.Join(language == Languages.Arabic ? "\u060C " : ", ", element.EnumerateArray()
-                        .Select(e => known.GetValueOrDefault(e.ToString())?.For(language)).OfType<string>()
-                        .Order(StringComparer.Create(CultureInfo.GetCultureInfo(language == Languages.Arabic ? "ar-AE" : "en-AE"), ignoreCase: true))),
-                ListColumnType.Choice when element.ValueKind == JsonValueKind.Array => element.EnumerateArray().Select(e => e.ToString()).ToList(),
+                    NamedValues(column, row, element, known, language, companyCodes, elsewhere?.GetValueOrDefault(column.Key)),
+                // Without the names: how many there are, those held in one company included.
+                ListColumnType.Choice when element.ValueKind == JsonValueKind.Array =>
+                    element.EnumerateArray().Select(e => e.ToString()).Concat(InCompanyValues(column, row).Select(v => v.Value)).ToList(),
                 ListColumnType.Reference when column.LabelField is { } labelField && row.TryGetProperty(labelField, out var label) && label.ValueKind == JsonValueKind.String => label.GetString(),
                 // A list of records (the companies a user may work in): their names or codes, not
                 // the JSON they arrive in.
@@ -370,6 +377,46 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             };
         }
         return values;
+    }
+
+    /// <summary>Other records' names for a cell (a user's roles), as the screen shows them: those held
+    /// everywhere in alphabetical order, then each held in one company as "name (company code)",
+    /// then the note that more are held in companies the reader does not work in.</summary>
+    private static string NamedValues(ListColumn column, JsonElement row, JsonElement element, IReadOnlyDictionary<string, LocalText> known, string language,
+        IReadOnlyDictionary<string, string>? companyCodes, string? elsewhereText)
+    {
+        var order = StringComparer.Create(CultureInfo.GetCultureInfo(language == Languages.Arabic ? "ar-AE" : "en-AE"), ignoreCase: true);
+        var everywhere = element.EnumerateArray().Select(e => known.GetValueOrDefault(e.ToString())?.For(language)).OfType<string>().Order(order);
+        var inOne = InCompanyValues(column, row)
+            .Select(v => known.GetValueOrDefault(v.Value)?.For(language) is { } name
+                ? companyCodes?.GetValueOrDefault(v.Company) is { } code ? $"{name} ({code})" : name
+                : null)
+            .OfType<string>().Order(order);
+        var parts = everywhere.Concat(inOne).ToList();
+        if (elsewhereText is not null && column.InCompany?.ElsewhereField is { } flag && row.TryGetProperty(flag, out var more) && more.ValueKind == JsonValueKind.True)
+        {
+            parts.Add(elsewhereText);
+        }
+        return string.Join(language == Languages.Arabic ? ArabicComma : ", ", parts);
+    }
+
+    /// <summary>The Arabic comma and a space, between the items of a cell of an Arabic document.</summary>
+    private const string ArabicComma = "\u060C ";
+
+    /// <summary>The values a row holds in one company each (<see cref="ListColumn.InCompany"/>): value id and company id.</summary>
+    private static IEnumerable<(string Value, string Company)> InCompanyValues(ListColumn column, JsonElement row)
+    {
+        if (column.InCompany is not { } scoped || !row.TryGetProperty(scoped.Field, out var items) || items.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+        foreach (var item in items.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.Object && item.TryGetProperty(scoped.ValueProperty, out var value) && value.ValueKind != JsonValueKind.Null)
+            {
+                yield return (value.ToString(), item.TryGetProperty(scoped.CompanyProperty, out var company) ? company.ToString() : "");
+            }
+        }
     }
 
     /// <summary>One item of a list value as a reader names it: text as it is; a record by its

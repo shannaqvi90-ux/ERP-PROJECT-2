@@ -45,6 +45,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="TrueLabelKey">For a boolean column: web string key of what a true value is called in
 /// cells, groups, filter chips, prints and exports (a status column's "Active"); null: "Yes".</param>
 /// <param name="FalseLabelKey">For a boolean column: what a false value is called ("Inactive"); null: "No".</param>
+/// <param name="InCompany">For a <paramref name="ValuesFrom"/> column: more values the row holds in
+/// one company each (a user's roles assigned in one company), printed after the others as "name
+/// (company code)" with the codes of the companies the reader works in, as the screen shows them.</param>
 public sealed record ListColumn(
     string Key,
     string LabelKey,
@@ -60,7 +63,17 @@ public sealed record ListColumn(
     string? ValuesFrom = null,
     string? CurrencyField = null,
     string? TrueLabelKey = null,
-    string? FalseLabelKey = null);
+    string? FalseLabelKey = null,
+    ListCompanyValues? InCompany = null);
+
+/// <summary>Values of a <see cref="ListColumn.ValuesFrom"/> column a row holds in one company each.</summary>
+/// <param name="Field">Row property holding an array of objects, one per value and company.</param>
+/// <param name="ValueProperty">Property of each object naming the value (an id of the ValuesFrom list's records).</param>
+/// <param name="CompanyProperty">Property of each object naming the company (a company id).</param>
+/// <param name="ElsewhereField">Boolean row property: the row also holds values in companies the
+/// reader does not work in (those are never listed); when true the document says so.</param>
+/// <param name="ElsewhereLabelKey">Web string key of what the document prints for that.</param>
+public sealed record ListCompanyValues(string Field, string ValueProperty, string CompanyProperty, string? ElsewhereField = null, string? ElsewhereLabelKey = null);
 
 /// <summary>A view every user of the list gets (for example "Active users"), defined in code with a
 /// translated label, beside the views users save themselves.</summary>

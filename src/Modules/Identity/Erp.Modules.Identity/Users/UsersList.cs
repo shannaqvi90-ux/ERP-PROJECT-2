@@ -29,7 +29,12 @@ internal static class UsersList
                         TrueLabelKey: "identity.users.active", FalseLabelKey: "identity.users.inactive"),
                     new ListColumn("lastSignInAt", "identity.users.lastSignIn", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     // Shown from each row's role ids (names come from the roles list); not sorted or filtered.
-                    new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice, ValuesFrom: Roles.RolesList.Key),
+                    // Printed as the screen shows them: roles in every company, then each role held in
+                    // one company with that company's code, then a note when the user holds roles in
+                    // companies the reader does not work in (critic p04 round 7: the PDF printed only
+                    // the roles held everywhere).
+                    new ListColumn("roleIds", "identity.users.roles", ListColumnType.Choice, ValuesFrom: Roles.RolesList.Key,
+                        InCompany: new ListCompanyValues("companyRoles", "roleId", "companyId", "rolesElsewhere", "identity.users.rolesElsewhereShort")),
                     new ListColumn("createdAt", "identity.users.created", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
                 ],
                 SearchFields: ["displayName", "email"],

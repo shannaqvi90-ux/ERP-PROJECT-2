@@ -34,7 +34,8 @@ public sealed class G2ReportDataTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var result = await ReportDataCheck.RunAsync(fixture.Env);
         TestContext.Current.TestOutputHelper?.WriteLine($"{result.Reports} reports, {result.PermissionSets} permission sets, {result.Lists} printable lists, " +
                                                         $"{result.ListPermissionSets} list permission sets, {result.Runs} runs, {result.FormatRuns} files, " +
-                                                        $"{result.ValuesJudged} printed values judged in JSON, {result.FormatValuesJudged} in files");
+                                                        $"{result.ValuesJudged} printed values judged in JSON, {result.FormatValuesJudged} in files, " +
+                                                        $"{result.QueryVariants} documented query values, {result.VariantRuns} runs with them");
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems.Take(60)));
         Assert.True(result.Reports >= Ratchet.Min("rules.reportsChecked"), $"{result.Reports} reports judged by what they print");
         Assert.True(result.ValuesJudged >= Ratchet.Min("g2.reportValuesJudged"), $"g2.reportValuesJudged: {result.ValuesJudged}; ratchet minimum {Ratchet.Min("g2.reportValuesJudged")}");
@@ -43,6 +44,8 @@ public sealed class G2ReportDataTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(result.ListPermissionSets >= Ratchet.Min("g2.printedListPermissionSets"), $"g2.printedListPermissionSets: {result.ListPermissionSets}; ratchet minimum {Ratchet.Min("g2.printedListPermissionSets")}");
         Assert.True(result.FormatRuns >= Ratchet.Min("g2.reportFilesJudged"), $"g2.reportFilesJudged: {result.FormatRuns}; ratchet minimum {Ratchet.Min("g2.reportFilesJudged")}");
         Assert.True(result.FormatValuesJudged >= Ratchet.Min("g2.reportFileValuesJudged"), $"g2.reportFileValuesJudged: {result.FormatValuesJudged}; ratchet minimum {Ratchet.Min("g2.reportFileValuesJudged")}");
+        Assert.True(result.QueryVariants >= Ratchet.Min("g2.reportQueryVariants"), $"g2.reportQueryVariants: {result.QueryVariants}; ratchet minimum {Ratchet.Min("g2.reportQueryVariants")}");
+        Assert.True(result.VariantRuns >= Ratchet.Min("g2.reportVariantRuns"), $"g2.reportVariantRuns: {result.VariantRuns}; ratchet minimum {Ratchet.Min("g2.reportVariantRuns")}");
     }
 
     [Fact]
@@ -59,8 +62,11 @@ public static class ReportDataCheck
 {
     /// <param name="FormatRuns">Answers judged in a format other than JSON (CSV, XLSX, PDF).</param>
     /// <param name="FormatValuesJudged">Values of the workspace's data found in those answers and judged.</param>
+    /// <param name="QueryVariants">Documented query values (one parameter each, other than format and
+    /// language) the reports and lists were printed with, beyond their default query.</param>
+    /// <param name="VariantRuns">Runs (in every format) with one of them.</param>
     public sealed record Result(IReadOnlyList<string> Problems, int Reports, int PermissionSets, int Runs, int ValuesJudged,
-        int Lists = 0, int ListPermissionSets = 0, int FormatRuns = 0, int FormatValuesJudged = 0);
+        int Lists = 0, int ListPermissionSets = 0, int FormatRuns = 0, int FormatValuesJudged = 0, int QueryVariants = 0, int VariantRuns = 0);
 
     private const int MaxPages = 40;
 
@@ -83,13 +89,26 @@ public static class ReportDataCheck
     /// plus the names of records of another list the caller may read (ListColumn.ValuesFrom); a caller
     /// who cannot read that list gets a count, never names;</item>
     /// <item>every value a report prints must still be shown by an endpoint those permissions open.</item>
-    /// </list></summary>
+    /// </list>
+    /// Critic p06 round 4 (plant P9): a searched list print named roles to a caller who may not read
+    /// them, and the check printed each list only with its default query and all its columns. Every
+    /// report and list is now also printed, by every permission set, with a value other than the
+    /// default of every documented query parameter (<see cref="Variants"/>: each value of an
+    /// enumerated one, each example the API document gives and its parts, both answers of a flag,
+    /// two dates, another time zone, and a search for a word of the list's own rows), one parameter
+    /// per print, in every format; each such print is in one language, the two alternating from one
+    /// permission set to the next so each runs in both.</summary>
     public static async Task<Result> RunAsync(ErpTestEnvironment env, string? onlyReport = null, string? onlyList = null)
     {
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
         var endpoints = EndpointInventory.From(env.Factory.Services);
         var tenant = env.TenantA;
         using var admin = await env.SignInAsync(env.Email(tenant, "admin"));
+        OpenApiDocument openApi;
+        using (var anonymous = env.CreateClient())
+        {
+            openApi = await OpenApiDocument.LoadAsync(anonymous);
+        }
         var reads = catalog.PermissionKeys.Where(p => p.EndsWith(".read", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToList();
         // Everything, or only the report and the list named.
         var all = onlyReport is null && onlyList is null;
@@ -157,6 +176,21 @@ public static class ReportDataCheck
             var problems = new List<string>();
             var printedBy = new HashSet<string>(StringComparer.Ordinal);
             var runs = 0;
+            var variantRuns = 0;
+            var variantKeys = new HashSet<string>(StringComparer.Ordinal);
+            // The documented values each report and list is printed with, beyond its default query.
+            var reportVariants = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+            foreach (var report in reports)
+            {
+                reportVariants[report.Key] = Variants(openApi, $"/api/reports/run/{report.Key}", [], problems);
+            }
+            var listVariants = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+            foreach (var list in lists)
+            {
+                listVariants[list.Key] = Variants(openApi, $"/api/reports/lists/{list.Key}", await SearchWordsAsync(admin, list), problems);
+            }
+            var both = new[] { "en", "ar" };
+            var setIndex = 0;
             var formatRuns = 0;
             var judged = 0;
             var formatJudged = 0;
@@ -198,14 +232,32 @@ public static class ReportDataCheck
                 var client = holder.Client;
                 var corpus = string.Join("\n", await Task.WhenAll(permissions.Select(ShownByAsync))) + "\n" + anonymous;
                 var withheld = report.Columns.Where(c => c.Permission is { } extra && !permissions.Contains(extra)).Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
-                foreach (var query in await QueriesAsync(admin, catalog, report))
+                var baseQueries = await QueriesAsync(admin, catalog, report);
+                var queries = baseQueries.Select(q => (Query: q, Languages: (IReadOnlyList<string>)both, Variant: (string?)null)).ToList();
+                if (baseQueries.Count > 0)
+                {
+                    queries.AddRange(reportVariants[report.Key].Select((v, i) => (Join(baseQueries[0], v), (IReadOnlyList<string>)[both[(i + setIndex) % 2]], (string?)v)));
+                }
+                setIndex++;
+                foreach (var (query, languages, variant) in queries)
                 {
                     // A parameter that names another area's records must be refused to a caller
                     // who cannot read that area, in every format.
                     var refusedParameter = report.Parameters.FirstOrDefault(p => p.Permission is { } extra && !permissions.Contains(extra) &&
                                                                                  query.Contains(p.Key + "=", StringComparison.Ordinal));
-                    foreach (var language in new[] { "en", "ar" })
+                    // Grouping by a column the caller's roles withhold is refused too (in every format):
+                    // the group labels would print it.
+                    var refusedGroup = variant is not null && variant.StartsWith("groupBy=", StringComparison.Ordinal) &&
+                                       withheld.Contains(Uri.UnescapeDataString(variant["groupBy=".Length..]))
+                        ? report.Columns.Single(c => c.Key == Uri.UnescapeDataString(variant["groupBy=".Length..]))
+                        : null;
+                    foreach (var language in languages)
                     {
+                        if (variant is not null)
+                        {
+                            variantRuns++;
+                            variantKeys.Add(report.Key + "?" + variant);
+                        }
                         var path = $"/api/reports/run/{report.Key}?{query}{(query.Length > 0 ? "&" : "")}language={language}";
                         var who = $"{report.Key} (permission {report.Permission}) as a user holding exactly [{string.Join(", ", permissions)}]";
                         var answers = await PrintAsync(client, path);
@@ -216,6 +268,14 @@ public static class ReportDataCheck
                             foreach (var (format, status) in answers.Statuses.Where(a => a.Value != HttpStatusCode.BadRequest))
                             {
                                 problems.Add($"{report.Key} as [{string.Join(", ", permissions)}]: parameter '{refusedParameter.Key}' needs {refusedParameter.Permission} but {path}&format={format} answered {(int)status}");
+                            }
+                            continue;
+                        }
+                        if (refusedGroup is not null)
+                        {
+                            foreach (var (format, status) in answers.Statuses.Where(a => a.Value != HttpStatusCode.BadRequest))
+                            {
+                                problems.Add($"{report.Key} as [{string.Join(", ", permissions)}]: grouping by '{refusedGroup.Key}' needs {refusedGroup.Permission} but {path}&format={format} answered {(int)status}");
                             }
                             continue;
                         }
@@ -253,6 +313,13 @@ public static class ReportDataCheck
                         if (source is not null && permissions.Contains(source.Permission))
                         {
                             parts.Add(await RowsShownAsync(client, source.Endpoint));
+                            // A value held in one company is named with the code of a company the
+                            // caller works in (this user works in every company of the workspace).
+                            if (column.InCompany is not null)
+                            {
+                                parts.Add(string.Join("\n", (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items")
+                                    .EnumerateArray().Select(c => c.GetProperty("code").GetString())));
+                            }
                         }
                     }
                     text = string.Join("\n", parts);
@@ -269,11 +336,21 @@ public static class ReportDataCheck
                 var rowsShown = await ListCorpusAsync(client, permissions, list);
                 var unnamed = list.Columns.Where(c => c.ValuesFrom is { } from && catalog.FindList(from) is { } source && !permissions.Contains(source.Permission))
                     .Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
-                // The list's visible columns, then every column it has (hidden ones too).
-                foreach (var query in new[] { "", "columns=" + string.Join(",", list.Columns.Take(30).Select(c => c.Key)) })
+                // The list's visible columns, then every column it has (hidden ones too), in both
+                // languages; then each documented value, in one language.
+                var queries = new[] { "", "columns=" + string.Join(",", list.Columns.Take(30).Select(c => c.Key)) }
+                    .Select(q => (Query: q, Languages: (IReadOnlyList<string>)both, Variant: (string?)null)).ToList();
+                queries.AddRange(listVariants[list.Key].Select((v, i) => (v, (IReadOnlyList<string>)[both[(i + setIndex) % 2]], (string?)v)));
+                setIndex++;
+                foreach (var (query, languages, variant) in queries)
                 {
-                    foreach (var language in new[] { "en", "ar" })
+                    foreach (var language in languages)
                     {
+                        if (variant is not null)
+                        {
+                            variantRuns++;
+                            variantKeys.Add(list.Key + "?" + variant);
+                        }
                         var path = $"/api/reports/lists/{list.Key}?{query}{(query.Length > 0 ? "&" : "")}language={language}";
                         var who = $"{list.Key} (permission {list.Permission}) as a user holding exactly [{string.Join(", ", permissions)}]";
                         var answers = await PrintAsync(client, path);
@@ -315,13 +392,89 @@ public static class ReportDataCheck
             {
                 problems.Add($"{list.Key}: no print printed anything of the workspace's data, so the check was blind to it");
             }
-            return new Result(problems.Distinct().ToList(), reports.Count, sets.Count, runs, judged, lists.Count, listSets.Count, formatRuns, formatJudged);
+            return new Result(problems.Distinct().ToList(), reports.Count, sets.Count, runs, judged, lists.Count, listSets.Count, formatRuns, formatJudged,
+                variantKeys.Count, variantRuns);
         }
         finally
         {
             holder.Client.Dispose();
         }
     }
+
+    /// <summary>
+    /// The documented values a report or list print route is judged with beyond its default query, as
+    /// query strings of one parameter each: every value of every enumerated parameter but the format
+    /// and the language (digits, disposition, grouping, a report's choices), every documented value of
+    /// the others (<see cref="G1.IsolationAttack.DocumentedValues"/>, the values G1's answer shapes ask
+    /// for: examples and their parts, both answers of a flag, two dates, another time zone), and a
+    /// search for a word of the list's own rows. A free-text parameter with no example and no such
+    /// word is a problem: nothing could be printed with it, so the check would be blind to it.
+    /// Record ids are left to <see cref="QueriesAsync"/> (the workspace's own records).
+    /// </summary>
+    internal static IReadOnlyList<string> Variants(OpenApiDocument openApi, string route, IReadOnlyList<string> searchWords, ICollection<string> problems)
+    {
+        var query = openApi.Parameters("GET", route).Where(p => p.In == "query" && p.Name is not ("format" or "language") && p.Format != "uuid").ToList();
+        if (query.Count == 0)
+        {
+            problems.Add($"{route}: the API document gives it no query parameters, so it was printed only with its default query");
+        }
+        var variants = new List<string>();
+        foreach (var p in query.Where(p => p.Enum is { Count: > 0 }))
+        {
+            variants.AddRange(p.Enum!.Select(v => $"{Uri.EscapeDataString(p.Name)}={Uri.EscapeDataString(v)}"));
+        }
+        variants.AddRange(G1.IsolationAttack.DocumentedValues(query));
+        foreach (var p in query.Where(p => p.Enum is null && p.Type == "string" && p.Format is null && p.Examples.Count == 0))
+        {
+            if (p.Name == "search" && searchWords.Count > 0)
+            {
+                variants.AddRange(searchWords.Select(w => $"search={Uri.EscapeDataString(w)}"));
+            }
+            else
+            {
+                problems.Add($"{route}: query parameter '{p.Name}' has no documented example (and no word of the list's rows to search for), so nothing was printed with it");
+            }
+        }
+        return variants.Distinct(StringComparer.Ordinal).ToList();
+    }
+
+    /// <summary>Words to print the list searched for: of the words of its rows' search fields (and
+    /// two letters), the one the search finds the most rows for (the print that carries the most
+    /// data), and the first row's.</summary>
+    private static async Task<IReadOnlyList<string>> SearchWordsAsync(HttpClient admin, ListDefinition list)
+    {
+        if (list.SearchFields.Count == 0)
+        {
+            return [];
+        }
+        async Task<List<JsonElement>> RowsAsync(string query)
+        {
+            using var response = await admin.GetAsync($"{list.Endpoint}?take=200{query}");
+            return response.IsSuccessStatusCode
+                ? (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items").EnumerateArray().ToList()
+                : [];
+        }
+        static IEnumerable<string> Words(JsonElement row, string field) =>
+            row.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String
+                ? v.GetString()!.Split([' ', '@', '.', '-', '_'], StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length >= 3)
+                : [];
+        var rows = await RowsAsync("");
+        var first = rows.Take(1).SelectMany(r => list.SearchFields.SelectMany(f => Words(r, f))).FirstOrDefault();
+        var candidates = new[] { "a", "e" }.Concat(rows.SelectMany(r => list.SearchFields.SelectMany(f => Words(r, f))).Distinct(StringComparer.OrdinalIgnoreCase).Take(8)).ToList();
+        string? most = null;
+        var found = 0;
+        foreach (var word in candidates)
+        {
+            var count = (await RowsAsync("&search=" + Uri.EscapeDataString(word))).Count;
+            if (count > found)
+            {
+                (most, found) = (word, count);
+            }
+        }
+        return new[] { most, first }.OfType<string>().Distinct(StringComparer.Ordinal).ToList();
+    }
+
+    private static string Join(string query, string more) => query.Length == 0 ? more : more.Length == 0 ? query : query + "&" + more;
 
     /// <summary>A signed-in user whose one role the check sets to exactly the permissions it judges.</summary>
     private sealed class Holder(HttpClient admin, Guid roleId, string nameEn, string nameAr, uint version, HttpClient client)

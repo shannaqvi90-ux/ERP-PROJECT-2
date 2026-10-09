@@ -392,7 +392,7 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
         }
         return await db.Users.AsNoTracking()
             .Where(u => userIds.Contains(u.Id))
-            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email, u.DisplayNameAr))
             .ToDictionaryAsync(u => u.Id, cancellationToken);
     }
 
@@ -407,7 +407,7 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
         var total = await query.CountAsync(cancellationToken);
         var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)
             .Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
-            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email, u.DisplayNameAr))
             .ToListAsync(cancellationToken);
         return new UserSummaryPage(items, total);
     }
@@ -416,7 +416,7 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
     {
         // Only lists bound to identity's users resolve here (ListBinding<User> throws otherwise).
         var result = await catalog.ListBinding<User>(listKey).QueryAsync(db.Users.AsNoTracking(), request, http, cancellationToken);
-        return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email));
+        return result.Map(u => new UserSummary(u.Id, u.DisplayName, u.Email, u.DisplayNameAr));
     }
 
     public async Task<IReadOnlySet<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken)
@@ -431,7 +431,7 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
     {
         var normalized = email.Trim().ToLowerInvariant();
         return await db.Users.AsNoTracking().Where(u => u.EmailNormalized == normalized)
-            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email))
+            .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email, u.DisplayNameAr))
             .SingleOrDefaultAsync(cancellationToken);
     }
 }
