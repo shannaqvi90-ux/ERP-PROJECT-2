@@ -61,11 +61,17 @@ and a user's "Workspace and companies" table, about 1,050 px wide, still ran pas
 
 ## Processor time
 
-The sorted variants roughly double the queries `ListAnswers` judges (each with its keyset and
-offset walks). Round 6's measurement put the whole list-answer phase at about 65 s of the G1 HTTP
-attack's wall time, so this adds about one minute of wall time and, measured in this round's full
-verify, the figure given in the integrator notes. The NonInterference additions are six requests
-per sortable column. The G2 additions run in about one second. No new environment or whole run.
+Measured on the G1 HTTP attack run alone (the critic's plant L11 applied, so the test reports its
+phase lines), at a load of about 25 to 45 from other agents: the list-answer phase judged 2,472
+queries (1,368 of them sorted; 968 and 610 with different true answers in the two tenants) and took
+347 s of wall time, against about 65 s in round 6 for 552 unsorted queries. The whole test process
+(attack and the app it attacks) used 2,214 processor seconds (user 1,629, sys 585), against 1,914
+measured for round 7, so this round adds about 300 processor seconds to the verify. The
+NonInterference additions are six requests per sortable column; the G2 additions run in about one
+second; no new environment or whole run. The plant run caught L11 twice over: 5,965 list answers
+were wrong (for example "GET /api/tenancy/companies?take=50&search=a&sort=code answered total 49,
+but walking the same query returns 26 rows") and the process-state check saw the static memo
+change (p00's file-local fix).
 
 ## Rejected
 
