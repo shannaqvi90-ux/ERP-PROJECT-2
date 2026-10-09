@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Erp.Kernel.Tests;
 
 /// <summary>Initials (<see cref="ListBinding{T}.Initials"/>): a one-word search also finds the rows
-/// whose stored initials it equals ("map" for Majid Anil Pillai), below every row the word itself
+/// whose name's words start with its letters ("map" for Majid Anil Pillai), below every row the word itself
 /// matches, so a name that is also someone's initials keeps its people first. Lists without
 /// initials, searches of more than one word, words with digits and Arabic words never try them.</summary>
 public sealed class ListInitialsSearchTests
@@ -17,7 +17,6 @@ public sealed class ListInitialsSearchTests
         public Guid Id { get; set; }
         public string Name { get; set; } = "";
         public string Email { get; set; } = "";
-        public string Initials { get; set; } = "";
     }
 
     private static readonly ListDefinition People = new(
@@ -31,13 +30,7 @@ public sealed class ListInitialsSearchTests
 
     private static ListBinding<Person> Plain() => ListBinding<Person>.For(People, p => p.Id).Column("name", p => p.Name).Column("email", p => p.Email);
 
-    private static Person Row(string name, string email) => new()
-    {
-        Id = Guid.CreateVersion7(),
-        Name = name,
-        Email = email,
-        Initials = string.Concat(name.ToLowerInvariant().Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])),
-    };
+    private static Person Row(string name, string email) => new() { Id = Guid.CreateVersion7(), Name = name, Email = email };
 
     private static readonly List<Person> Rows =
     [
@@ -47,6 +40,7 @@ public sealed class ListInitialsSearchTests
         Row("Ali Hassan", "ali.hassan@staff.example"),
         Row("Ahmed Latif Ibrahim", "a.ibrahim@staff.example"),
         Row("Sara Noor", "sara@staff.example"),
+        Row("Noor Al-Saadi", "n.saadi@staff.example"),
     ];
 
     private static HttpContext Http()
@@ -58,7 +52,7 @@ public sealed class ListInitialsSearchTests
 
     private static async Task<IReadOnlyList<string>> Find(string search, ListBinding<Person>? binding = null)
     {
-        var result = await (binding ?? Plain().Initials(p => p.Initials)).InMemory("test rows")
+        var result = await (binding ?? Plain().Initials(p => p.Name)).InMemory("test rows")
             .QueryAsync(Rows.AsQueryable(), new ListRequest { Search = search, Take = 200 }, Http(), CancellationToken.None);
         Assert.Null(result.Problem);
         return result.Rows.Select(r => r.Name).ToList();
@@ -91,14 +85,15 @@ public sealed class ListInitialsSearchTests
     }
 
     [Fact]
-    public void The_binding_exposes_its_initials_for_the_index_gate()
+    public async Task Initials_need_one_word_per_letter_in_order_and_words_end_at_hyphens()
     {
-        Assert.Null(((IListBinding)Plain()).InitialsColumn);
-        var initials = ((IListBinding)Plain().Initials(p => p.Initials)).InitialsColumn;
-        Assert.NotNull(initials);
-        Assert.Equal(ListSearch.InitialsKey, initials.Key);
-        Assert.Equal(nameof(Person.Initials), initials.Member);
-        // Further columns and other definitions keep them.
-        Assert.NotNull(((IListBinding)Plain().Initials(p => p.Initials).ServeAs(People)).InitialsColumn);
+        // Majid Anil Pillai has three words; "ma" (two) and "mapk" (four) are not his initials.
+        Assert.DoesNotContain("Majid Anil Pillai", await Find("mapk"));
+        Assert.DoesNotContain("Majid Anil Pillai", await Find("pam"));
+        Assert.Equal(["Mapara Khan"], await Find("mk"));
+        Assert.Contains("Ahmed Latif Ibrahim", await Find("ALI"));
+        Assert.Equal("^m[^ -]*[ -]+a[^ -]*[ -]+p[^ -]*$", ListSearch.InitialsPattern("map"));
+        // Words end at hyphens too.
+        Assert.Equal(["Noor Al-Saadi"], await Find("nas"));
     }
 }

@@ -416,13 +416,6 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_sign_in_at");
 
-                    b.Property<string>("NameInitials")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("text")
-                        .HasColumnName("name_initials")
-                        .HasComputedColumnSql("regexp_replace(regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\\1', 'g'), '[^[:alpha:]]+', '', 'g')", true);
-
                     b.Property<string>("Numerals")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -470,9 +463,6 @@ namespace Erp.Modules.Identity.Migrations
                     b.HasIndex("TenantId", "EmailNormalized")
                         .IsUnique()
                         .HasDatabaseName("ix_users_tenant_id_email_normalized");
-
-                    b.HasIndex("TenantId", "NameInitials")
-                        .HasDatabaseName("ix_users_tenant_id_name_initials");
 
                     b.HasIndex("TenantId", "CreatedAt", "Id")
                         .HasDatabaseName("ix_users_tenant_id_created_at_id");

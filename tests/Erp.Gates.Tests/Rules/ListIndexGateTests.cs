@@ -101,31 +101,6 @@ public sealed class ListIndexGateTests(GateFixture fixture)
                     problems.Add($"list '{list.Key}': sortable column '{sortable.Key}' ({schema}.{table}.{column}) has no B-tree index on (tenant_id, {column}, …)");
                 }
             }
-            // The initials a one-word search also matches, by equality: a B-tree index leading with
-            // (tenant_id, initials), so the search seeks them.
-            if (binding.InitialsColumn is { } initials)
-            {
-                checkedIndexes++;
-                var column = initials.Member is { } member ? entity.FindProperty(member)?.GetColumnName(store) : null;
-                if (column is null)
-                {
-                    problems.Add($"list '{list.Key}': its search initials read a computed value, which no index can serve; store them in a column");
-                    continue;
-                }
-                var btree = await DbCatalog.ScalarAsync<long>(admin, """
-                    SELECT count(*)
-                      FROM pg_index i
-                      JOIN pg_class t ON t.oid = i.indrelid JOIN pg_namespace n ON n.oid = t.relnamespace
-                      JOIN pg_class x ON x.oid = i.indexrelid JOIN pg_am am ON am.oid = x.relam
-                     WHERE n.nspname = @s AND t.relname = @t AND am.amname = 'btree' AND i.indisvalid AND i.indpred IS NULL
-                       AND (SELECT attname FROM pg_attribute WHERE attrelid = t.oid AND attnum = i.indkey[0]) = 'tenant_id'
-                       AND (SELECT attname FROM pg_attribute WHERE attrelid = t.oid AND attnum = i.indkey[1]) = @c
-                    """, ("s", schema), ("t", table), ("c", column));
-                if (btree == 0)
-                {
-                    problems.Add($"list '{list.Key}': its search initials ({schema}.{table}.{column}) have no B-tree index on (tenant_id, {column}, …)");
-                }
-            }
         }
         Assert.True(databaseLists > 0, "No list is served by the database; the index gate checked nothing.");
         Assert.True(problems.Count == 0, string.Join("\n", problems));

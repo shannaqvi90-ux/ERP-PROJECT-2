@@ -40,11 +40,15 @@ public static class ListSearch
     /// people whose names hold the word come first.</summary>
     internal const int InitialsScore = 1;
 
-    /// <summary>Most letters a word may have and still be tried as initials.</summary>
-    public const int MaxInitials = 8;
+    /// <summary>Most letters a word may have and still be tried as initials (names of more words
+    /// are rare; a longer word is served by the trigram index alone).</summary>
+    public const int MaxInitials = 5;
 
-    /// <summary>The key of a binding's initials (never a column key: column keys cannot start with '~').</summary>
-    public const string InitialsKey = "~initials";
+    /// <summary>A value whose words start with the word's letters, in order, one word per letter
+    /// ("map": "Majid Anil Pillai", "Mona Al-Pillai"), as a case-insensitive regular expression
+    /// PostgreSQL and .NET read alike; words end at spaces and hyphens.</summary>
+    public static string InitialsPattern(string word) =>
+        "^" + string.Join("[^ -]*[ -]+", word.Select(c => Pattern(c.ToString()))) + "[^ -]*$";
 
     /// <summary>Relevance is score × this, minus the length of the first search field (capped), so
     /// that among equally good matches the shorter (closer) value comes first.</summary>

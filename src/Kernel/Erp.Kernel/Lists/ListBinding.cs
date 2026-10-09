@@ -39,11 +39,6 @@ public interface IListBinding
     /// module shows over this module's rows, see <c>ModuleBuilder.List(definition, servedBy)</c>):
     /// the columns the other definition names keep their bindings, the rest are left out.</summary>
     IListBinding ServeAs(ListDefinition definition);
-
-    /// <summary>The stored initials of each row's first search field that a one-word search also
-    /// matches (see <see cref="ListBinding{T}.Initials"/>), or null. Its key is
-    /// <see cref="ListSearch.InitialsKey"/>; the index gate reads its member like a column's.</summary>
-    ListBoundColumn? InitialsColumn => null;
 }
 
 /// <summary>The result of one list query: the page's rows, or the problem the caller must fix.</summary>
@@ -148,21 +143,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     }
 
     /// <summary>
-    /// A binding whose one-word searches also match the initials of the first search field (a
-    /// user's "map" for "Majid Anil Pillai"): <paramref name="value"/> is a stored, indexed value of
-    /// the row holding them in lower case, one letter per word. Such a match ranks below every match
-    /// of the word itself (a word starting a field or a word scores more), so "ali" still lists the
-    /// people named Ali first. Only words of 2 to <see cref="ListSearch.MaxInitials"/> letters, none
-    /// Arabic, try it: the Arabic search fields keep their own rules.
+    /// A binding whose one-word searches also match the initials of a value of the row (a user's
+    /// "map" for the name "Majid Anil Pillai"): the value has exactly as many words as the search
+    /// has letters, each starting with its letter in order (words end at spaces and hyphens; any
+    /// case). Such a match ranks below every match of the word itself (a word starting a field or a
+    /// word scores more), so "ali" still lists the people named Ali first. Only words of 2 to
+    /// <see cref="ListSearch.MaxInitials"/> letters, none Arabic, try it (the Arabic search fields
+    /// keep their own rules). Matched by a regular expression on the value itself: nothing is
+    /// stored, and longer words keep the trigram index alone.
     /// </summary>
     public ListBinding<T> Initials(Expression<Func<T, string?>> value) =>
         new(Definition, _id, _idOf, _columns, InMemoryReason, value);
-
-    /// <inheritdoc/>
-    public ListBoundColumn? InitialsColumn => _initials is { } initials
-        ? new ListBoundColumn(ListSearch.InitialsKey, typeof(string), initials,
-            initials.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == initials.Parameters[0] ? property.Name : null)
-        : null;
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
@@ -435,8 +426,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
             var fields = SearchFieldsFor([word]);
             if (initials is not null)
             {
-                // The one word in the fields, or the initials of the first one (see Initials).
-                conditions.Add(Expression.OrElse(AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database), InitialsMatch(row, initials)));
+                // The one word in the fields, or the value's initials (see Initials). Two conditions
+                // that together say exactly that: the first holds only LIKE tests, which the trigram
+                // index serves (and row-level security lets it, as they leak nothing); the second
+                // adds the regular expression, read only on the rows the first leaves.
+                var inFields = AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database);
+                conditions.Add(Expression.OrElse(inFields, InitialsPrefilter(row, initials, database)));
+                conditions.Add(Expression.OrElse(inFields, InitialsMatch(row, initials, database)));
                 continue;
             }
             if (database && spellings.Count > 1)
@@ -518,7 +514,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         if (InitialsWord(plan) is { } initials)
         {
-            parts.Add(Score(InitialsMatch(row, initials), ListSearch.InitialsScore));
+            parts.Add(Score(InitialsMatch(row, initials, database), ListSearch.InitialsScore));
         }
         var score = parts.Aggregate(Expression.Add);
         var first = Value(Definition.SearchFields[0], row);
@@ -536,9 +532,27 @@ public sealed class ListBinding<T> : IListBinding where T : class
             ? word
             : null;
 
-    /// <summary>The row's stored initials equal the word (lower case, as words are).</summary>
-    private Expression InitialsMatch(ParameterExpression row, string word) =>
-        Expression.Equal(new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body), Box(word, typeof(string)));
+    /// <summary>The row's value has the word's letters as its initials (see <see cref="ListSearch.InitialsPattern"/>).
+    /// Tested first with case-insensitive LIKE patterns the regular expression implies (the value
+    /// starts with the first letter; a word starts with each next one after a space or a hyphen),
+    /// which the trigram index serves as word-start trigrams: the regular expression then reads a
+    /// few hundred rows of 100,000, not every row.</summary>
+    private Expression InitialsMatch(ParameterExpression row, string word, bool database) =>
+        Expression.AndAlso(InitialsPrefilter(row, word, database),
+            RegexMatch(new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body), ListSearch.InitialsPattern(word), database));
+
+    /// <summary>The LIKE tests the initials imply (see <see cref="InitialsMatch"/>).</summary>
+    private Expression InitialsPrefilter(ParameterExpression row, string word, bool database)
+    {
+        var value = new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body);
+        var match = Like(value, EscapeLike(word[..1]) + "%", database);
+        foreach (var letter in word[1..])
+        {
+            var l = EscapeLike(letter.ToString());
+            match = Expression.AndAlso(match, Expression.OrElse(Like(value, "% " + l + "%", database), Like(value, "%-" + l + "%", database)));
+        }
+        return match;
+    }
 
     private static readonly MethodInfo RegexIsMatch = typeof(System.Text.RegularExpressions.Regex).GetMethod(
         nameof(System.Text.RegularExpressions.Regex.IsMatch), [typeof(string), typeof(string), typeof(System.Text.RegularExpressions.RegexOptions)])!;

@@ -349,15 +349,13 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
         await Problem(admin, $"/api/identity/roles?filter={Q("userCount gt 'many'")}");
     }
     /// <summary>Initials (critic p05 round 7): a one-word search finds a user by the first letters of
-    /// their name's words, after the users the word itself matches; the database keeps the initials
-    /// from the name (a rename moves them) and the audit trail records the name, not the initials.</summary>
+    /// their name's words, after the users the word itself matches; a rename moves them.</summary>
     [Fact]
     public async Task A_user_is_found_by_the_initials_of_their_name_and_the_initials_follow_a_rename()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var tag = Guid.NewGuid().ToString("N")[..6];
-        // Initials of letters no seeded name or address holds: "qzxw" and, after the rename, "qzxv"
-        // (a word starting with a digit gives no initial).
+        // Initials of letters no seeded name or address holds: "qzxw" and, after the rename, "qzxv".
         var created = await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"initials.{tag}@{Env.TenantA.EmailDomain}", displayName = "Qadir Zayed Xavier-Wahid", language = "en", roleIds = Array.Empty<Guid>(),
@@ -373,19 +371,11 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
 
         var renamed = await admin.PutAsJsonAsync($"/api/identity/users/{id}", new
         {
-            displayName = "Qadir 7 Zayed Xavier Victor", language = "en", isActive = true, version = user.GetProperty("version").GetUInt32(),
+            displayName = "Qadir Zayed Xavier Victor", language = "en", isActive = true, version = user.GetProperty("version").GetUInt32(),
         });
         Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
         Assert.Empty(Ids(await Get(admin, $"/api/identity/users?search=qzxw")));
         Assert.Equal([id], Ids(await Get(admin, $"/api/identity/users?search=qzxv")));
 
-        await using var owner = await Env.OpenAdminAsync();
-        await using var audit = new Npgsql.NpgsqlCommand(
-            "SELECT count(*) FILTER (WHERE changes ? 'display_name'), count(*) FILTER (WHERE changes ? 'name_initials') FROM audit.entries WHERE table_name = 'users' AND record_id = @id", owner);
-        audit.Parameters.AddWithValue("id", Guid.Parse(id));
-        await using var reader = await audit.ExecuteReaderAsync();
-        Assert.True(await reader.ReadAsync());
-        Assert.Equal(2, reader.GetInt64(0));
-        Assert.Equal(0, reader.GetInt64(1));
     }
 }

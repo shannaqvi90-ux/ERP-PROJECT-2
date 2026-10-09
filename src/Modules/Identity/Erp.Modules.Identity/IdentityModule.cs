@@ -88,10 +88,6 @@ public sealed class User : TenantEntity
     /// companies they work in; comparing with this tells whether the user holds roles elsewhere.</summary>
     public int CompanyRoleCount { get; set; }
 
-    /// <summary>The display name's initials, lower case, one letter per word ("map" for "Majid Anil
-    /// Pillai"), kept by the database (a stored generated column, never written by the application):
-    /// what a one-word search of the users list also matches.</summary>
-    public string NameInitials { get; set; } = "";
 }
 
 /// <summary>
@@ -240,10 +236,6 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 {
     public const string SchemaName = "identity";
 
-    /// <summary>The users' initials: the first letter of every word of the trimmed, lower-case
-    /// display name, words ending at white space and hyphens; a word that starts with anything but
-    /// a letter (a number, a bracket) gives none, as initials are searched by words of letters only.</summary>
-    internal const string UserInitialsSql = """regexp_replace(regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\1', 'g'), '[^[:alpha:]]+', '', 'g')""";
 
     protected override string Schema => SchemaName;
 
@@ -286,10 +278,6 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.HasIndex(x => new { x.TenantId, x.LastSignInAt, x.Id });
             // Kept by the count_company_roles trigger, never written by the application.
             e.Property(x => x.CompanyRoleCount).HasDefaultValue(0).ValueGeneratedOnAddOrUpdate();
-            // The first letter of each word of the name (words end at spaces and hyphens), searched
-            // by equality on (tenant, initials).
-            e.Property(x => x.NameInitials).HasComputedColumnSql(UserInitialsSql, stored: true);
-            e.HasIndex(x => new { x.TenantId, x.NameInitials });
         });
 
         modelBuilder.Entity<Role>(e =>
