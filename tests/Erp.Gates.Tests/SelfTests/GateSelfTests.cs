@@ -797,7 +797,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // planted module's too: they are reviewed for product lists, not for this one.
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal) &&
                                                      !p.Contains($"/api/lists/{LeakyModule.ScrollList}/views", StringComparison.Ordinal) &&
-                                                     !p.Contains($"/api/lists/{LeakyModule.JumpList}/views", StringComparison.Ordinal));
+                                                     !p.Contains($"/api/lists/{LeakyModule.JumpList}/views", StringComparison.Ordinal) &&
+                                                     !p.Contains($"/api/lists/{LeakyModule.SortedList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);
