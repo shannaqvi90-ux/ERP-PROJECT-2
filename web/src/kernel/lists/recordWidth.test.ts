@@ -31,7 +31,8 @@ describe("record form width", () => {
   });
 
   it("measures a drag from the form's side of the list body, the left in Arabic", () => {
-    const body = { left: 100, right: 1100, width: 1000 };
+    // The list body from x = 100 to 1,100.
+    const body = new DOMRect(100, 0, 1000, 600);
     expect(shareFromPointer(600, body, false)).toBe(50);
     expect(shareFromPointer(400, body, false)).toBe(70);
     expect(shareFromPointer(400, body, true)).toBe(30);
