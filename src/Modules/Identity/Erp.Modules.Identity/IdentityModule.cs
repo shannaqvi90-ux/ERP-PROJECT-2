@@ -87,7 +87,6 @@ public sealed class User : TenantEntity
     /// in every company, kept by a database trigger). An administrator sees only the rows of the
     /// companies they work in; comparing with this tells whether the user holds roles elsewhere.</summary>
     public int CompanyRoleCount { get; set; }
-
 }
 
 /// <summary>
@@ -235,7 +234,6 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     : ModuleDbContext(options, tenant)
 {
     public const string SchemaName = "identity";
-
 
     protected override string Schema => SchemaName;
 
