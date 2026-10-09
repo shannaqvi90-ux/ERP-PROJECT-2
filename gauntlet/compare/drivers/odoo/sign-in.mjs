@@ -70,11 +70,64 @@ function variant(returning) {
   };
 }
 
+/**
+ * `passkey`: the reference signs in with a passkey too (its auth_passkey module, installed on the
+ * rig). Set-up adds one the way its user does (user menu > Preferences > Security > Add Passkey >
+ * confirm the password > name it > Create; the device confirms at once in set-up) and signs out.
+ * Its sign-in screen asks the device only when the person picks "Use a Passkey"; then the person
+ * confirms on the device and the screen signs in.
+ */
+const passkey = {
+  path: 'The sign-in screen: click "Use a Passkey" > confirm on the device.',
+  async signIn(ctx) {
+    const { user, password } = ctx.task.input;
+    const page = ctx.page;
+    // A device of the user's from an earlier run is gone: set-up starts from a user with none.
+    await removeHarnessPasskeys(ctx);
+    await page.goto(LOGIN_URL(ctx));
+    await page.locator('input[name="login"]').fill(user);
+    await page.locator('input[name="password"]').fill(password);
+    await page.locator('input[name="password"]').press('Enter');
+    await page.locator('.o_main_navbar button.o_user_menu').waitFor();
+    await page.locator('.o_main_navbar button.o_user_menu').click();
+    await page.locator('.o-dropdown--menu [data-menu="preferences"], .o-dropdown--menu [data-menu="settings"]').first().click();
+    await page.locator('button[role=tab]:has-text("Security"), a[role=tab]:has-text("Security")').first().click();
+    await page.locator('button:has-text("Add Passkey")').click();
+    await page.locator('.modal [name=password] input, .modal input[type=password]').first().fill(password);
+    await page.locator('.modal button:has-text("Confirm Password")').click();
+    await page.locator('.modal .o_field_char input').first().fill('Harness device');
+    await page.locator('.modal button:has-text("Create")').first().click();
+    await page.locator('.modal').waitFor({ state: 'detached' });
+    await page.keyboard.press('Escape');
+    await signOut(page);
+  },
+  ready: 'input[name="login"]:focus, input[name="password"]:focus',
+  async run(op) {
+    await op.click(op.page.locator('a.passkey_login_link'), { label: 'Use a Passkey' });
+    await op.confirmOnDevice({ label: 'confirm on the device' });
+    await op.waitFor('.o_main_navbar button.o_user_menu', { label: 'signed in' });
+    await op.waitFor('.o_action_manager :is(.o_kanban_view, .o_list_view) :is(.o_kanban_record:not(.o_kanban_ghost), .o_data_row)', { label: 'working screen ready' });
+    return { remembered: false, passkey: true };
+  },
+  async cleanup(ctx) {
+    if (await ctx.page.locator('.o_main_navbar button.o_user_menu').isVisible().catch(() => false)) await signOut(ctx.page).catch(() => { });
+    // The passkey set-up added for the task's user is removed again.
+    await removeHarnessPasskeys(ctx).catch(() => { });
+  },
+};
+
+/** The passkeys of the task's user that set-up added (named "Harness device"), removed as the administrator. */
+async function removeHarnessPasskeys(ctx) {
+  const rpc = await adminRpc(ctx);
+  const keys = await rpc.call('auth.passkey.key', 'search', [[['create_uid', '=', ctx.state.uid], ['name', '=', 'Harness device']]]);
+  if (keys.length) await rpc.unlink('auth.passkey.key', keys);
+}
+
 export default {
   built: true,
-  path: 'Sign-in screen: e-mail > Tab > password > Enter (a returning browser keeps whatever the product remembers).',
+  path: 'Sign-in screen: e-mail > Tab > password > Enter (a returning browser keeps whatever the product remembers); with a passkey: Use a Passkey > confirm on the device.',
   run: variant(false).run,
-  variants: { 'new-device': variant(false), returning: variant(true) },
+  variants: { 'new-device': variant(false), returning: variant(true), passkey },
   async setup(ctx) { ctx.state.uid = await ensureUser(ctx); },
   async verify(ctx) {
     // The browser's own session, read through the back end with its cookie.

@@ -4,6 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { consoleOf, launch, newContext } from './browser.mjs';
+import { Device } from './device.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
 import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
@@ -451,6 +452,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   let routed = false;
   let thaw = null;
   const kind = startKind(task);
+  // The person's passkey device, for a task that declares one (lib/device.mjs).
+  const device = task.device === 'passkey' ? new Device() : null;
   // Every wait and step times out after `opts.timeout` (2 minutes; the plant tests use less).
   const timeout = opts.timeout ?? 120_000;
   // A hook that never answers stops the driver process (set-up of a slow product may take minutes).
@@ -460,7 +463,9 @@ export async function execute(task, driver, product, productId, needles, out, op
   try {
     session = new DriverSession(host, { product, timeout });
     context = await newContext(browser);
+    await device?.attachContext(context);
     page = await context.newPage();
+    await device?.attachPage(page);
     page.setDefaultTimeout(timeout);
     session.page = guard(page);
     await hook('begin', {
@@ -471,9 +476,12 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (driver.hooks.setup) await hook('setup');
     if (driver.hooks.signIn) {
       const restart = async () => {
+        await device?.collect();
         await context.close().catch(() => {});
         context = await newContext(browser);
+        await device?.attachContext(context);
         page = await context.newPage();
+        await device?.attachPage(page);
         page.setDefaultTimeout(timeout);
         session.page = guard(page);
       };
@@ -487,11 +495,12 @@ export async function execute(task, driver, product, productId, needles, out, op
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
     run.set_up_calls_waited = await session.drain(timeout);
-    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session }));
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session, device }));
+    if (device) run.device = { passkeys_held: device.held, asked_at_start: device.waiting(page) };
     session.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
     if (driver.hooks.observe) await hook('observe', { handles: handles() });
-    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout });
+    op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout, device });
     if (session.apiSession) op.useApi(apiSessionFor(product, session.apiSession));
 
     // A task already done before the clock starts was done by set-up: the run measures nothing.
@@ -609,6 +618,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       takeViolations();
     }
     session?.close();
+    device?.close();
     await host.stop();
     await browser.close().catch(() => {});
   }
@@ -660,7 +670,7 @@ export function startKind(task) {
  * (cookies; local storage too for a signed-out start); wait until the product is ready and quiet; check and record the
  * start state. Returns the fresh { context, page }.
  */
-async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}, { hook, session }) {
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}, { hook, session, device = null }) {
   const endedOn = oldPage.url();
   let url = null;
   if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind, task);
@@ -678,10 +688,14 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   // the driver opened itself may still hold an action it started and left pending (a slow typed
   // text, a delayed click, a navigation), which would otherwise finish inside the measured part.
   const others = browser.contexts().filter(c => c !== oldContext);
+  // The passkey device is the person's, not the browser's: what set-up made on it stays on it.
+  await device?.collect();
   await Promise.all([oldContext, ...others].map(c => c.close().catch(() => {})));
   const context = await newContext(browser, { storageState });
   await resetClipboard(context);
+  await device?.attachContext(context);
   const page = await context.newPage();
+  await device?.attachPage(page);
   page.setDefaultTimeout(timeout);
   if (kind === 'api') {
     await page.setContent(apiTranscriptHtml(task, []));

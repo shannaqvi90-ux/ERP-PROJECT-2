@@ -169,7 +169,7 @@ const PLAYWRIGHT = new Set(['Page', 'Frame', 'BrowserContext', 'Browser', 'Locat
 const BUILDERS = new Set(['locator', 'getByRole', 'getByText', 'getByLabel', 'getByPlaceholder', 'getByAltText', 'getByTitle', 'getByTestId',
   'frameLocator', 'filter', 'first', 'last', 'nth', 'or', 'and', 'contentFrame', 'owner', 'describe',
   'browserType', 'context', 'mainFrame', 'page', 'frame', 'browser', 'request', 'parentFrame']);
-const OP_METHODS = new Set(['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'waitFor', 'shot']);
+const OP_METHODS = new Set(['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot']);
 const MAX_POST_DATA = 1 << 20;
 const API_HEADERS = new Set(['authorization', 'cookie', 'x-erp-request', 'accept', 'accept-language']);
 

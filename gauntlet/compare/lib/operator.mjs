@@ -94,7 +94,7 @@ const describeControl = ch => ({ '\n': '\\n (Enter)', '\r': '\\r (Enter)', '\t':
  */
 const OPTIONS = {
   click: ['label'], doubleClick: ['label'], scrollTo: ['label'], type: ['label'], fill: ['label'], press: ['label'],
-  browserKey: ['label'], pickFile: ['label'], clickForDownload: ['label'], request: ['label', 'expect'],
+  browserKey: ['label'], pickFile: ['label'], clickForDownload: ['label'], request: ['label', 'expect'], confirmOnDevice: ['label'],
   waitFor: ['label', 'timeout', 'arg', 'state'],
 };
 function checkOptions(method, opts) {
@@ -126,7 +126,7 @@ export class NotBuilt extends Error {
 }
 
 export class Operator {
-  #page; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null;
+  #page; #device = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null;
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -134,8 +134,9 @@ export class Operator {
    *   moments: the screenshot moments the task declares; while measuring, a driver may shoot only
    *   these, each once (the runner checks afterwards that every one was shot).
    */
-  constructor(page, { shotsDir, branding, shotFormat = 'jpeg', defaultTimeout = 120_000, moments = null }) {
+  constructor(page, { shotsDir, branding, shotFormat = 'jpeg', defaultTimeout = 120_000, moments = null, device = null }) {
     this.#page = unwrap(page);
+    this.#device = device;
     this.shotsDir = shotsDir;
     this.branding = branding;
     this.shotFormat = shotFormat;
@@ -361,6 +362,25 @@ export class Operator {
   }
 
   /**
+   * The person confirms on their passkey device (fingerprint, face or device PIN) what the product
+   * asked the browser for (lib/device.mjs): one step, no keystroke. It waits for the product to ask
+   * (system wait) and fails when it never does: there is nothing to confirm. Only for a task that
+   * declares a device (`device: 'passkey'`).
+   */
+  async confirmOnDevice(opts) {
+    const { label } = checkOptions('confirmOnDevice', opts);
+    if (!this.#device) throw new RefusedClaim('op.confirmOnDevice(): the task declares no device (device: \'passkey\'), so there is no device to confirm on');
+    const t = this.#begin();
+    if (!(await this.#device.whenAsked(this.#page, this.defaultTimeout))) {
+      throw new Error(`op.confirmOnDevice(): the product did not ask the device within ${Math.round(this.defaultTimeout / 1000)} s; there is nothing to confirm`);
+    }
+    const waited = this.now() - t;
+    if (waited > 0.001) this.#waits.push({ label: 'the product asks the device', at: round(t), seconds: round(waited) });
+    const ceremony = this.#device.confirm(this.#page);
+    return this.#record('device', label || (ceremony === 'create' ? 'confirm on the device: make a passkey' : 'confirm on the device: use the passkey'), 0, t, { ceremony });
+  }
+
+  /**
    * Choose a file through the browser's file dialog: the click that opens the dialog (one
    * step) and the choice of the file in it (one step, modelled as a double click).
    */
@@ -476,7 +496,7 @@ export class Operator {
     if (this.#view) return this.#view;
     const op = this;
     const view = {};
-    for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'waitFor', 'shot', 'now']) {
+    for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot', 'now']) {
       view[m] = (...args) => op[m](...args);
     }
     Object.defineProperties(view, {
@@ -503,6 +523,7 @@ export class Operator {
       key_chords: by('key'),
       file_picks: by('file-pick'),
       requests: by('request'),
+      device_confirmations: by('device'),
       machine_seconds: this.machineSeconds,
       system_wait_seconds: wait,
       human_seconds: klm.human_seconds,

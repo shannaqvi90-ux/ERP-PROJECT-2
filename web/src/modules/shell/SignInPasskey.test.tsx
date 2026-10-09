@@ -18,7 +18,7 @@ const challenge = { challenge: "AAECAwQFBgcICQoLDA0ODw", rpId: "localhost", time
 
 /** A device that answers (or refuses) navigator.credentials.get. */
 function device(answer: () => Promise<unknown>) {
-  const get = vi.fn(answer);
+  const get = vi.fn((options: CredentialRequestOptions) => (void options, answer()));
   Object.defineProperty(window, "PublicKeyCredential", { configurable: true, value: function PublicKeyCredential() {} });
   Object.defineProperty(navigator, "credentials", { configurable: true, value: { get, create: vi.fn() } });
   return get;
@@ -61,9 +61,9 @@ describe("sign-in with a passkey", () => {
     await settle();
     await settle();
     expect(get).toHaveBeenCalledTimes(1);
-    const options = get.mock.calls[0][0] as unknown as { publicKey: PublicKeyCredentialRequestOptions };
-    expect(options.publicKey.userVerification).toBe("required");
-    expect(options.publicKey.rpId).toBe("localhost");
+    const options = get.mock.calls[0]![0];
+    expect(options.publicKey?.userVerification).toBe("required");
+    expect(options.publicKey?.rpId).toBe("localhost");
     const signIn = calls.find((c) => c.url === "/api/auth/sign-in")!;
     expect(signIn.body).toEqual({ passkey: { credentialId: "AQID", clientDataJson: "BA", authenticatorData: "BQ", signature: "Bg", userHandle: "Bwg" } });
     expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
