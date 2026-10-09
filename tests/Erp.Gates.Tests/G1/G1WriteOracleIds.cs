@@ -42,8 +42,8 @@ public static partial class G1WriteOracle
         var checks = 0;
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
-        using var a = await env.SignInAsync(env.Email(env.TenantA, "admin"));
-        using var b = await env.SignInAsync(env.Email(env.TenantB, "admin"));
+        using var a = await env.SignInAsync(env.Email(env.TenantA, "admin"), workspace: env.TenantA.Code);
+        using var b = await env.SignInAsync(env.Email(env.TenantB, "admin"), workspace: env.TenantB.Code);
         await UseWorkingCompanyAsync(a);
         await UseWorkingCompanyAsync(b);
         var aAdmin = (await a.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user").GetProperty("id").GetGuid();
