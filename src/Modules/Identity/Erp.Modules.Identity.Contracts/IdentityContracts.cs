@@ -31,7 +31,13 @@ public static class IdentityLists
 }
 
 /// <summary>Display facts about users other modules may show (for example "changed by").</summary>
-public sealed record UserSummary(Guid Id, string DisplayName, string Email);
+/// <param name="DisplayNameAr">The name in Arabic script, when the user has one: what Arabic screens
+/// and documents show in place of <paramref name="DisplayName"/>.</param>
+public sealed record UserSummary(Guid Id, string DisplayName, string Email, string? DisplayNameAr = null)
+{
+    /// <summary>The name in the language asked for: the Arabic name on Arabic screens and documents when given.</summary>
+    public string NameFor(string language) => language == "ar" && !string.IsNullOrWhiteSpace(DisplayNameAr) ? DisplayNameAr : DisplayName;
+}
 
 /// <summary>A page of users (newest first) and how many match in all.</summary>
 public sealed record UserSummaryPage(IReadOnlyList<UserSummary> Items, int Total);

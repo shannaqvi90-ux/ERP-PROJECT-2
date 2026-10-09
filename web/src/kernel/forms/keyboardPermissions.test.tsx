@@ -126,6 +126,8 @@ async function sweep(canEdit: boolean, isNew = false, exhaustive = false) {
     targets: [
       () => container().querySelector<HTMLElement>(".record-header h2"),
       () => container().querySelector<HTMLElement>('[role="tab"][aria-selected="true"]'),
+      // A one-line field: Enter saves there (round 5); a read-only form's fields are disabled.
+      () => container().querySelector<HTMLElement>("form.record-form input:not([type=checkbox])"),
       () => null,
     ],
   });
@@ -164,5 +166,6 @@ describe("the record form by keyboard, for a user who may not change the record"
     const keys = new Set(found.filter((w) => w.method === "PUT" && w.url === "/api/things/t1").map((w) => w.key.split(" ")[0]));
     expect(keys).toContain("Ctrl+KeyS");
     expect(keys).toContain("Ctrl+Enter");
+    expect(keys).toContain("Enter");
   }, sweepTimeLimit);
 });

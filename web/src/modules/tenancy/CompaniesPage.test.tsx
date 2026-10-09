@@ -336,7 +336,7 @@ describe("companies screen", () => {
     expect(rows().some((r) => r.includes("Jebel Ali Branch"))).toBe(true);
   });
 
-  it("saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces both on the save button", async () => {
+  it("saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces them and Enter (in a one-line field) on the save button", async () => {
     const calls = mockFetch((method, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
@@ -359,7 +359,7 @@ describe("companies screen", () => {
     const posts = calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/companies");
     expect(posts).toHaveLength(1);
     expect(posts[0]!.body).toMatchObject({ code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC" });
-    expect(view.container.querySelector('button[type="submit"][aria-keyshortcuts]')!.getAttribute("aria-keyshortcuts")).toBe("Control+S Control+Enter");
+    expect(view.container.querySelector('button[type="submit"][aria-keyshortcuts]')!.getAttribute("aria-keyshortcuts")).toBe("Enter Control+S Control+Enter");
   });
 
   it("shows the company under its Arabic name on Arabic screens and starts a new branch in the company's emirate", async () => {
