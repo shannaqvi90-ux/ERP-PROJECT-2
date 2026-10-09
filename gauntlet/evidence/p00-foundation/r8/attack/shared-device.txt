@@ -1,0 +1,4 @@
+arrival (1.5 s): {"asking":true,"askingText":"Confirm on your device: your fingerprint, face or device PIN.","focus":"email","emailDisabled":false}
+after typing e-mail while asking: {"asking":true,"askingText":"Confirm on your device: your fingerprint, face or device PIN.","focus":"email","emailDisabled":false} email value: admin@alnoor.example
+signed in with e-mail, Enter, password, Enter while the passkey request was open: false
+Reading: the Sign in button is disabled while the passkey request is open (web/src/modules/shell/SignInPage.tsx: disabled={busy || asking}), the page has no way to abort the request (no AbortController), and the request lives for the challenge timeout GET /api/auth/session returns: "timeout":300000 (300 s). In a real browser the system passkey prompt opens over the page and must be cancelled first: cancel + e-mail + Enter + password + Enter = 5 steps, against Odoo's 4 (e-mail, Tab, password, Enter).

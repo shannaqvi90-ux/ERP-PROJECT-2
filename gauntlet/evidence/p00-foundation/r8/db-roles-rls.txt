@@ -1,0 +1,86 @@
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcanlogin | rolcreaterole | rolcreatedb 
+-----------+----------+--------------+------------+-------------+---------------+-------------
+ erp_app   | f        | f            | f          | t           | f             | f
+ erp_auth  | f        | f            | f          | f           | f             | f
+ erp_owner | f        | f            | t          | t           | f             | f
+(3 rows)
+
+  member   | of_role  
+-----------+----------
+ erp_owner | erp_auth
+(1 row)
+
+                t                 | rls | forced |   owner   | has_tenant | nullable | app_select 
+----------------------------------+-----+--------+-----------+------------+----------+------------
+ audit.__ef_migrations_history    | f   | f      | erp_owner | f          |          | f
+ audit.entries                    | t   | t      | erp_owner | t          | NO       | t
+ identity.__ef_migrations_history | f   | f      | erp_owner | f          |          | f
+ identity.passkeys                | t   | t      | erp_owner | t          | NO       | t
+ identity.roles                   | t   | t      | erp_owner | t          | NO       | t
+ identity.sessions                | t   | t      | erp_owner | t          | NO       | t
+ identity.sign_in_attempts        | t   | t      | erp_owner | t          | NO       | t
+ identity.sign_in_secret          | f   | f      | erp_owner | f          |          | f
+ identity.user_company_roles      | t   | t      | erp_owner | t          | NO       | t
+ identity.user_credentials        | t   | t      | erp_owner | t          | NO       | f
+ identity.user_roles              | t   | t      | erp_owner | t          | NO       | t
+ identity.users                   | t   | t      | erp_owner | t          | NO       | t
+ lists.__ef_migrations_history    | f   | f      | erp_owner | f          |          | f
+ lists.saved_views                | t   | t      | erp_owner | t          | NO       | t
+ tenancy.__ef_migrations_history  | f   | f      | erp_owner | f          |          | f
+ tenancy.branches                 | t   | t      | erp_owner | t          | NO       | t
+ tenancy.companies                | t   | t      | erp_owner | t          | NO       | t
+ tenancy.tenants                  | t   | t      | erp_owner | t          | NO       | t
+ tenancy.user_branch_access       | t   | t      | erp_owner | t          | NO       | t
+ tenancy.user_company_access      | t   | t      | erp_owner | t          | NO       | t
+ tenancy.user_company_totals      | t   | t      | erp_owner | t          | NO       | t
+ tenancy.user_workplaces          | t   | t      | erp_owner | t          | NO       | t
+(22 rows)
+
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+            fn            |  owner   
+--------------------------+----------
+ identity.resolve_session | erp_auth
+ identity.verify_sign_in  | erp_auth
+(2 rows)
+
+--- as erp_app (SET ROLE), tenant A bound in a transaction: B rows visible?
+BEGIN
+SET
+              set_config              |    set_config     | set_config 
+--------------------------------------+-------------------+------------
+ 0190a000-0000-7000-8000-000000000001 | 1791554137.673494 | all
+(1 row)
+
+      ?column?      | count 
+--------------------+-------
+ users of B visible |     0
+(1 row)
+
+      ?column?      | count 
+--------------------+-------
+ audit of B visible |     0
+(1 row)
+
+      ?column?      | count  
+--------------------+--------
+ users of A visible | 100005
+(1 row)
+
+UPDATE 0
+ROLLBACK
+BEGIN
+SET
+            ?column?            | count 
+--------------------------------+-------
+ no tenant bound: users visible |     0
+(1 row)
+
+         ?column?         | has_function_privilege 
+--------------------------+------------------------
+ erp_auth function as app | t
+(1 row)
+
+ROLLBACK

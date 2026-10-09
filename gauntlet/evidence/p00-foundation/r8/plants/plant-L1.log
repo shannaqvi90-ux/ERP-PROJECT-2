@@ -1,0 +1,31 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.26]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.73]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.97]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:18.62]     Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [FAIL]
+[xUnit.net 00:00:18.62]       versions shown to tenant A that are transaction ids of tenant rows: 791, 795, 783, 765, 784, 789
+[xUnit.net 00:00:18.62]       Stack Trace:
+[xUnit.net 00:00:18.62]         /work/tests/Erp.Gates.Tests/G1/G1RowVersionTests.cs(60,0): at Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id()
+[xUnit.net 00:00:18.62]         /work/tests/Erp.Gates.Tests/G1/G1RowVersionTests.cs(62,0): at Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id()
+[xUnit.net 00:00:18.63]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:18.63]       Output:
+[xUnit.net 00:00:18.63]         6 versions shown to tenant A; 17 transaction ids over 440 tenant rows
+[xUnit.net 00:00:18.81]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [1 s]
+  Error Message:
+   versions shown to tenant A that are transaction ids of tenant rows: 791, 795, 783, 765, 784, 789
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id() in /work/tests/Erp.Gates.Tests/G1/G1RowVersionTests.cs:line 60
+   at Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id() in /work/tests/Erp.Gates.Tests/G1/G1RowVersionTests.cs:line 62
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 6 versions shown to tenant A; 17 transaction ids over 440 tenant rows
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 19.5087 Seconds

@@ -1,0 +1,87 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/RowVersions.cs b/src/Kernel/Erp.Kernel/Data/RowVersions.cs
+index d47059c..9534c0e 100644
+--- a/src/Kernel/Erp.Kernel/Data/RowVersions.cs
++++ b/src/Kernel/Erp.Kernel/Data/RowVersions.cs
+@@ -30,6 +30,7 @@ public static class RowVersions
+     /// <summary>The version a client sees for <paramref name="xmin"/>.</summary>
+     public static uint Hide(uint xmin)
+     {
++        if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L1") { return xmin; }
+         var left = (ushort)(xmin >> 16);
+         var right = (ushort)xmin;
+         for (var round = 0; round < Rounds; round++)
+@@ -42,6 +43,7 @@ public static class RowVersions
+     /// <summary>The <c>xmin</c> a version a client sent back stands for.</summary>
+     public static uint Reveal(uint version)
+     {
++        if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L1") { return version; }
+         var left = (ushort)(version >> 16);
+         var right = (ushort)version;
+         for (var round = Rounds - 1; round >= 0; round--)
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 8a3e9b6..cbc50fd 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -241,6 +241,21 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var filtered = Filtered(source, plan, database);
+         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        if (database && Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L3" && string.IsNullOrEmpty(request.Search) && string.IsNullOrEmpty(request.Filter))
++        {
++            // Plant L3: a 'fast count' for big unfiltered lists from the table statistics (all tenants).
++            var relname = typeof(T).Name switch { "User" => "users", "Branch" => "branches", "Company" => "companies", _ => null };
++            if (relname is not null)
++            {
++                var dbSession = http.RequestServices.GetService(typeof(Erp.Kernel.Data.ErpDbSession)) as Erp.Kernel.Data.ErpDbSession;
++                if (dbSession is not null)
++                {
++                    await using var cmd = new Npgsql.NpgsqlCommand("SELECT (n_live_tup + 0)::bigint FROM pg_stat_user_tables WHERE relname = @r ORDER BY n_live_tup DESC LIMIT 1", dbSession.Connection, dbSession.Transaction);
++                    cmd.Parameters.AddWithValue("r", relname);
++                    if (await cmd.ExecuteScalarAsync(cancellationToken) is long live && live > 0) { total = (int)live; }
++                }
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17..a903e9c 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,17 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        else if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P1" && context.User.Identity?.IsAuthenticated == true
++                 && context.Resource is HttpContext http && (HttpMethods.IsGet(http.Request.Method) || HttpMethods.IsHead(http.Request.Method)))
++        {
++            // Plant P1: anyone who may do anything with a resource may read it.
++            var parts = requirement.Permission.Split('.');
++            var prefix = parts[0] + "." + parts[1] + ".";
++            if (context.User.Permissions().Any(p => p.StartsWith(prefix, StringComparison.Ordinal)))
++            {
++                context.Succeed(requirement);
++            }
++        }
+         return Task.CompletedTask;
+     }
+ }
+@@ -89,10 +100,18 @@ public static class PermissionEndpointExtensions
+             throw new ArgumentException($"Invalid permission key '{permission}'.", nameof(permission));
+         }
+         builder.WithMetadata(new RequiresPermissionAttribute(permission));
++        if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P2" && permission.EndsWith(".read", StringComparison.Ordinal))
++        {
++            // Plant P2: reads only need a signed-in user.
++            builder.RequireAuthorization(new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme).RequireAuthenticatedUser().Build());
++        }
++        else
++        {
+         builder.RequireAuthorization(new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme)
+             .RequireAuthenticatedUser()
+             .AddRequirements(new PermissionRequirement(permission))
+             .Build());
++        }
+         builder.ProducesProblem(StatusCodes.Status401Unauthorized);
+         builder.ProducesProblem(StatusCodes.Status403Forbidden);
+         return builder;

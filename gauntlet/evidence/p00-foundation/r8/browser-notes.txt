@@ -1,0 +1,40 @@
+(attack/browse.mjs, parts 1-3, first run; console output kept verbatim)
+1. sign-in html dir/lang: ltr/en
+   wrong password message: Sign-in failed. Check your e-mail and password and try again.
+   sign-in controls: ["العربية","Show","Sign in","Continue with a passkey"]
+   after language switch dir/lang: rtl/ar
+   Arabic sign-in labels: ["نظام تخطيط الموارد","English","البريد الإلكتروني","كلمة المرور","إظهار","تسجيل الدخول","المتابعة بمفتاح مرور"]
+2. English admin by keyboard on the plain address
+  focus on load (/): input[name=email][type=email]
+  focus after typing whole e-mail: input[name=email][type=email]
+  focus before password: input[name=password][type=password]
+  signed in, shell nav visible after 864 ms
+   shell dir/lang: ltr/en
+   Tab order (40 presses): a:Users > a:Roles > a:Company access > a:Companies > a:Branches > a:Workspace > a:Reports > a:My account > BODY > a:Skip to content > button:Show or hide the navigati > a:ERP > button:ALN-DXB · DEIRA-HQ > button:ALN-AUH > button:ALN-FZE > button:ALN-SHJ > button:Search screens, records a > button:العربية > button:Keyboard shortcuts > button:Mariam Al Mansoori > button:Sign out > a:Users > a:Users > a:Roles > ... (cycle repeats)
+   BODY stops in Tab cycle: 2
+   sign-out control visible at once: true
+3. Arabic admin by keyboard on the team address
+  focus on load (/?domain=alnoor.example): input[name=email][type=text]
+  focus after typing whole e-mail: input[name=email][type=text]
+  focus before password: input[name=password][type=password]
+  signed in, shell nav visible after 282 ms
+   shell dir/lang: rtl/ar
+   visible Latin text in Arabic shell: ["ALN-DXB · DEIRA-HQ","ALN-AUH","ALN-FZE","ALN-SHJ","Ctrl","English","تم تسجيل الدخول باسم فاطمة الزعابي · مسا"]
+4. no-roles user
+  focus on load (/): input[name=email][type=email]
+  focus after typing whole e-mail: input[name=email][type=email]
+  focus before password: input[name=password][type=password]
+  signed in, shell nav present after 334 ms
+   main text: Welcome, Layla Nasser /  / No areas are open to you yet. Ask an administrator to give you a role.
+   nav links: []
+   no-roles GET /api/identity/users: 403
+5. passkey
+  focus on load (/): input[name=email][type=email]
+  focus after typing whole e-mail: input[name=email][type=email]
+  focus before password: input[name=password][type=password]
+  signed in, shell nav present after 248 ms
+   passkey added; credentials on device: 1
+   plain address, device with passkey: in the shell without a key after 371 ms
+empty workspace: signed in by keyboard in 817 ms; dir/lang rtl/ar
+main: مرحبًا، Huda Owner /  / افتح قسمًا: /  / المستخدمون / الأدوار / الوصول إلى الشركات / الشركات / الفروع / مساحة العمل / التقارير / حسابي
+after 8 failures, right password: Sign-in failed. Check your e-mail and password and try again. url http://localhost:20050/
