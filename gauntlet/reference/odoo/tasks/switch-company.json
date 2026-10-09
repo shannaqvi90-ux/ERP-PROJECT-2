@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "run_id": "switch-company-20261007T235004-d214",
-  "instrument": 6,
+  "run_id": "switch-company-20261009T181557-c494",
+  "instrument": 7,
   "task": "switch-company",
   "task_title": "Switch company",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch to working in \"Demo Manufacturing FZE\".",
   "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
-  "started_at": "2026-10-07T23:50:04.233Z",
-  "finished_at": "2026-10-07T23:50:08.944Z",
+  "started_at": "2026-10-09T18:15:57.113Z",
+  "finished_at": "2026-10-09T18:16:02.583Z",
   "environment": {
-    "base_url": "http://localhost:8069",
+    "base_url": "http://localhost:20102",
     "viewport": {
       "width": 1600,
       "height": 900
@@ -29,10 +29,11 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 0.541,
-    "system_wait_seconds": 0.405,
+    "device_confirmations": 0,
+    "machine_seconds": 0.511,
+    "system_wait_seconds": 0.373,
     "human_seconds": 5.3,
-    "human_plus_wait_seconds": 5.705,
+    "human_plus_wait_seconds": 5.673,
     "klm_operator_counts": {
       "K": 0,
       "P": 2,
@@ -58,7 +59,7 @@
       "label": "company switcher",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.068,
+      "took": 0.058,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +68,8 @@
       "kind": "click",
       "label": "Demo Manufacturing FZE",
       "keystrokes": 0,
-      "at": 0.07,
-      "took": 0.041,
+      "at": 0.06,
+      "took": 0.042,
       "screen": "/odoo/discuss",
       "chain": false
     }
@@ -76,22 +77,22 @@
   "waits": [
     {
       "label": "working in the other company",
-      "at": 0.113,
-      "seconds": 0.397
+      "at": 0.102,
+      "seconds": 0.373
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "5eeafa31e4d22f7c.jpg",
+      "file": "4fbc0b8a49ec0868.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/5eeafa31e4d22f7c.jpg"
+      "path": "gauntlet/reference/odoo/shots/4fbc0b8a49ec0868.jpg"
     },
     {
       "moment": "done",
-      "file": "43bfdd2ba111e4bb.jpg",
-      "at": 0.541,
-      "path": "gauntlet/reference/odoo/shots/43bfdd2ba111e4bb.jpg"
+      "file": "90cfafdc9d7aa450.jpg",
+      "at": 0.511,
+      "path": "gauntlet/reference/odoo/shots/90cfafdc9d7aa450.jpg"
     }
   ],
   "verification": {
@@ -129,32 +130,43 @@
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
       "seconds": 0.003,
-      "verified": true
+      "verified": true,
+      "gap_seconds": 1.101
     }
   ],
-  "requests_after_clock": 0,
+  "requests_after_clock": 2,
   "requests_in_flight_at_clock": {
     "count": 0,
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "26cd457b00f9c0c1",
+    "sha256": "e4b77adb7b7e7a82",
     "elements": 153
   },
   "screen_after_verify": {
-    "sha256": "26cd457b00f9c0c1",
+    "sha256": "e4b77adb7b7e7a82",
     "elements": 153,
     "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.043
   },
   "result_file": "gauntlet/reference/odoo/tasks/switch-company.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-company-20261007T234954-3cfb.json",
-    "gauntlet/reference/odoo/results/switch-company-20261007T234959-28ec.json",
-    "gauntlet/reference/odoo/results/switch-company-20261007T235004-d214.json"
+    "gauntlet/reference/odoo/results/switch-company-20261009T181551-177a.json",
+    "gauntlet/reference/odoo/results/switch-company-20261009T181557-c494.json",
+    "gauntlet/reference/odoo/results/switch-company-20261009T181602-e7f2.json"
   ]
 }
