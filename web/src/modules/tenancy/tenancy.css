@@ -353,11 +353,8 @@
   }
 }
 
-/* List screens: the shared list with the open record's form in a wide panel beside it. */
-.tn-list .list-body.has-record {
-  grid-template-columns: minmax(0, 1fr) minmax(380px, 48%);
-}
-
+/* List screens: the shared list with the open record's form beside it, as wide as the list
+   framework makes a record form (it grows to fit, and the user can widen it). */
 .tn-list .list-record {
   padding: 8px 12px;
 }
@@ -365,5 +362,9 @@
 @media (max-width: 1100px) {
   .tn-list .list-body.has-record {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tn-list .list-splitter {
+    display: none;
   }
 }

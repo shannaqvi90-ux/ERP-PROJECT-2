@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
@@ -31,6 +31,7 @@ import {
   type SavedView,
 } from "./model";
 import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
+import { readShare, recordShare, shareAfterKey, shareFromPointer, shareToFit, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { useListRows } from "./useListRows";
 import "./lists.css";
 import "../forms/forms.css";
@@ -324,6 +325,50 @@ export function ListView(props: ListViewProps) {
   }, [reloadKey, reload]);
 
   const update = useCallback((change: (s: ListState) => ListState) => setState((s) => (s ? change(s) : s)), []);
+
+  // How wide a screen's record form is (recordWidth.ts): the user's choice for this list, else the
+  // standard share, grown to fit a form whose content is wider than the panel.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLElement>(null);
+  const [chosenShare, setChosenShare] = useState<number | null>(() => readShare(listKey));
+  const [fitShare, setFitShare] = useState<number>(recordShare.standard);
+  const formShare = chosenShare ?? fitShare;
+  const formOpen = Boolean(props.renderRecord && openId);
+  const chooseShare = useCallback(
+    (share: number) => {
+      setChosenShare(share);
+      writeShare(listKey, share);
+    },
+    [listKey],
+  );
+  useEffect(() => {
+    if (!formOpen) {
+      setFitShare(recordShare.standard);
+      return;
+    }
+    if (chosenShare !== null) return;
+    const form = formRef.current;
+    const body = bodyRef.current;
+    if (!form || !body || typeof ResizeObserver === "undefined") return;
+    let frame = 0;
+    const fit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const overflow = form.scrollWidth - form.clientWidth;
+        setFitShare((share) => shareToFit(share, form.getBoundingClientRect().width, overflow, body.getBoundingClientRect().width));
+      });
+    };
+    const resized = new ResizeObserver(fit);
+    resized.observe(form);
+    const changed = new MutationObserver(fit);
+    changed.observe(form, { childList: true, subtree: true });
+    fit();
+    return () => {
+      cancelAnimationFrame(frame);
+      resized.disconnect();
+      changed.disconnect();
+    };
+  }, [formOpen, openId, chosenShare]);
 
   // Escape closes the open record wherever the focus is on the screen: a record opened from its
   // address or from the command palette leaves the focus on the page, not in the list or the
@@ -980,7 +1025,11 @@ export function ListView(props: ListViewProps) {
           {t(definition?.printable ? "lists.print.partialReport" : "lists.print.partial", { from: i18n.formatNumber(range.start + 1), to: i18n.formatNumber(range.end), total: i18n.formatNumber(rows.total) })}
         </p>
       )}
-      <div className={`list-body${recordOpen ? (props.renderRecord ? " has-record has-form" : " has-record") : ""}`}>
+      <div
+        ref={bodyRef}
+        className={`list-body${recordOpen ? (props.renderRecord ? " has-record has-form" : " has-record") : ""}`}
+        style={formOpen ? ({ "--record-share": `${formShare}%` } as CSSProperties) : undefined}
+      >
         <div ref={gridRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
         <table
           ref={tableRef}
@@ -1159,7 +1208,17 @@ export function ListView(props: ListViewProps) {
         </div>
 
         {props.renderRecord && openId && (
+          <RecordSplitter
+            share={formShare}
+            controls={`${id}-record`}
+            body={bodyRef}
+            onChange={chooseShare}
+          />
+        )}
+        {props.renderRecord && openId && (
           <aside
+            ref={formRef}
+            id={`${id}-record`}
             className="list-record"
             role="region"
             aria-label={t("lists.record.title")}
@@ -1181,6 +1240,67 @@ export function ListView(props: ListViewProps) {
         <span>{t("lists.keys")}</span>
       </div>
     </section>
+  );
+}
+
+/** The divider between the list and a screen's record form: drag it, or focus it (Tab) and use
+ * the arrow keys, Home and End; Enter or a double click switches between the standard and the
+ * widest form. A window splitter in the ARIA sense, its value the form's share of the list body. */
+function RecordSplitter({ share, controls, body, onChange }: { share: number; controls: string; body: { current: HTMLDivElement | null }; onChange: (share: number) => void }) {
+  const { t, dir, formatNumber } = useI18n();
+  const rtl = dir === "rtl";
+  const [dragging, setDragging] = useState(false);
+  // Alt+W from anywhere on the screen while the form is open (the splitter exists only then).
+  useShortcut({
+    id: "lists.widenRecord",
+    chord: widenChord,
+    labelKey: "lists.shortcut.widen",
+    groupKey: "lists.shortcut.group",
+    run: () => onChange(toggledShare(share)),
+  });
+  const fromPointer = (clientX: number) => {
+    const rect = body.current?.getBoundingClientRect();
+    return rect ? shareFromPointer(clientX, rect, rtl) : share;
+  };
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-controls={controls}
+      aria-label={t("lists.record.resize")}
+      aria-valuemin={recordShare.min}
+      aria-valuemax={recordShare.wide}
+      aria-valuenow={share}
+      aria-valuetext={t("lists.record.width", { percent: formatNumber(share) })}
+      title={`${t("lists.record.resize")}\n${t("lists.record.resizeHint")}`}
+      tabIndex={0}
+      className={`list-splitter${dragging ? " is-dragging" : ""}`}
+      onKeyDown={(event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        const next = shareAfterKey(event.key, share, rtl);
+        if (next === null) return;
+        event.preventDefault();
+        onChange(next);
+      }}
+      onDoubleClick={() => onChange(toggledShare(share))}
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        event.currentTarget.focus();
+        setDragging(true);
+      }}
+      onPointerMove={(event) => {
+        if (dragging) onChange(fromPointer(event.clientX));
+      }}
+      onPointerUp={(event) => {
+        if (!dragging) return;
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+        setDragging(false);
+        onChange(fromPointer(event.clientX));
+      }}
+      onPointerCancel={() => setDragging(false)}
+    />
   );
 }
 
