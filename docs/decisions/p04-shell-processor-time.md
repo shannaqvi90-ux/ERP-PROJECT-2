@@ -98,3 +98,20 @@ list page, so an export of an in-memory list is interpreted too.
 
 The owner raised `verify.cpuSeconds` to 10,500 on 2026-10-08 (needs-human #12). This piece did not
 change it.
+
+## Processor time of this round's merged tree (2026-10-09)
+
+This round adds no gate work of its own: the merge, one fix to the write oracle's sign-ins (it names
+each administrator's workspace) and the decision record. Measured through the verify slot on the
+merged tree (f380b2e, load average about 8 at the start, up to about 40 while it ran): .NET stage
+6,240 s, web 1,039 s, end-to-end 252 s, about 7,530 s in all before the timing stage, against the
+maximum of 10,500 s. The .NET stage failed only on the write oracle's id pass (B's administrator's
+e-mail also existed in tenant A, so the sign-in asked for a workspace); the processor time is that of
+a full .NET run, since every other test ran. The G1 HTTP attack took 25 min 36 s of wall time in it.
+
+The passing verify of this round (6f6e379 with this record's first paragraph, slot taken 2026-10-09
+at about 05:25 UTC, load average 32 at the start, 49 to 59 during the .NET stage, 21 at the end)
+counted 10,484 s: .NET 8,478, web 1,612, end-to-end 332, timing 62, maximum 10,500. Every stage of
+the same tree cost 35 to 55 per cent more than in the run above at a lower load (.NET 6,240 against
+8,478; web 1,039 against 1,612). A verify of this tree under a load average near 50 or more can
+therefore exceed the maximum with no change to the work; on a quieter machine it uses about 7,600 s.
