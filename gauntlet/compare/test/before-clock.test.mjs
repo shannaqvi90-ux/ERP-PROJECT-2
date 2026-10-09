@@ -14,6 +14,8 @@ import http from 'node:http';
 import { execute, layout, compareRuns, containsValue, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
 import { sandboxed, sandboxedSource } from './helpers/driver-module.mjs';
 import { readRecord } from '../lib/sandbox/bridge.mjs';
+import { DRIVERS_DIR } from '../lib/registry.mjs';
+import { lintDriver } from './drivers-lint.test.mjs';
 
 let server, base, tmp;
 let saved = null;
@@ -378,4 +380,14 @@ test('a keyboard-only task fails on a pointer step; the harness judges it, not v
     verify,
   }, KB);
   assert.equal(keys.status, 'verified', keys.error);
+});
+
+test('plant P1 on the real driver (critic r8): ours edit-and-save whose set-up saves the number and whose verify() keys on the outcome is caught in review by the lint', () => {
+  const src = fs.readFileSync(path.join(DRIVERS_DIR, 'ours', 'edit-and-save.mjs'), 'utf8');
+  assert.match(src, /async verify\(ctx\) \{/, 'the driver changed: update this plant');
+  const planted = src.replace(/async verify\(ctx\) \{/, 'async verify(ctx, outcome) {\n    if (outcome === undefined) return { verified: false, details: {} };');
+  assert.ok(lintDriver(planted).some(p => /second parameter/.test(p)), lintDriver(planted).join('\n'));
+  // Without the outcome the plant has no way left to tell the calls apart (plants P1-P5 above), its
+  // empty measured part is refused (P1, P2), its start form holds the number (P8) and no read
+  // gains the number during the measured part (P7).
 });

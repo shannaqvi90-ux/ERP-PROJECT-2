@@ -642,9 +642,9 @@ export async function execute(task, driver, product, productId, needles, out, op
       const passes = [];
       const reads = [];
       for (let i = 0; i < 2; i++) {
-        // Round 9: the second pass starts at least a second after the first, so a read that tells the
-        // time answers differently in the two passes and never counts as a saved change.
-        while (i === 1 && performance.now() - passes[0].started < VERIFY_PASS_GAP_MS) await new Promise(r => setTimeout(r, Math.max(1, VERIFY_PASS_GAP_MS - (performance.now() - passes[0].started))));
+        // Round 9: for a task that saves, the second pass starts at least a second after the first, so
+        // a read that tells the time answers differently in the two passes and never counts as a saved change.
+        while (i === 1 && task.saves && performance.now() - passes[0].started < VERIFY_PASS_GAP_MS) await new Promise(r => setTimeout(r, Math.max(1, VERIFY_PASS_GAP_MS - (performance.now() - passes[0].started))));
         const started = performance.now();
         const p = await verifyOnce(i === 0 ? 'verify()' : 'verify() (second pass)');
         passes.push({ ...p.meter, seconds: p.seconds, verified: p.value?.verified === true, started });

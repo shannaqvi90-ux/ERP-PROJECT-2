@@ -566,7 +566,7 @@ export class DriverSession {
     }
     const bodyText = typeof body === 'string' ? body : body ? Buffer.from(body).toString('utf8') : '';
     const signIn = isSignIn(u.pathname, method);
-    const cacheKey = signIn ? `${method} ${url} ${bodyText}` : null;
+    const cacheKey = signIn ? `${method} ${url} ${withoutRpcId(bodyText)}` : null;
     if (cacheKey && this.signIns.has(cacheKey)) return this.signIns.get(cacheKey);
     const res = await this.#send(url, init, u);
     const bytes = new Uint8Array(await res.arrayBuffer());
