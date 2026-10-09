@@ -72,25 +72,14 @@ public sealed class LeakyModule : ErpModule
             .Column("displayName", p => p.DisplayName)
             .InMemory("Planted list of the gate self-tests."));
         module.Services.AddSingleton<ObjectPool<JumpScratch>>(_ => ObjectPool.Create<JumpScratch>());
-        // Planted sorted-search total (critic p05 round 7, plant L11's behaviour): a registered list that answers a
-        // request carrying both a sort and a search with the total first counted for that list,
-        // search, filter and sort, whatever its tenant. Every unsorted query, and every sorted query
-        // without a search, stays the caller's own; only what the client sends after a header click
-        // with a search typed leaks. The memo sits in a singleton, so the fresh-process comparison
-        // of the non-interference gate can see it as well as the list answer check.
-        module.List(ListBinding<Person>.For(new ListDefinition(
-                SortedList, "leaky.sorted.title", "leaky.data.read", "/api/leaky/sorted",
-                [
-                    new ListColumn("displayName", "leaky.people.name", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("language", "leaky.people.language", ListColumnType.Choice, Sortable: true, Filterable: true,
-                        Choices: [new ListChoice("en", "leaky.people.en"), new ListChoice("ar", "leaky.people.ar")]),
-                ],
-                SearchFields: ["displayName"],
-                DefaultSort: "displayName"),
-                p => p.Id)
-            .Column("displayName", p => p.DisplayName)
-            .Column("language", p => p.Language)
-            .InMemory("Planted list of the gate self-tests."));
+        // Planted sorted-search total (critic p05 round 7, plant L11's behaviour), on the scroll list
+        // above: a request carrying both a sort and a search is answered with the total first counted
+        // for that search, filter and sort, whatever its tenant. Every unsorted query, and every
+        // sorted query without a search, keeps bug 52's behaviour only; what the client sends after a
+        // header click with a search typed leaks. The memo sits in a singleton, so the fresh-process
+        // comparison of the non-interference gate can see it as well as the list answer check. (A
+        // planted list of its own cost the verify about a quarter of an hour: every phase of the
+        // HTTP attack and its saved-view endpoints with it.)
         module.Services.AddSingleton<SortedSearchMemo>();
         module.Services.AddSingleton<CountCache>();
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
@@ -118,7 +107,8 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, groups));
             }).WithName("leaky.people").WithSummary("Planted bug: list totals and groups remembered across tenants.").RequirePermission("leaky.data.read");
 
-            group.MapGet("/scroll", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, HttpContext http, CancellationToken ct) =>
+            group.MapGet("/scroll", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, SortedSearchMemo memo,
+                HttpContext http, CancellationToken ct) =>
             {
                 var rows = await PeopleAsync(session);
                 var result = await catalog.ListBinding<Person>(ScrollList).QueryAsync(rows.AsQueryable(), request, http, ct);
@@ -127,8 +117,14 @@ public sealed class LeakyModule : ErpModule
                     return (IResult)problem;
                 }
                 SortedTotals.Remember(request, result.Total);
-                return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
-            }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
+                var total = ScrollTotals<Person>.Total(request, result.Total);
+                if (!string.IsNullOrEmpty(request.Sort) && !string.IsNullOrEmpty(request.Search))
+                {
+                    total = memo.Totals.GetOrAdd($"{request.Search}|{request.Filter}|{request.Sort}", result.Total);
+                }
+                return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, result.Groups));
+            }).WithName("leaky.scroll").WithSummary("Planted bugs: continuation pages reuse the last first page's total, and a sorted search reuses the first total counted for it, any tenant's.")
+              .RequirePermission("leaky.data.read");
 
             group.MapGet("/jump", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, ObjectPool<JumpScratch> pool,
                 HttpContext http, CancellationToken ct) =>
@@ -160,21 +156,6 @@ public sealed class LeakyModule : ErpModule
                     pool.Return(scratch);
                 }
             }).WithName("leaky.jump").WithSummary("Planted bug: offset pages reuse the last first page's total, any tenant's, from a pooled scratch object.").RequirePermission("leaky.data.read");
-
-            group.MapGet("/sorted", async ([Microsoft.AspNetCore.Http.AsParameters] ListRequest request, ErpDbSession session, ModuleCatalog catalog, SortedSearchMemo memo,
-                HttpContext http, CancellationToken ct) =>
-            {
-                var rows = await PeopleAsync(session);
-                var result = await catalog.ListBinding<Person>(SortedList).QueryAsync(rows.AsQueryable(), request, http, ct);
-                if (result.Problem is { } problem)
-                {
-                    return (IResult)problem;
-                }
-                var total = string.IsNullOrEmpty(request.Sort) || string.IsNullOrEmpty(request.Search)
-                    ? result.Total
-                    : memo.Totals.GetOrAdd($"{request.Search}|{request.Filter}|{request.Sort}", result.Total);
-                return Results.Ok(new ListPage<Person>(result.Rows, total, result.Next, result.Groups));
-            }).WithName("leaky.sorted").WithSummary("Planted bug: a sorted search reuses the total first counted for it, any tenant's.").RequirePermission("leaky.data.read");
 
             // Bug 9: a process-wide static cache of the workspace record, filled by whichever
             // tenant asks first (the shape of critic p01 round 1's plant A4).
@@ -1431,9 +1412,8 @@ public sealed class LeakyModule : ErpModule
     public const string PeopleList = "leaky.people";
     public const string ScrollList = "leaky.scroll";
     public const string JumpList = "leaky.jump";
-    public const string SortedList = "leaky.sorted";
 
-    /// <summary>The planted sorted-search memory: totals of sorted searches by search, filter and sort, no tenant.</summary>
+    /// <summary>The planted sorted-search memory of the scroll list: totals of sorted searches by search, filter and sort, no tenant.</summary>
     public sealed class SortedSearchMemo
     {
         public ConcurrentDictionary<string, int> Totals { get; } = new(StringComparer.Ordinal);

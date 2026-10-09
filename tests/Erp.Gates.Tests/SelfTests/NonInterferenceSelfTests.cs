@@ -33,12 +33,12 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && f.Contains("skip=", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && f.Contains("skip=", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Findings, f => f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && !f.Contains("skip=", StringComparison.Ordinal));
-        // A sorted search that reuses the total first counted for the same search, filter and sort,
-        // whatever its tenant (critic p05 round 7, plant L11's behaviour, kept in a singleton): only
-        // a request carrying both a sort and a search shows it.
-        Assert.Contains(result.Findings, f => f.Contains("GET /api/leaky/sorted?", StringComparison.Ordinal) && f.Contains("sort=", StringComparison.Ordinal) &&
+        // The scroll list's sorted search reuses the total first counted for the same search, filter
+        // and sort, whatever its tenant (critic p05 round 7, plant L11's behaviour, kept in a
+        // singleton): only a request carrying both a sort and a search shows it.
+        Assert.Contains(result.Findings, f => f.Contains("GET /api/leaky/scroll?", StringComparison.Ordinal) && f.Contains("sort=", StringComparison.Ordinal) &&
                                               f.Contains("search=", StringComparison.Ordinal));
-        Assert.DoesNotContain(result.Findings, f => f.Contains("GET /api/leaky/sorted", StringComparison.Ordinal) &&
+        Assert.DoesNotContain(result.Findings, f => f.Contains("GET /api/leaky/scroll", StringComparison.Ordinal) &&
                                                     (!f.Contains("sort=", StringComparison.Ordinal) || !f.Contains("search=", StringComparison.Ordinal)));
         // Writes, on the Arabic side only (critic p04 round 4): a number handed on between Arabic
         // callers (bug 46) and the previous Arabic-Indic-digits caller's e-mail (bug 45, plant L1).
