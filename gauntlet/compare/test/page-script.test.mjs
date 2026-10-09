@@ -118,8 +118,8 @@ let posts = 0;
 let slowHits = 0;
 let lateHits = 0;
 // Round 9 (critic p01 r8, mutation A24): a request the page starts after the clock without any
-// script (an image whose address an SVG animation sets 0.8 s after the click) must never reach the product.
-const LATE_PAGE = `<!doctype html><html><body><button id="go" onclick="document.getElementById('s').beginElementAt(0.8)">Go</button>
+// script (an image whose address an SVG animation sets 0.4 s after the click) must never reach the product.
+const LATE_PAGE = `<!doctype html><html><body><button id="go" onclick="document.getElementById('s').beginElementAt(0.4)">Go</button>
 <svg width="40" height="40"><image id="i" width="40" height="40" href=""><set id="s" attributeName="href" to="/late.png" begin="indefinite" fill="freeze"/></image></svg></body></html>`;
 const PAGE = `<!doctype html><html><head><title>Stand-in</title></head><body>
   <input id="q" aria-label="Query"><button id="go">Go</button><button id="look">Look</button><div id="out">none</div>
@@ -453,7 +453,11 @@ test('round 9 (critic mutation A24): what the page starts loading after the cloc
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/late'); },
     async run(op) { await op.click('#go'); return {}; },
-    async verify(ctx) { return { verified: (await ctx.read(() => document.getElementById('i').getAttribute('href'))) === '' && (await ctx.read(() => document.activeElement?.id || '')) === 'go' }; },
+    async verify(ctx) {
+      // Long enough (under the pause limit) for the animation to ask for its image after the clock.
+      await new Promise(r2 => setTimeout(r2, 700));
+      return { verified: (await ctx.read(() => document.getElementById('i').getAttribute('href'))) === '' && (await ctx.read(() => document.activeElement?.id || '')) === 'go' };
+    },
   });
   assert.equal(r.status, 'verified', r.error);
   await new Promise(res => setTimeout(res, 300));
