@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
 import { completesTeamEmail, fullEmail, teamDomain } from "../../kernel/signInAddress";
-import { useSession, type Workspace } from "../../kernel/session";
+import { freshPasskeyChallenge, useSession, type Workspace } from "../../kernel/session";
+import { askForPasskey, cancelledByPerson, passkeyOffered, passkeysSupported, setPasskeyOffered, takeSignedOut, type PasskeySignIn } from "../../kernel/passkeys";
 import { LanguageToggle } from "./LanguageToggle";
 
 function rememberedEmail(): string {
@@ -21,6 +22,7 @@ const problemKeys: Record<string, string> = {
   "auth.signInFailed": "shell.signIn.problem.signInFailed",
   "auth.chooseWorkspace": "shell.signIn.problem.chooseWorkspace",
   "auth.passwordChangeRequired": "shell.signIn.problem.passwordChangeRequired",
+  "auth.passkeyFailed": "shell.signIn.problem.passkeyFailed",
   "request.tooMany": "shell.signIn.problem.tooMany",
 };
 
@@ -31,14 +33,30 @@ type Message = { key: string } | { text: string; language: Language };
 const fromServer = (text: string, language: Language, code?: string): Message =>
   code && problemKeys[code] ? { key: problemKeys[code] } : { text, language };
 
+/** Failed password sign-ins in a row on this screen after which it says that sign-in may pause. */
+const failuresBeforeHint = 3;
+
 /**
  * The first screen. Keyboard first: the e-mail field has focus (or the password field, when this
  * device remembers the last e-mail), Enter signs in. The e-mail — never the password — is
  * remembered on this device until the person signs out (see kernel/deviceState.ts).
+ *
+ * Passkeys: "Continue with a passkey" asks the device for any passkey of this site (no e-mail
+ * typed). On a device where a passkey was added or used, the screen asks at once as it opens, from
+ * any address (plain, the team's, a personal bookmark), so signing in is one confirmation on the
+ * device; not right after the Sign out button, and cancelling leaves the e-mail and password.
  */
 export function SignInPage() {
   const { t, language } = useI18n();
-  const { signIn } = useSession();
+  const { signIn, signInWithPasskey, state } = useSession();
+  const passkeyRequest = state.status === "anonymous" ? state.passkey : undefined;
+  const [canUsePasskey] = useState(passkeysSupported);
+  // Read once: this screen comes right after the Sign out button.
+  const [justSignedOut] = useState(takeSignedOut);
+  const [asking, setAsking] = useState(false);
+  const askedOnArrival = useRef(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [failures, setFailures] = useState(0);
   useDocumentTitle("shell.signIn.title");
   // A set-up link may carry the e-mail (never the code); otherwise this device's last one. On the
   // team's sign-in address the domain is filled in: the person types only the part before "@".
@@ -77,6 +95,51 @@ export function SignInPage() {
   useEffect(() => {
     if (workspaces) workspaceRef.current?.focus();
   }, [workspaces]);
+
+  // A device that holds a passkey of this site is asked as soon as the screen opens.
+  useEffect(() => {
+    if (askedOnArrival.current || !passkeyRequest || !canUsePasskey || justSignedOut || !passkeyOffered()) return;
+    askedOnArrival.current = true;
+    void passkeySignIn(passkeyRequest);
+    // Once, on arrival: the challenge the session answer carried.
+  }, [passkeyRequest]);
+
+  /** Asks the device for a passkey and signs in with its answer. */
+  async function passkeySignIn(request?: PasskeySignIn) {
+    if (asking || busy) return;
+    setAsking(true);
+    setError(null);
+    setNotice(null);
+    let signedIn = false;
+    try {
+      const challenge = request ?? (await freshPasskeyChallenge());
+      if (!challenge) {
+        setError({ key: "shell.signIn.unreachable" });
+        return;
+      }
+      const assertion = await askForPasskey(challenge);
+      setBusy(true);
+      const result = await signInWithPasskey(assertion);
+      if (result.kind === "ok") {
+        signedIn = true;
+        setPasskeyOffered(true);
+        try {
+          localStorage.setItem(lastEmailKey, result.session.user.email);
+        } catch {
+          // Not remembered on this device.
+        }
+        return;
+      }
+      setError(fromServer(result.message, language, result.kind === "failed" ? result.code : undefined));
+    } catch (problem) {
+      if (cancelledByPerson(problem)) setNotice("shell.signIn.passkeyCancelled");
+      else setError({ key: "shell.signIn.passkeyUnavailable" });
+    } finally {
+      setAsking(false);
+      setBusy(false);
+      if (!signedIn) (emailRef.current?.value ? passwordRef : emailRef).current?.focus();
+    }
+  }
 
   useEffect(() => {
     if (changing) newPasswordRef.current?.focus();
@@ -149,8 +212,10 @@ export function SignInPage() {
     }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const result = await signIn(signInEmail, password, workspace, changing ? newPassword : undefined);
+      if (result.kind === "failed" && result.code === "auth.signInFailed") setFailures((count) => count + 1);
       if (result.kind === "ok") {
         try {
           localStorage.setItem(lastEmailKey, signInEmail);
@@ -325,6 +390,12 @@ export function SignInPage() {
               {...("key" in error ? {} : { lang: error.language, dir: "auto" })}
             >
               {"key" in error ? t(error.key) : error.text}
+              {failures >= failuresBeforeHint && !changing && <p className="signin-pause-hint">{t("shell.signIn.repeatedFailures")}</p>}
+            </div>
+          )}
+          {notice && !error && (
+            <div className="notice" role="status">
+              {t(notice)}
             </div>
           )}
           {workspaces && workspaces.length > 0 && (
@@ -343,9 +414,24 @@ export function SignInPage() {
               ))}
             </div>
           )}
-          <button type="submit" className="button primary signin-submit" disabled={busy}>
+          <button type="submit" className="button primary signin-submit" disabled={busy || asking}>
             {busy ? t("shell.signIn.busy") : t("shell.signIn.submit")}
           </button>
+          {canUsePasskey && passkeyRequest && !changing && (
+            <>
+              <div className="signin-or">
+                <span>{t("shell.signIn.or")}</span>
+              </div>
+              <button type="button" className="button signin-passkey" disabled={busy || asking} aria-describedby={asking ? "passkey-asking" : undefined} onClick={() => void passkeySignIn()}>
+                {t("shell.signIn.passkey")}
+              </button>
+              {asking && (
+                <span id="passkey-asking" className="muted signin-note" role="status">
+                  {t("shell.signIn.passkeyAsking")}
+                </span>
+              )}
+            </>
+          )}
         </form>
       </div>
     </div>

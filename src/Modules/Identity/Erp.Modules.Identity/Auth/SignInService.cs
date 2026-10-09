@@ -48,6 +48,7 @@ internal sealed class SignInService(
     IServiceScopeFactory scopes,
     ITenantDirectory tenants,
     TrustedDevices devices,
+    Passkeys.PasskeyChallenges challenges,
     IOptions<AuthOptions> options,
     TimeProvider time,
     ILogger<SignInService> logger)
@@ -162,6 +163,87 @@ internal sealed class SignInService(
             await Passwords.SetAsync(db, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
+        return await StartSessionAsync(user, client, email, now, http, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sign-in with a passkey. The user handle the device returns names the account's workspace
+    /// and user (<see cref="Passkeys.PasskeyEndpoints.UserHandle"/>), as an e-mail names an
+    /// account: that workspace is bound only to find the passkey there and read its public key,
+    /// and nothing is answered or kept from it unless the device's signature over this
+    /// deployment's own challenge verifies with that key. A handle naming another workspace or
+    /// user, an unknown credential, a removed passkey, an inactive account or a suspended
+    /// workspace all fail with the same answer. Each challenge is answered once: the passkey keeps
+    /// the issue time of the last challenge it answered.
+    /// </summary>
+    public async Task<SignInOutcome> SignInWithPasskeyAsync(PasskeyAssertion assertion, HttpContext http, CancellationToken cancellationToken)
+    {
+        await session.RollbackAsync(cancellationToken);
+        var credentialId = Passkeys.WebAuthn.FromBase64Url(assertion.CredentialId, 1023);
+        var clientData = Passkeys.WebAuthn.FromBase64Url(assertion.ClientDataJson, 4096);
+        var authenticatorData = Passkeys.WebAuthn.FromBase64Url(assertion.AuthenticatorData, 2048);
+        var signature = Passkeys.WebAuthn.FromBase64Url(assertion.Signature, 1024);
+        var handle = Passkeys.WebAuthn.FromBase64Url(assertion.UserHandle, 64);
+        if (credentialId is not { Length: >= 16 } || clientData is null || authenticatorData is null || signature is null || handle is not { Length: 32 } ||
+            !Passkeys.WebAuthn.TryReadClientData(clientData, Passkeys.WebAuthn.AssertionType, origin => challenges.OriginAllowed(origin, http), out var challenge) ||
+            !challenges.Verify(challenge, Passkeys.PasskeyChallenges.Purpose.SignIn, null, out var issuedAt) ||
+            Passkeys.WebAuthn.ReadAuthenticatorData(authenticatorData) is not { } data ||
+            !Passkeys.WebAuthn.IsForRelyingParty(data, challenges.RpId(http)))
+        {
+            return new SignInOutcome.Failed();
+        }
+        var tenantId = new Guid(handle.AsSpan(0, 16), bigEndian: true);
+        var userId = new Guid(handle.AsSpan(16, 16), bigEndian: true);
+        var client = ClientOf(http);
+
+        session.CorrelationId ??= http.TraceIdentifier;
+        // The workspace the device names, to find the passkey's public key there.
+        await session.BeginAsync(tenantId, null, "system", cancellationToken);
+        if (await tenants.GetCurrentAsync(cancellationToken) is null)
+        {
+            await session.RollbackAsync(cancellationToken);
+            return new SignInOutcome.Failed();
+        }
+        var key = await (
+                from p in db.Passkeys.AsNoTracking()
+                join u in db.Users.AsNoTracking() on p.UserId equals u.Id
+                where p.UserId == userId && p.CredentialId == credentialId && u.IsActive
+                select new { p.Id, p.PublicKey, p.Algorithm, p.SignCount, u.Email })
+            .SingleOrDefaultAsync(cancellationToken);
+        await session.RollbackAsync(cancellationToken);
+        if (key is null || !Passkeys.WebAuthn.VerifySignature(key.PublicKey, key.Algorithm, authenticatorData, clientData, signature))
+        {
+            logger.LogInformation("Passkey sign-in refused from {Source}", client.Source);
+            return new SignInOutcome.Failed();
+        }
+
+        // Proven: work as that user.
+        await session.BeginAsync(tenantId, userId, "user", cancellationToken);
+        var now = time.GetUtcNow();
+        var counter = (long)data.SignCount;
+        // Once and in order: an answer to the same or an older challenge is a replay; a signature
+        // counter that does not move forward (when the device keeps one) is a copied key.
+        var used = await db.Passkeys
+            .Where(p => p.Id == key.Id && (p.LastChallengeAt == null || p.LastChallengeAt < issuedAt) &&
+                        ((p.SignCount == 0 && counter == 0) || counter > p.SignCount))
+            .ExecuteUpdateAsync(set => set
+                .SetProperty(p => p.LastUsedAt, now)
+                .SetProperty(p => p.LastChallengeAt, issuedAt)
+                .SetProperty(p => p.SignCount, counter)
+                .SetProperty(p => p.BackedUp, data.Has(Passkeys.AuthenticatorData.BackedUpFlag)), cancellationToken);
+        if (used == 0)
+        {
+            logger.LogWarning("Passkey {PasskeyId} answered an old challenge or its counter went back; sign-in refused", key.Id);
+            return new SignInOutcome.Failed();
+        }
+        var user = await db.Users.SingleAsync(u => u.Id == userId, cancellationToken);
+        return await StartSessionAsync(user, client, key.Email, now, http, cancellationToken);
+    }
+
+    /// <summary>The checked account signs in: its sign-in moment, a new session and the sign-in
+    /// history entry, in the request's transaction bound to that user.</summary>
+    private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, DateTimeOffset now, HttpContext http, CancellationToken cancellationToken)
+    {
         // The sign-in moment is written in place, not through the tracked record: two sign-ins of
         // one account at the same moment (two tabs, a browser and an API client) both succeed
         // instead of the later one failing on the record's version. The audit trigger still

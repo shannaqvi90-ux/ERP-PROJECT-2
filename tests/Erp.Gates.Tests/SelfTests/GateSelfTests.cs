@@ -113,6 +113,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // printed it, so the answer-shape phase (tenant B asks for every format and language
         // first) must find it.
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/printed?", StringComparison.Ordinal) && l.Contains("an answer shape tenant B asked for first", StringComparison.Ordinal));
+        // Bug 60 (critic p06 round 4, plant L6): a spool keyed on the columns printed reaches
+        // tenant A only once tenant B printed with columns other than the default.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/spooled?", StringComparison.Ordinal) && l.Contains("columns=", StringComparison.Ordinal) &&
+                                          l.Contains("an answer shape tenant B asked for first", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
 
@@ -586,6 +590,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.False(running.ReachableWalkCut, $"the reachable-state walk stopped at its object budget after {running.ReachableObjectsWalked} objects");
         Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
         Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
+
+        // A file-local class's static memo (critic p05 round 7, plant L11): a type a person wrote,
+        // although its compiled name holds '<'.
+        var fileLocal = typeof(LeakyModule).Assembly.GetTypes().Single(t => t.Name.EndsWith("__SortedTotals", StringComparison.Ordinal));
+        Assert.True(CompilerGenerated.IsFileLocal(fileLocal) && !CompilerGenerated.Is(fileLocal), $"{fileLocal.Name} is judged as compiler-generated");
+        Assert.Contains(ProcessState.InspectTypes([fileLocal], [], new HashSet<Type>()).Findings, f => f.Key.EndsWith("SortedTotals.Totals", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key.EndsWith("SortedTotals.Totals", StringComparison.Ordinal));
 
         // A variable captured by an endpoint lambda lives as long as the endpoint (critic p01
         // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.

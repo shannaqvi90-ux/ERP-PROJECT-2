@@ -24,6 +24,115 @@ namespace Erp.Modules.Identity.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Erp.Modules.Identity.Passkey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Algorithm")
+                        .HasColumnType("integer")
+                        .HasColumnName("algorithm");
+
+                    b.Property<bool>("BackedUp")
+                        .HasColumnType("boolean")
+                        .HasColumnName("backed_up");
+
+                    b.Property<bool>("BackupEligible")
+                        .HasColumnType("boolean")
+                        .HasColumnName("backup_eligible");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<byte[]>("CredentialId")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("credential_id");
+
+                    b.Property<DateTimeOffset?>("LastChallengeAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_challenge_at");
+
+                    b.Property<DateTimeOffset?>("LastUsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_used_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("public_key");
+
+                    b.Property<long>("SignCount")
+                        .HasColumnType("bigint")
+                        .HasColumnName("sign_count");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.PrimitiveCollection<List<string>>("Transports")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("transports");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_passkeys");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_passkeys_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CredentialId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_passkeys_tenant_id_credential_id");
+
+                    b.HasIndex("TenantId", "UserId", "CreatedAt")
+                        .HasDatabaseName("ix_passkeys_tenant_id_user_id_created_at");
+
+                    b.ToTable("passkeys", "identity", t =>
+                        {
+                            t.HasCheckConstraint("ck_passkeys_algorithm", "algorithm IN (-7, -257)");
+
+                            t.HasCheckConstraint("ck_passkeys_credential_id", "octet_length(credential_id) BETWEEN 16 AND 1023");
+
+                            t.HasCheckConstraint("ck_passkeys_sign_count", "sign_count >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Erp.Modules.Identity.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -557,6 +666,17 @@ namespace Erp.Modules.Identity.Migrations
                         .HasDatabaseName("ix_user_roles_tenant_id_user_id_role_id");
 
                     b.ToTable("user_roles", "identity");
+                });
+
+            modelBuilder.Entity("Erp.Modules.Identity.Passkey", b =>
+                {
+                    b.HasOne("Erp.Modules.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "UserId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_passkeys_users_tenant_id_user_id");
                 });
 
             modelBuilder.Entity("Erp.Modules.Identity.Session", b =>

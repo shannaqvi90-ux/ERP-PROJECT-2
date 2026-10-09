@@ -46,6 +46,22 @@ const SIGN_IN = `<!doctype html><html><head><title>Sign in</title></head><body>
       const ok = full() === 'signin.tester@demo-trading.example' && e.target.password.value === 'Sign-In-Pass-2026';
       if (ok) { document.cookie = 'sid=' + Math.random().toString(36).slice(2) + '; path=/'; location.href = '/'; }
     });
+    // Like ours, a device that holds a passkey of the site is asked for it as the screen opens.
+    if (localStorage.getItem('erp.passkeyOffer') === '1' && navigator.credentials) {
+      const asking = document.createElement('span'); asking.id = 'passkey-asking'; asking.textContent = 'Confirm on your device.'; document.body.append(asking);
+      navigator.credentials.get({ publicKey: { challenge: new Uint8Array(16), rpId: location.hostname, userVerification: 'required', allowCredentials: [] } })
+        .then(() => { document.cookie = 'sid=' + Math.random().toString(36).slice(2) + '; path=/'; location.href = '/'; }, () => asking.remove());
+    }
+  </script></body></html>`;
+// Stand-in for My account: Add a passkey makes one on the device and remembers on the device to ask for it.
+const MY_ACCOUNT = `<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav><main><button id="add">Add a passkey</button><p id="msg"></p></main>
+  <script>
+    document.getElementById('add').onclick = async () => {
+      await navigator.credentials.create({ publicKey: { challenge: new Uint8Array(16), rp: { id: location.hostname, name: 'x' }, user: { id: new Uint8Array(8), name: 's', displayName: 's' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }], authenticatorSelection: { residentKey: 'required', userVerification: 'required' } } });
+      localStorage.setItem('erp.passkeyOffer', '1');
+      document.getElementById('msg').textContent = 'Passkey Stand-in added.';
+    };
   </script></body></html>`;
 const HOME = '<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav><main><h1>Home</h1></main></body></html>';
 const usersPage = users => `<!doctype html><html><body><nav aria-label="Main navigation"><a href="/users">Users</a></nav>
@@ -173,6 +189,7 @@ before(async () => {
     if (root && homePreference) { res.writeHead(302, { Location: homePreference }); return res.end(); }
     if (root) return html(signedIn ? HOME : SIGN_IN);
     if (req.url === '/users') return html(usersPage(users));
+    if (req.url === '/identity/me') return html(MY_ACCOUNT);
     if (req.url.startsWith('/remembering')) return html(REMEMBERING);
     html(PAGE);
   });
@@ -511,23 +528,34 @@ const OURS_SIGN_IN = path.join(HARNESS_DIR, 'drivers', 'ours', 'sign-in.mjs');
 function loadVariant(transform) {
   return describeDriverFile(plantedFile(OURS_SIGN_IN, transform));
 }
-const SIGN_IN_TASK = { id: 'sign-in', title: 'Sign in', startAt: 'sign-in', moments: [], input: { user: 'signin.tester@demo-trading.example', password: 'Sign-In-Pass-2026', name: 'Sara Signin' } };
-const signInProduct = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'a', password: 'b' } }, brandWords: [] });
+const SIGN_IN_TASK = { id: 'sign-in', title: 'Sign in', startAt: 'sign-in', moments: [], input: { user: 'signin.tester@demo-trading.example', password: 'Sign-In-Pass-2026', name: 'Sara Signin' }, device: 'passkey' };
+// A passkey is made for a domain, never an IP address: the passkey path runs on "localhost".
+const signInProduct = id => ({ id: 'ours', baseUrl: id === 'passkey' ? base.replace('127.0.0.1', 'localhost') : base, users: { admin: { login: 'a', password: 'b' } }, brandWords: [] });
+/** The paths that type the e-mail and the password (the plants below change those). */
+const PASSWORD_PATHS = ['new-device', 'new-device-whole-e-mail', 'returning'];
 
-/** Every expert path of a driver, the way runTask runs them. */
-async function executeAll(driver, dir) {
-  const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
+/** Every expert path of a driver (or those named), the way runTask runs them. */
+async function executeAll(driver, dir, only = null) {
+  const variants = (driver.variants ? Object.entries(driver.variants) : [[null, {}]]).filter(([id]) => !only || only.includes(id));
   const out = [];
-  for (const [id] of variants) out.push({ id, ...(await execute(SIGN_IN_TASK, { ...driver, variant: id }, signInProduct(), 'ours', {}, layout(path.join(tmp, `${dir}-${id}`)), { timeout: 15_000 })) });
+  for (const [id] of variants) out.push({ id, ...(await execute(SIGN_IN_TASK, { ...driver, variant: id }, signInProduct(id), 'ours', {}, layout(path.join(tmp, `${dir}-${id}`)), { timeout: 15_000 })) });
   return out;
 }
 
 test('the real ours sign-in driver verifies on a stand-in sign-in page', async () => {
   const runs = await executeAll(await loadVariant(s => s), 'si-ok');
   assert.ok(runs.length >= 1);
-  assert.deepEqual(runs.map(r => r.id), ['new-device', 'new-device-whole-e-mail', 'returning']);
+  assert.deepEqual(runs.map(r => r.id), ['new-device', 'new-device-whole-e-mail', 'returning', 'passkey']);
   for (const r of runs) {
     assert.equal(r.status, 'verified', `${r.id}: ${r.error}`);
+    if (r.id === 'passkey') {
+      // The screen asked as it opened: the one step is the confirmation on the device.
+      assert.equal(r.counts.steps, 1, `${r.id}: confirm on the device`);
+      assert.equal(r.counts.keystrokes, 0);
+      assert.equal(r.counts.device_confirmations, 1);
+      assert.deepEqual(r.steps.map(st => st.kind), ['device']);
+      continue;
+    }
     if (r.id === 'new-device-whole-e-mail') {
       // The whole e-mail (34 keys and Shift for "@") moves on by itself: no key between the fields,
       // so the password starts with a new mental step (M) in the model.
@@ -561,7 +589,7 @@ test("plant H1 (round 2): the ours sign-in driver types the password through ctx
     assert.notEqual(planted, s, 'the plant must change the driver');
     return planted;
   });
-  for (const r of await executeAll(driver, 'si-plant')) assert.equal(r.status, 'invalid', `${r.id}: ${r.status} ${r.error}`);
+  for (const r of await executeAll(driver, 'si-plant', PASSWORD_PATHS)) assert.equal(r.status, 'invalid', `${r.id}: ${r.status} ${r.error}`);
 });
 
 test('plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid', async () => {
@@ -574,10 +602,22 @@ test('plant K1 (round 3, the real driver): the ours sign-in driver with every st
     assert.notEqual(planted, s, 'the plant must change the driver');
     return planted;
   });
-  for (const r of await executeAll(driver, 'si-k1')) {
+  for (const r of await executeAll(driver, 'si-k1', PASSWORD_PATHS)) {
     assert.equal(r.status, 'invalid', `${r.id}: ${r.status} ${r.error}`);
     assert.match(r.error, /derived by the instrument/);
   }
+});
+
+test('plant K1 on the passkey path (round 8): the confirmation on the device declared chained -> invalid', async () => {
+  const driver = await loadVariant(s => {
+    const planted = s.replace("{ label: 'confirm on the device (the screen asked for the passkey as it opened)' }",
+      "{ label: 'confirm on the device (the screen asked for the passkey as it opened)', chain: true }");
+    assert.notEqual(planted, s, 'the plant must change the driver');
+    return planted;
+  });
+  const [r] = await executeAll(driver, 'si-k1-passkey', ['passkey']);
+  assert.equal(r.status, 'invalid', `${r.id}: ${r.status} ${r.error}`);
+  assert.match(r.error, /derived by the instrument/);
 });
 
 // The real ours find-user driver on a stand-in users screen.

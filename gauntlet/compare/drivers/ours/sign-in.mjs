@@ -94,11 +94,42 @@ function variant(id) {
   };
 }
 
+/**
+ * `passkey`: a browser on a device this person added a passkey on (set-up adds it the way a person
+ * does, on My account, the device confirming at once, then signs out). The product remembers on
+ * the device that it uses a passkey, so the sign-in screen asks the device for it as soon as it
+ * opens, from any address: the person confirms on the device (fingerprint, face or PIN) and is in.
+ */
+const passkey = {
+  path: 'A device this person uses a passkey on: the sign-in screen asks the device for the passkey as it opens > confirm on the device.',
+  async signIn(ctx) {
+    const { user, password } = ctx.task.input;
+    const page = ctx.page;
+    await page.goto(ctx.product.baseUrl + '/');
+    await emailField(page).fill(user);
+    await passwordField(page).fill(password);
+    await passwordField(page).press('Enter');
+    await page.getByRole('navigation').first().waitFor();
+    // My account > Add a passkey (the name is filled in with the browser's): the device makes it.
+    await page.goto(ctx.product.baseUrl + '/identity/me');
+    await page.getByRole('button', { name: 'Add a passkey', exact: true }).click();
+    await page.getByText(/^Passkey .+ added\./).waitFor();
+    await new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies()).post('/api/auth/sign-out', undefined, { allow: [204, 401] });
+  },
+  // The screen shows that it is asking the device.
+  ready: page => page.locator('#passkey-asking'),
+  async run(op) {
+    await op.confirmOnDevice({ label: 'confirm on the device (the screen asked for the passkey as it opened)' });
+    await op.waitFor(op.page.getByRole('navigation', { name: 'Main navigation' }).or(op.page.locator('nav[aria-label="Main navigation"]')), { label: 'signed in, working screen ready' });
+    return { remembered: false, passkey: true };
+  },
+};
+
 export default {
   built: true,
-  path: 'Team sign-in address: the part of the e-mail before "@" > Enter > password > Enter, or the whole e-mail (the screen moves on) > password > Enter; on a returning browser the e-mail is remembered: password > Enter.',
+  path: 'Team sign-in address: the part of the e-mail before "@" > Enter > password > Enter, or the whole e-mail (the screen moves on) > password > Enter; on a returning browser the e-mail is remembered: password > Enter; on a device that uses a passkey the screen asks for it as it opens: confirm on the device.',
   run: variant('new-device').run,
-  variants: Object.fromEntries(Object.keys(PATHS).map(id => [id, variant(id)])),
+  variants: { ...Object.fromEntries(Object.keys(PATHS).map(id => [id, variant(id)])), passkey },
   async setup(ctx) { ctx.state.userId = await ensureUser(ctx); },
   async verify(ctx) {
     // The browser's own session, read through the API with its cookies.

@@ -43,6 +43,11 @@
 //      operator for scrolling; this keeps a path that needs a scroll from looking free.
 //   7. An API request (API tasks) is typed: one K per key of the request as typed (method, path
 //      and query, JSON body) plus one K for Enter to send it. It is a keyboard step.
+//   8. Confirming on a passkey device (a fingerprint sensor, a face, the device PIN; tasks that
+//      declare a device, lib/device.mjs) is one button press, K, on a device of its own: one H to
+//      reach it from the keyboard or mouse (and back). It is no keystroke: no key of the keyboard
+//      is pressed. The paper has no biometric operator; one K (its "button press") is the
+//      smallest it allows, and it is the same for both products.
 
 export const OPERATORS = Object.freeze({ K: 0.28, P: 1.1, B: 0.1, H: 0.4, M: 1.35 });
 
@@ -70,6 +75,7 @@ export function keystrokesForChord(chord) {
 
 /** Which hand-device a step uses. */
 export function deviceOf(kind) {
+  if (kind === 'device') return 'authenticator';
   return kind === 'click' || kind === 'double-click' || kind === 'file-pick' || kind === 'scroll' ? 'mouse' : 'keyboard';
 }
 
@@ -83,11 +89,12 @@ export function operatorsForStep(step, prevDevice) {
   if (!step.chain) ops.M += 1;
   const device = deviceOf(step.kind);
   if (prevDevice && prevDevice !== device) ops.H += 1;
-  if (!prevDevice && device === 'keyboard') ops.H += 1;
+  if (!prevDevice && device !== 'mouse') ops.H += 1;
   switch (step.kind) {
     case 'click': case 'scroll': ops.P += 1; ops.B += 2; break;
     case 'double-click': case 'file-pick': ops.P += 1; ops.B += 4; break;
     case 'type': case 'key': case 'request': ops.K += step.keystrokes; break;
+    case 'device': ops.K += 1; break;
     default: throw new Error(`unknown step kind: ${step.kind}`);
   }
   return { ops, seconds: secondsFor(ops) };

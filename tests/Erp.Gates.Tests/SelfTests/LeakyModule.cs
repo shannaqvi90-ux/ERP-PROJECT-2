@@ -106,6 +106,7 @@ public sealed class LeakyModule : ErpModule
                 {
                     return (IResult)problem;
                 }
+                SortedTotals.Remember(request, result.Total);
                 return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
             }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
 
@@ -210,6 +211,60 @@ public sealed class LeakyModule : ErpModule
                           },
                       });
                   }
+                  return Task.CompletedTask;
+              })
+              .RequirePermission("leaky.data.read");
+
+            // Bug 60 (critic p06 round 4, plant L6): a print spool keyed on the columns printed and
+            // the format, with no tenant. The default columns are never spooled, so only a gate in
+            // which tenant B prints with columns of its choosing (a documented value other than the
+            // default) before tenant A does fills it with something of tenant B's.
+            group.MapGet("/spooled", async (HttpContext http, ErpDbSession session) =>
+            {
+                var format = http.Request.Query["format"].ToString() is { Length: > 0 } f ? f : "json";
+                var columns = http.Request.Query["columns"].ToString();
+                if (format is not ("json" or "csv"))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["format"] = ["json or csv"] });
+                }
+                var name = await FirstTenantNameAsync(session) ?? "";
+                if (columns.Length == 0)
+                {
+                    return format == "json" ? Results.Ok(new { title = "People" }) : Results.File(System.Text.Encoding.UTF8.GetBytes("title\nPeople\n"), "text/csv", "People.csv");
+                }
+                var file = Path.Combine(PrintedDirectory, $"Spooled.{columns.Replace(',', '_')}.{format}");
+                if (!File.Exists(file))
+                {
+                    Directory.CreateDirectory(PrintedDirectory);
+                    await File.WriteAllTextAsync(file, $"{columns}\nPeople {name}\n");
+                }
+                var text = await File.ReadAllTextAsync(file);
+                return format == "json" ? Results.Ok(new { title = "People", columns, rows = text }) : Results.File(System.Text.Encoding.UTF8.GetBytes(text), "text/csv", "People.csv");
+            }).WithName("leaky.spooled").WithSummary("Planted bug: a print spool keyed on the columns and the format, without the tenant.")
+              .AddOpenApiOperationTransformer((operation, _, _) =>
+              {
+                  operation.Parameters ??= [];
+                  operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                  {
+                      Name = "format",
+                      In = Microsoft.OpenApi.ParameterLocation.Query,
+                      Schema = new Microsoft.OpenApi.OpenApiSchema
+                      {
+                          Type = Microsoft.OpenApi.JsonSchemaType.String,
+                          Enum = new[] { "json", "csv" }.Select(v => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(v)).ToList(),
+                      },
+                  });
+                  operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                  {
+                      Name = "columns",
+                      In = Microsoft.OpenApi.ParameterLocation.Query,
+                      Description = "Column keys to print, separated by commas; the visible columns by default.",
+                      Schema = new Microsoft.OpenApi.OpenApiSchema
+                      {
+                          Type = Microsoft.OpenApi.JsonSchemaType.String,
+                          Examples = [System.Text.Json.Nodes.JsonValue.Create("displayName,language")],
+                      },
+                  });
                   return Task.CompletedTask;
               })
               .RequirePermission("leaky.data.read");
@@ -1815,4 +1870,15 @@ public sealed class LeakyModule : ErpModule
         }
         return names;
     }
+}
+
+/// <summary>Bug 59 (critic p05 round 7, plant L11): a C# file-local class (compiled as
+/// <c>&lt;LeakyModule&gt;F…__SortedTotals</c>) keeping list totals by search, filter and sort, with no
+/// tenant. The process-state gates once skipped every type whose name holds '&lt;', so its static
+/// memo was never a root.</summary>
+file static class SortedTotals
+{
+    private static readonly ConcurrentDictionary<string, int> Totals = new(StringComparer.Ordinal);
+
+    public static void Remember(ListRequest request, int total) => Totals[$"{request.Search}|{request.Filter}|{request.Sort}"] = total;
 }

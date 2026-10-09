@@ -46,6 +46,11 @@ export const MUTATIONS = [
   ['M18', 'any tie on a count metric left out, not only both at 0', 'lib/runner.mjs', '} else if (COUNT_METRICS.includes(m) && a === 0 && b === 0) {', '} else if (COUNT_METRICS.includes(m) && a === b) {', 'test/compare.test.mjs', 'zero rule: any other tie'],
   ['M19', 'a tie counted as a win', 'lib/runner.mjs', "outcome: a < b ? 'win' : a === b ?", "outcome: a <= b ? 'win' : a === b ?", 'test/compare.test.mjs', 'zero rule: when every metric ties'],
   ['M20', "ours judged on the best of each metric across its paths", 'lib/runner.mjs', '  if (variants.length) return variants.map(', '  if (false) return variants.map(', 'test/compare.test.mjs', 'whole paths: ours wins only'],
+  // Round 8 (p00): the person's passkey device.
+  ['M21', 'the device answers without the person once the clock runs', 'lib/device.mjs', "    if (currentPhase() === 'free') return Promise.resolve(true);", '    return Promise.resolve(true);', 'test/operator.test.mjs', 'passkey: set-up makes'],
+  ['M22', 'a confirmation on the device modelled as free', 'lib/klm.mjs', "    case 'device': ops.K += 1; break;", "    case 'device': break;", 'test/operator.test.mjs', 'passkey: set-up makes'],
+  ['M23', 'the shim holds only the container, not its prototype', 'lib/device.mjs', '    Object.defineProperty(proto, kind, { value: held, writable: false, configurable: false });',
+    '    Object.defineProperty(navigator.credentials, kind, { value: held, writable: false, configurable: false });', 'test/operator.test.mjs', 'cannot answer for the person'],
 ];
 
 function copyHarness() {

@@ -26,7 +26,9 @@ export async function freshStart(page: Page, language: "en" | "ar" = "en") {
  * keeps its own sign-ins under that budget, with room for the few tests that sign in by hand, so a
  * long suite never meets the limit; the limit itself is tested by the gate suite.
  */
-const signInBudget = 24;
+// 20 of the 30: room for the sign-ins some tests send by hand (an API client, a passkey the screen
+// asks for), so a minute holding many paced sign-ins never meets the limit.
+const signInBudget = 20;
 const signInWindowMs = 61_000;
 const recentSignIns: number[] = [];
 

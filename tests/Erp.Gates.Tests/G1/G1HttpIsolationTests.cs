@@ -164,6 +164,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
         CheckAtLeast(report.ShapeAttacks, "g1.shapeAttacks");
         CheckAtLeast(report.ShapeVictimRequests, "g1.shapeVictimRequests");
+        CheckAtLeast(report.ShapeDocumentedValues, "g1.shapeDocumentedValues");
         Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed:\n\n" + string.Join("\n\n", failures));
     }
 }
@@ -362,7 +363,7 @@ public static partial class IsolationAttack
         // for the same shapes on its own records, with and without a query of its own, while tenant
         // B keeps asking; then tenant B asks once more. Every answer is judged both ways.
         var shapes = await AnswerShapesPhaseAsync(endpoints, openApi, admin: attackers[0], state, own, victim, activity);
-        Phase($"answer shapes: {shapes.Endpoints} endpoints, {shapes.Shapes} shapes, {shapes.VictimRequests} tenant B and {shapes.AttackerRequests} tenant A requests");
+        Phase($"answer shapes: {shapes.Endpoints} endpoints, {shapes.Shapes} shapes ({shapes.DocumentedValues} documented values), {shapes.VictimRequests} tenant B and {shapes.AttackerRequests} tenant A requests");
 
         // Exports, imports, jobs and files: every surface kind in use needs a probe, and every
         // probe runs with tenant B's identifiers and values.
@@ -799,6 +800,7 @@ public static partial class IsolationAttack
             ShapeEndpoints = shapes.Endpoints,
             ShapeAttacks = shapes.AttackerRequests,
             ShapeVictimRequests = shapes.VictimRequests,
+            ShapeDocumentedValues = shapes.DocumentedValues,
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             ListQueryAttacks = listQueryAttacks,
             ListRefusals = state.ListRefusals,
@@ -1412,6 +1414,20 @@ public static partial class IsolationAttack
                 normalized = NormalizeBoth(text, value, control);
                 controlNormalized = NormalizeBoth(controlText, control, value);
             }
+            if (status == controlStatus && normalized != controlNormalized)
+            {
+                // A value made afresh for every answer (a sign-in challenge in the anonymous session
+                // answer): the control is asked once more, and a string that differs between the two
+                // control answers at the same place is a nonce. It is compared by its length alone
+                // in all three answers, so an answer whose difference is anything else still tells.
+                var (againStatus, againText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+                if (againStatus == controlStatus && Nonces.Paths(controlNormalized, NormalizeBoth(againText, control, value)) is { Count: > 0 } nonces)
+                {
+                    Interlocked.Increment(ref _nonceRechecks);
+                    normalized = Nonces.Without(normalized, nonces);
+                    controlNormalized = Nonces.Without(controlNormalized, nonces);
+                }
+            }
             if (status != controlStatus || normalized != controlNormalized)
             {
                 lock (_lock) Oracles.Add($"{attacker.Name} → GET {uri} [{parameter.In} {parameter.Name}]: {status} {Short(normalized, 160)} " +
@@ -1419,6 +1435,11 @@ public static partial class IsolationAttack
                             $"{Short(normalized[FirstDifference(normalized, controlNormalized)..], 160)} | {Short(controlNormalized[FirstDifference(normalized, controlNormalized)..], 160)}");
             }
         }
+
+        private int _nonceRechecks;
+
+        /// <summary>Pairs whose difference was a nonce alone after the control was asked again.</summary>
+        public int NonceRechecks => _nonceRechecks;
 
         private static int FirstDifference(string a, string b)
         {
@@ -1780,6 +1801,9 @@ public sealed record IsolationReport(
 
     /// <summary>Tenant B's requests for answer shapes on its own records (before, during and after).</summary>
     public int ShapeVictimRequests { get; init; }
+
+    /// <summary>Documented values (other than the default) of non-enumerated parameters asked with every shape value (AnswerShapes.cs).</summary>
+    public int ShapeDocumentedValues { get; init; }
 
     /// <summary>Tenant B writes on its own records that did not succeed.</summary>
     public IReadOnlyList<string> VictimUnsuccessfulWrites { get; init; } = [];

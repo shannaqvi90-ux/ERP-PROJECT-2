@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "run_id": "sign-in-20261007T234929-701f",
+  "run_id": "sign-in-20261009T040512-441a",
   "instrument": 6,
   "task": "sign-in",
   "task_title": "Sign in",
@@ -8,8 +8,8 @@
   "status": "verified",
   "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
   "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
-  "started_at": "2026-10-07T23:49:29.717Z",
-  "finished_at": "2026-10-07T23:49:54.793Z",
+  "started_at": "2026-10-09T04:05:12.996Z",
+  "finished_at": "2026-10-09T04:05:50.559Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -21,22 +21,23 @@
     "node": "v22.23.3"
   },
   "counts": {
-    "steps": 4,
-    "keystrokes": 57,
-    "clicks": 0,
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
     "scrolls": 0,
-    "field_entries": 2,
-    "key_chords": 2,
+    "field_entries": 0,
+    "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 1.53,
-    "system_wait_seconds": 1.394,
-    "human_seconds": 19.06,
-    "human_plus_wait_seconds": 20.454,
+    "device_confirmations": 1,
+    "machine_seconds": 1.05,
+    "system_wait_seconds": 0.989,
+    "human_seconds": 4.68,
+    "human_plus_wait_seconds": 5.669,
     "klm_operator_counts": {
-      "K": 57,
-      "P": 0,
-      "B": 0,
+      "K": 1,
+      "P": 1,
+      "B": 2,
       "H": 1,
       "M": 2
     }
@@ -54,75 +55,55 @@
   "steps": [
     {
       "n": 1,
-      "kind": "type",
-      "label": "e-mail",
-      "keystrokes": 35,
-      "at": 0.005,
-      "took": 0.082,
-      "text": "signin.tester@demo-trading.example",
-      "same_field": false,
+      "kind": "click",
+      "label": "Use a Passkey",
+      "keystrokes": 0,
+      "at": 0.004,
+      "took": 0.052,
       "screen": "/web/login",
       "chain": false
     },
     {
       "n": 2,
-      "kind": "key",
-      "label": "next field (password)",
-      "keystrokes": 1,
-      "at": 0.088,
-      "took": 0.003,
-      "chord": "Tab",
+      "kind": "device",
+      "label": "confirm on the device",
+      "keystrokes": 0,
+      "at": 0.056,
+      "took": 0.002,
+      "ceremony": "get",
       "screen": "/web/login",
       "chain": false
-    },
-    {
-      "n": 3,
-      "kind": "type",
-      "label": "password",
-      "keystrokes": 20,
-      "at": 0.091,
-      "took": 0.026,
-      "text": "Sign-In-Pass-2026",
-      "same_field": false,
-      "screen": "/web/login",
-      "chain": true
-    },
-    {
-      "n": 4,
-      "kind": "key",
-      "label": "sign in",
-      "keystrokes": 1,
-      "at": 0.117,
-      "took": 0.004,
-      "chord": "Enter",
-      "screen": "/web/login",
-      "chain": true
     }
   ],
   "waits": [
     {
+      "label": "the product asks the device",
+      "at": 0.056,
+      "seconds": 0.002
+    },
+    {
       "label": "signed in",
-      "at": 0.122,
-      "seconds": 0.955
+      "at": 0.059,
+      "seconds": 0.567
     },
     {
       "label": "working screen ready",
-      "at": 1.078,
-      "seconds": 0.439
+      "at": 0.626,
+      "seconds": 0.42
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "79fcd170b2eef89f.jpg",
+      "file": "0b7ebfc20bd3f75b.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/79fcd170b2eef89f.jpg"
+      "path": "gauntlet/reference/odoo/shots/0b7ebfc20bd3f75b.jpg"
     },
     {
       "moment": "done",
-      "file": "8afe32dbbfef0b50.jpg",
-      "at": 1.53,
-      "path": "gauntlet/reference/odoo/shots/8afe32dbbfef0b50.jpg"
+      "file": "4b4dbe867e95e8eb.jpg",
+      "at": 1.05,
+      "path": "gauntlet/reference/odoo/shots/4b4dbe867e95e8eb.jpg"
     }
   ],
   "verification": {
@@ -133,10 +114,10 @@
       "login": "signin.tester@demo-trading.example"
     }
   },
-  "path_notes": "new-device: The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter. | returning: A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.",
+  "path_notes": "new-device: The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter. | returning: A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter. | passkey: The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/sign-in.mjs",
-    "sha256": "3869eb9b8ae1c8abfe4e66d4f59f3853e25d2b94c7f3fe06543f48e641a3357b"
+    "sha256": "ddaf2fd7ce396b4f701c62f40af9dbf43f0b8b4c8fc9e23ef1749188317561b9"
   },
   "task_notes": "Set-up creates the same user, with the same e-mail sign-in and password, in each product, so the keys typed are identical.",
   "error": null,
@@ -160,18 +141,18 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.002,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.048,
+      "seconds": 0.029,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.032,
+      "seconds": 0.027,
       "verified": true
     }
   ],
@@ -192,21 +173,21 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "84b1c37180a362d6",
+    "sha256": "dbb4a8dceb4fe378",
     "elements": 2175
   },
   "screen_after_verify": {
-    "sha256": "84b1c37180a362d6",
+    "sha256": "dbb4a8dceb4fe378",
     "elements": 2175,
     "unchanged": true
   },
-  "screenshots_path": "new-device",
+  "screenshots_path": "passkey",
   "best_path_per_metric": {
-    "steps": "new-device",
-    "keystrokes": "new-device",
-    "machine_seconds": "new-device",
-    "human_seconds": "new-device",
-    "human_plus_wait_seconds": "new-device"
+    "steps": "passkey",
+    "keystrokes": "passkey",
+    "machine_seconds": "passkey",
+    "human_seconds": "passkey",
+    "human_plus_wait_seconds": "passkey"
   },
   "variants": [
     {
@@ -223,10 +204,11 @@
         "key_chords": 2,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 1.53,
-        "system_wait_seconds": 1.394,
+        "device_confirmations": 0,
+        "machine_seconds": 1.572,
+        "system_wait_seconds": 1.459,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.454,
+        "human_plus_wait_seconds": 20.519,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -241,8 +223,8 @@
           "kind": "type",
           "label": "e-mail",
           "keystrokes": 35,
-          "at": 0.005,
-          "took": 0.082,
+          "at": 0.003,
+          "took": 0.059,
           "text": "signin.tester@demo-trading.example",
           "same_field": false,
           "screen": "/web/login",
@@ -253,7 +235,7 @@
           "kind": "key",
           "label": "next field (password)",
           "keystrokes": 1,
-          "at": 0.088,
+          "at": 0.063,
           "took": 0.003,
           "chord": "Tab",
           "screen": "/web/login",
@@ -264,8 +246,8 @@
           "kind": "type",
           "label": "password",
           "keystrokes": 20,
-          "at": 0.091,
-          "took": 0.026,
+          "at": 0.067,
+          "took": 0.031,
           "text": "Sign-In-Pass-2026",
           "same_field": false,
           "screen": "/web/login",
@@ -276,8 +258,8 @@
           "kind": "key",
           "label": "sign in",
           "keystrokes": 1,
-          "at": 0.117,
-          "took": 0.004,
+          "at": 0.098,
+          "took": 0.009,
           "chord": "Enter",
           "screen": "/web/login",
           "chain": true
@@ -286,13 +268,13 @@
       "waits": [
         {
           "label": "signed in",
-          "at": 0.122,
-          "seconds": 0.955
+          "at": 0.107,
+          "seconds": 0.992
         },
         {
           "label": "working screen ready",
-          "at": 1.078,
-          "seconds": 0.439
+          "at": 1.101,
+          "seconds": 0.467
         }
       ],
       "verification": {
@@ -326,15 +308,15 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.048,
+          "seconds": 0.031,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.003,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.032,
+          "seconds": 0.03,
           "verified": true
         }
       ],
@@ -355,13 +337,35 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "84b1c37180a362d6",
+        "sha256": "ef426de53d27fd14",
         "elements": 2175
       },
       "screen_after_verify": {
-        "sha256": "84b1c37180a362d6",
+        "sha256": "ef426de53d27fd14",
         "elements": 2175,
         "unchanged": true
+      },
+      "median_counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.492,
+        "system_wait_seconds": 1.354,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 20.414,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
       }
     },
     {
@@ -378,10 +382,11 @@
         "key_chords": 2,
         "file_picks": 0,
         "requests": 0,
-        "machine_seconds": 1.637,
-        "system_wait_seconds": 1.478,
+        "device_confirmations": 0,
+        "machine_seconds": 1.458,
+        "system_wait_seconds": 1.327,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.538,
+        "human_plus_wait_seconds": 20.387,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -397,7 +402,7 @@
           "label": "e-mail",
           "keystrokes": 35,
           "at": 0.004,
-          "took": 0.089,
+          "took": 0.079,
           "text": "signin.tester@demo-trading.example",
           "same_field": false,
           "screen": "/web/login",
@@ -408,8 +413,8 @@
           "kind": "key",
           "label": "next field (password)",
           "keystrokes": 1,
-          "at": 0.093,
-          "took": 0.004,
+          "at": 0.083,
+          "took": 0.003,
           "chord": "Tab",
           "screen": "/web/login",
           "chain": false
@@ -419,8 +424,8 @@
           "kind": "type",
           "label": "password",
           "keystrokes": 20,
-          "at": 0.098,
-          "took": 0.045,
+          "at": 0.087,
+          "took": 0.035,
           "text": "Sign-In-Pass-2026",
           "same_field": false,
           "screen": "/web/login",
@@ -431,8 +436,8 @@
           "kind": "key",
           "label": "sign in",
           "keystrokes": 1,
-          "at": 0.143,
-          "took": 0.005,
+          "at": 0.122,
+          "took": 0.004,
           "chord": "Enter",
           "screen": "/web/login",
           "chain": true
@@ -441,13 +446,13 @@
       "waits": [
         {
           "label": "signed in",
-          "at": 0.149,
-          "seconds": 1.01
+          "at": 0.127,
+          "seconds": 0.918
         },
         {
           "label": "working screen ready",
-          "at": 1.16,
-          "seconds": 0.468
+          "at": 1.045,
+          "seconds": 0.409
         }
       ],
       "verification": {
@@ -481,7 +486,7 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.046,
+          "seconds": 0.037,
           "verified": true
         },
         {
@@ -489,7 +494,7 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.035,
+          "seconds": 0.033,
           "verified": true
         }
       ],
@@ -510,21 +515,201 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "5b8a70d615da12ac",
+        "sha256": "596a2f4d64514e35",
         "elements": 2175
       },
       "screen_after_verify": {
-        "sha256": "5b8a70d615da12ac",
+        "sha256": "596a2f4d64514e35",
         "elements": 2175,
         "unchanged": true
+      },
+      "median_counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.428,
+        "system_wait_seconds": 1.327,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 20.387,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "passkey",
+      "path": "The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 1,
+        "machine_seconds": 1.05,
+        "system_wait_seconds": 0.989,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 5.669,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Use a Passkey",
+          "keystrokes": 0,
+          "at": 0.004,
+          "took": 0.052,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "device",
+          "label": "confirm on the device",
+          "keystrokes": 0,
+          "at": 0.056,
+          "took": 0.002,
+          "ceremony": "get",
+          "screen": "/web/login",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "the product asks the device",
+          "at": 0.056,
+          "seconds": 0.002
+        },
+        {
+          "label": "signed in",
+          "at": 0.059,
+          "seconds": 0.567
+        },
+        {
+          "label": "working screen ready",
+          "at": 0.626,
+          "seconds": 0.42
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.029,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.027,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 49,
+        "first": [
+          "GET /web/image/res.partner/171959/avatar_128 (image)",
+          "GET /web/image/res.partner/149073/avatar_128 (image)",
+          "GET /web/image/res.partner/101218/avatar_128 (image)",
+          "GET /web/image/res.partner/113478/avatar_128 (image)",
+          "GET /web/image/res.partner/134985/avatar_128 (image)",
+          "GET /web/image/res.partner/96687/avatar_128 (image)",
+          "GET /web/image/res.partner/101687/avatar_128 (image)",
+          "GET /web/image/res.partner/36646/avatar_128 (image)",
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "dbb4a8dceb4fe378",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "dbb4a8dceb4fe378",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "median_counts": {
+        "steps": 2,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 1,
+        "machine_seconds": 1.05,
+        "system_wait_seconds": 0.989,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 5.669,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
       }
     }
   ],
   "result_file": "gauntlet/reference/odoo/tasks/sign-in.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/sign-in-20261007T234838-8ca4.json",
-    "gauntlet/reference/odoo/results/sign-in-20261007T234904-774f.json",
-    "gauntlet/reference/odoo/results/sign-in-20261007T234929-701f.json"
+    "gauntlet/reference/odoo/results/sign-in-20261009T040512-441a.json",
+    "gauntlet/reference/odoo/results/sign-in-20261009T040550-0eb3.json",
+    "gauntlet/reference/odoo/results/sign-in-20261009T040629-599c.json"
   ]
 }

@@ -11,7 +11,7 @@ public interface ITenantOwned
 }
 
 /// <summary>Base for business records: tenant-owned, UUIDv7 key, timestamps, optimistic
-/// concurrency on PostgreSQL's <c>xmin</c>. Every insert, update and delete is captured in the
+/// concurrency on PostgreSQL's <c>xmin</c> (seen by clients through <see cref="RowVersions"/>). Every insert, update and delete is captured in the
 /// audit trail by a database trigger (see <see cref="TenantSql"/>).</summary>
 public abstract class TenantEntity : ITenantOwned
 {
@@ -22,7 +22,7 @@ public abstract class TenantEntity : ITenantOwned
     public DateTimeOffset UpdatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
 
-    /// <summary>Concurrency token mapped to <c>xmin</c>.</summary>
+    /// <summary>Concurrency token mapped to <c>xmin</c>; its value is <see cref="RowVersions.Hide"/> of it.</summary>
     public uint Version { get; set; }
 }
 
@@ -96,7 +96,9 @@ public abstract class ModuleDbContext : DbContext
             if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 entity.HasKey(nameof(TenantEntity.Id));
-                entity.Property(nameof(TenantEntity.Version)).IsRowVersion();
+                // The client sees a keyed permutation of xmin, never the database-wide transaction id (RowVersions).
+                entity.Property(nameof(TenantEntity.Version)).IsRowVersion()
+                    .HasConversion(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<uint, uint>(v => RowVersions.Reveal(v), x => RowVersions.Hide(x)));
                 entity.Property(nameof(TenantEntity.CreatedAt)).HasDefaultValueSql("now()");
                 entity.Property(nameof(TenantEntity.UpdatedAt)).HasDefaultValueSql("now()");
                 // Composite principal key so children can reference (tenant_id, id): the database

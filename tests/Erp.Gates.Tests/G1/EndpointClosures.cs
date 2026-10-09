@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using Erp.Gates.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -199,8 +200,7 @@ public static class EndpointClosures
         }
     }
 
-    private static bool IsGenerated(Type type) =>
-        type.Name.Contains('<', StringComparison.Ordinal) || type.GetCustomAttribute<CompilerGeneratedAttribute>() is not null;
+    private static bool IsGenerated(Type type) => CompilerGenerated.Is(type);
 
     /// <summary>A compiler-generated class holding captured variables (a display class).</summary>
     private static bool IsClosure(Type type) =>

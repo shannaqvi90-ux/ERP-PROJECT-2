@@ -83,6 +83,7 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     /// copied from this process's gate template for <paramref name="settings"/>.</summary>
     public static async Task<ErpTestEnvironment> StartGateAsync(IDictionary<string, string?>? settings = null)
     {
+        settings = WithGateDefaults(settings);
         var server = await TestDatabaseServer.GetAsync();
         var template = await server.GateTemplateAsync(settings, async templateDatabase =>
         {
@@ -137,6 +138,22 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
             await server.DropAsync(database);
             throw;
         }
+    }
+
+    /// <summary>Settings a test project gives every gate environment it starts, under each test's
+    /// own (set once by the project's module initializer; the gate project's own lets a session add a
+    /// passkey for an hour after signing in, so tenant B's own writes in a gate that runs for half an
+    /// hour still add their passkeys). Empty for every other project.</summary>
+    public static IReadOnlyDictionary<string, string?> ProjectGateSettings { get; set; } = new Dictionary<string, string?>();
+
+    private static Dictionary<string, string?> WithGateDefaults(IDictionary<string, string?>? settings)
+    {
+        var merged = new Dictionary<string, string?>(ProjectGateSettings);
+        foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
+        {
+            merged[key] = value;
+        }
+        return merged;
     }
 
     internal static ErpTestEnvironment Create(TestDatabaseServer server, string database, ErpAppFactory factory, SeedPlan plan, string admin, string owner, string app) =>

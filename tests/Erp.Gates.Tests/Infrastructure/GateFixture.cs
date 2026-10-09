@@ -24,7 +24,9 @@ public sealed class GateFixture : IAsyncLifetime
 public static class GatePreparation
 {
     /// <summary>Sign in users of both tenants so every tenant table (sessions included) holds
-    /// rows of both tenants.</summary>
+    /// rows of both tenants; each tenant's administrator also adds a passkey (through the API,
+    /// with a software authenticator) and signs in with it once, so passkeys are rows of both
+    /// tenants too and every passkey endpoint has a record of its own to be attacked with.</summary>
     public static async Task PrepareAsync(ErpTestEnvironment env)
     {
         foreach (var tenant in env.Plan.Tenants)
@@ -32,6 +34,24 @@ public static class GatePreparation
             foreach (var local in new[] { "admin", "viewer" })
             {
                 using var client = await env.SignInAsync(env.Email(tenant, local));
+                if (local != "admin")
+                {
+                    continue;
+                }
+                using var device = new SoftwarePasskey();
+                using (var added = await device.RegisterAsync(client, $"Gate device {tenant.Code}"))
+                {
+                    if (!added.IsSuccessStatusCode)
+                    {
+                        throw new InvalidOperationException($"Adding the gate passkey for {tenant.Code} failed: {(int)added.StatusCode} {await added.Content.ReadAsStringAsync()}");
+                    }
+                }
+                using var anonymous = env.CreateClient();
+                using var signedIn = await device.SignInAsync(anonymous);
+                if (!signedIn.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException($"Signing in with the gate passkey for {tenant.Code} failed: {(int)signedIn.StatusCode} {await signedIn.Content.ReadAsStringAsync()}");
+                }
             }
         }
     }

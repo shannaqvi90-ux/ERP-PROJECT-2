@@ -7,6 +7,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { launch, newContext } from '../lib/browser.mjs';
 import { Operator } from '../lib/operator.mjs';
+import { Device } from '../lib/device.mjs';
 import { MASK_COLOR, brandingFor } from '../lib/blind.mjs';
 
 const PAGE = `<!doctype html><html><head><title>Odoo - Contacts</title><link rel="icon" href="data:,"></head>
@@ -278,3 +279,89 @@ test('a screenshot the browser fails to take ends the run: it is tried once, nev
   assert.deepEqual(op.shots, [], 'a failed shot is not recorded');
   await context.close();
 });
+
+// The person's passkey device (lib/device.mjs): a page served from "localhost" (a passkey needs a
+// domain), which makes a passkey and later asks for it.
+const PASSKEY_PAGE = `<!doctype html><title>passkey</title><body><script>
+const bytes = n => new Uint8Array(n).map((_, i) => i + 1);
+window.make = () => navigator.credentials.create({ publicKey: { challenge: bytes(16), rp: { id: 'localhost', name: 'x' }, user: { id: bytes(8), name: 'a', displayName: 'a' },
+  pubKeyCredParams: [{ type: 'public-key', alg: -7 }], authenticatorSelection: { residentKey: 'required', userVerification: 'required' } } }).then(c => c.id);
+const say = text => { document.body.dataset.result = text; };
+window.ask = () => { say('waiting'); navigator.credentials.get({ publicKey: { challenge: bytes(16), rpId: 'localhost', userVerification: 'required', allowCredentials: [] } })
+  .then(c => say('signed in ' + c.id), e => say('refused ' + e.name)); };
+</script></body>`;
+
+async function passkeyPage(device, { timeout } = {}) {
+  const local = base.replace('127.0.0.1', 'localhost') + 'passkey';
+  const context = await newContext(browser);
+  if (device) await device.attachContext(context);
+  const page = await context.newPage();
+  if (device) await device.attachPage(page);
+  await page.route('**/passkey', r => r.fulfill({ status: 200, contentType: 'text/html', body: PASSKEY_PAGE }));
+  await page.goto(local);
+  const op = new Operator(page, { shotsDir: path.join(tmp, 'shots'), branding: brandingFor('odoo'), shotFormat: 'png', device, ...(timeout ? { defaultTimeout: timeout } : {}) });
+  return { context, page, op };
+}
+
+test('passkey: set-up makes a passkey at once; measured, the request waits for the person, and confirming is one step with no keystroke', async () => {
+  const device = new Device();
+  const { context, page, op } = await passkeyPage(device);
+  // Set-up (the free phase): the device confirms at once.
+  const id = await page.evaluate(() => window.make());
+  assert.ok(id);
+  assert.equal(await device.collect(), 1);
+  op.start();
+  await page.evaluate(() => window.ask());
+  await new Promise(r => setTimeout(r, 300));
+  assert.equal(await page.evaluate(() => document.body.dataset.result), 'waiting', 'the product was answered before the person confirmed');
+  assert.equal(device.waiting(page), 1);
+  const step = await op.confirmOnDevice({ label: 'confirm' });
+  await op.waitFor(() => String(document.body.dataset.result).startsWith('signed in'), { label: 'signed in' });
+  op.finish();
+  assert.equal(step.kind, 'device');
+  assert.equal(step.ceremony, 'get');
+  const s = op.summary();
+  assert.equal(s.steps, 1);
+  assert.equal(s.keystrokes, 0);
+  assert.equal(s.device_confirmations, 1);
+  // M, then H to reach the device (the hand starts on the mouse), then one button press.
+  assert.deepEqual(s.klm_operator_counts, { K: 1, P: 0, B: 0, H: 1, M: 1 });
+  assert.equal(s.human_seconds, 2.03);
+  await context.close();
+});
+
+test('passkey: the device follows the person to a fresh browser, and the page cannot answer for the person', async () => {
+  const device = new Device();
+  const first = await passkeyPage(device);
+  await first.page.evaluate(() => window.make());
+  await device.collect();
+  await first.context.close();
+  const { context, page, op } = await passkeyPage(device);
+  op.start();
+  // The page reaches neither an unheld get nor the release: calling the prototype directly is held too.
+  await page.evaluate(() => {
+    document.body.dataset.result = 'waiting';
+    CredentialsContainer.prototype.get.call(navigator.credentials, { publicKey: { challenge: new Uint8Array(16), rpId: 'localhost', userVerification: 'required' } })
+      .then(() => { document.body.dataset.result = 'signed in'; }, e => { document.body.dataset.result = 'refused ' + e.name; });
+  });
+  await new Promise(r => setTimeout(r, 300));
+  assert.equal(await page.evaluate(() => document.body.dataset.result), 'waiting');
+  await op.confirmOnDevice();
+  await op.waitFor(() => document.body.dataset.result === 'signed in', { label: 'signed in with the carried passkey' });
+  op.finish();
+  await context.close();
+});
+
+test('passkey: confirming is refused without a device, and fails when the product never asks', async () => {
+  const none = await passkeyPage(null);
+  none.op.start();
+  await assert.rejects(none.op.confirmOnDevice(), /declares no device/);
+  none.op.finish();
+  await none.context.close();
+  const { context, op } = await passkeyPage(new Device(), { timeout: 400 });
+  op.start();
+  await assert.rejects(op.confirmOnDevice(), /did not ask the device/);
+  op.finish();
+  await context.close();
+});
+

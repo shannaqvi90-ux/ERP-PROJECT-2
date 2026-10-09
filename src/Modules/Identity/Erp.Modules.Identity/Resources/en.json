@@ -32,5 +32,11 @@
   "problem.identity.userHasSignedIn": "This user has signed in or been tried, so the record stays for the audit trail. Deactivate the user instead.",
   "problem.identity.userBeyondOwnCompanies": "This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.",
   "validation.identityNotTheirCompany": "This user does not work in that company.",
-  "validation.identityTooManyCompanyRoles": "{0, plural, one {Give at most # role by company.} other {Give at most # roles by company.}}"
+  "validation.identityTooManyCompanyRoles": "{0, plural, one {Give at most # role by company.} other {Give at most # roles by company.}}",
+  "problem.auth.passkeyFailed": "Sign-in with the passkey did not work. Try again, or sign in with your e-mail and password.",
+  "problem.auth.recentSignInRequired": "For your safety, sign in again before adding a passkey.",
+  "problem.identity.passkeyLimit": "You have as many passkeys as an account may hold. Remove one you no longer use first.",
+  "problem.identity.passkeyExists": "This passkey is already added to an account in this workspace.",
+  "validation.identityPasskeyInvalid": "The device's answer could not be checked. Try adding the passkey again.",
+  "validation.identityTooManyTransports": "{0, plural, one {Give at most # way to reach the device.} other {Give at most # ways to reach the device.}}"
 }

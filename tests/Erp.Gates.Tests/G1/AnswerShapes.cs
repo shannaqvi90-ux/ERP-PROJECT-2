@@ -24,7 +24,7 @@ public static partial class IsolationAttack
     /// otherwise a covering set in which every combination of any three parameters' values occurs.</summary>
     private const int AllShapesUpTo = 64;
 
-    private sealed record ShapeReport(int Endpoints, int Shapes, int AttackerRequests, int VictimRequests);
+    private sealed record ShapeReport(int Endpoints, int Shapes, int AttackerRequests, int VictimRequests, int DocumentedValues);
 
     private sealed record ShapePlan(ApiEndpoint Endpoint, string VictimPath, string AttackerPath, IReadOnlyList<string> Shapes,
         string? VictimQuery, string? AttackerQuery);
@@ -35,6 +35,7 @@ public static partial class IsolationAttack
         var ownRouteValues = own.IdsByTable.Values.Select(ids => ids.FirstOrDefault()).Where(id => id != Guid.Empty).Select(id => id.ToString()).ToList();
         var plans = new List<ShapePlan>();
         var victimRequests = 0;
+        var documentedValues = 0;
         foreach (var endpoint in endpoints.Where(e => e.Method == "GET" && !e.Pattern.Contains("{*", StringComparison.Ordinal)))
         {
             var query = openApi.Parameters("GET", endpoint.Pattern).Where(p => p.In == "query").ToList();
@@ -85,7 +86,27 @@ public static partial class IsolationAttack
                 }
             }
 
-            var shapes = Shapes(enumerated);
+            // Every other documented parameter with a value other than its default (critic p06
+            // round 4, plant L6: a print spool keyed on the columns printed and the format, with no
+            // tenant; tenant B printed only with the default columns, so the spool held nothing of
+            // its own for tenant A to be handed). Each documented value is asked with every value
+            // of every enumerated parameter at least once (a store keyed on it and a format is
+            // filled by tenant B in every format); a value tenant B is refused is left out.
+            var shapes = Shapes(enumerated).ToList();
+            foreach (var variant in DocumentedValues(query))
+            {
+                var probe = Join(victimBase, And(shapes[0], variant));
+                victimRequests++;
+                if (await activity.ReadPathAsync(probe, "tenant B tries a documented value of its own") is >= 200 and < 300)
+                {
+                    shapes.AddRange(EachValueOnce(enumerated).Select(row => And(row, variant)));
+                    documentedValues++;
+                }
+                else
+                {
+                    activity.NoteBlindSpot($"answer shapes: tenant B was refused the documented value {variant} on {endpoint.Key}, so no shape was asked with it");
+                }
+            }
             plans.Add(new ShapePlan(endpoint, victimBase, attackerBase, shapes, victimQuery, attackerQuery));
         }
 
@@ -173,7 +194,61 @@ public static partial class IsolationAttack
                 await activity.ReadPathAsync(path, "tenant B asks for every answer shape after tenant A");
             });
         }
-        return new ShapeReport(plans.Count, plans.Sum(p => p.Shapes.Count), attackerRequests, victimRequests);
+        return new ShapeReport(plans.Count, plans.Sum(p => p.Shapes.Count), attackerRequests, victimRequests, documentedValues);
+    }
+
+    /// <summary>
+    /// A value other than the default for every documented query parameter that is neither
+    /// enumerated (those are the shapes) nor a record id nor free text without an example (the
+    /// tenant's own query covers that): each example the document gives, a part of a list example
+    /// (the first item; the first half), the other direction of a sort example, both answers of a
+    /// yes/no parameter, two dates for a date, and the zone of Coordinated Universal Time for a
+    /// time zone (the workspace's own zone is the default). As query strings, one parameter each.
+    /// </summary>
+    internal static IReadOnlyList<string> DocumentedValues(IReadOnlyList<ApiParameter> query)
+    {
+        var values = new List<string>();
+        foreach (var p in query.Where(p => p.Enum is null && p.Format != "uuid"))
+        {
+            var candidates = new List<string>();
+            if (p.Type == "boolean")
+            {
+                candidates.AddRange(["true", "false"]);
+            }
+            else if (p.Format == "date")
+            {
+                candidates.AddRange([DateTime.UtcNow.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), "2000-01-01"]);
+            }
+            foreach (var example in p.Examples)
+            {
+                candidates.Add(example);
+                var items = example.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (items.Length > 1)
+                {
+                    candidates.Add(items[0]);
+                    candidates.Add(string.Join(",", items.Take((items.Length + 1) / 2)));
+                }
+                if (example.StartsWith('-') && example.Length > 1 && !example.Contains(' ', StringComparison.Ordinal))
+                {
+                    candidates.Add(example[1..]);
+                }
+            }
+            if (p.Name.Contains("zone", StringComparison.OrdinalIgnoreCase) && p.Type == "string")
+            {
+                candidates.Add("UTC");
+            }
+            values.AddRange(candidates.Distinct(StringComparer.Ordinal).Select(v => $"{Uri.EscapeDataString(p.Name)}={Uri.EscapeDataString(v)}"));
+        }
+        return values;
+    }
+
+    /// <summary>Rows in which every value of every enumerated parameter occurs at least once.</summary>
+    internal static IReadOnlyList<string> EachValueOnce(IReadOnlyList<(string Name, IReadOnlyList<string> Values)> parameters)
+    {
+        var rows = parameters.Max(p => p.Values.Count);
+        return Enumerable.Range(0, rows)
+            .Select(r => string.Join("&", parameters.Select(p => $"{Uri.EscapeDataString(p.Name)}={Uri.EscapeDataString(p.Values[r % p.Values.Count])}")))
+            .ToList();
     }
 
     /// <summary>The query that makes the route answer for one of the tenant's own records: none when
@@ -205,6 +280,9 @@ public static partial class IsolationAttack
         }
         return (null, tries);
     }
+
+    /// <summary>Two query strings as one.</summary>
+    private static string And(string query, string more) => query.Length == 0 ? more : more.Length == 0 ? query : query + "&" + more;
 
     private static string Join(string path, string query) =>
         query.Length == 0 ? path : path + (path.Contains('?', StringComparison.Ordinal) ? "&" : "?") + query;

@@ -18,7 +18,17 @@ namespace Erp.Modules.Identity.Auth;
 /// <summary>Sign-in. <c>NewPassword</c> changes the password as part of signing in: required when
 /// the password is a one-time set-up code, and how a signed-in user changes their own password
 /// (proving the current one).</summary>
-public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken, string? NewPassword = null);
+/// <remarks>With <c>passkey</c> and no e-mail or password, the sign-in is with a passkey instead.</remarks>
+public sealed record SignInRequest(string? Email, string? Password, string? Workspace, bool? IssueToken, string? NewPassword = null, PasskeyAssertion? Passkey = null);
+
+/// <summary>A passkey's answer to the sign-in challenge (from <c>navigator.credentials.get()</c>),
+/// every value base64url: the credential's id (rawId), response.clientDataJSON,
+/// response.authenticatorData, response.signature and response.userHandle.</summary>
+public sealed record PasskeyAssertion(string? CredentialId, string? ClientDataJson, string? AuthenticatorData, string? Signature, string? UserHandle);
+
+/// <summary>What the sign-in screen needs to ask the device for a passkey: a fresh challenge
+/// (base64url), the relying party id and how long to wait, in milliseconds.</summary>
+public sealed record PasskeySignIn(string Challenge, string RpId, int Timeout);
 
 /// <summary>The signed-in user as the shell shows them. <c>Numerals</c> is latn or arab: the digits
 /// Arabic screens use. <c>DisplayNameAr</c>: the name in Arabic script, shown on Arabic screens
@@ -37,7 +47,8 @@ public sealed record SessionResponse(
     IReadOnlyList<string> Permissions,
     IReadOnlyList<SessionMenuItem> Menu,
     DateTimeOffset? ExpiresAt,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Token = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Token = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] PasskeySignIn? Passkey = null)
 {
     public static readonly SessionResponse Anonymous = new(false, null, null, [], [], null);
 }
@@ -48,7 +59,7 @@ internal static class AuthEndpoints
     {
         group.MapPost("/sign-in", SignIn)
             .WithName("auth.signIn")
-            .WithSummary("Sign in with e-mail and password (or a one-time set-up code). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given.")
+            .WithSummary("Sign in with e-mail and password (or a one-time set-up code), or with a passkey (passkey, no e-mail or password: the device's answer to the challenge from GET /api/auth/session). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -63,7 +74,7 @@ internal static class AuthEndpoints
 
         group.MapGet("/session", GetSession)
             .WithName("auth.session")
-            .WithSummary("The caller's session: user, workspace, permissions and menu, or authenticated = false.")
+            .WithSummary("The caller's session: user, workspace, permissions and menu, or authenticated = false with a fresh passkey sign-in challenge.")
             .AllowAnonymousReviewed("The sign-in screen asks whether a session exists; returns only the caller's own session.");
     }
 
@@ -75,18 +86,38 @@ internal static class AuthEndpoints
         HttpContext http,
         CancellationToken cancellationToken)
     {
-        var validator = new Validator(http)
-            .Required("email", request.Email).Email("email", request.Email?.Trim())
-            .Required("password", request.Password).MaxLength("password", request.Password, 1024)
-            .MaxLength("workspace", request.Workspace, 40)
-            .MaxLength("newPassword", request.NewPassword, 1024);
-        if (!validator.IsValid)
+        // A passkey signs in only when nothing of a password sign-in is given.
+        var withPasskey = request.Passkey is not null && string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password);
+        SignInOutcome outcome;
+        if (withPasskey)
         {
-            return validator.ToResult();
+            var passkey = request.Passkey!;
+            var check = new Validator(http)
+                .Required("passkey.credentialId", passkey.CredentialId).MaxLength("passkey.credentialId", passkey.CredentialId, 1400)
+                .Required("passkey.clientDataJson", passkey.ClientDataJson).MaxLength("passkey.clientDataJson", passkey.ClientDataJson, 5500)
+                .Required("passkey.authenticatorData", passkey.AuthenticatorData).MaxLength("passkey.authenticatorData", passkey.AuthenticatorData, 2800)
+                .Required("passkey.signature", passkey.Signature).MaxLength("passkey.signature", passkey.Signature, 1400)
+                .Required("passkey.userHandle", passkey.UserHandle).MaxLength("passkey.userHandle", passkey.UserHandle, 100);
+            if (!check.IsValid)
+            {
+                return check.ToResult();
+            }
+            outcome = await signIn.SignInWithPasskeyAsync(passkey, http, cancellationToken);
         }
-
-        var outcome = await signIn.SignInAsync(request.Email!.Trim(), request.Password!, string.IsNullOrEmpty(request.NewPassword) ? null : request.NewPassword,
-            request.Workspace, http, cancellationToken);
+        else
+        {
+            var validator = new Validator(http)
+                .Required("email", request.Email).Email("email", request.Email?.Trim())
+                .Required("password", request.Password).MaxLength("password", request.Password, 1024)
+                .MaxLength("workspace", request.Workspace, 40)
+                .MaxLength("newPassword", request.NewPassword, 1024);
+            if (!validator.IsValid)
+            {
+                return validator.ToResult();
+            }
+            outcome = await signIn.SignInAsync(request.Email!.Trim(), request.Password!, string.IsNullOrEmpty(request.NewPassword) ? null : request.NewPassword,
+                request.Workspace, http, cancellationToken);
+        }
         switch (outcome)
         {
             case SignInOutcome.Succeeded success:
@@ -110,7 +141,7 @@ internal static class AuthEndpoints
                 problem.Extensions["workspaces"] = choose.Workspaces;
                 return TypedResults.Problem(problem);
             default:
-                return Problems.Result(http, StatusCodes.Status401Unauthorized, "auth.signInFailed");
+                return Problems.Result(http, StatusCodes.Status401Unauthorized, withPasskey ? "auth.passkeyFailed" : "auth.signInFailed");
         }
     }
 
@@ -131,14 +162,18 @@ internal static class AuthEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Ok<SessionResponse>> GetSession(HttpContext http, SessionPayload payload, CancellationToken cancellationToken)
+    private static async Task<Ok<SessionResponse>> GetSession(HttpContext http, SessionPayload payload, Passkeys.PasskeyChallenges challenges, CancellationToken cancellationToken)
     {
         if (http.User.Identity?.IsAuthenticated != true || http.User.FindUserId() is not { } userId)
         {
             // Always 200, also for an expired, revoked, unknown or malformed session cookie: a
             // fresh visit logs no failed request. The cookie is left alone; the next sign-in
-            // replaces it.
-            return TypedResults.Ok(SessionResponse.Anonymous);
+            // replaces it. The sign-in screen gets its passkey challenge with this answer, so a
+            // device that holds a passkey can be asked as soon as the screen opens.
+            return TypedResults.Ok(SessionResponse.Anonymous with
+            {
+                Passkey = new PasskeySignIn(Passkeys.WebAuthn.ToBase64Url(challenges.Issue(Passkeys.PasskeyChallenges.Purpose.SignIn)), challenges.RpId(http), challenges.TimeoutMilliseconds),
+            });
         }
         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)
             ? DateTimeOffset.FromUnixTimeSeconds(seconds)

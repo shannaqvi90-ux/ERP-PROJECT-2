@@ -380,7 +380,21 @@ public static class CompanyAttack
                         if (item.ControlPath is { } controlPath)
                         {
                             var other = await state.SendAsync(name, client, "GET", controlPath, null, [item.ControlValue!]);
-                            state.Compare(name, $"GET {item.Path}", answer, other, item.Value, item.ControlValue!);
+                            // A pair that differs is asked once more, both sides: a document shows
+                            // the second it was printed, and the two answers of a pair a moment apart
+                            // may straddle one (an answer that tells the values apart does so again);
+                            // strings that differ between the two answers of one side are values
+                            // made afresh for every answer (Nonces).
+                            if (state.Differs(answer, other, item.Value, item.ControlValue!))
+                            {
+                                var answerAgain = await state.SendAsync(name, client, item.Method, item.Path, item.Body, [item.Value]);
+                                var otherAgain = await state.SendAsync(name, client, "GET", controlPath, null, [item.ControlValue!]);
+                                state.Compare(name, $"GET {item.Path}", answerAgain, otherAgain, item.Value, item.ControlValue!, (answer, other));
+                            }
+                            else
+                            {
+                                state.Compare(name, $"GET {item.Path}", answer, other, item.Value, item.ControlValue!);
+                            }
                         }
                     });
                 }
@@ -624,7 +638,29 @@ public static class CompanyAttack
             }
         }
 
-        public void Compare(string attacker, string label, (int Status, string Text) answer, (int Status, string Text) control, string value, string controlValue)
+        private static string Normalize(string text, string a, string b)
+        {
+            try
+            {
+                var node = JsonNode.Parse(text);
+                if (node is JsonObject obj) obj.Remove("traceId");
+                text = node?.ToJsonString() ?? "";
+            }
+            catch (JsonException)
+            {
+            }
+            return text.Replace(a, "<v>", StringComparison.OrdinalIgnoreCase).Replace(b, "<v>", StringComparison.OrdinalIgnoreCase)
+                .Replace(Uri.EscapeDataString(a), "<v>", StringComparison.OrdinalIgnoreCase).Replace(Uri.EscapeDataString(b), "<v>", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Whether the two answers differ once trace ids and both values are blanked.</summary>
+        public bool Differs((int Status, string Text) answer, (int Status, string Text) control, string value, string controlValue) =>
+            answer.Status != control.Status || Normalize(answer.Text, value, controlValue) != Normalize(control.Text, value, controlValue);
+
+        /// <param name="first">The pair asked first, when this pair is the second asking of a pair
+        /// that differed: strings that differ between the two answers of one side are nonces.</param>
+        public void Compare(string attacker, string label, (int Status, string Text) answer, (int Status, string Text) control, string value, string controlValue,
+            ((int Status, string Text) Answer, (int Status, string Text) Control)? first = null)
         {
             bool stored;
             lock (_lock)
@@ -640,22 +676,18 @@ public static class CompanyAttack
                 return;
             }
             Interlocked.Increment(ref _differentialChecks);
-            static string Normalize(string text, string a, string b)
-            {
-                try
-                {
-                    var node = JsonNode.Parse(text);
-                    if (node is JsonObject obj) obj.Remove("traceId");
-                    text = node?.ToJsonString() ?? "";
-                }
-                catch (JsonException)
-                {
-                }
-                return text.Replace(a, "<v>", StringComparison.OrdinalIgnoreCase).Replace(b, "<v>", StringComparison.OrdinalIgnoreCase)
-                    .Replace(Uri.EscapeDataString(a), "<v>", StringComparison.OrdinalIgnoreCase).Replace(Uri.EscapeDataString(b), "<v>", StringComparison.OrdinalIgnoreCase);
-            }
             var left = Normalize(answer.Text, value, controlValue);
             var right = Normalize(control.Text, value, controlValue);
+            if (answer.Status == control.Status && left != right && first is { } earlier && earlier.Answer.Status == answer.Status && earlier.Control.Status == control.Status)
+            {
+                var nonces = Nonces.Paths(right, Normalize(earlier.Control.Text, value, controlValue));
+                nonces.UnionWith(Nonces.Paths(left, Normalize(earlier.Answer.Text, value, controlValue)));
+                if (nonces.Count > 0)
+                {
+                    left = Nonces.Without(left, nonces);
+                    right = Nonces.Without(right, nonces);
+                }
+            }
             if (answer.Status != control.Status || left != right)
             {
                 lock (_lock) Oracles.Add($"{attacker} → {label}: {answer.Status} {left[..Math.Min(160, left.Length)]} but for a value that exists nowhere {control.Status} {right[..Math.Min(160, right.Length)]}");

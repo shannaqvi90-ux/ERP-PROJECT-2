@@ -289,7 +289,7 @@ function makeOp(pageHandle, startedAt) {
     return decode(r.value);
   };
   const view = {};
-  for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'waitFor', 'shot']) {
+  for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot']) {
     view[m] = (...args) => call(m, args);
   }
   view.now = () => (Date.now() - startedAt) / 1000;

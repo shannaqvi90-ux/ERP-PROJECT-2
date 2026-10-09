@@ -55,6 +55,8 @@ public static partial class G1WriteOracle
         var ownB = await OwnRecords.LoadAsync(env, env.TenantB.Id, CompanyOf(b), bAdmin);
 
         var endpoints = EndpointInventory.From(env.Factory.Services).Where(e => !e.IsAnonymous).OrderBy(e => e.Key, StringComparer.Ordinal).ToList();
+        // Records of their own (a workspace's settings) are put back after the run (G1WriteOracleRestore.cs).
+        var singletons = await Singletons.TakeAsync(openApi, endpoints, (a, "tenant A"), (b, "tenant B"));
         // Tenant B reads every list it can, once.
         foreach (var endpoint in endpoints.Where(e => e.Method == "GET" && e.RouteParameters.Count == 0))
         {
@@ -121,6 +123,7 @@ public static partial class G1WriteOracle
                 }
             }
         }
+        problems.AddRange(await singletons.RestoreAsync(openApi, env));
         return new IdResult(problems, checks, judged, unjudged);
     }
 
