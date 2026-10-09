@@ -27,14 +27,22 @@ namespace Erp.Gates.Tests.G1;
 /// last first page counted, whatever its tenant; every first page and every keyset page stayed
 /// right). The check is blind unless some queries have different true answers in the two tenants
 /// and some are answered over more than one keyset page and more than one offset page, so every
-/// list must have all three.
+/// list must have all three. Every query is judged a second time with an explicit sort, and every
+/// sort key (each sortable column, both directions) meets every kind of query: alone, with a
+/// search, a filter, a grouping and a grouping with a search (critic p05 round 7, plant L11: a
+/// total memo keyed by search, filter and sort with no tenant, served only to requests carrying both
+/// a sort and a search, which is what the client sends after a header click). A sorted walk must
+/// return exactly the rows of the same query unsorted, and a list with sortable columns must have
+/// sorted queries, sorted searches among them, with different true answers in the two tenants.
 /// </summary>
 public static class ListAnswers
 {
     /// <param name="PagesJudged">Pages of keyset walks whose total (and groups) were judged.</param>
     /// <param name="OffsetPagesJudged">Pages of offset (skip) walks whose total, groups and rows were judged.</param>
+    /// <param name="SortedQueries">Queries judged with an explicit sort (of <paramref name="Queries"/>).</param>
+    /// <param name="SortedDiscriminating">Sorted queries with different true answers in the two tenants.</param>
     public sealed record Result(IReadOnlyList<string> Wrong, int Queries, int Discriminating, IReadOnlyList<string> Blind, int RowsWalked, int PagesJudged = 0,
-        int OffsetPagesJudged = 0);
+        int OffsetPagesJudged = 0, int SortedQueries = 0, int SortedDiscriminating = 0);
 
     private const int MaxTake = 199;
     private const int MaxPages = 400;
@@ -50,169 +58,313 @@ public static class ListAnswers
     public static async Task<Result> RunAsync(ModuleCatalog catalog, HttpClient first, HttpClient judged, IReadOnlySet<Guid> judgedIds,
         IReadOnlySet<Guid> firstIds, IReadOnlyList<string> victimStrings, string label)
     {
-        var wrong = new List<string>();
-        var blind = new List<string>();
-        var queries = 0;
-        var discriminating = 0;
-        var walked = 0;
-        var pagesJudged = 0;
-        var offsetPagesJudged = 0;
+        var tally = new Tally(label, judgedIds, firstIds);
         foreach (var binding in catalog.ListBindings)
         {
             var list = binding.Definition;
             var listDiscriminating = 0;
             var listPaged = 0;
             var listOffsetPaged = 0;
-            foreach (var query in QueriesFor(list, victimStrings))
+            var baseQueries = QueriesFor(list, victimStrings).ToList();
+            var unsorted = new Dictionary<string, Judged>(StringComparer.Ordinal);
+            foreach (var query in baseQueries)
             {
-                var uri = $"{list.Endpoint}?take=50{query}";
-                var firstAnswer = await GetAsync(first, uri);
-                var answer = await GetAsync(judged, uri);
-                if (firstAnswer is null || answer is null)
+                if (await JudgeAsync(tally, list, first, judged, query) is not { } outcome)
                 {
-                    wrong.Add($"{label}: GET {uri} was not answered with 200 (first {(firstAnswer is null ? "refused" : "ok")}, judged {(answer is null ? "refused" : "ok")})");
                     continue;
                 }
-                queries++;
-                var total = answer.Value.GetProperty("total").GetInt32();
-                var firstTotal = firstAnswer.Value.GetProperty("total").GetInt32();
-                // Both tenants walk the same query (grouping kept) in lock step, the judged tenant's
-                // page n just before the other tenant's page n: whatever one tenant's request leaves
-                // behind is in place when the other's next page is answered. Every page of both walks
-                // is judged, not only the first.
-                var take = Math.Clamp((Math.Max(total, firstTotal) + PagesAimedFor - 1) / PagesAimedFor, 1, MaxTake);
-                var (walk, firstWalk) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take);
-                if (walk is null || firstWalk is null)
+                unsorted[query] = outcome;
+                listDiscriminating += outcome.Discriminating ? 1 : 0;
+                listPaged += outcome.Paged ? 1 : 0;
+                listOffsetPaged += outcome.OffsetPaged ? 1 : 0;
+            }
+            // The same queries again with an explicit sort (critic p05 round 7, plant L11: a total
+            // memo keyed by search, filter and sort, served only when a request has both a sort and
+            // a search, which is what the client sends once a user clicks a header). Every query is
+            // sent with a sort, and every sortable column in both directions is sent alone, with a
+            // search, with a filter, with a grouping and with a grouping and a search, so a memo
+            // that only one sort key, one kind of query or their combination reaches is judged.
+            var sortedDiscriminating = 0;
+            var sortedSearchDiscriminating = 0;
+            var sortedPaged = 0;
+            var sortedOffsetPaged = 0;
+            var keysJudged = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var (query, basis, sort) in SortedQueriesFor(list, baseQueries))
+            {
+                if (await JudgeAsync(tally, list, first, judged, query) is not { } outcome)
                 {
-                    wrong.Add($"{label}: keyset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(walk is null ? "failed" : "ok")}, other {(firstWalk is null ? "failed" : "ok")})");
                     continue;
                 }
-                var rows = walk.Rows;
-                walked += rows.Count;
-                if (total != rows.Count)
+                tally.SortedQueries++;
+                keysJudged.Add(sort);
+                if (outcome.Discriminating)
                 {
-                    wrong.Add($"{label}: GET {uri} answered total {total}, but walking the same query returns {rows.Count} rows " +
-                              $"(the other tenant's answer to the same request was {firstTotal})");
+                    tally.SortedDiscriminating++;
+                    sortedDiscriminating++;
+                    sortedSearchDiscriminating += query.Contains("&search=", StringComparison.Ordinal) ? 1 : 0;
                 }
-                var ids = rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
-                if (ids.Distinct().Count() != ids.Count)
+                sortedPaged += outcome.Paged ? 1 : 0;
+                sortedOffsetPaged += outcome.OffsetPaged ? 1 : 0;
+                // A sort orders the rows a query matches; it never changes which rows those are.
+                if (unsorted.TryGetValue(basis, out var plain))
                 {
-                    wrong.Add($"{label}: walking {list.Endpoint}{query} returned a row twice");
-                }
-                foreach (var id in ids.Where(i => !judgedIds.Contains(i)).Take(3))
-                {
-                    wrong.Add($"{label}: walking {list.Endpoint}{query} returned row {id}, which is not the judged tenant's" +
-                              (firstIds.Contains(id) ? " (it is the other tenant's)" : ""));
-                }
-                foreach (var id in firstWalk.Rows.Select(r => r.GetProperty("id").GetGuid()).Where(i => !firstIds.Contains(i)).Take(3))
-                {
-                    wrong.Add($"{label}: the other tenant's walk of {list.Endpoint}{query} returned row {id}, which is not its own" +
-                              (judgedIds.Contains(id) ? " (it is the judged tenant's)" : ""));
-                }
-                if (firstWalk.Rows.Count != rows.Count)
-                {
-                    discriminating++;
-                    listDiscriminating++;
-                }
-                if (walk.Pages.Count > 1)
-                {
-                    listPaged++;
-                }
-                var column = GroupColumn(query);
-                pagesJudged += walk.Pages.Count + firstWalk.Pages.Count;
-                foreach (var (who, pages, mine) in new[] { ("judged", walk.Pages, rows), ("other tenant's", firstWalk.Pages, firstWalk.Rows) })
-                {
-                    for (var n = 0; n < pages.Count; n++)
+                    foreach (var (who, sorted, own) in new[] { ("judged", outcome.JudgedRows, plain.JudgedRows), ("other tenant's", outcome.FirstRows, plain.FirstRows) })
                     {
-                        var page = pages[n];
-                        var where = $"{label}: the {who} page {n + 1} of {pages.Count} of GET {list.Endpoint}?take={take}{query}";
-                        var pageTotal = page.GetProperty("total").GetInt32();
-                        if (pageTotal != mine.Count)
+                        if (!sorted.SetEquals(own))
                         {
-                            wrong.Add($"{where} answered total {pageTotal}, but the walk returns {mine.Count} rows");
-                        }
-                        if (page.TryGetProperty("groups", out var pageGroups) && pageGroups.ValueKind == JsonValueKind.Array && column is not null)
-                        {
-                            wrong.AddRange(JudgeGroups(list, column, pageGroups, mine, mine.Count).Select(p => $"{where}: {p}"));
-                        }
-                        else if (column is not null)
-                        {
-                            wrong.Add($"{where} grouped by {column} but the page carries no groups");
+                            tally.Wrong.Add($"{label}: the {who} walk of GET {list.Endpoint}?{query.TrimStart('&')} returned {sorted.Count} rows, " +
+                                            $"the same query without the sort {own.Count} ({sorted.Except(own).Count()} rows only when sorted, {own.Except(sorted).Count()} only unsorted)");
                         }
                     }
-                }
-                // The same query again by offset (skip), both tenants in the same lock step: the
-                // judged tenant's offset page n just before the other tenant's. Each offset page's
-                // total and groups must be those of the keyset walk (the tenant's own rows), and the
-                // offset pages together must return exactly the walked rows.
-                var (jump, firstJump) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take, offset: true);
-                if (jump is null || firstJump is null)
-                {
-                    wrong.Add($"{label}: offset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(jump is null ? "failed" : "ok")}, other {(firstJump is null ? "failed" : "ok")})");
-                }
-                else
-                {
-                    if (jump.Pages.Count > 1)
-                    {
-                        listOffsetPaged++;
-                    }
-                    offsetPagesJudged += jump.Pages.Count + firstJump.Pages.Count;
-                    foreach (var (who, offsetWalk, mine) in new[] { ("judged", jump, rows), ("other tenant's", firstJump, firstWalk.Rows) })
-                    {
-                        var pages = offsetWalk.Pages;
-                        for (var n = 0; n < pages.Count; n++)
-                        {
-                            var page = pages[n];
-                            var where = $"{label}: the {who} offset page {n + 1} of {pages.Count} (skip={n * take}) of GET {list.Endpoint}?take={take}{query}";
-                            var pageTotal = page.GetProperty("total").GetInt32();
-                            if (pageTotal != mine.Count)
-                            {
-                                wrong.Add($"{where} answered total {pageTotal}, but the keyset walk returns {mine.Count} rows");
-                            }
-                            if (page.TryGetProperty("groups", out var pageGroups) && pageGroups.ValueKind == JsonValueKind.Array && column is not null)
-                            {
-                                wrong.AddRange(JudgeGroups(list, column, pageGroups, mine, mine.Count).Select(p => $"{where}: {p}"));
-                            }
-                            else if (column is not null)
-                            {
-                                wrong.Add($"{where} grouped by {column} but the page carries no groups");
-                            }
-                        }
-                        var keyset = mine.Select(r => r.GetProperty("id").GetGuid()).ToHashSet();
-                        var jumped = offsetWalk.Rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
-                        if (jumped.Count != keyset.Count || !keyset.SetEquals(jumped))
-                        {
-                            var foreign = jumped.Where(i => !keyset.Contains(i)).Take(3).ToList();
-                            wrong.Add($"{label}: the {who} offset walk of GET {list.Endpoint}?take={take}{query} returned {jumped.Count} rows ({jumped.Distinct().Count()} distinct), " +
-                                      $"the keyset walk {keyset.Count}" + (foreign.Count == 0 ? "" : $"; rows not in the keyset walk: {string.Join(", ", foreign)}" +
-                                      (foreign.Any(i => (who == "judged" ? firstIds : judgedIds).Contains(i)) ? " (the other tenant's)" : "")));
-                        }
-                    }
-                }
-                if (answer.Value.TryGetProperty("groups", out var groups) && groups.ValueKind == JsonValueKind.Array)
-                {
-                    wrong.AddRange(JudgeGroups(list, column!, groups, rows, total).Select(p => $"{label}: GET {uri}: {p}"));
-                }
-                else if (column is { } missing)
-                {
-                    wrong.Add($"{label}: GET {uri} grouped by {missing} but the page carries no groups");
                 }
             }
             if (listDiscriminating == 0)
             {
-                blind.Add($"{label}: list '{list.Key}': no query had different true answers in the two tenants, so a shared total or group count would go unseen");
+                tally.Blind.Add($"{label}: list '{list.Key}': no query had different true answers in the two tenants, so a shared total or group count would go unseen");
             }
             if (listPaged == 0)
             {
-                blind.Add($"{label}: list '{list.Key}': no query was answered over more than one keyset page, so a total or group remembered for the next pages would go unseen");
+                tally.Blind.Add($"{label}: list '{list.Key}': no query was answered over more than one keyset page, so a total or group remembered for the next pages would go unseen");
             }
             if (listOffsetPaged == 0)
             {
-                blind.Add($"{label}: list '{list.Key}': no query was answered over more than one offset (skip) page, so a total or group remembered for a jump into the list would go unseen");
+                tally.Blind.Add($"{label}: list '{list.Key}': no query was answered over more than one offset (skip) page, so a total or group remembered for a jump into the list would go unseen");
+            }
+            var sortKeys = SortKeys(list);
+            if (sortKeys.Count > 0)
+            {
+                foreach (var missing in sortKeys.Where(k => !keysJudged.Contains(k)))
+                {
+                    tally.Blind.Add($"{label}: list '{list.Key}': no query sorted by '{missing}' was answered, so a total or group remembered for that sort would go unseen");
+                }
+                if (sortedDiscriminating == 0)
+                {
+                    tally.Blind.Add($"{label}: list '{list.Key}': no sorted query had different true answers in the two tenants, so a total remembered for a sorted query would go unseen");
+                }
+                if (list.SearchFields.Count > 0 && sortedSearchDiscriminating == 0)
+                {
+                    tally.Blind.Add($"{label}: list '{list.Key}': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen");
+                }
+                if (sortedPaged == 0 || sortedOffsetPaged == 0)
+                {
+                    tally.Blind.Add($"{label}: list '{list.Key}': no sorted query was answered over more than one keyset page and more than one offset page, so a total remembered for a sorted list's later pages would go unseen");
+                }
             }
         }
-        return new Result(wrong, queries, discriminating, blind, walked, pagesJudged, offsetPagesJudged);
+        return new Result(tally.Wrong, tally.Queries, tally.Discriminating, tally.Blind, tally.Walked, tally.PagesJudged, tally.OffsetPagesJudged,
+            tally.SortedQueries, tally.SortedDiscriminating);
     }
+
+    /// <summary>What one judged query returned: the ids of both tenants' walks and what made the
+    /// query count toward the blind-spot checks.</summary>
+    private sealed record Judged(HashSet<Guid> JudgedRows, HashSet<Guid> FirstRows, bool Discriminating, bool Paged, bool OffsetPaged);
+
+    /// <summary>Counts and findings of one run (both tenants, every list).</summary>
+    private sealed class Tally(string label, IReadOnlySet<Guid> judgedIds, IReadOnlySet<Guid> firstIds)
+    {
+        public string Label { get; } = label;
+        public IReadOnlySet<Guid> JudgedIds { get; } = judgedIds;
+        public IReadOnlySet<Guid> FirstIds { get; } = firstIds;
+        public List<string> Wrong { get; } = [];
+        public List<string> Blind { get; } = [];
+        public int Queries { get; set; }
+        public int Discriminating { get; set; }
+        public int Walked { get; set; }
+        public int PagesJudged { get; set; }
+        public int OffsetPagesJudged { get; set; }
+        public int SortedQueries { get; set; }
+        public int SortedDiscriminating { get; set; }
+    }
+
+    /// <summary>One query, judged: the other tenant sends it first, then the judged tenant; both walk
+    /// it by keyset and by offset in lock step, and every page's total and groups must be those of
+    /// the tenant's own walked rows. Null when it could not be judged (reported as wrong).</summary>
+    private static async Task<Judged?> JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, string query)
+    {
+        var label = tally.Label;
+        var judgedIds = tally.JudgedIds;
+        var firstIds = tally.FirstIds;
+        var wrong = tally.Wrong;
+        var uri = $"{list.Endpoint}?take=50{query}";
+        var firstAnswer = await GetAsync(first, uri);
+        var answer = await GetAsync(judged, uri);
+        if (firstAnswer is null || answer is null)
+        {
+            wrong.Add($"{label}: GET {uri} was not answered with 200 (first {(firstAnswer is null ? "refused" : "ok")}, judged {(answer is null ? "refused" : "ok")})");
+            return null;
+        }
+        tally.Queries++;
+        var total = answer.Value.GetProperty("total").GetInt32();
+        var firstTotal = firstAnswer.Value.GetProperty("total").GetInt32();
+        // Both tenants walk the same query (grouping kept) in lock step, the judged tenant's
+        // page n just before the other tenant's page n: whatever one tenant's request leaves
+        // behind is in place when the other's next page is answered. Every page of both walks
+        // is judged, not only the first.
+        var take = Math.Clamp((Math.Max(total, firstTotal) + PagesAimedFor - 1) / PagesAimedFor, 1, MaxTake);
+        var (walk, firstWalk) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take);
+        if (walk is null || firstWalk is null)
+        {
+            wrong.Add($"{label}: keyset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(walk is null ? "failed" : "ok")}, other {(firstWalk is null ? "failed" : "ok")})");
+            return null;
+        }
+        var rows = walk.Rows;
+        tally.Walked += rows.Count;
+        if (total != rows.Count)
+        {
+            wrong.Add($"{label}: GET {uri} answered total {total}, but walking the same query returns {rows.Count} rows " +
+                      $"(the other tenant's answer to the same request was {firstTotal})");
+        }
+        var ids = rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
+        if (ids.Distinct().Count() != ids.Count)
+        {
+            wrong.Add($"{label}: walking {list.Endpoint}{query} returned a row twice");
+        }
+        foreach (var id in ids.Where(i => !judgedIds.Contains(i)).Take(3))
+        {
+            wrong.Add($"{label}: walking {list.Endpoint}{query} returned row {id}, which is not the judged tenant's" +
+                      (firstIds.Contains(id) ? " (it is the other tenant's)" : ""));
+        }
+        var firstRowIds = firstWalk.Rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
+        foreach (var id in firstRowIds.Where(i => !firstIds.Contains(i)).Take(3))
+        {
+            wrong.Add($"{label}: the other tenant's walk of {list.Endpoint}{query} returned row {id}, which is not its own" +
+                      (judgedIds.Contains(id) ? " (it is the judged tenant's)" : ""));
+        }
+        var discriminating = firstWalk.Rows.Count != rows.Count;
+        if (discriminating)
+        {
+            tally.Discriminating++;
+        }
+        var paged = walk.Pages.Count > 1;
+        var offsetPaged = false;
+        var column = GroupColumn(query);
+        tally.PagesJudged += walk.Pages.Count + firstWalk.Pages.Count;
+        foreach (var (who, pages, mine) in new[] { ("judged", walk.Pages, rows), ("other tenant's", firstWalk.Pages, firstWalk.Rows) })
+        {
+            for (var n = 0; n < pages.Count; n++)
+            {
+                var page = pages[n];
+                var where = $"{label}: the {who} page {n + 1} of {pages.Count} of GET {list.Endpoint}?take={take}{query}";
+                var pageTotal = page.GetProperty("total").GetInt32();
+                if (pageTotal != mine.Count)
+                {
+                    wrong.Add($"{where} answered total {pageTotal}, but the walk returns {mine.Count} rows");
+                }
+                if (page.TryGetProperty("groups", out var pageGroups) && pageGroups.ValueKind == JsonValueKind.Array && column is not null)
+                {
+                    wrong.AddRange(JudgeGroups(list, column, pageGroups, mine, mine.Count).Select(p => $"{where}: {p}"));
+                }
+                else if (column is not null)
+                {
+                    wrong.Add($"{where} grouped by {column} but the page carries no groups");
+                }
+            }
+        }
+        // The same query again by offset (skip), both tenants in the same lock step: the
+        // judged tenant's offset page n just before the other tenant's. Each offset page's
+        // total and groups must be those of the keyset walk (the tenant's own rows), and the
+        // offset pages together must return exactly the walked rows.
+        var (jump, firstJump) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take, offset: true);
+        if (jump is null || firstJump is null)
+        {
+            wrong.Add($"{label}: offset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(jump is null ? "failed" : "ok")}, other {(firstJump is null ? "failed" : "ok")})");
+        }
+        else
+        {
+            offsetPaged = jump.Pages.Count > 1;
+            tally.OffsetPagesJudged += jump.Pages.Count + firstJump.Pages.Count;
+            foreach (var (who, offsetWalk, mine) in new[] { ("judged", jump, rows), ("other tenant's", firstJump, firstWalk.Rows) })
+            {
+                var pages = offsetWalk.Pages;
+                for (var n = 0; n < pages.Count; n++)
+                {
+                    var page = pages[n];
+                    var where = $"{label}: the {who} offset page {n + 1} of {pages.Count} (skip={n * take}) of GET {list.Endpoint}?take={take}{query}";
+                    var pageTotal = page.GetProperty("total").GetInt32();
+                    if (pageTotal != mine.Count)
+                    {
+                        wrong.Add($"{where} answered total {pageTotal}, but the keyset walk returns {mine.Count} rows");
+                    }
+                    if (page.TryGetProperty("groups", out var pageGroups) && pageGroups.ValueKind == JsonValueKind.Array && column is not null)
+                    {
+                        wrong.AddRange(JudgeGroups(list, column, pageGroups, mine, mine.Count).Select(p => $"{where}: {p}"));
+                    }
+                    else if (column is not null)
+                    {
+                        wrong.Add($"{where} grouped by {column} but the page carries no groups");
+                    }
+                }
+                var keyset = mine.Select(r => r.GetProperty("id").GetGuid()).ToHashSet();
+                var jumped = offsetWalk.Rows.Select(r => r.GetProperty("id").GetGuid()).ToList();
+                if (jumped.Count != keyset.Count || !keyset.SetEquals(jumped))
+                {
+                    var foreign = jumped.Where(i => !keyset.Contains(i)).Take(3).ToList();
+                    wrong.Add($"{label}: the {who} offset walk of GET {list.Endpoint}?take={take}{query} returned {jumped.Count} rows ({jumped.Distinct().Count()} distinct), " +
+                              $"the keyset walk {keyset.Count}" + (foreign.Count == 0 ? "" : $"; rows not in the keyset walk: {string.Join(", ", foreign)}" +
+                              (foreign.Any(i => (who == "judged" ? firstIds : judgedIds).Contains(i)) ? " (the other tenant's)" : "")));
+                }
+            }
+        }
+        if (answer.Value.TryGetProperty("groups", out var groups) && groups.ValueKind == JsonValueKind.Array)
+        {
+            wrong.AddRange(JudgeGroups(list, column!, groups, rows, total).Select(p => $"{label}: GET {uri}: {p}"));
+        }
+        else if (column is { } missing)
+        {
+            wrong.Add($"{label}: GET {uri} grouped by {missing} but the page carries no groups");
+        }
+        return new Judged(ids.ToHashSet(), firstRowIds.ToHashSet(), discriminating, paged, offsetPaged);
+    }
+
+    /// <summary>Every sort key of a list: each sortable column ascending and descending.</summary>
+    public static IReadOnlyList<string> SortKeys(ListDefinition list) =>
+        list.Columns.Where(c => c.Sortable).SelectMany(c => new[] { c.Key, "-" + c.Key }).ToList();
+
+    /// <summary>The sorted twins of a list's queries: within each kind of query (everything,
+    /// searches, filters, groupings, groupings with a search) every query gets a sort and every
+    /// sort key is used, so each key meets each kind of query at least once; then two keys at once,
+    /// alone and with a search. Each comes with the unsorted query it sorts and its sort.</summary>
+    public static IEnumerable<(string Query, string Basis, string Sort)> SortedQueriesFor(ListDefinition list, IReadOnlyList<string> baseQueries)
+    {
+        var keys = SortKeys(list);
+        if (keys.Count == 0)
+        {
+            yield break;
+        }
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var members in baseQueries.GroupBy(Kind, StringComparer.Ordinal).Select(g => g.ToList()))
+        {
+            var n = Math.Max(members.Count, keys.Count);
+            for (var i = 0; i < n; i++)
+            {
+                var basis = members[i % members.Count];
+                var key = keys[i % keys.Count];
+                var query = basis + "&sort=" + Uri.EscapeDataString(key);
+                if (seen.Add(query))
+                {
+                    yield return (query, basis, key);
+                }
+            }
+        }
+        var columns = list.Columns.Where(c => c.Sortable).Select(c => c.Key).ToList();
+        if (columns.Count >= 2)
+        {
+            var two = $"-{columns[1]},{columns[0]}";
+            foreach (var basis in list.SearchFields.Count > 0 ? new[] { "", "&search=a" } : [""])
+            {
+                if (baseQueries.Contains(basis, StringComparer.Ordinal) && seen.Add(basis + "&sort=" + Uri.EscapeDataString(two)))
+                {
+                    yield return (basis + "&sort=" + Uri.EscapeDataString(two), basis, two);
+                }
+            }
+        }
+    }
+
+    private static string Kind(string query) =>
+        query.Contains("&groupBy=", StringComparison.Ordinal)
+            ? query.Contains("&search=", StringComparison.Ordinal) ? "grouping and search" : "grouping"
+            : query.Contains("&search=", StringComparison.Ordinal) ? "search"
+            : query.Contains("&filter=", StringComparison.Ordinal) ? "filter" : "everything";
 
     /// <summary>Query strings (each starting with '&amp;') for a list: everything, one-letter
     /// searches, the other tenant's own words, every value of every choice and flag column, text
@@ -267,7 +419,13 @@ public static class ListAnswers
     private static string? GroupColumn(string query)
     {
         var at = query.IndexOf("&groupBy=", StringComparison.Ordinal);
-        return at < 0 ? null : query[(at + "&groupBy=".Length)..];
+        if (at < 0)
+        {
+            return null;
+        }
+        var value = query[(at + "&groupBy=".Length)..];
+        var end = value.IndexOf('&', StringComparison.Ordinal);
+        return Uri.UnescapeDataString(end < 0 ? value : value[..end]);
     }
 
     private static IEnumerable<string> JudgeGroups(ListDefinition list, string column, JsonElement groups, IReadOnlyList<JsonElement> rows, int total)

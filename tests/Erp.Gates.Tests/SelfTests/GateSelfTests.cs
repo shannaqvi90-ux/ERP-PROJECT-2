@@ -299,8 +299,20 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
         Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/jump", StringComparison.Ordinal) && !w.Contains(" offset page ", StringComparison.Ordinal));
         Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/jump", StringComparison.Ordinal) && w.Contains(" offset page 1 of ", StringComparison.Ordinal));
+        // A list whose sorted searches reuse the total first counted for the same search, filter
+        // and sort, whatever its tenant (critic p05 round 7, plant L11's behaviour): every unsorted
+        // query and every sorted query without a search is right, so only judging the queries the
+        // client sends after a header click with a search typed catches it, in both directions.
+        foreach (var direction in new[] { "tenant B asks first, tenant A judged", "tenant A asks first, tenant B judged" })
+        {
+            Assert.Contains(report.ListAnswersWrong, w => w.StartsWith(direction, StringComparison.Ordinal) && w.Contains("/api/leaky/sorted", StringComparison.Ordinal) &&
+                                                          w.Contains("&sort=", StringComparison.Ordinal) && w.Contains("&search=", StringComparison.Ordinal) && w.Contains("answered total", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/sorted", StringComparison.Ordinal) &&
+                                                            (!w.Contains("&sort=", StringComparison.Ordinal) || !w.Contains("&search=", StringComparison.Ordinal)));
+        Assert.True(report.ListAnswerSortedQueries > 0 && report.ListAnswerSortedDiscriminating > 0, "no sorted list query was judged with different true answers");
         Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal) && !w.Contains("/api/leaky/scroll", StringComparison.Ordinal) &&
-                                                            !w.Contains("/api/leaky/jump", StringComparison.Ordinal));
+                                                            !w.Contains("/api/leaky/jump", StringComparison.Ordinal) && !w.Contains("/api/leaky/sorted", StringComparison.Ordinal));
         Assert.True(report.ListAnswerOffsetPagesJudged > 0, "no offset page was judged");
         Assert.Empty(report.ListAnswersBlind);
 
