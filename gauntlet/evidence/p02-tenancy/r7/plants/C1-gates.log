@@ -1,0 +1,163 @@
+Test run for /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.74]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.01]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [390 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [38 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [68 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [27 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [36 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [54 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [477 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [22 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [23 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [22 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [47 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [713 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [32 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [40 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [804 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [824 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [122 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [28 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [30 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [6 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [20 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [42 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [78 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [57 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [24 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [20 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 9 s]
+[xUnit.net 00:02:18.75]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:02:18.75]       318 leaks of branch Z:
+[xUnit.net 00:02:18.75]       branch-limited administrator → GET /api/reports/lists/tenancy.branches (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?language=ar (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=companyId (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=isActive (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27 (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&language=ar (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=companyId (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=isActive (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?language=ar (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=company (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=active (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&language=ar (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=company (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=active (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:02:18.76]       Stack Trace:
+[xUnit.net 00:02:18.76]         /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(40,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:02:18.76]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:18.76]       Output:
+[xUnit.net 00:02:18.76]         103 endpoints, 13692 requests, 4 branch Z markers, 1004 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 57 s]
+  Error Message:
+   318 leaks of branch Z:
+branch-limited administrator → GET /api/reports/lists/tenancy.branches (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?language=ar (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=companyId (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?groupBy=isActive (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27 (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&language=ar (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=companyId (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-71f1-bb5a-9bb52a51f8fb%27&groupBy=isActive (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?language=ar (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=company (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?groupBy=active (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&language=ar (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=company (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=city (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=emirate (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&groupBy=active (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=csv (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-71f1-bb5a-9bb52a51f8fb&format=xlsx (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 103 endpoints, 13692 requests, 4 branch Z markers, 1004 differential checks, 5 write oracle checks
+
+
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [41 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [6 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [4 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [30 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [58 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [3 m 32 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 59 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [34 s]
+[xUnit.net 00:04:36.39]   Finished:    Erp.Gates.Tests (ID = 'f2e72217c38d38bad3dcc846b6d1d55516a9b077cfb6ab0a616320f215244462')
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [518 ms]
+
+Test Run Failed.
+Total tests: 50
+     Passed: 49
+     Failed: 1
+ Total time: 4.6181 Minutes
+rc=1

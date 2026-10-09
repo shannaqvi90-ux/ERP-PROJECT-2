@@ -1,0 +1,38 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index 35a06a6..e02d60c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -63,7 +63,7 @@ internal static class AccessEndpoints
+             .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company or branch the caller does not; callers cannot change their own access. The request carries the version read; 409 when the access changed since.")
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(TenancyPermissions.AccessUpdate);
++            .RequirePermission(TenancyPermissions.AccessRead);
+     }
+ 
+     private static async Task<Results<Ok<ListPage<AccessRow>>, ProblemHttpResult>> List(
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index afd1c62..2b633d3 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -124,7 +124,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
+index 29af332..eb0e852 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
+@@ -62,6 +62,7 @@ internal static class TenancySql
+         ALTER TABLE tenancy.user_company_access FORCE ROW LEVEL SECURITY;
+         ALTER TABLE tenancy.user_company_totals FORCE ROW LEVEL SECURITY;
+         ALTER TABLE audit.entries FORCE ROW LEVEL SECURITY;
++        ALTER POLICY tenant_isolation ON tenancy.companies USING (tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL);
+         """;
+ 
+     public const string AccessCountsDown = """

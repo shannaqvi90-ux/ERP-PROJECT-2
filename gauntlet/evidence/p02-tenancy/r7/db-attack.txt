@@ -1,0 +1,100 @@
+== role attributes
+  rolname  | rolsuper | rolbypassrls | rolcreaterole 
+-----------+----------+--------------+---------------
+ erp_owner | f        | f            | f
+ erp_app   | f        | f            | f
+(2 rows)
+
+== tenant tables in tenancy schema: rls enabled / forced
+ nspname |         relname         | relrowsecurity | relforcerowsecurity 
+---------+-------------------------+----------------+---------------------
+ tenancy | __ef_migrations_history | f              | f
+ tenancy | branches                | t              | t
+ tenancy | companies               | t              | t
+ tenancy | tenants                 | t              | t
+ tenancy | user_branch_access      | t              | t
+ tenancy | user_company_access     | t              | t
+ tenancy | user_company_totals     | t              | t
+ tenancy | user_workplaces         | t              | t
+(8 rows)
+
+== policies
+ schemaname |      tablename      |      policyname      | permissive  |  cmd   |                                  qual                                   
+------------+---------------------+----------------------+-------------+--------+-------------------------------------------------------------------------
+ tenancy    | tenants             | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | branches            | company_scope        | RESTRICTIVE | ALL    | erp.company_allowed(company_id)
+ tenancy    | branches            | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_branch_access  | company_scope_delete | RESTRICTIVE | DELETE | erp.company_allowed(company_id)
+ tenancy    | user_branch_access  | company_scope_update | RESTRICTIVE | UPDATE | erp.company_allowed(company_id)
+ tenancy    | user_branch_access  | company_scope        | RESTRICTIVE | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_branch_access  | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_workplaces     | company_scope        | RESTRICTIVE | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_workplaces     | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | companies           | company_scope        | RESTRICTIVE | ALL    | erp.company_allowed(company_id)
+ tenancy    | companies           | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_company_access | company_scope_delete | RESTRICTIVE | DELETE | erp.company_allowed(company_id)
+ tenancy    | user_company_access | company_scope_update | RESTRICTIVE | UPDATE | erp.company_allowed(company_id)
+ tenancy    | user_company_access | company_scope        | RESTRICTIVE | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_company_access | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_company_totals | tenant_isolation     | PERMISSIVE  | ALL    | (tenant_id = erp.current_tenant_id())
+(16 rows)
+
+== no tenant set: counts
+ companies 
+-----------
+         0
+(1 row)
+
+ branches 
+----------
+        0
+(1 row)
+
+== as tenant A (try the setting names)
+ name | setting 
+------+---------
+(0 rows)
+
+== function definitions
+      proname      |                                                    pg_get_functiondef                                                     
+-------------------+---------------------------------------------------------------------------------------------------------------------------
+ company_allowed   | CREATE OR REPLACE FUNCTION erp.company_allowed(p_company_id uuid)                                                        +
+                   |  RETURNS boolean                                                                                                         +
+                   |  LANGUAGE sql                                                                                                            +
+                   |  STABLE PARALLEL SAFE                                                                                                    +
+                   | AS $function$                                                                                                            +
+                   |         SELECT coalesce(erp.current_company_scope() = 'all'                                                              +
+                   |                      OR (erp.current_company_scope() = 'list' AND p_company_id = ANY (erp.current_company_ids())), false)+
+                   |     $function$                                                                                                           +
+                   | 
+ current_actor_id  | CREATE OR REPLACE FUNCTION erp.current_actor_id()                                                                        +
+                   |  RETURNS uuid                                                                                                            +
+                   |  LANGUAGE sql                                                                                                            +
+                   |  STABLE PARALLEL SAFE                                                                                                    +
+                   | AS $function$ SELECT NULLIF(current_setting('app.actor_id', true), '')::uuid $function$                                  +
+                   | 
+ current_tenant_id | CREATE OR REPLACE FUNCTION erp.current_tenant_id()                                                                       +
+                   |  RETURNS uuid                                                                                                            +
+                   |  LANGUAGE sql                                                                                                            +
+                   |  STABLE PARALLEL SAFE                                                                                                    +
+                   | AS $function$                                                                                                            +
+                   |         SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text                        +
+                   |                     THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END                                    +
+                   |     $function$                                                                                                           +
+                   | 
+(3 rows)
+
+== all tables with tenant_id lacking forced RLS
+ nspname | relname 
+---------+---------
+(0 rows)
+
+== views/matviews reachable by erp_app
+ table_schema | table_name 
+--------------+------------
+(0 rows)
+
+ schemaname | matviewname 
+------------+-------------
+(0 rows)
+

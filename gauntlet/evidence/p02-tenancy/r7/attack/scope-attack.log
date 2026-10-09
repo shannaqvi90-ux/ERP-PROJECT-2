@@ -1,0 +1,59 @@
+user br 201 access 200 
+user co 201 access 200 
+branch-user 200 GET /api/tenancy/companies 
+branch-user 200 GET /api/tenancy/companies/018dca08-f081-7046-aef3-c792e1a43ea7 
+branch-user 200 GET /api/tenancy/branches 
+branch-user 200 GET /api/tenancy/branches?company=018dca08-f081-7046-aef3-c792e1a43ea7 
+branch-user 200 GET /api/tenancy/workplace 
+branch-user 200 GET /api/tenancy/access 
+branch-user 200 GET /api/tenancy/access/01a120be-f515-77b2-926c-fbbc17dd51a0 
+branch-user 200 GET /api/identity/companies 
+branch-user 200 GET /api/identity/users?limit=50 
+branch-user 200 GET /api/identity/users/01a120be-f515-77b2-926c-fbbc17dd51a0 
+branch-user 200 GET /api/identity/users/01a120be-f515-77b2-926c-fbbc17dd51a0/access 
+branch-user 200 GET /api/reports/run/tenancy.branchDirectory?format=csv 
+branch-user 200 GET /api/reports/run/tenancy.branchDirectory?company=018dca08-f081-7046-aef3-c792e1a43ea7&format=csv 
+branch-user 200 GET /api/reports/run/tenancy.branchDirectory?format=json 
+branch-user 200 GET /api/reports/run/tenancy.companyProfile?company=018dca08-f081-7046-aef3-c792e1a43ea7&format=csv 
+branch-user 200 GET /api/reports/run/tenancy.companyProfile?company=018dca08-f081-7046-aef3-c792e1a43ea7&format=json 
+branch-user 200 GET /api/reports/lists/tenancy.branches?format=csv 
+branch-user 200 GET /api/reports/lists/tenancy.companies?format=csv 
+branch-user 200 GET /api/reports/lists/tenancy.access?format=csv 
+branch-user 200 GET /api/reports/run/identity.usersByRole?format=csv 
+branch-user 200 GET /api/reports/run/identity.roleSummary?format=csv 
+branch-user 200 GET /api/tenancy/tenant 
+company-user 200 GET /api/tenancy/companies 
+company-user 200 GET /api/tenancy/companies/018dca08-f088-755f-aff9-ff583692b6ec 
+company-user 200 GET /api/tenancy/branches 
+company-user 200 GET /api/tenancy/branches?company=018dca08-f088-755f-aff9-ff583692b6ec 
+company-user 200 GET /api/tenancy/workplace 
+company-user 200 GET /api/tenancy/access 
+company-user 200 GET /api/tenancy/access/01a120be-f515-77b2-926c-fbbc17dd51a0 
+company-user 200 GET /api/identity/companies 
+company-user 200 GET /api/identity/users?limit=50 
+company-user 200 GET /api/identity/users/01a120be-f515-77b2-926c-fbbc17dd51a0 
+company-user 200 GET /api/identity/users/01a120be-f515-77b2-926c-fbbc17dd51a0/access 
+company-user 200 GET /api/reports/run/tenancy.branchDirectory?format=csv 
+company-user 200 GET /api/reports/run/tenancy.branchDirectory?company=018dca08-f088-755f-aff9-ff583692b6ec&format=csv 
+company-user 200 GET /api/reports/run/tenancy.branchDirectory?format=json 
+company-user 200 GET /api/reports/run/tenancy.companyProfile?company=018dca08-f088-755f-aff9-ff583692b6ec&format=csv 
+company-user 200 GET /api/reports/run/tenancy.companyProfile?company=018dca08-f088-755f-aff9-ff583692b6ec&format=json 
+company-user 200 GET /api/reports/lists/tenancy.branches?format=csv 
+company-user 200 GET /api/reports/lists/tenancy.companies?format=csv 
+company-user 200 GET /api/reports/lists/tenancy.access?format=csv 
+company-user 200 GET /api/reports/run/identity.usersByRole?format=csv 
+company-user 200 GET /api/reports/run/identity.roleSummary?format=csv 
+company-user 200 GET /api/tenancy/tenant 
+branch-user WRITE 403 PUT /api/tenancy/tenant tenancy.workspaceNeedsEveryCompany
+company-user WRITE 403 PUT /api/tenancy/tenant tenancy.workspaceNeedsEveryCompany
+branch-user WRITE 403 PUT /api/tenancy/companies/018dca08-f081-7046-aef3-c792e1a43ea7 tenancy.companyNeedsEveryBranch
+branch-user WRITE 400 POST /api/tenancy/branches validation
+branch-user WRITE 404 PUT /api/tenancy/branches/018dca08-f082-7ed4-b15f-ea616ff0cf6a notFound
+branch-user WRITE 400 PUT /api/tenancy/workplace validation
+branch-user WRITE 400 PUT /api/tenancy/access/01a120c5-c1de-786a-ac69-b4913232222d validation
+company-user WRITE 400 PUT /api/tenancy/access/01a120c5-c410-7f13-be65-11d2c3b924a2 validation
+company-user WRITE 404 PUT /api/tenancy/companies/018dca08-f081-7046-aef3-c792e1a43ea7 notFound
+company-user WRITE 400 POST /api/tenancy/companies validation
+company-user WRITE 400 PUT /api/tenancy/workplace validation
+leak answers: branch-user 0 company-user 0
+{"u1":{"id":"01a120c5-c1de-786a-ac69-b4913232222d","email":"critic-br-mv0zbo11@alnoor.example"},"u2":{"id":"01a120c5-c410-7f13-be65-11d2c3b924a2","email":"critic-co-mv0zbo11@alnoor.example"}}

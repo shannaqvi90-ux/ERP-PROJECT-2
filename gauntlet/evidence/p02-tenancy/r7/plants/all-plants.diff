@@ -1,0 +1,108 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+index 35a06a6..135f01d 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/AccessEndpoints.cs
+@@ -63,7 +63,7 @@ internal static class AccessEndpoints
+             .WithSummary("Set the companies and branches one user may work in. Access is a grant: only companies and branches the caller works in can be given or taken away, only from users who hold no permission the caller lacks and work in no company or branch the caller does not; callers cannot change their own access. The request carries the version read; 409 when the access changed since.")
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(TenancyPermissions.AccessUpdate);
++            .RequirePermission(TenancyPermissions.AccessRead);
+     }
+ 
+     private static async Task<Results<Ok<ListPage<AccessRow>>, ProblemHttpResult>> List(
+@@ -211,7 +211,7 @@ internal static class AccessEndpoints
+                               select new { b.CompanyId, b.BranchId }).ToListAsync(cancellationToken);
+         var companies = await db.Companies.AsNoTracking().OrderBy(c => c.Code)
+             .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive }).ToListAsync(cancellationToken);
+-        var allBranches = await db.Branches.AsNoTracking().OrderBy(b => b.Code)
++        var allBranches = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().OrderBy(b => b.Code)
+             .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive }).ToListAsync(cancellationToken);
+         return new UserAccessDto(user.Id, user.DisplayName, user.Email, isCaller,
+             access.Select(a => new CompanyAccessDto(a.CompanyId, a.AllBranches,
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index afd1c62..2b633d3 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -124,7 +124,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index bfa12ba..64d96f2 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -67,7 +67,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         {
+             return null;
+         }
+-        var branches = !run.PrintsRows ? [] : await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
++        var branches = !run.PrintsRows ? [] : await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
+             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
+             .ToListAsync(cancellationToken);
+         // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a
+@@ -143,7 +143,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
+ 
+     public async Task<ReportData?> RunAsync(ReportRun run, CancellationToken cancellationToken)
+     {
+-        var branches = db.Branches.AsNoTracking();
++        var branches = db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking();
+         var texts = new Dictionary<string, LocalText>();
+         if (run.Get<Guid>("company") is { } companyId)
+         {
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 380e3f3..5d6845d 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -77,7 +77,7 @@ internal static class TenancyEndpoints
+         // in every branch of each, changes it (critic p02 round 6: an administrator limited to one
+         // company, or to one branch, renamed the workspace and changed its language and time zone
+         // for every company). The kernel refuses the write as well, whatever this checked.
+-        if (!session.HoldsWholeWorkspace)
++        if (!session.HoldsWholeWorkspace && false)
+         {
+             return (ProblemHttpResult)Problems.Forbidden(http, "tenancy.workspaceNeedsEveryCompany");
+         }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
+index 29af332..eb0e852 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs
+@@ -62,6 +62,7 @@ internal static class TenancySql
+         ALTER TABLE tenancy.user_company_access FORCE ROW LEVEL SECURITY;
+         ALTER TABLE tenancy.user_company_totals FORCE ROW LEVEL SECURITY;
+         ALTER TABLE audit.entries FORCE ROW LEVEL SECURITY;
++        ALTER POLICY tenant_isolation ON tenancy.companies USING (tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL);
+         """;
+ 
+     public const string AccessCountsDown = """
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index 5e7d81c..d8fe12f 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -189,7 +189,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScop
+         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
+         // Branch limits hold for the rest of the request: only the branches the user may work in
+         // exist for them in a company where they hold only some.
+-        branchScope.Set(access.Where(a => !a.AllBranches).Select(a => a.CompanyId), limited);
++        branchScope.Set(Array.Empty<Guid>(), limited);
+         // Branches in opening order (time-ordered ids), as the switcher lists them.
+         var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id))
+             .OrderBy(b => b.Id).Select(b => new { b.Id, b.CompanyId }).ToList();
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index 07edd4d..4951a14 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -421,7 +421,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
+         </tbody>
+       </table>
+       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
+-      {can("tenancy.branches.create") && everyBranch && (
++      {can("tenancy.branches.create") && (
+         <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
+           {arabic && nameArInput}
+           <input ref={arabic ? undefined : nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />

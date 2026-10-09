@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index 5e7d81c..d8fe12f 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -189,7 +189,7 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScop
+         var allBranches = access.Where(a => a.AllBranches).Select(a => a.CompanyId).ToHashSet();
+         // Branch limits hold for the rest of the request: only the branches the user may work in
+         // exist for them in a company where they hold only some.
+-        branchScope.Set(access.Where(a => !a.AllBranches).Select(a => a.CompanyId), limited);
++        branchScope.Set(Array.Empty<Guid>(), limited);
+         // Branches in opening order (time-ordered ids), as the switcher lists them.
+         var allowedBranches = branches.Where(b => allBranches.Contains(b.CompanyId) || limited.Contains(b.Id))
+             .OrderBy(b => b.Id).Select(b => new { b.Id, b.CompanyId }).ToList();

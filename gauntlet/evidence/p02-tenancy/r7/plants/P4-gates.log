@@ -1,0 +1,201 @@
+Test run for /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.34]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.88]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.16]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [735 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [42 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [838 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [721 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [34 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [48 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [9 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [24 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [12 s]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [35 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [28 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [795 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [113 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [85 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [21 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [16 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [522 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [43 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [38 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [10 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [25 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [68 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [50 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [52 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [86 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [161 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [8 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [57 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [3 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [23 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [1 s]
+[xUnit.net 00:02:56.10]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:02:56.10]       Writes to company X's shared records by an administrator limited to one of its branches:
+[xUnit.net 00:02:56.10]       branch-limited administrator → PUT /api/tenancy/tenant [nameEn]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:02:56.10]       branch-limited administrator → PUT /api/tenancy/tenant [nameAr]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:02:56.10]       branch-limited administrator → PUT /api/tenancy/tenant [defaultLanguage]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:02:56.10]       branch-limited administrator → PUT /api/tenancy/tenant [weekStart]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:02:56.11]       Stack Trace:
+[xUnit.net 00:02:56.11]         /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(80,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:02:56.11]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:56.11]       Output:
+[xUnit.net 00:02:56.12]         103 endpoints, 13654 requests, 4 branch Z markers, 1004 differential checks, 5 write oracle checks
+[xUnit.net 00:02:56.12]         own-parameter reads: 1930 requests over 51 reads; answered: /api/auth/session, /api/health, /api/identity/companies, /api/identity/permissions, /api/identity/roles, /api/identity/roles/{id:guid}, /api/identity/users, /api/identity/users/{id:guid}, /api/identity/users/{id:guid}/access, /api/identity/users/{id:guid}/default-company, /api/identity/users/{id:guid}/sign-ins, /api/lists/identity.roles/definition, /api/lists/identity.roles/shared-views/{id:guid}, /api/lists/identity.roles/views, /api/lists/identity.users/definition, /api/lists/identity.users/shared-views/{id:guid}, /api/lists/identity.users/views, /api/lists/tenancy.access/definition, /api/lists/tenancy.access/shared-views/{id:guid}, /api/lists/tenancy.access/views, /api/lists/tenancy.branches/definition, /api/lists/tenancy.branches/shared-views/{id:guid}, /api/lists/tenancy.branches/views, /api/lists/tenancy.companies/definition, /api/lists/tenancy.companies/shared-views/{id:guid}, /api/lists/tenancy.companies/views, /api/openapi/v1.json, /api/reports/catalog, /api/reports/lists/identity.roles, /api/reports/lists/identity.users, /api/reports/lists/tenancy.access, /api/reports/lists/tenancy.branches, /api/reports/lists/tenancy.companies, /api/reports/run/identity.roleSummary, /api/reports/run/identity.usersByRole, /api/reports/run/tenancy.branchDirectory, /api/reports/run/tenancy.companyProfile, /api/tenancy/access, /api/tenancy/access/{userId:guid}, /api/tenancy/branches, /api/tenancy/branches/{id:guid}, /api/tenancy/companies, /api/tenancy/companies/{id:guid}, /api/tenancy/companies/{id:guid}/logo, /api/tenancy/tenant, /api/tenancy/workplace
+[xUnit.net 00:02:56.12]         shared records: tenancy.companies, tenancy.tenants; 35 writes to company X by the branch-limited administrator:
+[xUnit.net 00:02:56.12]           DELETE /api/identity/roles/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/identity/users/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/identity.roles/shared-views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/identity.roles/views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/identity.users/shared-views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/identity.users/views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.access/shared-views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.access/views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.branches/views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/lists/tenancy.companies/views/{id:guid} [-]
+[xUnit.net 00:02:56.12]           DELETE /api/tenancy/companies/{id:guid}/logo [-]
+[xUnit.net 00:02:56.12]           POST /api/identity/users/{id:guid}/sessions/revoke [-]
+[xUnit.net 00:02:56.12]           POST /api/identity/users/{id:guid}/unblock [-]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [addressAr]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [addressLine1]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [city]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [code]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [email]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [emirate]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [fiscalYearStartDay]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [fiscalYearStartMonth]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [isActive]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [legalNameAr]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [legalNameEn]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [poBox]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [taxRegistrationNumber]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [tradeLicenceAuthority]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/companies/{id:guid}/logo [-]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/tenant [defaultLanguage]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/tenant [nameAr]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/tenant [nameEn]
+[xUnit.net 00:02:56.12]           PUT /api/tenancy/tenant [weekStart]
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 56 s]
+  Error Message:
+   Writes to company X's shared records by an administrator limited to one of its branches:
+branch-limited administrator → PUT /api/tenancy/tenant [nameEn]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+branch-limited administrator → PUT /api/tenancy/tenant [nameAr]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+branch-limited administrator → PUT /api/tenancy/tenant [defaultLanguage]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+branch-limited administrator → PUT /api/tenancy/tenant [weekStart]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 80
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 103 endpoints, 13654 requests, 4 branch Z markers, 1004 differential checks, 5 write oracle checks
+ own-parameter reads: 1930 requests over 51 reads; answered: /api/auth/session, /api/health, /api/identity/companies, /api/identity/permissions, /api/identity/roles, /api/identity/roles/{id:guid}, /api/identity/users, /api/identity/users/{id:guid}, /api/identity/users/{id:guid}/access, /api/identity/users/{id:guid}/default-company, /api/identity/users/{id:guid}/sign-ins, /api/lists/identity.roles/definition, /api/lists/identity.roles/shared-views/{id:guid}, /api/lists/identity.roles/views, /api/lists/identity.users/definition, /api/lists/identity.users/shared-views/{id:guid}, /api/lists/identity.users/views, /api/lists/tenancy.access/definition, /api/lists/tenancy.access/shared-views/{id:guid}, /api/lists/tenancy.access/views, /api/lists/tenancy.branches/definition, /api/lists/tenancy.branches/shared-views/{id:guid}, /api/lists/tenancy.branches/views, /api/lists/tenancy.companies/definition, /api/lists/tenancy.companies/shared-views/{id:guid}, /api/lists/tenancy.companies/views, /api/openapi/v1.json, /api/reports/catalog, /api/reports/lists/identity.roles, /api/reports/lists/identity.users, /api/reports/lists/tenancy.access, /api/reports/lists/tenancy.branches, /api/reports/lists/tenancy.companies, /api/reports/run/identity.roleSummary, /api/reports/run/identity.usersByRole, /api/reports/run/tenancy.branchDirectory, /api/reports/run/tenancy.companyProfile, /api/tenancy/access, /api/tenancy/access/{userId:guid}, /api/tenancy/branches, /api/tenancy/branches/{id:guid}, /api/tenancy/companies, /api/tenancy/companies/{id:guid}, /api/tenancy/companies/{id:guid}/logo, /api/tenancy/tenant, /api/tenancy/workplace
+ shared records: tenancy.companies, tenancy.tenants; 35 writes to company X by the branch-limited administrator:
+   DELETE /api/identity/roles/{id:guid} [-]
+   DELETE /api/identity/users/{id:guid} [-]
+   DELETE /api/lists/identity.roles/shared-views/{id:guid} [-]
+   DELETE /api/lists/identity.roles/views/{id:guid} [-]
+   DELETE /api/lists/identity.users/shared-views/{id:guid} [-]
+   DELETE /api/lists/identity.users/views/{id:guid} [-]
+   DELETE /api/lists/tenancy.access/shared-views/{id:guid} [-]
+   DELETE /api/lists/tenancy.access/views/{id:guid} [-]
+   DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [-]
+   DELETE /api/lists/tenancy.branches/views/{id:guid} [-]
+   DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [-]
+   DELETE /api/lists/tenancy.companies/views/{id:guid} [-]
+   DELETE /api/tenancy/companies/{id:guid}/logo [-]
+   POST /api/identity/users/{id:guid}/sessions/revoke [-]
+   POST /api/identity/users/{id:guid}/unblock [-]
+   PUT /api/tenancy/companies/{id:guid} [addressAr]
+   PUT /api/tenancy/companies/{id:guid} [addressLine1]
+   PUT /api/tenancy/companies/{id:guid} [city]
+   PUT /api/tenancy/companies/{id:guid} [code]
+   PUT /api/tenancy/companies/{id:guid} [email]
+   PUT /api/tenancy/companies/{id:guid} [emirate]
+   PUT /api/tenancy/companies/{id:guid} [fiscalYearStartDay]
+   PUT /api/tenancy/companies/{id:guid} [fiscalYearStartMonth]
+   PUT /api/tenancy/companies/{id:guid} [isActive]
+   PUT /api/tenancy/companies/{id:guid} [legalNameAr]
+   PUT /api/tenancy/companies/{id:guid} [legalNameEn]
+   PUT /api/tenancy/companies/{id:guid} [poBox]
+   PUT /api/tenancy/companies/{id:guid} [taxRegistrationNumber]
+   PUT /api/tenancy/companies/{id:guid} [tradeLicenceAuthority]
+   PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]
+   PUT /api/tenancy/companies/{id:guid}/logo [-]
+   PUT /api/tenancy/tenant [defaultLanguage]
+   PUT /api/tenancy/tenant [nameAr]
+   PUT /api/tenancy/tenant [nameEn]
+   PUT /api/tenancy/tenant [weekStart]
+
+
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 8 s]
+[xUnit.net 00:03:39.39]     Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [FAIL]
+[xUnit.net 00:03:39.39]       Writes to the workspace's shared records by an administrator of one company:
+[xUnit.net 00:03:39.39]       company X administrator → PUT /api/tenancy/tenant [nameEn]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:03:39.39]       company X administrator → PUT /api/tenancy/tenant [nameAr]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:03:39.39]       company X administrator → PUT /api/tenancy/tenant [defaultLanguage]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:03:39.39]       company X administrator → PUT /api/tenancy/tenant [weekStart]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+[xUnit.net 00:03:39.39]       Stack Trace:
+[xUnit.net 00:03:39.39]         /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs(66,0): at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint()
+[xUnit.net 00:03:39.39]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:39.39]       Output:
+[xUnit.net 00:03:39.39]         103 endpoints, 59913 requests, 22 company Y markers, 7740 differential checks, 8 write oracle checks
+[xUnit.net 00:03:39.39]         own-parameter reads: 1949 requests over 51 reads
+[xUnit.net 00:03:39.39]         workspace records: tenancy.tenants; 4 writes:
+[xUnit.net 00:03:39.39]           PUT /api/tenancy/tenant [defaultLanguage]
+[xUnit.net 00:03:39.39]           PUT /api/tenancy/tenant [nameAr]
+[xUnit.net 00:03:39.39]           PUT /api/tenancy/tenant [nameEn]
+[xUnit.net 00:03:39.39]           PUT /api/tenancy/tenant [weekStart]
+  Failed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [3 m 14 s]
+  Error Message:
+   Writes to the workspace's shared records by an administrator of one company:
+company X administrator → PUT /api/tenancy/tenant [nameEn]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+company X administrator → PUT /api/tenancy/tenant [nameAr]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+company X administrator → PUT /api/tenancy/tenant [defaultLanguage]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+company X administrator → PUT /api/tenancy/tenant [weekStart]: refused only by the last layer (the kernel's workspace-wide row guard); the endpoint itself does not check that the caller works in every company and branch
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint() in /home/shan/critic/p02-tenancy-r7-work/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs:line 66
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 103 endpoints, 59913 requests, 22 company Y markers, 7740 differential checks, 8 write oracle checks
+ own-parameter reads: 1949 requests over 51 reads
+ workspace records: tenancy.tenants; 4 writes:
+   PUT /api/tenancy/tenant [defaultLanguage]
+   PUT /api/tenancy/tenant [nameAr]
+   PUT /api/tenancy/tenant [nameEn]
+   PUT /api/tenancy/tenant [weekStart]
+
+
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [2 m 1 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [25 s]
+[xUnit.net 00:04:08.98]   Finished:    Erp.Gates.Tests (ID = 'f2e72217c38d38bad3dcc846b6d1d55516a9b077cfb6ab0a616320f215244462')
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [384 ms]
+
+Test Run Failed.
+Total tests: 50
+     Passed: 48
+     Failed: 2
+ Total time: 4.1613 Minutes
+rc=1

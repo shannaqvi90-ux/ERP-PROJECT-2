@@ -1,0 +1,123 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p02-tenancy-r7-work/web[39m
+
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 588[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 626[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each branch's company by code and name, groups by company with those labels and offers the companies as filter choices [33m 376[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 793[2mms[22m[39m
+     [33m[2m✓[22m[39m says why a stronger user's access is read-only and offers no way to change it [33m 377[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 2059[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 736[2mms[22m[39m
+ [31m❯[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m60 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 8724[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: with every tenancy permission, every action is offered [33m 392[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.read, exactly the actions that need it disappear [33m 425[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.update, exactly the actions that need it disappear [33m 381[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.create, exactly the actions that need it disappear[32m 293[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.read, exactly the actions that need it disappear[32m 261[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.update, exactly the actions that need it disappear[32m 209[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.create, exactly the actions that need it disappear[32m 253[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.read, exactly the actions that need it disappear[32m 114[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.update, exactly the actions that need it disappear[32m 276[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.tenant.read, exactly the actions that need it disappear[32m 270[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.tenant.update, exactly the actions that need it disappear[32m 204[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear[32m 190[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 201[2mms[22m[39m
+     [32m✓[39m branches: with every tenancy permission, every action is offered[32m 72[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.access.read, exactly the actions that need it disappear[32m 143[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.access.update, exactly the actions that need it disappear[32m 146[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.create, exactly the actions that need it disappear[32m 107[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.read, exactly the actions that need it disappear[32m 78[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.update, exactly the actions that need it disappear[32m 147[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.create, exactly the actions that need it disappear[32m 132[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.read, exactly the actions that need it disappear[32m 132[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.update, exactly the actions that need it disappear[32m 183[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.read, exactly the actions that need it disappear[32m 153[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.update, exactly the actions that need it disappear[32m 169[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.read, exactly the actions that need it disappear[32m 155[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 160[2mms[22m[39m
+     [32m✓[39m access: with every tenancy permission, every action is offered[32m 61[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.read, exactly the actions that need it disappear[32m 87[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.update, exactly the actions that need it disappear[32m 122[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.create, exactly the actions that need it disappear[32m 109[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.read, exactly the actions that need it disappear[32m 105[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.update, exactly the actions that need it disappear[32m 113[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.create, exactly the actions that need it disappear[32m 105[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.read, exactly the actions that need it disappear[32m 99[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.update, exactly the actions that need it disappear[32m 134[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.read, exactly the actions that need it disappear[32m 174[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.update, exactly the actions that need it disappear[32m 100[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.read, exactly the actions that need it disappear[32m 134[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 98[2mms[22m[39m
+     [32m✓[39m tenant: with every tenancy permission, every action is offered[32m 50[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.read, exactly the actions that need it disappear[32m 78[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.update, exactly the actions that need it disappear[32m 65[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.create, exactly the actions that need it disappear[32m 89[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.read, exactly the actions that need it disappear[32m 84[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.update, exactly the actions that need it disappear[32m 64[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.create, exactly the actions that need it disappear[32m 67[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.read, exactly the actions that need it disappear[32m 75[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.update, exactly the actions that need it disappear[32m 69[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.read, exactly the actions that need it disappear[32m 52[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.update, exactly the actions that need it disappear[32m 78[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.read, exactly the actions that need it disappear[32m 80[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 100[2mms[22m[39m
+     [33m[2m✓[22m[39m companies and branches: the new-record key opens nothing without the create permission [33m 372[2mms[22m[39m
+[31m     [31m×[31m companies: where the user works in only some branches of the company, exactly what every branch shares disappears[39m[32m 223[2mms[22m[39m
+     [32m✓[39m branches: where the user works in only some branches of the company, exactly what every branch shares disappears[32m 142[2mms[22m[39m
+     [32m✓[39m companies: a company where the user works in only some branches says why it cannot be changed[32m 100[2mms[22m[39m
+     [32m✓[39m branches: Alt+N opens nothing when the user works in only some branches of every company[32m 70[2mms[22m[39m
+     [32m✓[39m branches: a branch code the user may not change says why[32m 57[2mms[22m[39m
+     [32m✓[39m tenant: where the user works in only some companies or branches, the workspace form disappears and says why[32m 64[2mms[22m[39m
+     [32m✓[39m access: a user the server marks read-only for the caller offers no change, even with every permission[32m 51[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 26231[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4675[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2919[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3033[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 949[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4223[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3867[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 4182[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 2381[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: where the user works in only some branches of the company, exactly what every branch shares disappears
+[31m[1mAssertionError[22m: companies for a user who works in only some branches: expected [ 'button:Add branch', …(14) ] to deeply equal [ Array(8) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[31m+   "button:Add branch",[39m
+[2m    "button:Close",[22m
+[2m    "button:Code▲",[22m
+[2m    "button:Columns",[22m
+[2m    "button:New",[22m
+[2m    "button:Print",[22m
+[2m    "button:View: Standard",[22m
+[2m    "button:▾",[22m
+[31m+   "field:branchCity",[39m
+[31m+   "field:branchCode",[39m
+[31m+   "field:branchEmirate",[39m
+[31m+   "field:branchNameAr",[39m
+[31m+   "field:branchNameEn",[39m
+[31m+   "form:Add branch",[39m
+[2m    "form:Company",[22m
+[2m  ][22m
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m254:79[22m[39m
+    [90m252| [39m      [34mcloseView[39m()[33m;[39m
+    [90m253| [39m      [35mconst[39m limited [33m=[39m [35mawait[39m [34mopen[39m(screen[33m,[39m all[33m,[39m { everyBranch[33m:[39m [35mfalse[39m })[33m;[39m
+    [90m254| [39m      expect(limited, `${screen} for a user who works in only some bra…
+    [90m   | [39m                                                                              [31m^[39m
+    [90m255| [39m    })[33m;[39m
+    [90m256| [39m  }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m86 passed[39m[22m[90m (87)[39m
+[2m   Start at [22m 17:22:29
+[2m   Duration [22m 29.71s[2m (transform 8.80s, setup 312ms, import 13.45s, tests 39.02s, environment 5.16s)[22m
+

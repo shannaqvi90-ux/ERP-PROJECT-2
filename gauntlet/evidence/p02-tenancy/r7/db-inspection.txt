@@ -1,0 +1,38 @@
+== money-ish / float columns in tenancy
+ table_name | column_name | data_type 
+------------+-------------+-----------
+(0 rows)
+
+== audit rows for tenancy tables by action (user actors vs system)
+ERROR:  column "schema_name" does not exist
+LINE 1: ..._id is null) as no_actor from audit.entries where schema_nam...
+                                                             ^
+== audit rows for tenancy tables by action and actor kind (today)
+     table_name      | action | actor_kind | with_actor | without_actor 
+---------------------+--------+------------+------------+---------------
+ branches            | insert | seed       |          0 |            15
+ branches            | insert | user       |         10 |             0
+ companies           | insert | seed       |          0 |             6
+ companies           | insert | user       |         10 |             0
+ companies           | update | user       |          6 |             0
+ tenants             | insert | seed       |          0 |             2
+ user_branch_access  | insert | seed       |          0 |             3
+ user_branch_access  | insert | user       |          1 |             0
+ user_company_access | insert | seed       |          0 |            18
+ user_company_access | insert | user       |         22 |             0
+ user_company_totals | insert | seed       |          0 |             8
+ user_company_totals | insert | user       |          2 |             0
+ user_company_totals | update | seed       |          0 |            10
+ user_company_totals | update | user       |         22 |             0
+ user_workplaces     | insert | seed       |          0 |             8
+ user_workplaces     | insert | user       |          2 |             0
+ user_workplaces     | update | user       |         20 |             0
+(17 rows)
+
+== the CRITIC companies created in the walk: audit entries
+ table_name | action | actor_kind | has_actor |                                                           left                                                           
+------------+--------+------------+-----------+--------------------------------------------------------------------------------------------------------------------------
+ companies  | insert | user       | t         | {"id": {"new": "01a120cd-bcac-7f03-943b-d19bfe4f32be"}, "code": {"new": "CRITIC"}, "country": {"new": "AE"}, "is_active"
+ companies  | insert | user       | t         | {"id": {"new": "01a120cd-e102-7433-b460-7f962b8e4285"}, "code": {"new": "CRITIC-2"}, "country": {"new": "AE"}, "is_activ
+(2 rows)
+

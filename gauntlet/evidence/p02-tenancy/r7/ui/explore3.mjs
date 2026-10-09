@@ -1,0 +1,10 @@
+import { browser, signedIn } from './lib.mjs';
+const b = await browser(); const p = await signedIn(b, 'admin@alnoor.example');
+await p.goto('http://localhost:20250/tenancy/companies'); await p.waitForLoadState('networkidle');
+await p.keyboard.press('Alt+N'); await p.waitForTimeout(800);
+console.log('url', p.url(), 'focused', await p.evaluate(() => { const e = document.activeElement; return e.id + ' ' + e.getAttribute('name') + ' ' + (e.labels?.[0]?.textContent); }));
+console.log((await p.locator('main label').evaluateAll(es => es.map(e => `${e.textContent.trim()} -> ${e.htmlFor}`))).join('\n'));
+console.log((await p.locator('main button').evaluateAll(es => es.map(e => `${e.textContent.trim()} | ${e.getAttribute('aria-keyshortcuts')} | disabled=${e.disabled}`))).join('\n'));
+console.log('scrollWidth', await p.evaluate(() => document.documentElement.scrollWidth));
+await p.screenshot({ path: 'x-new.jpg', type: 'jpeg', quality: 60, fullPage: true });
+await b.close();

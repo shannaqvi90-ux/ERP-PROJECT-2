@@ -1,0 +1,37 @@
+B tenant gulfsteel companies GSF-RAK,GSF-SHJ branches GHAIL-PL,HAMR-YD,SHJ-PLANT
+canaries 21 ids 12
+404 GET /api/tenancy/companies/018f6605-b084-7058-bdac-9bdcb51e8ad5  
+404 PUT /api/tenancy/companies/018f6605-b084-7058-bdac-9bdcb51e8ad5  
+404 GET /api/tenancy/companies/018f6605-b084-7058-bdac-9bdcb51e8ad5/logo  
+404 PUT /api/tenancy/companies/018f6605-b084-7058-bdac-9bdcb51e8ad5/logo  
+404 DELETE /api/tenancy/companies/018f6605-b084-7058-bdac-9bdcb51e8ad5/logo  
+404 GET /api/tenancy/branches/018f6605-b085-717a-b6e6-03f61387d6a9  
+404 PUT /api/tenancy/branches/018f6605-b085-717a-b6e6-03f61387d6a9  
+400 POST /api/tenancy/branches  
+400 PUT /api/tenancy/workplace  
+400 PUT /api/tenancy/workplace  
+200 GET /api/tenancy/branches?company=018f6605-b084-7058-bdac-9bdcb51e8ad5 LEAK مصنع الشارقة
+200 GET /api/tenancy/branches?companyId=018f6605-b084-7058-bdac-9bdcb51e8ad5 LEAK مصنع الشارقة
+200 GET /api/tenancy/companies?tenantId=0190a000-0000-7000-8000-000000000002  
+200 GET /api/tenancy/companies  
+200 GET /api/tenancy/tenant?id=0190a000-0000-7000-8000-000000000002  
+404 GET /api/tenancy/access/01a120bf-ee4b-7eca-abd8-4d5d663eb932  
+400 PUT /api/tenancy/access/01a120bf-ee4b-7eca-abd8-4d5d663eb932  
+404 GET /api/identity/users/01a120bf-ee4b-7eca-abd8-4d5d663eb932  
+404 GET /api/identity/users/01a120bf-ee4b-7eca-abd8-4d5d663eb932/access  
+404 GET /api/identity/users/01a120bf-ee4b-7eca-abd8-4d5d663eb932/default-company  
+404 GET /api/identity/roles/01a120bf-ed75-74ac-a01c-4fc13ce336d9  
+404 GET /api/reports/run/tenancy.companyProfile?company=018f6605-b084-7058-bdac-9bdcb51e8ad5&format=csv  
+404 GET /api/reports/run/tenancy.companyProfile?company=018f6605-b084-7058-bdac-9bdcb51e8ad5&format=json  
+200 GET /api/reports/run/tenancy.branchDirectory?company=018f6605-b084-7058-bdac-9bdcb51e8ad5&format=csv  
+200 GET /api/reports/run/tenancy.branchDirectory?format=csv  
+200 GET /api/reports/lists/tenancy.companies?format=csv  
+400 GET /api/reports/lists/tenancy.branches?format=csv&filter=companyId:018f6605-b084-7058-bdac-9bdcb51e8ad5  
+200 GET /api/reports/lists/tenancy.access?format=csv  
+200 GET /api/lists/tenancy.companies/definition  
+400 PUT /api/identity/users/01a120be-f4b2-7dad-ad1d-4e552786ec4e/default-company  
+400 PUT /api/tenancy/access/01a120be-f4b2-7dad-ad1d-4e552786ec4e  
+B company name after Gulf Steel Fabrication FZ-LLC version 776 was 776
+B branch name after Al Ghail plant branch count 3 was 3
+A workplace company ALN-AUH,ALN-DXB,ALN-FZE,ALN-SHJ 018dca08-f081-7046-aef3-c792e1a43ea7
+requests 31 leaks 2

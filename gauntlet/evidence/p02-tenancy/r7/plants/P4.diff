@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 380e3f3..5d6845d 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -77,7 +77,7 @@ internal static class TenancyEndpoints
+         // in every branch of each, changes it (critic p02 round 6: an administrator limited to one
+         // company, or to one branch, renamed the workspace and changed its language and time zone
+         // for every company). The kernel refuses the write as well, whatever this checked.
+-        if (!session.HoldsWholeWorkspace)
++        if (!session.HoldsWholeWorkspace && false)
+         {
+             return (ProblemHttpResult)Problems.Forbidden(http, "tenancy.workspaceNeedsEveryCompany");
+         }
