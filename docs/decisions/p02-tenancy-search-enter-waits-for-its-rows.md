@@ -8,7 +8,7 @@ kernel, made because it failed this piece's full verify). Status: accepted (roun
 This round's `./erp verify` failed in the built-driver health check: find-user's `enter` variant
 typed "Majid Anil Pillai", pressed Enter and waited 20 s for the user's record, which never opened;
 the address stayed on `/identity/users?q=Majid+Anil+Pillai` and every other variant of the same task
-verified (kept run: `.verify-failed/20261009T081928Z-1381621/ours-health`). The search box's Enter
+verified. The run's failure capture showed the list still on the search, no record panel. The search box's Enter
 acted at once when the typed text was applied and no read was flagged as running. But the list's
 read starts in an effect: in the render in which the applied search gives a new query, `loading` is
 still false and the rows (`loadedKey`) are still the previous query's. An Enter landing in that
