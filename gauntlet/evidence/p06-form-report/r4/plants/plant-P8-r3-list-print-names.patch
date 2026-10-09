@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 2390fcb..7001dfc 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -235,7 +235,7 @@ internal static class ReportEndpoints
+         foreach (var column in columns.Where(c => c.ValuesFrom is not null))
+         {
+             var source = catalog.PrintableLists.FirstOrDefault(p => p.List.Key == column.ValuesFrom);
+-            if (source.List is null || !caller.Has(source.List.Permission) || source.List.SearchFields.Count == 0)
++            if (source.List is null || source.List.SearchFields.Count == 0)
+             {
+                 continue;
+             }

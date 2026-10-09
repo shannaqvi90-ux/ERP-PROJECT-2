@@ -1,0 +1,20 @@
+create 201
+1 401 auth.signInFailed
+2 401 auth.signInFailed
+3 401 auth.signInFailed
+4 401 auth.signInFailed
+5 401 auth.signInFailed
+6 401 auth.signInFailed
+7 401 auth.signInFailed
+8 401 auth.signInFailed
+9 401 auth.signInFailed
+10 401 auth.signInFailed
+11 401 auth.signInFailed
+12 401 auth.signInFailed
+right password after failures: 401 auth.signInFailed
+sign-in history: [200] {"items": [{"id": "abb9e5a9-e58d-473c-af8b-7a4e98a08b22", "occurredAt": "2026-10-09T03:03:30.060899+00:00", "outcome": "throttled", "ipAddress": "172.20.0.1", "userAgent": "Python-urllib/3.14", "sessionActive": false}, {"id": "3c470b6f-7950-4875-9924-58fa3bbb9e1b", "occurredAt": "2026-10-09T03:03:29.980039+00:00", "outcome": "throttled", "ipAddress": "172.20.0.1", "userAgent": "Python-urllib/3.14"
+unblock: [204] null
+right password after unblock: 200
+reset password: [200] {"mustChangePassword": true, "setupCode": "UNZ7-SHPW-FHJN", "setupCodeExpiresAt": "2026-10-16T03:03:30.1892408+00:00", "sessionsEnded": 1}
+old password after reset: 401 auth.signInFailed
+USER 01a11e9d-9fa8-75a5-a1f3-a72a48aa4159 lock.7f7152@alnoor.example

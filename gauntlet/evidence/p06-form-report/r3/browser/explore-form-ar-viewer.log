@@ -1,0 +1,14 @@
+html dir/lang rtl ar
+header ALN-FZE · النور للتجارة العامة م.م.ح | طباعة | حفظ | إغلاق
+sections ["عام","التسجيل","المحاسبة","العنوان","الاتصال"]
+x legalNameEn vs legalNameAr (RTL: En should be right of Ar) 310 42
+phone input dir ltr ltr
+ar errors ["بعض الحقول تحتاج إلى مراجعة.","أدخل عنوان موقع يبدأ بـ http:// أو https://."]
+ar leave dialog تغييرات غير محفوظة |  | في هذا السجل تغييرات لم تُحفظ بعد. |  | حفظ وإغلاق | تجاهل التغييرات | متابعة التحرير
+after discard url http://localhost:20650/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616
+reports page ar الرئيسية | التقارير | التقارير | ملف الشركة | البيانات القانونية لشركة واحدة وعنوانها ووسائل الاتصال بها مع فروعها. | دليل الفروع | جميع فروع شركاتك مع المدينة والإمارة والهاتف، مجمّعة حسب الشركة. | المستخدمون حسب الدور | من يحمل كل دور، في كل الشركات أو في شركة واحدة فقط، وهل هو نشط، ومتى سجّل الدخول آخر مرة. | الأدوار والصلاحيات | كل دور مع عدد المستخدمين الذين يحملونه وعدد الصلاحيات التي يمنحها، مع الإجماليات. | القوائم |  | تُطبع كل قائمة من شاشتها كما هي مصفّاة ومجمّعة هناك (طباعة أو تصدير)؛ وتُطبع القائمة كاملة من هنا. |  | القائمة	تنزيل | الشركات	ملف PDF مصنف Excel | الفروع	ملف PDF مصنف Excel | الوصول إلى الشركات	ملف PDF مصنف Excel | المستخدمون	ملف PDF مصنف Excel | الأدوار	ملف PDF مصنف Excel |  | اختر تقريرًا.
+writes ["POST http://localhost:20650/api/auth/sign-in","PUT http://localhost:20650/api/tenancy/companies/018dca08-f085-7542-af56-a574b8de3616"]
+viewer companies rows 2
+viewer form Home | Settings | Companies | Companies | Every word must match | 1 company | View: Standard | Columns | Print or export | Code | ▲ | ▾ | Legal name (English) | ▾ | Legal name (Arabic) | ▾ | Base currency | ▾ | City | ▾ | Emirate | ▾ | Branches | Status | ▾ | ALN-DXB | Al Noor Trading LLC | شركة النور للتجارة ذ.م.م | AED | Dubai | Dubai | 2 | Active | ALN-DXB · Al Noor Trading LLC | Print | Close | Read only Your roles let you view this record but not change it. | General | Legal name (English) | Legal name (Arabic) | Code | Leave empty to make one from the English name; 2 to 20 capital letter
+disabled inputs 20 of 20
+viewer writes after keys []

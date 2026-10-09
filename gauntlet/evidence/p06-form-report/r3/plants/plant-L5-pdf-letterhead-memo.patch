@@ -1,0 +1,20 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/Pdf/PdfReportRenderer.cs b/src/Modules/Reports/Erp.Modules.Reports/Pdf/PdfReportRenderer.cs
+index 7fbf32a..5870245 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/Pdf/PdfReportRenderer.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/Pdf/PdfReportRenderer.cs
+@@ -28,7 +28,14 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
+     /// 260 points, which no more characters than this can exceed).</summary>
+     private const int MeasuredCharacters = 300;
+ 
+-    public byte[] Render(ReportDocument document) => new Layout(document, new TextShaper(fonts)).Render();
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _letterheads = new();
++
++    public byte[] Render(ReportDocument document)
++    {
++        // Letterhead laid out once per language and reused (plant L5: not keyed by tenant).
++        document = document with { Issuer = _letterheads.GetOrAdd(document.Language, document.Issuer) };
++        return new Layout(document, new TextShaper(fonts)).Render();
++    }
+ 
+     private sealed class Layout
+     {

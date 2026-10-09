@@ -133,6 +133,41 @@ public static partial class ResponseText
         return text.ToString();
     }
 
+    /// <summary>A PDF as a reader sees it, without its font programs and raw streams: page text and
+    /// words (each also with right-to-left runs in logical order) and marked-content replacement
+    /// text. The permission gate judges this (a value counts as printed when a reader can read it).</summary>
+    public static string PdfReadable(byte[] bytes)
+    {
+        var text = new StringBuilder();
+        try
+        {
+            using var document = PdfDocument.Open(bytes);
+            foreach (var page in document.GetPages())
+            {
+                var pageText = page.Text.Replace("\u200B", "", StringComparison.Ordinal);
+                text.AppendLine(pageText).AppendLine(Logical(pageText));
+                foreach (var word in page.GetWords())
+                {
+                    var wordText = word.Text.Replace("\u200B", "", StringComparison.Ordinal);
+                    text.Append(wordText).Append(' ').Append(Logical(wordText)).Append('\n');
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            text.AppendLine($"<unreadable PDF: {e.GetType().Name}>");
+        }
+        foreach (var stream in Streams(bytes))
+        {
+            foreach (Match match in ActualTextHex().Matches(Encoding.Latin1.GetString(stream)))
+            {
+                var hex = string.Concat(match.Groups[1].Value.Where(c => !char.IsWhiteSpace(c)));
+                text.AppendLine(Utf16(Convert.FromHexString(hex.Length % 2 == 0 ? hex : hex + "0")));
+            }
+        }
+        return text.ToString();
+    }
+
     /// <summary>The text with each run of right-to-left letters reversed, so visual order becomes
     /// logical order.</summary>
     public static string Logical(string visual) =>

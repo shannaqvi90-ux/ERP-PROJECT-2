@@ -1,0 +1,37 @@
+{
+  "task": "print-list-arabic",
+  "verdict": "win",
+  "rule": "Ours must be strictly lower on every metric; a tie is a loss.",
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 5,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 13,
+      "odoo": 32,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.921,
+      "odoo": 9.978,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 11.09,
+      "odoo": 19.06,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 11.571,
+      "odoo": 28.265,
+      "outcome": "win"
+    }
+  },
+  "ties_at_zero": [],
+  "runs": {
+    "ours": "../../evidence-staging/p06-form-report/r3/compare/results/print-list-arabic-20261008T155352-7490.json",
+    "odoo": "../../evidence-staging/p06-form-report/r3/compare/results/print-list-arabic-20261008T155251-448b.json"
+  }
+}

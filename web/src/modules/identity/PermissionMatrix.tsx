@@ -1,11 +1,12 @@
 import { useId, useMemo, useState } from "react";
 import { useI18n } from "../../kernel/i18n";
-import { allSelected, buildMatrix, matrixActions, rowPermissions, toggleAll, withImpliedReads, type Permission } from "./model";
+import { allSelected, buildMatrix, matrixActions, toggleAll, withImpliedReads, type MatrixRow, type Permission } from "./model";
 
 /**
  * Permissions as a matrix: a block per module, a row per resource, a column per common action
- * (view, create, change, delete) and the rest in "other". Search narrows the rows; each module,
- * column and row has a bulk toggle, and "all shown" toggles everything the search left. A
+ * (view, create, change, delete) and the rest in "other". Search narrows to the permissions it
+ * matches (the others of a row are not shown); each module, column and row has a bulk toggle, and
+ * "all shown" toggles everything the search left, never a permission it did not match. A
  * permission the signed-in user does not hold cannot be ticked or cleared (no escalation).
  * Ticking any action of a resource also ticks viewing it. Modules arriving later (contacts,
  * sales, …) appear as their own blocks from the permission catalogue, with nothing to change here.
@@ -27,7 +28,7 @@ export function PermissionMatrix({
   const [filter, setFilter] = useState("");
   const id = useId();
   const matrix = useMemo(() => buildMatrix(permissions, filter), [permissions, filter]);
-  const shown = matrix.flatMap((m) => m.permissions).filter((p) => canChange(p.key));
+  const shown = matrix.flatMap((m) => m.matching).filter((p) => canChange(p.key));
 
   function bulk(keys: string[]) {
     const changeable = keys.filter(canChange);
@@ -36,8 +37,8 @@ export function PermissionMatrix({
     onChange(on ? withImpliedReads(next, changeable, permissions, canChange) : next);
   }
 
-  function cell(p: Permission | undefined, showLabel = false) {
-    if (!p) return null;
+  function cell(row: MatrixRow, p: Permission | undefined, showLabel = false) {
+    if (!p || !row.matching.includes(p)) return null;
     const allowed = !readOnly && canChange(p.key);
     return (
       <label key={p.key} className={allowed ? "id-cell" : "id-cell id-disabled"} title={allowed ? p.key : t("identity.matrix.notHeld")}>
@@ -84,8 +85,8 @@ export function PermissionMatrix({
             <caption>
               <span>{block.label}</span>
               {!readOnly && (
-                <button type="button" className="button ghost id-link" onClick={() => bulk(block.permissions.map((p) => p.key))}>
-                  {allSelected(selected, block.permissions.filter((p) => canChange(p.key)).map((p) => p.key)) ? t("identity.matrix.none") : t("identity.matrix.all")}
+                <button type="button" className="button ghost id-link" onClick={() => bulk(block.matching.map((p) => p.key))}>
+                  {allSelected(selected, block.matching.filter((p) => canChange(p.key)).map((p) => p.key)) ? t("identity.matrix.none") : t("identity.matrix.all")}
                 </button>
               )}
             </caption>
@@ -101,7 +102,7 @@ export function PermissionMatrix({
                         type="button"
                         className="button ghost id-link"
                         title={t("identity.matrix.toggleColumn")}
-                        onClick={() => bulk(block.rows.map((r) => r.cells[action]?.key).filter((k): k is string => !!k))}
+                        onClick={() => bulk(block.rows.map((r) => r.cells[action]).filter((p): p is Permission => !!p && block.matching.includes(p)).map((p) => p.key))}
                       >
                         {t(`identity.action.${action}`)}
                       </button>
@@ -118,15 +119,15 @@ export function PermissionMatrix({
                     {readOnly ? (
                       row.label
                     ) : (
-                      <button type="button" className="button ghost id-link" title={t("identity.matrix.toggleRow")} onClick={() => bulk(rowPermissions(row).map((p) => p.key))}>
+                      <button type="button" className="button ghost id-link" title={t("identity.matrix.toggleRow")} onClick={() => bulk(row.matching.map((p) => p.key))}>
                         {row.label}
                       </button>
                     )}
                   </th>
                   {matrixActions.map((action) => (
-                    <td key={action}>{cell(row.cells[action])}</td>
+                    <td key={action}>{cell(row, row.cells[action])}</td>
                   ))}
-                  <td className="id-other">{row.other.map((p) => cell(p, true))}</td>
+                  <td className="id-other">{row.other.map((p) => cell(row, p, true))}</td>
                 </tr>
               ))}
             </tbody>

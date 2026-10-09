@@ -1,0 +1,129 @@
+{
+  "piece": "p03-identity",
+  "round": 7,
+  "commit": "870b36fbde74da8a34c9547448c06288d399bff7",
+  "judged_at": "2026-10-09T03:15:00Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p03-identity round 7",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "No leak found. As alnoor's admin I attacked gulfsteel's first 3 users and 3 roles: 45 calls (GET by id, access, sign-ins, default-company, tenancy access, PUT, password, revoke, unblock, DELETE, copy). All 45 answered 404. B's users, roles and admin session were unchanged (attacks/g1-a-vs-b.txt). Differential checks put B's ids against random ids in companyRoles[].companyId, companyRoles[].roleId, roleIds[], the access companies[] and a role filter, and every pair answered the same. Two pairs differed, and neither is a leak. In the e-mail pair only the random set-up code differs. The role-name pair used a seeded name that A holds too: a name only B holds answers 201 for A, the same as an unused name (g1-rolename-followup.txt). Exports and reports: the users, roles and access lists as CSV, XLSX and Arabic PDF, plus usersByRole and roleSummary, hold no B data. The only 'gulfsteel' strings are 2 of A's own users that my e-mail differential created (attacks/exports.txt). Database: as erp_app with no tenant bound I saw 0 rows. A session-wide set_config also saw 0. Bound to A, I saw 100,007 users and 0 of other tenants'. UPDATE of B's rows changed 0, and an INSERT into B's roles was refused by RLS. DISABLE RLS, SET ROLE erp_owner and row_security=off were all refused, and no erp role has bypassrls (attacks/db-app-role.txt)."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "All three plants were caught.\n- L5 (new): a process-wide RoleMemo cache behind GET /roles/{id}. Caught by G1ProcessStateTests ('static ...RoleEndpoints.RoleMemo: a read-only field that holds a mutable ConcurrentDictionary') and by G1HttpIsolation (67 leaks: 'GET /api/identity/roles/<B id> -> 200: response contains tenant B marker').\n- L3 (r5's companyRoles[].companyId oracle, missed in r5 and r6): now caught by G1WriteOracleTests ('POST/PUT /api/identity/users [companyRoles[].companyId]: tenant A naming tenant B's record answered ... identityNotTheirCompany ... unknownIds').\n- L6 (new, run 2): an extra PERMISSIVE SELECT USING(true) policy on identity.roles, added in p03's migration. Caught by three G1DatabaseIsolation tests.\nFiles: plants/run1/gates.log, plants/run2/gates.log, plants/r7-plants-run1.diff, plants/r7-plant-L6-run2.diff."
+    },
+    {
+      "gate": "G2 permissions of the product as built (restricted roles, escalation, screens hide)",
+      "status": "pass",
+      "evidence": "Checked live (attacks/g2-bulk.txt, g2-escalation.txt).\n- 'All that match' refused all three stronger targets: a company manager, a weak role held in a company the caller does not work in, and a target holding grants in C2 when the caller held them only in C1. Each answered changed 0, refusedBeyondOwn 1. Both controls changed 1.\n- Escalation probes were all refused: self company role, self access, changing the Administrator's access, a grant in a company where the caller does not hold it, a workspace-wide grant, and role edits by a holder whose grants come from one company.\n- A newly invited read-only user, signed in with the set-up code: no New user button, Alt+N does nothing, the record panel says 'Read only' with no Save or Reset password, and the roles screen offers no New, Copy or Delete. From the browser, POST roles, POST users and matching/active answered 403 while GETs answered 200 (walks/walk2b-ro.txt, screenshot 04)."
+    },
+    {
+      "gate": "G2 gate catches permission faults planted in this piece's surface",
+      "status": "fail",
+      "evidence": "Plants Pc, Pe and Pf ran in one gate run through verify-slot (plants/run1).\n- Pc (r6's gap, re-applied): 'all that match' lets a grant held in one company cover the same role in any company. Now CAUGHT by G2AccountTakeoverTests SetTakeover ('aimed at a user holding ... in one company only, the other one than where the caller holds it, by a user holding [...] only through a role in one company').\n- Pe (new): POST /roles/{id}/copy no longer checks that the caller holds the source role's grants. CAUGHT by Acting_on_a_record_that_grants_access, by Creating_from_a_role ('on the Administrator role by a user holding only [roles.create, roles.read] answered 201') and by the identity module test.\n- Pf (new): PUT /roles/{id} counts permissions the caller holds in ONE company as held everywhere, so a company-scoped role manager can edit a workspace-wide role. MISSED by every gate test and every identity module test: no failure in gates.log or identity.log names PUT /api/identity/roles. My proof plants/CriticR7Proof.cs passes on the shipped product (plants/proof-unplanted/proof.log). It fails planted: 'a user holding the role's grants only in company 1 changed a role held across the workspace: 200 {...\"nameEn\":\"Pf renamed ...\",\"userCount\":1}' (plants/proof-planted/proof.log). The new CompanyCallers inventory is wired into the user takeover and set-based checks only. The grant-bearing-record check, which judges PUT/DELETE/copy on roles, still uses only callers with workspace-wide roles."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds, tests",
+      "status": "fail",
+      "evidence": "Fresh clone of 870b36f, run as ERP_PROJECT=c-p03-identity-r7 with ports 20350, 20351, 20360 and 20361 (all honoured), through verify-slot. The slot was taken at 02:24:07Z at load 1 to 40. Result: 'verify stages failed: dotnet ... verify FAILED (exit 1)' after 1,889 s. The suite failed 1 of 152 gate tests: G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere. Error: 'Sign-in as admin@bravo-cnry340d2b08ef.example failed: 409 auth.chooseWorkspace ... workspaces: alpha (\"Name oracle491c3eee3897x\"), bravocnry...' (verify-kept/dotnet-suite.log).\nThe test arrived in this round's p03 merge (f336aed), and it depends on test order. The text write oracle, run first in the same fixture, creates in tenant A a user with tenant B's seeded admin address and the shared gate password. The ids oracle then signs in as B's admin with no workspace and gets 'choose a workspace'. In my planted run the same test got past sign-in, so whether it passes depends on order. Web 358, compare 315 and e2e 79 all passed. The timing stage did not run."
+    },
+    {
+      "gate": "G3 clean clone: one command to a running seeded demo",
+      "status": "pass",
+      "evidence": "./erp up with ERP_SEED_USERS_CSV printed 'The demo is running (33 s): http://localhost:20350', with 100,005 users in alnoor and 1,005 in gulfsteel (up.log). A first attempt failed in 2 s on a transient MCR network EOF (up-attempt1-mcr-eof.log). The retry succeeded, so this is not a product fault."
+    },
+    {
+      "gate": "Rule gates (licences, money, strings, audit) and ratchet counts",
+      "status": "pass",
+      "evidence": "The licence, money, string, audit and OpenAPI gates all passed inside the verify. The string check found 660 keys in English and Arabic. No count fell against r6: dotnet 513 (was 484), web unit 358 (was 350), e2e 79 (was 75), compare 315 (was 194). The live audit trail records every identity write with its actor, including the set-based deactivations and role deletes (attacks/audit-sample.txt). The 9,000 to 10,500 s rise of verify.cpuSeconds is the owner's own edit (needs-human #12), not a weakening by the piece."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r7 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ERP_VERIFY_LOG=.../verify-critic-p03-identity-r7.log gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1265,
+    "passed": 1264,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 1889
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 1889,
+    "evidence": "./erp verify on a fresh clone failed after 1,889 s, timed from 'slot taken'. 1 of 513 .NET tests failed: G1WriteOracleTests ids oracle, 409 auth.chooseWorkspace, because test order lets one test contaminate the other's fixture. Web, compare and e2e all passed. ./erp up served the seeded demo in 33 s."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 0.607,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 4.171,
+        "klm_seconds": 30.05
+      },
+      "notes": "Shipped drivers, blind, median of 3 runs each (compare/comparisons/create-restricted-user.json). Ours used its 'pointer' path. Odoo is taken at its best on each metric. Ours wins on every metric: human plus wait is 21.2 s against 33.9 s. No count metric tied at 0, so nothing was left out. The same caveat as r1 to r6 applies: there is no contacts permission yet (p16), so the task uses 'Clerk (restricted)' (screenshots 09)."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 1.069,
+        "klm_seconds": 6.64
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 9,
+        "seconds": 1.088,
+        "klm_seconds": 11.19
+      },
+      "notes": "Shortest expert path in each, median of 3 (compare-find-user-shortest/). Ours used its 'shortest' path, 'm an pi' then Enter. Odoo used r6's critic fragment driver, 'd anil p' (find-user.odoo.critic.mjs), which beats Odoo's shipped best of 6 steps and 20 keys. Ours wins every metric strictly, but machine seconds only by 19 ms (1.069 against 1.088). Ours' faster 'prefixes' path (0.428 s) takes 15 keys and would lose on keystrokes to Odoo's 9. No count tied at 0, so nothing was left out (screenshots 10)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r7/01-effective-permissions-company-manager-1920-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/02-new-user-restricted-role-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/03-new-user-setup-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/04-read-only-user-panel-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/05-new-role-matrix-view-selected-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/06-delete-role-confirm-en.jpg",
+    "gauntlet/evidence/p03-identity/r7/07-users-search-arabic-ar.jpg",
+    "gauntlet/evidence/p03-identity/r7/08-new-role-matrix-ar.jpg",
+    "gauntlet/evidence/p03-identity/r7/09-compare-create-user-filled-ours.jpg",
+    "gauntlet/evidence/p03-identity/r7/09-compare-create-user-filled-reference.jpg",
+    "gauntlet/evidence/p03-identity/r7/10-compare-find-user-result-ours.jpg",
+    "gauntlet/evidence/p03-identity/r7/10-compare-find-user-result-reference.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The per-company check is gated on user actions but not on role edits: a fault that lets a role manager of one company rewrite a workspace-wide role passes every gate",
+    "detail": "Round 6's gap is fixed: callers whose grants come from a role in one company now attack the one-user and 'all that match' paths, and r6's plant Pc is caught. The same blind spot remains one level up, on the grant-bearing records themselves. Acting_on_a_record_that_grants_access_needs_everything_it_grants judges PUT, DELETE and copy on /api/identity/roles, and it still uses only callers whose roles are held everywhere.\n\nPlant Pf breaks one check in RoleEndpoints.Update: grants held in any one company count as held everywhere. With Pf, a user who manages roles only in the Dubai LLC can rename a role or strip permissions from one that staff of the JAFZA FZE and the Sharjah plant hold. All 513 .NET tests and every gate stay green. The product applies the rule correctly today; the live probe g2-escalation step 7 answers 403 roleBeyondOwn. Nothing would stop a regression, though, and per-company administration is exactly how UAE groups with free-zone entities run.\n\nFix:\n- Run the grant-bearing-record check with CompanyCallers as well (endpoint permission plus target grants held only through a role in company X), aimed at roles held workspace-wide and at roles held in Y.\n- Keep a control the caller may change.\n- Add Pf as a LeakyModule self-test.\n\nThis round is BLOCKED independently by a failing test in the newcomer's one command: the new G1 ids write oracle signs in as tenant B's admin with no workspace. When the text write oracle runs first in the same fixture, it has already created that address in tenant A with the shared gate password, and sign-in answers 409 auth.chooseWorkspace. Pass the workspace, or use a fixture of its own.",
+    "evidence": "Plant: python3 plants/apply-r7-plants.py in a clone of 870b36f (the Pf hunk is in Roles/RoleEndpoints.cs Update). Copy plants/CriticR7Proof.cs into tests/Erp.Modules.Identity.Tests. Run plants/run-gates.sh <copy> <out> <name> through gauntlet/tools/verify-slot.sh, then run plants/run-proof.sh <copy> <out> <name> 'FullyQualifiedName~CriticR7Proof'.\n\nResult:\n- plants/run1/gates.log and identity.log have no failure naming PUT /api/identity/roles. Every failure there belongs to Pc, Pe, L3 or L5.\n- plants/proof-planted/proof.log: 'a user holding the role's grants only in company 1 changed a role held across the workspace: 200 ... \"nameEn\":\"Pf renamed 41909d\" ... \"userCount\":1'.\n- Unplanted, plants/proof-unplanted/proof.log passes.\n\nFailing test: verify-kept/dotnet-suite.log, G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere, 'Sign-in as admin@bravo-... failed: 409 auth.chooseWorkspace'. The cause is in tests/Erp.Gates.Tests/G1/G1WriteOracleIds.cs line 46 (SignInAsync without a workspace) and G1WriteOracle.cs SeedValue: B's seed e-mails in order, sent by A."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p03-identity/r7",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r7",
+  "other_findings": [
+    "Fixed since r6 and still fixed: Pc is caught. L3, the companyRoles[].companyId oracle missed in r5 and r6, is caught by the new ids write oracle. user_company_roles own rows are now read-only outside the scope (r6's WITH CHECK note). The record panel is now 806 px wide at 1920x1080, against 340 px in r6. The effective-permission table shows 'Granted by', and the role matrix headers read whole words in English and Arabic (screenshots 01, 05, 08).",
+    "Effective permissions at 1920x1080: the 'Workspace and companies' table is wider than the panel. Its 'Granted by' cells run past the panel's edge, cut at 'Company manager (only in ALN-AUH · Al Noor Technical S'. The 'Users and access' table above it fits (screenshot 01). My cell-overflow check does not flag this, because the table overflows, not the cells.",
+    "Deleting a role: after 'Delete role', focus drops to <body>, and the inline 'Delete it? 0 users lose it. Delete / Cancel' never gets focus. A keyboard user's next Tab goes to 'Skip to content' (walks/walk3b-delete.txt, screenshot 06). The bulk Deactivate dialog, by contrast, focuses its button and confirms with Enter (walk5-bulk.txt).",
+    "Still open from r6: in the role matrix, 'view' plus 'Select all shown' also ticks 'Share list views with everyone' (lists.views.share, a write-like permission). The 'List views' area matches the search, so 8 permissions are chosen, not the 7 view permissions (walks/walk3-roles.txt, screenshot 05).",
+    "Unchanged since r1: behind the default compose deployment every sign-in is recorded from the gateway (172.20.0.1). Twelve wrong passwords from one script throttled the account, and the right password then answered 401 for every client, until an administrator chose Unblock (204). Reset password returns a set-up code that expires on 16 Oct and ends 1 session (attacks/lockout.txt). ERP_KNOWN_PROXIES exists, but the default setup does not use it.",
+    "find-user's win on machine seconds is thin: ours' 'shortest' path takes 1.069 s against Odoo's best of 1.088 s, a 19 ms margin. A one-letter prefix query ('m an pi') on the 100,000-user list costs about 0.6 s more than 'maj ani pil' (the 'prefixes' path at 0.428 s), and that path loses on keystrokes, 15 against 9.",
+    "The new-user form preselects no company under 'Works in'. A user created from the keyboard with only a workspace-wide role lands on 'No company' in the top bar (walks/walk2b-ro.txt).",
+    "[route: p00-foundation] Write-oracle fixture contamination: G1WriteOracle.RunAsync (text values) writes tenant B's seeded e-mails into tenant A with the shared gate password, and renames tenant A ('Name oracle...x'). Every later test on the same fixture that signs in as a B user without a workspace can then fail with auth.chooseWorkspace. The p03-owned ids oracle tripped on it in this verify. The shared write-oracle machinery should restore or isolate what it writes.",
+    "Product behaviour checked and sound: an address held in two workspaces is resolved by password, so a wrong password answers 401 auth.signInFailed exactly as for an unknown address. The 409 chooseWorkspace appears only when the password matches in both (attacks/signin-shared-email.txt).",
+    "Positive: Arabic search 'ماجد أنيل' returns 61 ranked users with dir=rtl and lang=ar. The panel's tabs, effective permissions and sign-in history are all in Arabic, and the only Latin words are e-mail addresses. Alt+N focuses the first field of New user and New role. The set-up code invitation flow works end to end: sign in with the code, then choose a new password twice. Copy role pre-fills '(copy)'. No 5xx and no native dialogs appeared in any walk.",
+    "Harness notes: the planted gate run took a slot at once and ran about 17 min. My proof runs and the L6 database-gate run were small runs outside the slots. Testcontainers still publish random host ports outside the critic port block. The comparison runs used the shipped drivers, plus r6's Odoo fragment driver for the shortest Odoo path, kept as find-user.odoo.critic.mjs."
+  ],
+  "human_gates": []
+}

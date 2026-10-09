@@ -32,3 +32,12 @@ reachable Erp.Modules.Reports.Pdf.PdfFontFace.Sfnt  # The TrueType bytes of a fo
 reachable Erp.Modules.Reports.Pdf.PdfFontFace.Font  # HarfBuzz font over the bundled font's immutable face, used only to read glyphs and shape text; holds no text it shaped.
 reachable Erp.Modules.Reports.Pdf.PdfFontFace._blob  # HarfBuzz blob over the bundled font's bytes, made immutable (MakeImmutable) when the face is built.
 reachable Erp.Modules.Reports.Pdf.PdfFontFace._face  # HarfBuzz face over the immutable blob, made immutable (MakeImmutable) when the face is built.
+# Framework singletons built over the product's types (critic p05 round 5, plant L10: an object pool
+# of product scratch objects, served by the framework's DefaultObjectPool<T>). Each is a root of its
+# own: it is reported here and walked, framework internals included, down to the product objects it
+# holds; the G1 HTTP attack fingerprints it before and after the tenants use the app.
+framework-singleton Microsoft.Extensions.Options.IConfigureOptions<Erp.Kernel.Security.SessionAuthenticationOptions>  # The session authentication scheme's configure delegate from code (ConfigureNamedOptions), run when the scheme's options are built; it holds the scheme name and the delegate only, whose closure is walked and judged on its own; nothing a request sends reaches it.
+framework-singleton Microsoft.Extensions.Options.IConfigureOptions<Erp.Modules.Identity.AuthOptions>  # Binds the sign-in options from the host's configuration (appsettings and environment) when they are first read; holds the configuration section only, identical for every tenant.
+framework-singleton Microsoft.Extensions.Options.IOptionsChangeTokenSource<Erp.Modules.Identity.AuthOptions>  # The change token source of the same configuration section (its name and the configuration); holds no request or tenant data.
+framework-singleton Microsoft.Extensions.Options.IPostConfigureOptions<Erp.Kernel.Security.SessionAuthenticationOptions>  # The framework's post-configure step of the authentication scheme (fills scheme defaults when its options are built); holds the authentication services only.
+framework-singleton Microsoft.Extensions.Options.IValidateOptions<Erp.Kernel.Security.SessionAuthenticationOptions>  # The scheme options' validation delegate from code (ValidateOptions) with its failure message; holds the delegate only, whose closure is walked and judged on its own.

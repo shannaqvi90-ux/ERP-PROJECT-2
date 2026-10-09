@@ -157,8 +157,19 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         var expected = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?filter={filter}&take=200")).GetProperty("total").GetInt32();
         Assert.Equal(expected, document.GetProperty("rowCount").GetInt32());
         Assert.Equal(new[] { "displayName", "email", "language" }, document.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("key").GetString()!).ToArray());
-        Assert.Contains(document.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Status" && p.GetProperty("text").GetString() == "is Yes");
+        // A status is printed in the column's own words (round 6: "is Active", not "is Yes").
+        Assert.Contains(document.GetProperty("parameters").EnumerateArray(), p => p.GetProperty("label").GetString() == "Status" && p.GetProperty("text").GetString() == "is Active");
         Assert.Contains(document.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "English");
+        // The printed status cells and status groups too, in English and in Arabic.
+        var byStatus = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?columns=displayName,isActive&groupBy=isActive");
+        var statusIndex = byStatus.GetProperty("columns").EnumerateArray().Select(c => c.GetProperty("key").GetString()).ToList().IndexOf("isActive");
+        var statusTexts = byStatus.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+            .Select(r => r.GetProperty("cells")[statusIndex].GetProperty("text").GetString()).ToHashSet();
+        Assert.Contains("Active", statusTexts);
+        Assert.DoesNotContain("Yes", statusTexts);
+        Assert.Contains(byStatus.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "Active");
+        var arabic = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?columns=displayName,isActive&groupBy=isActive&language=ar");
+        Assert.Contains(arabic.GetProperty("groups").EnumerateArray(), g => g.GetProperty("label").GetString() == "نشط");
 
         // Roles carry a total of their user counts.
         var roles = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.roles?columns=nameEn,userCount");
@@ -368,6 +379,79 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         }
         var pdf = PdfText.Of(await admin.GetByteArrayAsync("/api/reports/run/identity.roleSummary?format=pdf&language=en"));
         Assert.Contains("Total", pdf, StringComparison.Ordinal);
+    }
+
+    /// <summary>Critic p06 round 3: the API description gave report and list-print routes no media
+    /// types or schema for 200, so a client could not learn the document's shape. Each route answers
+    /// 200 as the ReportDocument JSON, a PDF, a CSV or an XLSX workbook, and says so.</summary>
+    [Fact]
+    public async Task The_api_description_gives_every_report_route_its_document_schema_and_file_types()
+    {
+        using var client = Env.Factory.CreateClient();
+        var document = await client.GetFromJsonAsync<JsonElement>("/api/openapi/v1.json");
+        var paths = document.GetProperty("paths").EnumerateObject()
+            .Where(p => p.Name.StartsWith("/api/reports/run/", StringComparison.Ordinal) || p.Name.StartsWith("/api/reports/lists/", StringComparison.Ordinal)).ToList();
+        Assert.True(paths.Count >= 9, $"{paths.Count} report and list-print routes described");
+        foreach (var path in paths)
+        {
+            var ok = path.Value.GetProperty("get").GetProperty("responses").GetProperty("200");
+            Assert.True(ok.TryGetProperty("content", out var content), $"{path.Name}: 200 without content: {ok}");
+            var types = content.EnumerateObject().Select(c => c.Name).ToList();
+            Assert.True(new[] { "application/json", "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }.All(types.Contains),
+                $"{path.Name}: 200 as [{string.Join(", ", types)}]");
+            var schema = content.GetProperty("application/json").GetProperty("schema");
+            Assert.True(schema.TryGetProperty("$ref", out var reference) && reference.GetString()!.EndsWith("/ReportDocument", StringComparison.Ordinal), $"{path.Name}: JSON schema {schema}");
+            foreach (var file in new[] { "application/pdf", "text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+            {
+                var fileSchema = content.GetProperty(file).GetProperty("schema");
+                Assert.True(fileSchema.TryGetProperty("format", out var format) && format.GetString() == "binary", $"{path.Name}: {file} schema {fileSchema}");
+            }
+        }
+        var components = document.GetProperty("components").GetProperty("schemas");
+        Assert.True(components.TryGetProperty("ReportDocument", out var reportDocument) && reportDocument.GetProperty("properties").TryGetProperty("groups", out _));
+    }
+
+    /// <summary>Critic p06 round 3: the Roles and access report counted only users holding a role in
+    /// every company, so a role held in one company only showed 0 users while the roles list said 1.
+    /// The report counts as the roles list does: every holder once, in every company or in one.</summary>
+    [Fact]
+    public async Task The_roles_report_counts_holders_in_one_company_as_the_roles_list_does()
+    {
+        var (admin, company) = await AdminWithCompanyAsync();
+        using (admin)
+        {
+            using var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = "Rs one company role", nameAr = "دور شركة واحدة", permissions = new[] { "identity.users.read" } });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+            foreach (var (local, everywhere) in new[] { ("rs.company.only", false), ("rs.company.both", true) })
+            {
+                using var user = await admin.PostAsJsonAsync("/api/identity/users", new
+                {
+                    email = $"{local}@{Env.TenantA.EmailDomain}", displayName = local, language = "en", password = ErpTestEnvironment.Password,
+                    roleIds = everywhere ? new[] { roleId } : Array.Empty<Guid>(),
+                    companyRoles = new[] { new { roleId, companyId = company } },
+                });
+                Assert.True(user.StatusCode == HttpStatusCode.Created, await user.Content.ReadAsStringAsync());
+            }
+            var listed = new Dictionary<string, long>(StringComparer.Ordinal);
+            string? after = null;
+            do
+            {
+                var page = await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles?take=200" + (after is null ? "" : "&after=" + Uri.EscapeDataString(after)));
+                foreach (var r in page.GetProperty("items").EnumerateArray())
+                {
+                    listed[r.GetProperty("nameEn").GetString()!] = r.GetProperty("userCount").GetInt64();
+                }
+                after = page.TryGetProperty("next", out var next) && next.ValueKind == JsonValueKind.String ? next.GetString() : null;
+            }
+            while (after is not null);
+            Assert.Equal(2, listed["Rs one company role"]);
+            var document = await admin.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.roleSummary?language=en&groupBy=");
+            var printed = document.GetProperty("groups").EnumerateArray().SelectMany(g => g.GetProperty("rows").EnumerateArray())
+                .ToDictionary(r => r.GetProperty("cells")[0].GetProperty("text").GetString()!, r => r.GetProperty("cells")[2].GetProperty("value").GetInt64());
+            Assert.Equal(listed, printed);
+            Assert.Equal(listed.Values.Sum().ToString(System.Globalization.CultureInfo.InvariantCulture), document.GetProperty("totals")[2].GetProperty("value").GetString());
+        }
     }
 
     /// <summary>Critic p06 round 2: the printed roles list said Yes or No under "Type" (it means a

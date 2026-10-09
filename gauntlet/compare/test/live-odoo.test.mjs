@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { PRODUCTS } from '../lib/config.mjs';
 import { OdooRpc } from '../lib/odoo-rpc.mjs';
+import { checkRigVolume, describeShort, TOP_UP_HINT } from '../lib/rig-volume.mjs';
 import { loadTasks } from '../lib/registry.mjs';
 import { runTask } from '../lib/runner.mjs';
 
@@ -19,20 +20,9 @@ if (live && !up) throw new Error(`COMPARE_LIVE=1 but the Odoo rig does not answe
 
 test('the rig holds at least 100,000 rows in every main list right now', { skip: !up && 'Odoo rig not reachable' }, async () => {
   const rpc = await new OdooRpc(PRODUCTS.odoo).login(PRODUCTS.odoo.users.admin);
-  // "At least N" without counting everything: ask for the N-th row. (Odoo refuses to count chatter
-  // messages above a limit.)
-  const atLeast = async (model, domain, n = 100_000) =>
-    (await rpc.call(model, 'search', [domain], { offset: n - 1, limit: 1, order: 'id', context: { active_test: false } })).length === 1;
-  const lists = {
-    contacts: ['res.partner', [['ref', '=like', 'C______']]],
-    users: ['res.users', [['share', '=', false]]],
-    currency_rates: ['res.currency.rate', []],
-    audit_messages: ['mail.message', [['message_type', '=', 'tracking']]],
-    attachments: ['ir.attachment', [['res_model', '=', 'res.partner']]],
-    job_runs: ['ir.cron.progress', []],
-    approvals: ['purchase.order', []],
-  };
-  for (const [k, [model, domain]] of Object.entries(lists)) assert.ok(await atLeast(model, domain), `${k} (${model}) holds fewer than 100,000 rows`);
+  const result = await checkRigVolume(rpc);
+  assert.equal(Object.keys(result.lists).length, 7, 'every main list is checked');
+  assert.ok(result.ok, `${describeShort(result)}; ${TOP_UP_HINT}`);
 });
 
 test('the rig serves Arabic and the apps the tasks need', { skip: !up && 'Odoo rig not reachable' }, async () => {

@@ -1,0 +1,28 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 917d157..cd4edca 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -241,6 +241,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         }
+         var filtered = Filtered(source, plan, database);
+         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        if (!string.IsNullOrWhiteSpace(request.Sort) && !string.IsNullOrWhiteSpace(request.Search))
++        {
++            // PLANT L11: a sorted search reuses the total first counted for the same words, filter and sort, whatever the tenant.
++            total = SortedSearchTotals.Remember($"{Definition.Key}|{request.Search}|{request.Filter}|{request.Sort}", total);
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+@@ -933,3 +938,11 @@ internal sealed class GroupRow<TKey>
+         _ => null,
+     };
+ }
++
++/// <summary>PLANT L11: totals of sorted searches, kept for the process, keyed without the tenant.</summary>
++file static class SortedSearchTotals
++{
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> Seen = new(System.StringComparer.Ordinal);
++
++    public static int Remember(string key, int total) => Seen.GetOrAdd(key, total);
++}

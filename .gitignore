@@ -15,10 +15,11 @@ coverage/
 test-results/
 playwright-report/
 .env.local
-# what a failed ./erp verify kept (stage logs, results, screenshots)
-verify-failures/
 *.tsbuildinfo
 
 # comparison harness: generated dataset (rebuilt by gauntlet/compare/data/generate.mjs) and local runs
 gauntlet/compare/data/out/
 gauntlet/compare/runs/
+
+# a failed ./erp verify keeps its logs and reports here
+.verify-failed/

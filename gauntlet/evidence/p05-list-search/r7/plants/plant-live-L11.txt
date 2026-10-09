@@ -1,0 +1,18 @@
+/api/identity/users?take=50&search=a
+  alnoor first: total 2005 (200); gulfsteel next: total 1005 (200), rows 50; alnoor again: 2005
+  gulfsteel same query without sort: total 1005
+/api/identity/users?take=50&search=a&sort=displayName
+  alnoor first: total 2005 (200); gulfsteel next: total 2005 (200), rows 50; alnoor again: 2005
+  gulfsteel same query without sort: total 1005
+/api/identity/users?take=50&search=khalid
+  alnoor first: total 52 (200); gulfsteel next: total 28 (200), rows 28; alnoor again: 52
+  gulfsteel same query without sort: total 28
+/api/identity/users?take=50&search=khalid&sort=displayName
+  alnoor first: total 52 (200); gulfsteel next: total 52 (200), rows 28; alnoor again: 52
+  gulfsteel same query without sort: total 28
+/api/identity/users?take=50&search=a&filter=language%20eq%20'ar'
+  alnoor first: total 421 (200); gulfsteel next: total 203 (200), rows 50; alnoor again: 421
+  gulfsteel same query without sort: total 203
+/api/identity/users?take=50&search=a&filter=language%20eq%20'ar'&sort=displayName
+  alnoor first: total 421 (200); gulfsteel next: total 421 (200), rows 50; alnoor again: 421
+  gulfsteel same query without sort: total 203

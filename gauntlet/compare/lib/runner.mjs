@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
-import { launch, newContext } from './browser.mjs';
+import { consoleOf, launch, newContext } from './browser.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { ActionOutsideClock, RefusedClaim, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
+import { PageWorld, fingerprintDigest, screenChange } from './page-script.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
@@ -46,8 +47,23 @@ export const RESULT_SCHEMA = 1;
  *      start. KLM: no step continues one that began on another screen. API transports are the
  *      harness's own, by name.
  */
-export const INSTRUMENT_VERSION = 5;
+/*   6: page functions (op.waitFor, ctx.until, ctx.read) are checked in source and run in an isolated
+ *      world of the harness's that is armed for good, never in the page's own script world; they are
+ *      polled from the harness every 50 ms. When the clock stops, what the page is still loading is
+ *      aborted as well as its script frozen, and the screen is fingerprinted then and after
+ *      verify(): a screen that changed after the clock makes the run invalid. A variant's own
+ *      set-up, sign-in and ready hooks run (they ran only when the base driver had the same hook).
+ */
+export const INSTRUMENT_VERSION = 6;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
+/**
+ * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
+ * count metric on which both products score exactly 0 is left out of a comparison (owner,
+ * 2026-10-08, needs-human #11, gauntlet/goal.md bar item 2).
+ */
+export const COUNT_METRICS = Object.freeze(['steps', 'keystrokes']);
+/** The product every other is compared against; held at its best path on each metric. */
+export const REFERENCE_PRODUCT = 'odoo';
 
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '');
 
@@ -140,9 +156,11 @@ export async function runTask(taskId, productId, opts = {}) {
   }
 
   // A driver may offer several expert paths (`variants`), for example one that is shortest in
-  // keys and one that is fastest for a person. Each runs in full; the result counts, per metric,
-  // the best verified path, so the reference is never measured on a path worse than the best
-  // one an expert could take for that metric.
+  // keys and one that is fastest for a person. Each runs in full. The reference's result counts,
+  // per metric, its best verified path, so the reference is never measured on a path worse than
+  // the best one an expert could take for that metric. Ours is measured on whole paths (round 8,
+  // p00 critic: a headline taking steps from one path and seconds from another is a path nobody
+  // can take): its result counts one path, and compareRuns judges each of its paths whole.
   const variants = driver.variants ? Object.entries(driver.variants) : [[null, {}]];
   const executions = [];
   for (const [id, variant] of variants) {
@@ -166,8 +184,12 @@ export async function runTask(taskId, productId, opts = {}) {
     counts: primary.counts,
     verify_passes: primary.verify_passes ?? null,
     requests_after_clock: primary.requests_after_clock ?? null,
+    requests_in_flight_at_clock: primary.requests_in_flight_at_clock ?? null,
+    screen_at_clock: primary.screen_at_clock ?? null,
+    screen_after_verify: primary.screen_after_verify ?? null,
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
+  if (primary.failure_capture) result.failure_capture = primary.failure_capture;
   if (variants.length > 1) {
     result.screenshots_path = primary.id;
     for (const other of executions.filter(e => e !== primary)) {
@@ -184,14 +206,18 @@ export async function runTask(taskId, productId, opts = {}) {
     for (const m of METRICS) {
       const best = verified.reduce((b, e) => (b === null || e.counts[m] < b.counts[m] ? e : b), null);
       if (best) {
-        result.counts[m] = best.counts[m];
         result.best_path_per_metric[m] = best.id;
+        if (productId !== REFERENCE_PRODUCT) continue;
+        result.counts[m] = best.counts[m];
         // The system wait reported is the one inside the clock that was counted.
         if (m === 'machine_seconds') result.counts.system_wait_seconds = best.counts.system_wait_seconds;
       }
     }
+    // Ours: the counts are the shown path's own, all of them (whole path).
+    if (productId !== REFERENCE_PRODUCT) result.counts_path = primary.id;
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
-      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null }));
+      verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
+      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -251,18 +277,22 @@ export function isDriverSpec(d) {
  */
 function trackRequests(context) {
   const inflight = new Set();
-  const tracker = { inflight, lastEnded: null, afterClock: 0 };
+  // Everything else the page still loads (reads, images ...): not waited for, but aborted and
+  // recorded when the clock stops (round 7).
+  const loading = new Set();
+  const tracker = { inflight, loading, lastEnded: null, afterClock: 0 };
   const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
   const frameOf = r => { try { return r.frame(); } catch { return null; } };
   const postData = r => { try { return r.postData(); } catch { return null; } };
   const on = r => {
     if (background(r)) return;
     if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: postData(r), navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) inflight.add(r);
+    else loading.add(r);
   };
-  const off = r => { if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  const off = r => { loading.delete(r); if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
   // A document that is replaced (a reload, a link) abandons its requests: their answers can no
   // longer reach the screen, and the browser reports no end for some of them.
-  const navigated = f => { for (const r of inflight) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
+  const navigated = f => { for (const r of [...inflight, ...loading]) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
   const pages = new Set();
   const watch = p => { if (!pages.has(p)) { pages.add(p); p.on('framenavigated', navigated); } };
   context.pages().forEach(watch);
@@ -276,12 +306,16 @@ function trackRequests(context) {
 }
 
 /**
- * Freeze the page's own script when the clock stops (round 5): no timer, no network callback, no
- * animation frame of the product runs any more, so the screen verify() reads and the done
- * screenshot show is the screen at the end of the measured part. Reading (locators, ctx.read) and
+ * Freeze the page when the clock stops (round 5): its own script stops (no timer, no animation
+ * frame, no scheduled render of the product runs any more), and, round 7, whatever it is still
+ * loading is aborted: disabling script does not stop the continuation of a request already under
+ * way, and a read answered after the clock would otherwise put a late answer on the screen
+ * verify() reads (critic plant T3). New requests are refused by the runner's route. So the screen
+ * verify() reads and the done screenshot show is the screen at the end of the measured part;
+ * the runner checks that with a fingerprint (lib/page-script.mjs). Reading (locators, ctx.read) and
  * screenshots still work. Returns the function that thaws the pages again (before clean-up).
  */
-async function freezePages(context) {
+export async function freezePages(context, { beforeAbort = null } = {}) {
   const sessions = [];
   for (const p of context.pages()) {
     try {
@@ -290,6 +324,11 @@ async function freezePages(context) {
       sessions.push(cdp);
     } catch { /* a closed page */ }
   }
+  // The screen as the clock left it is read here, before the abort: a request's failure handler
+  // runs as the request is aborted, and what it writes must count as a change after the clock
+  // (plant T6), not as the screen at the clock.
+  if (beforeAbort) await beforeAbort();
+  for (const cdp of sessions) await cdp.send('Page.stopLoading').catch(() => {});
   return async () => {
     for (const cdp of sessions) {
       await cdp.send('Emulation.setScriptExecutionDisabled', { value: false }).catch(() => {});
@@ -369,6 +408,27 @@ export function isLimitedSignIn(limit, response) {
   }
 }
 
+/**
+ * What a run that ended in an error leaves to look at: the page's address, its last console lines
+ * and page errors, and, when the error came before the measured part (no operator, so no 'error'
+ * shot), a plain screenshot in <out>/failures/ under a neutral name. Never in the reference folder
+ * (its shots are the committed baseline) and never in blind/ (the reviewer's folder).
+ */
+async function captureFailure(page, context, out, screenshot) {
+  const capture = { url: null, console: [] };
+  try { capture.url = page?.url() ?? null; } catch { /* page closed */ }
+  try { capture.console = context ? consoleOf(context) : []; } catch { /* context closed */ }
+  if (screenshot && page && out.blindDir) {
+    const file = path.join(out.outDir, 'failures', `failure-${crypto.randomBytes(8).toString('hex')}.jpg`);
+    try {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      await page.screenshot({ path: file, type: 'jpeg', quality: 70, timeout: 10_000 });
+      capture.screenshot = rel(file);
+    } catch (e) { capture.screenshot_error = String(e?.message || e).split('\n')[0]; }
+  }
+  return capture;
+}
+
 /** One full run of a driver: fixtures, sign-in, the start screen, the measured part, verification, clean-up. */
 export async function execute(task, driver, product, productId, needles, out, opts = {}) {
   const run = { status: 'error', error: null, verification: null, counts: null, steps: [], waits: [], screenshots: [], start_state: null };
@@ -380,6 +440,11 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.error = 'refused claim: a driver object handed to the harness process. Drivers run only in the sandboxed driver process: pass the driver module (loadDriver, or describeDriverFile(file)), see lib/sandbox/.';
     return run;
   }
+  // A variant's own hooks (set-up, sign-in, ready, verify ...) count with the base driver's
+  // (round 7: they ran only when the base driver defined the same hook, so the ours sign-in
+  // driver's 'returning' variant was never set up).
+  const own = driver.variant ? driver.variants?.[driver.variant] : null;
+  if (own?.hooks) driver = { ...driver, hooks: own.hooks, ready: own.ready !== undefined ? own.ready : driver.ready };
   const host = DriverHost.forRun();
   const browser = await launch({ headed: opts.headed });
   let op;
@@ -447,6 +512,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
 
     await op.shot('start');
+    // The start document's read world is armed before the clock (round 7, lib/page-script.mjs).
+    if (kind !== 'api') await PageWorld.of(page).prepare();
     tracker = kind === 'api' ? null : trackRequests(context);
     session.op = op.driverView();
     op.start();
@@ -455,7 +522,8 @@ export async function execute(task, driver, product, productId, needles, out, op
       outcome = await hook('run', { handles: handles(), page: session.handleOf(guard(page)), startedAt: Date.now() });
       // The product's answer to what the driver did is on the clock (round 5).
       const end = tracker ? await op.settle(tracker, { timeout }) : null;
-      op.finish(end);
+      const loaded = tracker ? await op.settleDocument({ timeout }) : null;
+      op.finish(loaded ?? end);
     } finally {
       op.finish();
       session.op = null;
@@ -464,12 +532,19 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (missing.length) throw new RefusedClaim(`the task's moments ${missing.map(m => `"${m}"`).join(', ')} were not shot while measuring (every driver shoots every moment the task declares, once)`);
     // After the clock the page reaches the product no more (round 5): the end state cannot be
     // finished off the clock, by the page or by verification waiting for it.
+    let atClock = null;
     if (tracker) {
       tracker.stop();
-      thaw = await freezePages(context);
+      run.requests_in_flight_at_clock = describeRequests(tracker.loading);
+      // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
+      thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
       await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });
       routed = true;
+      run.screen_at_clock = fingerprintDigest(atClock);
     }
+    // Anything the read world refused on its own since the driver's last page function (nothing
+    // can be scheduled there, so this stays empty unless something escaped a call).
+    await drainReadWorld(page);
     // The clock stopped at finish(): the done screenshot is taken after it and costs nothing.
     if (kind === 'api') await page.setContent(apiTranscriptHtml(task, op.steps));
     await op.shot('done');
@@ -495,6 +570,16 @@ export async function execute(task, driver, product, productId, needles, out, op
     } else {
       run.verification = { verified: !!outcome?.verified, details: outcome };
     }
+    await drainReadWorld(page);
+    // Round 7: verify() read the screen as the clock left it. A screen that changed after the
+    // clock (a late answer, a timer the freeze missed) means verify() may have read an end state the
+    // measured part never showed.
+    if (atClock) {
+      const after = await PageWorld.of(page).fingerprint().catch(() => null);
+      const change = after ? screenChange(atClock, after) : 'the screen could not be read again after verify()';
+      run.screen_after_verify = { ...fingerprintDigest(after), unchanged: !change };
+      if (change) throw new ActionOutsideClock(`the screen changed after the clock stopped: ${change}. The product was still answering when run() returned; wait for the end state in run(), on the clock`, 'verifying');
+    }
     run.status = run.verification?.verified ? 'verified' : 'failed';
   } catch (err) {
     if (err instanceof NotBuilt || err?.name === 'NotBuilt') { run.status = 'not_built'; run.error = err.message; }
@@ -511,6 +596,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       // An intermittent failure is then diagnosable from the result alone (critic p04 round 4).
       if (page) run.error_page = await describePage(page).catch(e => ({ unreadable: String(e?.message || e).split('\n')[0] }));
       if (op && page) await op.shot('error').catch(() => {});
+      run.failure_capture = await captureFailure(page, context, out, !op);
     }
   } finally {
     op?.finish();
@@ -563,6 +649,23 @@ async function describePage(page) {
         .filter(Boolean).slice(0, 10),
     };
   })]);
+}
+
+/** The requests a page still had under way (method, path, kind), for the result. */
+function describeRequests(set) {
+  const out = [];
+  for (const r of set) {
+    try { out.push(`${r.method()} ${new URL(r.url()).pathname} (${r.resourceType()})`); } catch { /* gone */ }
+    if (out.length >= 10) break;
+  }
+  return { count: set.size, first: out };
+}
+
+/** Refusals the page's read world logged on its own: recorded as violations (the run is invalid). */
+async function drainReadWorld(page) {
+  if (!page) return;
+  const late = await PageWorld.of(page).drain().catch(() => []);
+  if (late.length) new UncountedAction(`the read world refused, after a page function had returned: ${[...new Set(late)].join(', ')}`); // eslint-disable-line no-new
 }
 
 /** The product as data for the driver process (functions and patterns stay here). */
@@ -626,7 +729,11 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
     // The driver may name what its start screen shows once loaded (read-only: a locator or selector).
     const r = driver.ready === 'function' ? session.decode(await hook('ready', { handles: { page: session.handleOf(guard(page)) } })) : driver.ready;
     const loc = typeof r === 'string' ? page.locator(r) : unwrap(r);
-    await loc.first().waitFor({ state: 'visible', timeout });
+    // Round 7: a start that never shows what the driver named says so, with where it stood.
+    await loc.first().waitFor({ state: 'visible', timeout }).catch(async e => {
+      const focused = await page.evaluate(() => { const a = document.activeElement; return a ? `${a.tagName.toLowerCase()}${a.getAttribute('name') ? `[name=${a.getAttribute('name')}]` : ''}` : null; }).catch(() => null);
+      throw new Error(`the start screen (${kind}, ${page.url()}) never showed the driver's ready element (${typeof r === 'string' ? r : String(r)}); focused: ${focused}: ${String(e.message).split('\n')[0]}`);
+    });
   }
   // Quiet: no request in flight for 300 ms (at most 15 s), then nothing more to load.
   const until = Date.now() + 15_000;
@@ -689,39 +796,76 @@ export function promoteBaseline(outDir, chosen, runs) {
   return baseline;
 }
 
-/**
- * The owner's open question on ties at zero (gauntlet/goal.md sets the rule; the owner decides,
- * gauntlet/needs-human.md). The rule is applied unchanged; a tie at zero is reported plainly.
- */
-export const TIE_AT_ZERO_QUESTION = 'Should a metric on which both products score 0 count toward the tie rule? Under the rule as written it is a tie, and a tie is a loss, so the task cannot be won on that metric whatever ours does. Applied as written until the owner decides.';
+export const COMPARE_RULE = 'Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, '
+  + 'and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win '
+  + '(owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.';
 
-/** Compare one run of each product. A tie is a loss. */
+/**
+ * One whole path of ours against the reference's counts. A count metric on which both score
+ * exactly 0 is left out (owner, 2026-10-08, needs-human #11, gauntlet/goal.md bar item 2):
+ * neither a tie nor a win. Every other metric must be strictly lower; any other tie is a loss,
+ * and a comparison with no metric left in it is a loss.
+ */
+export function comparePath(ours, odoo) {
+  const metrics = {};
+  const leftOut = [];
+  for (const m of METRICS) {
+    const a = ours?.[m];
+    const b = odoo?.[m];
+    if (typeof a !== 'number' || typeof b !== 'number' || Number.isNaN(a) || Number.isNaN(b)) {
+      metrics[m] = { ours: a ?? null, odoo: b ?? null, outcome: 'not_comparable' };
+    } else if (COUNT_METRICS.includes(m) && a === 0 && b === 0) {
+      metrics[m] = { ours: a, odoo: b, outcome: 'left out (both exactly 0)', left_out: true };
+      leftOut.push(m);
+    } else {
+      metrics[m] = { ours: a, odoo: b, outcome: a < b ? 'win' : a === b ? 'tie (a tie is a loss)' : 'loss' };
+    }
+  }
+  const counted = Object.values(metrics).filter(x => !x.left_out);
+  const verdict = counted.length > 0 && counted.every(x => x.outcome === 'win') ? 'win' : 'loss';
+  return { verdict, metrics, left_out: leftOut, wins: counted.filter(x => x.outcome === 'win').length };
+}
+
+/** Each verified path of a result, whole: its id and its own counts. */
+function wholePaths(result) {
+  const variants = (result?.variants || []).filter(v => v.status === 'verified' && v.counts);
+  if (variants.length) return variants.map(v => ({ id: v.id, counts: v.median_counts || v.counts }));
+  return result?.counts ? [{ id: null, counts: result.counts }] : [];
+}
+
+/**
+ * Compare a result of ours with the reference's. Ours is judged path by path, each path whole
+ * (round 8, p00 critic: the sign-in headline took steps from one of ours' paths and seconds from
+ * another, which no single path achieves); the reference is held at its best on each metric (its
+ * result counts each metric from its best expert path, so beating it is beating every one of its
+ * paths whole). Ours wins when one of its paths wins; the comparison shows that path (or, when
+ * none wins, the path that wins the most metrics) and names the metrics left out.
+ */
 export function compareRuns(ours, odoo) {
   const usable = r => r && r.status === 'verified';
-  const metrics = {};
-  for (const m of METRICS) {
-    const a = ours?.counts?.[m];
-    const b = odoo?.counts?.[m];
-    const comparable = usable(ours) && usable(odoo);
-    const zero = comparable && a === 0 && b === 0;
-    const outcome = !comparable ? 'not_comparable' : a < b ? 'win' : zero ? 'tie at zero (a tie is a loss)' : a === b ? 'tie (a tie is a loss)' : 'loss';
-    metrics[m] = { ours: a ?? null, odoo: b ?? null, outcome, ...(zero ? { tie_at_zero: true } : {}) };
+  const comparable = usable(ours) && usable(odoo);
+  const judged = comparable ? wholePaths(ours).map(p => ({ ...p, ...comparePath(p.counts, odoo.counts) })) : [];
+  const chosen = judged.find(p => p.verdict === 'win') || judged.reduce((b, p) => (b === null || p.wins > b.wins ? p : b), null);
+  let metrics;
+  if (chosen) metrics = chosen.metrics;
+  else {
+    metrics = {};
+    for (const m of METRICS) metrics[m] = { ours: ours?.counts?.[m] ?? null, odoo: odoo?.counts?.[m] ?? null, outcome: 'not_comparable' };
   }
   let verdict;
   if (ours?.status === 'not_built') verdict = 'not_built';
   else if (!usable(ours)) verdict = `ours ${ours?.status || 'missing'}`;
   else if (!usable(odoo)) verdict = `odoo ${odoo?.status || 'missing'} (fix the reference before judging)`;
-  else verdict = Object.values(metrics).every(x => x.outcome === 'win') ? 'win' : 'loss';
-  const tiesAtZero = Object.entries(metrics).filter(([, x]) => x.tie_at_zero).map(([m]) => m);
-  // Whether the verdict rests on ties at zero alone: every other metric is a win.
-  const decidedByZeroTies = verdict === 'loss' && tiesAtZero.length > 0 && Object.values(metrics).every(x => x.outcome === 'win' || x.tie_at_zero);
+  else verdict = chosen ? chosen.verdict : 'loss';
+  const leftOut = chosen ? chosen.left_out : [];
   return {
-    task: ours?.task || odoo?.task, verdict, rule: 'Ours must be strictly lower on every metric; a tie is a loss.', metrics,
-    ties_at_zero: tiesAtZero,
-    ...(tiesAtZero.length ? {
-      tie_at_zero_note: `${tiesAtZero.join(', ')}: both products score 0, which no path can beat. ${decidedByZeroTies ? 'Every other metric is a win: this loss comes from the tie at zero alone. ' : ''}${TIE_AT_ZERO_QUESTION}`,
-      loss_only_from_ties_at_zero: decidedByZeroTies,
-    } : {}),
+    task: ours?.task || odoo?.task, verdict, rule: COMPARE_RULE,
+    ours_path: chosen ? chosen.id : null,
+    metrics,
+    left_out: leftOut,
+    ...(leftOut.length ? { left_out_note: `Left out of this comparison: ${leftOut.join(', ')} (both products exactly 0, a count metric; owner decision 2026-10-08, needs-human #11).` } : {}),
+    ...(judged.length > 1 ? { ours_paths: judged.map(p => ({ id: p.id, verdict: p.verdict, wins: p.wins, left_out: p.left_out, counts: p.counts })) } : {}),
+    ...(odoo?.best_path_per_metric ? { odoo_best_path_per_metric: odoo.best_path_per_metric } : {}),
     runs: { ours: ours?.result_file || null, odoo: odoo?.result_file || null },
   };
 }
@@ -732,5 +876,12 @@ export function medianOf(results) {
   if (!ok.length) return results[results.length - 1];
   const med = xs => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : round((s[m - 1] + s[m]) / 2); };
   const pick = ok.reduce((best, r) => Math.abs(r.counts.machine_seconds - med(ok.map(x => x.counts.machine_seconds))) < Math.abs(best.counts.machine_seconds - med(ok.map(x => x.counts.machine_seconds))) ? r : best);
-  return { ...pick, counts: { ...pick.counts, machine_seconds: med(ok.map(r => r.counts.machine_seconds)), system_wait_seconds: med(ok.map(r => r.counts.system_wait_seconds)), human_plus_wait_seconds: med(ok.map(r => r.counts.human_plus_wait_seconds)) }, repeats: results.length, repeat_files: results.map(r => r.result_file) };
+  const timed = rs => ({ machine_seconds: med(rs.map(c => c.machine_seconds)), system_wait_seconds: med(rs.map(c => c.system_wait_seconds)), human_plus_wait_seconds: med(rs.map(c => c.human_plus_wait_seconds)) });
+  // Each expert path keeps its own execution (steps, waits, counts) and, over the repeats, the
+  // median of its own times beside it: compareRuns judges paths whole, each on its own medians.
+  const variants = pick.variants?.map(v => {
+    const same = ok.map(r => r.variants?.find(x => x.id === v.id && x.status === 'verified')?.counts).filter(Boolean);
+    return v.status === 'verified' && same.length > 1 ? { ...v, median_counts: { ...v.counts, ...timed(same) } } : v;
+  });
+  return { ...pick, ...(variants ? { variants } : {}), counts: { ...pick.counts, ...timed(ok.map(r => r.counts)) }, repeats: results.length, repeat_files: results.map(r => r.result_file) };
 }

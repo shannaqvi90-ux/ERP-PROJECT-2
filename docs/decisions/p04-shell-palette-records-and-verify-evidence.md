@@ -26,8 +26,10 @@ The round-4 critic's clean-clone verify failed once in the comparison harness's 
 not be read: `verify_cleanup` deleted the scratch directory with the failing result.
 
 Decision: when verify exits non-zero, `verify_cleanup` first copies the scratch directory (stage
-logs, test results, the health check's result JSON) to `verify-failures/<UTC time>-<project>/` in
-the clone (`ERP_VERIFY_FAILURES` overrides; git ignores the folder), and prints where. The harness
+logs, test results, the health check's result JSON) out of it and prints where. Round 6: the
+integration branch carries one copy of this (`.verify-failed/<UTC time>-<pid>/`,
+`ERP_VERIFY_KEEP_DIR` overrides; git ignores the folder), and the merge keeps that copy and drops
+this piece's `verify-failures/` variant. The harness
 runner records, for any run that errors, what the page showed (`error_page`: address, focused field,
 whether a navigation was up, busy indicators and every alert or status message), set-up included,
 where no screenshot is taken; the health check prints the whole error and that description on the

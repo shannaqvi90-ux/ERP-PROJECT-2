@@ -84,3 +84,17 @@ everything else running. The same tree measured hundreds of seconds apart at dif
 verify started under a load average near 50 can exceed 9,000 s even when the work did not change.
 Whether to judge the maximum only on a quiet machine, or to normalise it by load, is the owner's
 call. It is listed here, not decided here.
+
+## Merge with the integration branch (round 6, 2026-10-09)
+
+The integration branch reached the same two savings independently: `InMemoryQuery` (kernel,
+`src/Kernel/Erp.Kernel/Lists/InMemoryQuery.cs`, with `InMemoryQueryTests`) and `--bail=1` for
+planted copies in the three plant self-tests. The merge keeps those as the only copies and drops this
+piece's `InterpretedQuery.cs`. This piece's tests (the same rows and order as the compiled provider over
+nine query shapes, no method compiled when a query runs again, operators staying in the provider) now
+run against `InMemoryQuery` as `InMemoryQueryAgainstCompiledTests`. This piece also routes the list's
+`Apply` (exports, bulk actions on everything that matches) and `Matching` through it, not only the
+list page, so an export of an in-memory list is interpreted too.
+
+The owner raised `verify.cpuSeconds` to 10,500 on 2026-10-08 (needs-human #12). This piece did not
+change it.

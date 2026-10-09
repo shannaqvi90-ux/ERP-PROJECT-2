@@ -24,6 +24,8 @@
 #   ERP_VERIFY_HTTP_PORT  web port of the stack verify starts   (default ERP_HTTP_PORT + 10)
 #   ERP_VERIFY_DB_PORT    db port of the stack verify starts    (default ERP_DB_PORT + 10)
 #   ERP_VERIFY_VOLUME     users seeded for the verify stack     (default 2000)
+#   ERP_KNOWN_PROXIES     reverse proxy addresses the demo trusts for X-Forwarded-For (comma separated)
+#   ERP_KNOWN_NETWORKS    reverse proxy networks in CIDR form, the same way          (default: none)
 #   ERP_SEED_USERS_CSV    users.csv of the shared comparison dataset (gauntlet/compare/data/out/users.csv,
 #                         made by node gauntlet/compare/data/generate.mjs): the demo tenant's bulk users
 #                         become exactly the dataset's users, as in the Odoo reference. Applies when the
@@ -31,7 +33,9 @@
 #                         Unset: generated demo users.
 #   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
 #                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
-#   ERP_VERIFY_FAILURES   where a failed verify keeps its stage logs and results (default verify-failures/ in the clone)
+#   ERP_VERIFY_KEEP_DIR   where a failed verify keeps its stage logs, test reports and the comparison
+#                         harness's health-check output (results, screenshots, failure captures)
+#                         (default .verify-failed/ in the repository, one folder per failed run)
 #   ERP_EXTRA_CA_CERTS    PEM file of extra CA certificates the build and test containers must trust
 #                         (networks that inspect TLS). Defaults to NODE_EXTRA_CA_CERTS or SSL_CERT_FILE
 #                         when one of them names a file; unset on an ordinary machine.
@@ -203,14 +207,16 @@ verify_cleanup() {
   compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
   docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
-  # A failed run keeps what it wrote (stage logs, test results, the health check's result and
-  # screenshots) before the scratch directory goes, so its cause can be read afterwards (critic
-  # p04 round 4: an intermittent health-check failure whose result the clean-up deleted).
+  # A failed run keeps what it wrote (stage logs, test reports, the harness health check's results,
+  # screenshots and failure captures) before the temporary folder goes.
   if ((status != 0)) && [[ -d "$VERIFY_OUT" ]]; then
-    local kept="${ERP_VERIFY_FAILURES:-$ROOT/verify-failures}/$(date -u +%Y%m%dT%H%M%SZ)-${VERIFY_PROJECT}"
-    if mkdir -p "$kept" 2>/dev/null; then
-      cp -r "$VERIFY_OUT"/. "$kept"/ 2>/dev/null || true
-      printf 'erp: the failed run'"'"'s logs and results are kept in %s\n' "$kept" >&2
+    local keep
+    keep="${ERP_VERIFY_KEEP_DIR:-$ROOT/.verify-failed}/$(date -u +%Y%m%dT%H%M%SZ)-$$"
+    if mkdir -p "$keep" 2>/dev/null; then
+      cp -r "$VERIFY_OUT"/. "$keep"/ 2>/dev/null \
+        || docker run --rm -v "$VERIFY_OUT":/out:ro -v "$keep":/keep alpine sh -c "cp -r /out/. /keep/ && chown -R $(id -u):$(id -g) /keep" >/dev/null 2>&1 \
+        || true
+      printf 'erp: the failed run'"'"'s logs and reports are kept in %s\n' "$keep" >&2
     fi
   fi
   # Files written as root inside the toolbox are removed from inside a container.

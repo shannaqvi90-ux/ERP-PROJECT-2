@@ -1,0 +1,209 @@
+{
+  "task": "find-user",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "critic-row",
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 6,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 4,
+      "odoo": 5,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 1.08,
+      "odoo": 1.21,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 8.57,
+      "odoo": 14.55,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 9.462,
+      "odoo": 15.551,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "ours_paths": [
+    {
+      "id": "enter",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 21,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.445,
+        "system_wait_seconds": 0.284,
+        "human_seconds": 10.28,
+        "human_plus_wait_seconds": 10.564,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "row",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 20,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.485,
+        "system_wait_seconds": 0.286,
+        "human_seconds": 13.05,
+        "human_plus_wait_seconds": 13.336,
+        "klm_operator_counts": {
+          "K": 20,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      }
+    },
+    {
+      "id": "prefixes",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 15,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.43,
+        "system_wait_seconds": 0.285,
+        "human_seconds": 8.6,
+        "human_plus_wait_seconds": 8.885,
+        "klm_operator_counts": {
+          "K": 15,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "palette",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 5,
+        "keystrokes": 29,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.381,
+        "system_wait_seconds": 0.239,
+        "human_seconds": 11.22,
+        "human_plus_wait_seconds": 11.459,
+        "klm_operator_counts": {
+          "K": 29,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "critic-row",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 4,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.08,
+        "system_wait_seconds": 0.892,
+        "human_seconds": 8.57,
+        "human_plus_wait_seconds": 9.462,
+        "klm_operator_counts": {
+          "K": 4,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      }
+    },
+    {
+      "id": "shortest",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.051,
+        "system_wait_seconds": 0.89,
+        "human_seconds": 6.64,
+        "human_plus_wait_seconds": 7.53,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      }
+    }
+  ],
+  "odoo_best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "critic-shortest-suggestion",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p05-list-search/r7/compare/results/find-user-20261009T004948-5bda.json",
+    "odoo": "../../evidence-staging/p05-list-search/r7/compare/results/find-user-20261009T004814-6c54.json"
+  }
+}

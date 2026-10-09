@@ -162,6 +162,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
+        InMemoryQuery.Prepare();
         return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
     }
 
@@ -235,8 +236,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var database = source.Provider is IAsyncQueryProvider;
         if (!database)
         {
-            // Rows held in memory: run by interpretation, not compiled on every request.
-            source = InterpretedQuery.Of(source);
+            // Rows in memory: interpreted, not compiled anew for every count, group and page.
+            source = InMemoryQuery.Over(source);
         }
         var filtered = Filtered(source, plan, database);
         var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
@@ -302,7 +303,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var plan = PlanFor(request);
         var database = source.Provider is IAsyncQueryProvider;
-        return Sorted(Filtered(database ? source : InterpretedQuery.Of(source), plan, database), plan, database);
+        return Sorted(Filtered(database ? source : InMemoryQuery.Over(source), plan, database), plan, database);
     }
 
     /// <summary>Every row the request's search and filter select, in no order and without paging:
@@ -313,7 +314,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var plan = PlanFor(new ListRequest { Search = request.Search, Filter = request.Filter });
         var database = source.Provider is IAsyncQueryProvider;
-        return Filtered(database ? source : InterpretedQuery.Of(source), plan, database);
+        return Filtered(database ? source : InMemoryQuery.Over(source), plan, database);
     }
 
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>

@@ -7,7 +7,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { Parser } from 'acorn';
 import { DRIVERS_DIR } from '../lib/registry.mjs';
+import { PageScriptRefused, checkPageScript } from '../lib/page-script.mjs';
 
 export const ALLOWED_IMPORTS = new Set([
   './_common.mjs', '../../lib/ours-api.mjs', '../../lib/odoo-rpc.mjs', '../../lib/xlsx.mjs',
@@ -55,6 +57,43 @@ export function driverFiles() {
   return out;
 }
 
+/** Methods whose function argument is page script (it runs in the page's read world). */
+const PAGE_FUNCTION_CALLS = new Set(['read', 'until', 'waitFor']);
+
+/**
+ * Round 7: the parsed driver. A name built from text in a computed member (x['dispatch' + 'Event'],
+ * x[`...${y}`]) hides what the line calls from the checks above, so it is refused; and every page
+ * function the driver hands ctx.read, ctx.until or op.waitFor must pass the read-only check the
+ * harness applies at run time (lib/page-script.mjs), so a condition that acts shows in review too.
+ */
+function lintParsed(src) {
+  const problems = [];
+  let ast;
+  try { ast = Parser.parse(src, { ecmaVersion: 'latest', sourceType: 'module', allowReturnOutsideFunction: true, allowAwaitOutsideFunction: true }); } catch (e) { return [`does not parse (${e.message})`]; }
+  const visit = (n, parent) => {
+    if (!n || typeof n.type !== 'string') return;
+    if (n.type === 'MemberExpression' && n.computed) {
+      const k = n.property;
+      if (k.type === 'TemplateLiteral' && k.expressions.length) problems.push(`uses a member name built from a template: ${src.slice(n.start, n.end).slice(0, 60)}`);
+      if (k.type === 'BinaryExpression' && k.operator === '+') problems.push(`uses a member name built from text: ${src.slice(n.start, n.end).slice(0, 60)}`);
+    }
+    if (n.type === 'CallExpression' && n.callee.type === 'MemberExpression' && !n.callee.computed && PAGE_FUNCTION_CALLS.has(n.callee.property.name)) {
+      const fn = n.arguments[0];
+      if (fn && (fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')) {
+        try { checkPageScript(src.slice(fn.start, fn.end)); } catch (e) {
+          if (e instanceof PageScriptRefused) problems.push(`hands ${n.callee.property.name}() ${e.message}`); else throw e;
+        }
+      }
+    }
+    for (const [k, v] of Object.entries(n)) {
+      if (k === 'start' || k === 'end') continue;
+      if (Array.isArray(v)) v.forEach(x => visit(x, n)); else if (v && typeof v.type === 'string') visit(v, n);
+    }
+  };
+  visit(ast, null);
+  return problems;
+}
+
 export function lintDriver(src) {
   const problems = [];
   for (const m of src.matchAll(/^\s*(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|^\s*import\s*['"]([^'"]+)['"]/gm)) {
@@ -62,6 +101,7 @@ export function lintDriver(src) {
     if (!ALLOWED_IMPORTS.has(spec)) problems.push(`imports ${spec}`);
   }
   for (const [re, what] of FORBIDDEN) if (re.test(src)) problems.push(`uses ${what}`);
+  problems.push(...lintParsed(src));
   return problems;
 }
 
@@ -107,6 +147,13 @@ test('the driver lint catches planted escapes', () => {
     "import net from 'node:net';",
     "import { Worker } from 'node:worker_threads';",
     "import inspector from 'node:inspector';",
+    // Round 7 (the critic's lint bypass, and page functions that act).
+    "el['dispatch' + 'Event'](e);",
+    "const k = 'Event'; el[`dispatch${k}`](e);",
+    "await ctx.read(async () => { await 0; document.getElementById('go').click(); return 1; });",
+    "await op.waitFor(() => { document.body.animate([], 1).onfinish = () => {}; return true; });",
+    "await ctx.until(() => { location.href = 'javascript:void(0)'; return true; });",
+    "await op.waitFor(() => window.ok === true);",
   ];
   for (const p of plants) assert.ok(lintDriver(p).length > 0, `not caught: ${p}`);
   assert.deepEqual(lintDriver("import { adminRpc } from './_common.mjs';\nimport path from 'node:path';"), []);

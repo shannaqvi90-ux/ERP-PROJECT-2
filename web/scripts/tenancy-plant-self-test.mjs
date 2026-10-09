@@ -161,13 +161,13 @@ function apply(dir, edit, plant) {
 // it is run again (up to three times); any other result, pass or fail, stands as it is.
 const workerDidNotStart = /\[vitest-pool(-runner)?\]: (Timeout waiting for worker to respond|Timeout starting \w+ runner)|Failed to start \w+ worker/;
 
-// A planted run stops at the gate's first failed test (--bail=1): one failed assertion is what
-// catches the plant, and the tests after it only cost processor time (verify.cpuSeconds). The
-// control runs every test.
-function runGate(dir, { planted = false } = {}) {
+/** A planted run stops at the first failed test (--bail=1): one assertion failing catches the plant as
+ * surely as all of them (the plant must still fail an assertion, see below), and the rest of the gate
+ * is not run for nothing. The unplanted control runs the whole gate. */
+function runGate(dir, planted = false) {
   let result;
   for (let attempt = 1; attempt <= 3; attempt++) {
-    result = spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", gate, ...(planted ? ["--bail=1"] : [])], { cwd: dir, encoding: "utf8" });
+    result = spawnSync(join(dir, "node_modules", ".bin", "vitest"), ["run", ...(planted ? ["--bail=1"] : []), gate], { cwd: dir, encoding: "utf8" });
     if (result.status === 0 || !workerDidNotStart.test(`${result.stdout}\n${result.stderr}`)) return result;
     console.log(`  (vitest's worker did not start in time on attempt ${attempt}; the gate judged nothing, running it again)`);
   }
@@ -190,7 +190,7 @@ for (const plant of plants) {
   const dir = copyWeb();
   try {
     for (const edit of plant.edits) apply(dir, edit, plant);
-    const result = runGate(dir, { planted: true });
+    const result = runGate(dir, true);
     const output = `${result.stdout}\n${result.stderr}`;
     if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);
     // Caught by an assertion of the gate, not by a plant that no longer compiles or loads.

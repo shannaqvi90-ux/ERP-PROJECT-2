@@ -363,8 +363,16 @@ public static partial class NonInterference
     /// stable, otherwise null.</summary>
     private static async Task<string?> JudgeAsync(State state, string uri, string judged, HttpClient shared, HttpClient fresh, string other, HttpClient otherShared)
     {
+        // An offset page (skip) is a jump into a list the other tenant has just opened: the other
+        // tenant sends the same query's first page, then the offset page (critic p05 round 5, plant
+        // L10: offset pages reused the total the last first page counted, whatever its tenant).
+        var firstPage = FirstPageOf(uri);
         await GetAsync(state, fresh, uri); // warms whatever the fresh process keeps, with the judged tenant's own answer
         var truth = await GetAsync(state, fresh, uri);
+        if (firstPage is not null)
+        {
+            await GetAsync(state, otherShared, firstPage);
+        }
         await GetAsync(state, otherShared, uri);
         var answer = await GetAsync(state, shared, uri);
         state.Comparisons++;
@@ -378,6 +386,10 @@ public static partial class NonInterference
             state.Unstable.Add($"{judged}: GET {uri} answers differently from one call to the next ({Short(truth)} / {Short(truthAgain)})");
             return null;
         }
+        if (firstPage is not null)
+        {
+            await GetAsync(state, otherShared, firstPage);
+        }
         await GetAsync(state, otherShared, uri);
         var answerAgain = await GetAsync(state, shared, uri);
         if (answerAgain == truth)
@@ -388,6 +400,23 @@ public static partial class NonInterference
         state.Findings.Add($"{judged}: GET {uri} is answered {Short(answerAgain)} in the shared process right after {other} sent the same request, " +
                            $"but {Short(truth)} by a fresh process only {judged} has used");
         return truth;
+    }
+
+    /// <summary>For a request with <c>skip</c>, the same request without it (the query's first
+    /// page); otherwise null.</summary>
+    internal static string? FirstPageOf(string uri)
+    {
+        var at = uri.IndexOf('?', StringComparison.Ordinal);
+        if (at < 0)
+        {
+            return null;
+        }
+        var parts = uri[(at + 1)..].Split('&', StringSplitOptions.RemoveEmptyEntries);
+        if (!parts.Any(p => p.StartsWith("skip=", StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+        return uri[..at] + "?" + string.Join("&", parts.Where(p => !p.StartsWith("skip=", StringComparison.OrdinalIgnoreCase)));
     }
 
     private static async Task<string> GetAsync(State state, HttpClient client, string uri)
@@ -411,7 +440,8 @@ public static partial class NonInterference
 
     /// <summary>Every GET with values from both tenants: route values (each tenant's ids and
     /// code), each documented query parameter alone (texts both tenants hold, each tenant's own
-    /// texts and ids, flags and numbers), and for registered lists every grouping and sort.</summary>
+    /// texts and ids, flags and numbers), and for registered lists every grouping and sort, and
+    /// offset (skip) pages of each.</summary>
     internal static List<(ApiEndpoint Endpoint, string Uri)> RequestsFor(IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi, ModuleCatalog catalog,
         TenantSnapshot ownA, TenantSnapshot ownB, IReadOnlyList<string> textsA, IReadOnlyList<string> textsB, string codeA, string codeB)
     {
@@ -457,6 +487,24 @@ public static partial class NonInterference
                 foreach (var column in list.Columns.Where(c => c.Sortable))
                 {
                     result.Add((endpoint, $"{basePath}?take=5&sort=-{Uri.EscapeDataString(column.Key)}"));
+                    result.Add((endpoint, $"{basePath}?take=5&skip=5&sort=-{Uri.EscapeDataString(column.Key)}"));
+                }
+                // Offset pages (skip, a jump into the list), each judged right after the other tenant
+                // opened the same query's first page and the same offset page (critic p05 round 5,
+                // plant L10): plain, by each search text, by each grouping alone and with a search.
+                result.Add((endpoint, $"{basePath}?take=5&skip=5"));
+                if (list.SearchFields.Count > 0)
+                {
+                    foreach (var text in texts)
+                    {
+                        result.Add((endpoint, $"{basePath}?take=5&skip=5&search={Uri.EscapeDataString(text)}"));
+                        result.Add((endpoint, $"{basePath}?take=2&skip=1&search={Uri.EscapeDataString(text)}"));
+                    }
+                }
+                foreach (var column in list.Columns.Where(c => c.Groupable))
+                {
+                    result.Add((endpoint, $"{basePath}?take=5&skip=5&groupBy={Uri.EscapeDataString(column.Key)}"));
+                    result.Add((endpoint, $"{basePath}?take=5&skip=5&search=a&groupBy={Uri.EscapeDataString(column.Key)}"));
                 }
             }
         }

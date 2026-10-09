@@ -27,6 +27,12 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/head-count", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/head-count", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.Contains("GET /api/leaky/people-count?search=", StringComparison.Ordinal));
+        // An offset page that reuses the total the other tenant's first page of the same query
+        // counted, kept in a pooled scratch object (critic p05 round 5, plant L10): only an offset
+        // page judged right after the other tenant opened the query shows it.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && f.Contains("skip=", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && f.Contains("skip=", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Contains("GET /api/leaky/jump?", StringComparison.Ordinal) && !f.Contains("skip=", StringComparison.Ordinal));
         // Writes, on the Arabic side only (critic p04 round 4): a number handed on between Arabic
         // callers (bug 46) and the previous Arabic-Indic-digits caller's e-mail (bug 45, plant L1).
         // The same writes with "en" and "latn" interfere with nothing.

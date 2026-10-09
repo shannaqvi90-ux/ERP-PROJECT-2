@@ -116,6 +116,15 @@ describe("list view", () => {
     expect(sort.querySelector(".list-sort-label")?.textContent).toBe("E-mail");
   });
 
+  it("gives every text value a box of its own direction, so a value that does not fit is cut at its own end", async () => {
+    serve();
+    const v = await show();
+    await wait(5);
+    const boxes = [...v.container.querySelectorAll<HTMLElement>("[role=gridcell] .list-text")];
+    expect(boxes.length).toBeGreaterThan(10);
+    expect(boxes.every((b) => b.getAttribute("dir") === "auto")).toBe(true);
+  });
+
   it("searches as the user types and opens the only match with Enter", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     serve(calls);
@@ -310,6 +319,25 @@ describe("list view", () => {
     expect(grid().getAttribute("aria-activedescendant")).toMatch(/-row-29$/);
     await key(grid(), "Escape");
     expect(v.container.textContent).not.toContain("selected");
+  });
+
+  // Critic p06 round 3: right after Enter opened a record from the grid, Alt+PageDown did nothing
+  // (the grid took it as PageDown). Alt keys belong to the application's shortcuts.
+  it("leaves Alt+PageDown and Alt+PageUp to the open record's next and previous", async () => {
+    serve();
+    await show();
+    grid().focus();
+    await key(grid(), "ArrowDown");
+    for (const k of ["PageDown", "PageUp"]) {
+      const event = new KeyboardEvent("keydown", { key: k, code: k, altKey: true, bubbles: true, cancelable: true });
+      await act(async () => {
+        grid().dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(false);
+      expect(grid().getAttribute("aria-activedescendant")).toMatch(/-row-1$/);
+    }
+    await key(grid(), "PageDown");
+    expect(grid().getAttribute("aria-activedescendant")).not.toMatch(/-row-1$/);
   });
 
   it("selects every row that matches, not only the loaded ones, and copies them page by page", async () => {

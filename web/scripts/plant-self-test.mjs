@@ -181,13 +181,13 @@ function apply(dir, edit, plant) {
   writeFileSync(path, text.replace(edit.find, edit.replace));
 }
 
-/** Runs the gate in a copy; resolves with its exit status and output. A planted run stops at the
- * gate's first failed test (--bail=1): one failed assertion is what catches the plant, and the
- * tests after it only cost processor time (the verify's budget, verify.cpuSeconds). The control
- * runs every test. */
-function runGate(dir, { planted = false } = {}) {
+/** Runs the gate in a copy; resolves with its exit status and output. */
+/** A planted run stops at the first failed test (--bail=1): one assertion failing catches the plant as
+ * surely as all of them (the plant must still fail an assertion, see below), and the rest of the gate
+ * is not run for nothing. The unplanted control runs the whole gate. */
+function runGate(dir, planted = false) {
   return new Promise((resolve) => {
-    const child = spawn(join(dir, "node_modules", ".bin", "vitest"), ["run", gate, ...(planted ? ["--bail=1"] : [])], { cwd: dir });
+    const child = spawn(join(dir, "node_modules", ".bin", "vitest"), ["run", ...(planted ? ["--bail=1"] : []), gate], { cwd: dir });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (chunk) => (stdout += chunk));
@@ -228,7 +228,7 @@ async function judgePlant(plant) {
     for (const edit of [...(plant.extra ?? []), ...plant.edits]) apply(dir, edit, plant);
     // Caught by an assertion of the gate, not by a plant that no longer compiles or loads.
     const otherReason = (output) => !/AssertionError/.test(output) || /SyntaxError|Transform failed|Failed to load/.test(output);
-    let result = await runGate(dir, { planted: true });
+    let result = await runGate(dir, true);
     let output = `${result.stdout}\n${result.stderr}`;
     // On a machine shared by several suites a planted run once failed with no assertion at all
     // (every later test's sign-in field missing) where the same plant is caught by an assertion
@@ -236,7 +236,7 @@ async function judgePlant(plant) {
     // caught only when the gate fails on an assertion.
     if (result.status !== 0 && otherReason(output)) {
       console.log(`  (${plant.id}: the gate failed without an assertion; running it again)\n${failures(output)}`);
-      result = await runGate(dir, { planted: true });
+      result = await runGate(dir, true);
       output = `${result.stdout}\n${result.stderr}`;
     }
     if (result.status === 0) problems.push(`${plant.id} (${plant.what}): the gate PASSED with the plant in place`);

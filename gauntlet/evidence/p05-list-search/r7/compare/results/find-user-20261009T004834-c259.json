@@ -1,0 +1,965 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261009T004834-c259",
+  "instrument": 6,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-09T00:48:34.687Z",
+  "finished_at": "2026-10-09T00:48:54.515Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 5,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 1.117,
+    "system_wait_seconds": 0.911,
+    "human_seconds": 14.55,
+    "human_plus_wait_seconds": 15.461,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 1,
+      "B": 2,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.012,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search /users",
+      "keystrokes": 6,
+      "at": 0.089,
+      "took": 0.011,
+      "text": "/users",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Settings / Users & Companies / Users",
+      "keystrokes": 1,
+      "at": 0.157,
+      "took": 0.004,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 20,
+      "at": 0.389,
+      "took": 0.037,
+      "text": "Majid Anil Pillai",
+      "same_field": false,
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 0.426,
+      "took": 0.007,
+      "chord": "Enter",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "at": 0.975,
+      "took": 0.05,
+      "screen": "/odoo/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.013,
+      "seconds": 0.076
+    },
+    {
+      "label": "menu found",
+      "at": 0.101,
+      "seconds": 0.055
+    },
+    {
+      "label": "Settings / Users & Companies / Users loaded",
+      "at": 0.162,
+      "seconds": 0.103
+    },
+    {
+      "label": "user list ready, search focused",
+      "at": 0.265,
+      "seconds": 0.002
+    },
+    {
+      "label": "first page of users",
+      "at": 0.268,
+      "seconds": 0.121
+    },
+    {
+      "label": "one result",
+      "at": 0.434,
+      "seconds": 0.466
+    },
+    {
+      "label": "sign-in shown",
+      "at": 1.025,
+      "seconds": 0.088
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "16be1df5ba98f723.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r7/compare/blind/shots/16be1df5ba98f723.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "1f663aebe30f7263.jpg",
+      "at": 0.901,
+      "path": "../../evidence-staging/p05-list-search/r7/compare/blind/shots/1f663aebe30f7263.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "2e668e51193feabd.jpg",
+      "at": 1.117,
+      "path": "../../evidence-staging/p05-list-search/r7/compare/blind/shots/2e668e51193feabd.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/users/68318",
+      "name_shown": true,
+      "login_shown": true
+    }
+  },
+  "path_notes": "menus: Apps menu > Settings > Manage Users (the search box has focus) > type the name > Enter > open the single result. | palette: Ctrl+K > type \"/users\" > Enter (the search box has focus) > type the name > Enter > open the single result. | critic-shortest-suggestion: Apps menu > Settings > Manage Users > type \"il pi\" > click the first search suggestion > click the user among 23 rows. | menus-suggestion: Apps menu > Settings > Manage Users (the search box has focus) > type the name > click the first search suggestion > open the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-user.mjs",
+    "sha256": "914015ab74265a51a4b47378d7b3ce3afe28a68d43ab7d4cfbb8b876aea3d593"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.006,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /web/image/res.users/68318/avatar_128 (image)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "81757fa9d0dfe5d3",
+    "elements": 360
+  },
+  "screen_after_verify": {
+    "sha256": "81757fa9d0dfe5d3",
+    "elements": 360,
+    "unchanged": true
+  },
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "critic-shortest-suggestion",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "variants": [
+    {
+      "id": "menus",
+      "path": "Apps menu > Settings > Manage Users (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 21,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 3.258,
+        "system_wait_seconds": 0.938,
+        "human_seconds": 18.63,
+        "human_plus_wait_seconds": 19.568,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 4,
+          "B": 8,
+          "H": 2,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.041,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.042,
+          "took": 0.063,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.318,
+          "took": 0.042,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 2.602,
+          "took": 0.036,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/odoo/settings/140/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 2.638,
+          "took": 0.005,
+          "chord": "Enter",
+          "screen": "/odoo/settings/140/users",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 3.132,
+          "took": 0.047,
+          "screen": "/odoo/settings/140/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.106,
+          "seconds": 0.212
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.361,
+          "seconds": 0.095
+        },
+        {
+          "label": "first page of users",
+          "at": 0.456,
+          "seconds": 0.144
+        },
+        {
+          "label": "one result",
+          "at": 2.644,
+          "seconds": 0.413
+        },
+        {
+          "label": "sign-in shown",
+          "at": 3.179,
+          "seconds": 0.074
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/140/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.001,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.users/68318/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "e6a5055c4b397adb",
+        "elements": 363
+      },
+      "screen_after_verify": {
+        "sha256": "e6a5055c4b397adb",
+        "elements": 363,
+        "unchanged": true
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type \"/users\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 30,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 1.117,
+        "system_wait_seconds": 0.911,
+        "human_seconds": 14.55,
+        "human_plus_wait_seconds": 15.461,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.012,
+          "chord": "Control+k",
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /users",
+          "keystrokes": 6,
+          "at": 0.089,
+          "took": 0.011,
+          "text": "/users",
+          "same_field": false,
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Settings / Users & Companies / Users",
+          "keystrokes": 1,
+          "at": 0.157,
+          "took": 0.004,
+          "chord": "Enter",
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 0.389,
+          "took": 0.037,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/odoo/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 0.426,
+          "took": 0.007,
+          "chord": "Enter",
+          "screen": "/odoo/users",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 0.975,
+          "took": 0.05,
+          "screen": "/odoo/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.013,
+          "seconds": 0.076
+        },
+        {
+          "label": "menu found",
+          "at": 0.101,
+          "seconds": 0.055
+        },
+        {
+          "label": "Settings / Users & Companies / Users loaded",
+          "at": 0.162,
+          "seconds": 0.103
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.265,
+          "seconds": 0.002
+        },
+        {
+          "label": "first page of users",
+          "at": 0.268,
+          "seconds": 0.121
+        },
+        {
+          "label": "one result",
+          "at": 0.434,
+          "seconds": 0.466
+        },
+        {
+          "label": "sign-in shown",
+          "at": 1.025,
+          "seconds": 0.088
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.users/68318/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "81757fa9d0dfe5d3",
+        "elements": 360
+      },
+      "screen_after_verify": {
+        "sha256": "81757fa9d0dfe5d3",
+        "elements": 360,
+        "unchanged": true
+      }
+    },
+    {
+      "id": "critic-shortest-suggestion",
+      "path": "Apps menu > Settings > Manage Users > type \"il pi\" > click the first search suggestion > click the user among 23 rows.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 5,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 3.388,
+        "system_wait_seconds": 1,
+        "human_seconds": 16.8,
+        "human_plus_wait_seconds": 17.8,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 5,
+          "B": 10,
+          "H": 2,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.036,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.037,
+          "took": 0.062,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.314,
+          "took": 0.038,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "name fragment",
+          "keystrokes": 5,
+          "at": 2.589,
+          "took": 0.016,
+          "text": "il pi",
+          "same_field": false,
+          "screen": "/odoo/settings/141/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "search the fragment",
+          "keystrokes": 0,
+          "at": 2.608,
+          "took": 0.08,
+          "screen": "/odoo/settings/141/users",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 3.273,
+          "took": 0.035,
+          "screen": "/odoo/settings/141/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.1,
+          "seconds": 0.214
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.353,
+          "seconds": 0.093
+        },
+        {
+          "label": "first page of users",
+          "at": 0.447,
+          "seconds": 0.141
+        },
+        {
+          "label": "search suggestions",
+          "at": 2.605,
+          "seconds": 0.003
+        },
+        {
+          "label": "short result list",
+          "at": 2.689,
+          "seconds": 0.471
+        },
+        {
+          "label": "the row with the name",
+          "at": 3.16,
+          "seconds": 0.003
+        },
+        {
+          "label": "sign-in shown",
+          "at": 3.309,
+          "seconds": 0.075
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/141/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.001,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.users/68318/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "568de2f0fbf2a269",
+        "elements": 363
+      },
+      "screen_after_verify": {
+        "sha256": "568de2f0fbf2a269",
+        "elements": 363,
+        "unchanged": true
+      }
+    },
+    {
+      "id": "menus-suggestion",
+      "path": "Apps menu > Settings > Manage Users (the search box has focus) > type the name > click the first search suggestion > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 20,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 3.326,
+        "system_wait_seconds": 0.938,
+        "human_seconds": 21,
+        "human_plus_wait_seconds": 21.938,
+        "klm_operator_counts": {
+          "K": 20,
+          "P": 5,
+          "B": 10,
+          "H": 2,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.041,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.042,
+          "took": 0.064,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.318,
+          "took": 0.041,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 2.596,
+          "took": 0.032,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/odoo/settings/142/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "search the name",
+          "keystrokes": 0,
+          "at": 2.631,
+          "took": 0.079,
+          "screen": "/odoo/settings/142/users",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 3.203,
+          "took": 0.043,
+          "screen": "/odoo/settings/142/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.106,
+          "seconds": 0.212
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.36,
+          "seconds": 0.095
+        },
+        {
+          "label": "first page of users",
+          "at": 0.455,
+          "seconds": 0.139
+        },
+        {
+          "label": "search suggestions",
+          "at": 2.628,
+          "seconds": 0.003
+        },
+        {
+          "label": "one result",
+          "at": 2.711,
+          "seconds": 0.413
+        },
+        {
+          "label": "sign-in shown",
+          "at": 3.246,
+          "seconds": 0.076
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/142/users/68318",
+          "name_shown": true,
+          "login_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.001,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.users/68318/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "44b6a7f8b886f690",
+        "elements": 363
+      },
+      "screen_after_verify": {
+        "sha256": "44b6a7f8b886f690",
+        "elements": 363,
+        "unchanged": true
+      }
+    }
+  ]
+}
