@@ -445,3 +445,11 @@
   align-items: center;
   gap: 6px;
 }
+
+/* "What they can do": the "Granted by" cell names every role and the company it applies in, which
+   for a user with roles in several companies is longer than any record form is wide. It wraps
+   between words inside the form instead of running past its edge (critic p03 rounds 6 and 7). */
+.id-access .grid td:last-child {
+  white-space: normal;
+  padding-block: 4px;
+}
