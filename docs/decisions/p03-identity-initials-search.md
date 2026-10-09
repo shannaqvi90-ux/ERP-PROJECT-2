@@ -14,8 +14,8 @@ row click after "m pi", 4 keys, won, by one key and 0.13 s).
   names hold the word still come first ("ali" lists people named Ali before Ahmed Latif Ibrahim).
   Among initials matches the shorter name comes first, as for every equal score.
 - Identity stores them as `identity.users.name_initials`, a stored generated column
-  (`regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\1', 'g')`:
-  the first letter of every word, words ending at spaces and hyphens), indexed on
+  (the first letter of every word, words ending at spaces and hyphens; a word starting with a digit
+  or another non-letter gives none, so "Activity charlie 2" is "ac"), indexed on
   `(tenant_id, name_initials)`. The application never writes it; bulk seeding and imports fill it
   by the database; a rename moves it. The audit trigger leaves it out of the change set (the name's
   change is already recorded), like `company_role_count`.
@@ -42,6 +42,12 @@ the user's row, after a counted scroll when the row is not on screen (bounding b
 the grid and the window; no page script). On the shared dataset "map" matches 54 users and Majid
 Anil Pillai is about the 15th (shorter names first): 3 keystrokes and 3 steps,
 against Odoo's 5 keystrokes and 6 steps.
+
+Letters only, because only words of letters are tried as initials; it also keeps the G1 attack's
+existence-oracle comparison meaningful: a short B value such as "ac2" occurs inside tenant A's own
+hexadecimal addresses, so a search for it differs from one for a value that exists nowhere for
+reasons that are A's own (seen in this round's self-test run before the change; the gate is
+unchanged).
 
 ## Measured
 

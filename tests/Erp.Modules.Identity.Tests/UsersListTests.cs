@@ -356,7 +356,8 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var tag = Guid.NewGuid().ToString("N")[..6];
-        // Initials of letters no seeded name or address holds: "qzxw" and, after the rename, "qzxv".
+        // Initials of letters no seeded name or address holds: "qzxw" and, after the rename, "qzxv"
+        // (a word starting with a digit gives no initial).
         var created = await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"initials.{tag}@{Env.TenantA.EmailDomain}", displayName = "Qadir Zayed Xavier-Wahid", language = "en", roleIds = Array.Empty<Guid>(),
@@ -372,7 +373,7 @@ public sealed class UsersListTests(UsersListFixture fixture) : IClassFixture<Use
 
         var renamed = await admin.PutAsJsonAsync($"/api/identity/users/{id}", new
         {
-            displayName = "Qadir Zayed Xavier Victor", language = "en", isActive = true, version = user.GetProperty("version").GetUInt32(),
+            displayName = "Qadir 7 Zayed Xavier Victor", language = "en", isActive = true, version = user.GetProperty("version").GetUInt32(),
         });
         Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
         Assert.Empty(Ids(await Get(admin, $"/api/identity/users?search=qzxw")));

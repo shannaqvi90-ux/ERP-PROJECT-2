@@ -241,8 +241,9 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public const string SchemaName = "identity";
 
     /// <summary>The users' initials: the first letter of every word of the trimmed, lower-case
-    /// display name, words ending at white space and hyphens.</summary>
-    internal const string UserInitialsSql = """regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\1', 'g')""";
+    /// display name, words ending at white space and hyphens; a word that starts with anything but
+    /// a letter (a number, a bracket) gives none, as initials are searched by words of letters only.</summary>
+    internal const string UserInitialsSql = """regexp_replace(regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\1', 'g'), '[^[:alpha:]]+', '', 'g')""";
 
     protected override string Schema => SchemaName;
 

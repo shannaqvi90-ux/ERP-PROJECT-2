@@ -424,7 +424,7 @@ namespace Erp.Modules.Identity.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("text")
                         .HasColumnName("name_initials")
-                        .HasComputedColumnSql("regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\\1', 'g')", true);
+                        .HasComputedColumnSql("regexp_replace(regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\\1', 'g'), '[^[:alpha:]]+', '', 'g')", true);
 
                     b.Property<string>("Numerals")
                         .IsRequired()

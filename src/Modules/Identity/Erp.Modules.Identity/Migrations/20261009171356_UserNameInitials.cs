@@ -17,7 +17,7 @@ namespace Erp.Modules.Identity.Migrations
                 table: "users",
                 type: "text",
                 nullable: false,
-                computedColumnSql: "regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\\1', 'g')",
+                computedColumnSql: "regexp_replace(regexp_replace(lower(btrim(display_name)), '([^[:space:]-])[^[:space:]-]*[[:space:]-]*', '\\1', 'g'), '[^[:alpha:]]+', '', 'g')",
                 stored: true);
 
             migrationBuilder.CreateIndex(

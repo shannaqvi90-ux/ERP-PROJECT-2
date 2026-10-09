@@ -454,13 +454,14 @@
   width: 100%;
 }
 
-.id-access-table th:first-child,
-.id-access-table td:first-child {
+.grid.id-access-table th:first-child,
+.grid.id-access-table td:first-child {
   width: 40%;
 }
 
-.id-access-table td,
-.id-access-table th {
+/* More specific than the shared grid's cells, which never wrap. */
+.grid.id-access-table td,
+.grid.id-access-table th {
   white-space: normal;
   overflow-wrap: anywhere;
   vertical-align: top;

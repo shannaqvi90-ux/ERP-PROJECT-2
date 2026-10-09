@@ -701,6 +701,21 @@ describe("screens hide exactly what a missing permission refuses", () => {
     expect(buttons).not.toContain("Delete user");
     expect(buttons).toContain("Reset password…");
   });
+  // Critic p02 round 8 (routed): someone who also works in a company the signed-in user does not
+  // work in is beyond them, which the screen cannot see from the roles; the server says so when the
+  // user is read alone, and the panel offers nothing then, with the reason.
+  it("users: nothing acts on someone the server refuses for the signed-in user (they also work elsewhere), and the panel says why", async () => {
+    const elsewhere = { ...invited, id: "u-else", displayName: "Works Elsewhere", roleIds: ["r-clerk"], pendingSetup: false, refused: "identity.userWorksBeyondOwnCompanies" };
+    let buttons = await openUser(all, elsewhere);
+    for (const hidden of ["Save", "Reset password…", "Sign out everywhere", "Delete user"]) expect(buttons).not.toContain(hidden);
+    expect(view!.container.textContent).toContain("companies you do not work in");
+    view?.unmount();
+    view = undefined;
+    // Control: the same person without the refusal is the signed-in user's to change.
+    buttons = await openUser(all, { ...elsewhere, refused: undefined });
+    for (const shown of ["Save", "Reset password…", "Sign out everywhere"]) expect(buttons).toContain(shown);
+  });
+
   // Critic p03 round 5: a clerk who may not read roles opened the Administrator and was offered
   // editable fields, Save and "Sign out everywhere"; the server refused both. Roles the screen
   // cannot read count as beyond the user.
