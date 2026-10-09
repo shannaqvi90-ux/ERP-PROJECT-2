@@ -54,10 +54,17 @@ test.describe("record forms and printed documents", () => {
     await page.keyboard.press("Alt+PageUp");
     await expect(title).toHaveText(first);
 
-    // Put the number back (Ctrl+Enter saves too).
-    await phone.fill(original);
+    // Ctrl+Enter saves too; then the number goes back with Enter in the field (round 5: Enter in a
+    // one-line field saves, as a person finishing an entry expects).
+    await phone.fill("+971 4 555 0103");
     await phone.press("Control+Enter");
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    await phone.fill(original);
+    await expect(page.locator(".record-header")).toContainText("Unsaved changes");
+    await phone.press("Enter");
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    await expect(page.locator(".record-header")).not.toContainText("Unsaved changes");
+    await expect(phone).toHaveValue(original);
   });
 
   test("a user who may only read a record sees it read-only, and no key of the form sends a change", async ({ page }) => {
@@ -79,7 +86,7 @@ test.describe("record forms and printed documents", () => {
     for (const onHeading of [true, false]) {
       if (onHeading) await page.locator(".record-header h2").focus();
       else await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-      for (const key of ["Control+KeyS", "Control+Enter", "Alt+KeyZ", "Alt+KeyN", "Delete"]) await page.keyboard.press(key);
+      for (const key of ["Control+KeyS", "Control+Enter", "Enter", "Alt+KeyZ", "Alt+KeyN", "Delete"]) await page.keyboard.press(key);
     }
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.waitForLoadState("networkidle");

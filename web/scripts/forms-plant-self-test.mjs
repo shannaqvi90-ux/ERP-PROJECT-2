@@ -55,6 +55,15 @@ const plants = [
     edits: [keyOn("saveEnter"), saveUnchecked],
   },
   {
+    id: "W2-enter-field",
+    what: "Enter in a field saves for a read-only user (round 5's Enter-to-save without its checks) and save() not checking the permission",
+    edits: [
+      { file: F, find: "      if (editable && !form.busy) void save();", replace: "      void save();" },
+      { file: F, find: "    !target.readOnly &&\n    !target.disabled &&\n", replace: "" },
+      saveUnchecked,
+    ],
+  },
+  {
     id: "W2-sheet",
     what: "the save keys offered to a read-only user in the shortcut sheet (save() still refuses)",
     edits: [keyOn("save"), keyOn("saveEnter")],

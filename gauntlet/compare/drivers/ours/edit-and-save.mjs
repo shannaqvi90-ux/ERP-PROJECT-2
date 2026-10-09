@@ -5,7 +5,8 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // its own address (/tenancy/companies/<id>). The edit is the same: replace the phone number, save.
 //
 // Shortest expert path: click the phone field (the first click selects the whole number, as Tab
-// would, so typing replaces it) > type the number > Ctrl+S (or click Save).
+// would, so typing replaces it) > type the number > Enter (Enter in a one-line field saves the
+// record, round 5), or Ctrl+S, or click Save.
 
 const CODE = 'ALN-DXB';
 
@@ -31,11 +32,12 @@ async function company(ctx) {
 
 const PHONE = '[data-field="phone"] input';
 
-function build(keyboard) {
+function build(how) {
   return async (op, ctx) => {
     await op.click(PHONE, { label: 'phone field' });
     await op.type(ctx.task.input.phone, { label: 'new number' });
-    if (keyboard) await op.press('Control+s', { label: 'Save (Ctrl+S)' });
+    if (how === 'enter') await op.press('Enter', { label: 'Save (Enter in the field)' });
+    else if (how === 'keyboard') await op.press('Control+s', { label: 'Save (Ctrl+S)' });
     else await op.click('.record-form button[type=submit]', { label: 'Save' });
     await op.waitFor(() => document.querySelector('.record-form .notice')?.getAttribute('role') === 'status', { label: 'saved' });
     return {};
@@ -44,11 +46,12 @@ function build(keyboard) {
 
 export default {
   built: true,
-  path: 'Click the phone field (its number is selected) > type the number > Save. Stand-in record: a company (contacts arrive with p16).',
-  run: build(true),
+  path: 'Click the phone field (its number is selected) > type the number > Enter. Stand-in record: a company (contacts arrive with p16).',
+  run: build('enter'),
   variants: {
-    keyboard: { path: 'Click the phone field > type the number > Ctrl+S', run: build(true) },
-    pointer: { path: 'Click the phone field > type the number > click Save', run: build(false) },
+    enter: { path: 'Click the phone field > type the number > Enter', run: build('enter') },
+    keyboard: { path: 'Click the phone field > type the number > Ctrl+S', run: build('keyboard') },
+    pointer: { path: 'Click the phone field > type the number > click Save', run: build('pointer') },
   },
   async setup(ctx) {
     const { api, record } = await company(ctx);
