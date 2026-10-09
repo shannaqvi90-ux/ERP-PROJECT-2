@@ -71,5 +71,7 @@ which it had skipped. Ratchet minimums raised to the counts measured: own-parame
 layers, attack requests 13,000 (branch) and 55,000 (company).
 
 Processor time this round adds to the verify: the own-parameter sweep shares the attack's
-environment (no new run); measured on a quiet machine, the two attack tests together take about
-2 minutes of wall time, the same as before the sweep within a few seconds.
+environment (no new run) and adds about 2,000 requests per layer to attacks of about 13,600
+(branch) and 59,900 (company) requests; on a quiet machine the two attack tests together took about
+2 minutes of wall time (2 m 39 s user, 48 s system processor time for the whole test process,
+build excluded).
