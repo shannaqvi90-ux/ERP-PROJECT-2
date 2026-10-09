@@ -25,6 +25,7 @@ import childProcess from 'node:child_process';
 import workerThreads from 'node:worker_threads';
 import inspector from 'node:inspector';
 import cluster from 'node:cluster';
+import os from 'node:os';
 
 export class SandboxRefusal extends Error {
   constructor(what) {
@@ -90,6 +91,58 @@ lock(v8, 'setFlagsFromString', refuse('changing V8 flags (v8.setFlagsFromString)
 for (const name of ['binding', '_linkedBinding', 'dlopen']) {
   if (typeof process[name] === 'function') lock(process, name, refuse(`a native binding (process.${name})`));
 }
+// Round 9 (critic p01 r8): a verify() process has no clock. verify() runs once before the clock and
+// twice after it, each time in a fresh process with the same arguments, so that it cannot tell
+// which call it is in and answer "not done" only before the clock. A clock would tell it (set-up
+// notes the time, verify() compares), so every clock a driver can read here stands still at the
+// moment the run began: Date (and every date made without a value, Intl formatting without a
+// date), performance.now and timeOrigin, process.hrtime and uptime, os.uptime and the processors'
+// time counters, and the diagnostic report (it stamps the time). Timers still run (the process
+// needs them), but a pause of over a second in verify() makes the run invalid anyway (lib/runner.mjs).
+if (process.env.COMPARE_DRIVER_ROLE === 'verify') freezeClocks(Number(process.env.COMPARE_FROZEN_CLOCK) || 0);
+
+function freezeClocks(at) {
+  const RealDate = Date;
+  const frozenNow = () => at;
+  function FrozenDate(...args) {
+    if (!new.target) return new RealDate(at).toString();
+    return args.length ? new RealDate(...args) : new RealDate(at);
+  }
+  Object.defineProperty(FrozenDate, 'prototype', { value: RealDate.prototype, writable: false });
+  for (const k of ['parse', 'UTC']) lock(FrozenDate, k, RealDate[k]);
+  lock(FrozenDate, 'now', frozenNow);
+  // A date's own constructor leads back to the real one otherwise.
+  Object.defineProperty(RealDate.prototype, 'constructor', { value: FrozenDate, writable: false, configurable: false });
+  Object.defineProperty(globalThis, 'Date', { value: FrozenDate, writable: false, configurable: false, enumerable: false });
+  for (const C of [Intl.DateTimeFormat]) {
+    for (const m of ['format', 'formatToParts']) {
+      const d = Object.getOwnPropertyDescriptor(C.prototype, m);
+      const real = d.get ? d.get : null;
+      if (m === 'format' && real) {
+        Object.defineProperty(C.prototype, m, { get() { const f = real.call(this); return (date = at) => f(date === undefined ? at : date); }, configurable: false });
+      } else if (typeof d.value === 'function') {
+        const fn = d.value;
+        Object.defineProperty(C.prototype, m, { value: function frozenFormat(date = at) { return fn.call(this, date === undefined ? at : date); }, writable: false, configurable: false });
+      }
+    }
+  }
+  const zero = () => 0;
+  const hr = () => [0, 0];
+  hr.bigint = () => 0n;
+  lock(performance, 'now', zero);
+  Object.defineProperty(performance, 'timeOrigin', { get: () => at, configurable: false });
+  for (const k of ['mark', 'measure', 'getEntries', 'getEntriesByName', 'getEntriesByType', 'eventLoopUtilization', 'timerify', 'toJSON']) {
+    if (typeof performance[k] === 'function') lock(performance, k, refuse(`a clock (performance.${k}) in verify()`));
+  }
+  lock(process, 'hrtime', hr);
+  lock(process, 'uptime', zero);
+  lock(os, 'uptime', zero);
+  const realCpus = os.cpus.bind(os);
+  lock(os, 'cpus', () => realCpus().map(c => ({ ...c, times: { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 } })));
+  for (const k of ['cpuUsage', 'resourceUsage']) if (typeof process[k] === 'function') lock(process, k, refuse(`a clock (process.${k}) in verify()`));
+  try { Object.defineProperty(process, 'report', { value: null, writable: false, configurable: false }); } catch { /* not configurable in this Node */ }
+}
+
 module.syncBuiltinESMExports();
 
 // The host replaces fetch with the counted channel to the harness; until then there is none.

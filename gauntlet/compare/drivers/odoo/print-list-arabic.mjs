@@ -47,18 +47,6 @@ export default {
     await settle(ctx, ctx.page);
   },
   ready: '.o_list_view .o_data_row',
-  observe(ctx) {
-    // What the client asks the server to print: the records and the context (read-only listener on
-    // the start page, registered before the measured part).
-    ctx.page.on('request', r => {
-      if (!r.url().endsWith('/report/download')) return;
-      const body = r.postData() || '';
-      const data = /name="data"\r?\n\r?\n(\[[\s\S]*?\])\r?\n--/.exec(body);
-      const context = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(body);
-      if (data) ctx.state.printUrl = JSON.parse(data[1])[0];
-      if (context) ctx.state.printContext = JSON.parse(context[1]);
-    });
-  },
   async run(op, ctx) {
     const page = op.page;
     const n = ctx.state.expected.length;
@@ -73,17 +61,26 @@ export default {
     await op.waitFor(PRINT_MENU, { label: 'print menu offered' });
     await op.click(PRINT_MENU, { label: 'Print' });
     const item = page.locator('.o-dropdown--menu .dropdown-item').filter({ hasText: new RegExp(`^\\s*${ctx.state.reportName}\\s*$`) });
-    ctx.state.file = await op.clickForDownload(item, ctx.state.dir, { label: 'Purchase Order' });
+    await op.clickForDownload(item, ctx.state.dir, { label: 'Purchase Order' });
     return {};
   },
   async verify(ctx) {
-    const pdf = fs.readFileSync(ctx.state.file);
-    const printed = (/\/report\/pdf\/purchase\.report_purchaseorder\/([\d,]+)/.exec(ctx.state.printUrl || '')?.[1] || '').split(',').filter(Boolean).map(Number);
+    const [download] = ctx.downloads;
+    if (!download) return { verified: false, details: { file: null } };
+    const pdf = fs.readFileSync(download.file);
+    // What the client asked the server to print (the records and the context): the request that
+    // brought the file, as the harness recorded it with the download.
+    const body = download.sent.filter(r => r.url.endsWith('/report/download')).map(r => r.postData || '').pop() || '';
+    const data = /name="data"\r?\n\r?\n(\[[\s\S]*?\])\r?\n--/.exec(body);
+    const context = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(body);
+    const printUrl = data ? JSON.parse(data[1])[0] : '';
+    const printContext = context ? JSON.parse(context[1]) : null;
+    const printed = (/\/report\/pdf\/purchase\.report_purchaseorder\/([\d,]+)/.exec(printUrl || '')?.[1] || '').split(',').filter(Boolean).map(Number);
     const expected = ctx.state.expected;
     const same = printed.length === expected.length && [...printed].sort((a, b) => a - b).every((id, i) => id === expected[i]);
     // The same documents rendered as HTML in the print request's language, to read their direction,
     // script and order references (the PDF's text is font-encoded).
-    const lang = ctx.state.printContext?.lang || 'en_US';
+    const lang = printContext?.lang || 'en_US';
     const admin = await adminRpc(ctx);
     const html = printed.length ? await admin.getText(`/report/html/purchase.report_purchaseorder/${printed.join(',')}?context=${encodeURIComponent(JSON.stringify({ lang }))}`) : '';
     const text = html.replace(/<[^>]+>/g, ' ');
@@ -93,8 +90,8 @@ export default {
     return {
       verified: pdf.subarray(0, 5).toString() === '%PDF-' && pdf.length > 1000 && same && arabic >= 5 * expected.length && rtl && pages >= expected.length,
       details: {
-        file: path.basename(ctx.state.file), bytes: pdf.length, orders_printed: printed.length, orders_expected: expected.length, same_orders: same,
-        print_language: ctx.state.printContext?.lang ?? null, arabic_words_in_document: arabic, right_to_left: rtl, documents: pages,
+        file: path.basename(download.file), bytes: pdf.length, orders_printed: printed.length, orders_expected: expected.length, same_orders: same,
+        print_language: printContext?.lang ?? null, arabic_words_in_document: arabic, right_to_left: rtl, documents: pages,
       },
     };
   },

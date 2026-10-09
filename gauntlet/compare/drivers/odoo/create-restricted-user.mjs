@@ -71,7 +71,7 @@ export default {
   },
   async setup(ctx) { await removeUser(ctx); },
   async signIn(ctx) { await signInAs(ctx, 'admin'); },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
     const rpc = await adminRpc(ctx);
     const { name, login } = ctx.task.input;
     const users = await rpc.searchRead('res.users', [['login', '=', login]], ['name', 'all_group_ids', 'share', 'role']);
@@ -85,7 +85,7 @@ export default {
       const id = await rpc.ref(x).catch(() => null);
       if (id && have.has(id)) extra.push(x);
     }
-    return { verified: u.name === name && !u.share && !missing.length && !extra.length, details: { url: outcome?.url, role: u.role, missing, unexpected: extra } };
+    return { verified: u.name === name && !u.share && !missing.length && !extra.length, details: { url: ctx.page.url(), role: u.role, missing, unexpected: extra } };
   },
   async cleanup(ctx) { await removeUser(ctx); },
 };

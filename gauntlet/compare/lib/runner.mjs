@@ -1,5 +1,6 @@
 // Runs one task on one product and writes one JSON per run.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
@@ -55,7 +56,18 @@ export const RESULT_SCHEMA = 1;
  *      verify(): a screen that changed after the clock makes the run invalid. A variant's own
  *      set-up, sign-in and ready hooks run (they ran only when the base driver had the same hook).
  */
-export const INSTRUMENT_VERSION = 6;
+/*   7: verify() runs in a fresh process for each call, with the same arguments before and after the
+ *      clock (no outcome of run(), set-up's state as data, no clock, reads limited to the harness's
+ *      code and data and the measured part's downloads), so it cannot answer "not done" only before
+ *      the clock (critic p01 r8, plants P1, P1b, P2). A measured part with no counted step is
+ *      refused. A task whose end state is saved in the product (`saves`) must show it saved during
+ *      the measured part: one of verify()'s back-end reads answers differently after the clock than
+ *      before it, the same in both passes after it (a second apart), and, when the task names what
+ *      the person enters (`enters`), that read gained an entered value. The start screen may not
+ *      show an entered value. A keyboard-only task (`keyboardOnly`) fails on a pointer step (the
+ *      harness judges it; verify() no longer reports it).
+ */
+export const INSTRUMENT_VERSION = 7;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -246,6 +258,8 @@ export function driverFingerprint(productId, taskId) {
  *     waited by slow reads; a cold cache costs far less).
  */
 export const VERIFY_MAX_PAUSE_SECONDS = 1;
+/** Round 9: the second pass after the clock starts at least this long after the first. */
+export const VERIFY_PASS_GAP_MS = 1100;
 export const VERIFY_MAX_REQUESTS = 100;
 export const VERIFY_SLACK_SECONDS = 3;
 
@@ -464,6 +478,37 @@ export async function execute(task, driver, product, productId, needles, out, op
   const hookTimeout = opts.hookTimeout ?? Math.max(timeout * 3, 30_000);
   const hook = (name, extra = {}) => host.call(name, { file: driver.file, variant: driver.variant ?? null, ...extra }, hookTimeout);
   const handles = () => ({ browser: session.handleOf(guard(browser)), context: session.handleOf(guard(context)), page: session.handleOf(guard(page)) });
+  const sessionData = { task, product: plainProduct(product), needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, health: !!opts.health, params: opts.params ?? null };
+  // Round 9: verify() runs in a fresh process for each call, with the same arguments every time
+  // (lib/sandbox/host.mjs): set-up's state as data, taken when the start is ready; the files the
+  // measured part downloaded, copied by the harness into a folder of its own (empty before the
+  // clock); clocks that stand at the moment the run began.
+  const clockAt = Date.now();
+  const verifyFiles = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-verify-files-'));
+  let verifyState = {};
+  let verifyDownloads = [];
+  const verifyOnce = async label => {
+    const vhost = DriverHost.forVerify({ driverFile: driver.file, reads: [verifyFiles], clockAt });
+    const reads = [];
+    const vs = new DriverSession(vhost, { product, timeout, signIns: session.signIns, reads });
+    vs.page = guard(page);
+    vs.apiSession = session.apiSession;
+    const call = { file: driver.file, variant: driver.variant ?? null };
+    const vhandles = () => ({ browser: vs.handleOf(guard(browser)), context: vs.handleOf(guard(context)), page: vs.handleOf(guard(page)) });
+    try {
+      await vhost.call('begin', { ...call, session: sessionData, state: verifyState, downloads: verifyDownloads, handles: vhandles() }, hookTimeout);
+      const t = performance.now();
+      vs.startVerifyMeter({ maxRequests: VERIFY_MAX_REQUESTS, label });
+      let value = null;
+      let error = null;
+      try { value = await vhost.call('verify', { ...call, handles: vhandles() }, hookTimeout); } catch (e) { error = e; }
+      const meter = vs.stopVerifyMeter();
+      return { value, error, meter, reads, seconds: round(Math.max(0, (performance.now() - t) / 1000 - (meter?.paced_seconds || 0))) };
+    } finally {
+      vs.close();
+      await vhost.stop();
+    }
+  };
   try {
     session = new DriverSession(host, { product, timeout });
     context = await newContext(browser);
@@ -472,10 +517,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     await device?.attachPage(page);
     page.setDefaultTimeout(timeout);
     session.page = guard(page);
-    await hook('begin', {
-      session: { task, product: plainProduct(product), needles, dataDir: DATA_OUT, harnessDir: HARNESS_DIR, health: !!opts.health, params: opts.params ?? null },
-      handles: handles(),
-    });
+    await hook('begin', { session: sessionData, handles: handles() });
     // Set-up and sign-in may act on the product (fixtures, signing in); never page script.
     if (driver.hooks.setup) await hook('setup');
     if (driver.hooks.signIn) {
@@ -507,17 +549,28 @@ export async function execute(task, driver, product, productId, needles, out, op
     op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout, device });
     if (session.apiSession) op.useApi(apiSessionFor(product, session.apiSession));
 
+    // Round 9: the values the task asks the person to enter are not on the start screen already.
+    if (kind !== 'api') {
+      const shown = await startShowsEntered(page, task);
+      if (shown) throw new ActionOutsideClock(`unfair start state: the start screen already shows ${shown}, which the task asks the person to enter (set-up entered it)`, 'set-up');
+    }
+    // What set-up and sign-in left in ctx.state, as data, for every verify() call.
+    verifyState = await hook('state');
+
     // A task already done before the clock starts was done by set-up: the run measures nothing.
+    // verify() cannot tell this call from the ones after the clock (round 9, critic p01 r8): same
+    // arguments, a fresh process, no clock.
+    let before = null;
     if (driver.hooks.verify) {
       phase.set('verifying');
       page.setDefaultTimeout(VERIFY_READ_MS);
-      let before = null;
       // Metered like the passes after the clock: it reads, it does not poll (a refusal invalidates the run).
-      session.startVerifyMeter({ maxRequests: VERIFY_MAX_REQUESTS, label: 'verify() before the clock' });
-      try { before = await hook('verify', { handles: handles(), after: false }); } catch { /* not done (or not checkable without the outcome) */ } finally { session.stopVerifyMeter(); }
-      page.setDefaultTimeout(timeout);
-      phase.set('frozen');
-      if (before?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
+      try { before = await verifyOnce('verify() before the clock'); } finally {
+        page.setDefaultTimeout(timeout);
+        phase.set('frozen');
+      }
+      run.verify_before = { verified: before.value?.verified === true, error: before.error ? String(before.error.message || before.error).split('\n')[0] : null, back_end_reads: before.reads.length, seconds: before.seconds };
+      if (before.value?.verified === true) throw new ActionOutsideClock('the task was already done before the clock started (verify() passes on the start screen)', 'set-up');
     }
 
     await op.shot('start');
@@ -539,6 +592,9 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
     const missing = op.missingMoments;
     if (missing.length) throw new RefusedClaim(`the task's moments ${missing.map(m => `"${m}"`).join(', ')} were not shot while measuring (every driver shoots every moment the task declares, once)`);
+    // Round 9 (critic p01 r8, plants P1, P2): a task is done by what the person does. A measured
+    // part with no counted step did nothing; whatever verify() then finds was done off the clock.
+    if (op.steps.length === 0) throw new RefusedClaim('the measured part took no counted step: nothing the person did could have done the task, so whatever verify() finds was done before the clock (set-up) or by nobody');
     // After the clock the page reaches the product no more (round 5): the end state cannot be
     // finished off the clock, by the page or by verification waiting for it.
     let atClock = null;
@@ -560,25 +616,39 @@ export async function execute(task, driver, product, productId, needles, out, op
     phase.set('verifying');
     page.setDefaultTimeout(VERIFY_READ_MS);
     if (driver.hooks.verify) {
+      // The files the measured part downloaded, copied where only the harness writes (round 9).
+      verifyDownloads = op.downloads.map((d, i) => {
+        const dest = path.join(verifyFiles, String(i + 1), path.basename(d.file));
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(d.file, dest);
+        return { file: dest, url: d.url, name: d.name, sent: d.sent || [] };
+      });
       const passes = [];
+      const reads = [];
       for (let i = 0; i < 2; i++) {
-        const t = performance.now();
-        session.startVerifyMeter({ maxRequests: VERIFY_MAX_REQUESTS, label: i === 0 ? 'verify()' : 'verify() (second pass)' });
-        let v;
-        try { v = await hook('verify', { handles: handles(), after: true }); } finally {
-          // A sign-in the harness paced under the product's limit is the harness's time, not the pass's.
-          const meter = session.stopVerifyMeter();
-          passes.push({ ...meter, seconds: round(Math.max(0, (performance.now() - t) / 1000 - (meter?.paced_seconds || 0))) });
-        }
-        passes[i].verified = v?.verified === true;
-        if (i === 0) run.verification = v;
+        // Round 9: the second pass starts at least a second after the first, so a read that tells the
+        // time answers differently in the two passes and never counts as a saved change.
+        while (i === 1 && performance.now() - passes[0].started < VERIFY_PASS_GAP_MS) await new Promise(r => setTimeout(r, Math.max(1, VERIFY_PASS_GAP_MS - (performance.now() - passes[0].started))));
+        const started = performance.now();
+        const p = await verifyOnce(i === 0 ? 'verify()' : 'verify() (second pass)');
+        passes.push({ ...p.meter, seconds: p.seconds, verified: p.value?.verified === true, started });
+        reads.push(p.reads);
+        if (i === 0) run.verification = p.value;
+        if (p.error) throw p.error;
       }
-      run.verify_passes = passes;
+      run.verify_passes = passes.map(({ started, ...p }, i) => (i ? { ...p, gap_seconds: round((started - passes[0].started) / 1000) } : p));
       const waited = verifyWaited(passes);
       if (waited) throw new ActionOutsideClock(`${waited} (wait for the end state in run(), on the clock)`, 'verifying');
+      if (task.saves && run.verification?.verified) {
+        const saved = savedState(task, before?.reads || [], reads[0], reads[1]);
+        run.saved_state = saved.record;
+        if (saved.problem) throw new ActionOutsideClock(saved.problem, 'set-up');
+      }
     } else {
       run.verification = { verified: !!outcome?.verified, details: outcome };
     }
+    const rules = taskRuleProblems(task, op.steps);
+    if (rules.length) run.task_rules = rules;
     await drainReadWorld(page);
     // Round 7: verify() read the screen as the clock left it. A screen that changed after the
     // clock (a late answer, a timer the freeze missed) means verify() may have read an end state the
@@ -589,7 +659,7 @@ export async function execute(task, driver, product, productId, needles, out, op
       run.screen_after_verify = { ...fingerprintDigest(after), unchanged: !change };
       if (change) throw new ActionOutsideClock(`the screen changed after the clock stopped: ${change}. The product was still answering when run() returned; wait for the end state in run(), on the clock`, 'verifying');
     }
-    run.status = run.verification?.verified ? 'verified' : 'failed';
+    run.status = run.verification?.verified && !run.task_rules ? 'verified' : 'failed';
   } catch (err) {
     if (err instanceof NotBuilt || err?.name === 'NotBuilt') { run.status = 'not_built'; run.error = err.message; }
     else if (isRefusal(err)) {
@@ -629,6 +699,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     device?.close();
     await host.stop();
     await browser.close().catch(() => {});
+    fs.rmSync(verifyFiles, { recursive: true, force: true });
   }
   if (op) {
     run.counts = op.summary();
@@ -637,6 +708,104 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.screenshots = op.shots.map(({ measured, ...s }) => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
   return run;
+}
+
+/**
+ * The values a task asks the person to enter (`enters`: keys of its input), as text. Round 9: they
+ * must not be on the start screen, and a task that saves them must show one arriving in the back end
+ * during the measured part.
+ */
+export function enteredValues(task) {
+  return (task.enters || []).map(k => task.input?.[k]).filter(v => v !== undefined && v !== null && String(v).trim() !== '').map(v => String(v));
+}
+
+const NUMERIC = /^[-+]?\d+(\.\d+)?$/;
+const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Whether `text` holds `value` as the person would have entered it: letters and digits in order,
+ * whatever separators (spaces, dashes, a phone's punctuation) lie between them, not inside a longer
+ * word or number; a number also as an equal number written otherwise (4.2875, 4.28750000).
+ */
+export function containsValue(text, value) {
+  const t = String(text ?? '');
+  const v = String(value).trim();
+  if (!v) return false;
+  if (NUMERIC.test(v)) {
+    const n = Number(v);
+    for (const m of t.matchAll(/[-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi)) if (Math.abs(Number(m[0]) - n) <= 1e-9 * Math.max(1, Math.abs(n))) return true;
+    return false;
+  }
+  const parts = v.split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(escapeRe);
+  if (!parts.length) return t.includes(v);
+  return new RegExp(`(?<![\\p{L}\\p{N}])${parts.join('[^\\p{L}\\p{N}]*')}(?![\\p{L}\\p{N}])`, 'iu').test(t);
+}
+
+/** The text of a JSON answer as its values (strings and numbers), or the answer as it came. */
+function answerText(text) {
+  if (text === null || text === undefined) return '';
+  try {
+    const out = [];
+    const walk = (v, d = 0) => { if (d > 40 || v === null) return; if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') out.push(String(v)); else if (Array.isArray(v)) v.forEach(x => walk(x, d + 1)); else if (typeof v === 'object') Object.values(v).forEach(x => walk(x, d + 1)); };
+    walk(JSON.parse(text));
+    return out.join('\n');
+  } catch { return text; }
+}
+
+/** Page function (run by the runner, not a driver): the start screen's text and field values. */
+function startScreenText() {
+  const vals = [...document.querySelectorAll('input, textarea, select')].map(el => (el.type || '').toLowerCase() === 'password' ? '' : el.value || '');
+  return `${document.body?.innerText || ''}\n${vals.join('\n')}`;
+}
+
+/** An entered value the start screen already shows ("…" in quotes), or null. */
+async function startShowsEntered(page, task) {
+  const values = enteredValues(task);
+  if (!values.length) return null;
+  const text = await page.evaluate(startScreenText).catch(() => '');
+  const shown = values.find(v => containsValue(text, v));
+  return shown ? `"${shown}"` : null;
+}
+
+/**
+ * Round 9 (critic p01 r8): for a task whose end state is saved in the product, the saved state
+ * arrived during the measured part. verify()'s back-end reads before the clock and in the two passes
+ * after it are compared by what they asked: at least one read must answer differently after the
+ * clock than before it and the same in both passes after it (a read that tells the time differs
+ * between the passes); for a task that names what the person enters, such a read must hold an
+ * entered value after the clock that it did not hold before. Otherwise the end state verify()
+ * accepted was there before the clock (set-up did the task), or verify() never read it.
+ * Returns { problem, record }.
+ */
+export function savedState(task, beforeReads, afterReads, secondReads) {
+  const byKey = list => new Map(list.map(r => [r.key, r]));
+  const b = byKey(beforeReads);
+  const a = byKey(afterReads);
+  const c = byKey(secondReads);
+  const label = k => { const [m, u] = k.split(' '); try { return `${m} ${new URL(u).pathname}`; } catch { return `${m} ${u}`; } };
+  const common = [...a.keys()].filter(k => b.has(k) && c.has(k));
+  const changed = common.filter(k => b.get(k).digest !== a.get(k).digest && a.get(k).digest === c.get(k).digest);
+  const values = enteredValues(task);
+  const gained = values.length ? changed.filter(k => values.some(v => containsValue(answerText(a.get(k).text), v) && !containsValue(answerText(b.get(k).text), v))) : changed;
+  const record = { reads_before: b.size, reads_after: a.size, read_both_times: common.length, changed: changed.map(label), ...(values.length ? { gained_entered_value: gained.map(label) } : {}) };
+  let problem = null;
+  if (!a.size) problem = 'verify() read nothing from the back end after the clock: a task whose end state is saved in the product is verified from its back end';
+  else if (!changed.length) problem = `none of verify()'s back-end reads answered differently after the clock than before it (${common.length} read both times): the end state it accepted was already saved before the clock started (set-up did the task), or verify() never read it`;
+  else if (!gained.length) problem = `no back-end read of verify() gained a value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; what changed (${changed.map(label).join(', ')}) is not what the person entered, so the entered values were saved before the clock (set-up did the task)`;
+  return { problem, record };
+}
+
+/** Pointer steps (round 9: a keyboard-only task fails on one; the harness judges it, not verify()). */
+const POINTER_KINDS = new Set(['click', 'double-click', 'scroll', 'file-pick']);
+
+/** Problems with the task's own rules about the steps (empty when it keeps them). */
+export function taskRuleProblems(task, steps) {
+  const problems = [];
+  if (task.keyboardOnly) {
+    const pointer = steps.filter(s => POINTER_KINDS.has(s.kind));
+    if (pointer.length) problems.push(`the task is keyboard-only and ${pointer.length} step${pointer.length === 1 ? '' : 's'} used the mouse (first: step ${pointer[0].n}, ${pointer[0].kind} "${pointer[0].label}")`);
+  }
+  return problems;
 }
 
 /** The page as a failed run left it (read-only, runner's own code; never part of a measurement). */

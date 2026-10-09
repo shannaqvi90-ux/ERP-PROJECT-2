@@ -5,6 +5,8 @@ export default {
   piece: 'p08',
   actor: 'admin',
   startAt: 'home',
+  saves: true,
+  enters: ['aedPerUnit'],
   moments: ['rate entered'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Record today\'s rate for the euro: 1 EUR = {aedPerUnit} AED.',

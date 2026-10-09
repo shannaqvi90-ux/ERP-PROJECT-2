@@ -28,16 +28,6 @@ export default {
     await openRecord(ctx, 'purchase.order', ctx.state.po);
   },
   ready: '.o_form_view',
-  observe(ctx) {
-    // The context the client sends with the print request: the document is rendered with it.
-    // The listener is registered on the start page before the measured part; it only reads.
-    ctx.page.on('request', r => {
-      if (r.url().endsWith('/report/download')) {
-        const m = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(r.postData() || '');
-        if (m) ctx.state.printContext = JSON.parse(m[1]);
-      }
-    });
-  },
   async run(op, ctx) {
     const page = op.page;
     await op.click('button.o_user_menu', { label: 'user menu' });
@@ -49,20 +39,25 @@ export default {
     await op.waitFor(() => !document.querySelector('.modal') && !!document.body?.classList.contains('o_rtl'), { label: 'interface in Arabic' });
     const print = page.locator(`.o_form_view .o_form_statusbar button[name="${ctx.state.printAction}"]`).first();
     await op.waitFor(print, { label: 'order form in Arabic' });
-    ctx.state.file = await op.clickForDownload(print, ctx.state.dir, { label: 'Print' });
+    await op.clickForDownload(print, ctx.state.dir, { label: 'Print' });
     return {};
   },
   async verify(ctx) {
-    const pdf = fs.readFileSync(ctx.state.file);
-    // The same document rendered as HTML in the language of the print request, to read its
-    // direction and script (the PDF's text is font-encoded).
-    const context = ctx.state.printContext || {};
+    const [download] = ctx.downloads;
+    if (!download) return { verified: false, details: { file: null } };
+    const pdf = fs.readFileSync(download.file);
+    // The same document rendered as HTML in the language of the print request (the context the
+    // client sent with it, recorded by the harness with the download), to read its direction and
+    // script (the PDF's text is font-encoded).
+    const body = download.sent.filter(r => r.url.endsWith('/report/download')).map(r => r.postData || '').pop() || '';
+    const m = /name="context"\r?\n\r?\n(\{[\s\S]*?\})\r?\n--/.exec(body);
+    const context = m ? JSON.parse(m[1]) : {};
     const html = await (await adminRpc(ctx)).getText(`/report/html/purchase.report_purchaseorder/${ctx.state.po}?context=${encodeURIComponent(JSON.stringify({ lang: context.lang || 'en_US' }))}`);
     const arabic = (html.replace(/<[^>]+>/g, ' ').match(/[؀-ۿ]+/g) || []).length;
     const rtl = /<body[^>]*dir="rtl"/i.test(html);
     return {
       verified: pdf.subarray(0, 5).toString() === '%PDF-' && pdf.length > 1000 && arabic >= 5 && rtl,
-      details: { file: path.basename(ctx.state.file), bytes: pdf.length, print_language: context.lang ?? null, arabic_words_in_document: arabic, right_to_left: rtl },
+      details: { file: path.basename(download.file), bytes: pdf.length, print_language: context.lang ?? null, arabic_words_in_document: arabic, right_to_left: rtl },
     };
   },
   async cleanup(ctx) {

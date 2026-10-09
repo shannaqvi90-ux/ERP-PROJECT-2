@@ -49,10 +49,11 @@ export default {
     await op.request('PUT', `/api/identity/users/${u.id}`, { displayName: u.displayName, language: 'ar', isActive: u.isActive, roleIds: u.roleIds, version: u.version }, { label: 'set the language' });
     return { id: u.id };
   },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
+    // The back end: the needle user (found in set-up by sign-in, so not by the name the task searches) speaks Arabic.
     const api = await oursAs(ctx.product, 'admin');
     const u = await api.get(`/api/identity/users/${ctx.state.userId}`);
-    return { verified: outcome.id === ctx.state.userId && u.language === 'ar', details: { id: outcome.id, language: u.language, name: u.displayName } };
+    return { verified: u.language === 'ar', details: { id: ctx.state.userId, language: u.language, name: u.displayName } };
   },
   async cleanup(ctx) {
     if (!ctx.state.userId) return;

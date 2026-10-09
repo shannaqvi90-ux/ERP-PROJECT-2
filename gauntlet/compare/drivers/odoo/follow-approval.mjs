@@ -34,14 +34,14 @@ export default {
     }, { label: 'order approved' });
     return { first_row_is_the_order: firstRow.includes(name) };
   },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
     const rpc = await adminRpc(ctx);
     const [po] = await rpc.read('purchase.order', [ctx.state.po.id], ['state', 'date_approve', 'name']);
     const approver = (await rpc.search('res.users', [['login', '=', ctx.product.users.approver.login]]))[0];
     const msgs = await rpc.searchRead('mail.message', [['model', '=', 'purchase.order'], ['res_id', '=', ctx.state.po.id], ['author_id.user_ids', 'in', [approver]]], ['id']);
     return {
       verified: po.state === 'purchase' && !!po.date_approve && msgs.length > 0,
-      details: { order: po.name, state: po.state, date_approve: po.date_approve, approver_messages: msgs.length, ...outcome },
+      details: { order: po.name, state: po.state, date_approve: po.date_approve, approver_messages: msgs.length },
     };
   },
   async cleanup(ctx) {

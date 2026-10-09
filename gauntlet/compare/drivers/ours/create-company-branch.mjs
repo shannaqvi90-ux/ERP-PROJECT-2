@@ -29,6 +29,13 @@ async function findCompanies(api, name) {
   return page.items.filter(c => c.legalNameEn === name);
 }
 
+/** The active companies of that name (the retired copies are renamed and inactive). */
+async function activeCompanies(api, name) {
+  const filter = encodeURIComponent('isActive eq true');
+  const page = await api.get(`/api/tenancy/companies?search=${encodeURIComponent(name.split(' ')[0])}&filter=${filter}&take=200`);
+  return page.items.filter(c => c.legalNameEn === name);
+}
+
 async function retire(ctx) {
   const api = await oursAs(ctx.product, 'admin');
   const { company } = ctx.task.input;
@@ -89,7 +96,7 @@ export default {
   async verify(ctx) {
     const api = await oursAs(ctx.product, 'admin');
     const { company, branch } = ctx.task.input;
-    const found = await findCompanies(api, company);
+    const found = await activeCompanies(api, company);
     if (found.length !== 1) return { verified: false, details: { companies: found.length } };
     const filter = encodeURIComponent(`companyId eq '${found[0].id}'`);
     const branches = (await api.get(`/api/tenancy/branches?filter=${filter}&take=50`)).items;

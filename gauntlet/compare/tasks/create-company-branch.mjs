@@ -5,6 +5,8 @@ export default {
   piece: 'p02',
   actor: 'admin',
   startAt: 'home',
+  saves: true,
+  enters: ['company', 'branch'],
   moments: ['branch filled in'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Create the company "{company}" with one branch, "{branch}".',

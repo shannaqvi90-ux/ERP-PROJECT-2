@@ -66,19 +66,21 @@ export default {
     await op.click(PRINT(page), { label: 'Print or export' });
     const arabic = page.getByRole('menuitem', { name: STRINGS['lists.print.pdfArabic'], exact: true });
     await op.waitFor(arabic, { label: 'print menu' });
-    // The address of the printed report, read (not counted) from the menu item the user chooses.
-    ctx.state.printUrl = new URL(await arabic.getAttribute('href'), ctx.product.baseUrl).href;
-    ctx.state.file = await op.clickForDownload(arabic, ctx.state.dir, { label: 'PDF in Arabic' });
+    await op.clickForDownload(arabic, ctx.state.dir, { label: 'PDF in Arabic' });
     return {};
   },
   async verify(ctx) {
-    const pdf = fs.readFileSync(ctx.state.file);
+    // The file the measured part downloaded and its address, as the harness saved them.
+    const [download] = ctx.downloads;
+    if (!download) return { verified: false, details: { file: null } };
+    const pdf = fs.readFileSync(download.file);
+    const printUrl = download.url;
     // The same report as data, from the address the product printed: its language, direction,
     // rows and text (the PDF's text is font-encoded).
-    const url = new URL(ctx.state.printUrl || 'http://invalid/');
+    const url = new URL(printUrl || 'http://invalid/');
     url.searchParams.set('format', 'json');
     const api = await oursAs(ctx.product, 'adminArabic');
-    const doc = ctx.state.printUrl ? await api.get(url.pathname + url.search) : null;
+    const doc = printUrl ? await api.get(url.pathname + url.search) : null;
     const text = doc ? [doc.title, ...doc.columns.map(c => c.label), doc.rowCountText, doc.texts?.printed].join(' ') : '';
     const arabicWords = (text.match(/[\u0600-\u06FF]+/g) || []).length;
     const n = ctx.state.expected;
@@ -86,7 +88,7 @@ export default {
       verified: pdf.subarray(0, 5).toString() === '%PDF-' && pdf.length > 1000 && doc?.language === 'ar' && doc?.direction === 'rtl' &&
         doc?.rowCount === n && doc?.matchCount === n && doc?.truncated === false && url.searchParams.get('search') === ctx.state.search && arabicWords >= 3,
       details: {
-        file: path.basename(ctx.state.file), bytes: pdf.length, print_language: doc?.language ?? null, right_to_left: doc?.direction === 'rtl',
+        file: path.basename(download.file), bytes: pdf.length, print_language: doc?.language ?? null, right_to_left: doc?.direction === 'rtl',
         rows_printed: doc?.rowCount ?? null, rows_expected: n, search: url.searchParams.get('search'), arabic_words_in_report: arabicWords,
         document: 'users list (stand-in for purchase orders)',
       },

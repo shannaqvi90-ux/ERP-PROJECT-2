@@ -5,6 +5,7 @@ export default {
   piece: 'p12',
   actor: 'admin',
   startAt: 'home',
+  saves: true,
   moments: ['job opened'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Find the background job "{job}", see when it last ran, and run it again now.',

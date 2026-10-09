@@ -43,13 +43,13 @@ export default {
       const text = first?.innerText || '';
       return text.includes(oldEmail) && text.includes(newE) && text.includes(who);
     }, { label: 'latest change on screen', arg: [email, newEmail, changedBy] });
-    const shown = await op.page.locator('.o-mail-Chatter .o-mail-Message').first().innerText();
-    return { shown };
+    return {};
   },
-  async verify(ctx, outcome) {
+  async verify(ctx) {
     const { email } = ctx.needles.contact;
     const { newEmail, changedBy } = ctx.task.input;
-    const text = outcome.shown || '';
+    // The latest change, as the screen showed it when the clock stopped.
+    const text = await ctx.read(() => document.querySelector('.o-mail-Chatter .o-mail-Message')?.innerText || '');
     const hasTime = /\d{1,2}:\d{2}|ago|now/i.test(text);
     return {
       verified: text.includes(email) && text.includes(newEmail) && text.includes(changedBy) && hasTime,

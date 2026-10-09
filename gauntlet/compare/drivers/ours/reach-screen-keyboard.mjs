@@ -17,7 +17,7 @@ const nav = async (op) => {
   await op.waitFor(() => document.activeElement?.closest('nav.navpane') && document.activeElement.getAttribute('href') === '/identity/users', { label: 'Users entry focused' });
   await op.press('Enter', { label: 'open' });
   await op.waitFor(usersList, { label: 'users list' });
-  return { keyboardOnly: op.steps.every(s => s.kind === 'key' || s.kind === 'type') };
+  return {};
 };
 const palette = async (op) => {
   await op.press('Control+k', { label: 'command palette' });
@@ -26,7 +26,7 @@ const palette = async (op) => {
   await op.waitFor(() => (document.querySelector('[role=option][aria-selected=true]')?.textContent || '').startsWith('Users'), { label: 'Users first' });
   await op.press('Enter', { label: 'open' });
   await op.waitFor(usersList, { label: 'users list' });
-  return { keyboardOnly: op.steps.every(s => s.kind === 'key' || s.kind === 'type') };
+  return {};
 };
 export default {
   built: true,
@@ -37,8 +37,9 @@ export default {
     navigation: { path: 'Alt+M > Enter', run: nav },
     palette: { path: 'Ctrl+K > "us" > Enter', run: palette },
   },
-  async verify(ctx, outcome) {
+  // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.
+  async verify(ctx) {
     const ui = await ctx.read(() => ({ url: location.pathname, heading: document.querySelector('main h1')?.textContent?.trim(), rows: document.querySelectorAll('main table tbody tr').length }));
-    return { verified: outcome.keyboardOnly && ui.url === '/identity/users' && ui.rows > 0, details: { ...ui, keyboard_only: outcome.keyboardOnly } };
+    return { verified: ui.url === '/identity/users' && ui.rows > 0, details: ui };
   },
 };
