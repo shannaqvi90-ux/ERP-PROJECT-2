@@ -182,7 +182,10 @@ function RoleEditor({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const held = new Set(state.status === "signedIn" ? state.session.permissions : []);
-  const actions = roleActions(role, held);
+  // What the user holds in every company: a role's permissions are offered, and a role is
+  // changed, copied or deleted, only within it.
+  const everywhere = new Set(state.status === "signedIn" ? (state.session.workspacePermissions ?? state.session.permissions) : []);
+  const actions = roleActions(role, held, everywhere);
   const form = useRecordForm<Role, RoleDraft>({
     load: role ? async () => role : undefined,
     initial: (r) => ({ nameEn: r?.nameEn ?? "", nameAr: r?.nameAr ?? "", permissions: [...(r?.permissions ?? [])].sort() }),
@@ -265,7 +268,7 @@ function RoleEditor({
             permissions={permissions}
             selected={selected}
             onChange={(next) => form.set("permissions")([...next].sort())}
-            canChange={(key) => held.has(key)}
+            canChange={(key) => everywhere.has(key)}
             readOnly={form.readOnly}
           />
         </FormSection>

@@ -254,11 +254,18 @@ export type RoleActions = {
 /**
  * The actions offered for a role (undefined: a new one). A system role is only ever copied. A
  * role granting a permission the user lacks is shown read-only and can be neither copied nor
- * deleted, because the server refuses both. Each action also needs its own permission.
+ * deleted, because the server refuses both. Each action also needs its own permission (from
+ * <paramref name="held"/>, the session's). Roles are defined for the whole workspace, so what the
+ * role grants is judged against <paramref name="everywhere"/>: what the user holds in every
+ * company, not through a role in the company they work in now (critic p03 round 7).
  */
-export function roleActions(role: Pick<Role, "isSystem" | "permissions"> | undefined, held: ReadonlySet<string>): RoleActions {
+export function roleActions(
+  role: Pick<Role, "isSystem" | "permissions"> | undefined,
+  held: ReadonlySet<string>,
+  everywhere: ReadonlySet<string> = held,
+): RoleActions {
   if (!role) return { edit: held.has("identity.roles.create"), copy: false, delete: false, beyondOwn: false };
-  const beyondOwn = role.permissions.some((p) => !held.has(p));
+  const beyondOwn = role.permissions.some((p) => !everywhere.has(p));
   return {
     edit: !role.isSystem && !beyondOwn && held.has("identity.roles.update"),
     copy: !beyondOwn && held.has("identity.roles.create"),

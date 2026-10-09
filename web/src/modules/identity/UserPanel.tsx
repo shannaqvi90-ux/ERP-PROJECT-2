@@ -154,6 +154,9 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
 
   const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
   const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
+  // A role in every company needs its grants in every company (roles in the working company's do not count).
+  const everywhere = new Set(state.status === "signedIn" ? (state.session.workspacePermissions ?? state.session.permissions) : []);
+  const canGrantEverywhere = (role: Role) => role.permissions.every((p) => everywhere.has(p));
 
   return (
     <RecordForm form={form} title={t("identity.users.new")} onClose={onClose} saveLabel={t("identity.form.create")}>
@@ -201,7 +204,7 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
             ]}
           />
           {can("identity.roles.read") ? (
-            <RolePicker roles={roles} selected={draft.roleIds} onChange={set("roleIds")} canGrant={canGrant} />
+            <RolePicker roles={roles} selected={draft.roleIds} onChange={set("roleIds")} canGrant={canGrantEverywhere} />
           ) : (
             <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
           )}
@@ -324,6 +327,9 @@ export function UserDetail({
   const [notice, setNotice] = useState<Notice | undefined>(initialNotice);
   const granted = new Set(state.status === "signedIn" ? state.session.permissions : []);
   const canGrant = (role: Role) => role.permissions.every((p) => granted.has(p));
+  // A role in every company needs its grants in every company (roles in the working company's do not count).
+  const everywhere = new Set(state.status === "signedIn" ? (state.session.workspacePermissions ?? state.session.permissions) : []);
+  const canGrantEverywhere = (role: Role) => role.permissions.every((p) => everywhere.has(p));
   const selfId = state.status === "signedIn" ? state.session.user.id : null;
   const self = selfId === userId;
   const [loaded, setLoaded] = useState<User | null>(null);
@@ -423,7 +429,7 @@ export function UserDetail({
         />
         <BooleanField field={bind("isActive")} label={t("identity.form.active")} disabled={self} />
         {can("identity.roles.read") ? (
-          <RolePicker roles={roles} selected={form.draft.roleIds} onChange={form.set("roleIds")} canGrant={canGrant} disabled={form.readOnly || self} />
+          <RolePicker roles={roles} selected={form.draft.roleIds} onChange={form.set("roleIds")} canGrant={canGrantEverywhere} disabled={form.readOnly || self} />
         ) : (
           <p className="muted">{t("identity.form.rolesNeedPermission")}</p>
         )}
