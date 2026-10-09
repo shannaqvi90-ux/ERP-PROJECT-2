@@ -308,24 +308,35 @@ public static class GrantBearingRecords
                 var record = await HeldAsync(target.Permissions, company, $"yr{n}");
                 var item = create.Pattern.TrimEnd('/') + "/" + record;
                 var label = $"{target}, {place},";
-                var requests = new List<(string Spec, JsonObject? Body)> { ("", await BodyAsync(admin, openApi, endpoint, item, $"{tag}yk{n}")) };
+                var requests = new List<(string Spec, Guid Subject, string Label, JsonObject? Body)>
+                {
+                    ("", record, label, await BodyAsync(admin, openApi, endpoint, item, $"{tag}yk{n}")),
+                };
                 if (stripsPermissions && await BaseBodyAsync(admin, openApi, endpoint, item, $"{tag}yp{n}") is { } stripped && stripped["permissions"] is JsonArray granted && granted.Count > 0)
                 {
+                    // Taking a permission away.
                     stripped["permissions"] = new JsonArray(granted.Take(granted.Count - 1).Select(x => x!.DeepClone()).ToArray());
-                    requests.Add((" [permissions changed]", stripped));
+                    requests.Add((" [permissions changed]", record, label, stripped));
+                    // Granting more: a record granting nothing, held in the same place, given what
+                    // the target grants (an escalation wherever the record is held but X).
+                    var empty = await HeldAsync([], company, $"ye{n}");
+                    var adding = await BaseBodyAsync(admin, openApi, endpoint, create.Pattern.TrimEnd('/') + "/" + empty, $"{tag}ya{n}");
+                    adding["permissions"] = new JsonArray(target.Permissions.Select(p => (JsonNode)JsonValue.Create(p)!).ToArray());
+                    requests.Add((" [permissions changed]", empty, $"a record granting nothing, {place}, given the permissions of {target.Label},", adding));
                 }
-                foreach (var (spec, body) in requests)
+                foreach (var (spec, subject, what, body) in requests)
                 {
-                    var before = await ReadAsync(admin, item);
-                    var (status, text) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => record.ToString()), body);
+                    var subjectItem = create.Pattern.TrimEnd('/') + "/" + subject;
+                    var before = await ReadAsync(admin, subjectItem);
+                    var (status, text) = await SendAsync(inOne, endpoint.Method, endpoint.Path(_ => subject.ToString()), body);
                     if (status != (int)HttpStatusCode.Forbidden)
                     {
-                        problems.Add($"{endpoint}{spec}: aimed at {label} by {who} answered {status} (expected 403): {Short(text)}");
+                        problems.Add($"{endpoint}{spec}: aimed at {what} by {who} answered {status} (expected 403): {Short(text)}");
                     }
-                    var after = await ReadAsync(admin, item);
+                    var after = await ReadAsync(admin, subjectItem);
                     if (after != before)
                     {
-                        problems.Add($"{endpoint}{spec}: {label} changed when {who} aimed at it: before {Short(before)}; after {Short(after)}");
+                        problems.Add($"{endpoint}{spec}: {what} changed when {who} aimed at it: before {Short(before)}; after {Short(after)}");
                     }
                     aimed++;
                 }
