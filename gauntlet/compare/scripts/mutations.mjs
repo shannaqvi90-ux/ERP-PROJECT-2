@@ -51,6 +51,29 @@ export const MUTATIONS = [
   ['M22', 'a confirmation on the device modelled as free', 'lib/klm.mjs', "    case 'device': ops.K += 1; break;", "    case 'device': break;", 'test/operator.test.mjs', 'passkey: set-up makes'],
   ['M23', 'the shim holds only the container, not its prototype', 'lib/device.mjs', '    Object.defineProperty(proto, kind, { value: held, writable: false, configurable: false });',
     '    Object.defineProperty(navigator.credentials, kind, { value: held, writable: false, configurable: false });', 'test/operator.test.mjs', 'cannot answer for the person'],
+  // Round 9 (critic p01 r8, biggest gap): set-up cannot do the task off the clock.
+  ['M24', 'a verify() process keeps its clocks', 'lib/sandbox/lockdown.mjs', "if (process.env.COMPARE_DRIVER_ROLE === 'verify') freezeClocks(", 'if (false) freezeClocks(', 'test/sandbox.test.mjs', 'a verify\\(\\) process'],
+  ['M25', 'a verify() process reads anything (the run\'s scratch folder too)', 'lib/sandbox/bridge.mjs', "const read = reads ? [...new Set(reads)].map(p => `--allow-fs-read=${p}`) : ['--allow-fs-read=*'];",
+    "const read = ['--allow-fs-read=*'];", 'test/before-clock.test.mjs', 'plant P4'],
+  ['M26', 'a measured part with no counted step accepted', 'lib/runner.mjs', '    if (op.steps.length === 0) throw new RefusedClaim(', '    if (false) throw new RefusedClaim(', 'test/before-clock.test.mjs', 'plant P1 \\(|plant P2'],
+  ['M27', 'no saved-state check', 'lib/runner.mjs', '      if (task.saves && run.verification?.verified) {', '      if (false) {', 'test/before-clock.test.mjs', 'plant P6b'],
+  ['M28', 'a saved change need not hold what the person entered', 'lib/runner.mjs', '  else if (!gained.length) problem =', '  else if (false) problem =', 'test/before-clock.test.mjs', 'plant P7'],
+  ['M29', 'the two passes after the clock back to back', 'lib/runner.mjs', 'export const VERIFY_PASS_GAP_MS = 1100;', 'export const VERIFY_PASS_GAP_MS = 0;', 'test/before-clock.test.mjs', 'honest path of a task that saves'],
+  ['M30', 'an entered value on the start screen accepted', 'lib/runner.mjs', '      if (shown) throw new ActionOutsideClock(`unfair start state: the start screen already shows', '      if (false) throw new ActionOutsideClock(`unfair start state: the start screen already shows',
+    'test/before-clock.test.mjs', 'plant P8'],
+  ['M31', 'a keyboard-only task not judged by the harness', 'lib/runner.mjs', '  if (task.keyboardOnly) {', '  if (false) {', 'test/before-clock.test.mjs', 'keyboard-only task fails'],
+  ['M32', 'the product\'s Date header reaches verify()', 'lib/sandbox/bridge.mjs', "const clockHeaders = this.host.role === 'verify' ? CLOCK_HEADERS : new Set();", 'const clockHeaders = new Set();', 'test/sandbox.test.mjs', 'a verify\\(\\) process'],
+  ['M33', 'a verify() process may write (a file\'s time is a clock)', 'lib/sandbox/bridge.mjs', 'const write = reads ? [] : [`--allow-fs-write=${scratch}`];', 'const write = [`--allow-fs-write=${scratch}`];', 'test/sandbox.test.mjs', 'a verify\\(\\) process'],
+  // Round 9: the critic's own mutations that no self-test caught (A1, A16, A26, A24, H10).
+  ['M34', 'a key chord counted as one keystroke (critic A1)', 'lib/operator.mjs', "keystrokesForChord(chord), t, { chord, ...(copied", "1, t, { chord, ...(copied", 'test/operator.test.mjs', 'a key chord counts each'],
+  ['M35', 'a scroll records no step (critic A26)', 'lib/operator.mjs', "    return this.#record('scroll', label || `scroll to ${String(target)}`, 0, t);", "    return { kind: 'scroll' };", 'test/operator.test.mjs', 'a key chord counts each'],
+  ['M36', 'the reference measured on its worst path per metric (critic A16)', 'lib/runner.mjs', '(b === null || e.counts[m] < b.counts[m] ? e : b)', '(b === null || e.counts[m] > b.counts[m] ? e : b)', 'test/compare.test.mjs', 'held at its best path'],
+  ['M37', 'requests after the clock not refused (critic A24)', 'lib/runner.mjs', "      await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });", '', 'test/page-script.test.mjs', 'mutation A24'],
+  ['M38', 'reads in verify() not cut to half a second (critic H10)', 'lib/guard.mjs', "          return phase === 'verifying' ? clampTimeouts(raw) : raw;", '          return raw;', 'test/page-script.test.mjs', 'mutation H10'],
+  ['M41', "run()'s own word taken for the end state when a driver has no verify()", 'lib/runner.mjs', "      throw new RefusedClaim('the driver has no verify():", "      if (false) throw new RefusedClaim('the driver has no verify():", 'test/before-clock.test.mjs', 'plant P10'],
+  // Round 9: blindness (critic p01 r8: names inside form fields; an unbuilt product's column).
+  ['M39', 'demo names inside form fields not masked', 'lib/blind.mjs', '  else values.forEach((v, i) => { if (revealsIdentity(v, branding)) out.push(fields.nth(i)); });', '  else values.forEach(() => {});', 'test/blind.test.mjs', 'inside a form field'],
+  ['M40', "an unbuilt product's column shown", 'lib/review.mjs', "    if (Object.values(runs).some(r => r?.status === 'not_built')) {", '    if (false) {', 'test/blind.test.mjs', 'cannot run yet'],
 ];
 
 function copyHarness() {

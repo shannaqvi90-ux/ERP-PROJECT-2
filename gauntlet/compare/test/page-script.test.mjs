@@ -116,6 +116,11 @@ test('the source check refuses text that is not exactly one function expression'
 // Stand-in product.
 let posts = 0;
 let slowHits = 0;
+let lateHits = 0;
+// Round 9 (critic p01 r8, mutation A24): a request the page starts after the clock without any
+// script (an image whose address an SVG animation sets 0.4 s after the click) must never reach the product.
+const LATE_PAGE = `<!doctype html><html><body><button id="go" onclick="document.getElementById('s').beginElementAt(0.4)">Go</button>
+<svg width="40" height="40"><image id="i" width="40" height="40" href=""><set id="s" attributeName="href" to="/late.png" begin="indefinite" fill="freeze"/></image></svg></body></html>`;
 const PAGE = `<!doctype html><html><head><title>Stand-in</title></head><body>
   <input id="q" aria-label="Query"><button id="go">Go</button><button id="look">Look</button><div id="out">none</div>
   <a id="deep" href="/deep">deep</a><iframe id="f" srcdoc="<p>child</p>"></iframe>
@@ -156,6 +161,8 @@ before(async () => {
     if (u.pathname === '/api/slow') { slowHits++; setTimeout(() => { res.writeHead(200); res.end(u.searchParams.get('q') || ''); }, 2000); return; }
     if (u.pathname === '/api/echo') { res.writeHead(200); return res.end(u.searchParams.get('q') || ''); }
     const html = h => { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(h); };
+    if (u.pathname === '/late') return html(LATE_PAGE);
+    if (u.pathname === '/late.png') { lateHits++; res.writeHead(404); return res.end(); }
     if (u.pathname === '/timer') return html(TIMER_PAGE);
     if (u.pathname === '/error') return html(ERROR_PAGE);
     if (u.pathname === '/ticker') return html(TICKER_PAGE);
@@ -404,9 +411,9 @@ test('plant T3 (round 6): run() returns before a 2 s answer and verify() reads t
   const r = await runDriver({
     ...onPlant,
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#look'); return {}; },
-    async verify(ctx, outcome) {
+    async verify(ctx) {
       const done = async () => (await ctx.read(() => document.getElementById('out').textContent)) === 'found abcdefghij';
-      if (outcome === undefined) return { verified: await done() };
+      // Round 9: verify() cannot tell the call before the clock from the ones after it, so it polls every time.
       for (let i = 0; i < 9; i++) { if (await done()) return { verified: true }; await new Promise(r2 => setTimeout(r2, 300)); }
       return { verified: false };
     },
@@ -421,9 +428,8 @@ test('plant T4: the answer is fast but the page shows it by a timer 1.2 s later;
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/timer'); },
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#look'); return {}; },
-    async verify(ctx, outcome) {
+    async verify(ctx) {
       const done = async () => (await ctx.read(() => document.getElementById('out').textContent)) === 'found abcdefghij';
-      if (outcome === undefined) return { verified: await done() };
       for (let i = 0; i < 6; i++) { if (await done()) return { verified: true }; await new Promise(r2 => setTimeout(r2, 300)); }
       return { verified: false };
     },
@@ -442,13 +448,44 @@ test('plant T6: a read aborted at the clock whose failure writes the end state -
   assert.equal(r.screen_after_verify?.unchanged, false);
 });
 
+test('round 9 (critic mutation A24): what the page starts loading after the clock is refused and never reaches the product', async () => {
+  const before = lateHits;
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/late'); },
+    async run(op) { await op.click('#go'); return {}; },
+    async verify(ctx) {
+      // Long enough (under the pause limit) for the animation to ask for its image after the clock.
+      await new Promise(r2 => setTimeout(r2, 700));
+      return { verified: (await ctx.read(() => document.getElementById('i').getAttribute('href'))) === '' && (await ctx.read(() => document.activeElement?.id || '')) === 'go' };
+    },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  await new Promise(res => setTimeout(res, 300));
+  assert.equal(lateHits, before, 'the image the animation asked for after the clock reached the product');
+  assert.ok(r.requests_after_clock >= 1, `the late request is recorded as refused (${r.requests_after_clock})`);
+});
+
+test('round 9 (critic mutation H10): a read in verify() that asks to wait longer is cut to half a second', async () => {
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.fill('#q', 'abc'); return {}; },
+    async verify(ctx) {
+      const missing = await ctx.page.locator('#never-there').textContent({ timeout: 5000 }).catch(() => null);
+      return { verified: missing === null && (await ctx.page.locator('#q').inputValue()) === 'abc' };
+    },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  for (const p of [r.verify_before, ...r.verify_passes]) assert.ok(p.seconds < 1.5, `a pass took ${p.seconds} s: the read waited past the 0.5 s limit`);
+});
+
 test('control: an honest product with a live ticker on screen still verifies; the freeze holds its screen still through verify()', async () => {
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/ticker'); },
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'saved abcdefghij', { label: 'saved' }); return {}; },
-    async verify(ctx, outcome) {
-      // Long enough for several ticks, under the pause limit.
-      if (outcome !== undefined) { const t = Date.now(); while (Date.now() - t < 700) { /* a read takes its time */ } }
+    async verify(ctx) {
+      // Long enough for several ticks, under the pause limit (round 9: the clock of a verify() process
+      // stands still, so the wait is counted in timer turns).
+      await new Promise(r2 => setTimeout(r2, 700));
       return { verified: (await ctx.page.locator('#out').textContent()) === 'saved abcdefghij' };
     },
   });
@@ -460,7 +497,7 @@ test('a document still loading when run() returns stays on the clock (round 7: t
   const r = await runDriver({
     async signIn(ctx) { await ctx.page.goto(base + '/reloading'); },
     async run(op) { await op.click('#save'); await op.waitFor(() => location.pathname === '/reloaded', { label: 'address changed' }); return {}; },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined && (await ctx.page.locator('#out').textContent()) === 'saved' }; },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#out').textContent()) === 'saved' }; },
   });
   assert.equal(r.status, 'verified', r.error);
   assert.ok(r.counts.machine_seconds >= 1.4, `machine ${r.counts.machine_seconds} s against a 1.5 s client load`);
@@ -496,7 +533,7 @@ test('a variant\'s own set-up and sign-in run before its measured part (round 6:
       b: { async run(op) { await op.click('#q'); return {}; } },
     },
     async signIn(ctx) { await fetch(base + '/mark/signin-base'); await ctx.page.goto(base + '/base'); },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+    async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; },
   }, { base });
   const product = standIn();
   const a = await execute(TASK, { ...spec, variant: 'a' }, product, 'ours', {}, layout(path.join(tmp, 'va')), { timeout: 10_000 });

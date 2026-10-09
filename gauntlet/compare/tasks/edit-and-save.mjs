@@ -5,6 +5,8 @@ export default {
   piece: 'p06',
   actor: 'admin',
   startAt: 'record',
+  saves: true,
+  enters: ['phone'],
   moments: [],
   start: 'Signed in, with the contact {contact.name} open on screen.',
   goal: 'Change the contact\'s phone number to {phone} and save.',

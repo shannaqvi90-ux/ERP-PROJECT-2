@@ -35,7 +35,7 @@ export default {
   },
   async verify(ctx) {
     const rpc = await adminRpc(ctx);
-    const rows = await rpc.searchRead('ir.attachment', [['res_model', '=', 'res.partner'], ['res_id', '=', ctx.state.contactId], ['name', '=', ctx.task.input.file]], ['id', 'file_size']);
+    const rows = await rpc.searchRead('ir.attachment', [['res_model', '=', 'res.partner'], ['res_id', '=', ctx.state.contactId], ['name', '=', ctx.task.input.file]], ['id', 'name', 'file_size']);
     return { verified: rows.length === 1 && rows[0].file_size > 0, details: { attachments: rows } };
   },
   async cleanup(ctx) { if (ctx.state.contactId) await removeAttachments(ctx); },

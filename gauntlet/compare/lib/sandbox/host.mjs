@@ -258,12 +258,38 @@ function describeDriver(d) {
 }
 
 let ctx = null;
-let outcome;
 let opView = null;
+/**
+ * Round 9: what this process is for. A run's process ('run') runs set-up, sign-in, the measured
+ * part and clean-up; verify() never runs there. Each verify() call runs in a process of its own
+ * ('verify'), started fresh for that call, which runs nothing else (lib/sandbox/bridge.mjs).
+ */
+const ROLE = process.env.COMPARE_DRIVER_ROLE === 'verify' ? 'verify' : 'run';
 
-function makeCtx(s) {
+/**
+ * Plain data only (round 9): what set-up left in ctx.state, as a verify() process receives it.
+ * Functions, the stand-ins of harness objects (functions too) and anything else that is not data
+ * are left out; so is anything nested deeper than 12 levels.
+ */
+function plainState(v, depth = 0) {
+  if (v === null) return null;
+  const t = typeof v;
+  if (t === 'string' || t === 'boolean') return v;
+  if (t === 'number') return Number.isFinite(v) ? v : null;
+  if (t !== 'object' || depth > 12) return undefined;
+  if (Array.isArray(v)) return v.map(x => { const y = plainState(x, depth + 1); return y === undefined ? null : y; });
+  const proto = Object.getPrototypeOf(v);
+  if (proto !== Object.prototype && proto !== null) return undefined;
+  const out = {};
+  for (const [k, x] of Object.entries(v)) { const y = plainState(x, depth + 1); if (y !== undefined) out[k] = y; }
+  return out;
+}
+
+const deepFreeze = v => { if (v && typeof v === 'object' && !Object.isFrozen(v)) { Object.freeze(v); Object.values(v).forEach(deepFreeze); } return v; };
+
+function makeCtx(s, { state = {}, downloads = null } = {}) {
   const c = {
-    task: s.task, product: s.product, needles: s.needles, dataDir: s.dataDir, harnessDir: s.harnessDir, health: !!s.health, state: {},
+    task: s.task, product: s.product, needles: s.needles, dataDir: s.dataDir, harnessDir: s.harnessDir, health: !!s.health, state,
     params: s.params ?? null,
     useApi(session) {
       if (!session || typeof session !== 'object') throw new TypeError('useApi({ baseUrl, headers, transport })');
@@ -273,6 +299,9 @@ function makeCtx(s) {
     read: (fn, arg = null, opts = {}) => ask('read', { fn: encode(fn), arg: encode(arg), page: opts?.page ? encode(opts.page) : null }).then(decode),
     until: (fn, opts = {}) => ask('until', { fn: encode(fn), arg: encode(opts?.arg ?? null), timeout: opts?.timeout ?? null, page: opts?.page ? encode(opts.page) : null }).then(() => undefined),
   };
+  // verify(): the files the measured part downloaded, as the harness saved them (round 9). Empty
+  // before the clock; a download is part of the end state, and only a counted step makes one.
+  if (downloads) c.downloads = deepFreeze(downloads.map(d => ({ file: String(d.file), url: d.url ?? null, name: d.name ?? null, sent: (d.sent || []).map(r => ({ method: r.method, url: r.url, postData: r.post_data ?? null })) })));
   return c;
 }
 
@@ -309,22 +338,39 @@ async function hook(m) {
   if (m.name === 'describe') return describeDriver(base);
   if (m.variant && !base?.variants?.[m.variant]) throw new Error(`no variant ${m.variant}`);
   const driver = m.variant ? { ...base, ...base.variants[m.variant] } : base;
-  if (m.name === 'begin') { ctx = makeCtx(m.session); outcome = undefined; opView = null; setHandles(m.handles); return true; }
+  if (m.name === 'begin') {
+    // A verify() process receives set-up's state as data and the measured part's downloads; a
+    // run's process starts with an empty state.
+    ctx = ROLE === 'verify' ? makeCtx(m.session, { state: m.state ?? {}, downloads: m.downloads ?? [] }) : makeCtx(m.session);
+    opView = null;
+    setHandles(m.handles);
+    return true;
+  }
   if (!ctx) throw new Error('no run has begun');
   if (m.handles) setHandles(m.handles);
+  // Round 9 (critic p01 r8, plants P1, P1b, P2): verify() runs only in a process of its own, with
+  // the same arguments before and after the clock, so it cannot tell the two calls apart; a run's
+  // process never runs it, and a verify() process runs nothing else.
+  if (ROLE === 'verify' && m.name !== 'verify') throw new Error(`a verify() process runs verify() only (asked for ${m.name})`);
   switch (m.name) {
     case 'ready': {
       const r = typeof driver.ready === 'function' ? driver.ready(ctx.page) : driver.ready;
       return typeof r === 'string' ? r : encode(r);
     }
+    case 'state':
+      // The state set-up and sign-in left, as data, for the verify() processes (taken once, when
+      // the start screen is ready, before the first verify() and before the clock).
+      return plainState(ctx.state) ?? {};
     case 'run': {
       opView = makeOp(m.page, m.startedAt);
-      outcome = await driver.run(opView, ctx);
+      const outcome = await driver.run(opView, ctx);
       return encode(outcome === undefined ? null : outcome);
     }
     case 'verify': {
-      const r = await driver.verify(ctx, m.after ? outcome : undefined);
-      return encode(r);
+      if (ROLE !== 'verify') throw new Error('verify() runs only in a verify() process of its own (lib/sandbox/bridge.mjs)');
+      // One argument, the same before and after the clock: verify() reads the end state; what
+      // run() returned never reaches it.
+      return encode(await driver.verify(ctx));
     }
     default: {
       if (!HOOKS.includes(m.name) || typeof driver[m.name] !== 'function') throw new Error(`no hook ${m.name}`);

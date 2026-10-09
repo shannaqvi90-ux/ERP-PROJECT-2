@@ -126,7 +126,7 @@ export class NotBuilt extends Error {
 }
 
 export class Operator {
-  #page; #device = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null;
+  #page; #device = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -157,6 +157,8 @@ export class Operator {
   get steps() { return this.#steps.map(s => ({ ...s })); }
   get waits() { return this.#waits.map(w => ({ ...w })); }
   get shots() { return this.#shots.map(s => ({ ...s })); }
+  /** The files the measured part downloaded: { file, url, name } (round 9: verify() reads them from the harness). */
+  get downloads() { return this.#downloads.map(d => ({ ...d })); }
 
   /** Seconds on the product clock since start(). */
   now() {
@@ -405,13 +407,30 @@ export class Operator {
     const { label } = checkOptions('clickForDownload', opts);
     this.#begin();
     const download = this.#page.waitForEvent('download', { timeout: this.defaultTimeout });
-    await this.click(target, label ? { label } : {});
-    const t = this.now();
-    const d = await download;
+    // What the page sent between the click and the file (round 9): verify() reads the request that
+    // asked for the file from the download, not from a listener of its own in the run's process.
+    const sent = [];
+    const onRequest = r => {
+      if (sent.length >= 20) return;
+      let postData = null;
+      try { postData = r.postData(); } catch { /* none */ }
+      sent.push({ method: r.method(), url: r.url(), post_data: postData && postData.length > (1 << 20) ? postData.slice(0, 1 << 20) : postData });
+    };
+    this.#page.on('request', onRequest);
+    let d;
+    let t;
+    try {
+      await this.click(target, label ? { label } : {});
+      t = this.now();
+      d = await download;
+    } finally {
+      this.#page.off('request', onRequest);
+    }
     fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, d.suggestedFilename());
     await d.saveAs(file);
     this.#waits.push({ label: 'file received', at: round(t), seconds: round(this.now() - t) });
+    if (this.measuring) this.#downloads.push({ file, url: d.url(), name: d.suggestedFilename(), sent });
     return file;
   }
 

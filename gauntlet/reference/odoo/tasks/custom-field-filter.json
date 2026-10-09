@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "run_id": "custom-field-filter-20261007T234000-84d1",
-  "instrument": 6,
+  "run_id": "custom-field-filter-20261009T175959-21cb",
+  "instrument": 7,
   "task": "custom-field-filter",
   "task_title": "Add a custom field and filter by it",
   "product": "odoo",
   "status": "verified",
   "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
   "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
-  "started_at": "2026-10-07T23:40:00.291Z",
-  "finished_at": "2026-10-07T23:40:09.671Z",
+  "started_at": "2026-10-09T17:59:59.549Z",
+  "finished_at": "2026-10-09T18:00:09.573Z",
   "environment": {
-    "base_url": "http://localhost:8069",
+    "base_url": "http://localhost:20102",
     "viewport": {
       "width": 1600,
       "height": 900
@@ -29,10 +29,11 @@
     "key_chords": 2,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 5.234,
-    "system_wait_seconds": 1.428,
+    "device_confirmations": 0,
+    "machine_seconds": 5.101,
+    "system_wait_seconds": 1.181,
     "human_seconds": 53.48,
-    "human_plus_wait_seconds": 54.908,
+    "human_plus_wait_seconds": 54.661,
     "klm_operator_counts": {
       "K": 61,
       "P": 11,
@@ -58,7 +59,7 @@
       "label": "apps menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.063,
+      "took": 0.067,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +68,8 @@
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "at": 0.065,
-      "took": 0.051,
+      "at": 0.069,
+      "took": 0.052,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +78,8 @@
       "kind": "type",
       "label": "contact name",
       "keystrokes": 29,
-      "at": 0.666,
-      "took": 0.206,
+      "at": 0.252,
+      "took": 0.435,
       "text": "Shamma Waleed Al Romaithi",
       "same_field": false,
       "screen": "/odoo/contacts",
@@ -89,8 +90,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 0.873,
-      "took": 0.016,
+      "at": 0.688,
+      "took": 0.012,
       "chord": "Enter",
       "screen": "/odoo/contacts",
       "chain": true
@@ -100,8 +101,8 @@
       "kind": "click",
       "label": "open the contact",
       "keystrokes": 0,
-      "at": 1.158,
-      "took": 0.075,
+      "at": 0.99,
+      "took": 0.065,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -110,8 +111,8 @@
       "kind": "click",
       "label": "actions menu",
       "keystrokes": 0,
-      "at": 1.437,
-      "took": 0.05,
+      "at": 1.268,
+      "took": 0.051,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -120,8 +121,8 @@
       "kind": "click",
       "label": "Edit Properties",
       "keystrokes": 0,
-      "at": 1.488,
-      "took": 0.248,
+      "at": 1.32,
+      "took": 0.274,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -130,8 +131,8 @@
       "kind": "type",
       "label": "field label",
       "keystrokes": 12,
-      "at": 3.921,
-      "took": 0.047,
+      "at": 3.707,
+      "took": 0.041,
       "text": "Licence ref",
       "same_field": false,
       "screen": "/odoo/contacts/73531",
@@ -142,8 +143,8 @@
       "kind": "click",
       "label": "Add",
       "keystrokes": 0,
-      "at": 3.969,
-      "took": 0.064,
+      "at": 3.749,
+      "took": 0.051,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -152,8 +153,8 @@
       "kind": "click",
       "label": "focus value",
       "keystrokes": 0,
-      "at": 4.038,
-      "took": 0.05,
+      "at": 3.807,
+      "took": 0.049,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -162,8 +163,8 @@
       "kind": "type",
       "label": "value",
       "keystrokes": 9,
-      "at": 4.1,
-      "took": 0.029,
+      "at": 3.863,
+      "took": 0.02,
       "text": "LR-7731",
       "same_field": true,
       "screen": "/odoo/contacts/73531",
@@ -174,8 +175,8 @@
       "kind": "click",
       "label": "Save",
       "keystrokes": 0,
-      "at": 4.352,
-      "took": 0.086,
+      "at": 4.081,
+      "took": 0.064,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -184,8 +185,8 @@
       "kind": "click",
       "label": "breadcrumb: Contacts",
       "keystrokes": 0,
-      "at": 4.53,
-      "took": 0.123,
+      "at": 4.233,
+      "took": 0.094,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -194,8 +195,8 @@
       "kind": "key",
       "label": "drop the name filter",
       "keystrokes": 1,
-      "at": 4.66,
-      "took": 0.007,
+      "at": 4.331,
+      "took": 0.006,
       "chord": "Backspace",
       "screen": "/odoo/contacts",
       "chain": false
@@ -205,8 +206,8 @@
       "kind": "type",
       "label": "value to filter by",
       "keystrokes": 9,
-      "at": 4.876,
-      "took": 0.036,
+      "at": 4.556,
+      "took": 0.12,
       "text": "LR-7731",
       "same_field": false,
       "screen": "/odoo/contacts",
@@ -217,8 +218,8 @@
       "kind": "click",
       "label": "expand Search Properties",
       "keystrokes": 0,
-      "at": 4.913,
-      "took": 0.048,
+      "at": 4.678,
+      "took": 0.153,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -227,8 +228,8 @@
       "kind": "click",
       "label": "Licence ref line",
       "keystrokes": 0,
-      "at": 4.962,
-      "took": 0.14,
+      "at": 4.831,
+      "took": 0.156,
       "screen": "/odoo/contacts",
       "chain": false
     }
@@ -236,80 +237,80 @@
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.117,
-      "seconds": 0.468
+      "at": 0.121,
+      "seconds": 0.115
     },
     {
       "label": "contact list, search focused",
-      "at": 0.586,
-      "seconds": 0.006
+      "at": 0.236,
+      "seconds": 0.003
     },
     {
       "label": "one result",
-      "at": 0.891,
-      "seconds": 0.267
+      "at": 0.701,
+      "seconds": 0.289
     },
     {
       "label": "contact form",
-      "at": 1.234,
-      "seconds": 0.202
+      "at": 1.056,
+      "seconds": 0.211
     },
     {
       "label": "new field popover, label focused",
-      "at": 1.737,
-      "seconds": 0.183
+      "at": 1.595,
+      "seconds": 0.112
     },
     {
       "label": "field on the form",
-      "at": 4.033,
-      "seconds": 0.004
+      "at": 3.8,
+      "seconds": 0.006
     },
     {
       "label": "saved",
-      "at": 4.438,
-      "seconds": 0.091
+      "at": 4.146,
+      "seconds": 0.087
     },
     {
       "label": "contact list",
-      "at": 4.655,
-      "seconds": 0.004
+      "at": 4.328,
+      "seconds": 0.002
     },
     {
       "label": "filter dropped, full list back",
-      "at": 4.668,
-      "seconds": 0.208
+      "at": 4.337,
+      "seconds": 0.218
     },
     {
       "label": "filtered to one contact",
-      "at": 5.103,
-      "seconds": 0.129
+      "at": 4.988,
+      "seconds": 0.109
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "899db98f9b944eb2.jpg",
+      "file": "8132f28fe400ca46.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/899db98f9b944eb2.jpg"
+      "path": "gauntlet/reference/odoo/shots/8132f28fe400ca46.jpg"
     },
     {
       "moment": "field added and filled in",
-      "file": "ffdcab70f7e395b2.jpg",
-      "at": 4.13,
-      "path": "gauntlet/reference/odoo/shots/ffdcab70f7e395b2.jpg"
+      "file": "861726f8060d7b52.jpg",
+      "at": 3.884,
+      "path": "gauntlet/reference/odoo/shots/861726f8060d7b52.jpg"
     },
     {
       "moment": "done",
-      "file": "d2f38903dad176ee.jpg",
-      "at": 5.234,
-      "path": "gauntlet/reference/odoo/shots/d2f38903dad176ee.jpg"
+      "file": "2fa92a2ec4fae794.jpg",
+      "at": 5.101,
+      "path": "gauntlet/reference/odoo/shots/2fa92a2ec4fae794.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
       "field": {
-        "name": "507f1aa60df85177",
+        "name": "c1a3f6a90bce0d6c",
         "type": "char",
         "string": "Licence ref",
         "default": false
@@ -342,20 +343,21 @@
   },
   "verify_passes": [
     {
-      "requests": 5,
+      "requests": 6,
       "longest_pause_seconds": 0.003,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.063,
+      "seconds": 0.066,
       "verified": true
     },
     {
-      "requests": 5,
-      "longest_pause_seconds": 0.002,
+      "requests": 6,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.059,
-      "verified": true
+      "seconds": 0.065,
+      "verified": true,
+      "gap_seconds": 1.101
     }
   ],
   "requests_after_clock": 0,
@@ -364,19 +366,71 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "88b012799cf67b00",
+    "sha256": "3f2110df26ab2c50",
     "elements": 213
   },
   "screen_after_verify": {
-    "sha256": "88b012799cf67b00",
+    "sha256": "3f2110df26ab2c50",
     "elements": 213,
     "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 4,
+    "requests": 6,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.104
+  },
+  "saved_state": {
+    "reads_before": 4,
+    "reads_after": 4,
+    "read_both_times": 4,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/search",
+      "POST /web/dataset/call_kw/res.partner/read",
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/search",
+      "POST /web/dataset/call_kw/res.partner/read",
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/properties.base.definition/read": [
+        "result.0.properties_definition.0.name",
+        "result.0.properties_definition.0.type",
+        "result.0.properties_definition.0.string",
+        "result.0.properties_definition.0.default",
+        "result.0.properties_definition"
+      ],
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.properties.0.name",
+        "result.0.properties.0.type",
+        "result.0.properties.0.string",
+        "result.0.properties.0.default",
+        "result.0.properties.0.value",
+        "result.0.properties"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ]
   },
   "result_file": "gauntlet/reference/odoo/tasks/custom-field-filter.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/custom-field-filter-20261007T233941-3fa3.json",
-    "gauntlet/reference/odoo/results/custom-field-filter-20261007T233950-38de.json",
-    "gauntlet/reference/odoo/results/custom-field-filter-20261007T234000-84d1.json"
+    "gauntlet/reference/odoo/results/custom-field-filter-20261009T175937-e61d.json",
+    "gauntlet/reference/odoo/results/custom-field-filter-20261009T175949-1c4c.json",
+    "gauntlet/reference/odoo/results/custom-field-filter-20261009T175959-21cb.json"
   ]
 }

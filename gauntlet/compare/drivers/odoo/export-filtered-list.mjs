@@ -34,16 +34,18 @@ export default {
     await op.click(page.locator('.o-dropdown--menu .dropdown-item', { hasText: /^Export$/ }), { label: 'Export' });
     await op.waitFor('.modal .o_export_field, .modal .o_fields_list li', { label: 'export dialog' });
     await op.shot('export options chosen');
-    ctx.state.file = await op.clickForDownload(page.locator('.modal-footer button', { hasText: /^Export$/ }), ctx.state.dir, { label: 'Export (download)' });
+    await op.clickForDownload(page.locator('.modal-footer button', { hasText: /^Export$/ }), ctx.state.dir, { label: 'Export (download)' });
     return {};
   },
   async verify(ctx) {
-    const rows = readFirstSheet(ctx.state.file);
+    const [download] = ctx.downloads;
+    if (!download) return { verified: false, details: { file: null } };
+    const rows = readFirstSheet(download.file);
     const header = rows[0] || [];
     const has = re => header.some(h => re.test(h));
     const data = rows.slice(1).filter(r => r.some(c => c !== ''));
     const ok = has(/name/i) && has(/e-?mail/i) && has(/phone/i) && data.length === ctx.state.expected;
-    return { verified: ok, details: { file: path.basename(ctx.state.file), header, rows: data.length, expected_rows: ctx.state.expected } };
+    return { verified: ok, details: { file: path.basename(download.file), header, rows: data.length, expected_rows: ctx.state.expected } };
   },
   async cleanup(ctx) { if (ctx.state.dir) fs.rmSync(ctx.state.dir, { recursive: true, force: true }); },
 };

@@ -9,16 +9,17 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { HARNESS_DIR } from '../lib/config.mjs';
-import { checkRigVolume, describeShort, MAIN_LISTS, MIN_ROWS_PER_MAIN_LIST, TOP_UP_HINT } from '../lib/rig-volume.mjs';
+import { checkRigVolume, describeShort, describeSoon, MAIN_LISTS, MIN_ROWS_PER_MAIN_LIST, TOP_UP_HINT } from '../lib/rig-volume.mjs';
 
 const RUN = path.join(HARNESS_DIR, 'run.mjs');
 
-function fakeRpc(shortModels = []) {
+function fakeRpc(shortModels = [], { jobRunMade = '2026-10-09 06:00:00' } = {}) {
   const calls = [];
   return {
     calls,
     async call(model, method, args, kwargs) {
       calls.push({ model, method, args, kwargs });
+      if (method === 'search_read') return [{ id: 1, create_date: jobRunMade }];
       return shortModels.includes(model) ? [] : [kwargs.offset + 1];
     },
   };
@@ -30,9 +31,10 @@ test('rig volume: every main list is asked for its 100,000th row', async () => {
   assert.equal(r.ok, true);
   assert.deepEqual(r.short, []);
   assert.equal(MIN_ROWS_PER_MAIN_LIST, 100_000);
-  assert.equal(rpc.calls.length, 7);
-  assert.deepEqual(rpc.calls.map(c => c.model).sort(), Object.values(MAIN_LISTS).map(([m]) => m).sort());
-  for (const c of rpc.calls) {
+  const searches = rpc.calls.filter(c => c.method === 'search');
+  assert.equal(searches.length, 7);
+  assert.deepEqual(searches.map(c => c.model).sort(), Object.values(MAIN_LISTS).map(([m]) => m).sort());
+  for (const c of searches) {
     assert.equal(c.method, 'search');
     assert.equal(c.kwargs.offset, 99_999);
     assert.equal(c.kwargs.limit, 1);
@@ -47,6 +49,29 @@ test('rig volume: a list one row short is reported by name with the top-up comma
   assert.deepEqual(r.short, ['job_runs']);
   assert.match(describeShort(r), /job_runs \(ir\.cron\.progress\) hold fewer than 100,000 rows/);
   assert.match(TOP_UP_HINT, /tools\/odoo-reference\/up\.sh/);
+  assert.match(TOP_UP_HINT, /ODOO_REF_PROJECT=.* ODOO_REF_PORT=.* tools\/odoo-reference\/up\.sh/, 'the private-rig command too');
+  assert.match(TOP_UP_HINT, /README/);
+});
+
+// Round 9 (needs-human #13: the shared rig fell short after Odoo's weekly clean-up and a run was
+// refused). The 100,000 check stays as it is; the harness now says days ahead when a list it
+// vacuums will fall short, from the age of its 100,000th newest row.
+test('rig volume: the date a vacuumed list falls short is worked out, and a warning given two days ahead', async () => {
+  const now = Date.parse('2026-10-14T12:00:00Z');
+  const fresh = await checkRigVolume(fakeRpc([], { jobRunMade: '2026-10-13 06:00:00' }), MIN_ROWS_PER_MAIN_LIST, { now });
+  assert.equal(fresh.ok, true);
+  assert.equal(fresh.lists.job_runs.at_bar_until, '2026-10-20T06:00:00.000Z');
+  assert.deepEqual(fresh.soon, []);
+  const old = await checkRigVolume(fakeRpc([], { jobRunMade: '2026-10-08 06:00:00' }), MIN_ROWS_PER_MAIN_LIST, { now });
+  assert.equal(old.ok, true, 'still at the bar today: the run goes on');
+  assert.deepEqual(old.soon, ['job_runs']);
+  assert.match(describeSoon(old), /job_runs \(ir\.cron\.progress\) falls below 100,000 rows about 2026-10-15T06:00:00\.000Z/);
+  const read = fakeRpc([], {});
+  await checkRigVolume(read);
+  const q = read.calls.find(c => c.method === 'search_read');
+  assert.equal(q.model, 'ir.cron.progress');
+  assert.equal(q.kwargs.offset, 99_999, 'the 100,000th newest row');
+  assert.match(q.kwargs.order, /^create_date desc/);
 });
 
 /** A stand-in Odoo that signs in and answers search with no row for the given models. */
@@ -58,6 +83,7 @@ async function fakeOdoo(shortModels) {
       const { id, params } = JSON.parse(body || '{}');
       let result = null;
       if (req.url === '/web/session/authenticate') result = { uid: 2 };
+      else if (req.url.startsWith('/web/dataset/call_kw/') && params.method === 'search_read') result = [{ id: 1, create_date: new Date().toISOString().replace('T', ' ').slice(0, 19) }];
       else if (req.url.startsWith('/web/dataset/call_kw/')) result = shortModels.includes(params.model) ? [] : [params.kwargs.offset + 1];
       res.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': 'session_id=fake; Path=/' });
       res.end(JSON.stringify({ jsonrpc: '2.0', id, result }));
@@ -86,6 +112,7 @@ test('run.mjs refuses an Odoo run when the live rig is short of a main list, and
       assert.equal(r.status, 2, r.stdout + r.stderr);
       assert.match(r.stderr, /short of the bar: job_runs \(ir\.cron\.progress\)/);
       assert.match(r.stderr, /up\.sh/);
+      assert.match(r.stderr, /Nothing was run or recorded/);
       assert.equal(fs.existsSync(path.join(out, 'results')), false, 'no result is written for a short rig');
     }
   } finally {

@@ -25,6 +25,7 @@ import childProcess from 'node:child_process';
 import workerThreads from 'node:worker_threads';
 import inspector from 'node:inspector';
 import cluster from 'node:cluster';
+import os from 'node:os';
 
 export class SandboxRefusal extends Error {
   constructor(what) {
@@ -90,6 +91,61 @@ lock(v8, 'setFlagsFromString', refuse('changing V8 flags (v8.setFlagsFromString)
 for (const name of ['binding', '_linkedBinding', 'dlopen']) {
   if (typeof process[name] === 'function') lock(process, name, refuse(`a native binding (process.${name})`));
 }
+// Round 9 (critic p01 r8): a verify() process has no clock. verify() runs once before the clock and
+// twice after it, each time in a fresh process with the same arguments, so that it cannot tell
+// which call it is in and answer "not done" only before the clock. A clock would tell it (set-up
+// notes the time, verify() compares), so every clock a driver can read here stands still at the
+// moment the run began: Date (and every date made without a value, Intl formatting without a
+// date), performance.now and timeOrigin, process.hrtime and uptime, os.uptime and the processors'
+// time counters, and the diagnostic report (it stamps the time). Timers still run (the process
+// needs them), but a pause of over a second in verify() makes the run invalid anyway (lib/runner.mjs).
+if (process.env.COMPARE_DRIVER_ROLE === 'verify') freezeClocks(Number(process.env.COMPARE_FROZEN_CLOCK) || 0);
+
+function freezeClocks(at) {
+  // Pinned: reading gives the frozen value; assigning is ignored (a driver that patches its own
+  // clocks, in its own process, changes nothing for the harness, and must still load here).
+  const pin = (obj, key, value) => {
+    const d = Object.getOwnPropertyDescriptor(obj, key);
+    Object.defineProperty(obj, key, { get: () => value, set: () => {}, configurable: false, enumerable: d ? d.enumerable : false });
+  };
+  const RealDate = Date;
+  function FrozenDate(...args) {
+    if (!new.target) return new RealDate(at).toString();
+    return args.length ? new RealDate(...args) : new RealDate(at);
+  }
+  Object.defineProperty(FrozenDate, 'prototype', { value: RealDate.prototype, writable: false });
+  for (const k of ['parse', 'UTC']) pin(FrozenDate, k, RealDate[k]);
+  pin(FrozenDate, 'now', () => at);
+  // A date's own constructor leads back to the real one otherwise.
+  pin(RealDate.prototype, 'constructor', FrozenDate);
+  pin(globalThis, 'Date', FrozenDate);
+  // Intl formatting without a date formats "now".
+  const P = Intl.DateTimeFormat.prototype;
+  const formatGetter = Object.getOwnPropertyDescriptor(P, 'format').get;
+  Object.defineProperty(P, 'format', { get() { const f = formatGetter.call(this); return (date = at) => f(date === undefined ? at : date); }, set: () => {}, configurable: false });
+  const formatToParts = P.formatToParts;
+  pin(P, 'formatToParts', function frozenFormatToParts(date = at) { return formatToParts.call(this, date === undefined ? at : date); });
+  const zero = () => 0;
+  const hr = () => [0, 0];
+  hr.bigint = () => 0n;
+  // The instance and its prototype: Performance.prototype.now.call(performance) reads the real clock otherwise.
+  for (const o of [performance, Object.getPrototypeOf(performance)]) {
+    pin(o, 'now', zero);
+    pin(o, 'timeOrigin', at);
+    for (const k of ['mark', 'measure', 'getEntries', 'getEntriesByName', 'getEntriesByType', 'eventLoopUtilization', 'timerify', 'toJSON']) {
+      if (typeof o[k] === 'function') pin(o, k, refuse(`a clock (performance.${k}) in verify()`));
+    }
+  }
+  pin(process, 'hrtime', hr);
+  pin(process, 'uptime', zero);
+  pin(os, 'uptime', zero);
+  const realCpus = os.cpus.bind(os);
+  pin(os, 'cpus', () => realCpus().map(c => ({ ...c, times: { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 } })));
+  for (const k of ['cpuUsage', 'resourceUsage']) if (typeof process[k] === 'function') pin(process, k, refuse(`a clock (process.${k}) in verify()`));
+  try { pin(process, 'report', null); } catch { /* not configurable in this Node */ }
+  if (typeof globalThis.Temporal === 'object') pin(globalThis, 'Temporal', undefined);
+}
+
 module.syncBuiltinESMExports();
 
 // The host replaces fetch with the counted channel to the harness; until then there is none.

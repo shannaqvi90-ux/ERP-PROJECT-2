@@ -70,7 +70,7 @@ test('a verified run records no failure capture', async () => {
   const r = await execute(TASK, await sandboxed({
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run(op) { await op.click('#q'); return {}; },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+    async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; },
   }, { base }), product(), 'ours', {}, out, { timeout: 10_000 });
   assert.equal(r.status, 'verified', r.error);
   assert.equal(r.failure_capture, undefined);

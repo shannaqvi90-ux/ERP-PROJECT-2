@@ -4,6 +4,7 @@ export default {
   named: true,
   actor: 'admin',
   startAt: 'home',
+  saves: true,
   moments: ['columns matched'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.',

@@ -43,26 +43,25 @@ test('the driver process starts under the permission model with the network lock
   assert.ok(args.includes('--import') && args[args.indexOf('--import') + 1].endsWith(path.join('sandbox', 'lockdown.mjs')));
 });
 
+// Round 9: verify() runs in a process of its own, so the run's process is examined in set-up and
+// what it found travels to verify() in ctx.state (as data).
 test('inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket', async () => {
   const r = await run({
-    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
-    async run(op) { await op.click('#q'); return {}; },
-    async verify(ctx, outcome) {
-      if (outcome === undefined) return { verified: false };
+    async setup(ctx) {
       const p = process.permission;
       const tmpdir = os.tmpdir();
       const scratchFile = path.join(tmpdir, 'ok.txt');
       fs.writeFileSync(scratchFile, 'x');
       let socket = null;
       try { process.getBuiltinModule('node:net').connect(9, '127.0.0.1'); socket = 'opened'; } catch (e) { socket = e.name; }
-      return {
-        verified: true,
-        details: {
-          child: p.has('child'), worker: p.has('worker'), writeHarness: p.has('fs.write', ctx.harnessDir), writeScratch: p.has('fs.write', tmpdir),
-          readHarness: p.has('fs.read', ctx.harnessDir), scratchWritten: fs.readFileSync(scratchFile, 'utf8') === 'x', socket, pid: process.pid,
-        },
+      ctx.state.details = {
+        child: p.has('child'), worker: p.has('worker'), writeHarness: p.has('fs.write', ctx.harnessDir), writeScratch: p.has('fs.write', tmpdir),
+        readHarness: p.has('fs.read', ctx.harnessDir), scratchWritten: fs.readFileSync(scratchFile, 'utf8') === 'x', socket, pid: process.pid,
       };
     },
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.fill('#q', 'abc'); return {}; },
+    async verify(ctx) { return { verified: (await ctx.page.locator('#q').inputValue()) === 'abc', details: ctx.state.details }; },
   });
   // The socket attempt in verify() is refused and reported: the run is invalid, and its details say why.
   assert.equal(r.status, 'invalid');
@@ -81,9 +80,8 @@ test('inside the driver process: no child process, no worker, no writes outside 
 test('inside the driver process: every way to open a socket is refused by its own lock (round 7, critic mutation M4)', async () => {
   const r = await run({
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
-    async run(op) { await op.click('#q'); return {}; },
-    async verify(ctx, outcome) {
-      if (outcome === undefined) return { verified: false };
+    async run(op) { await op.fill('#q', 'abc'); return {}; },
+    async verify(ctx) {
       const net = process.getBuiltinModule('node:net');
       const tls = process.getBuiltinModule('node:tls');
       const http = process.getBuiltinModule('node:http');
@@ -99,7 +97,7 @@ test('inside the driver process: every way to open a socket is refused by its ow
       };
       const out = {};
       for (const [k, f] of Object.entries(tries)) { try { f(); out[k] = 'opened'; } catch (e) { out[k] = String(e.message); } }
-      return { verified: true, details: out };
+      return { verified: (await ctx.page.locator('#q').inputValue()) === 'abc', details: out };
     },
   });
   assert.equal(r.status, 'invalid');
@@ -140,19 +138,22 @@ test('the stand-ins a driver holds behave like Playwright objects: sync reads, l
       await op.waitFor(op.page.locator('#out', { hasText: 'found abc' }));
       assert.equal(await op.page.locator('#q').inputValue(), 'abc');
       assert.equal(op.steps.length, 3, 'the step copies follow each action');
-      return { posts: ctx.state.posts.length };
-    },
-    async verify(ctx, outcome) {
-      if (outcome === undefined) return { verified: false };
+      // The listener (in this process, the run's) saw the page's one POST.
       ctx.page.off('request', ctx.state.listener);
-      return { verified: (await ctx.page.locator('#out').textContent()) === 'found abc', details: { posts: ctx.state.posts, outcome: outcome ?? null } };
+      const posts = ctx.state.posts;
+      assert.equal(posts.length, 1, JSON.stringify(posts));
+      assert.match(posts[0].url, /\/api\/echo$/);
+      assert.equal(posts[0].body, 'abc');
+      return {};
+    },
+    async verify(ctx) {
+      // Round 9: the listener (a function) stays in the run's process; verify() gets set-up's state as data.
+      return { verified: (await ctx.page.locator('#out').textContent()) === 'found abc', details: { listener: ctx.state.listener ?? null, posts: ctx.state.posts } };
     },
   });
   assert.equal(r.status, 'verified', r.error);
-  const posts = r.verification.details.posts;
-  assert.equal(posts.length, 1, JSON.stringify(posts));
-  assert.match(posts[0].url, /\/api\/echo$/);
-  assert.equal(posts[0].body, 'abc');
+  assert.equal(r.verification.details.listener, null, 'a function never reaches verify()');
+  assert.deepEqual(r.verification.details.posts, [], 'verify() gets the state as it stood at the start');
   assert.equal(r.counts.steps, 3);
 });
 
@@ -170,11 +171,11 @@ test('a driver process that stops answering is stopped, and the next run gets a 
   const r = await execute(TASK, await sandboxed({
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run() { for (;;) { /* never answers */ } },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined }; },
+    async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; },
   }, { base }), standIn(), 'ours', {}, layout(path.join(tmp, 'hang')), { timeout: 1_000, hookTimeout: 3_000 });
   assert.notEqual(r.status, 'verified');
   assert.match(r.error, /did not answer/);
-  const next = await run({ async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, async run(op) { await op.click('#q'); return {}; }, async verify(ctx, outcome) { return { verified: outcome !== undefined }; } });
+  const next = await run({ async signIn(ctx) { await ctx.page.goto(base + '/plant'); }, async run(op) { await op.click('#q'); return {}; }, async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q' }; } });
   assert.equal(next.status, 'verified', next.error);
 });
 
@@ -189,16 +190,21 @@ test('plant X1 (round 6): every run has a driver process of its own, so a driver
       const then = Promise.prototype.then;
       Promise.prototype.then = function (a, b) { return then.call(this, v => new Promise(r => slow(() => r(v), 50)).then(a), b); };
       globalThis.__poisoned = process.pid;
+      ctx.state.pid = process.pid;
       await ctx.page.goto(base + '/plant');
     },
     async run(op) { await op.click('#q'); return {}; },
-    async verify(ctx, outcome) { return { verified: outcome !== undefined, details: { pid: process.pid } }; },
+    async verify(ctx) { return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q', details: { pid: ctx.state.pid } }; },
   });
   const next = await run({
-    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async signIn(ctx) {
+      // What the run's process (this one) holds, examined before the measured part.
+      Object.assign(ctx.state, { pid: process.pid, poisoned: globalThis.__poisoned ?? null, patched: Promise.prototype.then.toString().includes('slow') });
+      await ctx.page.goto(base + '/plant');
+    },
     async run(op) { await op.click('#q'); await new Promise(r => setTimeout(r, 10)); return {}; },
-    async verify(ctx, outcome) {
-      return { verified: outcome !== undefined, details: { pid: process.pid, poisoned: globalThis.__poisoned ?? null, patched: Promise.prototype.then.toString().includes('slow') } };
+    async verify(ctx) {
+      return { verified: (await ctx.read(() => document.activeElement?.id || '')) === 'q', details: { pid: ctx.state.pid, poisoned: ctx.state.poisoned, patched: ctx.state.patched } };
     },
   });
   assert.equal(next.status, 'verified', next.error);
@@ -209,4 +215,70 @@ test('plant X1 (round 6): every run has a driver process of its own, so a driver
   // The run's process ends with its run.
   const pid = next.verification.details.pid;
   assert.throws(() => process.kill(pid, 0), /ESRCH/);
+});
+
+// Round 9 (critic p01 r8): verify() runs in a fresh process for each call, with the same arguments
+// before and after the clock. That process runs nothing else, reads only the harness's code and
+// data and the measured part's downloads, and has no clock.
+test('a verify() process: one per call, reads only the harness and the downloads, writes nothing, no clock, nothing of the run\'s process', async () => {
+  const r = await run({
+    async setup(ctx) {
+      // A mark the run's process leaves where verify() might look for it.
+      fs.writeFileSync(path.join(os.tmpdir(), 'mark.txt'), 'ran');
+      ctx.state.runScratch = os.tmpdir();
+      ctx.state.runPid = process.pid;
+      ctx.state.setUpAt = Date.now();
+      globalThis.__fromRun = true;
+    },
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.fill('#q', 'abc'); return {}; },
+    async verify(ctx) {
+      const tryRead = f => { try { f(); return 'read'; } catch (e) { return e.code || e.name; } };
+      const details = {
+        pid: process.pid,
+        role: process.env.COMPARE_DRIVER_ROLE,
+        args: arguments.length,
+        fromRun: globalThis.__fromRun ?? null,
+        runMark: tryRead(() => fs.readFileSync(path.join(ctx.state.runScratch, 'mark.txt'))),
+        tmpListing: tryRead(() => fs.readdirSync(path.dirname(os.tmpdir()))),
+        proc: tryRead(() => fs.readFileSync('/proc/uptime')),
+        harnessLib: tryRead(() => fs.readFileSync(path.join(ctx.harnessDir, 'lib', 'config.mjs'))),
+        harnessRuns: tryRead(() => fs.readdirSync(path.join(ctx.harnessDir, 'runs'))),
+        now: Date.now(), dateNow: new Date().getTime(), perf: performance.now(), uptime: process.uptime(), osUptime: os.uptime(),
+        hr: process.hrtime.bigint().toString(), setUpAt: ctx.state.setUpAt, protoNow: Object.getPrototypeOf(performance).now.call(performance),
+        write: tryRead(() => fs.writeFileSync(path.join(os.tmpdir(), 'w.txt'), 'x')),
+        intl: new Intl.DateTimeFormat('en', { timeStyle: 'medium', timeZone: 'UTC' }).format() === new Intl.DateTimeFormat('en', { timeStyle: 'medium', timeZone: 'UTC' }).format(new Date()),
+        downloads: ctx.downloads,
+        dateHeader: (await fetch(base + '/plant')).headers.get('date'),
+      };
+      return { verified: (await ctx.page.locator('#q').inputValue()) === 'abc', details };
+    },
+  });
+  assert.equal(r.status, 'verified', r.error);
+  const d = r.verification.details;
+  assert.equal(d.role, 'verify');
+  assert.equal(d.args, 1, 'verify() gets ctx alone, before and after the clock');
+  assert.notEqual(d.pid, process.pid);
+  assert.equal(d.fromRun, null, 'nothing of the run\'s process reaches verify()');
+  assert.equal(d.runMark, 'ERR_ACCESS_DENIED', 'the run\'s scratch folder is out of reach');
+  assert.equal(d.tmpListing, 'ERR_ACCESS_DENIED');
+  assert.equal(d.proc, 'ERR_ACCESS_DENIED');
+  assert.equal(d.harnessLib, 'read');
+  assert.equal(d.harnessRuns, 'ERR_ACCESS_DENIED', 'the results and shots of runs are out of reach');
+  // The clocks stand at the moment the run began, before set-up.
+  assert.equal(d.now, d.dateNow);
+  assert.ok(d.now <= d.setUpAt, `the clock of verify() (${d.now}) stands before set-up (${d.setUpAt})`);
+  assert.equal(d.perf, 0);
+  assert.equal(d.uptime, 0);
+  assert.equal(d.osUptime, 0);
+  assert.equal(d.hr, '0');
+  assert.equal(d.protoNow, 0, 'the prototype\'s clock stands still too');
+  assert.equal(d.write, 'ERR_ACCESS_DENIED', 'a verify() process writes nothing (a file\'s time is a clock)');
+  assert.equal(d.intl, true);
+  assert.deepEqual(d.downloads, []);
+  assert.equal(d.dateHeader, null, 'the product\'s Date header (a clock) never reaches verify()');
+  assert.equal(r.verify_before.verified, false);
+  assert.equal(r.verify_passes.length, 2);
+  // Each verify() call had a process of its own, gone with the call.
+  assert.throws(() => process.kill(d.pid, 0), /ESRCH/);
 });

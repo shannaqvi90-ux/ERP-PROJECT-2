@@ -72,6 +72,16 @@ test('the blind review page shows neutral captions, never the moments a driver n
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('a task one product cannot run yet shows no columns, so nothing on the page says which product is unbuilt (round 9, critic p01 r8)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'review-'));
+  const runs = { odoo: { status: 'verified', screenshots: [{ file: 'a1.jpg', moment: 'start' }, { file: 'a2.jpg', moment: 'done' }] }, ours: { status: 'not_built', screenshots: [] } };
+  const html = fs.readFileSync(writeReview(dir, [{ cmp: { task: 'import-5000' }, runs }]), 'utf8');
+  assert.doesNotMatch(html, /not built/i);
+  assert.doesNotMatch(html, /a1\.jpg|<h3>/, 'the built product\'s shots and letter are not shown beside nothing');
+  assert.match(html, /Not compared yet/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('a placeholder naming the vendor is cleared, not painted over', () => {
   assert.ok(!BRANDING.odoo.selectors.some(s => s.startsWith('[placeholder')), 'a mask over a filled-in field would single the product out');
 });
@@ -186,5 +196,25 @@ test('a name cut short by its list cell is painted over within the cell, not acr
     assert.ok(near(px.shortCellEnd, mask), `a short name's cell is painted edge to edge, as a long one's: ${px.shortCellEnd}`);
     assert.ok(!near(px.nextColumn, mask) && !near(px.farNext, mask), `the paint stops at the cell's edge: ${px.nextColumn} ${px.farNext}`);
     assert.ok(!near(px.plain, mask), 'a row with no demo name is not painted');
+  } finally { await browser.close(); }
+});
+
+test('a demo name or code inside a form field is painted over too (round 9, critic p01 r8: the company form showed its names in its inputs)', async () => {
+  const { launch, newContext } = await import('../lib/browser.mjs');
+  const { maskTargets, revealsIdentity } = await import('../lib/blind.mjs');
+  const b = brandingFor('ours');
+  for (const t of ['Al Noor Trading LLC', 'شركة النور للتجارة ذ.م.م', 'ALN-DXB', 'Demo Trading LLC', 'Administrator', 'Odoo']) assert.ok(revealsIdentity(t, b), t);
+  for (const t of ['Falcon Logistics LLC', '+971 50 555 0199', 'ALN-DXBX', '']) assert.ok(!revealsIdentity(t, b), t);
+  const browser = await launch();
+  try {
+    const page = await (await newContext(browser)).newPage();
+    await page.setContent(`<form><input id="en" value="Al Noor Trading LLC"><input id="ar" value="شركة النور للتجارة ذ.م.م"><input id="code" value="ALN-DXB">
+      <textarea id="addr">Deira, Dubai</textarea><input id="phone" value="+971 4 000 0000"><select id="co"><option>Falcon Logistics LLC</option><option selected>Demo Manufacturing FZE</option></select>
+      <input id="typed"><input type="hidden" id="hidden" value="Al Noor Trading LLC"></form>`);
+    await page.locator('#typed').fill('admin@alnoor.example');
+    const masked = new Set();
+    for (const loc of await maskTargets(page, b)) for (const id of await loc.evaluateAll(els => els.map(e => e.id))) masked.add(id);
+    for (const id of ['en', 'ar', 'code', 'co', 'typed']) assert.ok(masked.has(id), `${id} not masked (${[...masked].join(', ')})`);
+    for (const id of ['addr', 'phone', 'hidden']) assert.ok(!masked.has(id), `${id} masked`);
   } finally { await browser.close(); }
 });

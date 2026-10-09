@@ -14,13 +14,19 @@ export function writeReview(outDir, comparisons, random = Math.random) {
   key.letters = key.letters || {};
   const sections = [];
   for (const { cmp, runs } of comparisons) {
+    // Round 9 (critic p01 r8): a column that says "not built yet" names its product (only our
+    // drivers are ever stubs), so a task one product cannot run yet shows no columns at all.
+    if (Object.values(runs).some(r => r?.status === 'not_built')) {
+      sections.push(`<section><h2>${esc(cmp.task)}</h2><p class="empty">Not compared yet: one product cannot run this task yet.</p></section>`);
+      continue;
+    }
     const letters = assignLetters(['ours', 'odoo'], random);
     key.letters[cmp.task] = letters;
     const cols = Object.entries(letters).sort((a, b) => a[1].localeCompare(b[1])).map(([product, letter]) => {
       const r = runs[product];
       const captions = neutralMoments(r?.screenshots || []);
       const shots = (r?.screenshots || []).map((s, i) => `<figure><img loading="lazy" src="shots/${esc(s.file)}" alt="${esc(letter)}: ${esc(captions[i])}"><figcaption>${esc(captions[i])}</figcaption></figure>`).join('');
-      const body = r?.status === 'not_built' ? '<p class="empty">Not built yet.</p>' : shots || '<p class="empty">No screenshots.</p>';
+      const body = shots || '<p class="empty">No screenshots.</p>';
       return `<div class="col"><h3>${letter}</h3>${body}</div>`;
     }).join('');
     sections.push(`<section><h2>${esc(cmp.task)}</h2><div class="cols">${cols}</div></section>`);

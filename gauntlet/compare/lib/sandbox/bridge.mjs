@@ -14,6 +14,7 @@
 // through the guards (lib/guard.mjs), the operator (lib/operator.mjs) and the fetch policy below,
 // judged by the phase at the moment the request arrives. Whatever a driver keeps, patches or
 // schedules in its own process can only ever produce such a request.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,9 +30,84 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOST = path.join(HERE, 'host.mjs');
 const LOCKDOWN = path.join(HERE, 'lockdown.mjs');
 
-/** The Node flags of the driver process. */
-export function hostArgs(scratch) {
-  return ['--permission', '--allow-fs-read=*', `--allow-fs-write=${scratch}`, '--disable-warning=ExperimentalWarning', '--import', LOCKDOWN, HOST];
+const HARNESS = path.resolve(HERE, '..', '..');
+/**
+ * What a verify() process may read (round 9): the harness's code and data, our product's web source
+ * (its resource files), the driver's own folder,
+ * the files the measured part downloaded (saved by the harness) and its own scratch folder. Not the
+ * run's scratch folder, not the screenshots and results of the run, not /proc: a driver's run()
+ * could leave a mark in any of them, and a file's time is a clock.
+ */
+export const VERIFY_READS = Object.freeze([...['lib', 'drivers', 'tasks', 'data', 'node_modules', 'package.json'].map(p => path.join(HARNESS, p)),
+  // Our product's own words (drivers name its menus by its resource files); source, never written by a run.
+  path.join(HARNESS, '..', '..', 'web', 'src')]);
+
+/**
+ * The Node flags of the driver process. A run's process reads anything (drivers read the dataset,
+ * their helpers and downloaded files) and writes in its scratch folder; a verify() process reads
+ * only `reads` and writes nothing.
+ */
+export function hostArgs(scratch, { reads = null } = {}) {
+  const read = reads ? [...new Set(reads)].map(p => `--allow-fs-read=${p}`) : ['--allow-fs-read=*'];
+  // A verify() process writes nothing (round 9): a file it wrote would carry the time it was written.
+  const write = reads ? [] : [`--allow-fs-write=${scratch}`];
+  return ['--permission', ...read, ...write, '--disable-warning=ExperimentalWarning', '--import', LOCKDOWN, HOST];
+}
+
+/** Response headers that tell the time (stripped from a verify() process's answers, round 9). */
+const CLOCK_HEADERS = new Set(['date', 'age', 'expires', 'last-modified']);
+
+/** A fixture sign-in (its answer is cached for the run's verify() processes). */
+const SIGN_INS = [/^\/api\/auth\/sign-in$/, /^\/web\/session\/authenticate$/];
+const isSignIn = (pathname, method) => method === 'POST' && SIGN_INS.some(re => re.test(pathname));
+
+/** A JSON-RPC call's id changes with every call; the read it asks for, and its answer, do not. */
+export function withoutRpcId(text) {
+  try {
+    const j = JSON.parse(text || 'null');
+    if (j && typeof j === 'object' && !Array.isArray(j) && ('jsonrpc' in j || ('id' in j && ('params' in j || 'result' in j || 'error' in j)))) { delete j.id; return JSON.stringify(j); }
+  } catch { /* not JSON */ }
+  return text;
+}
+
+const MAX_READ_TEXT = 4 << 20;
+const MAX_LEAVES = 50_000;
+
+/**
+ * A JSON answer as its leaves: path -> value as text ("result.0.name" -> "Falcon Logistics LLC").
+ * Null when the answer is not JSON or has too many leaves (the answer is then compared whole).
+ */
+export function answerLeaves(text) {
+  let j;
+  try { j = JSON.parse(text); } catch { return null; }
+  const out = {};
+  let n = 0;
+  const walk = (v, p, d) => {
+    if (n > MAX_LEAVES) return;
+    if (v !== null && typeof v === 'object' && d < 40) {
+      const entries = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
+      if (!entries.length) { out[p] = Array.isArray(v) ? '[]' : '{}'; n++; return; }
+      for (const [k, x] of entries) walk(x, p ? `${p}.${k}` : k, d + 1);
+      return;
+    }
+    out[p] = v === null ? 'null' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+    n++;
+  };
+  walk(j, '', 0);
+  return n > MAX_LEAVES ? null : out;
+}
+
+/** One back-end read of verify(): what it asked, a digest of the answer, its text (up to 4 MB) and its leaves. */
+export function readRecord(method, url, bodyText, status, bytes) {
+  const text = withoutRpcId(Buffer.from(bytes).toString('utf8'));
+  const kept = text.length <= MAX_READ_TEXT;
+  return {
+    key: `${method} ${url} ${withoutRpcId(bodyText)}`,
+    status,
+    digest: crypto.createHash('sha256').update(String(status)).update('\n').update(text).digest('hex'),
+    text: kept ? text : null,
+    leaves: kept ? answerLeaves(text) : null,
+  };
 }
 
 const errorOut = e => ({ name: e?.name || 'Error', message: String(e?.message || e), stack: String(e?.stack || '').split('\n').slice(0, 8).join('\n') });
@@ -63,6 +139,14 @@ export class DriverHost {
     return new DriverHost();
   }
 
+  /**
+   * A fresh process for one verify() call (round 9): it runs nothing but that call, reads only
+   * VERIFY_READS, the driver's folder and `reads`, and its clocks stand at `clockAt` (lib/sandbox/lockdown.mjs).
+   */
+  static forVerify({ driverFile, reads = [], clockAt }) {
+    return new DriverHost({ role: 'verify', reads: [...VERIFY_READS, path.dirname(path.resolve(driverFile)), ...reads], clockAt });
+  }
+
   /** Stop the process (a run's process, when the run ends). */
   async stop() {
     if (this.dead) return;
@@ -76,14 +160,18 @@ export class DriverHost {
   #busy = 0;
   session = null;
 
-  constructor() {
+  constructor({ role = 'run', reads = null, clockAt = 0 } = {}) {
     if (!process.allowedNodeEnvironmentFlags.has('--permission')) {
       throw new Error(`the driver sandbox needs Node's permission model (--permission, Node 22.13 or later); this is Node ${process.version}`);
     }
-    this.scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-driver-'));
+    this.role = role;
+    this.scratch = fs.mkdtempSync(path.join(os.tmpdir(), role === 'verify' ? 'compare-verify-' : 'compare-driver-'));
     const env = { ...process.env, TMPDIR: this.scratch, TMP: this.scratch, TEMP: this.scratch };
     delete env.NODE_OPTIONS;
-    this.child = spawn(process.execPath, hostArgs(this.scratch), { stdio: ['ignore', 'inherit', 'inherit', 'ipc'], serialization: 'advanced', env });
+    delete env.COMPARE_DRIVER_ROLE;
+    delete env.COMPARE_FROZEN_CLOCK;
+    if (role === 'verify') { env.COMPARE_DRIVER_ROLE = 'verify'; env.COMPARE_FROZEN_CLOCK = String(Math.round(clockAt)); }
+    this.child = spawn(process.execPath, hostArgs(this.scratch, { reads: role === 'verify' ? reads : null }), { stdio: ['ignore', 'inherit', 'inherit', 'ipc'], serialization: 'advanced', env });
     this.dead = false;
     this.ready = new Promise((resolve, reject) => {
       this.child.once('error', reject);
@@ -180,7 +268,14 @@ export class DriverSession {
   #seq = 0;
   #listeners = new Map();
 
-  constructor(host, { product, timeout }) {
+  /**
+   * `signIns`: the fixture sign-ins answered in this run, by address and body, shared by the run's
+   * session and its verify() sessions (round 9): each verify() call runs in a fresh process and signs
+   * in again, and the answer it gets is the one set-up got (no new session, no extra sign-in against
+   * the product's limit). `reads`: when an array, every back-end read of verify() is recorded in it
+   * (address, body and a digest of the answer), for the runner's saved-state check.
+   */
+  constructor(host, { product, timeout, signIns = new Map(), reads = null }) {
     this.host = host;
     this.product = product;
     this.origin = new URL(product.baseUrl).origin;
@@ -188,14 +283,22 @@ export class DriverSession {
     this.op = null; // the operator's driver view while run() is measured
     this.apiSession = null;
     this.page = null; // the guarded page reads default to
+    this.signIns = signIns;
+    this.reads = reads;
     host.session = this;
   }
+
+  #raw = []; // listeners on raw objects for the handles' snapshots
 
   close() {
     for (const { obj, event, cb } of this.#listeners.values()) {
       try { obj.off(event, cb); } catch { /* gone */ }
     }
     this.#listeners.clear();
+    for (const { obj, event, cb } of this.#raw) {
+      try { obj.off(event, cb); } catch { /* gone */ }
+    }
+    this.#raw = [];
     if (this.host.session === this) this.host.session = null;
   }
 
@@ -216,8 +319,11 @@ export class DriverSession {
     switch (cls) {
       case 'Page': {
         const push = snap => this.host.send({ type: 'event', kind: 'snap', id, snap });
-        raw.on('framenavigated', f => { if (f === raw.mainFrame()) push({ url: raw.url() }); });
-        raw.on('close', () => push({ closed: true }));
+        const nav = f => { if (f === raw.mainFrame()) push({ url: raw.url() }); };
+        const closed = () => push({ closed: true });
+        raw.on('framenavigated', nav);
+        raw.on('close', closed);
+        this.#raw.push({ obj: raw, event: 'framenavigated', cb: nav }, { obj: raw, event: 'close', cb: closed });
         return { url: raw.url(), viewport: raw.viewportSize(), closed: raw.isClosed(), context: this.handleOf(raw.context()), mainFrame: this.handleOf(raw.mainFrame()) };
       }
       case 'Frame': return { url: safe(() => raw.url()), name: safe(() => raw.name()), page: safe(() => this.handleOf(raw.page())) };
@@ -461,12 +567,21 @@ export class DriverSession {
     if (phase === 'verifying' && !isReadRequest(url, { ...init, body: typeof body === 'string' ? body : body ? Buffer.from(body).toString('utf8') : undefined })) {
       throw new ActionOutsideClock(`a back-end call that changes the product (fetch ${method} ${u.pathname}) in verify()`, phase);
     }
+    const bodyText = typeof body === 'string' ? body : body ? Buffer.from(body).toString('utf8') : '';
+    const signIn = isSignIn(u.pathname, method);
+    const cacheKey = signIn ? `${method} ${url} ${withoutRpcId(bodyText)}` : null;
+    if (cacheKey && this.signIns.has(cacheKey)) return this.signIns.get(cacheKey);
     const res = await this.#send(url, init, u);
     const bytes = new Uint8Array(await res.arrayBuffer());
     const out = [];
-    res.headers.forEach((v, k) => { if (k !== 'set-cookie') out.push([k, v]); });
+    // A verify() process has no clock (round 9): the product's Date header would be one.
+    const clockHeaders = this.host.role === 'verify' ? CLOCK_HEADERS : new Set();
+    res.headers.forEach((v, k) => { if (k !== 'set-cookie' && !clockHeaders.has(k)) out.push([k, v]); });
     for (const c of res.headers.getSetCookie?.() || []) out.push(['set-cookie', c]);
-    return { status: res.status, statusText: res.statusText, headers: out, body: bytes, url: res.url };
+    const answer = { status: res.status, statusText: res.statusText, headers: out, body: bytes, url: res.url };
+    if (cacheKey && res.status >= 200 && res.status < 300) this.signIns.set(cacheKey, answer);
+    if (Array.isArray(this.reads) && phase === 'verifying' && !signIn) this.reads.push(readRecord(method, url, bodyText, res.status, bytes));
+    return answer;
   }
 
   /**
