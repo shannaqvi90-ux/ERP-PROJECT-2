@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="d580c22e-98ad-4ef5-b2c5-d172d55ab722" name="@docker-desktop 2026-10-09 14:27:58" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-09T14:27:58.2719074+00:00" queuing="2026-10-09T14:27:58.2719075+00:00" start="2026-10-09T14:27:48.4387785+00:00" finish="2026-10-09T14:27:58.2752860+00:00" />
+  <TestSettings name="default" id="0dded937-1893-4bb2-ae10-880b8df23001">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-09_14_27_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="ee622d2a-7008-466c-b93b-22281d933537" testId="351b35c9-362b-6961-5a3b-91ab96a6f171" testName="Erp.Kernel.Tests.KernelDataTests.Bulk_insert_loads_100000_rows_through_row_level_security_quickly" computerName="docker-desktop" duration="00:00:01.0231071" startTime="2026-10-09T14:27:57.0346635+00:00" endTime="2026-10-09T14:27:58.0660859+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ee622d2a-7008-466c-b93b-22281d933537" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Kernel.Tests.KernelDataTests.Bulk_insert_loads_100000_rows_through_row_level_security_quickly" storage="/work/tests/erp.kernel.tests/bin/release/net10.0/erp.kernel.tests.dll" id="351b35c9-362b-6961-5a3b-91ab96a6f171">
+      <Execution id="ee622d2a-7008-466c-b93b-22281d933537" />
+      <TestMethod codeBase="/work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Kernel.Tests.KernelDataTests" name="Bulk_insert_loads_100000_rows_through_row_level_security_quickly" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="351b35c9-362b-6961-5a3b-91ab96a6f171" executionId="ee622d2a-7008-466c-b93b-22281d933537" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Kernel.Tests
+[xUnit.net 00:00:00.42]   Discovered:  Erp.Kernel.Tests
+[xUnit.net 00:00:00.55]   Starting:    Erp.Kernel.Tests
+[xUnit.net 00:00:09.46]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

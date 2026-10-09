@@ -1,0 +1,29 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+index 380e3f3..3b6e1ae 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyEndpoints.cs
+@@ -77,10 +77,7 @@ internal static class TenancyEndpoints
+         // in every branch of each, changes it (critic p02 round 6: an administrator limited to one
+         // company, or to one branch, renamed the workspace and changed its language and time zone
+         // for every company). The kernel refuses the write as well, whatever this checked.
+-        if (!session.HoldsWholeWorkspace)
+-        {
+-            return (ProblemHttpResult)Problems.Forbidden(http, "tenancy.workspaceNeedsEveryCompany");
+-        }
++
+         var tenant = await db.Tenants.SingleOrDefaultAsync(cancellationToken);
+         if (tenant is null)
+         {
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index e26a440..3557e16 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -74,7 +74,7 @@ public sealed class TenancyModule : ErpModule
+ /// constraint), so the same row-level security policy that guards every other table guards this
+ /// one. Every company of the workspace shares it (<see cref="IWorkspaceWide"/>): someone limited to
+ /// some companies, or some branches of one, reads it but never changes it.</summary>
+-public sealed class Tenant : TenantEntity, IWorkspaceWide
++public sealed class Tenant : TenantEntity
+ {
+     public string Code { get; set; } = "";
+     public string NameEn { get; set; } = "";

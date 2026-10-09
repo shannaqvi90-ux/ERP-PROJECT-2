@@ -1,0 +1,101 @@
+{
+  "task": "create-company-branch",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "keyboard",
+  "metrics": {
+    "steps": {
+      "ours": 6,
+      "odoo": 12,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 49,
+      "odoo": 72,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.564,
+      "odoo": 3.228,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 22.17,
+      "odoo": 48.53,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 22.324,
+      "odoo": 50.698,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "ours_paths": [
+    {
+      "id": "keyboard",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 6,
+        "keystrokes": 49,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.564,
+        "system_wait_seconds": 0.154,
+        "human_seconds": 22.17,
+        "human_plus_wait_seconds": 22.324,
+        "klm_operator_counts": {
+          "K": 49,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 6,
+        "keystrokes": 44,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.633,
+        "system_wait_seconds": 0.126,
+        "human_seconds": 27.22,
+        "human_plus_wait_seconds": 27.346,
+        "klm_operator_counts": {
+          "K": 44,
+          "P": 4,
+          "B": 8,
+          "H": 4,
+          "M": 6
+        }
+      }
+    }
+  ],
+  "odoo_best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p02-tenancy/r8/compare/results/create-company-branch-20261009T142026-140e.json",
+    "odoo": "../../evidence-staging/p02-tenancy/r8/compare/results/create-company-branch-20261009T142008-fec1.json"
+  }
+}

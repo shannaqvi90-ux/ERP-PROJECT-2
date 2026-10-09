@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind review</title>
+<style>
+  :root { --bg: #fafafa; --fg: #1b1b1b; --muted: #666; --line: #ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161616; --fg: #eee; --muted: #aaa; --line: #333; } }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; } h2 { font-size: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+  figure { margin: 0 0 12px; } img { width: 100%; border: 1px solid var(--line); }
+  figcaption, .empty { color: var(--muted); }
+</style></head><body>
+<h1>Blind review: two products, same tasks</h1>
+<p>Products are shown as A and B, assigned at random per task. The key is kept outside this folder; do not open it until the verdict is written.</p>
+<section><h2>switch-company</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/9804e157da5d59f4.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/8fa6c17296ee30d3.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/8b68e9380bab1bda.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/d53632e32f08055a.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+</body></html>

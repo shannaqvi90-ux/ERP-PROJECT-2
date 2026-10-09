@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="00a9c697-5b07-4758-9bea-f6a6f1f25ed6" name="@docker-desktop 2026-10-09 13:04:51" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-09T13:04:51.4111372+00:00" queuing="2026-10-09T13:04:51.4111373+00:00" start="2026-10-09T12:58:38.0513803+00:00" finish="2026-10-09T13:38:26.0154132+00:00" />
+  <TestSettings name="default" id="5b2956d8-5a09-4394-bc72-d91670751ceb">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-09_13_04_51" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7299d11c-9acc-40cb-b596-38e8baab8e42" testId="141ce4c7-bc47-5c47-c3cb-88db8cd2c615" testName="Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_attack_catches_an_endpoint_that_widens_the_company_scope" computerName="docker-desktop" duration="00:33:33.1996577" startTime="2026-10-09T13:04:51.2752158+00:00" endTime="2026-10-09T13:38:24.3646897+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7299d11c-9acc-40cb-b596-38e8baab8e42" />
+    <UnitTestResult executionId="ba5c6abf-3c3c-4ed5-92ce-524399a8d9b1" testId="42af779c-0568-fc4d-1b82-008b8862c8f7" testName="Erp.Gates.Tests.SelfTests.GateSelfTests.The_branch_attack_catches_reads_and_writes_that_ignore_the_branch_limits" computerName="docker-desktop" duration="00:04:30.1294334" startTime="2026-10-09T13:00:21.0880454+00:00" endTime="2026-10-09T13:04:51.2433131+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba5c6abf-3c3c-4ed5-92ce-524399a8d9b1" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.GateSelfTests.The_branch_attack_catches_reads_and_writes_that_ignore_the_branch_limits" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="42af779c-0568-fc4d-1b82-008b8862c8f7">
+      <Execution id="ba5c6abf-3c3c-4ed5-92ce-524399a8d9b1" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.GateSelfTests" name="The_branch_attack_catches_reads_and_writes_that_ignore_the_branch_limits" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_attack_catches_an_endpoint_that_widens_the_company_scope" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="141ce4c7-bc47-5c47-c3cb-88db8cd2c615">
+      <Execution id="7299d11c-9acc-40cb-b596-38e8baab8e42" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.GateSelfTests" name="The_company_attack_catches_an_endpoint_that_widens_the_company_scope" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="141ce4c7-bc47-5c47-c3cb-88db8cd2c615" executionId="7299d11c-9acc-40cb-b596-38e8baab8e42" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="42af779c-0568-fc4d-1b82-008b8862c8f7" executionId="ba5c6abf-3c3c-4ed5-92ce-524399a8d9b1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.04] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:02.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:03.71]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:04.85]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:39:43.40]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

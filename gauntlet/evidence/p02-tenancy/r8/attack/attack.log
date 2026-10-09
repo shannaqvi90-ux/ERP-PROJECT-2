@@ -1,0 +1,51 @@
+tenant B: 2 companies, 3 branches, 50 users, 127 markers
+sign-in A into B's workspace code: 200 {"authenticated":true,"user":{"id":"01a12103-602a-71dd-9f6a-8ba617f626e9","email":"admin@alnoor.example","displayName":"
+tenant phase: 380 requests; B versions before [777,[777,777],[777,777,777]] after [777,[777,777],[777,777,777]] UNCHANGED
+A: 4 companies (ALN-AUH,ALN-DXB,ALN-FZE,ALN-SHJ), 12 branches; roles Administrator|Company manager|Read-only|Staff
+made shj-admin r8-shj-admin-mv11sdmy@alnoor.example: access 200
+made branch-admin r8-branch-admin-mv11sdmy@alnoor.example: access 200
+made two-co-viewer r8-two-co-viewer-mv11sdmy@alnoor.example: access 200
+CL tenant everyCompany=false
+CL GET /api/tenancy/companies -> 200
+CL GET /api/tenancy/branches?take=200 -> 200
+CL GET /api/tenancy/access?take=200 -> 200
+CL GET /api/tenancy/workplace -> 200
+CL GET /api/reports/run/tenancy.branchDirectory?format=csv -> 200
+CL GET /api/reports/lists/tenancy.companies?format=csv -> 200
+CL GET /api/reports/lists/tenancy.branches?format=csv -> 200
+CL GET /api/reports/lists/tenancy.access?format=csv -> 200
+CL GET /api/identity/companies -> 200
+CL GET /api/identity/users/01a12104-eb90-7cbd-8020-0db85f562033/default-company -> 200
+CL GET /api/tenancy/access/01a12104-eb90-7cbd-8020-0db85f562033 -> 200
+CL GET /api/tenancy/companies/018dca08-f081-7e13-bcec-13e7f39a7e2b -> 404
+CL GET /api/reports/run/tenancy.companyProfile?company=018dca08-f081-7e13-bcec-13e7f39a7e2b&format=csv -> 404
+CL PUT /api/tenancy/tenant -> 403
+CL POST /api/tenancy/companies -> 400
+CL PUT /api/identity/users/01a12104-eb90-7cbd-8020-0db85f562033/default-company -> 403
+CL PUT /api/tenancy/access/01a12104-eb90-7cbd-8020-0db85f562033 -> 403
+BL GET /api/tenancy/companies -> 200
+BL GET /api/tenancy/companies/018dca08-f081-7e13-bcec-13e7f39a7e2b -> 200
+BL GET /api/tenancy/branches?take=200 -> 200
+BL GET /api/tenancy/access?take=200 -> 200
+BL GET /api/tenancy/access/01a12104-eb90-7cbd-8020-0db85f562033 -> 200
+BL GET /api/tenancy/access/01a12104-ea9f-781e-92de-f67204747a78 -> 200
+BL GET /api/tenancy/workplace -> 200
+BL GET /api/reports/run/tenancy.companyProfile?company=018dca08-f081-7e13-bcec-13e7f39a7e2b&format=csv -> 200
+BL GET /api/reports/run/tenancy.companyProfile?company=018dca08-f081-7e13-bcec-13e7f39a7e2b&format=json -> 200
+BL GET /api/reports/run/tenancy.branchDirectory?format=csv -> 200
+BL GET /api/reports/run/tenancy.branchDirectory?company=018dca08-f081-7e13-bcec-13e7f39a7e2b&format=json -> 200
+BL GET /api/reports/lists/tenancy.branches?format=csv -> 200
+BL GET /api/reports/lists/tenancy.companies?format=csv -> 200
+BL GET /api/reports/lists/tenancy.access?format=csv -> 200
+BL GET /api/identity/users/01a12104-eb90-7cbd-8020-0db85f562033/default-company -> 200
+BL GET /api/tenancy/branches/018dca08-f083-7113-9d04-6f5f03bab473 -> 404
+BL PUT /api/tenancy/workplace -> 400
+BL GET /api/tenancy/branches/018dca08-f082-7c00-8cfd-2778237b55e0 -> 404
+BL PUT /api/tenancy/workplace -> 400
+BL PUT /api/tenancy/tenant -> 403
+BL PUT /api/tenancy/companies/018dca08-f081-7e13-bcec-13e7f39a7e2b -> 403
+BL POST /api/tenancy/branches -> 400
+
+TOTAL requests 419; findings 2
+A GET /api/tenancy/branches?take=200 -> 200 contains marker مصنع الشارقة
+A signed in naming B's workspace

@@ -1,0 +1,52 @@
+         relname         | relrowsecurity | relforcerowsecurity |                                           string_agg                                            
+-------------------------+----------------+---------------------+-------------------------------------------------------------------------------------------------
+ __ef_migrations_history | f              | f                   | 
+ branches                | t              | t                   | tenant_isolation:perm,company_scope:restr
+ companies               | t              | t                   | tenant_isolation:perm,company_scope:restr
+ tenants                 | t              | t                   | tenant_isolation:perm
+ user_branch_access      | t              | t                   | tenant_isolation:perm,company_scope:restr,company_scope_update:restr,company_scope_delete:restr
+ user_company_access     | t              | t                   | tenant_isolation:perm,company_scope:restr,company_scope_update:restr,company_scope_delete:restr
+ user_company_totals     | t              | t                   | tenant_isolation:perm
+ user_workplaces         | t              | t                   | tenant_isolation:perm,company_scope:restr
+(8 rows)
+
+  rolname  | rolsuper | rolbypassrls | rolinherit 
+-----------+----------+--------------+------------
+ erp_owner | f        | f            | t
+ erp_app   | f        | f            | f
+ erp_auth  | f        | f            | f
+(3 rows)
+
+ERROR:  relation "audit.changes" does not exist
+LINE 1: ...(*) filter (where actor_id is null) no_actor from audit.chan...
+                                                             ^
+ column_name | data_type 
+-------------+-----------
+(0 rows)
+
+     table_name      | action | actor_kind | count | no_actor 
+---------------------+--------+------------+-------+----------
+ branches            | insert | seed       |    15 |       15
+ branches            | insert | user       |     9 |        0
+ companies           | insert | seed       |     6 |        6
+ companies           | insert | user       |    11 |        0
+ companies           | update | user       |     9 |        0
+ tenants             | insert | seed       |     2 |        2
+ user_branch_access  | insert | seed       |     3 |        3
+ user_branch_access  | insert | user       |     1 |        0
+ user_company_access | insert | seed       |    18 |       18
+ user_company_access | insert | user       |    26 |        0
+ user_company_totals | insert | seed       |     8 |        8
+ user_company_totals | insert | user       |     3 |        0
+ user_company_totals | update | seed       |    10 |       10
+ user_company_totals | update | user       |    26 |        0
+ user_workplaces     | insert | seed       |     8 |        8
+ user_workplaces     | update | user       |    34 |        0
+(16 rows)
+
+ table_name | action |                  changes                   
+------------+--------+--------------------------------------------
+ companies  | update | {"is_active": {"new": false, "old": true}}
+ companies  | update | {"is_active": {"new": false, "old": true}}
+(2 rows)
+

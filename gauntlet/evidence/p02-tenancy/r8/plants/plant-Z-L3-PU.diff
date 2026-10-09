@@ -1,0 +1,28 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261009072419_CompanyEnglishLegalNameRequired.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261009072419_CompanyEnglishLegalNameRequired.cs
+index 0079e40..0306571 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261009072419_CompanyEnglishLegalNameRequired.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261009072419_CompanyEnglishLegalNameRequired.cs
+@@ -22,6 +22,8 @@ namespace Erp.Modules.Tenancy.Migrations
+                 schema: "tenancy",
+                 table: "companies",
+                 sql: "btrim(legal_name_en) <> ''");
++            // PLANT L3 (critic p02 r8): a permissive read policy on the workspaces table
++            migrationBuilder.Sql("CREATE POLICY directory_lookup ON tenancy.tenants AS PERMISSIVE FOR SELECT TO PUBLIC USING (status = 'active');");
+         }
+ 
+         /// <inheritdoc />
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+index 5c1a1dc..51e7e66 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+@@ -24,10 +24,6 @@ internal sealed class UserWorkplaces(TenancyDbContext db) : IUserWorkplaces
+     public async Task<WorkplaceChange> SetAsync(Guid userId, Guid? companyId, uint version, CancellationToken cancellationToken)
+     {
+         var (companies, elsewhere) = await CompaniesAsync(userId, cancellationToken);
+-        if (elsewhere)
+-        {
+-            return WorkplaceChange.UserBeyondScope;
+-        }
+         if (companyId is { } wanted && companies.All(c => c.Id != wanted || !c.IsActive))
+         {
+             return WorkplaceChange.CompanyNotAllowed;

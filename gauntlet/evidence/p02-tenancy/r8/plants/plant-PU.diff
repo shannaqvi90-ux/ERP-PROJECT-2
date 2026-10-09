@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+index 5c1a1dc..51e7e66 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+@@ -24,10 +24,6 @@ internal sealed class UserWorkplaces(TenancyDbContext db) : IUserWorkplaces
+     public async Task<WorkplaceChange> SetAsync(Guid userId, Guid? companyId, uint version, CancellationToken cancellationToken)
+     {
+         var (companies, elsewhere) = await CompaniesAsync(userId, cancellationToken);
+-        if (elsewhere)
+-        {
+-            return WorkplaceChange.UserBeyondScope;
+-        }
+         if (companyId is { } wanted && companies.All(c => c.Id != wanted || !c.IsActive))
+         {
+             return WorkplaceChange.CompanyNotAllowed;

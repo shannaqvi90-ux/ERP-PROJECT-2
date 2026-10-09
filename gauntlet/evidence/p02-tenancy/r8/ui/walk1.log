@@ -1,0 +1,19 @@
+dir ltr lang en
+after Alt+N focus: legalNameEn
+form fields: legalNameEn* legalNameAr code isActive tradeLicenceNumber tradeLicenceAuthority taxRegistrationNumber baseCurrency fiscalYearStartMonth fiscalYearStartDay addressLine1 addressLine2 city emirate poBox country addressAr phone email website
+shot 01-company-new-en
+after Ctrl+S: {"focus":"branchNameEn","url":"/tenancy/companies/01a12107-62c1-72ad-8573-2ed040cb83ca","alerts":""}
+tab from branch name to: branchNameAr
+after branch save: {"url":"/tenancy/companies/01a12107-62c1-72ad-8573-2ed040cb83ca","text":"CRITIC · Critic Eight VPTM Trading LLC‹5 of 5›PrintSaveCloseSaved.GeneralLegal name (English)Legal name (Arabic)CodeLeave empty to make one from the English name; 2 to 20 capital letters, digits or hyphens.ActiveRegistrationTrade licence numberLicensing authorityTax registration number (TRN)AccountingBase currencyThree-letter ISO code; the books are kept in it.Fiscal year starts (month)JanuaryFebr","alerts":""}
+shot 02-company-branch-saved-en
+switcher options: ALN-AUH · MUS-WSAl Noor Technical Services LLC · Mussafah workshop || ALN-AUH · AIN-OFAl Noor Technical Services LLC · Al Ain office || ALN-AUH · RAK-STAl Noor Technical Services LLC · Ras Al Khaimah store || ALN-AUH · FUJ-STAl Noor Technical Services LLC · Fujairah store || ALN-DXB · DEIRA-HQAl Noor Trading LLC · Deira head office || ALN-DXB · AQZ-WHAl Noor Trading LLC · Al Quoz warehouse || ALN-DXB · DIP-SRAl Noor Trading LLC · Dubai Investments Park showroom || ALN-FZE · JAFZA-WHAl Noor General Trading FZE · JAFZA South warehouse || ALN-FZE · DAFZ-OFAl Noor General Trading FZE · Dubai Airport Freezone office || ALN-SHJ · SHJ-FACAl Noor Industries LLC · Sharjah factory || ALN-SHJ · SAIF-WHAl Noor Industries LLC · SAIF Zone store || ALN-SHJ · AJM-WSAl Noor Industries LLC · Ajman workshop || CRITICCritic Eight VPTM Trading LLC
+shot 03-switcher-en
+workplace after keyboard switch: 018dca08-f081-7e13-bcec-13e7f39a7e2b 018dca08-f083-7113-9d04-6f5f03bab473
+page width {"sw":1400,"cw":1400}
+ar dir rtl
+shot 04-branches-ar
+ar after Ctrl+S focus: {"name":"branchNameAr","value":"شركة الناقد العربية - "}
+shot 05-company-branch-ar
+shot 06-switcher-ar
+ar page width {"sw":1400,"cw":1400}
+ar company profile pdf: [200,"application/pdf",43678]

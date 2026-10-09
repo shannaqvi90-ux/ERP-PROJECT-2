@@ -1,0 +1,56 @@
+Test run for /home/shan/critic/p02-tenancy-r8-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.38]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.94]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.24]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [4 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [15 s]
+[xUnit.net 00:03:15.69]     Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [FAIL]
+[xUnit.net 00:03:15.70]       Writes to the workspace's shared records by an administrator of one company:
+[xUnit.net 00:03:15.70]       company X administrator → PUT /api/tenancy/tenant [nameEn] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+[xUnit.net 00:03:15.70]       company X administrator → PUT /api/tenancy/tenant [nameAr] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+[xUnit.net 00:03:15.70]       company X administrator → PUT /api/tenancy/tenant [defaultLanguage] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+[xUnit.net 00:03:15.70]       company X administrator → PUT /api/tenancy/tenant [weekStart] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+[xUnit.net 00:03:15.71]       Stack Trace:
+[xUnit.net 00:03:15.71]         /home/shan/critic/p02-tenancy-r8-plant/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs(66,0): at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint()
+[xUnit.net 00:03:15.71]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:15.71]       Output:
+[xUnit.net 00:03:15.71]         103 endpoints, 59913 requests, 22 company Y markers, 7740 differential checks, 8 write oracle checks
+[xUnit.net 00:03:15.71]         own-parameter reads: 1949 requests over 51 reads
+[xUnit.net 00:03:15.71]         workspace records: tenancy.tenants; 4 writes:
+[xUnit.net 00:03:15.71]           PUT /api/tenancy/tenant [defaultLanguage]
+[xUnit.net 00:03:15.71]           PUT /api/tenancy/tenant [nameAr]
+[xUnit.net 00:03:15.71]           PUT /api/tenancy/tenant [nameEn]
+[xUnit.net 00:03:15.71]           PUT /api/tenancy/tenant [weekStart]
+[xUnit.net 00:03:16.00]   Finished:    Erp.Gates.Tests (ID = '31e0dcc7d4f6d94131ce07c82316c59f8f57402bd8026fe7f1da1cee9908200b')
+  Failed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 53 s]
+  Error Message:
+   Writes to the workspace's shared records by an administrator of one company:
+company X administrator → PUT /api/tenancy/tenant [nameEn] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+company X administrator → PUT /api/tenancy/tenant [nameAr] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+company X administrator → PUT /api/tenancy/tenant [defaultLanguage] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+company X administrator → PUT /api/tenancy/tenant [weekStart] on the workspace every company shares, while it works in only some of its companies or branches: answered 200, expected a refusal
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint() in /home/shan/critic/p02-tenancy-r8-plant/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs:line 66
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 103 endpoints, 59913 requests, 22 company Y markers, 7740 differential checks, 8 write oracle checks
+ own-parameter reads: 1949 requests over 51 reads
+ workspace records: tenancy.tenants; 4 writes:
+   PUT /api/tenancy/tenant [defaultLanguage]
+   PUT /api/tenancy/tenant [nameAr]
+   PUT /api/tenancy/tenant [nameEn]
+   PUT /api/tenancy/tenant [weekStart]
+
+
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 3.2815 Minutes
+rc=1 seconds=198

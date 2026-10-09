@@ -1,0 +1,14 @@
+import { createRequire } from "node:module";
+const require = createRequire("/home/shan/critic/p02-tenancy-r8/gauntlet/compare/package.json");
+const { chromium } = require("playwright-core");
+const [base, email] = [process.argv[2], process.argv[3]]; const out = "/home/shan/evidence-staging/p02-tenancy/r8";
+const browser = await chromium.launch({ executablePath: "/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome" });
+const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } }); const page = await ctx.newPage();
+await page.goto(base + "/"); await page.evaluate(() => { localStorage.clear(); localStorage.setItem("erp.language", "ar"); }); await page.goto(base + "/");
+await page.locator('input[name="email"]').waitFor();
+await page.keyboard.type(email); await page.keyboard.press("Tab"); await page.keyboard.type("Critic-R8-Pass-2026!"); await page.keyboard.press("Enter"); await page.waitForTimeout(2500);
+await page.goto(base + "/tenancy/tenant"); await page.waitForTimeout(2000);
+const info = await page.evaluate(() => ({ dir: document.documentElement.dir, inputs: [...document.querySelectorAll("main input, main select")].map((e) => `${e.name}:${e.disabled || e.readOnly ? "ro" : "rw"}`).join(" "), buttons: [...document.querySelectorAll("main button")].map((b) => b.textContent.trim()).join(" | "), note: document.querySelector("main")?.innerText.slice(0, 500) }));
+console.log(JSON.stringify(info, null, 1));
+await page.screenshot({ path: `${out}/12-company-limited-admin-workspace-ar.jpg`, type: "jpeg", quality: 70 });
+await browser.close();

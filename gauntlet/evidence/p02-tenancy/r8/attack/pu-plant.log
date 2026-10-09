@@ -1,0 +1,6 @@
+made shj-admin 201 200
+made two-co 201 200
+U2 default before (seen by full admin): 200 null version 0
+CL GET U2 default-company: 200 ["ALN-SHJ"] version 0
+CL PUT U2 default-company = ALN-SHJ: 200 {"userId":"01a12113-43e4-7d61-8256-f1fe711b0d30","companyId":"018dca08-f088-7d62-8c49-1d8c3ea1723b","companies":[{"id":"018dca08-f088-7d62-8c49-1d8c3ea1723b","code":"ALN-SHJ","legalNameEn":"Al Noor Industries LLC","legalNameAr":"مصانع النور ذ.م.م"}],"version":909}
+U2 default after (seen by full admin): 200 ALN-SHJ
