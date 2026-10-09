@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { api } from "../../kernel/api";
 import { SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm } from "../../kernel/forms/RecordForm";
@@ -16,6 +17,8 @@ type Tenant = {
   weekStart: "monday" | "sunday" | "saturday";
   timeZones: string[];
   version: number;
+  /** The caller works in every company and every branch of each: only then may they change the workspace. */
+  everyCompany?: boolean;
 };
 
 type Draft = { nameEn: string; nameAr: string; defaultLanguage: "en" | "ar" | ""; timeZone: string; weekStart: "monday" | "sunday" | "saturday" | "" };
@@ -24,9 +27,17 @@ type Draft = { nameEn: string; nameAr: string; defaultLanguage: "en" | "ar" | ""
 export function TenantPage() {
   const { t } = useI18n();
   const { can, refresh } = useSession();
-  const editable = can("tenancy.tenant.update");
+  // Every company shares the workspace: changing it needs every company and every branch of each
+  // (the server answers 403 workspaceNeedsEveryCompany otherwise), so the settings form is offered
+  // only then, and otherwise the reason is shown.
+  const [everyCompany, setEveryCompany] = useState(true);
+  const mayUpdate = can("tenancy.tenant.update");
+  const editable = mayUpdate && everyCompany;
   const form = useRecordForm<Tenant, Draft>({
-    load: (signal) => api<Tenant>("GET", "/api/tenancy/tenant", undefined, { signal }),
+    load: (signal) => api<Tenant>("GET", "/api/tenancy/tenant", undefined, { signal }).then((tenant) => {
+      setEveryCompany(tenant.everyCompany !== false);
+      return tenant;
+    }),
     initial: (tenant) => ({
       nameEn: tenant?.nameEn ?? "",
       nameAr: tenant?.nameAr ?? "",
@@ -68,6 +79,11 @@ export function TenantPage() {
           <dt>{t("tenancy.tenant.weekStart")}</dt>
           <dd>{t(`tenancy.weekday.${tenant.weekStart}`)}</dd>
         </dl>
+      )}
+      {mayUpdate && !everyCompany && tenant && (
+        <p className="hint" role="note" data-testid="tenant-some-companies-only">
+          <span className="badge">{t("forms.readOnly")}</span> {t("tenancy.tenant.someCompaniesOnly")}
+        </p>
       )}
       {editable && tenant && (
         <RecordForm form={form} title={t("tenancy.tenant.settings")} label={t("tenancy.tenant.settings")} narrow>

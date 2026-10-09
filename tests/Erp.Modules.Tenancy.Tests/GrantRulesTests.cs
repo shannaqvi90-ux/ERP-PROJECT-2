@@ -146,6 +146,67 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
     }
 
     [Fact]
+    public async Task A_user_who_also_works_in_branches_the_caller_does_not_is_read_only_to_the_caller_and_their_hidden_branches_are_not_counted()
+    {
+        // Critic p02 round 6: a one-branch administrator was offered the access of a user who also
+        // holds another branch (hidden from it), and every save, even an unchanged one, was refused.
+        var (admin, _, x, _, branchesOfX) = await SetUpAsync();
+        var (mine, other) = (branchesOfX[0], branchesOfX[1]);
+        var administrator = await AdministratorRoleAsync(admin);
+        var (_, managerEmail) = await NewUserAsync(admin, "branchmanager2", [administrator], Access(x, mine));
+        var (bothId, bothEmail) = await NewUserAsync(admin, "twobranches", [], Access(x, mine, other));
+        var (onlyMineId, _) = await NewUserAsync(admin, "ownbranch", [], Access(x, mine));
+        using var manager = await Env.SignInAsync(managerEmail);
+
+        var both = await manager.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{bothId}");
+        Assert.False(both.GetProperty("canEdit").GetBoolean());
+        Assert.Equal("tenancy.access.readOnly.branches", both.GetProperty("readOnlyReason").GetString());
+        Assert.Equal(new[] { mine }, both.GetProperty("companies")[0].GetProperty("branchIds").EnumerateArray().Select(b => b.GetGuid()));
+        var unchanged = await manager.PutAccessAsync(bothId, new { companies = new[] { Access(x, mine) } });
+        Assert.Equal(HttpStatusCode.Forbidden, unchanged.StatusCode);
+        Assert.Equal("tenancy.userBeyondOwnBranches", (await Json(unchanged)).GetProperty("code").GetString());
+        var kept = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{bothId}");
+        Assert.Equal(2, kept.GetProperty("companies")[0].GetProperty("branchIds").GetArrayLength());
+
+        // A user within the caller's own branch stays theirs to change.
+        Assert.True((await manager.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{onlyMineId}")).GetProperty("canEdit").GetBoolean());
+
+        // The access list counts only the branches the caller can see.
+        var rows = (await manager.GetFromJsonAsync<JsonElement>($"/api/tenancy/access?search={Uri.EscapeDataString(bothEmail)}")).GetProperty("items");
+        Assert.Equal(1, rows[0].GetProperty("companies")[0].GetProperty("branchCount").GetInt32());
+        var adminRows = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access?search={Uri.EscapeDataString(bothEmail)}")).GetProperty("items");
+        Assert.Equal(2, adminRows[0].GetProperty("companies")[0].GetProperty("branchCount").GetInt32());
+    }
+
+    [Fact]
+    public async Task Only_someone_who_works_in_every_company_and_branch_changes_the_workspace()
+    {
+        // Critic p02 round 6: an administrator limited to one company, and one limited to one branch,
+        // renamed the workspace and changed its language for every company.
+        var (admin, _, x, _, branchesOfX) = await SetUpAsync();
+        var administrator = await AdministratorRoleAsync(admin);
+        var (_, companyEmail) = await NewUserAsync(admin, "onecompanyws", [administrator], Access(x));
+        var (_, branchEmail) = await NewUserAsync(admin, "onebranchws", [administrator], Access(x, branchesOfX[0]));
+        var before = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/tenant");
+        Assert.True(before.GetProperty("everyCompany").GetBoolean());
+        foreach (var email in new[] { companyEmail, branchEmail })
+        {
+            using var limited = await Env.SignInAsync(email);
+            var read = await limited.GetFromJsonAsync<JsonElement>("/api/tenancy/tenant");
+            Assert.False(read.GetProperty("everyCompany").GetBoolean());
+            var rename = await limited.PutAsJsonAsync("/api/tenancy/tenant", new
+            {
+                nameEn = "Renamed by one company", nameAr = "تغيير من شركة واحدة", defaultLanguage = "ar", version = read.GetProperty("version").GetUInt32(),
+            });
+            Assert.Equal(HttpStatusCode.Forbidden, rename.StatusCode);
+            Assert.Equal("tenancy.workspaceNeedsEveryCompany", (await Json(rename)).GetProperty("code").GetString());
+        }
+        var after = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/tenant");
+        Assert.Equal(before.GetProperty("version").GetUInt32(), after.GetProperty("version").GetUInt32());
+        Assert.Equal(before.GetProperty("nameEn").GetString(), after.GetProperty("nameEn").GetString());
+    }
+
+    [Fact]
     public async Task Only_someone_who_works_in_every_company_creates_a_company_or_changes_a_company_code()
     {
         var (admin, _, x, y, _) = await SetUpAsync();

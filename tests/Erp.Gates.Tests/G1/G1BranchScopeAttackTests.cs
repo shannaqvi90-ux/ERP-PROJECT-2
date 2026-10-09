@@ -50,12 +50,33 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
             $"g1.branchAttackRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g1.branchAttackRequests")}");
         Assert.True(report.Markers >= Ratchet.Min("g1.branchMarkers"), $"g1.branchMarkers: {report.Markers}; ratchet minimum {Ratchet.Min("g1.branchMarkers")}");
 
+        // Reads with nothing but the attacker's own parameters (critic p02 round 6, plants B1, B3 and
+        // B3b): the company's reports and exports, the lists and their prints, and per-user screens by
+        // the ids the attacker's own lists show. Each of these is answered, so it is really judged.
+        var own = report.OwnReads!;
+        TestContext.Current.TestOutputHelper?.WriteLine($"own-parameter reads: {own.Requests} requests over {own.Endpoints} reads; answered: {string.Join(", ", own.Answered)}");
+        foreach (var read in new[]
+                 {
+                     "/api/reports/run/tenancy.companyProfile",
+                     "/api/reports/run/tenancy.branchDirectory",
+                     "/api/reports/lists/tenancy.branches",
+                     "/api/tenancy/branches",
+                     "/api/tenancy/access/{userId:guid}",
+                     "/api/tenancy/companies/{id:guid}",
+                     "/api/identity/users/{id:guid}",
+                 })
+        {
+            Assert.Contains(read, own.Answered);
+        }
+        Assert.True(own.Requests >= Ratchet.Min("g1.branchOwnReadRequests"), $"g1.branchOwnReadRequests: {own.Requests}; ratchet minimum {Ratchet.Min("g1.branchOwnReadRequests")}");
+
         // The records every branch of company X shares (critic p02 round 4, plant P7: a one-branch
         // administrator renamed and deactivated the whole company and every gate passed).
         var shared = report.Shared!;
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"shared records: {string.Join(", ", shared.Tables)}; {shared.Writes} writes to company X by the branch-limited administrator:\n  " + string.Join("\n  ", shared.Sources));
         Assert.Contains("tenancy.companies", shared.Tables);
+        Assert.Contains("tenancy.tenants", shared.Tables);
         Assert.True(shared.Failures.Count == 0, "Writes to company X's shared records by an administrator limited to one of its branches:\n" + string.Join("\n", shared.Failures.Take(40)));
         Assert.True(shared.ChangedTables.Count == 0, "Company X's shared rows changed (by an administrator limited to one of its branches) in: " + string.Join(", ", shared.ChangedTables));
         // Renaming, re-registering, deactivating, the logo: each proven valid by the tenant's
@@ -69,6 +90,10 @@ public sealed class G1BranchScopeAttackTests(G1BranchFixture fixture) : IClassFi
                      "PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]",
                      "PUT /api/tenancy/companies/{id:guid}/logo [-]",
                      "DELETE /api/tenancy/companies/{id:guid}/logo [-]",
+                     // The workspace every company shares (critic p02 round 6).
+                     "PUT /api/tenancy/tenant [nameEn]",
+                     "PUT /api/tenancy/tenant [defaultLanguage]",
+                     "PUT /api/tenancy/tenant [weekStart]",
                  })
         {
             Assert.Contains(source, shared.Sources);

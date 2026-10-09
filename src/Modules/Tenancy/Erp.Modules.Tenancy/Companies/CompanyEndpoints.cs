@@ -70,11 +70,11 @@ public sealed record CompanyRow(
     bool EveryBranch = true);
 
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
-/// name); a legal name in English or Arabic is required (both are recommended). On change,
+/// name); the legal name in English is required, the Arabic one is recommended. On change,
 /// <c>version</c> is the version that was read.</summary>
 public sealed record SaveCompanyRequest(
     [property: ApiExample("AN-DXB"), StringLength(20, MinimumLength = 2), RegularExpression(TenancyValidation.CodePattern)] string? Code,
-    [property: StringLength(200)] string? LegalNameEn,
+    [property: ApiExample("Al Noor Trading LLC"), StringLength(200, MinimumLength = 1)] string? LegalNameEn,
     [property: StringLength(200)] string? LegalNameAr,
     [property: StringLength(50)] string? TradeLicenceNumber,
     [property: StringLength(100)] string? TradeLicenceAuthority,
@@ -371,7 +371,7 @@ internal static class CompanyEndpoints
     {
         var validator = new Validator(http)
             .Code("code", TenancyValidation.NormalizeCode(request.Code))
-            .Names("legalNameEn", request.LegalNameEn, "legalNameAr", request.LegalNameAr)
+            .LegalNames(request.LegalNameEn, request.LegalNameAr)
             .MaxLength("tradeLicenceNumber", request.TradeLicenceNumber, 50)
             .MaxLength("tradeLicenceAuthority", request.TradeLicenceAuthority, 100)
             .TaxNumber(request.TaxRegistrationNumber)
