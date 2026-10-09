@@ -88,9 +88,26 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
             .GetProperty("code").GetString());
         Assert.Equal("AL-REEM", (await Create(new { legalNameEn = "Al Reem Trading L.L.C.", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true }))
             .GetProperty("code").GetString());
-        var arabicOnly = await Create(new { legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
-        Assert.Equal("CO-1", arabicOnly.GetProperty("code").GetString());
-        Assert.Equal("", arabicOnly.GetProperty("legalNameEn").GetString());
+        // A name with no distinctive Latin word (only legal-form words) gets the fallback code.
+        var formOnly = await Create(new { legalNameEn = "L.L.C.", legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+        Assert.Equal("CO-1", formOnly.GetProperty("code").GetString());
+        // The English legal name is required even when the Arabic one is given (p06 round 3: an
+        // empty English legal name was saved next to an Arabic one), on create and on change, and
+        // nothing is saved.
+        foreach (var english in new string?[] { null, "", "   " })
+        {
+            var arabicOnly = await admin.PostAsJsonAsync("/api/tenancy/companies", new { legalNameEn = english, legalNameAr = "مؤسسة الصقر للتجارة", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+            Assert.Equal(HttpStatusCode.BadRequest, arabicOnly.StatusCode);
+            Assert.Equal("tenancyLegalNameEn", (await Json(arabicOnly)).GetProperty("errors").GetProperty("legalNameEn")[0].GetProperty("code").GetString());
+        }
+        var all = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200");
+        Assert.DoesNotContain(all.GetProperty("items").EnumerateArray(), c => c.GetProperty("legalNameAr").GetString() == "مؤسسة الصقر للتجارة");
+        var change = JsonSerializer.SerializeToNode(new { legalNameEn = "", legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true })!.AsObject();
+        change["version"] = formOnly.GetProperty("version").GetUInt32();
+        var emptied = await admin.PutAsJsonAsync($"/api/tenancy/companies/{formOnly.GetProperty("id").GetGuid()}", change);
+        Assert.Equal(HttpStatusCode.BadRequest, emptied.StatusCode);
+        Assert.Equal("tenancyLegalNameEn", (await Json(emptied)).GetProperty("errors").GetProperty("legalNameEn")[0].GetProperty("code").GetString());
+        Assert.Equal("L.L.C.", (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{formOnly.GetProperty("id").GetGuid()}")).GetProperty("legalNameEn").GetString());
 
         var branch = await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = falcon.GetProperty("id").GetGuid(), nameEn = "Falcon Logistics LLC - Jebel Ali Branch", country = "AE", isActive = true });
         Assert.Equal(HttpStatusCode.Created, branch.StatusCode);
@@ -130,7 +147,7 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         var errors = (await Json(response)).GetProperty("errors");
         string Code(string field) => errors.GetProperty(field)[0].GetProperty("code").GetString()!;
         Assert.Equal("tenancyCode", Code("code"));
-        Assert.Equal("tenancyNameEnOrAr", Code("legalNameEn"));
+        Assert.Equal("tenancyLegalNameEn", Code("legalNameEn"));
         Assert.False(errors.TryGetProperty("legalNameAr", out _));
         Assert.Equal("tenancyTaxNumber", Code("taxRegistrationNumber"));
         Assert.Equal("tenancyCurrency", Code("baseCurrency"));

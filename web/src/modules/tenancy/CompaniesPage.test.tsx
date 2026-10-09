@@ -75,6 +75,9 @@ describe("companies screen", () => {
     press({ altKey: true, code: "KeyN", key: "n" });
     await settle();
     expect(document.activeElement).toBe(field(view.container, "legalNameEn"));
+    // The English legal name is required (p06 round 3), the Arabic one recommended.
+    expect(field(view.container, "legalNameEn").required).toBe(true);
+    expect(field(view.container, "legalNameAr").required).toBe(false);
     const code = field(view.container, "code");
     setInput(code, "a");
     expect(code.value).toBe("A");

@@ -102,6 +102,21 @@ internal static partial class TenancyValidation
         return validator;
     }
 
+    /// <summary>
+    /// A company's legal names: the English one is always required (it identifies the company in
+    /// every list, code and English document, and an English document must never print an empty
+    /// legal name: p06 round 3 saved a company whose English legal name was empty because an Arabic
+    /// one existed); the Arabic one is optional until the owner rules on it (needs-human #9). Each is
+    /// at most 200 characters.
+    /// </summary>
+    public static Validator LegalNames(this Validator validator, string? english, string? arabic)
+    {
+        validator.Must(!string.IsNullOrWhiteSpace(english), "legalNameEn", "tenancyLegalNameEn")
+            .MaxLength("legalNameEn", english, 200)
+            .MaxLength("legalNameAr", arabic, 200);
+        return validator;
+    }
+
     /// <summary>Words of a legal name that say nothing about which company it is.</summary>
     private static readonly FrozenSet<string> LegalWords = FrozenSet.ToFrozenSet(
         ["LLC", "L", "C", "FZE", "FZCO", "FZ", "FZC", "DMCC", "PJSC", "PSC", "LTD", "LIMITED", "INC", "CO", "COMPANY", "BRANCH", "THE", "AND", "OF"],

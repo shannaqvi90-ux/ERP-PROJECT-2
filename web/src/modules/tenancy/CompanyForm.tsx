@@ -161,7 +161,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       }
     >
       <FormSection title={t("tenancy.company.general")}>
-        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
+        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null} />
         <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
           hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
         <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
