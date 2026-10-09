@@ -5,7 +5,11 @@ namespace Erp.Gates.Tests.Infrastructure;
 
 /// <summary>A documented route, query or header parameter.</summary>
 /// <param name="Enum">The values the document publishes for it (an enumeration), when it does.</param>
-public sealed record ApiParameter(string Name, string In, string Type, string? Format, IReadOnlyList<string>? Enum = null);
+public sealed record ApiParameter(string Name, string In, string Type, string? Format, IReadOnlyList<string>? Enum = null)
+{
+    /// <summary>The values the document gives as examples (<c>example</c>, <c>examples</c>), as text.</summary>
+    public IReadOnlyList<string> Examples { get; init; } = [];
+}
 
 /// <summary>A request-body leaf with the values the document allows for it.</summary>
 /// <param name="Path">Property names from the body's root (<see cref="OpenApiDocument.ArrayItems"/> for an array's items).</param>
@@ -90,8 +94,21 @@ public sealed class OpenApiDocument(JsonElement root)
             var members = schema.ValueKind == JsonValueKind.Object && schema.TryGetProperty("enum", out var e) && e.ValueKind == JsonValueKind.Array
                 ? e.EnumerateArray().Where(v => v.ValueKind == JsonValueKind.String).Select(v => v.GetString()!).ToList()
                 : null;
+            var examples = new List<string>();
+            foreach (var holder in new[] { parameter, schema }.Where(h => h.ValueKind == JsonValueKind.Object))
+            {
+                if (holder.TryGetProperty("example", out var one) && one.ValueKind is not (JsonValueKind.Object or JsonValueKind.Array or JsonValueKind.Null))
+                {
+                    examples.Add(one.ValueKind == JsonValueKind.String ? one.GetString()! : one.GetRawText());
+                }
+                if (holder.TryGetProperty("examples", out var many) && many.ValueKind == JsonValueKind.Array)
+                {
+                    examples.AddRange(many.EnumerateArray().Where(v => v.ValueKind is not (JsonValueKind.Object or JsonValueKind.Array or JsonValueKind.Null))
+                        .Select(v => v.ValueKind == JsonValueKind.String ? v.GetString()! : v.GetRawText()));
+                }
+            }
             list.Add(new ApiParameter(parameter.GetProperty("name").GetString()!, parameter.GetProperty("in").GetString()!, type, format,
-                members is { Count: > 0 } ? members : null));
+                members is { Count: > 0 } ? members : null) { Examples = examples.Distinct(StringComparer.Ordinal).ToList() });
         }
         return list;
     }
