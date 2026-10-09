@@ -37,4 +37,6 @@ round's verify health check after the end-to-end suite. No driver change was nee
 
 ## Processor time
 
-Three model unit tests (milliseconds). Nothing else is added to the verify.
+Three model unit tests (milliseconds). Nothing else is added to the verify. This round's passing
+verify (slot taken 08:22:44Z, load 28 at the start with another verify running) measured 7,946 s
+of processor time (dotnet 6,427, web 1,285, e2e 181, timing 53) against the 10,500 s maximum.
