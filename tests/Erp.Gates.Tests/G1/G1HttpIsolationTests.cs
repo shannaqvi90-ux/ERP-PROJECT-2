@@ -63,7 +63,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"in Arabic: {report.ArabicAttackRequests} tenant A requests, {report.VictimArabicRequests} tenant B requests, {report.ArabicWritePairs} write pairs");
+            $"in Arabic: {report.ArabicAttackRequests} tenant A requests, {report.VictimArabicRequests} tenant B requests, {report.ArabicWritePairs} write pairs, " +
+            $"{report.ArabicWorkspaceWrites} of {report.ArabicWorkspaceRefusals} workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one");
 
         // Every check runs and every failing one is reported together: a plant caught by one
         // check must not hide whether the others (list answers, process state) caught it too.
@@ -142,6 +143,14 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ArabicAttackRequests, "g1.arabicAttackRequests");
         CheckAtLeast(report.VictimArabicRequests, "g1.victimArabicRequests");
         CheckAtLeast(report.ArabicWritePairs, "g1.arabicWritePairs");
+        // A write of a record every company shares, refused by design to the Arabic administrator
+        // (limited to one branch in the gate seed), is made in Arabic by an administrator who works
+        // in every company and branch, and every such write succeeded (p04 round 7, after p02
+        // round 7's workspace-wide guard): its success path ran in Arabic for both tenants.
+        Check(report.ArabicWorkspaceWrites == report.ArabicWorkspaceRefusals,
+            $"Of {report.ArabicWorkspaceRefusals} writes refused to the branch-limited Arabic administrator because they need the whole workspace, " +
+            $"only {report.ArabicWorkspaceWrites} succeeded for the workspace-wide Arabic administrator");
+        CheckAtLeast(report.ArabicWorkspaceWrites, "g1.arabicWorkspaceWideWrites");
         Check(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
         CheckAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
         Check(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
@@ -749,6 +758,8 @@ public static partial class IsolationAttack
             ArabicAttackRequests = attackers.Where(x => x.Arabic).Sum(x => x.Requests) + pairs.ArabicRequests,
             VictimArabicRequests = activity.ArabicRequests,
             ArabicWritePairs = pairs.ArabicPairs,
+            ArabicWorkspaceRefusals = activity.ArabicWorkspaceRefusals + pairs.ArabicWorkspaceRefusals,
+            ArabicWorkspaceWrites = activity.ArabicWorkspaceWrites + pairs.ArabicWorkspaceWrites,
             ArabicBlindSpots = arabicBlind,
             AttackerUnsuccessfulWrites = pairs.AttackerUnsuccessfulWrites,
             WritePairBlindSpots = pairs.BlindSpots,
@@ -809,7 +820,7 @@ public static partial class IsolationAttack
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
         IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null,
-        int ArabicPairs = 0, int ArabicRequests = 0);
+        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0);
 
     /// <summary>
     /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
@@ -836,6 +847,8 @@ public static partial class IsolationAttack
         var variantPairs = 0;
         var arabicPairs = 0;
         var arabicRequests = 0;
+        var workspaceRefusals = 0;
+        var workspaceWrites = 0;
         var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
         var writes = victimActivity.Writes;
@@ -913,6 +926,8 @@ public static partial class IsolationAttack
                 await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's {endpoint.Key}");
             }
             arabicRequests = attacker.ArabicRequests;
+            workspaceRefusals = attacker.ArabicWorkspaceRefusals;
+            workspaceWrites = attacker.ArabicWorkspaceWrites;
         }
         finally
         {
@@ -927,7 +942,7 @@ public static partial class IsolationAttack
         {
             blind.Add("no write pair in Arabic succeeded on both sides");
         }
-        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests);
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites);
     }
 
     /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the
@@ -1796,6 +1811,13 @@ public sealed record IsolationReport(
 
     /// <summary>Write pairs in which both tenants wrote in Arabic.</summary>
     public int ArabicWritePairs { get; init; }
+
+    /// <summary>Writes refused to the branch-limited Arabic administrator because they need the
+    /// whole workspace (both tenants), each made once more by the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceRefusals { get; init; }
+
+    /// <summary>Those writes that succeeded for the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceWrites { get; init; }
 
     /// <summary>Moments an Arabic session no longer answered in Arabic with Arabic-Indic digits.</summary>
     public IReadOnlyList<string> ArabicBlindSpots { get; init; } = [];

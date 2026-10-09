@@ -34,7 +34,8 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), " +
             $"{result.WriteComparisons} write comparisons over {result.WriteEndpoints} endpoints and {result.WriteVariants} body variants, {result.Requests} requests, {result.Unstable.Count} unstable; " +
-            $"in Arabic: {result.ArabicComparisons} comparisons ({result.ArabicAnswers} answered in Arabic), {result.ArabicWriteComparisons} write comparisons");
+            $"in Arabic: {result.ArabicComparisons} comparisons ({result.ArabicAnswers} answered in Arabic), {result.ArabicWriteComparisons} write comparisons " +
+            $"({result.ArabicWorkspaceWriteComparisons} between the workspace-wide Arabic administrators)");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -51,6 +52,9 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         AssertAtLeast(result.ArabicComparisons, "g1.nonInterferenceArabicComparisons");
         AssertAtLeast(result.ArabicAnswers, "g1.nonInterferenceArabicAnswers");
         AssertAtLeast(result.ArabicWriteComparisons, "g1.writeNonInterferenceArabicComparisons");
+        // Writes every company shares, refused to the branch-limited Arabic administrators, compared
+        // between administrators who work in every company and branch (p04 round 7).
+        AssertAtLeast(result.ArabicWorkspaceWriteComparisons, "g1.writeNonInterferenceArabicWorkspaceComparisons");
     }
 
     private static void AssertAtLeast(int value, string key) =>
