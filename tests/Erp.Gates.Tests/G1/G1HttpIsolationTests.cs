@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -140,6 +141,7 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
         CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
         CheckAtLeast(report.ListAnswerPagesJudged, "g1.listAnswerPagesJudged");
+        CheckAtLeast(report.ListAnswerOffsetPagesJudged, "g1.listAnswerOffsetPagesJudged");
         Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
         CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
         CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
@@ -708,6 +710,7 @@ public static partial class IsolationAttack
             ListAnswerQueries = listAnswers.Sum(r => r.Queries),
             ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
             ListAnswerPagesJudged = listAnswers.Sum(r => r.PagesJudged),
+            ListAnswerOffsetPagesJudged = listAnswers.Sum(r => r.OffsetPagesJudged),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
@@ -1162,6 +1165,10 @@ public static partial class IsolationAttack
     }
 
     /// <summary>What the attack has seen so far and how it judges a response.</summary>
+    /// <summary>The differential check's normalisation, one pass and two (for its own test).</summary>
+    internal static (string OnePass, string TwoPasses) NormalizationsOf(string text, string first, string second) =>
+        (AttackState.NormalizeBoth(text, first, second), AttackState.Normalize(AttackState.Normalize(text, first), second));
+
     private sealed class AttackState(TenantSnapshot victim, VictimValues values)
     {
         private readonly List<string> _victimIds = values.Ids.Select(i => i.ToString()).ToList();
@@ -1252,8 +1259,8 @@ public static partial class IsolationAttack
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
             // in every answer ("user" in "Users and access") is treated the same on both sides.
-            var normalized = Normalize(Normalize(text, value), control);
-            var controlNormalized = Normalize(Normalize(controlText, control), value);
+            var normalized = NormalizeBoth(text, value, control);
+            var controlNormalized = NormalizeBoth(controlText, control, value);
             if ((status != controlStatus || normalized != controlNormalized) && (Stamped(headers) || Stamped(controlHeaders)))
             {
                 // A printed document shows the minute it was printed (in its own language and digits,
@@ -1263,8 +1270,8 @@ public static partial class IsolationAttack
                 (status, text, var retryHeaders) = await RawAsync(attacker, endpoint, uri, bodySchema, openApi, b, n);
                 Judge(attacker, endpoint, $"{uri} [{parameter.In} {parameter.Name}, asked again]", status, text, retryHeaders, [value]);
                 (controlStatus, controlText, _) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
-                normalized = Normalize(Normalize(text, value), control);
-                controlNormalized = Normalize(Normalize(controlText, control), value);
+                normalized = NormalizeBoth(text, value, control);
+                controlNormalized = NormalizeBoth(controlText, control, value);
             }
             if (status != controlStatus || normalized != controlNormalized)
             {
@@ -1383,10 +1390,90 @@ public static partial class IsolationAttack
             return text.Replace(Uri.EscapeDataString(value), "<sent>", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Exactly <c>Normalize(Normalize(text, first), second)</c>, in one pass over a JSON
+        /// body: the reader copies the body token by token, drops every <c>traceId</c> property and
+        /// scrubs both values from each string value (never from a property name), and the writer
+        /// writes it as <see cref="JsonNode.ToJsonString"/> does (compact, the default encoder,
+        /// numbers as written). A body that is not JSON is scrubbed as text, as before. The
+        /// differential check normalises both answers of every pair this way (twice each before:
+        /// a parse, a tree, a copy of every array item and a serialisation per value).</summary>
+        internal static string NormalizeBoth(string text, string first, string second)
+        {
+            var scrubFirst = Scrubber.For(first);
+            var scrubSecond = Scrubber.For(second);
+            try
+            {
+                var bytes = Encoding.UTF8.GetBytes(text);
+                var reader = new Utf8JsonReader(bytes);
+                if (!reader.Read())
+                {
+                    throw new JsonException("empty");
+                }
+                if (reader.TokenType == JsonTokenType.Null)
+                {
+                    // A body of JSON null: the tree is null and was written as nothing.
+                    while (reader.Read())
+                    {
+                    }
+                    return "";
+                }
+                var output = new ArrayBufferWriter<byte>(bytes.Length + 64);
+                using (var writer = new Utf8JsonWriter(output))
+                {
+                    do
+                    {
+                        switch (reader.TokenType)
+                        {
+                            case JsonTokenType.StartObject: writer.WriteStartObject(); break;
+                            case JsonTokenType.EndObject: writer.WriteEndObject(); break;
+                            case JsonTokenType.StartArray: writer.WriteStartArray(); break;
+                            case JsonTokenType.EndArray: writer.WriteEndArray(); break;
+                            case JsonTokenType.PropertyName:
+                                var name = reader.GetString()!;
+                                if (name == "traceId")
+                                {
+                                    reader.Read();
+                                    reader.Skip();
+                                    continue;
+                                }
+                                writer.WritePropertyName(name);
+                                break;
+                            case JsonTokenType.String:
+                                writer.WriteStringValue(scrubSecond.Apply(scrubFirst.Apply(reader.GetString()!)));
+                                break;
+                            case JsonTokenType.Number: writer.WriteRawValue(reader.ValueSpan, skipInputValidation: true); break;
+                            case JsonTokenType.True: writer.WriteBooleanValue(true); break;
+                            case JsonTokenType.False: writer.WriteBooleanValue(false); break;
+                            case JsonTokenType.Null: writer.WriteNullValue(); break;
+                            default: throw new JsonException($"unexpected {reader.TokenType}");
+                        }
+                    }
+                    while (reader.Read());
+                }
+                return Encoding.UTF8.GetString(output.WrittenSpan);
+            }
+            catch (JsonException)
+            {
+                return Normalize(scrubFirst.Apply(text), second);
+            }
+        }
+
+        /// <summary><see cref="Scrub"/> for one value, its JSON-escaped and URI-escaped forms worked
+        /// out once.</summary>
+        private sealed record Scrubber(string Value, string Escaped, string UriEscaped)
+        {
+            public static Scrubber For(string value) => new(value, JsonSerializer.Serialize(value)[1..^1], Uri.EscapeDataString(value));
+
+            public string Apply(string text) => text
+                .Replace(Value, "<sent>", StringComparison.OrdinalIgnoreCase)
+                .Replace(Escaped, "<sent>", StringComparison.OrdinalIgnoreCase)
+                .Replace(UriEscaped, "<sent>", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>The body with trace ids removed and the sent value replaced by a placeholder.
         /// In JSON only string values are scrubbed, never property names, so a short value such as
         /// "user" cannot hide a difference by matching a key.</summary>
-        private static string Normalize(string text, string value)
+        internal static string Normalize(string text, string value)
         {
             try
             {
@@ -1576,6 +1663,9 @@ public sealed record IsolationReport(
 
     /// <summary>Keyset pages (first and following, both tenants) whose total and groups were judged.</summary>
     public int ListAnswerPagesJudged { get; init; }
+
+    /// <summary>Pages of offset (skip) walks whose total, groups and rows were judged.</summary>
+    public int ListAnswerOffsetPagesJudged { get; init; }
 
     /// <summary>Process-wide state (reachable from singletons and static fields) that changed
     /// while the tenants used the app.</summary>

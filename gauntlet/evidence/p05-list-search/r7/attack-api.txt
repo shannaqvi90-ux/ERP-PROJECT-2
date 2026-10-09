@@ -1,0 +1,29 @@
+ok   200 total=0 search needle e-mail 
+ok   200 total=0 search needle name 
+ok   200 total=0 search needle Arabic 
+ok   200 total=0 filter email eq 
+ok   200 total=0 filter OR true 
+ok   200 total=0 filter quote injection 
+ok   200 total=0 wildcards % 
+ok   200 total=0 wildcards _ 
+ok   400 roleIds in B role 
+ok   200 total=0 header X-Tenant 
+ok   200 total=0 query tenantId 
+ok   200 total=0 groupBy language w/ needle 
+ok   200 total=1005 skip deep 
+ok   200 total=0 B cursor replayed 
+ok   404 B user by id 
+ok   404 B shared view GET 
+ok   404 B shared view PUT 
+ok   404 B shared view via personal GET 
+ok   404 B shared view DELETE 
+ok   404 B shared view via personal DELETE 
+ok   200 total=1 views list 
+ok   200 definition (role choices) 
+ok   200 print/export csv 
+ok   200 print/export xlsx 
+ok   200 print/export pdf 
+ok   409 bulk matching needle (count oracle) 
+ok   400 bulk matching filter roleIds B 
+B needle still active: true | B shared view still there: 200
+27 probes, 0 leaks

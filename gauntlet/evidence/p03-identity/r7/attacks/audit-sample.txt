@@ -1,0 +1,36 @@
+              t              | action | count  | with_actor 
+-----------------------------+--------+--------+------------
+ identity.roles              | delete |      1 |          1
+ identity.roles              | insert |     22 |         14
+ identity.sessions           | insert |     97 |         97
+ identity.sessions           | update |      1 |          1
+ identity.user_company_roles | insert |     12 |          8
+ identity.user_credentials   | delete |      6 |          6
+ identity.user_credentials   | insert | 101030 |         20
+ identity.user_credentials   | update |      2 |          2
+ identity.user_roles         | delete |      6 |          6
+ identity.user_roles         | insert |     18 |         10
+ identity.users              | delete |      6 |          6
+ identity.users              | insert | 101030 |         20
+ identity.users              | update |      3 |          3
+ lists.saved_views           | insert |     10 |          0
+ tenancy.branches            | insert |     15 |          0
+ tenancy.companies           | insert |      6 |          0
+ tenancy.tenants             | insert |      2 |          0
+ tenancy.user_branch_access  | insert |      3 |          0
+ tenancy.user_company_access | insert |     28 |         10
+ tenancy.user_company_totals | insert |     16 |          8
+ tenancy.user_company_totals | update |     20 |         10
+ tenancy.user_workplaces     | insert |      8 |          0
+(22 rows)
+
+          occurred_at          |               actor_id               | table_name | action |                                                                               left                                                                               
+-------------------------------+--------------------------------------+------------+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-09 03:04:25.071888+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | delete | {"id": {"old": "01a11e9e-795c-7961-a9c5-ac2de39ff60b"}, "email": {"old": "hessa.clerk@demo-trading.example"}, "language": {"old": "en"}, "numerals": {"old": "la
+ 2026-10-09 03:04:24.663956+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | insert | {"id": {"new": "01a11e9e-795c-7961-a9c5-ac2de39ff60b"}, "email": {"new": "hessa.clerk@demo-trading.example"}, "language": {"new": "en"}, "numerals": {"new": "la
+ 2026-10-09 03:04:22.940388+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | delete | {"id": {"old": "01a11e9e-7104-766e-ab2c-b43b563bcada"}, "email": {"old": "hessa.clerk@demo-trading.example"}, "language": {"old": "en"}, "numerals": {"old": "la
+ 2026-10-09 03:04:22.528358+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | insert | {"id": {"new": "01a11e9e-7104-766e-ab2c-b43b563bcada"}, "email": {"new": "hessa.clerk@demo-trading.example"}, "language": {"new": "en"}, "numerals": {"new": "la
+ 2026-10-09 03:04:20.757424+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | delete | {"id": {"old": "01a11e9e-688a-72ba-a7c0-ff3553753631"}, "email": {"old": "hessa.clerk@demo-trading.example"}, "language": {"old": "en"}, "numerals": {"old": "la
+ 2026-10-09 03:04:20.358342+00 | 01a11e97-7102-7c79-8091-f049e16823cd | users      | insert | {"id": {"new": "01a11e9e-688a-72ba-a7c0-ff3553753631"}, "email": {"new": "hessa.clerk@demo-trading.example"}, "language": {"new": "en"}, "numerals": {"new": "la
+(6 rows)
+

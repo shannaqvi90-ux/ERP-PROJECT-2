@@ -1,0 +1,128 @@
+-- no tenant bound
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+-- bound to A (transaction-local)
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ a_users | other 
+---------+-------
+       0 |     0
+(1 row)
+
+ other_roles 
+-------------
+           0
+(1 row)
+
+ other_ucr 
+-----------
+         0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+ROLLBACK
+-- session-level tenant
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+-- escape attempts
+ERROR:  must be owner of table users
+ERROR:  permission denied to set role "erp_owner"
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+ERROR:  function identity.resolve_login(unknown) does not exist
+LINE 1: select * from identity.resolve_login('admin@gulfsteel.exampl...
+                      ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+-- policies on identity tables
+ERROR:  column "forcerowsecurity" does not exist
+LINE 1: select tablename, rowsecurity, forcerowsecurity from pg_tabl...
+                                       ^
+     tablename      |     policyname     |   roles    |  cmd   |                                  qual                                   
+--------------------+--------------------+------------+--------+-------------------------------------------------------------------------
+ roles              | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ sessions           | auth_resolver_read | {erp_auth} | SELECT | true
+ sessions           | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ sign_in_attempts   | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ user_company_roles | company_scope      | {public}   | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ user_company_roles | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ user_credentials   | auth_resolver_read | {erp_auth} | SELECT | true
+ user_credentials   | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ user_roles         | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ users              | auth_resolver_read | {erp_auth} | SELECT | true
+ users              | tenant_isolation   | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+(11 rows)
+
+-- bound to A properly (tenant_tx)
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791488717.446991
+(1 row)
+
+ a_users | other 
+---------+-------
+  100017 |     0
+(1 row)
+
+ other_roles | roles 
+-------------+-------
+           0 |    14
+(1 row)
+
+ ucr_visible | other_ucr 
+-------------+-----------
+           0 |         0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "user_roles"
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+-- verify_sign_in as erp_app (SECURITY DEFINER?)
+ challenge | tenant_id 
+-----------+-----------
+(0 rows)
+

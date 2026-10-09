@@ -72,6 +72,10 @@ case "$stage" in
         --test-reporter=spec --test-reporter-destination=stdout \
         --test-reporter=junit --test-reporter-destination="$out/compare-junit.xml" \
         $(ls test/*.test.mjs | grep -v live-odoo)
+    # Instrument integrity: every planted fault in the measuring instrument (scripts/mutations.mjs,
+    # one defence removed or weakened at a time, in a scratch copy) must fail a self-test.
+    step "Comparison harness: instrument mutations (each must be caught)"
+    node scripts/mutations.mjs
     ;;
   dotnet)
     copy_sources

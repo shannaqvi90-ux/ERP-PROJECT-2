@@ -1,0 +1,53 @@
+== tables with tenant_id: RLS enabled|forced
+audit.entries|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_company_roles|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.branches|t|t
+tenancy.companies|t|t
+tenancy.tenants|t|t
+tenancy.user_branch_access|t|t
+tenancy.user_company_access|t|t
+tenancy.user_company_totals|t|t
+tenancy.user_workplaces|t|t
+== tenant tables WITHOUT forced RLS
+== roles: name|superuser|bypassrls
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+== tables in app schemas without tenant_id
+audit.__ef_migrations_history
+identity.__ef_migrations_history
+identity.sign_in_secret
+lists.__ef_migrations_history
+tenancy.__ef_migrations_history
+== as erp_app with no tenant bound: counts
+SET
+users|0
+companies|0
+tenants|0
+audit|0
+== (as the postgres superuser, for reference: both tenants exist)
+0190a000-0000-7000-8000-000000000002|gulfsteel
+0190a000-0000-7000-8000-000000000001|alnoor
+== as erp_app bound to alnoor (marker set in this transaction): which tenants' rows are visible
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000001|1791502544.083257
+tenants|alnoor
+users by tenant|0190a000-0000-7000-8000-000000000001|100005
+audit by tenant|0190a000-0000-7000-8000-000000000001|200073
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+== as erp_app with the GUC set but no transaction marker
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000002
+users visible|0
+ROLLBACK

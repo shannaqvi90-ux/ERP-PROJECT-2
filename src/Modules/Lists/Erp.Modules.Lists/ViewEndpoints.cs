@@ -18,7 +18,8 @@ public sealed record ListChoiceDto(string Value, string LabelKey);
 
 public sealed record ListColumnDto(
     string Key, string LabelKey, ListColumnType Type, bool Sortable, bool Filterable, bool Groupable, bool Aggregate, bool Hidden,
-    IReadOnlyList<ListChoiceDto> Choices, IReadOnlyList<FilterOperator> Operators, string? CurrencyField = null);
+    IReadOnlyList<ListChoiceDto> Choices, IReadOnlyList<FilterOperator> Operators, string? CurrencyField = null,
+    string? TrueLabelKey = null, string? FalseLabelKey = null);
 
 public sealed record ListPresetDto(string Key, string LabelKey, string? Filter, string? Sort, string? GroupBy);
 
@@ -195,7 +196,7 @@ internal static class ViewEndpoints
         list.Columns.Select(c => new ListColumnDto(
             c.Key, c.LabelKey, c.Type, c.Sortable, c.Filterable, c.Groupable, c.Aggregate, c.Hidden,
             (c.Choices ?? []).Select(x => new ListChoiceDto(x.Value, x.LabelKey)).ToList(),
-            c.Filterable ? ListFilter.Allowed(c.Type) : [], c.CurrencyField)).ToList(),
+            c.Filterable ? ListFilter.Allowed(c.Type) : [], c.CurrencyField, c.TrueLabelKey, c.FalseLabelKey)).ToList(),
         list.SearchFields,
         list.DefaultSort,
         (list.Presets ?? []).Select(p => new ListPresetDto(p.Key, p.LabelKey, p.Filter, p.Sort, p.GroupBy)).ToList(),

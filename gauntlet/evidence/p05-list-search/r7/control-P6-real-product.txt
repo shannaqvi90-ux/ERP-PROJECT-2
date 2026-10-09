@@ -1,0 +1,6 @@
+viewer canShare false
+admin shared default 201 true ; admin personal 201
+viewer sees views: Probe team default 1791506348447 shared=true default=true mine=false | Team view shared=true default=false mine=false
+viewer saves a personal default: 201
+shared view after viewer saved personal default: isDefault true version 904 (before 904)
+viewer PUT shared view directly: 403

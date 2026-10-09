@@ -25,6 +25,7 @@ public sealed class LeakyFixture : IAsyncLifetime
     private readonly Lock _runs = new();
     private Task<GrantBearingRecords.Result>? _grantBearing;
     private Task<GrantEscalation.Result>? _grantEscalation;
+    private Task<SetTakeover.Result>? _setTakeover;
 
     /// <summary>The grant-bearing record check over this environment, run once: three self-tests
     /// judge the same run, each for its own plants (three identical full runs were most of the
@@ -39,6 +40,14 @@ public sealed class LeakyFixture : IAsyncLifetime
     public Task<GrantEscalation.Result> GrantEscalationAsync()
     {
         lock (_runs) return _grantEscalation ??= GrantEscalation.RunAsync(Env);
+    }
+
+    /// <summary>The set-based takeover check over the planted "all that match" activations, run
+    /// once for the two self-tests that judge it (bugs 53 and 54, and bug 57).</summary>
+    public Task<SetTakeover.Result> SetTakeoverAsync()
+    {
+        lock (_runs) return _setTakeover ??= SetTakeover.RunAsync(Env, userLists: ["/api/leaky/users"],
+            only: e => e.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal), targets: SetTakeover.Targets.PerModule, freshAdministrator: true);
     }
 }
 
@@ -243,7 +252,20 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
         Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/scroll", StringComparison.Ordinal) && w.Contains(" page 1 of ", StringComparison.Ordinal));
         Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("GET /api/leaky/scroll?take=50", StringComparison.Ordinal));
-        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal) && !w.Contains("/api/leaky/scroll", StringComparison.Ordinal));
+        // A list whose offset (skip) pages reuse the total the last first page counted, whatever
+        // its tenant, kept in a pooled scratch object (critic p05 round 5, plant L10): every first
+        // page and every keyset page is right, so only judging offset pages, walked in lock step
+        // with the other tenant, catches it.
+        foreach (var direction in new[] { "tenant B asks first, tenant A judged", "tenant A asks first, tenant B judged" })
+        {
+            Assert.Contains(report.ListAnswersWrong, w => w.StartsWith(direction, StringComparison.Ordinal) && w.Contains("/api/leaky/jump", StringComparison.Ordinal) &&
+                                                          w.Contains("the judged offset page 2 of ", StringComparison.Ordinal) && w.Contains("answered total", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/jump", StringComparison.Ordinal) && !w.Contains(" offset page ", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/jump", StringComparison.Ordinal) && w.Contains(" offset page 1 of ", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.ListAnswersWrong, w => !w.Contains("/api/leaky/people", StringComparison.Ordinal) && !w.Contains("/api/leaky/scroll", StringComparison.Ordinal) &&
+                                                            !w.Contains("/api/leaky/jump", StringComparison.Ordinal));
+        Assert.True(report.ListAnswerOffsetPagesJudged > 0, "no offset page was judged");
         Assert.Empty(report.ListAnswersBlind);
 
         // The planted state changed while the tenants used the app (the list memory on the module
@@ -257,6 +279,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last", StringComparison.Ordinal)), "no change to the stateful singleton:" + changes);
         // The static memo of a closed generic type (plant L6's shape) is a root of its own.
         Assert.True(report.StateChanges.Any(c => c.StartsWith($"static {typeof(LeakyModule).FullName}.ScrollTotals`1[", StringComparison.Ordinal)), "no change to the generic type's static memo:" + changes);
+        // The pooled scratch (plant L10's shape) sits in a framework singleton built over a planted
+        // type: the holder is a root of its own and its framework internals are walked to it.
+        Assert.True(report.StateChanges.Any(c => c.StartsWith($"singleton Microsoft.Extensions.ObjectPool.ObjectPool<{typeof(LeakyModule).FullName}.JumpScratch>", StringComparison.Ordinal)),
+            "no change to the pooled scratch:" + changes);
         Assert.True(report.StateChanges.All(c => c.Contains("Leaky", StringComparison.Ordinal)), "product state changed:" + changes);
     }
 
@@ -328,6 +354,45 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(partly, StringComparison.Ordinal) && p.Contains("on themselves", StringComparison.Ordinal));
         // The product's endpoint carries a version and refuses a stale one.
         Assert.DoesNotContain(result.Problems, p => p.Contains("concurrency token", StringComparison.Ordinal) || p.Contains("stale version", StringComparison.Ordinal));
+    }
+
+    /// <summary>Critic p03 round 6: a table whose own rows stay readable outside the company scope
+    /// (the own-rows variant) without the RESTRICTIVE update and delete policies lets a session
+    /// delete its own rows of other companies or move one into its scope; a permissive policy by
+    /// one of those names widens access and is unreviewed.</summary>
+    [Fact]
+    public async Task The_company_policy_check_catches_own_rows_writable_outside_the_scope()
+    {
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            foreach (var table in new[] { "selftest_own_rows_writable", "selftest_own_rows_permissive" })
+            {
+                await DbCatalog.ExecuteAsync(owner, $"CREATE TABLE tenancy.{table} (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL, user_id uuid NOT NULL)");
+                await DbCatalog.ExecuteAsync(owner, $"CREATE POLICY company_scope ON tenancy.{table} AS RESTRICTIVE FOR ALL TO PUBLIC " +
+                                                    "USING (erp.company_allowed(company_id) OR user_id = erp.current_actor_id()) WITH CHECK (erp.company_allowed(company_id))");
+            }
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_update ON tenancy.selftest_own_rows_permissive AS RESTRICTIVE FOR UPDATE TO PUBLIC USING (erp.company_allowed(company_id))");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_scope_delete ON tenancy.selftest_own_rows_permissive AS PERMISSIVE FOR DELETE TO PUBLIC USING (true)");
+        }
+        try
+        {
+            var (problems, _) = await G1CompanyScopeTests.PolicyProblemsAsync(fixture.Env);
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_writable: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => p.StartsWith("tenancy.selftest_own_rows_permissive: its own rows are readable outside the company scope, so it needs the RESTRICTIVE company_scope_update", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_own_rows_", StringComparison.Ordinal));
+            var (tenantProblems, _) = await G1DatabaseIsolationTests.RowLevelSecurityProblemsAsync(fixture.Env);
+            Assert.Contains(tenantProblems, p => p.Contains("tenancy.selftest_own_rows_permissive: unreviewed policy 'tenancy.selftest_own_rows_permissive company_scope_delete", StringComparison.Ordinal));
+            Assert.DoesNotContain(tenantProblems, p => p.Contains("company_scope_update", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_own_rows_writable; DROP TABLE tenancy.selftest_own_rows_permissive");
+        }
     }
 
     [Fact]
@@ -483,6 +548,14 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._totals" && f.Why.Contains("ModuleCatalog._modules", StringComparison.Ordinal));
         Assert.Contains(running.Findings, f => f.Key == $"reachable {typeof(LeakyModule).FullName}._groups");
 
+        // A framework singleton built over a planted type (critic p05 round 5, plant L10: an
+        // ObjectPool<T> served by the framework's DefaultObjectPool<T>) is reported on its own, and
+        // the walk goes through its framework internals to the planted scratch objects it pools,
+        // whose fields are judged like any product object's.
+        Assert.Contains(running.Findings, f => f.Key == $"framework-singleton Microsoft.Extensions.ObjectPool.ObjectPool<{typeof(LeakyModule).FullName}.JumpScratch>" &&
+                                               f.Why.Contains("JumpScratch", StringComparison.Ordinal));
+        Assert.True(running.FrameworkSingletonsInspected > 0, "no framework singleton built over a product type was found");
+
         // A static delegate in a generic type (critic p05 round 4, plant L6): the field is flagged
         // by type, and the closure it holds is reached through the closed instantiation the
         // product's code uses and judged on its own.
@@ -576,6 +649,64 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains("POST /api/identity/users", result.Checked);
     }
 
+    /// <summary>Bugs 53 and 54 (critic p03 round 5, plant P2 and finding R1): "all that match"
+    /// activation that judges nothing the chosen users hold, and one that judges only roles held
+    /// in every company. The set-based takeover check must report the first changing the
+    /// Administrator, and the second changing users whose roles are held in one company and a user
+    /// holding a role in a company the caller does not work in, while leaving the Administrator
+    /// and users holding workspace-wide grants alone (the second's own check works).</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_judging_nothing_or_only_roles_held_everywhere()
+    {
+        const string anyone = "POST /api/leaky/users/matching/active-anyone";
+        const string workspaceOnly = "POST /api/leaky/users/matching/active-workspace-roles";
+        var result = await fixture.SetTakeoverAsync();
+        foreach (var problem in result.Problems.Take(12))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(anyone, result.Checked);
+        Assert.Contains(workspaceOnly, result.Checked);
+        Assert.Contains(result.Problems, p => p.StartsWith(anyone + " by search", StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(anyone + " by filter", StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(workspaceOnly + selector, StringComparison.Ordinal) && p.Contains("in one company only", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+            Assert.Contains(result.Problems, p => p.StartsWith(workspaceOnly + selector, StringComparison.Ordinal) && p.Contains("a company the caller does not work in", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(workspaceOnly, StringComparison.Ordinal) && p.Contains("aimed at the Administrator", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(workspaceOnly, StringComparison.Ordinal) && p.Contains("aimed at a user holding", StringComparison.Ordinal) &&
+                                                    !p.Contains("in one company only", StringComparison.Ordinal) && !p.Contains("a company the caller does not work in", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.True(result.CompanyAimed > 0);
+    }
+
+    /// <summary>Bug 57 (critic p03 round 6, plant Pc): "all that match" activation that takes a role
+    /// the caller's grants cover in one company as covered in every company. Only a caller whose
+    /// grants come from a role in one company reaches it: the set-based takeover check must report
+    /// it changing a user holding a module's grants in the other company, by search and by filter,
+    /// and nothing else of that endpoint (its other rules work, and the same role held in the
+    /// caller's company is meant to change).</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another()
+    {
+        const string roleAnywhere = "POST /api/leaky/users/matching/active-role-anywhere";
+        const string otherCompany = "in one company only, the other one than where the caller holds it";
+        var result = await fixture.SetTakeoverAsync();
+        foreach (var problem in result.Problems.Where(p => p.StartsWith(roleAnywhere, StringComparison.Ordinal)).Take(6))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(roleAnywhere, result.Checked);
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(roleAnywhere + selector, StringComparison.Ordinal) && p.Contains(otherCompany, StringComparison.Ordinal) &&
+                                                  p.Contains("only through a role in one company", StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(roleAnywhere, StringComparison.Ordinal) && !p.Contains(otherCompany, StringComparison.Ordinal));
+        Assert.True(result.CompanyCallerAimed > 0);
+    }
+
     [Fact]
     public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
     {
@@ -585,7 +716,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // The planted list's own saved-view endpoints (a reader saving their own view) are the
         // planted module's too: they are reviewed for product lists, not for this one.
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal) && !p.Contains($"/api/lists/{LeakyModule.PeopleList}/views", StringComparison.Ordinal) &&
-                                                     !p.Contains($"/api/lists/{LeakyModule.ScrollList}/views", StringComparison.Ordinal));
+                                                     !p.Contains($"/api/lists/{LeakyModule.ScrollList}/views", StringComparison.Ordinal) &&
+                                                     !p.Contains($"/api/lists/{LeakyModule.JumpList}/views", StringComparison.Ordinal));
 
         // A GET that writes: the database refuses inside the read-only transaction, nothing changes.
         await using var owner = new NpgsqlConnection(fixture.Env.AdminConnectionString);
@@ -698,15 +830,20 @@ public sealed class WriteOracleSelfTests(LeakyWriteOracleFixture fixture) : ICla
         Assert.Contains("POST /api/identity/roles", result.Endpoints);
     }
 
+    /// <summary>Bug 58 (critic p03 rounds 5 and 6, plant L3): a membership naming another
+    /// workspace's company inside a list of objects answers "not their company", an id that exists
+    /// nowhere "unknown ids". The id differential must report it, and no product endpoint.</summary>
     [Fact]
-    public async Task The_id_write_oracle_check_catches_a_line_item_that_refuses_another_tenants_company_differently()
+    public async Task The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one()
     {
-        // Critic p03 round 5, plant L3: tenant B's company id inside the objects of a list.
         var result = await G1WriteOracle.RunIdsAsync(fixture.Env);
-        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/orders [lines[].companyId]: tenant A sending tenant B's id answered 400", StringComparison.Ordinal) &&
+        foreach (var problem in result.Problems.Take(10))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(result.Problems, p => p.StartsWith("POST /api/leaky/company-memberships [memberships[].companyId]: tenant A naming tenant B's record", StringComparison.Ordinal) &&
                                               p.Contains("notTheirCompany", StringComparison.Ordinal));
-        Assert.Contains("POST /api/leaky/orders [lines[].companyId]", result.Leaves);
-        Assert.Contains("POST /api/identity/users [companyRoles[].companyId]", result.Leaves);
         Assert.DoesNotContain(result.Problems, p => !p.Contains("/api/leaky/", StringComparison.Ordinal));
+        Assert.Contains("POST /api/identity/users [companyRoles[].companyId]", result.Judged);
     }
 }

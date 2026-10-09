@@ -29,7 +29,7 @@ import {
   type Row,
   type SavedView,
 } from "./model";
-import { ColumnChooser, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
+import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
 import { useListRows } from "./useListRows";
 import "./lists.css";
 import "../forms/forms.css";
@@ -44,6 +44,10 @@ export type BulkAction = {
    * all that match"); the query has no paging. Actions without it act on chosen rows only.
    * Answering false (the user cancelled) keeps the selection as it was. */
   runAll?: (query: URLSearchParams, total: number) => Promise<void | boolean> | void | boolean;
+  /** Ask first, in the app's own dialog (in the user's language and direction, keyboard first):
+   * plural messages with {count}, for chosen rows and for all that match. Without it the action
+   * runs at once. */
+  confirm?: { messageKey: string; allMessageKey?: string; danger?: boolean };
 };
 
 /** Most rows one copy of "all that match" puts on the clipboard (larger sets are exported). */
@@ -145,6 +149,8 @@ export function ListView(props: ListViewProps) {
   const [anchor, setAnchor] = useState<number | null>(null);
   const [menu, setMenu] = useState<null | { kind: "column"; column: string } | { kind: "filter"; column: string } | { kind: "columns" } | { kind: "views" } | { kind: "save" }>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // The confirmation the app is asking for (a bulk action, deleting a view), if any.
+  const [confirming, setConfirming] = useState<{ title: string; message: string; confirmLabel: string; danger?: boolean; run: () => void } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewport, setViewport] = useState(600);
@@ -505,6 +511,9 @@ export function ListView(props: ListViewProps) {
     // Keys pressed on a control inside the grid (a column header's sort or menu button, a filter
     // editor) belong to that control: Enter and Space press it, arrows move within it.
     if (event.target !== event.currentTarget) return;
+    // Alt with a key is an application shortcut (Alt+PageDown and Alt+PageUp move the open record
+    // to the next or previous one), never a move in the grid: leave it to the shortcuts.
+    if (event.altKey) return;
     const page = Math.max(1, Math.floor(viewport / rowHeight) - 1);
     const count = grouped ? (rows.groups?.length ?? 0) : total;
     switch (event.key) {
@@ -642,9 +651,19 @@ export function ListView(props: ListViewProps) {
     }
   }
 
-  async function deleteView() {
+  function deleteView() {
     if (!selectedView || !definition) return;
-    if (!window.confirm(t("lists.views.deleteConfirm", { name: selectedView.name }))) return;
+    setConfirming({
+      title: t("lists.views.delete"),
+      message: t("lists.views.deleteConfirm", { name: selectedView.name }),
+      confirmLabel: t("lists.views.delete"),
+      danger: true,
+      run: () => void deleteViewConfirmed(),
+    });
+  }
+
+  async function deleteViewConfirmed() {
+    if (!selectedView || !definition) return;
     try {
       await api<void>("DELETE", `/api/lists/${listKey}/${selectedView.isShared ? "shared-views" : "views"}/${selectedView.id}`);
       setViews((list) => list.filter((v) => v.id !== selectedView.id));
@@ -890,13 +909,27 @@ export function ListView(props: ListViewProps) {
                 className="button"
                 disabled={unavailable}
                 title={unavailable ? t("lists.bulk.chosenOnly") : undefined}
-                onClick={() =>
-                  void Promise.resolve(allMatching && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then((done) => {
-                    if (done === false) return;
-                    clearSelection();
-                    rows.reload();
-                  })
-                }
+                onClick={() => {
+                  const all = Boolean(allMatching && action.runAll && query);
+                  const count = all ? total : selected.size;
+                  const go = () =>
+                    void Promise.resolve(all && action.runAll && query ? action.runAll(new URLSearchParams(query), total) : action.run([...selected.values()])).then((done) => {
+                      if (done === false) return;
+                      clearSelection();
+                      rows.reload();
+                    });
+                  if (!action.confirm) {
+                    go();
+                    return;
+                  }
+                  setConfirming({
+                    title: t(action.labelKey),
+                    message: t(all ? (action.confirm.allMessageKey ?? action.confirm.messageKey) : action.confirm.messageKey, { count }),
+                    confirmLabel: t(action.labelKey),
+                    danger: action.confirm.danger,
+                    run: go,
+                  });
+                }}
               >
                 {t(action.labelKey)}
               </button>
@@ -912,6 +945,20 @@ export function ListView(props: ListViewProps) {
         <div className="list-notice" role="status">
           {notice}
         </div>
+      )}
+      {confirming && (
+        <ConfirmDialog
+          title={confirming.title}
+          message={confirming.message}
+          confirmLabel={confirming.confirmLabel}
+          danger={confirming.danger}
+          onCancel={() => setConfirming(null)}
+          onConfirm={() => {
+            const run = confirming.run;
+            setConfirming(null);
+            run();
+          }}
+        />
       )}
       {rows.error && (
         <div className="alert" role="alert">
@@ -929,7 +976,7 @@ export function ListView(props: ListViewProps) {
           {t(definition?.printable ? "lists.print.partialReport" : "lists.print.partial", { from: i18n.formatNumber(range.start + 1), to: i18n.formatNumber(range.end), total: i18n.formatNumber(rows.total) })}
         </p>
       )}
-      <div className={`list-body${recordOpen ? " has-record" : ""}`}>
+      <div className={`list-body${recordOpen ? (props.renderRecord ? " has-record has-form" : " has-record") : ""}`}>
         <div ref={gridRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
         <table
           ref={tableRef}
@@ -1186,7 +1233,16 @@ function RecordPanel({
 
 /** A text value as a box of its own direction (see .list-text): cut at its own end when it does not fit. */
 function textBox(column: ListColumn, content: ReactNode): ReactNode {
-  return column.type === "text" && typeof content === "string" ? <span className="list-text">{content}</span> : content;
+  // dir="auto": the box's direction (and so the end its ellipsis cuts) is the value's own, not the
+  // page's: a Latin name in an Arabic list is cut at its end, "Al Noor Technical Serv…", never at
+  // its beginning (unicode-bidi alone orders the letters but leaves the ellipsis on the page's end).
+  return column.type === "text" && typeof content === "string" ? (
+    <span className="list-text" dir="auto">
+      {content}
+    </span>
+  ) : (
+    content
+  );
 }
 
 /** A column's width in the grid template: a minimum in rem and a share of the rest. */

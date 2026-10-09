@@ -1,0 +1,20 @@
+import { open, signIn, BASE, shot } from './pw.mjs';
+const { browser, page, errors } = await open();
+await signIn(page, 'clerk.64eabe@alnoor.example', 'Critic-Pass-2026x');
+await page.goto(BASE + '/identity/users'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(800);
+await page.keyboard.type('admin@alnoor.example'); await page.waitForTimeout(1200);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+await shot(page, '01-clerk-opens-administrator-en');
+const panel = page.locator('aside, [role=dialog], [role=complementary]').last();
+console.log('PANEL TEXT:\n' + (await panel.innerText()).slice(0, 1500));
+const editable = await page.locator('aside input:not([disabled]):not([readonly]), aside select:not([disabled]), aside textarea:not([disabled]):not([readonly]), [role=complementary] input:not([disabled]):not([readonly])').count();
+const buttons = await page.locator('aside button:not([disabled]), [role=complementary] button:not([disabled])').allInnerTexts();
+console.log('editable inputs', editable, 'enabled buttons', JSON.stringify(buttons));
+// Now a user the clerk can act on: plain user
+await page.goto(BASE + '/identity/users'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(800);
+await page.keyboard.type('plain.64eabe'); await page.waitForTimeout(1200);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+console.log('PLAIN PANEL:\n' + (await page.locator('aside, [role=complementary]').last().innerText()).slice(0, 800));
+console.log('enabled buttons', JSON.stringify(await page.locator('aside button:not([disabled]), [role=complementary] button:not([disabled])').allInnerTexts()));
+console.log('errors', errors);
+await browser.close();

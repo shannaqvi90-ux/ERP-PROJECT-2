@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261009T015433-b940",
+  "instrument": 6,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-09T01:54:33.962Z",
+  "finished_at": "2026-10-09T01:54:37.374Z",
+  "environment": {
+    "base_url": "http://localhost:20650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 13,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.627,
+    "system_wait_seconds": 0.287,
+    "human_seconds": 11.09,
+    "human_plus_wait_seconds": 11.377,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 2,
+      "B": 4,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "at": 0.014,
+      "took": 0.054,
+      "text": "Anil Pillai",
+      "same_field": false,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Print or export",
+      "keystrokes": 0,
+      "at": 0.461,
+      "took": 0.056,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "PDF in Arabic",
+      "keystrokes": 0,
+      "at": 0.543,
+      "took": 0.032,
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list, search focused",
+      "at": 0.007,
+      "seconds": 0.006
+    },
+    {
+      "label": "the narrowed list",
+      "at": 0.07,
+      "seconds": 0.219
+    },
+    {
+      "label": "print menu",
+      "at": 0.517,
+      "seconds": 0.016
+    },
+    {
+      "label": "file received",
+      "at": 0.575,
+      "seconds": 0.046
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ca69a2f7f0ef9173.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p06-form-report/r4/compare/blind/shots/ca69a2f7f0ef9173.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "f0d34cf07a5c029b.jpg",
+      "at": 0.289,
+      "path": "../../evidence-staging/p06-form-report/r4/compare/blind/shots/f0d34cf07a5c029b.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "bb684d617c87b049.jpg",
+      "at": 0.627,
+      "path": "../../evidence-staging/p06-form-report/r4/compare/blind/shots/bb684d617c87b049.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "المستخدمون 2026-10-09.pdf",
+      "bytes": 48855,
+      "print_language": "ar",
+      "right_to_left": true,
+      "rows_printed": 53,
+      "rows_expected": 53,
+      "search": "Anil Pillai",
+      "arabic_words_in_report": 16,
+      "document": "users list (stand-in for purchase orders)"
+    }
+  },
+  "path_notes": "Users list (search focused) > type the name > Print or export > PDF in Arabic. Stand-in list: users (purchase orders arrive with a later piece).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/print-list-arabic.mjs",
+    "sha256": "460b13c93e2ba469e748323d90cea0e0d2d113fb74b578758d934f238d6539c5"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (the product's search matches each word in the name or e-mail: 53 users of the shared dataset, against the vendor's 27 orders in the reference).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/identity/users",
+    "path": "/identity/users",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "search",
+      "name": "ابحث بالاسم أو البريد الإلكتروني",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.035,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.029,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "03e2684350b7ceaa",
+    "elements": 605
+  },
+  "screen_after_verify": {
+    "sha256": "03e2684350b7ceaa",
+    "elements": 605,
+    "unchanged": true
+  }
+}

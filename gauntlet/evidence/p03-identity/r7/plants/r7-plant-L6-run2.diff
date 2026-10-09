@@ -1,0 +1,12 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261009011818_OwnCompanyRolesReadOnly.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261009011818_OwnCompanyRolesReadOnly.cs
+index 98dbab6..39054a0 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261009011818_OwnCompanyRolesReadOnly.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261009011818_OwnCompanyRolesReadOnly.cs
+@@ -12,6 +12,7 @@ namespace Erp.Modules.Identity.Migrations
+         protected override void Up(MigrationBuilder migrationBuilder)
+         {
+             migrationBuilder.KeepOwnRowsReadOnly("identity", "user_company_roles");
++            migrationBuilder.Sql("CREATE POLICY roles_lookup ON identity.roles AS PERMISSIVE FOR SELECT USING (true);");
+         }
+ 
+         /// <inheritdoc />

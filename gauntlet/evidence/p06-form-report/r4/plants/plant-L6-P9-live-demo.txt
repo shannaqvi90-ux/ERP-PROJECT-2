@@ -1,0 +1,25 @@
+signed in; keys of sign-in body: [
+  'authenticated',
+  'user',
+  'tenant',
+  'permissions',
+  'menu',
+  'expiresAt'
+]
+alnoor 400 lines 1 alnoor e-mails 0
+gulfsteel 400 lines 1 alnoor e-mails in gulfsteel's file 0 gulfsteel e-mails 0
+gulfsteel first lines:
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-e4e717d6627be663be100ea12f55215c-e148f0eb8b7e4621-00","errors":{"columns":[{"code":"reportColumns","message":"Name one or more columns of this list, separated by commas."}]}}
+gulfsteel without columns: alnoor e-mails 0
+role 201 {"id":"01a11e48-123e-7a28-a946-2ba0d6a9b566","nameEn":"Critic users only","nameAr":"مستخدمون فقط","permissions":["identi
+user 201 {"id":"01a11e48-12a4-7dac-913c-c457b1fba8e5","email":"critic.p9.1791509402218@alnoor.example","displayName":"Critic P9","language":"en","isActive":true,"roleIds
+clerk GET /api/identity/roles 403
+clerk users list, searched "admin", CSV:
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Active,,Administrator
+Mariam Al Mansoori,admin@alnoor.example,English,Active,2026-10-09 05:30:00,Administrator
+
+clerk users list, no search, CSV head:
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Critic P9,critic.p9.1791509402218@alnoor.example,English,Active,2026-10-09 05:30:02,1
+Layla Nasser,noaccess@alnoor.example,English,Active,,0

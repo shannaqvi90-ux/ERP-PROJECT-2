@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "follow-approval-20261005T070807-4388",
-  "instrument": 5,
+  "run_id": "follow-approval-20261007T234253-f3f1",
+  "instrument": 6,
   "task": "follow-approval",
   "task_title": "Follow an approval",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the document that is waiting for your approval and approve it.",
   "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
-  "started_at": "2026-10-05T07:08:07.519Z",
-  "finished_at": "2026-10-05T07:08:20.910Z",
+  "started_at": "2026-10-07T23:42:53.809Z",
+  "finished_at": "2026-10-07T23:43:01.004Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -29,10 +29,10 @@
     "key_chords": 0,
     "file_picks": 0,
     "requests": 0,
-    "machine_seconds": 5.667,
-    "system_wait_seconds": 5.021,
+    "machine_seconds": 2.398,
+    "system_wait_seconds": 1.762,
     "human_seconds": 10.6,
-    "human_plus_wait_seconds": 15.621,
+    "human_plus_wait_seconds": 12.362,
     "klm_operator_counts": {
       "K": 0,
       "P": 4,
@@ -57,8 +57,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.001,
-      "took": 0.066,
+      "at": 0.002,
+      "took": 0.048,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -67,8 +67,8 @@
       "kind": "click",
       "label": "Purchase app",
       "keystrokes": 0,
-      "at": 0.067,
-      "took": 0.062,
+      "at": 0.051,
+      "took": 0.051,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -77,8 +77,8 @@
       "kind": "click",
       "label": "open the order waiting for approval",
       "keystrokes": 0,
-      "at": 3.183,
-      "took": 0.154,
+      "at": 1.56,
+      "took": 0.127,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -87,60 +87,60 @@
       "kind": "click",
       "label": "Approve Order",
       "keystrokes": 0,
-      "at": 4.972,
-      "took": 0.092,
-      "screen": "/odoo/purchase/100006",
+      "at": 2.049,
+      "took": 0.118,
+      "screen": "/odoo/purchase/100037",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "Purchase loaded",
-      "at": 0.13,
-      "seconds": 0.316
+      "at": 0.102,
+      "seconds": 0.191
     },
     {
       "label": "order list",
-      "at": 0.446,
-      "seconds": 2.469
+      "at": 0.294,
+      "seconds": 0.984
     },
     {
       "label": "order form",
-      "at": 3.337,
-      "seconds": 1.634
+      "at": 1.688,
+      "seconds": 0.36
     },
     {
       "label": "order approved",
-      "at": 5.064,
-      "seconds": 0.602
+      "at": 2.168,
+      "seconds": 0.227
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "7968a924a7db4e45.jpg",
+      "file": "34adc6326e93f5d8.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/7968a924a7db4e45.jpg"
+      "path": "gauntlet/reference/odoo/shots/34adc6326e93f5d8.jpg"
     },
     {
       "moment": "orders waiting for approval",
-      "file": "a880f1232fa9643c.jpg",
-      "at": 2.921,
-      "path": "gauntlet/reference/odoo/shots/a880f1232fa9643c.jpg"
+      "file": "b3c70bab21f55d54.jpg",
+      "at": 1.285,
+      "path": "gauntlet/reference/odoo/shots/b3c70bab21f55d54.jpg"
     },
     {
       "moment": "done",
-      "file": "00d121551f44786a.jpg",
-      "at": 5.667,
-      "path": "gauntlet/reference/odoo/shots/00d121551f44786a.jpg"
+      "file": "2d3f01359ddb0ba5.jpg",
+      "at": 2.398,
+      "path": "gauntlet/reference/odoo/shots/2d3f01359ddb0ba5.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "order": "P00006",
+      "order": "P00037",
       "state": "purchase",
-      "date_approve": "2026-10-05 07:08:19",
+      "date_approve": "2026-10-07 23:43:00",
       "approver_messages": 1,
       "first_row_is_the_order": true
     }
@@ -164,20 +164,41 @@
   },
   "verify_passes": [
     {
-      "seconds": 0.096,
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.047,
       "verified": true
     },
     {
-      "seconds": 0.159,
+      "requests": 3,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.038,
       "verified": true
     }
   ],
   "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "cfadac159f7175fb",
+    "elements": 498
+  },
+  "screen_after_verify": {
+    "sha256": "cfadac159f7175fb",
+    "elements": 498,
+    "unchanged": true
+  },
   "result_file": "gauntlet/reference/odoo/tasks/follow-approval.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/follow-approval-20261005T070807-4388.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261005T070820-6b4b.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261005T070835-e7f8.json"
+    "gauntlet/reference/odoo/results/follow-approval-20261007T234253-f3f1.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261007T234301-709e.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261007T234308-0c14.json"
   ]
 }

@@ -37,7 +37,12 @@ function build(keyboard) {
     await op.click(page.locator('.modal-footer button', { hasText: 'Save & Close' }), { label: 'Save & Close' });
     await op.waitFor('.modal', { label: 'branch dialog closed', state: 'hidden' });
     await saveForm(op, keyboard);
-    await op.waitFor(() => /\/\d+$/.test(location.pathname), { label: 'company has an id' });
+    // Saving a new company reloads Odoo's whole client (the user's companies changed). The task is
+    // done when the reloaded client shows the saved company, not when the address has its id (round
+    // 7: that ended the reference's clock while its client was still loading).
+    await op.waitFor(name => /\/\d+$/.test(location.pathname) && !document.querySelector('.o_loading_indicator, .o_blockUI')
+      && !!document.querySelector('.o_main_navbar button.o_user_menu')
+      && [...document.querySelectorAll('.o_form_view .o_field_widget[name="name"] input')].some(i => i.value === name), { label: 'company saved, client reloaded', arg: company });
     return {};
   };
 }

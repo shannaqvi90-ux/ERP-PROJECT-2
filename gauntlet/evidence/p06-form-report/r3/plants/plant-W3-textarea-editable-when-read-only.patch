@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/forms/fields.tsx b/web/src/kernel/forms/fields.tsx
+index 22caa26..ecf3b1b 100644
+--- a/web/src/kernel/forms/fields.tsx
++++ b/web/src/kernel/forms/fields.tsx
+@@ -113,7 +113,7 @@ export function TextAreaField({ field, dir, maxLength, rows = 2, ...p }: Common
+           dir={dir ?? "auto"}
+           rows={rows}
+           maxLength={maxLength}
+-          disabled={p.disabled || field.readOnly}
++          disabled={p.disabled}
+           onChange={(e) => field.onChange(e.target.value)}
+         />
+       )}

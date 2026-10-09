@@ -184,6 +184,24 @@ describe("report totals", () => {
     expect([...doc.querySelectorAll("thead th")].map((th) => th.className)).toEqual(["", "num", "num"]);
   });
 
+  // Critic p06 round 3: a phone number broke across two lines in the browser's printout.
+  it("keeps a value of digits and signs on one line and lets words wrap", async () => {
+    const phones: ReportDocument = {
+      ...arabicDocument,
+      groupBy: null,
+      groupLabel: null,
+      columns: [
+        { key: "name", label: "الفرع", type: "text", align: "start", total: false },
+        { key: "phone", label: "الهاتف", type: "text", align: "start", total: false },
+      ],
+      groups: [{ label: null, count: 1, countText: "سجل واحد", rows: [{ cells: [{ value: "فرع دبي", text: "فرع دبي" }, { value: "+971 4 123 4567", text: "+971 4 123 4567" }] }], totals: [null, null] }],
+    };
+    view = await render(<ReportView document={phones} />);
+    const cells = [...view.container.querySelectorAll(".report-table tbody td")];
+    expect(cells[0]!.classList.contains("report-nowrap")).toBe(false);
+    expect(cells[1]!.classList.contains("report-nowrap")).toBe(true);
+  });
+
   it("draws no totals row for a report with no totalled column", async () => {
     view = await render(<ReportView document={arabicDocument} />);
     expect(view.container.querySelector(".report-subtotal, .report-total")).toBeNull();

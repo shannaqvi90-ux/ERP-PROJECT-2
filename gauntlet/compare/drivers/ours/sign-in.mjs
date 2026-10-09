@@ -50,9 +50,20 @@ function variant(id) {
         await emailField(page).fill(user);
         await passwordField(page).fill(password);
         await passwordField(page).press('Enter');
-        await page.getByRole('navigation').first().waitFor();
-        // Sign the browser's session out (the product keeps what it remembers in the browser).
-        await new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies()).post('/api/auth/sign-out', undefined, { allow: [204, 401] });
+        // Round 7 (routed from the p04 round 4 critic: this variant once waited 120 s and nothing
+        // said where): each wait of the set-up says what it waited for.
+        try {
+          await page.getByRole('navigation').first().waitFor();
+        } catch (e) {
+          const alert = await page.getByRole('alert').first().textContent({ timeout: 1_000 }).catch(() => null);
+          throw new Error(`set-up of the returning browser: the first sign-in did not reach the working screen (at ${page.url()}${alert ? `; the screen says "${alert.trim()}"` : ''}): ${e.message.split('\n')[0]}`);
+        }
+        // Sign the browser's session out (the product keeps what it remembers in the browser), and
+        // check that it ended: a session still alive would open the working screen, not the sign-in.
+        const browserApi = new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies());
+        await browserApi.post('/api/auth/sign-out', undefined, { allow: [204, 401] });
+        const after = await new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies()).get('/api/auth/session', { allow: [401] });
+        if (after?.authenticated === true) throw new Error('set-up of the returning browser: the sign-out did not end the browser\'s session');
       }
       // The runner opens the start (signed out, the bookmarked address) in a fresh browser that
       // keeps this browser's cookies and local storage.

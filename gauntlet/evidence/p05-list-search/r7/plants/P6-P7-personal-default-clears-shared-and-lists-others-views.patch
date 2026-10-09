@@ -1,0 +1,24 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f0eb30..f2fa37c 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -209,7 +209,8 @@ internal static class ViewEndpoints
+     {
+         var me = caller.UserId;
+         var views = await db.SavedViews.AsNoTracking()
+-            .Where(v => v.ListKey == list && (v.IsShared || v.OwnerUserId == me))
++            // PLANT P7: every user's personal views are listed to any reader of the list.
++            .Where(v => v.ListKey == list)
+             .OrderBy(v => v.IsShared ? 0 : 1).ThenBy(v => v.Name).ThenBy(v => v.Id)
+             .ToListAsync(cancellationToken);
+         var items = views.Select(v => ToDto(v, me)).ToList();
+@@ -320,7 +321,8 @@ internal static class ViewEndpoints
+     private static async Task ClearOtherDefaultsAsync(string list, bool shared, Guid? owner, Guid? except, ListsDbContext db, CancellationToken cancellationToken)
+     {
+         var previous = await db.SavedViews
+-            .Where(v => v.ListKey == list && v.IsShared == shared && v.OwnerUserId == owner && v.IsDefault && v.Id != except)
++            // PLANT P6: a personal default also replaces the workspace's shared default (no lists.views.share needed).
++            .Where(v => v.ListKey == list && (v.IsShared || (v.IsShared == shared && v.OwnerUserId == owner)) && v.IsDefault && v.Id != except)
+             .ToListAsync(cancellationToken);
+         if (previous.Count == 0)
+         {

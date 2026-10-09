@@ -1,0 +1,403 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261009T000142-4e5f",
+  "instrument": 6,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-09T00:01:42.158Z",
+  "finished_at": "2026-10-09T00:01:51.284Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "machine_seconds": 0.126,
+    "system_wait_seconds": 0.056,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.706,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE (one-click button)",
+      "keystrokes": 0,
+      "at": 0.008,
+      "took": 0.054,
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.062,
+      "seconds": 0.056
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "728c286c457f81d5.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r8/compare/blind/shots/728c286c457f81d5.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "373d163ee8802031.jpg",
+      "at": 0.126,
+      "path": "../../evidence-staging/p01-odoo-rig/r8/compare/blind/shots/373d163ee8802031.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": {
+        "label": "DEMO-MFG · MAIN",
+        "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+      },
+      "companyId": "01a11df7-37bd-7ab7-9d02-74d9aa86d325"
+    }
+  },
+  "path_notes": "pointer: click the company button in the top bar | keyboard: Alt+C > type \"manuf\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-company.mjs",
+    "sha256": "4073bb927374d1904701b3ed08a7dcb973d9ce89aef2e838aba622decc70ae71"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.032,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.02,
+      "verified": true
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "8205efd7ccdc2eac",
+    "elements": 115
+  },
+  "screen_after_verify": {
+    "sha256": "8205efd7ccdc2eac",
+    "elements": 115,
+    "unchanged": true
+  },
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "pointer",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "click the company button in the top bar",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.126,
+        "system_wait_seconds": 0.056,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.706,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Demo Manufacturing FZE (one-click button)",
+          "keystrokes": 0,
+          "at": 0.008,
+          "took": 0.054,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "working in the other company",
+          "at": 0.062,
+          "seconds": 0.056
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a11df7-37bd-7ab7-9d02-74d9aa86d325"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.032,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.02,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "8205efd7ccdc2eac",
+        "elements": 115
+      },
+      "screen_after_verify": {
+        "sha256": "8205efd7ccdc2eac",
+        "elements": 115,
+        "unchanged": true
+      }
+    },
+    {
+      "id": "keyboard",
+      "path": "Alt+C > type \"manuf\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "machine_seconds": 0.172,
+        "system_wait_seconds": 0.063,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 4.053,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "company switcher (Alt+C)",
+          "keystrokes": 2,
+          "at": 0.003,
+          "took": 0.04,
+          "chord": "Alt+c",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "part of the company name",
+          "keystrokes": 5,
+          "at": 0.05,
+          "took": 0.045,
+          "text": "manuf",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "switch (Enter)",
+          "keystrokes": 1,
+          "at": 0.096,
+          "took": 0.011,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "switcher open, filter focused",
+          "at": 0.045,
+          "seconds": 0.005
+        },
+        {
+          "label": "working in the other company",
+          "at": 0.107,
+          "seconds": 0.058
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a11df7-37bd-7ab7-9d02-74d9aa86d325"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.031,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.027,
+          "verified": true
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "8205efd7ccdc2eac",
+        "elements": 115
+      },
+      "screen_after_verify": {
+        "sha256": "8205efd7ccdc2eac",
+        "elements": 115,
+        "unchanged": true
+      }
+    }
+  ]
+}

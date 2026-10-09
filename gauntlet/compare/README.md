@@ -25,7 +25,8 @@ an API session's sign-in from the driver process. Pacing never happens inside a 
 paced wait inside `verify()` is reported apart (`paced_seconds`) and not charged to the pass.
 
 Options: `--task <id|id,id|all>`, `--product odoo|ours|both`, `--out <dir>`, `--repeat N`
-(median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid.
+(median machine seconds of N runs), `--headed`. Exit code 1 when a run fails, errors or is invalid;
+2 on bad arguments or a reference rig short of the bar.
 With `--product both` the two products run in a random order per task (recorded in `key.json`).
 
 Tests: `npm test` (unit tests; the live rig checks run too when the rig answers),
@@ -33,7 +34,11 @@ Tests: `npm test` (unit tests; the live rig checks run too when the rig answers)
 `./erp verify` runs the unit tests and counts them against `suite.compareTests` in
 `gauntlet/ratchet.json`.
 
-The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README).
+The Odoo reference must be running: `tools/odoo-reference/up.sh` (see its README). Before any run
+on Odoo, `run.mjs` checks the live rig for at least 100,000 rows in each of the seven main lists
+(`lib/rig-volume.mjs`, the same check as the live test) and exits with code 2, recording nothing,
+when a list is short or the rig cannot be checked. Odoo vacuums job-run rows older than a week, so
+a rig seeded once falls short after about a week; `up.sh` tops it up.
 
 ## What is measured
 
@@ -67,7 +72,7 @@ plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
   (authorization, cookie, `X-Erp-Request`, accept), nothing that changes what a typed request does.
 - A function a driver hands to the page (`ctx.read`, `ctx.until`, `op.waitFor`) arrives as its text.
   The harness parses it (acorn, MIT) and accepts exactly one function expression, so a crafted text
-  cannot close the sentinel's call and run page script outside it.
+  cannot close the harness's call and run page script outside it (and see "Page functions" below).
   A file the harness writes for a driver (a screenshot path, a download folder) must lie in the
   driver process's scratch folder.
 
@@ -83,11 +88,32 @@ plant-tested in `test/guard.test.mjs` and `test/sandbox.test.mjs`, linted in
   `waitForFunction`, `addInitScript`, `exposeFunction`, `route`, `setExtraHTTPHeaders`, the page
   clock … (round 3: a listener installed during sign-in finished the task inside the measured
   part). Drivers read the page with `ctx.read(fn, arg)` and wait with `ctx.until(fn, { arg })`;
-  both run `fn` inside the sentinel below.
-- The condition of `op.waitFor(fn)` (and of `ctx.read`, `ctx.until`) runs in the page inside a
-  sentinel that refuses clicks, focus, value and scroll setters, form submits, timers, network,
-  storage and history calls, cancels a navigation, and reports any DOM change, event, navigation
-  or focus move it caused.
+  both run `fn` as a page function (below).
+- **Page functions** (round 7, `lib/page-script.mjs`): the condition of `op.waitFor(fn)` and the
+  functions of `ctx.read` and `ctx.until` may only read the page, now and later. Three layers, each
+  plant-tested on its own (`test/page-script.test.mjs`):
+  1. *The source.* One synchronous function expression that reads: no async function, `await`,
+     generator, import, `with`, `this` or `debugger`; no write to any property and no assignment to
+     a name it did not declare; no computed property but a number (no name built at run time); none
+     of `window`, `self`, `globalThis`, `top`, `parent`, `frames`, `document.defaultView`,
+     `contentWindow`, `eval`, `Function`, `Reflect`, `.constructor`, `.prototype`, `.then`,
+     `Object.values` and the other `Object` members that hand out property values; `new` only for
+     plain data (`RegExp`, `Set`, `Map`, `Date`, `URL` …); `location` only as `location.pathname`
+     and its other parts. A `javascript:` address set from any script world runs later in the
+     page's own world and fires no navigate event, so the address object must be out of reach.
+     The driver lint applies the same check to every page function in a driver's source.
+  2. *Its own world.* It runs in an isolated script world of the harness's (through the browser's
+     debugging protocol), never in the page's own: the product's globals, prototypes and handlers
+     are out of reach, so it cannot leave a hook the product calls later. Only the document is
+     shared. Its argument is plain data.
+  3. *Armed for good.* That world is armed when it is created and never disarmed: every method and
+     property setter of the browser's interfaces that acts (clicks, focus, values, DOM changes,
+     timers, promises, observers, listeners, network, storage, history, workers, animations) throws
+     and is logged, and its prototypes are frozen. Whatever a function scheduled anyway would find
+     every action refused when it ran, and the log is read after every call.
+  Around each call any DOM change, event, navigation (cancelled), focus move or change of address
+  it caused is reported. A refusal while measured is an uncounted action; the run is invalid.
+  Conditions are polled every 50 ms from the harness; one that runs over 10 s is ended.
 - While measured, `fetch` and `http(s).request` from the harness are refused, so a task cannot be
   done through the back end and count nothing. API tasks use `op.request`, which counts. The
   guard is installed when the harness loads. An API task's transport (how a request as typed is
@@ -133,11 +159,19 @@ right after its last step or wait. Round 5 closes the ways to finish a task afte
   OPTIONS that is not one of the reference's documented read calls) is still under way when `run`
   returns, the clock runs on until it ends: a save is the product's answer to the task (system
   wait "the product still answering when run() returned"). Reads still loading (avatars, a chatter)
-  are not waited for.
-- When the clock stops the page's own script is frozen (no timer, network callback or animation
-  frame of the product runs any more; reading and screenshots still work) and its new requests are
-  aborted (`requests_after_clock`), so the screen `verify()` reads is the screen at the end of the
-  measured part. It is thawed for clean-up.
+  are not waited for. Round 7: a document still loading when `run` returns (a client that reloads
+  itself after a save) is the product still answering too: the clock runs on until it has loaded
+  (system wait "the page still loading when run() returned").
+- When the clock stops the page's own script is frozen (no timer, scheduled render or animation
+  frame of the product runs any more; reading and screenshots still work), then (round 7) whatever
+  it is still loading is aborted, because freezing script does not stop the continuation of a
+  request already under way (critic plant T3: a read answered 2 s later reached the screen
+  `verify()` read). What was under way is recorded (`requests_in_flight_at_clock`) and its new
+  requests are refused (`requests_after_clock`). The screen is fingerprinted (address, elements
+  with their attributes, text, field values, focus) after the freeze and before the abort, and again
+  after `verify()` (`screen_at_clock`, `screen_after_verify`): if it changed, `verify()` may have
+  read an end state the measured part never showed, and the run is invalid (plant T6: a request's
+  failure handler wrote the end state as it was aborted). It is thawed for clean-up.
 - `verify()` reads; it never waits. Every wait is refused there (`Locator.waitFor`, `waitForURL`,
   `waitForTimeout`, `ctx.until` …) and every read times out after 0.5 s. `verify()` runs twice and
   each pass is metered (`verify_passes`): a pass that asked the harness nothing for over 1 s (it
@@ -153,7 +187,7 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 5); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 6); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -186,12 +220,23 @@ usually signed in, on the screen the product shows right after sign-in. End stat
 
 Verdict per task (`comparisons/<task>.json` for `--product both`): ours must be strictly lower on
 every measure. **A tie is a loss.** An unbuilt or failed run is never a win.
-A metric on which both products score 0 (no keystrokes on a pointer-only path, for example) is a
-tie under that rule, so the task cannot be won on it whatever ours does. The harness applies the
-rule unchanged and reports such a metric plainly: its outcome reads `tie at zero (a tie is a loss)`,
-the comparison lists it in `ties_at_zero` with a `tie_at_zero_note`, says whether the loss comes from
-ties at zero alone (`loss_only_from_ties_at_zero`), and `run.mjs` prints `TIE AT ZERO`. Whether such
-a metric should count toward the tie rule is the owner's question (gauntlet/needs-human.md).
+
+**Both at 0 on a count (owner decision, 2026-10-08, needs-human #11; gauntlet/goal.md bar item 2).**
+A count metric (`steps`, `keystrokes`) on which both products score exactly 0 is left out of the
+task's comparison: neither a tie nor a win. Only exactly 0 on both sides (0 against anything else
+is compared as usual), only count metrics (a time equal on both sides still ties, even at 0). Every
+other metric must still be strictly lower for ours; any other tie is a loss; when every metric
+ties, or nothing is left to compare, the task is a loss. The comparison names the metrics left out
+(`left_out`, `left_out_note`, and each one's outcome reads `left out (both exactly 0)`), and
+`run.mjs` prints them.
+
+**Whole paths for ours (round 8, p00 critic).** When ours has several expert paths, each is judged
+whole, every metric from that one path; ours wins when one of its paths wins on its own. The
+comparison shows that path (`ours_path`; when none wins, the path that wins the most metrics) and
+lists every path's verdict (`ours_paths`). Ours' result counts are likewise one path's own
+(`counts_path`). The reference stays at its best path on each metric (below), so beating it is
+beating every one of its paths whole. Over repeats (`--repeat N`) each path keeps the median of its
+own times (`median_counts`).
 
 A scroll (`op.scrollTo`) is a step modelled like a click (P + BB), so a path that needs one never
 looks free. A click that makes the product send a file (`op.clickForDownload`) is one step; the
@@ -199,9 +244,12 @@ wait for the file is system wait.
 
 **Expert paths per metric.** Where the shortest path depends on the metric (hotkeys press more
 keys but save pointing and hand moves), a driver offers `variants` (for example `keyboard` and
-`pointer`). Each runs in full; the result counts, per metric, the best verified variant
+`pointer`). Each runs in full; the reference's result counts, per metric, the best verified variant
 (`best_path_per_metric`) and records every variant's steps; `system_wait_seconds` is the wait inside the variant whose clock is counted. The reference is never measured on a
-path worse than the best one an expert could take for that metric.
+path worse than the best one an expert could take for that metric. Ours is judged on whole paths
+(above). A variant may define its own
+`setup`, `signIn`, `ready`, `verify` and `cleanup`; each overrides the base driver's (round 7: they
+ran only when the base driver defined the same hook).
 
 **Baselines stay honest.** Each result records a hash of the driver that produced it.
 `test/baselines.test.mjs` (part of `./erp verify`, no rig needed) fails when a driver changed
@@ -220,8 +268,12 @@ over, so a filled-in field is never singled out. Only the `blind/` folder (its `
 time (2000-01-01), and the products run in a random order per task, so neither file times nor run
 order tell the products apart.
 Logos, product names, vendor links and the vendor's bot avatar are painted over with a flat grey
-box, and so are the demo data's own names (each product's company name and its database or tenant
-code, `identity` in `lib/blind.mjs`); the shot is rendered in greyscale (no signature colours); the
+box, and so are the demo data's own names (company names, database or tenant codes, company and
+branch codes, and, from round 8, the names of the people each product signs in as, the task
+fixtures' company codes and Arabic names; `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
+names, not only their own: a name masked in one product's shots and showing in the other's told the
+products apart. A name inside a cell that hides its overflow (a list cell with an ellipsis) is
+painted over by the whole cell, so the paint lines up with the columns (`maskTargets`). The shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
@@ -237,7 +289,14 @@ metrics (`screenshots_path` in the result), so a reviewer sees the path the coun
 <out>/results/<run-id>.json     one JSON per run: counts, every step with timing, waits, screenshots, verification
 <out>/key.json                  screenshot -> product, task, moment; A/B letters and run order per task
 <out>/comparisons/<task>.json   verdict and per-measure outcome (--product both)
+<out>/failures/failure-<random>.jpg  page at an error before the measured part (not in blind/)
 ```
+
+A run that ends in an error records `failure_capture` in its result: the page's address, its last
+40 console lines and page errors and, for an error before the measured part (no operator, so no
+`error` shot), a screenshot in `<out>/failures/` (never in the reference folder). A failed
+`./erp verify` keeps its whole output folder, the health check's results included, in
+`.verify-failed/<time>-<pid>/` (or `ERP_VERIFY_KEEP_DIR`) instead of deleting it.
 
 Baselines (`--product odoo` without `--out`) are kept one per task in
 `gauntlet/reference/odoo/tasks/<task>.json` with their shots in `gauntlet/reference/odoo/shots/`
@@ -259,7 +318,7 @@ removed (plan.md); the ratchet counts them.
 | import-5000 | Apps > Contacts > ⋮ > Import > Upload (file) > Import | headers map automatically |
 | follow-approval | Apps > Purchase > open the order waiting for approval (first row) > Approve Order | Approvals is Enterprise; nearest Community feature is purchase two-step approval (limit AED 5,000) |
 | sign-in (p00) | type the e-mail (focused) > Tab > password > Enter | same user, e-mail and password created in both products; `new-device` and `returning` (the browser signed in and out before; whatever a product remembers is used) variants in both |
-| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name > Enter > open the result | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus and palette variants |
+| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name > Enter (or click the search box's first suggestion) > open the result | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus, palette and menus-suggestion variants (the suggestion click saves the Enter key: 20 keystrokes, found by the p05 round 4 critic) |
 | api-update-user (p15) | POST /json/2/res.users/search > POST /json/2/res.users/write | through the API only: steps are requests, keystrokes the requests as typed; Odoo's JSON-2 needs an API key (an interactive identity check), so the same calls travel by its external JSON-RPC and are counted in the JSON-2 form |
 | create-company-branch (p02) | Settings > Users & Companies > Companies > New > name > Branches > Add a line > branch > Save & Close > Save | keyboard and pointer variants |
 | switch-company (p02) | company switcher > the company | |
@@ -318,7 +377,9 @@ strings, patterns or `ctx.until`), and files may be written only under `os.tmpdi
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
 generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
-(page script inside the sentinel) and `health` (true in a driver health check, below). Use
+(page functions: read-only, see "Page functions") and `health` (true in a driver health check,
+below). A page function reads with `document.querySelector…`, `innerText`, `getComputedStyle`,
+`location.pathname`; index a list with a number or `.item(i)`; pass what it needs as `arg`. Use
 keyboard-first paths where our product offers them: every key is counted, and so is every click.
 
 **Health check.** `./erp verify` runs every built ours driver against its clean stack:
@@ -328,6 +389,18 @@ A built driver that no longer verifies fails `./erp verify` (round 3: a list cha
 switch-to-arabic and nothing noticed). Its counts are not a comparison.
 
 ## Planting a fault (for critics)
+
+`npm run mutations` (`scripts/mutations.mjs`) removes or weakens each defence of the instrument in
+turn, in a scratch copy of the harness, and runs the self-tests that must catch it: the keystroke
+operator, greyscale, the read world's click refusal and its arming, the source check, the driver
+lint's page-function check, the network locks, the script freeze, the abort at the clock, the
+screen check after `verify()`, the document settle, a variant's own hooks, the masks, the zero
+rule, ties and whole paths. Each test file's self-tests run once unmutated for all of its
+mutations (the control), and a mutation counts as caught only when a test that passed there fails
+mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
+web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above
+`compare.instrumentMutations` and checks that each still finds the text it mutates. Add a line
+there for every new defence.
 
 Plant tests run drivers the way the runner does: as module files in the driver process. Write the
 driver as a module (or transform a real one) and hand its description to `execute()`:
