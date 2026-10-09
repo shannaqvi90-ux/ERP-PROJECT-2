@@ -21,7 +21,7 @@ import { loadDriver, loadTasks, PRODUCT_IDS } from './lib/registry.mjs';
 import { compareRuns, medianOf, promoteBaseline, runTask } from './lib/runner.mjs';
 import { writeReview } from './lib/review.mjs';
 import { productOrder } from './lib/blind.mjs';
-import { checkLiveRig, describeShort, TOP_UP_HINT } from './lib/rig-volume.mjs';
+import { checkLiveRig, describeShort, describeSoon, TOP_UP_HINT } from './lib/rig-volume.mjs';
 
 function parse(argv) {
   const a = { task: null, product: 'both', out: null, repeat: 1, headed: false, list: false, health: false };
@@ -87,10 +87,12 @@ async function main() {
       return 2;
     }
     if (!rig.ok) {
-      console.error(`the Odoo reference rig is short of the bar: ${describeShort(rig)}; ${TOP_UP_HINT}`);
+      console.error(`the Odoo reference rig on ${PRODUCTS.odoo.baseUrl} is short of the bar: ${describeShort(rig)}. Nothing was run or recorded.\n${TOP_UP_HINT}`);
       return 2;
     }
     console.log(`reference rig: at least ${rig.minimum.toLocaleString('en-US')} rows in each of ${Object.keys(rig.lists).length} main lists (checked live)`);
+    // Round 9: a warning days ahead, so a rig is topped up before it trips a run (needs-human #13).
+    if (rig.soon?.length) console.warn(`warning: ${describeSoon(rig)}.\n${TOP_UP_HINT}`);
   }
 
   let failures = 0;

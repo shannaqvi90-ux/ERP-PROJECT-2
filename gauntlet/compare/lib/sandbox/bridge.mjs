@@ -68,15 +68,42 @@ export function withoutRpcId(text) {
 }
 
 const MAX_READ_TEXT = 4 << 20;
+const MAX_LEAVES = 50_000;
 
-/** One back-end read of verify(): what it asked and a digest of the answer (and the answer's text, up to 4 MB). */
+/**
+ * A JSON answer as its leaves: path -> value as text ("result.0.name" -> "Falcon Logistics LLC").
+ * Null when the answer is not JSON or has too many leaves (the answer is then compared whole).
+ */
+export function answerLeaves(text) {
+  let j;
+  try { j = JSON.parse(text); } catch { return null; }
+  const out = {};
+  let n = 0;
+  const walk = (v, p, d) => {
+    if (n > MAX_LEAVES) return;
+    if (v !== null && typeof v === 'object' && d < 40) {
+      const entries = Array.isArray(v) ? v.map((x, i) => [String(i), x]) : Object.entries(v);
+      if (!entries.length) { out[p] = Array.isArray(v) ? '[]' : '{}'; n++; return; }
+      for (const [k, x] of entries) walk(x, p ? `${p}.${k}` : k, d + 1);
+      return;
+    }
+    out[p] = v === null ? 'null' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+    n++;
+  };
+  walk(j, '', 0);
+  return n > MAX_LEAVES ? null : out;
+}
+
+/** One back-end read of verify(): what it asked, a digest of the answer, its text (up to 4 MB) and its leaves. */
 export function readRecord(method, url, bodyText, status, bytes) {
   const text = withoutRpcId(Buffer.from(bytes).toString('utf8'));
+  const kept = text.length <= MAX_READ_TEXT;
   return {
     key: `${method} ${url} ${withoutRpcId(bodyText)}`,
     status,
     digest: crypto.createHash('sha256').update(String(status)).update('\n').update(text).digest('hex'),
-    text: text.length <= MAX_READ_TEXT ? text : null,
+    text: kept ? text : null,
+    leaves: kept ? answerLeaves(text) : null,
   };
 }
 

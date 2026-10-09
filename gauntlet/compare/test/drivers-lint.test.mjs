@@ -45,6 +45,10 @@ const FORBIDDEN = [
   [/\b(Performance|performance)\s*\.\s*(prototype|now\s*=)|\bDate\s*\.\s*now\s*=/, 'a patched clock'],
   // A transport is chosen by name from lib/api-transport.mjs, never written in a driver.
   [/\btransport\s*:\s*(async\s*)?(\(|function|[\w$]+\s*=>)/, 'a transport function'],
+  // Round 9 (critic p01 r8): verify() gets ctx alone, the same before and after the clock; a second
+  // parameter reads as an outcome of run() that never comes (and once let it tell the calls apart).
+  [/\bverify\s*(?::\s*(?:async\s*)?(?:function\s*)?)?\(\s*[\w$]+\s*,|\bverify\s*\(\s*[\w$]+\s*,\s*[\w$]+\s*\)\s*\{/, 'a verify() with a second parameter (it gets ctx alone)'],
+  [/\barguments\b/, 'the arguments object'],
 ];
 
 export function driverFiles() {
@@ -132,6 +136,9 @@ test('the driver lint catches planted escapes', () => {
     "await ctx.page.clock.install();",
     "await op.press('Enter', { label: 'x', chain: true });",
     "const other = await ctx.browser.browserType().launch();",
+    "async verify(ctx, outcome) { return { verified: !!outcome }; },",
+    "verify: async (ctx, outcome) => ({ verified: !!outcome }),",
+    "async verify(ctx) { return { verified: arguments.length > 1 }; },",
     "await ctx.browser.newBrowserCDPSession();",
     "await ctx.browser.startTracing();",
     // Round 5 (the critic's plants U4 and U5, and their neighbours).

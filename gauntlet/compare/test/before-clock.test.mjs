@@ -13,6 +13,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { execute, layout, compareRuns, containsValue, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
 import { sandboxed, sandboxedSource } from './helpers/driver-module.mjs';
+import { readRecord } from '../lib/sandbox/bridge.mjs';
 
 let server, base, tmp;
 let saved = null;
@@ -32,6 +33,10 @@ const STATUS_PAGE = () => `<!doctype html><html><body><input id="q" aria-label="
 document.getElementById('touch').onclick = () => { document.getElementById('touched').textContent = 'touched'; };
 document.getElementById('mark').onclick = () => { fetch('/api/mark', { method: 'POST' }).then(() => { document.getElementById('touched').textContent = 'marked'; }); };</script></body></html>`;
 
+// A record form: its field shows the saved value (a draft saved in set-up would be there).
+const FORM_PAGE = () => `<!doctype html><html><body><input id="q" aria-label="Query" value="${saved ?? ''}"><button id="go">Save</button><div id="out"></div>
+<script>document.getElementById('go').onclick = () => fetch('/api/save', { method: 'POST', body: document.getElementById('q').value }).then(() => { document.getElementById('out').textContent = 'saved'; });</script></body></html>`;
+
 before(async () => {
   server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
@@ -41,7 +46,7 @@ before(async () => {
     if (u.pathname === '/api/version') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ version })); }
     if (u.pathname === '/api/now') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ now: Date.now() })); }
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(u.pathname === '/status' ? STATUS_PAGE() : PAGE());
+    res.end(u.pathname === '/status' ? STATUS_PAGE() : u.pathname === '/form' ? FORM_PAGE() : PAGE());
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
@@ -249,16 +254,28 @@ test('plant P7: a task that names what the person enters; set-up saves the value
   assert.deepEqual(r.saved_state.changed, ['GET /api/version']);
 });
 
-test('plant P8: set-up saves the value the person is to enter and the start screen shows it -> refused at the start', async () => {
+test('plant P8: set-up saves the value the person is to enter, so the start form\'s field already holds it; the measured part clicks Save -> refused at the start', async () => {
+  reset();
+  const r = await runDriver({
+    async setup() { await fetch(base + '/api/save', { method: 'POST', body: 'abcdefghij' }); },
+    async signIn(ctx) { await ctx.page.goto(base + '/form'); },
+    async run(op) { await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'saved'); return {}; },
+    async verify(ctx) { const s = await (await fetch(base + '/api/state')).json(); return { verified: s.saved === 'abcdefghij' }; },
+  }, { ...ENTERS, startAt: 'record' }); // a record start: its fields may hold the record's values
+  never(r, 'P8');
+  assert.match(r.error, /start screen already shows "abcdefghij" in a field/);
+});
+
+test('plant P8b: the same value shown as text beside the form (a record\'s history, say) is no unfair start, but the saved-state check still refuses the run', async () => {
   reset();
   const r = await runDriver({
     async setup() { await fetch(base + '/api/save', { method: 'POST', body: 'abcdefghij' }); },
     async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
     async run(op) { await op.click('#go'); return {}; },
-    async verify(ctx) { const s = await (await fetch(base + '/api/state')).json(); return { verified: s.saved === 'abcdefghij' }; },
+    async verify(ctx) { const s = await (await fetch(base + '/api/state')).json(); return { verified: s.saved === 'abcdefghij' || s.saved === '' }; },
   }, ENTERS);
-  never(r, 'P8');
-  assert.match(r.error, /start screen already shows "abcdefghij"/);
+  never(r, 'P8b');
+  assert.doesNotMatch(String(r.error), /unfair start state/);
 });
 
 test('plant P9: verify() reads a back-end clock beside the saved state; the clock changes, but not as a saved state does (it differs between the passes) -> never verifies', async () => {
@@ -295,7 +312,7 @@ test('saved state: the honest path of a task that saves what the person enters v
 });
 
 test('saved state: the rule judged on records alone (changed and stable, gained an entered value, nothing read)', () => {
-  const rec = (key, text) => ({ key: `GET http://x${key} `, digest: text, text });
+  const rec = (key, text) => readRecord('GET', `http://x${key}`, '', 200, Buffer.from(text));
   const t = ENTERS;
   assert.equal(savedState(t, [rec('/s', '{"saved":null}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, null);
   assert.match(savedState(t, [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, /answered differently/);
@@ -306,6 +323,17 @@ test('saved state: the rule judged on records alone (changed and stable, gained 
   assert.match(savedState(SAVES, [], [rec('/s', 'a')], [rec('/s', 'a')]).problem, /answered differently/);
   // Changed, but what the person enters was there before.
   assert.match(savedState(t, [rec('/v', '1'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')]).problem, /gained a value/);
+  // A JSON answer is compared part by part: a token that changes with every answer is no saved
+  // state; the user the session names is (round 9: Odoo's session information carries such a token).
+  const session = (uid, token) => JSON.stringify({ result: { uid, token, lang: 'en_US' } });
+  const ok = savedState(SAVES, [rec('/session', '{"error":{"message":"Session Expired","timestamp":1}}')], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]);
+  assert.equal(ok.problem, null);
+  assert.deepEqual(ok.record.changed_parts['GET /session'].sort(), ['error.message', 'error.timestamp', 'result.lang', 'result.uid'].sort());
+  // Only the token changed (and differently in each pass): nothing saved.
+  assert.match(savedState(SAVES, [rec('/session', session(7, 'x0'))], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]).problem, /answered differently/);
+  // The entered value must arrive in a part that changed.
+  const contact = phone => JSON.stringify({ result: [{ id: 5, phone, write_date: phone ? '2026-10-09 10:00:01' : '2026-10-09 10:00:00' }] });
+  assert.equal(savedState(ENTERS, [rec('/c', contact('+971 4 000'))], [rec('/c', contact('abcdefghij'))], [rec('/c', contact('abcdefghij'))]).problem, null);
 });
 
 test('entered values are found as a person would have entered them, never inside a longer word or number', () => {

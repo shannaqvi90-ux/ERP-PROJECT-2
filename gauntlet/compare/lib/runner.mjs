@@ -200,6 +200,9 @@ export async function runTask(taskId, productId, opts = {}) {
     requests_in_flight_at_clock: primary.requests_in_flight_at_clock ?? null,
     screen_at_clock: primary.screen_at_clock ?? null,
     screen_after_verify: primary.screen_after_verify ?? null,
+    verify_before: primary.verify_before ?? null,
+    ...(primary.saved_state ? { saved_state: primary.saved_state } : {}),
+    ...(primary.task_rules ? { task_rules: primary.task_rules } : {}),
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
   if (primary.failure_capture) result.failure_capture = primary.failure_capture;
@@ -219,7 +222,8 @@ export async function runTask(taskId, productId, opts = {}) {
     if (productId !== REFERENCE_PRODUCT) result.counts_path = primary.id;
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
       verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
-      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
+      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, verify_before: e.verify_before ?? null,
+      ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.task_rules ? { task_rules: e.task_rules } : {}), ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -559,10 +563,10 @@ export async function execute(task, driver, product, productId, needles, out, op
     op = new Operator(page, { shotsDir: out.shotsDir, branding: brandingFor(productId, product.brandWords || []), moments: task.moments || [], defaultTimeout: timeout, device });
     if (session.apiSession) op.useApi(apiSessionFor(product, session.apiSession));
 
-    // Round 9: the values the task asks the person to enter are not on the start screen already.
+    // Round 9: the values the task asks the person to enter are not in the start screen's fields already.
     if (kind !== 'api') {
       const shown = await startShowsEntered(page, task);
-      if (shown) throw new ActionOutsideClock(`unfair start state: the start screen already shows ${shown}, which the task asks the person to enter (set-up entered it)`, 'set-up');
+      if (shown) throw new ActionOutsideClock(`unfair start state: the start screen already shows ${shown} in a field, which the task asks the person to enter (set-up entered it)`, 'set-up');
     }
     // What set-up and sign-in left in ctx.state, as data, for every verify() call.
     verifyState = await hook('state');
@@ -764,29 +768,56 @@ function answerText(text) {
   } catch { return text; }
 }
 
-/** Page function (run by the runner, not a driver): the start screen's text and field values. */
-function startScreenText() {
-  const vals = [...document.querySelectorAll('input, textarea, select')].map(el => (el.type || '').toLowerCase() === 'password' ? '' : el.value || '');
-  return `${document.body?.innerText || ''}\n${vals.join('\n')}`;
+/**
+ * Page function (run by the runner, not a driver): what the start screen's fields hold (inputs,
+ * text areas, chosen options, editable regions). Text around them is not read: a record's history
+ * may show an earlier run's value, and a value saved before the clock is caught by the saved-state
+ * check instead.
+ */
+function startFieldValues() {
+  const out = [];
+  for (const el of document.querySelectorAll('input, textarea, select, [contenteditable=""], [contenteditable="true"]')) {
+    if ((el.type || '').toLowerCase() === 'password') continue;
+    out.push(el.tagName === 'SELECT' ? el.options[el.selectedIndex]?.text || '' : el.isContentEditable ? el.innerText : el.value || '');
+  }
+  return out.join('\n');
 }
 
-/** An entered value the start screen already shows ("…" in quotes), or null. */
+/** An entered value a field of the start screen already holds ("…" in quotes), or null. */
 async function startShowsEntered(page, task) {
   const values = enteredValues(task);
   if (!values.length) return null;
-  const text = await page.evaluate(startScreenText).catch(() => '');
+  const text = await page.evaluate(startFieldValues).catch(() => '');
   const shown = values.find(v => containsValue(text, v));
   return shown ? `"${shown}"` : null;
 }
 
 /**
+ * What changed in one back-end read (answered before the clock: `b`; after it: `a`, and again a
+ * second later: `c`): the parts of the answer that hold a different value after the clock than
+ * before it and the same value in both passes after it. A JSON answer is compared part by part
+ * (its leaves: a session's id or a token that changes with every answer is no saved state, the user
+ * it names is); any other answer whole. Returns the changed paths ('' for a whole answer).
+ */
+export function changedParts(b, a, c) {
+  if (a.digest !== c.digest && !(a.leaves && c.leaves)) return [];
+  if (!(a.leaves && b.leaves && c.leaves)) return b.digest !== a.digest && a.digest === c.digest ? [''] : [];
+  const out = [];
+  for (const p of new Set([...Object.keys(a.leaves), ...Object.keys(b.leaves)])) {
+    const va = a.leaves[p];
+    if (va === c.leaves[p] && va !== b.leaves[p]) out.push(p);
+  }
+  return out;
+}
+
+/**
  * Round 9 (critic p01 r8): for a task whose end state is saved in the product, the saved state
  * arrived during the measured part. verify()'s back-end reads before the clock and in the two passes
- * after it are compared by what they asked: at least one read must answer differently after the
- * clock than before it and the same in both passes after it (a read that tells the time differs
- * between the passes); for a task that names what the person enters, such a read must hold an
- * entered value after the clock that it did not hold before. Otherwise the end state verify()
- * accepted was there before the clock (set-up did the task), or verify() never read it.
+ * after it are compared by what they asked: at least one read must hold a part that answers
+ * differently after the clock than before it and the same in both passes after it (a part that
+ * tells the time differs between the passes); for a task that names what the person enters, such a
+ * part must hold an entered value that the read did not hold before the clock. Otherwise the end
+ * state verify() accepted was there before the clock (set-up did the task), or verify() never read it.
  * Returns { problem, record }.
  */
 export function savedState(task, beforeReads, afterReads, secondReads) {
@@ -796,13 +827,19 @@ export function savedState(task, beforeReads, afterReads, secondReads) {
   const c = byKey(secondReads);
   const label = k => { const [m, u] = k.split(' '); try { return `${m} ${new URL(u).pathname}`; } catch { return `${m} ${u}`; } };
   const common = [...a.keys()].filter(k => b.has(k) && c.has(k));
-  const changed = common.filter(k => b.get(k).digest !== a.get(k).digest && a.get(k).digest === c.get(k).digest);
+  const parts = new Map(common.map(k => [k, changedParts(b.get(k), a.get(k), c.get(k))]).filter(([, p]) => p.length));
+  const changed = [...parts.keys()];
   const values = enteredValues(task);
-  const gained = values.length ? changed.filter(k => values.some(v => containsValue(answerText(a.get(k).text), v) && !containsValue(answerText(b.get(k).text), v))) : changed;
-  const record = { reads_before: b.size, reads_after: a.size, read_both_times: common.length, changed: changed.map(label), ...(values.length ? { gained_entered_value: gained.map(label) } : {}) };
+  const partText = (r, p) => (p === '' ? answerText(r.text) : r.leaves?.[p] ?? '');
+  const gained = values.length
+    ? changed.filter(k => values.some(v => parts.get(k).some(p => containsValue(partText(a.get(k), p), v)) && !containsValue(answerText(b.get(k).text), v)))
+    : changed;
+  const record = { reads_before: b.size, reads_after: a.size, read_both_times: common.length, read_before: [...b.keys()].map(label), read_after: [...a.keys()].map(label),
+    changed: changed.map(label), changed_parts: Object.fromEntries(changed.map(k => [label(k), parts.get(k).slice(0, 8)])),
+    ...(values.length ? { gained_entered_value: gained.map(label) } : {}) };
   let problem = null;
   if (!a.size) problem = 'verify() read nothing from the back end after the clock: a task whose end state is saved in the product is verified from its back end';
-  else if (!changed.length) problem = `none of verify()'s back-end reads answered differently after the clock than before it (${common.length} read both times): the end state it accepted was already saved before the clock started (set-up did the task), or verify() never read it`;
+  else if (!changed.length) problem = `none of verify()'s back-end reads answered differently after the clock than before it, the same in both passes after it (${common.length} read both times): the end state it accepted was already saved before the clock started (set-up did the task), or verify() never read it`;
   else if (!gained.length) problem = `no back-end read of verify() gained a value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; what changed (${changed.map(label).join(', ')}) is not what the person entered, so the entered values were saved before the clock (set-up did the task)`;
   return { problem, record };
 }

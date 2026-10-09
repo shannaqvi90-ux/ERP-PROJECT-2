@@ -152,6 +152,53 @@ passes, set-up did the task and the run is invalid. `verify()` only reads: page 
 and from the back end only reads go through (GET, a fixture sign-in, Odoo read methods). Clean-up
 may act again.
 
+**Set-up cannot do the task off the clock** (round 9, critic p01 r8: `verify()` got no outcome
+before the clock and `run()`'s outcome after it, so it answered "not done" only before the clock,
+and a run with no counted step was accepted: set-up did the task through the API, 0 steps, a
+recorded win). Now, plant-tested in `test/before-clock.test.mjs` (the critic's P1, P1b, P2 and
+P3-P9) and `test/sandbox.test.mjs`:
+
+- `verify(ctx)` takes `ctx` alone, the same before and after the clock; `run()`'s outcome never
+  reaches it (the lint refuses a second parameter). Each call runs in a **fresh process of its
+  own** (`DriverHost.forVerify`), never in the run's: nothing `run()` keeps in its process (a
+  module variable, a global, `ctx.state`) is there. `ctx.state` arrives as data, as set-up and
+  sign-in left it when the start screen was ready (functions and harness objects left out).
+  `ctx.downloads` lists the files the measured part downloaded (`{ file, url, name, sent }`, `sent`
+  being what the page sent between the click and the file), copied by the harness into a folder only
+  it writes; it is empty before the clock.
+- A verify() process **reads only** the harness's code and data (`lib`, `drivers`, `tasks`, `data`,
+  `node_modules`), the driver's own folder and the downloads, and **writes nothing**: not the run's
+  scratch folder, not the shots and results, not `/proc` (a mark left by `run()` or a file's time
+  would tell it which call it is in).
+- A verify() process **has no clock**: `Date` (and every date made without a value, `Intl`
+  formatting without a date), `performance.now` and `timeOrigin` (on the prototype too),
+  `process.hrtime` and `uptime`, `os.uptime` and the processors' time counters stand at the moment
+  the run began; the diagnostic report is gone, and the product's `Date` header is stripped from
+  the answers it gets.
+- **A measured part with no counted step is refused** (invalid): nothing the person did could have
+  done the task.
+- A task whose end state is saved in the product declares **`saves: true`** (every task whose done
+  text names the back end must). Its `verify()` must read that state from the back end, and one of
+  its back-end reads must answer **differently after the clock than before it, and the same in
+  both passes after it** (the second pass starts at least 1.1 s after the first, so a read that
+  tells the time never counts). The comparison is by what was asked (method, address, body; a
+  JSON-RPC id ignored) and recorded in `saved_state`. Otherwise the end state was there before the
+  clock (set-up did the task) or `verify()` never read it, and the run is invalid.
+- A task that names what the person enters (**`enters`**: keys of its `input`) must show one of
+  those values arriving: a read that changed must hold an entered value after the clock that it did
+  not hold before (a value is found as a person would have typed it: letters and digits in order,
+  separators free, a number as an equal number). And **the start screen may not already show an
+  entered value** (text or field values), or the start is unfair.
+- A keyboard-only task (**`keyboardOnly: true`**) fails on any pointer step (click, double click,
+  scroll, file pick). The harness judges it from the steps; `verify()` no longer reports it.
+- Every verify() call signs in again in its fresh process; the harness answers a fixture sign-in it
+  already answered in this run with the same answer (`signIns`), so no extra session is made and the
+  product's sign-in limit is not spent.
+
+What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
+only make sure `verify()` reads the same way before and after the clock and that, for a task that
+saves, the state it reads changed during the measured part. Drivers are reviewed code.
+
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
 right after its last step or wait. Round 5 closes the ways to finish a task after that:
 
@@ -187,7 +234,7 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 6); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 7); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -273,7 +320,12 @@ branch codes, and, from round 8, the names of the people each product signs in a
 fixtures' company codes and Arabic names; `identity` in `lib/blind.mjs`). Round 7: every product's shots mask every product's
 names, not only their own: a name masked in one product's shots and showing in the other's told the
 products apart. A name inside a cell that hides its overflow (a list cell with an ellipsis) is
-painted over by the whole cell, so the paint lines up with the columns (`maskTargets`). The shot is rendered in greyscale (no signature colours); the
+painted over by the whole cell, so the paint lines up with the columns (`maskTargets`). Round 9
+(critic p01 r8): a name inside a form field is a value, not text, and was left showing ("Al Noor
+Trading LLC" and ALN-DXB in our company form); every field whose value holds such a name or code
+is painted over too, by the same rules (`revealsIdentity`), and every field when the values cannot
+be read. A task one product cannot run yet shows no columns on the review page (a "not built"
+column named its product). The shot is rendered in greyscale (no signature colours); the
 title and favicon are replaced. File names are random hex; `key.json` (outside `blind/`) maps
 them back. `--product both` also writes `review.html`: the two products as A and B, assigned
 at random per task, mapping in `key.json`. Our product marks any branding element with
@@ -318,11 +370,11 @@ removed (plan.md); the ratchet counts them.
 | import-5000 | Apps > Contacts > ⋮ > Import > Upload (file) > Import | headers map automatically |
 | follow-approval | Apps > Purchase > open the order waiting for approval (first row) > Approve Order | Approvals is Enterprise; nearest Community feature is purchase two-step approval (limit AED 5,000) |
 | sign-in (p00) | type the e-mail (focused) > Tab > password > Enter | same user, e-mail and password created in both products; `new-device` and `returning` (the browser signed in and out before; whatever a product remembers is used) variants in both |
-| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name > Enter (or click the search box's first suggestion) > open the result | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus, palette and menus-suggestion variants (the suggestion click saves the Enter key: 20 keystrokes, found by the p05 round 4 critic) |
+| find-user (p03) | Ctrl+K > "/users" > Enter (or Apps > Settings > Manage Users) > type the name, or the shortest piece of it that puts the user on the list's first screen > Enter (or click the search box's first suggestion) > open the user | the dataset's 100,000 users (ours: start with `ERP_SEED_USERS_CSV`); menus, palette and menus-suggestion variants (the suggestion click saves the Enter key, found by the p05 round 4 critic), and since round 9 the shortest-piece variants (`shortest-suggestion`, `shortest-enter`, `palette-shortest`: the p05 round 7 critic's "il pi" and the suggestion, 5 keystrokes; the piece is found through the back end before the run, as ours finds its shortest prefixes) |
 | api-update-user (p15) | POST /json/2/res.users/search > POST /json/2/res.users/write | through the API only: steps are requests, keystrokes the requests as typed; Odoo's JSON-2 needs an API key (an interactive identity check), so the same calls travel by its external JSON-RPC and are counted in the JSON-2 form |
 | create-company-branch (p02) | Settings > Users & Companies > Companies > New > name > Branches > Add a line > branch > Save & Close > Save | keyboard and pointer variants |
 | switch-company (p02) | company switcher > the company | |
-| keyboard-navigation (p04) | Alt+H > Down, Down > Enter > Down ×4 > Enter | no mouse allowed; verified |
+| keyboard-navigation (p04) | Alt+H > Down, Down > Enter > Down ×4 > Enter | no mouse allowed (`keyboardOnly`, judged by the harness); the form's pager shows it is the list's third record |
 | edit-and-save (p06) | phone field > Ctrl+A > type > Save | keyboard and pointer variants |
 | arabic-report (p06) | user menu > My Preferences > Arabic > Update Preferences > Print | printing straight away gives Arabic text laid out left to right |
 | who-changed-field (p07) | Apps > Contacts > name > Enter > open; the change log shows the latest change | change made by another user in set-up |
@@ -363,7 +415,10 @@ export default {
                                 // op.shot(moment) for each of the task's declared moments, once
     return {};
   },
-  async verify(ctx, outcome) {  // read-only confirmation: { verified, details }; must fail before the clock
+  async verify(ctx) {           // read-only confirmation: { verified, details }; must fail before the clock.
+                                // ctx alone, in a fresh process (round 9): set-up's ctx.state as data,
+                                // ctx.downloads for files the measured part downloaded, no clock;
+                                // a task that saves reads its end state from the back end
     return { verified: true, details: {} };
   },
   async cleanup(ctx) {},        // undo the task so it can run again
@@ -376,7 +431,8 @@ strings, patterns or `ctx.until`), and files may be written only under `os.tmpdi
 
 `ctx` carries `page`, `context`, `browser`, `product` (base URL, demo sign-ins), `task` (its
 `input`), `needles` (the dataset's records: `ctx.needles.contact.name` …), `dataDir` (the
-generated files), `state` (shared between the hooks), `read(fn, arg)` and `until(fn, { arg })`
+generated files), `state` (shared by set-up, sign-in, run and clean-up in the run's process;
+`verify()` gets it as data, as it stood when the start was ready), `downloads` (in `verify()`), `read(fn, arg)` and `until(fn, { arg })`
 (page functions: read-only, see "Page functions") and `health` (true in a driver health check,
 below). A page function reads with `document.querySelector…`, `innerText`, `getComputedStyle`,
 `location.pathname`; index a list with a number or `.item(i)`; pass what it needs as `arg`. Use
@@ -395,7 +451,11 @@ turn, in a scratch copy of the harness, and runs the self-tests that must catch 
 operator, greyscale, the read world's click refusal and its arming, the source check, the driver
 lint's page-function check, the network locks, the script freeze, the abort at the clock, the
 screen check after `verify()`, the document settle, a variant's own hooks, the masks, the zero
-rule, ties and whole paths. Each test file's self-tests run once unmutated for all of its
+rule, ties and whole paths, and (round 9) the verify() process (its clocks, reads, writes, the Date
+header), the no-step refusal, the saved-state rule and its pass gap, the entered-value checks, the
+keyboard-only rule, chord keystrokes, scroll steps, the reference's best path, the refusal of
+requests after the clock, the verify read limit, field-value masks and the review page's unbuilt
+tasks. Each test file's self-tests run once unmutated for all of its
 mutations (the control), and a mutation counts as caught only when a test that passed there fails
 mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above

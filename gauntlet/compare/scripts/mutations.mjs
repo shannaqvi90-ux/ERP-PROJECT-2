@@ -70,6 +70,9 @@ export const MUTATIONS = [
   ['M36', 'the reference measured on its worst path per metric (critic A16)', 'lib/runner.mjs', '(b === null || e.counts[m] < b.counts[m] ? e : b)', '(b === null || e.counts[m] > b.counts[m] ? e : b)', 'test/compare.test.mjs', 'held at its best path'],
   ['M37', 'requests after the clock not refused (critic A24)', 'lib/runner.mjs', "      await context.route('**/*', r => { tracker.afterClock++; r.abort('blockedbyclient').catch(() => {}); });", '', 'test/page-script.test.mjs', 'mutation A24'],
   ['M38', 'reads in verify() not cut to half a second (critic H10)', 'lib/guard.mjs', "          return phase === 'verifying' ? clampTimeouts(raw) : raw;", '          return raw;', 'test/page-script.test.mjs', 'mutation H10'],
+  // Round 9: blindness (critic p01 r8: names inside form fields; an unbuilt product's column).
+  ['M39', 'demo names inside form fields not masked', 'lib/blind.mjs', '  else values.forEach((v, i) => { if (revealsIdentity(v, branding)) out.push(fields.nth(i)); });', '  else values.forEach(() => {});', 'test/blind.test.mjs', 'inside a form field'],
+  ['M40', "an unbuilt product's column shown", 'lib/review.mjs', "    if (Object.values(runs).some(r => r?.status === 'not_built')) {", '    if (false) {', 'test/blind.test.mjs', 'cannot run yet'],
 ];
 
 function copyHarness() {

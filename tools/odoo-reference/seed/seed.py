@@ -396,9 +396,13 @@ def attachment_content():
 @timed('job-runs')
 def job_runs():
     # Odoo Community keeps no per-run job history beyond ir.cron.progress, which its own vacuum
-    # trims to one week; runs are spread over the last six days and topped up on each up.sh.
+    # trims to one week. Round 9 (needs-human #13): runs used to be spread over the last six days,
+    # so the oldest were vacuumed about a day after a top-up and the rig fell short again within
+    # days. Each up.sh now keeps at least TARGET runs made within the last day (spread over twelve
+    # hours), so the rig stays at the bar for six days after a top-up; older runs stay until Odoo's
+    # own vacuum removes them.
     cr.execute("DELETE FROM ir_cron_progress WHERE create_date < now() - interval '6 days 12 hours'")
-    cr.execute("SELECT count(*) FROM ir_cron_progress")
+    cr.execute("SELECT count(*) FROM ir_cron_progress WHERE create_date >= now() - interval '1 day'")
     have = cr.fetchone()[0]
     if have >= TARGET:
         return 0
@@ -407,7 +411,7 @@ def job_runs():
     cron_total = cr.fetchone()[0]
     cr.execute(f"""INSERT INTO ir_cron_progress (cron_id, remaining, done, timed_out_counter, deactivate, create_uid, write_uid, create_date, write_date)
                    SELECT j.id, 0, (g * 7) % 50, 0, false, 1, 1,
-                          now() - ((g * 5) || ' seconds')::interval, now() - ((g * 5) || ' seconds')::interval
+                          now() - ((g * 432) || ' milliseconds')::interval, now() - ((g * 432) || ' milliseconds')::interval
                    FROM generate_series(1, {n}) g
                    JOIN (SELECT id, row_number() OVER (ORDER BY id) AS rn FROM ir_cron) j
                      ON j.rn = (g % {cron_total}) + 1""")
