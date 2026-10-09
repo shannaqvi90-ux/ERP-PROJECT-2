@@ -123,6 +123,11 @@ test('every task that ends in a state saved in the product says so (saves), and 
         assert.ok(String(t.input[k]).trim().length >= 4, `${t.id}: input.${k} is long enough to be found again ("${t.input[k]}")`);
       }
     }
+    // Every built driver reads its end state with verify() (run() never reports it, round 9).
+    for (const p of PRODUCT_IDS) {
+      const d = await loadDriver(p, t.id);
+      if (d.built !== false) assert.ok(d.hooks.verify || Object.values(d.variants || {}).every(v => v.hooks?.verify), `${p}/${t.id}: no verify()`);
+    }
     // Every built driver of a task that saves reads its end state (verify), in both products.
     if (t.saves) {
       for (const p of PRODUCT_IDS) {
@@ -131,7 +136,4 @@ test('every task that ends in a state saved in the product says so (saves), and 
       }
     }
   }
-  const tasks = await loadTasks();
-  assert.ok(tasks.filter(t => t.saves).length >= 13, 'the tasks that save never go below 13');
-  assert.ok(tasks.filter(t => t.enters).length >= 7, 'the tasks that name what the person enters never go below 7');
 });

@@ -295,6 +295,17 @@ test('plant P9: verify() reads a back-end clock beside the saved state; the cloc
   assert.match(r.error, /answered differently after the clock|already done before the clock/);
 });
 
+test('plant P10: no verify() at all; set-up does the task and run() says it is done -> never verifies (run() never reports its own end state)', async () => {
+  reset();
+  const r = await runDriver({
+    async setup() { await fetch(base + '/api/save', { method: 'POST', body: 'abcdefghij' }); },
+    async signIn(ctx) { await ctx.page.goto(base + '/plant'); },
+    async run(op) { await op.press('Escape'); return { verified: true }; },
+  });
+  never(r, 'P10');
+  assert.match(r.error, /no verify\(\)/);
+});
+
 test('saved state: the honest path of a task that saves what the person enters verifies, and the record names the read that gained it', async () => {
   reset();
   const r = await runDriver({

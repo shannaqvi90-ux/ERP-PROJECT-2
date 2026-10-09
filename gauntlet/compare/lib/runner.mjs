@@ -661,7 +661,9 @@ export async function execute(task, driver, product, productId, needles, out, op
         if (saved.problem) throw new ActionOutsideClock(saved.problem, 'set-up');
       }
     } else {
-      run.verification = { verified: !!outcome?.verified, details: outcome };
+      // Round 9: run() never reports its own end state; a driver without verify() measures nothing.
+      run.verification = { verified: false, details: { returned_by_run: outcome ?? null } };
+      throw new RefusedClaim('the driver has no verify(): the end state is read by verify(), the same before and after the clock, never reported by run()');
     }
     const rules = taskRuleProblems(task, op.steps);
     if (rules.length) run.task_rules = rules;

@@ -43,6 +43,12 @@ function variant(returning) {
       const { user, password } = ctx.task.input;
       if (returning) {
         await ctx.page.goto(LOGIN_URL(ctx));
+        // Round 9 (critic p01 r8: one repeat timed out waiting for the e-mail field): a browser the
+        // rig still holds a session for lands signed in; sign it out and open the sign-in screen again.
+        const form = ctx.page.locator('input[name="login"]');
+        const menu = ctx.page.locator('.o_main_navbar button.o_user_menu');
+        await form.or(menu).first().waitFor();
+        if (await menu.isVisible()) { await signOut(ctx.page); await ctx.page.goto(LOGIN_URL(ctx)); }
         await ctx.page.locator('input[name="login"]').fill(user);
         await ctx.page.locator('input[name="password"]').fill(password);
         await ctx.page.locator('input[name="password"]').press('Enter');
