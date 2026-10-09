@@ -292,6 +292,9 @@ public static class SubjectInjection
         using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), path);
         if (body is not null)
         {
+            // A write that answers something the product issued first (adding a passkey) is
+            // completed for the caller (Infrastructure/Ceremonies.cs).
+            await Ceremonies.CompleteAsync(client, endpoint.Method, path, body);
             request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
         }
         foreach (var (name, value) in headers ?? new Dictionary<string, string>())

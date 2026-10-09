@@ -27,6 +27,14 @@ GET /api/identity/users/{id:guid}/default-company identity.users.read # which co
 PUT /api/identity/users/{id:guid}/default-company identity.users.update # choosing another user's starting company changes the account (access checked in the handler)
 GET /api/identity/companies identity.users.read # the caller's own companies, offered where roles are assigned per company
 PUT /api/identity/me/preferences identity.profile.update # the caller's own language, theme and density
+GET /api/identity/me/passkeys identity.profile.update # the caller's own passkeys (names and dates, never keys): part of the caller's own account
+GET /api/identity/me/passkeys/{id:guid} identity.profile.update # one of the caller's own passkeys; another user's answers 404
+POST /api/identity/me/passkeys/options identity.profile.update # creation options for the caller's own new passkey, only within minutes of signing in
+POST /api/identity/me/passkeys identity.profile.update # adds a sign-in method to the caller's own account only, after a recent sign-in
+PUT /api/identity/me/passkeys/{id:guid} identity.profile.update # renames one of the caller's own passkeys
+DELETE /api/identity/me/passkeys/{id:guid} identity.profile.update # removes one of the caller's own passkeys
+GET /api/identity/users/{id:guid}/passkeys identity.users.read # another user's passkeys (names and dates, never keys), as the users screen shows that user
+DELETE /api/identity/users/{id:guid}/passkeys identity.users.update # removing another user's way to sign in changes that account; only users within the caller's own access
 
 GET /api/identity/roles identity.roles.read # the roles list
 GET /api/identity/roles/{id:guid} identity.roles.read # one role and its permissions

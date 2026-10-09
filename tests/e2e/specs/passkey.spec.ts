@@ -32,7 +32,7 @@ test.describe("passkeys", () => {
     await signOut(page);
     await expect(page.locator("#passkey-asking")).toHaveCount(0);
     await paceSignIn(page);
-    await page.getByRole("button", { name: "Sign in with a passkey" }).click();
+    await page.getByRole("button", { name: "Continue with a passkey" }).click();
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
 
     // A later visit (a new tab of the device, the next morning) asks as the screen opens: from the
@@ -45,14 +45,16 @@ test.describe("passkeys", () => {
       await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
     }
 
-    // In Arabic, right to left.
+    // From the Arabic sign-in screen, right to left (the workspace then opens in the person's own
+    // language, whatever the screen's was).
     await signOut(page);
     await page.getByRole("button", { name: "العربية" }).click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("button", { name: "المتابعة بمفتاح مرور" })).toBeVisible();
     await page.evaluate(() => sessionStorage.clear());
     await paceSignIn(page);
     await page.goto("/");
-    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { name: /مرحبًا/ })).toBeVisible();
+    await expect(page.locator("main h1")).toBeVisible();
   });
 
   test("a removed passkey no longer signs in, and the screen says so and keeps the password path", async ({ page }) => {

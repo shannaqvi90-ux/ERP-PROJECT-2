@@ -140,12 +140,15 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         }
     }
 
-    /// <summary>Settings every gate environment runs with, under the test's own: a session may add
-    /// a passkey for an hour after signing in (the product's longest), so tenant B's own writes in a
-    /// gate that runs for half an hour still add their passkeys.</summary>
+    /// <summary>Settings a test project gives every gate environment it starts, under each test's
+    /// own (set once by the project's module initializer; the gate project's own lets a session add a
+    /// passkey for an hour after signing in, so tenant B's own writes in a gate that runs for half an
+    /// hour still add their passkeys). Empty for every other project.</summary>
+    public static IReadOnlyDictionary<string, string?> ProjectGateSettings { get; set; } = new Dictionary<string, string?>();
+
     private static Dictionary<string, string?> WithGateDefaults(IDictionary<string, string?>? settings)
     {
-        var merged = new Dictionary<string, string?> { ["Erp:Auth:PasskeyRecentSignInMinutes"] = "60" };
+        var merged = new Dictionary<string, string?>(ProjectGateSettings);
         foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
         {
             merged[key] = value;

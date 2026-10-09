@@ -104,7 +104,7 @@ describe("sign-in with a passkey", () => {
     // The mark is read once: the next visit asks again.
     expect(sessionStorage.getItem("erp.signedOut")).toBeNull();
 
-    const button = [...view.container.querySelectorAll("button")].find((b) => b.textContent === "Sign in with a passkey")!;
+    const button = [...view.container.querySelectorAll("button")].find((b) => b.textContent === "Continue with a passkey")!;
     await act(async () => {
       button.click();
       await new Promise((resolve) => setTimeout(resolve, 0));

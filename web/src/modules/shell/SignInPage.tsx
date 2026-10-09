@@ -41,7 +41,7 @@ const failuresBeforeHint = 3;
  * device remembers the last e-mail), Enter signs in. The e-mail — never the password — is
  * remembered on this device until the person signs out (see kernel/deviceState.ts).
  *
- * Passkeys: "Sign in with a passkey" asks the device for any passkey of this site (no e-mail
+ * Passkeys: "Continue with a passkey" asks the device for any passkey of this site (no e-mail
  * typed). On a device where a passkey was added or used, the screen asks at once as it opens, from
  * any address (plain, the team's, a personal bookmark), so signing in is one confirmation on the
  * device; not right after the Sign out button, and cancelling leaves the e-mail and password.

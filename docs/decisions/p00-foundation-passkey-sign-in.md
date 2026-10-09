@@ -38,7 +38,7 @@ sign-in screen offers "Use a Passkey" (a click, then the confirmation on the dev
 4. **Not right after Sign out.** The Sign out button marks the tab (`erp.signedOut`,
    sessionStorage, read once): the next sign-in screen of that tab does not ask (the person just
    left; on a shared device the next person should not meet a passkey prompt). The button
-   "Sign in with a passkey" is always there; a later visit (a new tab, the next morning) asks again.
+   "Continue with a passkey" is always there (its label holds no "Sign in", so the password button keeps its own name); a later visit (a new tab, the next morning) asks again.
 5. **Repeated failures say that sign-in may pause** (round 7 finding): after three failed password
    sign-ins on the screen, the message adds that sign-in from the device pauses for a while, with
    what to check, still without saying whether the account exists.

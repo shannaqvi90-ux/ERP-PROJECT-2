@@ -90,7 +90,11 @@ case "$stage" in
     # processor (the test processes wait mostly on PostgreSQL, and spinning took processor time
     # from the processes doing work), and a 64 MB first GC generation instead of one sized by the
     # processor cache (fewer collections). Measured on the company attack: 240 -> 220 CPU seconds.
-    export DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0 DOTNET_GCgen0size=0x4000000
+    # Tiered PGO off as well: its instrumented tier costs more processor time than it gives back in
+    # test processes that each run a few minutes of mostly database-bound work (measured round 8 on
+    # G1CompanyIsolationTests and G2AccountTakeoverTests, interleaved runs: 245 and 250 s of user
+    # time against 253 and 257 s with it on, about 3 % less).
+    export DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0 DOTNET_GCgen0size=0x4000000 DOTNET_TieredPGO=0
     rm -rf "$out/trx"
     # Four test processes side by side: every test project (the gate self-tests below excepted),
     # and the three long self-tests of the planted module, each in a process of its own. Their
