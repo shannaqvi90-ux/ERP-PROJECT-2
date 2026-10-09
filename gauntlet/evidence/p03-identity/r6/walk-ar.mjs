@@ -1,0 +1,20 @@
+import { open, signIn, BASE, shot } from './pw.mjs';
+const { browser, page, errors } = await open(1600, 900);
+await signIn(page, 'admin.ar@alnoor.example');
+await page.goto(BASE + '/identity/users'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(800);
+console.log('dir', await page.evaluate(() => document.documentElement.dir), 'lang', await page.evaluate(() => document.documentElement.lang));
+await page.keyboard.type('ماجد أنيل'); await page.waitForTimeout(1500);
+const t = await page.locator('main').innerText(); console.log('AR USERS:\n' + t.slice(0, 600));
+await shot(page, '06-users-search-arabic-ar');
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1200);
+await page.getByRole('tab').nth(1).click().catch(() => {}); await page.waitForTimeout(1000);
+await shot(page, '07-effective-permissions-ar');
+console.log('AR PANEL:\n' + (await page.locator('aside, [role=complementary]').last().innerText()).slice(0, 800));
+// English leftovers check: Latin words in visible UI chrome
+const latin = await page.evaluate(() => { const out = new Set(); const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); while (w.nextNode()) { const s = w.currentNode.nodeValue.trim(); if (/^[A-Za-z][A-Za-z ,.'()-]{3,}$/.test(s)) out.add(s); } return [...out].slice(0, 40); });
+console.log('Latin-only text nodes:', JSON.stringify(latin));
+await page.goto(BASE + '/identity/roles'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(800);
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(1200);
+await shot(page, '08-new-role-matrix-ar');
+console.log('errors', errors);
+await browser.close();

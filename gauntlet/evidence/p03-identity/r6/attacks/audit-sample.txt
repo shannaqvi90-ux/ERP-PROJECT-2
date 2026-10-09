@@ -1,0 +1,23 @@
+          occurred_at          |                actor                |    table_name    | action |                                                                               left                                                                               
+-------------------------------+-------------------------------------+------------------+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-08 19:43:45.566902+00 | admin@alnoor.example                | users            | insert | {"id": {"new": "01a11d0b-0bce-7150-be1b-0005fd83a639"}, "email": {"new": "plain.64eabe@alnoor.example"}, "language": {"new": "en"}, "numerals": {"new": "latn"},
+ 2026-10-08 19:43:45.566902+00 | admin@alnoor.example                | user_credentials | insert | {"id": {"new": "01a11d0b-0bce-7150-be1b-0005fd83a639"}, "changed_at": {"new": "2026-10-08T19:43:45.614418+00:00"}, "changed_by": {"new": "01a11d08-db13-7003-aa0
+ 2026-10-08 19:43:45.90887+00  | clerk.64eabe@alnoor.example         | users            | update | {"is_active": {"new": false, "old": true}}
+ 2026-10-08 19:43:47.043954+00 | admin@alnoor.example                | users            | insert | {"id": {"new": "01a11d0b-1172-7cbe-8d76-27da1db5bf09"}, "email": {"new": "c1.editor.64eabe@alnoor.example"}, "language": {"new": "en"}, "numerals": {"new": "lat
+ 2026-10-08 19:43:47.043954+00 | admin@alnoor.example                | user_credentials | insert | {"id": {"new": "01a11d0b-1172-7cbe-8d76-27da1db5bf09"}, "changed_at": {"new": "2026-10-08T19:43:47.05845+00:00"}, "changed_by": {"new": "01a11d08-db13-7003-aa09
+ 2026-10-08 19:43:47.34409+00  | company.clerk.64eabe@alnoor.example | users            | update | {"is_active": {"new": false, "old": true}}
+ 2026-10-08 20:01:48.80708+00  | admin@alnoor.example                | users            | update | {"is_active": {"new": true, "old": false}}
+ 2026-10-08 20:01:48.920306+00 | admin@alnoor.example                | user_credentials | update | {"changed_at": {"new": "2026-10-08T20:01:48.939157+00:00", "old": "2026-10-08T19:43:45.614418+00:00"}, "expires_at": {"new": "2026-10-15T20:01:48.939157+00:00"}
+ 2026-10-08 20:01:50.715833+00 | admin@alnoor.example                | users            | update | {"sign_in_unblocked_at": {"new": "2026-10-08T20:01:50.728143+00:00"}}
+(9 rows)
+
+     table_name     | count  
+--------------------+--------
+ roles              |     20
+ sessions           |     68
+ user_company_roles |     12
+ user_credentials   | 101035
+ user_roles         |     23
+ users              | 101038
+(6 rows)
+
