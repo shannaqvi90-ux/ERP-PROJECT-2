@@ -118,14 +118,131 @@ public sealed class TenantActivity
         var activity = new TenantActivity(env, tenant, endpoints, openApi);
         activity._actors.Add(new Actor($"tenant {tenant.Code} administrator (cookie)", await env.SignInAsync(env.Email(tenant, "admin"))));
         activity._actors.Add(new Actor($"tenant {tenant.Code} administrator (bearer)", await env.SignInWithTokenAsync(env.Email(tenant, "admin"))));
-        activity._actors.Add(new Actor($"tenant {tenant.Code} read-only user (cookie)", await env.SignInAsync(env.Email(tenant, "viewer"))));
+        activity._actors.Add(new Actor($"tenant {tenant.Code} read-only user (cookie)", await env.SignInAsync(env.Email(tenant, "viewer")), "viewer"));
+        // The Arabic side (critic p04 round 4): an administrator whose every request runs in
+        // Arabic with Arabic-Indic digits, so whatever the Arabic branch of a handler keeps is
+        // this tenant's too when the other tenant's Arabic session comes.
+        activity._actors.Add(new Actor($"tenant {tenant.Code} administrator in Arabic (cookie)", await ArabicSession.SignInAsync(env, tenant), ArabicSession.Local));
         return activity;
     }
+
+    /// <summary>
+    /// E-mail of this activity's Arabic administrator who works in every company and branch
+    /// (<see cref="ArabicSession.CreateWorkspaceWideAsync"/>), created the first time it is needed.
+    /// The Arabic administrator works in one branch of the last company only (gate seed), so a
+    /// write of a record every company shares (the workspace, p02 round 7) is refused to it by
+    /// design; such a write is made in Arabic once more by this user, and must succeed, so the
+    /// Arabic branch of its success path runs for this tenant as for every other write.
+    /// </summary>
+    public async Task<string> ArabicWorkspaceEmailAsync()
+    {
+        await _workspaceGate.WaitAsync();
+        try
+        {
+            if (_arabicWorkspaceEmail is null)
+            {
+                _arabicWorkspaceEmail = await ArabicSession.CreateWorkspaceWideAsync(_env, _tenant, Admin.Client, _run);
+                // Writes never target an actor's own user record.
+                _actorUserIds = null;
+            }
+            return _arabicWorkspaceEmail;
+        }
+        finally
+        {
+            _workspaceGate.Release();
+        }
+    }
+
+    private async Task<Actor> ArabicWorkspaceActorAsync()
+    {
+        var email = await ArabicWorkspaceEmailAsync();
+        await _workspaceGate.WaitAsync();
+        try
+        {
+            return _arabicWorkspace ??= new Actor($"tenant {_tenant.Code} workspace-wide administrator in Arabic (cookie)",
+                await ArabicSession.SignInWorkspaceWideAsync(_env, email), email.Split('@')[0]);
+        }
+        finally
+        {
+            _workspaceGate.Release();
+        }
+    }
+
+    /// <summary>Whether the Arabic administrator does not hold the whole workspace, read once: only
+    /// then is a workspace refusal of its write the product working as designed.</summary>
+    private async Task<bool> ArabicLacksWorkspaceAsync()
+    {
+        if (_arabicLacksWorkspace is null)
+        {
+            var holds = await ArabicSession.HoldsWholeWorkspaceAsync(Arabic.Client);
+            _arabicLacksWorkspace = holds == false;
+        }
+        return _arabicLacksWorkspace.Value;
+    }
+
+    private readonly SemaphoreSlim _workspaceGate = new(1, 1);
+    private string? _arabicWorkspaceEmail;
+    private Actor? _arabicWorkspace;
+    private bool? _arabicLacksWorkspace;
+
+    /// <summary>Writes refused to the Arabic administrator because it does not work in every
+    /// company and branch, each then made in Arabic by the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceRefusals => _arabicWorkspaceRefusals;
+
+    /// <summary>Those writes that succeeded for the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceWrites => _arabicWorkspaceWrites;
+
+    private int _arabicWorkspaceRefusals;
+    private int _arabicWorkspaceWrites;
 
     /// <summary>The other tenant's markers, which no response to this tenant may contain.</summary>
     public void Watch(MarkerSet other) => _forbidden = other;
 
     private Actor Admin => _actors[0];
+
+    private Actor Viewer => _actors[2];
+
+    private Actor Arabic => _actors[3];
+
+    /// <summary>This tenant's administrator in Arabic with Arabic-Indic digits (<see cref="ArabicSession"/>).</summary>
+    public HttpClient ArabicClient => Arabic.Client;
+
+    /// <summary>Requests this tenant's Arabic session sent.</summary>
+    public int ArabicRequests => _arabicRequests;
+
+    private int _arabicRequests;
+
+    /// <summary>Puts the Arabic session back to Arabic with Arabic-Indic digits: a write of its own
+    /// preferences (a body variant) may have changed them. Counted as a blind spot when the
+    /// session is no longer signed in.</summary>
+    public async Task EnsureArabicAsync(string phase)
+    {
+        if (_baseline is null)
+        {
+            await ArabicSession.PrepareAsync(Arabic.Client);
+        }
+        else
+        {
+            // A write of this tenant's own: framed like every other own write, so it never counts
+            // as a change someone else made.
+            await _tracking.WaitAsync();
+            try
+            {
+                _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, await SnapshotAsync()));
+                await ArabicSession.PrepareAsync(Arabic.Client);
+                _baseline = await SnapshotAsync();
+            }
+            finally
+            {
+                _tracking.Release();
+            }
+        }
+        Interlocked.Increment(ref _requests);
+        if (!await ArabicSession.IsArabicAsync(Arabic.Client))
+        {
+            lock (_lock) BlindSpots.Add($"{phase}: {Arabic.Name} no longer answers in Arabic with Arabic-Indic digits");
+        }
+    }
 
     /// <summary>Endpoints that change data and that the activity calls: every write except signing
     /// in and out (the actors stay signed in for the whole attack) and catch-all routes (they only
@@ -230,6 +347,21 @@ public sealed class TenantActivity
             : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[0].ToJsonString()}")), leaves.Select(l => (l, l.Values[0])).ToList(), null, null);
     }
 
+    /// <summary>The variant with every enumerated field at its last documented value (null when the
+    /// body has none). For the shell's own preferences that is Arabic with Arabic-Indic digits, so
+    /// an Arabic session that writes it stays Arabic.</summary>
+    public WriteVariant? LastValues(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return null;
+        }
+        var leaves = _openApi.EnumLeaves(schema);
+        return leaves.Count == 0
+            ? null
+            : new WriteVariant(string.Join(" ", leaves.Select(l => $"{l.Name}={l.Values[^1].ToJsonString()}")), leaves.Select(l => (l, l.Values[^1])).ToList(), null, null);
+    }
+
     /// <summary>Variants (endpoint key and label) whose settings a body held when it was sent.</summary>
     public IReadOnlySet<string> AppliedVariants
     {
@@ -248,11 +380,11 @@ public sealed class TenantActivity
     /// can be repeated as often as the attack needs). Returns the status; a write that does not
     /// succeed is recorded in <see cref="UnsuccessfulWrites"/>.
     /// </summary>
-    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null)
+    public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null, bool arabic = false)
     {
         if (_baseline is null)
         {
-            return (await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null)).Status;
+            return await WriteAsActorAsync(endpoint, own, phase, bearer, variant, arabic);
         }
         // Changes since this tenant's last own write were made by someone else.
         await _tracking.WaitAsync();
@@ -260,7 +392,7 @@ public sealed class TenantActivity
         {
             var before = await SnapshotAsync();
             _changedByOthers.UnionWith(TenantSnapshot.Differences(_baseline, before));
-            var (status, _) = await WriteCoreAsync(endpoint, own, phase, bearer, variant, via: null);
+            var status = await WriteAsActorAsync(endpoint, own, phase, bearer, variant, arabic);
             _baseline = await SnapshotAsync();
             return status;
         }
@@ -268,6 +400,31 @@ public sealed class TenantActivity
         {
             _tracking.Release();
         }
+    }
+
+    /// <summary>The write by the administrator (cookie or bearer) or, with <paramref name="arabic"/>,
+    /// by the Arabic administrator. A write refused to the Arabic administrator only because it does
+    /// not work in every company and branch (and it indeed does not) is made once more, in Arabic,
+    /// by the workspace-wide Arabic administrator, and that write is the one that must succeed.</summary>
+    private async Task<int> WriteAsActorAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, bool arabic)
+    {
+        if (!arabic)
+        {
+            return (await WriteCoreAsync(endpoint, own, phase, bearer, variant, null)).Status;
+        }
+        var (status, text) = await WriteCoreAsync(endpoint, own, phase, bearer, variant, Arabic, note: false);
+        if (ArabicSession.IsWorkspaceRefusal(status, text) && await ArabicLacksWorkspaceAsync())
+        {
+            Interlocked.Increment(ref _arabicWorkspaceRefusals);
+            (status, _) = await WriteCoreAsync(endpoint, own, $"{phase}, by the workspace-wide Arabic administrator", bearer, variant, await ArabicWorkspaceActorAsync());
+            if (status is >= 200 and < 300)
+            {
+                Interlocked.Increment(ref _arabicWorkspaceWrites);
+            }
+            return status;
+        }
+        NoteWrite(endpoint, status, text);
+        return status;
     }
 
     private TenantSnapshot? _baseline;
@@ -303,28 +460,29 @@ public sealed class TenantActivity
     /// write answers in a process the other tenant also uses with what it answers in a process
     /// only this tenant has used (<see cref="NonInterference"/>).
     /// </summary>
-    public async Task<(int Status, string Text)> WriteThroughAsync(HttpClient client, string clientName, ApiEndpoint endpoint, TenantSnapshot own, string phase, WriteVariant? variant)
+    public async Task<(int Status, string Text)> WriteThroughAsync(HttpClient client, string clientName, ApiEndpoint endpoint, TenantSnapshot own, string phase, WriteVariant? variant,
+        string owner = "admin")
     {
         if (_baseline is not null)
         {
             throw new InvalidOperationException("Writes through another client are not framed by change tracking.");
         }
-        return await WriteCoreAsync(endpoint, own, phase, bearer: false, variant, new Actor(clientName, client));
+        return await WriteCoreAsync(endpoint, own, phase, bearer: false, variant, new Actor(clientName, client, owner));
     }
 
-    private async Task<(int Status, string Text)> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, Actor? via)
+    private async Task<(int Status, string Text)> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, Actor? via, bool note = true)
     {
         var actor = via ?? (bearer ? _actors[1] : Admin);
         switch (endpoint.Method)
         {
             case "POST":
             {
-                var path = await OwnPathAsync(endpoint, own, forWrite: true);
+                var path = await OwnPathAsync(endpoint, own, forWrite: true, actor);
                 var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null, variant), $"POST {path} [{phase}]");
-                NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text);
                 if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
                 {
-                    var collection = endpoint.Pattern.TrimEnd('/');
+                    var collection = CreatedKey(endpoint.Pattern.TrimEnd('/'), actor.Owner);
                     lock (_lock)
                     {
                         if (!_created.TryGetValue(collection, out var ids)) _created[collection] = ids = [];
@@ -338,7 +496,7 @@ public sealed class TenantActivity
             }
             case "PUT" or "PATCH":
             {
-                var path = await OwnPathAsync(endpoint, own, forWrite: true);
+                var path = await OwnPathAsync(endpoint, own, forWrite: true, actor);
                 JsonNode? template = null;
                 if (_endpoints.Any(e => e.Method == "GET" && e.Pattern == endpoint.Pattern))
                 {
@@ -349,7 +507,7 @@ public sealed class TenantActivity
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template, variant), $"{endpoint.Method} {path} [{phase}]");
-                NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text);
                 return (status, text);
             }
             default:
@@ -362,28 +520,29 @@ public sealed class TenantActivity
                 else
                 {
                     var collection = CollectionOf(endpoint.Pattern);
-                    var target = await FreshRecordAsync(collection, own, phase);
+                    var target = await FreshRecordAsync(collection, own, phase, actor);
                     // Nothing could be created to delete: still run the handler on a record that does not exist.
                     path = endpoint.Path(_ => target ?? Guid.NewGuid().ToString());
                     if (target is not null)
                     {
                         lock (_lock)
                         {
-                            if (_created.TryGetValue(collection, out var ids)) ids.Remove(target);
+                            if (_created.TryGetValue(CreatedKey(collection, actor.Owner), out var ids)) ids.Remove(target);
                             foreach (var key in _routes.Where(r => r.Value == target).Select(r => r.Key).ToList()) _routes.Remove(key);
                         }
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, null, $"{endpoint.Method} {path} [{phase}]");
-                NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text);
                 return (status, text);
             }
         }
     }
 
-    /// <summary>A record of the collection created now, only to be deleted: never one that another
+    /// <summary>A record of the collection created now by <paramref name="creator"/> (so it is
+    /// theirs, even when only its owner may see it), only to be deleted: never one that another
     /// write targets.</summary>
-    private async Task<string?> FreshRecordAsync(string collection, TenantSnapshot own, string phase)
+    private async Task<string?> FreshRecordAsync(string collection, TenantSnapshot own, string phase, Actor creator)
     {
         var create = _endpoints.FirstOrDefault(e => e.Method == "POST" && e.RouteParameters.Count == 0 && e.Pattern.TrimEnd('/') == collection);
         if (create is null)
@@ -391,7 +550,7 @@ public sealed class TenantActivity
             return null;
         }
         var path = create.Path(_ => "");
-        var (status, text, location) = await SendAsync(Admin, "POST", path, BuildBody(create, own, template: null), $"POST {path} [{phase}, record to delete]");
+        var (status, text, location) = await SendAsync(creator, "POST", path, BuildBody(create, own, template: null), $"POST {path} [{phase}, record to delete]");
         return status is >= 200 and < 300 ? CreatedId(text, location) : null;
     }
 
@@ -424,7 +583,7 @@ public sealed class TenantActivity
         }
         if (values is not null)
         {
-            var work = new List<(string Path, string Label)>();
+            var work = new List<(Actor Actor, string Path, string Label)>();
             foreach (var endpoint in reads.Where(e => !e.Pattern.Contains("{*", StringComparison.Ordinal)))
             {
                 var basePath = await OwnPathAsync(endpoint, own, forWrite: false);
@@ -439,12 +598,19 @@ public sealed class TenantActivity
                     foreach (var value in parameterValues)
                     {
                         var uri = basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(value);
-                        work.Add((uri, $"GET {basePath} [{phase}, own value in query {parameter.Name}]"));
+                        work.Add((Admin, uri, $"GET {basePath} [{phase}, own value in query {parameter.Name}]"));
+                    }
+                    // The Arabic session sends the values the attack's Arabic session sends
+                    // (ArabicValuesFor), so what the Arabic branch keeps per value is this tenant's.
+                    foreach (var value in ArabicValuesFor(parameter, values))
+                    {
+                        var uri = basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(value);
+                        work.Add((Arabic, uri, $"GET {basePath} [{phase}, in Arabic, own value in query {parameter.Name}]"));
                     }
                 }
             }
             await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests },
-                async (item, _) => await SendAsync(Admin, "GET", item.Path, null, item.Label));
+                async (item, _) => await SendAsync(item.Actor, "GET", item.Path, null, item.Label));
         }
         if (_successfulReads == successBefore)
         {
@@ -457,8 +623,26 @@ public sealed class TenantActivity
             {
                 lock (_lock) BlindSpots.Add($"{phase}: {actor.Name} is no longer signed in ({status})");
             }
+            else if (actor == Arabic && !ArabicSession.IsArabicSessionText(text))
+            {
+                lock (_lock) BlindSpots.Add($"{phase}: {actor.Name} no longer answers in Arabic with Arabic-Indic digits");
+            }
         }
     }
+
+    /// <summary>Values an Arabic session sends in one query parameter: sampled ids for a uuid, the
+    /// small cross-section (<see cref="VictimValues.Probe"/>) for text, and every published value.
+    /// The English sessions send every value; the Arabic ones a cross-section of them, which
+    /// reaches every Arabic branch of every handler with the tenant's values at a fraction of the
+    /// cost.</summary>
+    /// <param name="published">With every value the document publishes for the parameter (a
+    /// tenant's own reads); the attack leaves them out, as they are no tenant's values.</param>
+    public static IEnumerable<string> ArabicValuesFor(ApiParameter parameter, VictimValues values, bool published = true) => (parameter switch
+    {
+        { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
+        { Type: "string" } => values.Probe,
+        _ => [],
+    }).Concat(published ? parameter.Enum ?? [] : []).Distinct(StringComparer.Ordinal);
 
     /// <summary>The administrator uses the endpoint on this tenant's own records right before or
     /// after tenant A attacks it: a read for a GET, a valid write for an endpoint that changes data
@@ -469,6 +653,7 @@ public sealed class TenantActivity
         {
             var path = await OwnPathAsync(endpoint, own, forWrite: false);
             await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+            await SendAsync(Arabic, "GET", path, null, $"GET {path} [{phase}, in Arabic]");
         }
         else if (IsActivityWrite(endpoint))
         {
@@ -493,8 +678,9 @@ public sealed class TenantActivity
         foreach (var value in values.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var path = endpoint.Path(_ => value);
-            work.Add((_actors[0], path));
-            work.Add((_actors[^1], path));
+            work.Add((Admin, path));
+            work.Add((Viewer, path));
+            work.Add((Arabic, path));
         }
         await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
         {
@@ -536,6 +722,7 @@ public sealed class TenantActivity
         {
             var path = await OwnPathAsync(endpoint, own, forWrite: false);
             await SendAsync(Admin, "GET", path, null, $"GET {path} [{phase}]");
+            await SendAsync(Arabic, "GET", path, null, $"GET {path} [{phase}, in Arabic]");
         }
     }
 
@@ -578,6 +765,10 @@ public sealed class TenantActivity
         var location = response.Headers.Location?.ToString() ?? "";
         var headers = ResponseHeaders.Text(response);
         Interlocked.Increment(ref _requests);
+        if (actor == Arabic || actor == _arabicWorkspace)
+        {
+            Interlocked.Increment(ref _arabicRequests);
+        }
         if (method == "GET" && status is >= 200 and < 300)
         {
             Interlocked.Increment(ref _successfulReads);
@@ -606,13 +797,32 @@ public sealed class TenantActivity
     /// created in the same collection, else the first own id (tables named like the route first)
     /// that the administrator can read. Writes never target the actors' own user records (nor the
     /// role-less user the attack signs in).</summary>
-    private async Task<string> OwnPathAsync(ApiEndpoint endpoint, TenantSnapshot own, bool forWrite)
+    private async Task<string> OwnPathAsync(ApiEndpoint endpoint, TenantSnapshot own, bool forWrite, Actor? actor = null)
     {
         if (endpoint.RouteParameters.Count == 0 || endpoint.Pattern.Contains("{*", StringComparison.Ordinal))
         {
             return endpoint.Path(_ => "");
         }
-        var key = $"{CollectionOf(endpoint.Pattern)}|{forWrite}";
+        // Another user than the administrator (the Arabic administrator) writes the records it
+        // created itself, creating one first: some records only their owner may see or change.
+        var owner = actor?.Owner ?? "admin";
+        var prober = actor ?? Admin;
+        if (owner != "admin" && forWrite)
+        {
+            var ownedKey = CreatedKey(CollectionOf(endpoint.Pattern), owner);
+            bool hasOwn;
+            lock (_lock) hasOwn = _created.TryGetValue(ownedKey, out var mine) && mine.Count > 0;
+            if (!hasOwn && await FreshRecordAsync(CollectionOf(endpoint.Pattern), own, "a record of its own to write", prober) is { } fresh)
+            {
+                lock (_lock)
+                {
+                    if (!_created.TryGetValue(ownedKey, out var ids)) _created[ownedKey] = ids = [];
+                    ids.Add(fresh);
+                    _routeValues.Add(fresh);
+                }
+            }
+        }
+        var key = owner == "admin" ? $"{CollectionOf(endpoint.Pattern)}|{forWrite}" : $"{CollectionOf(endpoint.Pattern)}|{forWrite}|{owner}";
         lock (_lock)
         {
             if (_routes.TryGetValue(key, out var known))
@@ -624,7 +834,7 @@ public sealed class TenantActivity
         var candidates = new List<string>();
         lock (_lock)
         {
-            if (_created.TryGetValue(CollectionOf(endpoint.Pattern), out var created)) candidates.AddRange(created);
+            if (_created.TryGetValue(CreatedKey(CollectionOf(endpoint.Pattern), owner), out var created)) candidates.AddRange(created);
         }
         var segment = Singular(CollectionOf(endpoint.Pattern).Split('/').Last());
         var excluded = forWrite ? await ActorUserIdsAsync() : [];
@@ -646,7 +856,7 @@ public sealed class TenantActivity
                 return path;
             }
             using var probe = new HttpRequestMessage(HttpMethod.Get, readPath);
-            using var response = await Admin.Client.SendAsync(probe);
+            using var response = await prober.Client.SendAsync(probe);
             Interlocked.Increment(ref _requests);
             if (response.IsSuccessStatusCode)
             {
@@ -670,7 +880,7 @@ public sealed class TenantActivity
         await using var admin = await _env.OpenAdminAsync();
         _actorUserIds = (await DbCatalog.ReadAsync(admin,
                 "SELECT id FROM identity.users WHERE tenant_id = @t AND lower(email) = ANY(@e)", r => r.GetGuid(0),
-                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer"), _env.Email(_tenant, "noaccess") })))
+                ("t", _tenant.Id), ("e", new[] { _env.Email(_tenant, "admin"), _env.Email(_tenant, "viewer"), _env.Email(_tenant, "noaccess"), _env.Email(_tenant, ArabicSession.Local), (_arabicWorkspaceEmail ?? "").ToLowerInvariant() })))
             .Select(i => i.ToString()).ToList();
         return _actorUserIds;
     }
@@ -844,9 +1054,16 @@ public sealed class TenantActivity
         {
             actor.Client.Dispose();
         }
+        _arabicWorkspace?.Client.Dispose();
     }
 
-    private sealed record Actor(string Name, HttpClient Client);
+    /// <param name="Owner">Local part of the e-mail of the user the actor is signed in as: records
+    /// only their owner can see (a saved list view) are created and written per owner.</param>
+    private sealed record Actor(string Name, HttpClient Client, string Owner = "admin");
+
+    /// <summary>Key of the records an owner created in a collection (the administrator's keep the
+    /// bare collection).</summary>
+    private static string CreatedKey(string collection, string owner) => owner == "admin" ? collection : $"{owner}|{collection}";
 }
 
 /// <summary>One way to fill a write's body beyond its defaults (<see cref="TenantActivity.VariantsOf"/>):

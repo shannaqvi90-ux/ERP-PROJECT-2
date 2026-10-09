@@ -132,6 +132,88 @@ describe("command palette", () => {
     expect(new URLSearchParams(window.location.search).get("q")).toBe("abdullah");
   });
 
+  it("finds a role by its English or Arabic name and opens it in the roles list (critic p04 round 4)", async () => {
+    const role = { id: "0192aaaa-0000-7000-8000-000000000001", nameEn: "Read-only", nameAr: "قراءة فقط", permissions: ["identity.users.read"], isSystem: false, userCount: 3, version: 1 };
+    const calls = serve(admin, (method, url) =>
+      method === "GET" && url.startsWith("/api/identity/roles?search=") ? { status: 200, body: { items: [role], total: 1 } } : undefined,
+    );
+    view = await render(<App language="en" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, "قراءة");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(calls.some((c) => c.url.startsWith(`/api/identity/roles?search=${encodeURIComponent("قراءة")}`))).toBe(true);
+    // The name in the screen's language, the other language's beside it.
+    expect(options()).toContain("Read-only");
+    const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.querySelector(".palette-option-title")!.textContent === "Read-only")!;
+    expect(option.querySelector(".palette-option-subtitle")!.textContent).toBe("قراءة فقط");
+    const index = options().indexOf("Read-only");
+    for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
+    press({ code: "Enter", key: "Enter" }, input);
+    await settle();
+    expect(window.location.pathname).toBe(`/identity/roles/${role.id}`);
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("Read-only");
+    expect(palette()).toBeNull();
+  });
+
+  it("never asks the roles, companies or branches sources without their read permissions", async () => {
+    const calls = serve({ ...admin, permissions: ["identity.users.read"] });
+    view = await render(<App language="en" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, "aln-dxb");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(calls.filter((c) => /^\/api\/(identity\/roles|tenancy\/companies|tenancy\/branches)\?/.test(c.url))).toHaveLength(0);
+    expect(calls.some((c) => c.url.startsWith("/api/identity/users?search=aln-dxb"))).toBe(true);
+  });
+
+  it("finds companies and branches by code and opens the record in its list, in Arabic too", async () => {
+    const companyId = "0192aaaa-0000-7000-8000-0000000000c1";
+    const branchId = "0192aaaa-0000-7000-8000-0000000000b1";
+    const withTenancy = {
+      ...admin,
+      user: { ...admin.user, language: "ar" },
+      permissions: [...admin.permissions, "tenancy.companies.read", "tenancy.branches.read"],
+      menu: [
+        ...admin.menu,
+        { key: "tenancy.companies", labelKey: "tenancy.menu.companies", path: "/tenancy/companies", group: "settings" },
+        { key: "tenancy.branches", labelKey: "tenancy.menu.branches", path: "/tenancy/branches", group: "settings" },
+      ],
+    };
+    const calls = serve(withTenancy, (method, url) => {
+      if (method !== "GET") return undefined;
+      if (url.startsWith("/api/tenancy/companies?search="))
+        return { status: 200, body: { items: [{ id: companyId, code: "ALN-DXB", legalNameEn: "Al Noor Trading LLC", legalNameAr: "شركة النور للتجارة ذ.م.م", baseCurrency: "AED", city: "Dubai", emirate: "dubai", branchCount: 2, isActive: true, version: 1 }], total: 1 } };
+      if (url.startsWith("/api/tenancy/branches?search="))
+        return { status: 200, body: { items: [{ id: branchId, companyId, companyCode: "ALN-DXB", code: "DXB-HQ", nameEn: "Deira head office", nameAr: "المكتب الرئيسي ديرة", city: "Dubai", emirate: "dubai", isActive: true, version: 1 }], total: 1 } };
+      return undefined;
+    });
+    view = await render(<App language="ar" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, "ALN-DXB");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(calls.some((c) => c.url.startsWith("/api/tenancy/companies?search=ALN-DXB"))).toBe(true);
+    expect(calls.some((c) => c.url.startsWith("/api/tenancy/branches?search=ALN-DXB"))).toBe(true);
+    // Arabic names on an Arabic screen; the codes beside them.
+    expect(options()).toEqual(expect.arrayContaining(["شركة النور للتجارة ذ.م.م", "المكتب الرئيسي ديرة"]));
+    const index = options().indexOf("المكتب الرئيسي ديرة");
+    for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
+    press({ code: "Enter", key: "Enter" }, input);
+    await settle();
+    expect(window.location.pathname).toBe(`/tenancy/branches/${branchId}`);
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("DXB-HQ");
+  });
+
   it("offers no 'show all matches' when every match is already shown", async () => {
     serve(admin);
     view = await render(<App language="en" />);

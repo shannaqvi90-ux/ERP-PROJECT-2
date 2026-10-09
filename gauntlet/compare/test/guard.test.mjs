@@ -774,6 +774,21 @@ test('control (round 4): text copied inside the measured part may be pasted', as
   assert.equal(r.status, 'verified', `${r.status} ${r.error}`);
 });
 
+test('a run that fails in set-up records what the page showed (critic p04 round 4: an intermittent sign-in wait left nothing to read)', async () => {
+  const r = await runDriver({
+    async signIn(ctx) {
+      await ctx.page.goto(base + '/form');
+      await ctx.page.locator('nav').first().waitFor({ timeout: 500 });
+    },
+    async run() { return {}; },
+  });
+  assert.equal(r.status, 'error');
+  assert.match(r.error, /waitFor|Timeout/);
+  assert.equal(r.error_page.url, '/form');
+  assert.equal(r.error_page.navigation, false);
+  assert.deepEqual(r.error_page.focused, { tag: 'input', name: 'v', type: null, label: 'Value' });
+});
+
 // ---------------------------------------------------------------------------------------------
 // Round 5: nothing a driver does in its own Node process may act uncounted or off the clock. The
 // critic's plants (gauntlet/evidence/p01-odoo-rig/r5/plants/zz-critic-r5.test.mjs) first, then

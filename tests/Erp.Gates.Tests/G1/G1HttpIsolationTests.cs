@@ -62,6 +62,9 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"in Arabic: {report.ArabicAttackRequests} tenant A requests, {report.VictimArabicRequests} tenant B requests, {report.ArabicWritePairs} write pairs, " +
+            $"{report.ArabicWorkspaceWrites} of {report.ArabicWorkspaceRefusals} workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one");
 
         // Every check runs and every failing one is reported together: a plant caught by one
         // check must not hide whether the others (list answers, process state) caught it too.
@@ -134,6 +137,20 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         // was sent by both tenants back to back, not only the first one.
         CheckAtLeast(report.EnumValuesAttacked.Count, "g1.enumValuesAttacked");
         CheckAtLeast(report.EnumVariantPairs, "g1.enumVariantWritePairs");
+        // The Arabic side of every session (critic p04 round 4): tenant A attacks and tenant B
+        // uses the app in Arabic with Arabic-Indic digits too, and both stayed Arabic throughout.
+        Check(report.ArabicBlindSpots.Count == 0, "The Arabic sessions may have been blind:\n" + string.Join("\n", report.ArabicBlindSpots));
+        CheckAtLeast(report.ArabicAttackRequests, "g1.arabicAttackRequests");
+        CheckAtLeast(report.VictimArabicRequests, "g1.victimArabicRequests");
+        CheckAtLeast(report.ArabicWritePairs, "g1.arabicWritePairs");
+        // A write of a record every company shares, refused by design to the Arabic administrator
+        // (limited to one branch in the gate seed), is made in Arabic by an administrator who works
+        // in every company and branch, and every such write succeeded (p04 round 7, after p02
+        // round 7's workspace-wide guard): its success path ran in Arabic for both tenants.
+        Check(report.ArabicWorkspaceWrites == report.ArabicWorkspaceRefusals,
+            $"Of {report.ArabicWorkspaceRefusals} writes refused to the branch-limited Arabic administrator because they need the whole workspace, " +
+            $"only {report.ArabicWorkspaceWrites} succeeded for the workspace-wide Arabic administrator");
+        CheckAtLeast(report.ArabicWorkspaceWrites, "g1.arabicWorkspaceWideWrites");
         Check(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
         CheckAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
         Check(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
@@ -201,13 +218,31 @@ public static partial class IsolationAttack
         var (stateRoots, productAssemblies) = ProcessState.LiveRoots(Env.Factory);
         var stateBefore = ReachableState.Fingerprint(stateRoots, productAssemblies);
 
+        // The administrator first, its bearer token second and the anonymous caller last (the
+        // phases below pick them by position). The Arabic side (critic p04 round 4): an
+        // administrator and an anonymous caller whose every request runs in Arabic (with
+        // Arabic-Indic digits), so the Arabic branch of every handler is attacked too.
         var attackers = new List<Attacker>
         {
             new("tenant A administrator (cookie)", () => Env.SignInAsync(Env.Email(a, "admin"))),
             new("tenant A administrator (bearer)", () => Env.SignInWithTokenAsync(Env.Email(a, "admin"))),
+            new("tenant A administrator in Arabic (cookie)", () => ArabicSession.SignInAsync(Env, a), arabic: true),
             new("tenant A user without roles", () => Env.SignInAsync(Env.Email(a, "noaccess"))),
-            new("anonymous", () => Task.FromResult(Env.CreateClient())),
+            new("anonymous in Arabic", () => Task.FromResult(ArabicSession.Anonymous(Env)), anonymous: true, arabic: true),
+            new("anonymous", () => Task.FromResult(Env.CreateClient()), anonymous: true),
         };
+        var arabicAdmin = attackers.Single(x => x.Arabic && !x.Anonymous);
+        var arabicAnonymous = attackers.Single(x => x.Arabic && x.Anonymous);
+        var arabicBlind = new List<string>();
+        async Task KeepArabicAsync(string phase)
+        {
+            await arabicAdmin.KeepArabicAsync();
+            await activity.EnsureArabicAsync(phase);
+            if (!await ArabicSession.IsArabicAsync(arabicAdmin.Client))
+            {
+                arabicBlind.Add($"{phase}: {arabicAdmin.Name} no longer answers in Arabic with Arabic-Indic digits");
+            }
+        }
         foreach (var attacker in attackers)
         {
             await attacker.ConnectAsync();
@@ -218,7 +253,8 @@ public static partial class IsolationAttack
         var clock = System.Diagnostics.Stopwatch.StartNew();
         void Phase(string name)
         {
-            phases.Add($"{name}: {state.Requests} requests so far, {clock.Elapsed.TotalSeconds:F1} s");
+            phases.Add($"{name}: {state.Requests} requests so far ({attackers.Where(x => x.Arabic).Sum(x => x.Requests)} by tenant A's Arabic sessions; " +
+                       $"tenant B {activity.Requests}, {activity.ArabicRequests} in Arabic), {clock.Elapsed.TotalSeconds:F1} s");
         }
 
         var victimRouteValues = victim.IdsByTable.Values.SelectMany(ids => ids.Take(VictimIdsPerTable))
@@ -263,6 +299,21 @@ public static partial class IsolationAttack
                 {
                     foreach (var attacker in attackers)
                     {
+                        // The anonymous Arabic caller reaches a permissioned handler's Arabic
+                        // refusal only, which is the same for every value: sent once per endpoint.
+                        if (attacker == arabicAnonymous && !endpoint.IsAnonymous && (variant != Variant.Plain || path != paths[0]))
+                        {
+                            continue;
+                        }
+                        // The Arabic sessions send every path plainly. Tenant-switch headers and
+                        // query names are about where the tenant comes from, not the language: the
+                        // English sessions send them here and the switch phase (1b) sends every one
+                        // the app reads, so the Arabic copies only cost processor time (the verify
+                        // budget, verify.cpuSeconds).
+                        if (attacker.Arabic && variant != Variant.Plain)
+                        {
+                            continue;
+                        }
                         batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
@@ -274,6 +325,10 @@ public static partial class IsolationAttack
                 await state.SendAsync(item.Attacker, endpoint, request, item.Label);
             });
             attacked.Add(endpoint.Key);
+            if (endpoint.Method != "GET")
+            {
+                await KeepArabicAsync($"after A attacked {endpoint.Key}");
+            }
             await activity.TouchAsync(endpoint, victim, "tenant B reads right after A attacked this endpoint");
             if (endpoint.Method != "GET")
             {
@@ -383,12 +438,26 @@ public static partial class IsolationAttack
             var basePath = endpoint.Path(_ => ownRoute);
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var get = endpoint.Method == "GET";
+            // The Arabic side: every GET once more in Arabic (the administrator, and the anonymous
+            // caller where it reaches the handler), with a cross-section of tenant B's values in
+            // every parameter (TenantActivity.ArabicValuesFor), each compared with a value that
+            // exists nowhere like the English attack.
+            var arabicReachable = !get ? [] : !endpoint.IsAnonymous ? new[] { arabicAdmin } : [arabicAdmin, arabicAnonymous];
 
             foreach (var (parameter, parameterValues) in queries)
             {
                 foreach (var value in parameterValues)
                 {
                     foreach (var attacker in reachable)
+                    {
+                        var n = counter++;
+                        string UriFor(string v) => basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(v);
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n)));
+                    }
+                }
+                foreach (var value in TenantActivity.ArabicValuesFor(parameter, values, published: false))
+                {
+                    foreach (var attacker in arabicReachable)
                     {
                         var n = counter++;
                         string UriFor(string v) => basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(v);
@@ -410,6 +479,20 @@ public static partial class IsolationAttack
                 foreach (var value in routeValues)
                 {
                     foreach (var attacker in reachable)
+                    {
+                        var n = counter++;
+                        string UriFor(string v) => endpoint.Path(name => name == routeParameter ? v : ownRoute);
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n)));
+                    }
+                }
+                // Every route value tenant B used itself was already sent in Arabic in every route
+                // (phase 1); here the sampled ids, each with its control value.
+                var arabicRouteValues = catchAll || documentedRoute.Format != "uuid"
+                    ? values.Probe
+                    : values.IdSample.Select(i => i.ToString()).ToList();
+                foreach (var value in arabicRouteValues)
+                {
+                    foreach (var attacker in arabicReachable)
                     {
                         var n = counter++;
                         string UriFor(string v) => endpoint.Path(name => name == routeParameter ? v : ownRoute);
@@ -524,6 +607,9 @@ public static partial class IsolationAttack
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
             listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
             listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
+            // The same in Arabic with Arabic-Indic digits, both ways.
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged"));
         }
         Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 
@@ -653,6 +739,11 @@ public static partial class IsolationAttack
             .Where(k => environmentBefore.GetValueOrDefault(k) != environmentAfter.GetValueOrDefault(k))
             .Select(k => $"environment variable {k} changed during the attack").ToList();
 
+        await KeepArabicAsync("after the attack");
+        if (!(await arabicAnonymous.Client.GetStringAsync("/api/auth/session")).Contains("\"authenticated\":false", StringComparison.Ordinal))
+        {
+            arabicBlind.Add($"after the attack: {arabicAnonymous.Name} is signed in");
+        }
         foreach (var attacker in attackers)
         {
             attacker.Client.Dispose();
@@ -664,6 +755,12 @@ public static partial class IsolationAttack
             WritePairEndpoints = pairs.Endpoints,
             EnumVariantPairs = pairs.VariantPairs,
             EnumValuesAttacked = pairs.EnumValuesAttacked ?? [],
+            ArabicAttackRequests = attackers.Where(x => x.Arabic).Sum(x => x.Requests) + pairs.ArabicRequests,
+            VictimArabicRequests = activity.ArabicRequests,
+            ArabicWritePairs = pairs.ArabicPairs,
+            ArabicWorkspaceRefusals = activity.ArabicWorkspaceRefusals + pairs.ArabicWorkspaceRefusals,
+            ArabicWorkspaceWrites = activity.ArabicWorkspaceWrites + pairs.ArabicWorkspaceWrites,
+            ArabicBlindSpots = arabicBlind,
             AttackerUnsuccessfulWrites = pairs.AttackerUnsuccessfulWrites,
             WritePairBlindSpots = pairs.BlindSpots,
             Oracles = state.Oracles,
@@ -722,7 +819,8 @@ public static partial class IsolationAttack
             .ToDictionary(e => (string)e.Key, e => e.Value as string, StringComparer.Ordinal);
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
-        IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null);
+        IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null,
+        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0);
 
     /// <summary>
     /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
@@ -747,6 +845,10 @@ public static partial class IsolationAttack
         attacker.Watch(new MarkerSet(victimNow, values));
         var pairs = 0;
         var variantPairs = 0;
+        var arabicPairs = 0;
+        var arabicRequests = 0;
+        var workspaceRefusals = 0;
+        var workspaceWrites = 0;
         var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
         var writes = victimActivity.Writes;
@@ -754,13 +856,32 @@ public static partial class IsolationAttack
         {
             foreach (var endpoint in writes)
             {
-                foreach (var bearer in new[] { false, true })
+                // Cookie, bearer token, and the Arabic session (every request in Arabic with
+                // Arabic-Indic digits) on both sides: tenant B's Arabic write right before tenant
+                // A's Arabic write runs the Arabic branch of the handler for both back to back.
+                foreach (var (bearer, arabic) in Writers)
                 {
-                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, "tenant B writes right before A's write");
-                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({(bearer ? "bearer" : "cookie")})", bearer);
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write{(arabic ? " (in Arabic)" : "")}", arabic: arabic);
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({WriterName(bearer, arabic)})", bearer, arabic: arabic);
                     if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
                     {
                         pairs++;
+                        if (arabic)
+                        {
+                            arabicPairs++;
+                        }
+                    }
+                }
+                // In Arabic once more, every enumerated field at its last documented value (for the
+                // shell's own preferences: Arabic with Arabic-Indic digits).
+                if (victimActivity.LastValues(endpoint) is { } last)
+                {
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right before A's write ({last}, in Arabic)", variant: last, arabic: true);
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's write ({last}, {WriterName(false, true)})", variant: last, arabic: true);
+                    if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                    {
+                        pairs++;
+                        arabicPairs++;
                     }
                 }
                 foreach (var variant in victimActivity.VariantsOf(endpoint))
@@ -788,6 +909,9 @@ public static partial class IsolationAttack
                         enumValues.Add($"{endpoint.Key} {leaf.Name}={variant.Value!.ToJsonString()}");
                     }
                 }
+                // An Arabic session's own preferences write (a variant) may have left it in English.
+                await victimActivity.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
+                await attacker.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
                 if (victimActivity.VariantsOf(endpoint).Count > 0)
                 {
                     // What the variants left in either tenant's records, read by the other.
@@ -801,6 +925,9 @@ public static partial class IsolationAttack
                 await attacker.WriteOneAsync(endpoint, ownA, "tenant A writes before B reads", variant: attacker.FirstValues(endpoint));
                 await victimActivity.ReadRoundAsync(victimNow, $"tenant B reads after A's {endpoint.Key}");
             }
+            arabicRequests = attacker.ArabicRequests;
+            workspaceRefusals = attacker.ArabicWorkspaceRefusals;
+            workspaceWrites = attacker.ArabicWorkspaceWrites;
         }
         finally
         {
@@ -811,8 +938,18 @@ public static partial class IsolationAttack
         {
             blind.Add("no write pair succeeded on both sides");
         }
-        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList());
+        if (writes.Count > 0 && arabicPairs == 0)
+        {
+            blind.Add("no write pair in Arabic succeeded on both sides");
+        }
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites);
     }
+
+    /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the
+    /// Arabic administrator (<see cref="ArabicSession"/>).</summary>
+    private static readonly (bool Bearer, bool Arabic)[] Writers = [(false, false), (true, false), (false, true)];
+
+    private static string WriterName(bool bearer, bool arabic) => arabic ? "in Arabic, cookie" : bearer ? "bearer" : "cookie";
 
     /// <summary>Header names never used as a tenant switch probe: they carry the attacker's own
     /// credentials or frame the request itself.</summary>
@@ -1209,9 +1346,10 @@ public static partial class IsolationAttack
             using var response = await attacker.Client.SendAsync(request);
             var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
+            attacker.Count();
             var status = (int)response.StatusCode;
             Judge(attacker, endpoint, label, status, text, ResponseHeaders.Text(response), sent ?? []);
-            if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
+            if (endpoint.Name == "auth.signOut" && !attacker.Anonymous)
             {
                 await attacker.ConnectAsync();
             }
@@ -1224,8 +1362,9 @@ public static partial class IsolationAttack
             using var response = await attacker.Client.SendAsync(request);
             var text = await response.Content.ReadAsStringAsync();
             Interlocked.Increment(ref _requests);
+            attacker.Count();
             var answer = ((int)response.StatusCode, text, ResponseHeaders.Text(response));
-            if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
+            if (endpoint.Name == "auth.signOut" && !attacker.Anonymous)
             {
                 await attacker.ConnectAsync();
             }
@@ -1342,8 +1481,9 @@ public static partial class IsolationAttack
             }
             using var response = await attacker.Client.SendAsync(request);
             Interlocked.Increment(ref _requests);
+            attacker.Count();
             var text = await ResponseText.ReadAsync(response);
-            if (endpoint.Name == "auth.signOut" && attacker.Name != "anonymous")
+            if (endpoint.Name == "auth.signOut" && !attacker.Anonymous)
             {
                 await attacker.ConnectAsync();
             }
@@ -1514,15 +1654,38 @@ public static partial class IsolationAttack
         private static string Short(string value, int max) => value.Length <= max ? value : value[..max] + "…";
     }
 
-    private sealed class Attacker(string name, Func<Task<HttpClient>> connect)
+    private sealed class Attacker(string name, Func<Task<HttpClient>> connect, bool anonymous = false, bool arabic = false)
     {
         public string Name { get; } = name;
         public HttpClient Client { get; private set; } = null!;
+
+        /// <summary>Not signed in: signing out leaves it as it was.</summary>
+        public bool Anonymous { get; } = anonymous;
+
+        /// <summary>Every request runs in Arabic with Arabic-Indic digits (<see cref="ArabicSession"/>).</summary>
+        public bool Arabic { get; } = arabic;
+
+        private int _requests;
+
+        /// <summary>Requests this attacker sent.</summary>
+        public int Requests => _requests;
+
+        public void Count() => Interlocked.Increment(ref _requests);
 
         public async Task ConnectAsync()
         {
             Client?.Dispose();
             Client = await connect();
+        }
+
+        /// <summary>A signed-in Arabic attacker's own write (its preferences, through the attack's
+        /// valid bodies) may have changed its language or digits: they are set back.</summary>
+        public async Task KeepArabicAsync()
+        {
+            if (Arabic && !Anonymous)
+            {
+                await ArabicSession.PrepareAsync(Client);
+            }
         }
     }
 }
@@ -1638,6 +1801,26 @@ public sealed record IsolationReport(
     /// <summary>Write pairs (both tenants succeeding) sent with a variant of the body: one
     /// documented value of an enumerated field, the same in both tenants' bodies.</summary>
     public int EnumVariantPairs { get; init; }
+
+    /// <summary>Requests tenant A's Arabic sessions (administrator and anonymous) sent, every one
+    /// of them in Arabic with Arabic-Indic digits.</summary>
+    public int ArabicAttackRequests { get; init; }
+
+    /// <summary>Requests tenant B's Arabic administrator sent.</summary>
+    public int VictimArabicRequests { get; init; }
+
+    /// <summary>Write pairs in which both tenants wrote in Arabic.</summary>
+    public int ArabicWritePairs { get; init; }
+
+    /// <summary>Writes refused to the branch-limited Arabic administrator because they need the
+    /// whole workspace (both tenants), each made once more by the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceRefusals { get; init; }
+
+    /// <summary>Those writes that succeeded for the workspace-wide Arabic administrator.</summary>
+    public int ArabicWorkspaceWrites { get; init; }
+
+    /// <summary>Moments an Arabic session no longer answered in Arabic with Arabic-Indic digits.</summary>
+    public IReadOnlyList<string> ArabicBlindSpots { get; init; } = [];
 
     /// <summary>Endpoint, field and documented value, for every value both tenants sent back to back.</summary>
     public IReadOnlyList<string> EnumValuesAttacked { get; init; } = [];

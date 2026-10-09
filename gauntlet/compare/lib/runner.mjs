@@ -176,6 +176,7 @@ export async function runTask(taskId, productId, opts = {}) {
     start_state: primary.start_state,
     status: primary.status,
     error: primary.error,
+    ...(primary.error_page ? { error_page: primary.error_page } : {}),
     verification: primary.verification,
     steps: primary.steps,
     waits: primary.waits,
@@ -196,7 +197,10 @@ export async function runTask(taskId, productId, opts = {}) {
     }
     const verified = executions.filter(e => e.status === 'verified');
     result.status = verified.length === executions.length ? 'verified' : executions.find(e => e.status !== 'verified').status;
-    if (result.status !== 'verified') result.error = executions.filter(e => e.status !== 'verified').map(e => `${e.id}: ${e.status} ${e.error || ''}`.trim()).join('\n');
+    if (result.status !== 'verified') {
+      result.error = executions.filter(e => e.status !== 'verified').map(e => `${e.id}: ${e.status} ${e.error || ''}`.trim()).join('\n');
+      result.error_page = Object.fromEntries(executions.filter(e => e.error_page).map(e => [e.id, e.error_page]));
+    }
     result.counts = { ...primary.counts };
     result.best_path_per_metric = {};
     for (const m of METRICS) {
@@ -211,7 +215,7 @@ export async function runTask(taskId, productId, opts = {}) {
     }
     // Ours: the counts are the shown path's own, all of them (whole path).
     if (productId !== REFERENCE_PRODUCT) result.counts_path = primary.id;
-    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
+    result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
       verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
       screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
@@ -587,6 +591,10 @@ export async function execute(task, driver, product, productId, needles, out, op
     } else {
       run.status = 'error';
       run.error = String(err?.stack || err).split('\n').slice(0, 6).join('\n');
+      // What the page showed when the run failed (set-up included, where no screenshot is taken):
+      // its address, the focused field, whether a working screen was up, and every message on it.
+      // An intermittent failure is then diagnosable from the result alone (critic p04 round 4).
+      if (page) run.error_page = await describePage(page).catch(e => ({ unreadable: String(e?.message || e).split('\n')[0] }));
       if (op && page) await op.shot('error').catch(() => {});
       run.failure_capture = await captureFailure(page, context, out, !op);
     }
@@ -619,6 +627,28 @@ export async function execute(task, driver, product, productId, needles, out, op
     run.screenshots = op.shots.map(({ measured, ...s }) => ({ ...s, path: rel(path.join(out.shotsDir, s.file)) }));
   }
   return run;
+}
+
+/** The page as a failed run left it (read-only, runner's own code; never part of a measurement). */
+async function describePage(page) {
+  const late = new Promise((_, reject) => setTimeout(() => reject(new Error('the page did not answer within 5 s')), 5_000).unref());
+  return Promise.race([late, page.evaluate(() => {
+    const text = el => (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+    const focused = document.activeElement;
+    return {
+      url: location.pathname + location.search,
+      ready_state: document.readyState,
+      title: document.title,
+      focused: focused && focused !== document.body
+        ? { tag: focused.tagName.toLowerCase(), name: focused.getAttribute('name'), type: focused.getAttribute('type'), label: focused.getAttribute('aria-label') }
+        : null,
+      navigation: !!document.querySelector('nav'),
+      busy: [...document.querySelectorAll('[aria-busy="true"]')].map(text).filter(Boolean),
+      messages: [...document.querySelectorAll('[role="alert"], [role="status"], .field-error, [aria-invalid="true"]')]
+        .map(el => el.getAttribute('aria-invalid') === 'true' ? `invalid field ${el.getAttribute('name') || el.tagName.toLowerCase()}` : text(el))
+        .filter(Boolean).slice(0, 10),
+    };
+  })]);
 }
 
 /** The requests a page still had under way (method, path, kind), for the result. */

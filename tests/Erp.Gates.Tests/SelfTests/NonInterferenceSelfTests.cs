@@ -42,6 +42,16 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/script", StringComparison.Ordinal) && !f.Contains("language=\"ar\"", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/digits", StringComparison.Ordinal) && !f.Contains("numerals=\"arab\"", StringComparison.Ordinal));
         Assert.True(result.WriteVariants > 0, "no write was compared with a documented value other than the default");
+        // Reads in Arabic (critic p04 round 4, "language=ar"): a number handed on between callers
+        // whose request runs in Arabic (bug 48), and the previous Arabic caller's e-mail (bug 47).
+        // English sessions reach neither.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A in Arabic", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/greeting-count", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B in Arabic", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/greeting-count", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Contains("in Arabic", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/greeting ", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/greeting", StringComparison.Ordinal) && !f.StartsWith("tenant A in Arabic", StringComparison.Ordinal) &&
+                                                     !f.StartsWith("tenant B in Arabic", StringComparison.Ordinal));
+        Assert.True(result.ArabicComparisons > 0, "no request was compared in Arabic");
+        Assert.True(result.ArabicWriteComparisons > 0, "no write was compared in Arabic");
         // Nothing outside the planted module interferes, and the check was not blind.
         Assert.DoesNotContain(result.Findings, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(result.BlindSpots);

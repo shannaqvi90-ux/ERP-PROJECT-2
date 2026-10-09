@@ -46,7 +46,11 @@ public static partial class NonInterference
         int Endpoints,
         int WriteComparisons = 0,
         int WriteEndpoints = 0,
-        int WriteVariants = 0);
+        int WriteVariants = 0,
+        int ArabicComparisons = 0,
+        int ArabicAnswers = 0,
+        int ArabicWriteComparisons = 0,
+        int ArabicWorkspaceWriteComparisons = 0);
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
@@ -94,10 +98,12 @@ public static partial class NonInterference
 
         var uris = RequestsFor(endpoints, openApi, catalog, ownA, ownB, textsA, textsB, a.Code, b.Code);
         var state = new State();
+        var englishA = new Dictionary<string, string?>(StringComparer.Ordinal);
         foreach (var (endpoint, uri) in uris)
         {
             var judgedA = await JudgeAsync(state, uri, "tenant A", sharedA, freshA, "tenant B", sharedB);
             var judgedB = await JudgeAsync(state, uri, "tenant B", sharedB, freshB, "tenant A", sharedA);
+            englishA[uri] = judgedA;
             state.Endpoints.Add(endpoint.Key);
             if (judgedA is { } answerA && judgedB is { } answerB && answerA != answerB)
             {
@@ -105,11 +111,54 @@ public static partial class NonInterference
             }
         }
 
-        // Writes: what a write answers may not depend on the other tenant's same write either,
-        // for every documented value of every enumerated field of its body.
-        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB);
-
+        // The Arabic side (critic p04 round 4): the request language is the signed-in user's, so
+        // the comparisons above only ever ran the English branch of every handler. Every request
+        // once more from each tenant's Arabic administrator (Arabic, Arabic-Indic digits), in the
+        // shared process right after the other tenant's Arabic administrator sent it, against a
+        // fresh process only the judged tenant has used. Answers in Arabic (more Arabic letters
+        // than the English administrator's answer to the same request) prove the Arabic branch ran.
         var blind = new List<string>();
+        using var arabicA = await ArabicSession.SignInWithTokenAsync(env, a);
+        using var arabicB = await ArabicSession.SignInWithTokenAsync(env, b);
+        using var freshArabicA = FreshClient(freshProcessA, arabicA);
+        using var freshArabicB = FreshClient(freshProcessB, arabicB);
+        foreach (var (endpoint, uri) in uris)
+        {
+            var before = state.Comparisons;
+            var judgedA = await JudgeAsync(state, uri, "tenant A in Arabic", arabicA, freshArabicA, "tenant B in Arabic", arabicB);
+            await JudgeAsync(state, uri, "tenant B in Arabic", arabicB, freshArabicB, "tenant A in Arabic", arabicA);
+            state.ArabicComparisons += state.Comparisons - before;
+            if (judgedA is { } arabic && englishA.GetValueOrDefault(uri) is { } english && ArabicSession.ArabicLetters(arabic) > ArabicSession.ArabicLetters(english))
+            {
+                state.ArabicAnswers++;
+            }
+        }
+
+        // Writes: what a write answers may not depend on the other tenant's same write either,
+        // for every documented value of every enumerated field of its body, and in Arabic.
+        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB, arabicA, arabicB, freshArabicA, freshArabicB, freshProcessA, freshProcessB);
+        blind.AddRange(state.WorkspaceWideFailures);
+
+        foreach (var (name, client) in new[] { ("tenant A's Arabic administrator", arabicA), ("tenant B's Arabic administrator", arabicB),
+                     ("tenant A's Arabic administrator (fresh process)", freshArabicA), ("tenant B's Arabic administrator (fresh process)", freshArabicB) })
+        {
+            if (!await ArabicSession.IsArabicAsync(client))
+            {
+                blind.Add($"{name} no longer answers in Arabic with Arabic-Indic digits");
+            }
+        }
+        if (state.ArabicComparisons == 0)
+        {
+            blind.Add("no request was compared in Arabic");
+        }
+        if (state.ArabicAnswers == 0)
+        {
+            blind.Add("no answer to an Arabic session was more Arabic than the English one, so the Arabic branch may never have run");
+        }
+        if (state.ArabicWriteComparisons == 0)
+        {
+            blind.Add("no write was compared in Arabic");
+        }
         if (state.WriteComparisons == 0)
         {
             blind.Add("no write was compared");
@@ -135,7 +184,8 @@ public static partial class NonInterference
             blind.Add("no request had different true answers in the two tenants, so no interference could show");
         }
         return new Result(state.Findings, state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count,
-            state.WriteComparisons, state.WriteEndpoints.Count, state.WriteVariants.Count);
+            state.WriteComparisons, state.WriteEndpoints.Count, state.WriteVariants.Count, state.ArabicComparisons, state.ArabicAnswers, state.ArabicWriteComparisons,
+            state.ArabicWorkspaceWriteComparisons);
     }
 
     /// <summary>
@@ -151,12 +201,38 @@ public static partial class NonInterference
     /// times and trace ids.
     /// </summary>
     private static async Task CompareWritesAsync(ErpTestEnvironment env, State state, IReadOnlyList<ApiEndpoint> allEndpoints, OpenApiDocument openApi,
-        HttpClient sharedA, HttpClient sharedB, HttpClient freshA, HttpClient freshB)
+        HttpClient sharedA, HttpClient sharedB, HttpClient freshA, HttpClient freshB,
+        HttpClient arabicA, HttpClient arabicB, HttpClient freshArabicA, HttpClient freshArabicB, ErpAppFactory freshProcessA, ErpAppFactory freshProcessB)
     {
         var a = env.TenantA;
         var b = env.TenantB;
         var activityA = await TenantActivity.StartAsync(env, a, allEndpoints, openApi);
         var activityB = await TenantActivity.StartAsync(env, b, allEndpoints, openApi);
+        // The Arabic administrators work in one branch of a company only (gate seed), so a write of
+        // a record every company shares is refused to both alike, and comparing two refusals never
+        // runs the Arabic branch of its success path. Such a write is compared once more between
+        // the two tenants' workspace-wide Arabic administrators (p04 round 7), created when needed.
+        var wideClients = new List<HttpClient>();
+        WriteSide[]? wideSides = null;
+        async Task<WriteSide[]> WideSidesAsync(TenantSnapshot ownA, TenantSnapshot ownB)
+        {
+            if (wideSides is not null) return wideSides;
+            var emailA = await activityA.ArabicWorkspaceEmailAsync();
+            var emailB = await activityB.ArabicWorkspaceEmailAsync();
+            var wideA = await ArabicSession.SignInWorkspaceWideAsync(env, emailA, bearer: true);
+            wideClients.Add(wideA);
+            var wideB = await ArabicSession.SignInWorkspaceWideAsync(env, emailB, bearer: true);
+            wideClients.Add(wideB);
+            var freshWideA = FreshClient(freshProcessA, wideA);
+            wideClients.Add(freshWideA);
+            var freshWideB = FreshClient(freshProcessB, wideB);
+            wideClients.Add(freshWideB);
+            return wideSides =
+            [
+                new WriteSide("tenant A's workspace-wide administrator in Arabic", activityA, ownA, wideA, freshWideA, emailA.Split('@')[0]),
+                new WriteSide("tenant B's workspace-wide administrator in Arabic", activityB, ownB, wideB, freshWideB, emailB.Split('@')[0]),
+            ];
+        }
         try
         {
             var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
@@ -165,6 +241,11 @@ public static partial class NonInterference
             {
                 new WriteSide("tenant A", activityA, ownA, sharedA, freshA),
                 new WriteSide("tenant B", activityB, ownB, sharedB, freshB),
+            };
+            var arabicSides = new[]
+            {
+                new WriteSide("tenant A in Arabic", activityA, ownA, arabicA, freshArabicA, ArabicSession.Local),
+                new WriteSide("tenant B in Arabic", activityB, ownB, arabicB, freshArabicB, ArabicSession.Local),
             };
             foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
             {
@@ -182,30 +263,70 @@ public static partial class NonInterference
                         state.WriteVariants.Add($"{endpoint.Key}|{variant.Label}");
                     }
                 }
+                // The same write by both Arabic administrators, every enumerated field at its last
+                // documented value (for the shell's own preferences: Arabic with Arabic-Indic
+                // digits, which keeps the sessions Arabic).
+                var last = activityA.LastValues(endpoint);
+                var refusedWholeWorkspace = false;
+                foreach (var (judged, other) in new[] { (arabicSides[0], arabicSides[1]), (arabicSides[1], arabicSides[0]) })
+                {
+                    var before = state.WriteComparisons;
+                    var truth = await JudgeWriteAsync(state, endpoint, last, judged, other);
+                    state.ArabicWriteComparisons += state.WriteComparisons - before;
+                    refusedWholeWorkspace |= IsWorkspaceRefusal(truth);
+                }
+                if (refusedWholeWorkspace)
+                {
+                    var wide = await WideSidesAsync(ownA, ownB);
+                    foreach (var (judged, other) in new[] { (wide[0], wide[1]), (wide[1], wide[0]) })
+                    {
+                        var before = state.WriteComparisons;
+                        var truth = await JudgeWriteAsync(state, endpoint, last, judged, other);
+                        state.ArabicWriteComparisons += state.WriteComparisons - before;
+                        state.ArabicWorkspaceWriteComparisons += state.WriteComparisons - before;
+                        if (StatusOf(truth) is < 200 or >= 300)
+                        {
+                            state.WorkspaceWideFailures.Add($"{judged.Name}: {endpoint.Method} {endpoint.Pattern} answered {Short(truth)}, so the success path of a write every company shares was not compared in Arabic");
+                        }
+                    }
+                }
+                await ArabicSession.PrepareAsync(arabicA);
+                await ArabicSession.PrepareAsync(arabicB);
+                await ArabicSession.PrepareAsync(freshArabicA);
+                await ArabicSession.PrepareAsync(freshArabicB);
             }
         }
         finally
         {
+            wideClients.ForEach(c => c.Dispose());
             activityA.Dispose();
             activityB.Dispose();
         }
     }
 
-    private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh);
+    /// <summary>The status of a judged write answer (<c>"{status} {body}"</c>).</summary>
+    private static int StatusOf(string answer) => int.TryParse(answer.Split(' ', 2)[0], out var status) ? status : 0;
+
+    /// <summary>Whether a judged write answer is a refusal for want of the whole workspace.</summary>
+    private static bool IsWorkspaceRefusal(string answer) =>
+        ArabicSession.IsWorkspaceRefusal(StatusOf(answer), answer.Split(' ', 2) is [_, var body] ? body : "");
+
+    private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh, string Owner = "admin");
 
     /// <summary>Writes whose true answer is the same each time the same caller makes them: every
     /// write on an existing record (creates and deletes answer a new record each time).</summary>
     internal static bool ComparableWrite(ApiEndpoint endpoint) =>
         endpoint.Method is "PUT" or "PATCH" || (endpoint.Method == "POST" && endpoint.RouteParameters.Count > 0);
 
-    private static async Task JudgeWriteAsync(State state, ApiEndpoint endpoint, WriteVariant? variant, WriteSide judged, WriteSide other)
+    /// <returns>The judged side's true answer (fresh process), <c>"{status} {body}"</c>.</returns>
+    private static async Task<string> JudgeWriteAsync(State state, ApiEndpoint endpoint, WriteVariant? variant, WriteSide judged, WriteSide other)
     {
         var label = $"{endpoint.Method} {endpoint.Pattern}{(variant is null ? "" : $" ({variant})")}";
         async Task<string> WriteAsync(WriteSide side, bool fresh)
         {
             state.Requests++;
             var (status, text) = await side.Activity.WriteThroughAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
-                endpoint, side.Own, $"write comparison, {label}", variant);
+                endpoint, side.Own, $"write comparison, {label}", variant, side.Owner);
             return $"{status} {NormalizeWrite(text)}";
         }
 
@@ -216,14 +337,14 @@ public static partial class NonInterference
         state.WriteComparisons++;
         if (answer == truth)
         {
-            return;
+            return truth;
         }
         var truthAgain = await WriteAsync(judged, fresh: true);
         if (truthAgain != truth)
         {
             state.UnstableWrites++;
             state.Unstable.Add($"{judged.Name}: {label} answers differently from one write to the next ({Short(truth)} / {Short(truthAgain)})");
-            return;
+            return truth;
         }
         await WriteAsync(other, fresh: false);
         var answerAgain = await WriteAsync(judged, fresh: false);
@@ -231,10 +352,11 @@ public static partial class NonInterference
         {
             state.UnstableWrites++;
             state.Unstable.Add($"{judged.Name}: {label} differed once in the shared process ({Short(answer)}), then matched");
-            return;
+            return truth;
         }
         state.Findings.Add($"{judged.Name}: {label} is answered {Short(answerAgain)} in the shared process right after {other.Name} made the same write, " +
                            $"but {Short(truth)} by a fresh process only {judged.Name} has used");
+        return truth;
     }
 
     /// <summary><see cref="Normalize"/>, and every <c>version</c> field (a row's concurrency
@@ -287,6 +409,11 @@ public static partial class NonInterference
         public int Discriminating;
         public int WriteComparisons;
         public int UnstableWrites;
+        public int ArabicComparisons;
+        public int ArabicAnswers;
+        public int ArabicWriteComparisons;
+        public int ArabicWorkspaceWriteComparisons;
+        public List<string> WorkspaceWideFailures { get; } = [];
     }
 
     /// <summary>One comparison. Returns the judged tenant's true (fresh-process) answer when it is
@@ -361,6 +488,10 @@ public static partial class NonInterference
     {
         var client = process.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
         client.DefaultRequestHeaders.Authorization = signedIn.DefaultRequestHeaders.Authorization;
+        foreach (var language in signedIn.DefaultRequestHeaders.AcceptLanguage)
+        {
+            client.DefaultRequestHeaders.AcceptLanguage.Add(language);
+        }
         return client;
     }
 

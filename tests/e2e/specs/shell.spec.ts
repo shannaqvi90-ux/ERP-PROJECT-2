@@ -182,6 +182,42 @@ test.describe("app shell", () => {
     await expect(page.getByRole("region", { name: "Details" })).toContainText(users.viewer);
   });
 
+  test("the palette opens a role by its Arabic name, and a company and a branch by code (keyboard only)", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await expect(page.locator("main h1")).toBeVisible();
+    const palette = page.locator('[role="dialog"].palette');
+    // The record under its source's heading (the company's code also offers "work in" lines).
+    const pick = async (query: string, source: string, name: RegExp) => {
+      await page.keyboard.press("Control+K");
+      await expect(palette).toBeVisible();
+      await page.keyboard.type(query);
+      const option = palette.getByRole("group", { name: source, exact: true }).getByRole("option", { name }).first();
+      await expect(option).toBeVisible();
+      for (let i = 0; i < 20 && (await option.getAttribute("aria-selected")) !== "true"; i++) await page.keyboard.press("ArrowDown");
+      await expect(option).toHaveAttribute("aria-selected", "true");
+      await page.keyboard.press("Enter");
+      await expect(palette).toBeHidden();
+    };
+    // A role, by its Arabic name: the roles list narrowed to it, the role open beside it.
+    await pick("قراءة فقط", "الأدوار", /^قراءة فقط/);
+    await expect(page).toHaveURL(/\/identity\/roles\/[0-9a-f-]{36}\?q=/);
+    await expect(page.locator("main h1")).toHaveText("الأدوار");
+    await expect(page.locator('input[name="nameAr"]')).toHaveValue("قراءة فقط");
+    // A company, by its code: the Arabic legal name, the code beside it.
+    await pick("ALN-DXB", "الشركات", /شركة النور للتجارة/);
+    await expect(page).toHaveURL(/\/tenancy\/companies\/[0-9a-f-]{36}\?q=ALN-DXB$/);
+    await expect(page.locator(".list-row")).toHaveCount(1);
+    await expect(page.locator(".list-row").first()).toContainText("ALN-DXB");
+    await expect(page.locator('input[name="code"]')).toHaveValue("ALN-DXB");
+    // A branch, by its code.
+    await pick("DEIRA-HQ", "الفروع", /المكتب الرئيسي - ديرة/);
+    await expect(page).toHaveURL(/\/tenancy\/branches\/[0-9a-f-]{36}\?q=DEIRA-HQ$/);
+    await expect(page.locator(".list-row")).toHaveCount(1);
+    await expect(page.locator(".list-row").first()).toContainText("DEIRA-HQ");
+    await expect(page.locator('input[name="code"]')).toHaveValue("DEIRA-HQ");
+  });
+
   test("the palette leads from a few record matches to the list of every match", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
@@ -218,6 +254,34 @@ test.describe("app shell", () => {
       await expect(pane).toBeHidden();
       await expect(page.locator("main h1")).toBeVisible();
       expect(await overflow(), "a screen scrolls sideways").toBeLessThanOrEqual(0);
+    });
+  }
+
+  // Laptop widths, with users who may work in several companies (the top bar then carries the
+  // working company and its quick switches): the shell is exactly the window's width, the top bar
+  // stays one line, and every control at its end is whole and in view.
+  for (const language of ["en", "ar"] as const) {
+    test(`at laptop widths the top bar fits the window (${language})`, async ({ page }) => {
+      await freshStart(page, language);
+      await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+      await expect(page.locator("html")).toHaveAttribute("lang", language);
+      for (const width of [1024, 1280, 1366]) {
+        await page.setViewportSize({ width, height: 768 });
+        await expect(page.locator("main h1")).toBeVisible();
+        await expect(page.locator(".workplace-chip").first()).toBeAttached();
+        const layout = await page.evaluate(() => {
+          const bar = document.querySelector(".topbar")!.getBoundingClientRect();
+          const end = [...document.querySelectorAll(".topbar-end > *")].map((e) => e.getBoundingClientRect());
+          return {
+            overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            barHeight: Math.round(bar.height),
+            endInView: end.every((r) => r.left >= 0 && r.right <= window.innerWidth && r.height <= bar.height),
+          };
+        });
+        expect(layout.overflow, `${width} px scrolls sideways`).toBeLessThanOrEqual(0);
+        expect(layout.barHeight, `${width} px: the top bar wrapped`).toBe(44);
+        expect(layout.endInView, `${width} px: a control at the top bar's end is cut or out of view`).toBe(true);
+      }
     });
   }
 
@@ -376,6 +440,62 @@ test.describe("app shell", () => {
     // Latin text keeps the system font: the bundled font covers Arabic only.
     const latin = await page.evaluate(() => [...document.fonts].filter((f) => f.family.includes("Noto Sans Arabic Variable")).map((f) => f.unicodeRange));
     expect(latin.every((range) => !/U\+0?0?(00|20)-/i.test(range))).toBe(true);
+  });
+
+  test("every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper", async ({ page }) => {
+    // Round-4 critic: rows with an empty cell ("not signed in yet", no roles) looked shifted. The
+    // print layout base gave every table cell in a wrapped screen its own padding and bottom line,
+    // and the field height made checkboxes 30 px tall, so cells overflowed the 28 px row.
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    // Starts in English whatever the administrator's stored language is, and leaves it so.
+    await setPreferences(page, { language: "en" });
+    await page.reload();
+    await expect(navigation(page)).toBeVisible();
+    const problems: string[] = [];
+    try {
+      for (const language of ["en", "ar"] as const) {
+        if (language === "ar") {
+          await page.keyboard.press("Alt+l");
+          await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+        }
+        const nav = navigation(page, language === "ar" ? "التنقل الرئيسي" : "Main navigation");
+        const links = await nav.locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+        let listsChecked = 0;
+        for (const href of links) {
+          await nav.locator(`a[href="${href}"]`).click();
+          await expect(page.locator("main h1")).toBeVisible();
+          if ((await page.locator("main .list-grid").count()) === 0) continue;
+          await expect(page.locator("main .list-row").first()).toBeVisible();
+          for (const media of ["screen", "print"] as const) {
+            await page.emulateMedia({ media });
+            const found = await page.locator("main .list-header, main .list-row").evaluateAll((rows) => {
+              const out: string[] = [];
+              for (const row of rows) {
+                const r = row.getBoundingClientRect();
+                for (const cell of Array.from(row.children)) {
+                  const c = cell.getBoundingClientRect();
+                  const style = getComputedStyle(cell);
+                  const what = `${row.className.split(" ")[0]} "${(row.textContent ?? "").slice(0, 24)}" cell ${(cell as HTMLElement).className}`;
+                  if (c.top < r.top - 0.5 || c.bottom > r.bottom + 0.5) out.push(`${what}: ${c.top.toFixed(1)}-${c.bottom.toFixed(1)} outside the row ${r.top.toFixed(1)}-${r.bottom.toFixed(1)}`);
+                  if (parseFloat(style.borderBlockEndWidth) > 0 || parseFloat(style.borderBlockStartWidth) > 0) out.push(`${what}: a line of its own`);
+                }
+              }
+              return out;
+            });
+            problems.push(...found.slice(0, 5).map((p) => `${href} (${language}, ${media}): ${p}`));
+          }
+          await page.emulateMedia({ media: "screen" });
+          listsChecked++;
+        }
+        expect(listsChecked, `list screens checked (${language})`).toBeGreaterThanOrEqual(5);
+      }
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+      await setPreferences(page, { language: "en" });
+    }
+    expect(problems).toEqual([]);
   });
 
   for (const language of ["en", "ar"] as const) {

@@ -42,7 +42,12 @@ describe("working company switcher", () => {
   it("is contributed to the top bar and the command palette through the shell's extension points", () => {
     const all = collectExtensions({ "../modules/tenancy/extensions.tsx": { extensions } });
     expect(all.topbar.map((i) => [i.key, i.permission])).toEqual([["tenancy.workplace", "tenancy.workplace.read"]]);
-    expect(all.palette.map((i) => [i.key, i.permission])).toEqual([["tenancy.workplace", "tenancy.workplace.switch"]]);
+    // "Work in …" for those who may switch, and the company and branch records for those who may read them.
+    expect(all.palette.map((i) => [i.key, i.permission])).toEqual([
+      ["tenancy.workplace", "tenancy.workplace.switch"],
+      ["tenancy.companies", "tenancy.companies.read"],
+      ["tenancy.branches", "tenancy.branches.read"],
+    ]);
   });
 
   it("shows the working company and branch, and switches by keyboard: Alt+C, type, Enter", async () => {

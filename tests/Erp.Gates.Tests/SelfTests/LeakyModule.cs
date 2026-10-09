@@ -461,6 +461,39 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { language = request.Language, change = mine - previous });
             }).WithName("leaky.script").WithSummary("Planted bug: Arabic answers the change since the previous Arabic caller's directory size.").RequirePermission("leaky.data.update");
 
+            // Bug 47 (critic p04 round 4, the "language=ar" half of plant L1): a read that, only when
+            // the request runs in Arabic (the signed-in user's language), keeps the last Arabic
+            // caller's e-mail in a temporary file and greets the next Arabic caller with it. The
+            // request has no body and no parameter: no value the attack sends reaches the Arabic
+            // branch, only a session whose language is Arabic does. Every session the gates signed
+            // in before was English, so the leak passed every one of them.
+            group.MapGet("/me/greeting", async (ErpDbSession session, ICurrentUser caller, HttpContext http) =>
+            {
+                if (Erp.Kernel.Localization.Languages.ForRequest(http) != "ar")
+                {
+                    return Results.Ok(new { greeting = "Welcome" });
+                }
+                var mine = await EmailAsync(session, caller.UserId);
+                var previous = await SwapNoteAsync(GreetingNote, mine);
+                return Results.Ok(new { greeting = previous.Length > 0 ? $"\u0623\u0647\u0644\u0627\u064B {mine} ({previous})" : $"\u0623\u0647\u0644\u0627\u064B {mine}" });
+            }).WithName("leaky.greeting").WithSummary("Planted bug: in Arabic, greets the caller with the previous Arabic caller's e-mail.").RequirePermission("leaky.data.read");
+
+            // Bug 48 (the same, carrying only a number): in Arabic only, a read answers how far the
+            // caller's directory size (the letters of every address) is from that of the previous
+            // Arabic caller, kept in a temporary file. Nothing of the other tenant's shows, so only
+            // the non-interference check, run from both tenants' Arabic sessions, sees it.
+            group.MapGet("/me/greeting-count", async (ErpDbSession session, HttpContext http) =>
+            {
+                if (Erp.Kernel.Localization.Languages.ForRequest(http) != "ar")
+                {
+                    return Results.Ok(new { change = 0L });
+                }
+                await using var command = new NpgsqlCommand("SELECT coalesce(sum(length(email)), 0) FROM identity.users", session.Connection, session.Transaction);
+                var mine = (long)(await command.ExecuteScalarAsync())!;
+                var previous = long.TryParse(await SwapNoteAsync(GreetingCountNote, mine.ToString(System.Globalization.CultureInfo.InvariantCulture)), out var p) ? p : mine;
+                return Results.Ok(new { change = mine - previous });
+            }).WithName("leaky.greetingCount").WithSummary("Planted bug: in Arabic, answers the change since the previous Arabic caller's directory size.").RequirePermission("leaky.data.read");
+
             // Bug 43 (critic p04 round 3, plant N1): a "me" endpoint with an optional, documented
             // userId acts on whichever user the body names. The caller holds the endpoint's own
             // permission, so only the object-level check (G2 SubjectInjection) can see it.
@@ -1372,13 +1405,47 @@ public sealed class LeakyModule : ErpModule
         cachedTenant = null;
         exportedTenant = null;
         PersonCards.Clear();
+        File.Delete(DigitsNote);
+        File.Delete(ScriptNote);
+        File.Delete(GreetingNote);
+        File.Delete(GreetingCountNote);
         if (Directory.Exists(PrintedDirectory))
         {
             Directory.Delete(PrintedDirectory, recursive: true);
         }
-        File.Delete(DigitsNote);
-        File.Delete(ScriptNote);
     }
+
+    /// <summary>Planted state outside the process (bugs 45 and 46): temporary files, one per test
+    /// process.</summary>
+    private static readonly string DigitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-digits-{Environment.ProcessId}.txt");
+
+    private static readonly string ScriptNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-script-{Environment.ProcessId}.txt");
+
+    /// <summary>Planted state outside the process (bugs 47 and 48).</summary>
+    private static readonly string GreetingNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-greeting-{Environment.ProcessId}.txt");
+
+    private static readonly string GreetingCountNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-greeting-count-{Environment.ProcessId}.txt");
+
+    /// <summary>Reads a note file and replaces its text. The attack sends requests in parallel: a
+    /// request that meets the file open by another one leaves the note as it is and answers as if
+    /// there were no previous caller (a server error would not be the planted leak).</summary>
+    private static async Task<string> SwapNoteAsync(string path, string text)
+    {
+        try
+        {
+            var previous = File.Exists(path) ? await File.ReadAllTextAsync(path) : "";
+            await File.WriteAllTextAsync(path, text);
+            return previous;
+        }
+        catch (IOException)
+        {
+            return "";
+        }
+    }
+
+    public sealed record DigitsRequest([property: AllowedTextValues("latn", "arab")] string? Numerals);
+
+    public sealed record ScriptRequest([property: AllowedTextValues("en", "ar")] string? Language);
 
     /// <summary>Bug 51: the companies' tax numbers under a permission that does not grant them.</summary>
     public sealed class TaxNumbersReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource
@@ -1450,16 +1517,6 @@ public sealed class LeakyModule : ErpModule
     /// <summary>Where bug 50 keeps printed files: one directory per test process, so self-tests
     /// running side by side in separate processes never read each other's files.</summary>
     private static string PrintedDirectory => Path.Combine(Path.GetTempPath(), $"erp-leaky-printed-{Environment.ProcessId}");
-
-    /// <summary>Planted state outside the process (bugs 45 and 46): temporary files, one per test
-    /// process.</summary>
-    private static readonly string DigitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-digits-{Environment.ProcessId}.txt");
-
-    private static readonly string ScriptNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-script-{Environment.ProcessId}.txt");
-
-    public sealed record DigitsRequest([property: AllowedTextValues("latn", "arab")] string? Numerals);
-
-    public sealed record ScriptRequest([property: AllowedTextValues("en", "ar")] string? Language);
 
     /// <summary>Planted process-wide state: person cards cached per id, without the tenant.</summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, PersonCard> PersonCards = new();

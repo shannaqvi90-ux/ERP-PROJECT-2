@@ -46,6 +46,42 @@ public sealed class OpenApiGateTests(GateFixture fixture)
     }
 
     [Fact]
+    public async Task The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on()
+    {
+        // The framework put the request's Host header in the document's server list, so the
+        // description echoed what any caller sent. It now depends only on the code and is generated
+        // once per process (OpenApiDocumentCache).
+        using var anonymous = fixture.Env.CreateClient();
+        using var signedIn = await fixture.Env.SignInAsync(fixture.Env.Email(fixture.Env.Plan.Tenants[0], "admin"));
+        var plain = await anonymous.GetAsync("/api/openapi/v1.json", TestContext.Current.CancellationToken);
+        Assert.Equal(System.Net.HttpStatusCode.OK, plain.StatusCode);
+        Assert.Equal("application/json", plain.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("utf-8", plain.Content.Headers.ContentType?.CharSet);
+        var text = await plain.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var other = new HttpRequestMessage(HttpMethod.Get, "/api/openapi/v1.json");
+        other.Headers.Host = "caller-host.example:8443";
+        other.Headers.Add("X-Forwarded-Host", "forwarded-host.example");
+        other.Headers.Add("X-Forwarded-Proto", "https");
+        other.Headers.Add("X-Forwarded-Prefix", "/forwarded-prefix");
+        var otherText = await (await signedIn.SendAsync(other, TestContext.Current.CancellationToken)).Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var arabic = new HttpRequestMessage(HttpMethod.Get, "/api/openapi/v1.json");
+        arabic.Headers.AcceptLanguage.ParseAdd("ar-AE");
+        var arabicText = await (await anonymous.SendAsync(arabic, TestContext.Current.CancellationToken)).Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.True(text == otherText, "the document differs with the caller, its Host or its forwarded headers");
+        Assert.True(text == arabicText, "the document differs with the caller's language");
+        foreach (var echoed in new[] { "caller-host.example", "forwarded-host.example", "forwarded-prefix", "http://localhost" })
+        {
+            Assert.DoesNotContain(echoed, otherText, StringComparison.OrdinalIgnoreCase);
+        }
+        using var document = JsonDocument.Parse(text);
+        Assert.False(document.RootElement.TryGetProperty("servers", out var servers) && servers.GetArrayLength() > 0, "the document names a server URL");
+        // The same text the process holds: generated once, not per request.
+        var held = fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.OpenApiDocumentCache>();
+        Assert.Same(held, fixture.Env.Factory.Services.GetRequiredService<Erp.Kernel.Hosting.OpenApiDocumentCache>());
+        Assert.Equal(System.Text.Encoding.UTF8.GetString(await held.JsonAsync()), text);
+    }
+
+    [Fact]
     public async Task Decimals_are_documented_as_strings()
     {
         using var client = fixture.Env.CreateClient();

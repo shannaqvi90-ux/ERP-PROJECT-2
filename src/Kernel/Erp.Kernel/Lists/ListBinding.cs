@@ -303,7 +303,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var plan = PlanFor(request);
         var database = source.Provider is IAsyncQueryProvider;
-        return Sorted(Filtered(source, plan, database), plan, database);
+        return Sorted(Filtered(database ? source : InMemoryQuery.Over(source), plan, database), plan, database);
     }
 
     /// <summary>Every row the request's search and filter select, in no order and without paging:
@@ -313,7 +313,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public IQueryable<T> Matching(IQueryable<T> source, ListRequest request)
     {
         var plan = PlanFor(new ListRequest { Search = request.Search, Filter = request.Filter });
-        return Filtered(source, plan, source.Provider is IAsyncQueryProvider);
+        var database = source.Provider is IAsyncQueryProvider;
+        return Filtered(database ? source : InMemoryQuery.Over(source), plan, database);
     }
 
     /// <summary>A 400 validation problem for a list query error, in the request's language.</summary>
