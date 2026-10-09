@@ -5,6 +5,7 @@ using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Modules.Identity.Auth;
 using Erp.Modules.Identity.Contracts;
+using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -51,7 +52,7 @@ internal static class UserBulkEndpoints
     }
 
     private static async Task<Results<Ok<SetMatchingUsersActiveResponse>, ProblemHttpResult>> SetMatchingActive(
-        SetMatchingUsersActiveRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time,
+        SetMatchingUsersActiveRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, IUserWorkplaces workplaces, TimeProvider time,
         HttpContext http, CancellationToken cancellationToken)
     {
         var validator = new Validator(http)
@@ -78,7 +79,7 @@ internal static class UserBulkEndpoints
             return Problems.Result(http, StatusCodes.Status409Conflict, "list.matchingChanged", null, request.ExpectedCount, matched);
         }
         var active = request.Active!.Value;
-        var beyond = await BeyondCallerAsync(db, caller, catalog, cancellationToken);
+        var beyond = await BeyondCallerAsync(db, caller, catalog, workplaces, cancellationToken);
         var toChange = matching.Where(u => u.IsActive != active);
         var unchanged = matched - await toChange.CountAsync(cancellationToken);
         var refusedSelf = !active && await toChange.AnyAsync(u => u.Id == caller.UserId, cancellationToken) ? 1 : 0;
@@ -107,13 +108,16 @@ internal static class UserBulkEndpoints
     /// in that company;</item>
     /// <item>any role in a company the caller does not work in (row-level security and the
     /// company filter hide those rows, so the user's count of company roles is larger than the
-    /// rows the caller sees): what it grants cannot be judged from here.</item>
+    /// rows the caller sees): what it grants cannot be judged from here;</item>
+    /// <item>access to a company the caller does not work in (<see cref="IUserWorkplaces.WorkingElsewhereAsync"/>,
+    /// the tenancy module's count, as for one user).</item>
     /// </list>
     /// Only permissions of the catalogue count, as for one user.
     /// </summary>
     internal static async Task<Expression<Func<User, bool>>> BeyondCallerAsync(IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog,
-        CancellationToken cancellationToken)
+        IUserWorkplaces workplaces, CancellationToken cancellationToken)
     {
+        var elsewhere = (await workplaces.WorkingElsewhereAsync(cancellationToken)).ToList();
         var callerGrants = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
         var roles = await db.Roles.AsNoTracking().Select(r => new { r.Id, r.Permissions }).ToListAsync(cancellationToken);
         var granted = roles.ToDictionary(r => r.Id, r => r.Permissions.Where(catalog.IsPermission).ToList());
@@ -127,6 +131,7 @@ internal static class UserBulkEndpoints
             db.UserRoles.Any(ur => ur.UserId == u.Id && strong.Contains(ur.RoleId)) ||
             db.UserCompanyRoles.Any(ucr => ucr.UserId == u.Id && strong.Contains(ucr.RoleId) &&
                                            !coveredThere.Contains(ucr.RoleId.ToString() + "/" + ucr.CompanyId.ToString())) ||
-            u.CompanyRoleCount > db.UserCompanyRoles.Count(ucr => ucr.UserId == u.Id);
+            u.CompanyRoleCount > db.UserCompanyRoles.Count(ucr => ucr.UserId == u.Id) ||
+            elsewhere.Contains(u.Id);
     }
 }

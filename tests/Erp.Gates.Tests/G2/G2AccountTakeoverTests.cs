@@ -177,9 +177,31 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 {
                     var elsewhere = await targets.UserInCompanyAsync(["identity.users.read"], companies.Ids[1], companies, fresh: true);
                     var elsewhereBefore = await ReadUserAsync(admin, elsewhere);
+                    // A user who works in both companies, holding only a workspace-wide role the
+                    // caller's grants cover (critic p02 round 8: whoever sets the password of a user
+                    // who also works in the JAFZA FZE signs in there as them, though they work in the
+                    // Dubai LLC alone; identity counted only hidden company roles).
+                    var worksElsewhere = await CreatedIdAsync(admin, "/api/identity/users", new
+                    {
+                        email = $"workselsewhere.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Works elsewhere {tag}", language = "en", password = ErpTestEnvironment.Password,
+                        mustChangePassword = false, roleIds = new[] { await targets.RoleAsync(["identity.users.read"]) },
+                    });
+                    await companies.GiveAccessAsync(worksElsewhere);
+                    var worksElsewhereBefore = await ReadUserAsync(admin, worksElsewhere);
                     await companies.LimitAccessAsync(callerId, inCompany);
                     var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
                     var elsewhereAfter = await ReadUserAsync(admin, elsewhere);
+                    var (worksStatus, worksText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => worksElsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, worksElsewhere, $"{tag}w"));
+                    var worksElsewhereAfter = await ReadUserAsync(admin, worksElsewhere);
+                    companyTargetsAimed++;
+                    if (worksStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user who also works in a company the caller does not work in answered {worksStatus} (expected 403): {Short(worksText)}");
+                    }
+                    if (worksElsewhereAfter != worksElsewhereBefore)
+                    {
+                        problems.Add($"{endpoint}: the user who also works in a company the caller does not work in changed: before {Short(worksElsewhereBefore)}; after {Short(worksElsewhereAfter)}");
+                    }
                     // Control: working in the first company alone, the caller still acts on a user
                     // without roles who works there too.
                     var limitedTarget = await CreatedIdAsync(admin, "/api/identity/users", new { email = $"limited.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Limited target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });

@@ -813,6 +813,28 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.True(result.CompanyCallerAimed > 0);
     }
 
+    /// <summary>Bug 65 (critic p02 round 8): "all that match" activation with every role rule right
+    /// that leaves out where the chosen users work. The set-based takeover check must report it
+    /// changing a user who also works in a company the caller does not work in, by search and by
+    /// filter, and nothing else of that endpoint.</summary>
+    [Fact]
+    public async Task The_set_takeover_check_catches_all_that_match_leaving_out_where_users_work()
+    {
+        const string ignoring = "POST /api/leaky/users/matching/active-ignoring-workplaces";
+        const string worksElsewhere = "a user who also works in a company the caller does not work in";
+        var result = await fixture.SetTakeoverAsync();
+        foreach (var problem in result.Problems.Where(p => p.StartsWith(ignoring, StringComparison.Ordinal)).Take(6))
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(problem);
+        }
+        Assert.Contains(ignoring, result.Checked);
+        foreach (var selector in new[] { " by search", " by filter" })
+        {
+            Assert.Contains(result.Problems, p => p.StartsWith(ignoring + selector, StringComparison.Ordinal) && p.Contains(worksElsewhere, StringComparison.Ordinal) && p.Contains("changed them", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(ignoring, StringComparison.Ordinal) && !p.Contains(worksElsewhere, StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
     {

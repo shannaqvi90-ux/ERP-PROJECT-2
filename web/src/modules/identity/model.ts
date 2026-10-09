@@ -19,6 +19,9 @@ export type User = {
   rolesElsewhere?: boolean;
   setupCode?: string;
   setupCodeExpiresAt?: string;
+  /** One user read alone: the problem code the server answers to any action on this account by the
+   * signed-in user (it grants more than they hold, or reaches companies they do not work in). */
+  refused?: string;
 };
 
 /** A role held in one company only. */
@@ -279,7 +282,7 @@ export const userName = (user: { displayName: string; displayNameAr?: string | n
  * and the server refused both).
  */
 export function userActions(
-  user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere">,
+  user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere" | "refused">,
   roles: Pick<Role, "id" | "permissions">[],
   held: ReadonlySet<string>,
   selfId: string | null,
@@ -288,7 +291,13 @@ export function userActions(
   // Roles in every company and roles in one company alike; roles that are not loaded and roles in
   // companies the signed-in user does not work in cannot be judged from here, so they count as beyond.
   const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;
-  const beyondOwn = user.roleIds.some(grantsBeyond) || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) || user.rolesElsewhere === true;
+  // The server's own verdict, when the user was read alone, decides too: it sees what the screen
+  // cannot (where each grant of the signed-in user holds, the companies the user works in).
+  const beyondOwn =
+    user.roleIds.some(grantsBeyond) ||
+    (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) ||
+    user.rolesElsewhere === true ||
+    (!self && Boolean(user.refused));
   const others = !self && !beyondOwn;
   return {
     self,

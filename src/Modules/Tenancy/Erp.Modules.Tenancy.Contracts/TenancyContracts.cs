@@ -93,4 +93,10 @@ public interface IUserWorkplaces
     Task<UserWorkplaceInfo> GetAsync(Guid userId, CancellationToken cancellationToken);
 
     Task<WorkplaceChange> SetAsync(Guid userId, Guid? companyId, uint version, CancellationToken cancellationToken);
+
+    /// <summary>The users of the workspace who may work in a company outside the caller's company
+    /// scope (the set-based <see cref="UserWorkplaceInfo.CompaniesElsewhere"/>, by the same count):
+    /// none when the scope holds every company. Acting on such a user's account (a new password, an
+    /// edit) would reach companies the caller does not work in.</summary>
+    Task<IReadOnlyList<Guid>> WorkingElsewhereAsync(CancellationToken cancellationToken);
 }

@@ -1,3 +1,4 @@
+using Erp.Kernel.Data;
 using Erp.Modules.Tenancy.Access;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace Erp.Modules.Tenancy.Workplace;
 /// The branch is cleared when the company changes: the session then picks the user's first branch
 /// there, as it does for a company chosen in the top bar without a branch.
 /// </summary>
-internal sealed class UserWorkplaces(TenancyDbContext db) : IUserWorkplaces
+internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session) : IUserWorkplaces
 {
     public async Task<UserWorkplaceInfo> GetAsync(Guid userId, CancellationToken cancellationToken)
     {
@@ -59,6 +60,20 @@ internal sealed class UserWorkplaces(TenancyDbContext db) : IUserWorkplaces
         }
         await db.SaveChangesAsync(cancellationToken);
         return WorkplaceChange.Done;
+    }
+
+    public async Task<IReadOnlyList<Guid>> WorkingElsewhereAsync(CancellationToken cancellationToken)
+    {
+        if (await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+        {
+            return [];
+        }
+        // The user's companies in all (counted outside the scope) against those of the caller's
+        // scope (row-level security shows no others), as for one user.
+        return await db.CompanyTotals.AsNoTracking()
+            .Where(t => t.CompanyCount > db.CompanyAccess.Count(a => a.UserId == t.UserId))
+            .Select(t => t.UserId)
+            .ToListAsync(cancellationToken);
     }
 
     /// <summary>The companies of the caller's scope the user may work in (by code), and whether they

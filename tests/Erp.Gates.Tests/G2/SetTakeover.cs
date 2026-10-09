@@ -142,6 +142,15 @@ public static class SetTakeover
                 {
                     var id = await records.UserInCompanyAsync(["identity.users.read"], companies.Ids[1], companies, fresh: true);
                     strong.Add((id, "a user holding a role in a company the caller does not work in", await EmailOfAsync(admin, id), true, true));
+                    // A user who also works in a company the caller does not work in, holding only a
+                    // workspace-wide role the caller's grants cover (critic p02 round 8).
+                    var worksEmail = $"setworks.{tag}@{env.TenantA.EmailDomain}";
+                    var works = await CreatedIdAsync(admin, "/api/identity/users", new
+                    {
+                        email = worksEmail, displayName = $"Set works elsewhere {tag}", language = "en", roleIds = new[] { await records.RoleAsync(["identity.users.read"]) },
+                    });
+                    await companies.GiveAccessAsync(works);
+                    strong.Add((works, "a user who also works in a company the caller does not work in", worksEmail, false, true));
                 }
             }
             var variants = FlagVariants(schema);

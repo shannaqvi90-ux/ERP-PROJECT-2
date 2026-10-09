@@ -401,9 +401,14 @@ export function UserDetail({
   }
 
   const bind = form.bind;
+  // Why the account is read-only: it reaches companies the signed-in user does not work in, or it
+  // grants more than they hold.
+  const beyondCompanies =
+    loaded?.rolesElsewhere === true || loaded?.refused === "identity.userBeyondOwnCompanies" || loaded?.refused === "identity.userWorksBeyondOwnCompanies";
+  const beyondNote = beyondCompanies ? t("identity.users.beyondCompaniesNote") : t("identity.users.beyondOwnNote");
   const details = (
     <>
-      {allowed.beyondOwn && <p className="muted">{t("identity.users.beyondOwnNote")}</p>}
+      {allowed.beyondOwn && <p className="muted">{beyondNote}</p>}
       <FormSection columns={false}>
         <TextField field={bind("email")} label={t("identity.users.email")} type="email" dir="ltr" disabled={self} />
         <TextField field={bind("displayName")} label={t("identity.users.name")} />
@@ -468,7 +473,7 @@ export function UserDetail({
         }
         onClose={onClose}
         nav={nav}
-        readOnlyReason={allowed.beyondOwn ? t("identity.users.beyondOwnNote") : undefined}
+        readOnlyReason={allowed.beyondOwn ? beyondNote : undefined}
       >
         {notice?.kind === "code" && <CodeNotice notice={notice} />}
         {notice?.warning && (

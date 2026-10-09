@@ -616,6 +616,14 @@ public sealed class LeakyModule : ErpModule
                 .WithName("leaky.matchingActiveRoleAnywhere").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, taking a role the caller's grants cover in one company as covered in every company.")
                 .RequirePermission("leaky.data.update");
 
+            // Bug 65 (critic p02 round 8, routed to p03): the same activation with every role rule
+            // right, that leaves out where the chosen users work: a clerk who works in the Dubai LLC
+            // alone deactivates someone who also works in the JAFZA FZE. Same reach as bugs 53 and 54.
+            group.MapPost("/users/matching/active-ignoring-workplaces", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveRoleAnywhereAsync(request, session, caller, roleAnywhere: false))
+                .WithName("leaky.matchingActiveIgnoringWorkplaces").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, whatever companies outside the caller's they work in.")
+                .RequirePermission("leaky.data.update");
+
             // Bug 25: a GET that writes. Every GET runs in a read-only transaction, so the database
             // refuses the write.
             group.MapGet("/touch", async (ErpDbSession session) =>
@@ -1702,7 +1710,11 @@ public sealed class LeakyModule : ErpModule
     /// users holding a company role granting what the caller does not hold workspace-wide unless
     /// the caller's grants in SOME company cover that role: the planted fault, which should ask
     /// for the company the role is held in.</summary>
-    private static async Task<IResult> SetMatchingActiveRoleAnywhereAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller)
+    /// <remarks>With <paramref name="roleAnywhere"/> false, bug 65 instead: every role rule right (a
+    /// company role judged against what the caller holds in that company), but a user who also
+    /// works in a company the caller does not work in is changed all the same. With it true, such a
+    /// user is left alone, so bug 57 keeps its one fault.</remarks>
+    private static async Task<IResult> SetMatchingActiveRoleAnywhereAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller, bool roleAnywhere = true)
     {
         var filterEmail = request.Filter is { Length: > 0 } filter && System.Text.RegularExpressions.Regex.Match(filter, "^email eq '(.*)'$") is { Success: true } m
             ? m.Groups[1].Value.Replace("''", "'", StringComparison.Ordinal)
@@ -1720,9 +1732,16 @@ public sealed class LeakyModule : ErpModule
             "WHERE (@search::text IS NULL OR lower(u.email) = lower(@search)) AND (@filter::text IS NULL OR lower(u.email) = lower(@filter)) " +
             "AND (u.email LIKE 'set%' OR u.email LIKE 'g2.%') AND u.id <> @caller " +
             "AND NOT EXISTS (SELECT 1 FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id, everywhere e WHERE ur.user_id = u.id AND NOT (r.permissions <@ e.held)) " +
-            "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id AND NOT (r.permissions <@ e.held) " +
-            "                AND ucr.role_id NOT IN (SELECT id FROM covered)) " +
-            "AND u.company_role_count <= (SELECT count(*) FROM identity.user_company_roles ucr WHERE ucr.user_id = u.id)",
+            (roleAnywhere
+                ? "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id AND NOT (r.permissions <@ e.held) " +
+                  "                AND ucr.role_id NOT IN (SELECT id FROM covered)) "
+                : "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id " +
+                  "                AND NOT (r.permissions <@ (e.held || coalesce((SELECT c.held FROM by_company c WHERE c.company_id = ucr.company_id), '{}'::text[])))) ") +
+            "AND u.company_role_count <= (SELECT count(*) FROM identity.user_company_roles ucr WHERE ucr.user_id = u.id)" +
+            // Where the user works: all their companies against those of the caller's scope (row-level security shows no others).
+            (roleAnywhere
+                ? " AND coalesce((SELECT t.company_count FROM tenancy.user_company_totals t WHERE t.user_id = u.id), 0) <= (SELECT count(*) FROM tenancy.user_company_access a WHERE a.user_id = u.id)"
+                : ""),
             session.Connection, session.Transaction);
         command.Parameters.AddWithValue("active", request.Active.Value);
         command.Parameters.Add(new NpgsqlParameter("search", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)search ?? DBNull.Value });

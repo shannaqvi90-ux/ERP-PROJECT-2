@@ -225,8 +225,14 @@ public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixtu
         }
         (s, t) = await SendAsync(narrowAdmin, HttpMethod.Post, $"/api/identity/users/{heldInY}/password", new { password = "Taken-Over-Password-2", mustChangePassword = false });
         Expect("a caller who works only in X resetting the password of a user holding a role in Y", HttpStatusCode.Forbidden, s, t);
+        // A user holding a role in X who also works in Y is beyond them too (critic p02 round 8: a
+        // new password would let them sign in to Y as that user).
         (s, t) = await SendAsync(narrowAdmin, HttpMethod.Post, $"/api/identity/users/{heldInX}/password", new { password = "Within-X-Password-2", mustChangePassword = false });
-        Expect("a caller who works only in X resetting the password of a user holding a role in X (control)", HttpStatusCode.OK, s, t);
+        Expect("a caller who works only in X resetting the password of a user holding a role in X who also works in Y", HttpStatusCode.Forbidden, s, t);
+        var onlyInX = await UserAsync("g2.xheldxonly", [], [new { roleId = reader, companyId = x }], access: false);
+        await GiveAccessAsync(admin, onlyInX, [x]);
+        (s, t) = await SendAsync(narrowAdmin, HttpMethod.Post, $"/api/identity/users/{onlyInX}/password", new { password = "Within-X-Password-3", mustChangePassword = false });
+        Expect("a caller who works only in X resetting the password of a user holding a role in X who works only there (control)", HttpStatusCode.OK, s, t);
 
         TestContext.Current.TestOutputHelper?.WriteLine($"{checks} checks");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
