@@ -95,11 +95,11 @@ public static partial class IsolationAttack
             var shapes = Shapes(enumerated).ToList();
             foreach (var variant in DocumentedValues(query))
             {
-                var probe = Join(victimBase, Join(shapes[0], variant));
+                var probe = Join(victimBase, And(shapes[0], variant));
                 victimRequests++;
                 if (await activity.ReadPathAsync(probe, "tenant B tries a documented value of its own") is >= 200 and < 300)
                 {
-                    shapes.AddRange(EachValueOnce(enumerated).Select(row => Join(row, variant)));
+                    shapes.AddRange(EachValueOnce(enumerated).Select(row => And(row, variant)));
                     documentedValues++;
                 }
                 else
@@ -280,6 +280,9 @@ public static partial class IsolationAttack
         }
         return (null, tries);
     }
+
+    /// <summary>Two query strings as one.</summary>
+    private static string And(string query, string more) => query.Length == 0 ? more : more.Length == 0 ? query : query + "&" + more;
 
     private static string Join(string path, string query) =>
         query.Length == 0 ? path : path + (path.Contains('?', StringComparison.Ordinal) ? "&" : "?") + query;

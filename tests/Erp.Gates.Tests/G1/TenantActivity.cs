@@ -570,6 +570,12 @@ public sealed class TenantActivity
         using var request = new HttpRequestMessage(new HttpMethod(method), path);
         if (body is not null)
         {
+            // A write that answers something the product issued first (adding a passkey) is
+            // completed for this actor, so tenant B's own write succeeds and its handler runs.
+            if (body is JsonObject ceremony)
+            {
+                await Ceremonies.CompleteAsync(actor.Client, method, path, ceremony);
+            }
             request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
         }
         using var response = await actor.Client.SendAsync(request);
