@@ -526,11 +526,7 @@ public static class ProcessState
         : type.Name;
 
     private static bool IsGenerated(Type type) =>
-        type.Name.Contains('<', StringComparison.Ordinal) ||
-        type.GetCustomAttribute<CompilerGeneratedAttribute>() is not null ||
-        type.GetCustomAttribute<System.CodeDom.Compiler.GeneratedCodeAttribute>() is not null ||
-        (type.Namespace?.StartsWith("System.Text.RegularExpressions.Generated", StringComparison.Ordinal) ?? false) ||
-        (type.DeclaringType is { } declaring && IsGenerated(declaring));
+        CompilerGenerated.Is(type) || (type.DeclaringType is { } declaring && IsGenerated(declaring));
 
     /// <summary>A static auto-property's backing field is reported as the property.</summary>
     private static string FieldName(FieldInfo field) =>

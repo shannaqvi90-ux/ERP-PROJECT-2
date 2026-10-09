@@ -100,6 +100,7 @@ public sealed class LeakyModule : ErpModule
                 {
                     return (IResult)problem;
                 }
+                SortedTotals.Remember(request, result.Total);
                 return Results.Ok(new ListPage<Person>(result.Rows, ScrollTotals<Person>.Total(request, result.Total), result.Next, result.Groups));
             }).WithName("leaky.scroll").WithSummary("Planted bug: continuation pages reuse the last first page's total, any tenant's.").RequirePermission("leaky.data.read");
 
@@ -1667,4 +1668,15 @@ public sealed class LeakyModule : ErpModule
         }
         return names;
     }
+}
+
+/// <summary>Bug 59 (critic p05 round 7, plant L11): a C# file-local class (compiled as
+/// <c>&lt;LeakyModule&gt;F…__SortedTotals</c>) keeping list totals by search, filter and sort, with no
+/// tenant. The process-state gates once skipped every type whose name holds '&lt;', so its static
+/// memo was never a root.</summary>
+file static class SortedTotals
+{
+    private static readonly ConcurrentDictionary<string, int> Totals = new(StringComparer.Ordinal);
+
+    public static void Remember(ListRequest request, int total) => Totals[$"{request.Search}|{request.Filter}|{request.Sort}"] = total;
 }

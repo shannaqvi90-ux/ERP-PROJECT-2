@@ -530,6 +530,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.Contains(running.Findings, f => f.Key == $"static {typeof(LeakyModule).FullName}.cachedTenant");
         Assert.Contains(running.Findings, f => f.Key == $"singleton {typeof(LeakyModule).FullName}.LastListHolder.Last");
 
+        // A file-local class's static memo (critic p05 round 7, plant L11): a type a person wrote,
+        // although its compiled name holds '<'.
+        var fileLocal = typeof(LeakyModule).Assembly.GetTypes().Single(t => t.Name.EndsWith("__SortedTotals", StringComparison.Ordinal));
+        Assert.True(CompilerGenerated.IsFileLocal(fileLocal) && !CompilerGenerated.Is(fileLocal), $"{fileLocal.Name} is judged as compiler-generated");
+        Assert.Contains(ProcessState.InspectTypes([fileLocal], [], new HashSet<Type>()).Findings, f => f.Key.EndsWith("SortedTotals.Totals", StringComparison.Ordinal));
+        Assert.Contains(running.Findings, f => f.Key.EndsWith("SortedTotals.Totals", StringComparison.Ordinal));
+
         // A variable captured by an endpoint lambda lives as long as the endpoint (critic p01
         // round 2, plant B): the inventory walks every endpoint's delegate to the closures it holds.
         Assert.Contains(running.Findings, f => f.Key == $"closure {typeof(LeakyModule).FullName}.Register.previousCaller" && f.Why.Contains("written inside", StringComparison.Ordinal));

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Erp.Gates.Tests.Infrastructure;
 
 namespace Erp.Gates.Tests.G1;
 
@@ -394,8 +395,7 @@ public static class ReachableState
         }
     }
 
-    private static bool IsGenerated(Type type) =>
-        type.Name.Contains('<', StringComparison.Ordinal) || type.GetCustomAttribute<CompilerGeneratedAttribute>() is not null;
+    private static bool IsGenerated(Type type) => CompilerGenerated.Is(type);
 
     /// <summary>The static fields of a reached product object's closed generic type, its generic
     /// base types and the generic types it is nested in, once per type (critic p05 round 4, plant
