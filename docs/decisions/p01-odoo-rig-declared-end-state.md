@@ -75,4 +75,14 @@ Tasks and drivers stay reviewed code.
 
 ## Cost
 
-PROCESSOR_TIME_NOTE
+Measured on this machine (user plus system time of the process and its children, `/usr/bin/time`):
+
+- `test/set-up-off-clock.test.mjs` (16 tests, 14 runs with a browser): about 29 s.
+- The changed `before-clock` and `tasks` tests: under 1 s more than before (record-only checks).
+- The twelve new instrument mutations (M42-M53, each running only the self-tests named for it,
+  one control per test file): about 26 s.
+- Each run reads the clipboard back in a scratch page: a few hundredths of a second per run.
+
+So the round adds about one minute of processor time to `./erp verify`, well inside the owner's
+10,500 s maximum (`verify.cpuSeconds`, needs-human #12, unchanged). The whole comparison suite took
+230 s of processor time (374 passing, 22 live tests skipped) in a standalone run.
