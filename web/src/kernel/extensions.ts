@@ -12,6 +12,14 @@ import type { Language } from "./format";
  *  - `status`: short facts in the status line (inline end side).
  *  - `palette`: sources of command palette entries: records found by what the user types
  *    (`minLength` >= 1) or a fixed set of actions (`minLength` 0, for example "switch to company X").
+ *  - `actions`: what the module lets a user start from anywhere by typing in the command palette
+ *    (New user, New company, Print or export the branches list ...). An action opens its screen and,
+ *    with `command`, then runs that screen's own command (registered with useCommand/useShortcut),
+ *    so the palette starts exactly what the screen's button or key would. The palette offers an
+ *    action only to a user whose roles grant its `permission` and the permission of the screen it
+ *    opens; the screen's command is the second check (a screen that does not offer the action at
+ *    the moment registers no command, and the palette says so instead of doing anything).
+ *    Commands of the screen on show are listed by the palette as well, first ("On this screen").
  *
  * Every item may name a `permission`; the shell shows it only to users whose roles grant it.
  * The API enforces permissions anyway; hiding is so screens never offer what the user cannot do.
@@ -57,10 +65,28 @@ export type PaletteSource = {
   showAll?: (query: string) => string;
 };
 
+/** An action a module offers in the command palette from anywhere (see `actions` above). */
+export type ModuleAction = {
+  key: string;
+  /** String key of the action's name; matched in both languages. */
+  labelKey: string;
+  /** String key of extra words people type for it ("invite, add, create"), in each language. */
+  keywordsKey?: string;
+  /** What the user's roles must grant (besides the screen's own permission). */
+  permission: string;
+  /** The screen the action happens on (a route path). */
+  path: string;
+  /** Id of the screen command to run once the screen offers it (useCommand/useShortcut). */
+  command?: string;
+  /** The screen's key for the same action, shown beside it once the screen is open. */
+  chord?: string;
+};
+
 export type ModuleExtensions = {
   topbar?: SlotItem[];
   status?: SlotItem[];
   palette?: PaletteSource[];
+  actions?: ModuleAction[];
 };
 
 type ExtensionModule = { extensions?: ModuleExtensions };
@@ -68,7 +94,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [] };
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
     const name = /modules\/([^/]+)\//.exec(path)?.[1] ?? path;
@@ -85,6 +111,11 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     all.topbar.push(...(ext.topbar ?? []));
     all.status.push(...(ext.status ?? []));
     all.palette.push(...(ext.palette ?? []));
+    for (const action of ext.actions ?? []) {
+      if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
+      if (!action.path.startsWith(`/${name}/`)) throw new Error(`Action "${action.key}" of module ${name} must happen on one of its own screens (/${name}/...)`);
+      all.actions.push(action);
+    }
   }
   const byOrder = (a: SlotItem, b: SlotItem) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key);
   all.topbar.sort(byOrder);

@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { allowed, extensions } from "../../kernel/extensions";
+import { allowed, extensions, type ModuleAction } from "../../kernel/extensions";
 import { Icon } from "../../kernel/icons";
 import { translate, useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { PrintDocument } from "../../kernel/print";
-import { Link, matchRoute, navigate, usePath } from "../../kernel/router";
+import { Link, matchRoute, navigate, splitPath, usePath } from "../../kernel/router";
 import { sessionUserName, useSession, type Session } from "../../kernel/session";
-import { Keys, chordForAria, useShortcut } from "../../kernel/shortcuts";
+import { Keys, chordForAria, useCommandList, useShortcut } from "../../kernel/shortcuts";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { CommandPalette, type PaletteEntry } from "./CommandPalette";
 import { LanguageToggle, languageChord } from "./LanguageToggle";
 import { NavPane } from "./NavPane";
+import { actionEntries, offeredActions } from "./paletteActions";
 import { entryFor, groupLabelKey } from "./navigation";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { ShortcutHelp } from "./ShortcutHelp";
@@ -27,6 +28,8 @@ export const shellChords = {
 } as const;
 
 const navKey = "erp.navOpen";
+/** How long a module action waits for its screen to offer the command it runs. */
+const commandWaitMs = 5000;
 const recentKey = (userId: string) => `erp.recent.${userId}`;
 const maxRecent = 5;
 
@@ -34,15 +37,21 @@ const maxRecent = 5;
 const narrowQuery = "(max-width: 600px)";
 const isNarrow = () => (typeof window.matchMedia === "function" ? window.matchMedia(narrowQuery).matches : false);
 
-function readNavOpen(): boolean {
+/** The pane's open or closed state beside the screen, as this device last left it on a wide
+ * window (open unless it was closed). */
+function readWideNavOpen(): boolean {
   try {
     const stored = localStorage.getItem(navKey);
     if (stored !== null) return stored !== "0";
   } catch {
     // Not remembered: the default below.
   }
-  // Open beside the screen on a desktop; closed over it on a phone until asked for.
-  return !isNarrow();
+  return true;
+}
+
+/** Open beside the screen on a desktop as last left there; closed over it on a phone until asked for. */
+function readNavOpen(): boolean {
+  return isNarrow() ? false : readWideNavOpen();
 }
 
 function readRecent(userId: string): string[] {
@@ -100,13 +109,28 @@ export function AppShell({ session }: { session: Session }) {
     if (isNarrow()) setNavOpen(false);
   }, [path]);
 
+  // Only the wide window's choice is remembered: on a phone the pane closes by itself whenever a
+  // screen opens, which says nothing about the desktop. A window that turns wide again gets the
+  // pane back as it was left there; one that turns narrow puts it away (critic p04 round 7).
+  const [narrow, setNarrow] = useState(isNarrow);
   useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const query = window.matchMedia(narrowQuery);
+    const changed = () => {
+      setNarrow(query.matches);
+      setNavOpen(query.matches ? false : readWideNavOpen());
+    };
+    query.addEventListener?.("change", changed);
+    return () => query.removeEventListener?.("change", changed);
+  }, []);
+  useEffect(() => {
+    if (narrow) return;
     try {
       localStorage.setItem(navKey, navOpen ? "1" : "0");
     } catch {
       // Remembered for this visit only.
     }
-  }, [navOpen]);
+  }, [navOpen, narrow]);
 
   const rememberScreen = useCallback(
     (target: string) => {
@@ -182,6 +206,23 @@ export function AppShell({ session }: { session: Session }) {
       { id: "action:signOut", title: t("shell.action.signOut"), keywords: both("shell.action.signOut"), icon: "signOut", run: () => void signOut() },
     ];
   }, [t, language, numerals, changeLanguage, changeNumerals, focusNavigation, signOut]);
+
+  // Actions the modules offer from anywhere (New user, New company, Print or export a list ...):
+  // only those the user's roles grant, on a screen the user may open. Starting one opens its screen
+  // and runs the screen's own command there, once the screen offers it.
+  const [pending, setPending] = useState<{ action: ModuleAction; at: number } | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const startAction = useCallback((action: ModuleAction) => {
+    setNotice(null);
+    if (splitPath(window.location.pathname).screen !== action.path) navigate(action.path);
+    if (action.command) setPending({ action, at: Date.now() });
+  }, []);
+  // A note that an action could not run belongs to the screen it was said on.
+  useEffect(() => setNotice(null), [path]);
+  const moduleActions = useMemo(
+    () => actionEntries(offeredActions(extensions.actions, can), t, language, startAction),
+    [can, t, language, startAction],
+  );
 
   const contextItems = allowed(extensions.topbar, can);
   const statusItems = allowed(extensions.status, can);
@@ -288,6 +329,11 @@ export function AppShell({ session }: { session: Session }) {
       </div>
       <footer className="statusbar">
         <span>{t("shell.status.signedInAs", { name: userName, workspace: session.tenant.code })}</span>
+        {notice && (
+          <span className="status-notice" role="status">
+            {notice}
+          </span>
+        )}
         {statusItems.map(({ key, component: Item }) => (
           <span key={key} className="status-item">
             <Item />
@@ -298,9 +344,57 @@ export function AppShell({ session }: { session: Session }) {
           <Keys chord={shellChords.palette} /> {t("shell.status.commands")} · <Keys chord={shellChords.help} /> {t("shell.status.shortcuts")}
         </span>
       </footer>
-      {dialog === "palette" && <CommandPalette screens={screens} actions={actions} recent={recent} onOpenScreen={rememberScreen} onClose={close} />}
+      {pending && (
+        <PendingCommand
+          key={pending.at}
+          action={pending.action}
+          onDone={(ran) => {
+            setPending(null);
+            if (!ran) setNotice(t("shell.palette.actionUnavailable", { action: t(pending.action.labelKey) }));
+          }}
+        />
+      )}
+      {dialog === "palette" && (
+        <CommandPalette
+          screens={screens}
+          actions={[...moduleActions, ...actions]}
+          screen={route?.path}
+          recent={recent}
+          onOpenScreen={rememberScreen}
+          onClose={close}
+        />
+      )}
       {dialog === "help" && <ShortcutHelp onClose={close} />}
       {dialog === "preferences" && <PreferencesDialog session={session} onClose={close} />}
     </div>
   );
+}
+
+/**
+ * Runs a module action's screen command once its screen is open and offers it (a screen offers a
+ * command only while its own checks allow the action: New branch only with a company to add it
+ * to). A screen that does not offer it within a few seconds, or a move to another screen (the
+ * user chose to stay with unsaved changes), runs nothing and says so.
+ */
+function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean) => void }) {
+  const commands = useCommandList();
+  const path = usePath();
+  const done = useRef(onDone);
+  done.current = onDone;
+  const onScreen = splitPath(path).screen === action.path;
+  const command = onScreen ? commands.find((c) => c.id === action.command) : undefined;
+  useEffect(() => {
+    if (!command) return;
+    // After the palette has closed and given the focus back, so the command keeps the focus it moves.
+    const timer = window.setTimeout(() => {
+      command.run();
+      done.current(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [command]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => done.current(false), commandWaitMs);
+    return () => window.clearTimeout(timer);
+  }, []);
+  return null;
 }

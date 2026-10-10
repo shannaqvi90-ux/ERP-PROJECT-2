@@ -18,6 +18,10 @@ export function problemOf(error: unknown): { message: string; fields: FieldError
 type Keys = {
   /** Alt+N: new record. */
   onNew?: () => void;
+  /** What New makes on this screen ("New company"), in the shortcut sheet and the palette. */
+  newLabelKey?: string;
+  /** Extra words people type for New on this screen. */
+  newKeywordsKey?: string;
   /** "/": focus the search box. */
   search?: React.RefObject<HTMLInputElement | null>;
 };
@@ -26,13 +30,14 @@ type Keys = {
  * registry (listed in its help sheet, matched by key position on an Arabic layout) and "/" for the
  * search box. Saving, discarding, closing and moving between records are the shared record form's
  * keys (kernel/forms/RecordForm). */
-export function useScreenKeys({ onNew, search }: Keys) {
+export function useScreenKeys({ onNew, search, newLabelKey = "tenancy.shortcut.new", newKeywordsKey }: Keys) {
   const latest = useRef({ onNew, search });
   latest.current = { onNew, search };
   useShortcut({
     id: "tenancy.screen.new",
     chord: "Alt+KeyN",
-    labelKey: "tenancy.shortcut.new",
+    labelKey: newLabelKey,
+    keywordsKey: newKeywordsKey,
     groupKey: "tenancy.shortcut.group",
     enabled: Boolean(onNew),
     run: () => latest.current.onNew?.(),

@@ -4,9 +4,10 @@ import { allowed, extensions, type PaletteItem, type PaletteSource } from "../..
 import { Icon, type IconName } from "../../kernel/icons";
 import { useI18n } from "../../kernel/i18n";
 import { navigate } from "../../kernel/router";
-import { Keys } from "../../kernel/shortcuts";
+import { Keys, useCommandList } from "../../kernel/shortcuts";
 import { useSession } from "../../kernel/session";
-import { rank } from "./paletteSearch";
+import { commandEntries } from "./paletteActions";
+import { rank, score } from "./paletteSearch";
 
 type Translate = ReturnType<typeof useI18n>["t"];
 
@@ -22,6 +23,9 @@ export type PaletteEntry = {
   path?: string;
   run?: () => void | Promise<void>;
   ltr?: boolean;
+  /** A module action that runs this screen command once its screen is open: hidden while the
+   * screen on show offers the same command itself (it is listed under "On this screen"). */
+  command?: { id: string; screen: string };
 };
 
 type Section = { key: string; label: string; entries: PaletteEntry[]; status?: "searching" | "failed" };
@@ -34,19 +38,26 @@ const shownPerSource = 8;
 const debounceMs = 120;
 
 /**
- * Ctrl+K (⌘K): type to reach any screen, action or record. Screens and actions match at once in
- * either language; record sources contributed by modules answer as the user types. Up/Down move,
- * Enter opens, Esc closes and gives focus back. Only what the user's roles allow is offered.
+ * Ctrl+K (⌘K): type to reach any screen, action or record. The commands of the screen on show come
+ * first ("On this screen": New user, Print or export the list, Copy role ...), then screens and
+ * actions (the shell's and those modules offer from anywhere), matched at once in either language;
+ * record sources contributed by modules answer as the user types. Up/Down move, Enter opens, Esc
+ * closes and gives focus back. Only what the user's roles allow is offered: screen commands exist
+ * only while the screen offers them, and module actions are filtered by permission before they
+ * reach the palette (AppShell, paletteActions.ts).
  */
 export function CommandPalette({
   screens,
   actions,
+  screen,
   recent,
   onOpenScreen,
   onClose,
 }: {
   screens: PaletteEntry[];
   actions: PaletteEntry[];
+  /** The screen on show (its route path), whose commands come first. */
+  screen?: string;
   recent: string[];
   onOpenScreen: (path: string) => void;
   onClose: () => void;
@@ -61,6 +72,13 @@ export function CommandPalette({
   const listId = useId();
   const sources = useMemo(() => allowed(extensions.palette, can), [can]);
   const trimmed = query.trim();
+  const registered = useCommandList();
+  const here = useMemo(() => commandEntries(registered, t, language), [registered, t, language]);
+  // A module action the screen on show offers itself is listed once, under "On this screen".
+  const elsewhere = useMemo(
+    () => actions.filter((a) => !(a.command && a.command.screen === screen && registered.some((c) => c.id === a.command!.id))),
+    [actions, screen, registered],
+  );
 
   // Ask the record sources, debounced; a newer query cancels the older one.
   useEffect(() => {
@@ -92,13 +110,21 @@ export function CommandPalette({
     const text = (e: PaletteEntry) => [e.title, ...e.keywords];
     const list: Section[] = [];
     if (!trimmed) {
+      list.push({ key: "here", label: t("shell.palette.group.here"), entries: here });
       const recentEntries = recent.map((path) => screens.find((s) => s.path === path)).filter((s): s is PaletteEntry => !!s);
       if (recentEntries.length) list.push({ key: "recent", label: t("shell.palette.group.recent"), entries: recentEntries });
       list.push({ key: "screens", label: t("shell.palette.group.screens"), entries: screens.filter((s) => !recentEntries.includes(s)) });
-      list.push({ key: "actions", label: t("shell.palette.group.actions"), entries: actions });
+      list.push({ key: "actions", label: t("shell.palette.group.actions"), entries: elsewhere });
     } else {
-      list.push({ key: "screens", label: t("shell.palette.group.screens"), entries: rank(trimmed, screens, text) });
-      list.push({ key: "actions", label: t("shell.palette.group.actions"), entries: rank(trimmed, actions, text) });
+      // The group whose best entry matches best comes first ("new" on the users screen: New user
+      // under "On this screen"; "users" there: the Users screen); equal matches keep this order.
+      const local = [
+        { key: "here", label: t("shell.palette.group.here"), entries: rank(trimmed, here, text) },
+        { key: "screens", label: t("shell.palette.group.screens"), entries: rank(trimmed, screens, text) },
+        { key: "actions", label: t("shell.palette.group.actions"), entries: rank(trimmed, elsewhere, text) },
+      ];
+      const best = (section: Section) => (section.entries[0] ? score(trimmed, text(section.entries[0])) : 0);
+      list.push(...local.map((section, index) => ({ section, index, best: best(section) })).sort((a, b) => b.best - a.best || a.index - b.index).map((s) => s.section));
     }
     for (const source of sources) {
       const state = remote[source.key];
@@ -111,7 +137,7 @@ export function CommandPalette({
       });
     }
     return list.filter((s) => s.entries.length > 0 || s.status);
-  }, [trimmed, screens, actions, recent, sources, remote, t]);
+  }, [trimmed, screens, here, elsewhere, recent, sources, remote, t]);
 
   const flat = useMemo(() => sections.flatMap((s) => s.entries), [sections]);
   const searching = sections.some((s) => s.status === "searching");

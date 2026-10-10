@@ -25,7 +25,7 @@ export function BranchesPage() {
   // 403 tenancy.branchNeedsEveryBranch otherwise): New is offered only when there is one.
   const creatable = useMemo(() => companies.filter((c) => c.isActive && c.everyBranch !== false), [companies]);
   const panel = useRecordPanel(can("tenancy.branches.create") && creatable.length > 0);
-  useScreenKeys({ onNew: panel.startNew, search: listSearch });
+  useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey: "tenancy.branch.new", newKeywordsKey: "tenancy.action.newBranchKeywords" });
 
   useEffect(() => {
     if (!can("tenancy.companies.read")) return;

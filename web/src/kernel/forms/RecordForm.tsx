@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useId, useRef, useState, type For
 import { Dialog } from "../dialog";
 import { useI18n } from "../i18n";
 import { navigate } from "../router";
-import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
+import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
 import type { RecordFormState } from "./useRecordForm";
 import "./forms.css";
 
@@ -367,7 +367,7 @@ export function FormSection({ title, children, columns = true }: { title?: strin
  * when opened); the draft keeps every field, so saving sends them all.
  */
 export function FormTabs({ tabs, label }: { tabs: { key: string; label: string; content: ReactNode; hidden?: boolean }[]; label: string }) {
-  const { dir } = useI18n();
+  const { dir, t } = useI18n();
   const shown = tabs.filter((tab) => !tab.hidden);
   const [current, setCurrent] = useState(shown[0]?.key ?? "");
   const id = useId();
@@ -391,6 +391,11 @@ export function FormTabs({ tabs, label }: { tabs: { key: string; label: string; 
   };
   return (
     <div className="form-tabs">
+      {shown
+        .filter((tab) => tab.key !== current)
+        .map((tab) => (
+          <TabCommand key={tab.key} tabKey={tab.key} label={t("forms.command.tab", { tab: tab.label })} onOpen={() => select(shown.indexOf(tab))} />
+        ))}
       <div role="tablist" aria-label={label} ref={listRef} onKeyDown={onKey}>
         {shown.map((tab) => (
           <button
@@ -418,6 +423,13 @@ export function FormTabs({ tabs, label }: { tabs: { key: string; label: string; 
         ))}
     </div>
   );
+}
+
+/** "Open the Sign-in history tab" in the command palette, for each tab of the open record that is
+ * not on show: the tab gets the focus, as when it is chosen with the arrow keys. */
+function TabCommand({ tabKey, label, onOpen }: { tabKey: string; label: string; onOpen: () => void }) {
+  useCommand({ id: `forms.tab.${tabKey}`, labelKey: "forms.command.tab", label, groupKey: "forms.shortcut.group", run: onOpen });
+  return null;
 }
 
 /** The address of a record document in the given language and format. */

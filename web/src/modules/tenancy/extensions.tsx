@@ -13,6 +13,14 @@ import { WorkplaceSwitcher } from "./WorkplaceSwitcher";
  * opened in their list (narrowed to the record, its form open).
  */
 export const extensions: ModuleExtensions = {
+  // From anywhere: a new company or branch, or either list printed or exported, for those whose
+  // roles allow it; each opens its screen and runs the screen's own command.
+  actions: [
+    { key: "tenancy.companies.new", labelKey: "tenancy.company.new", keywordsKey: "tenancy.action.newCompanyKeywords", permission: "tenancy.companies.create", path: "/tenancy/companies", command: "tenancy.screen.new" },
+    { key: "tenancy.branches.new", labelKey: "tenancy.branch.new", keywordsKey: "tenancy.action.newBranchKeywords", permission: "tenancy.branches.create", path: "/tenancy/branches", command: "tenancy.screen.new" },
+    { key: "tenancy.companies.print", labelKey: "tenancy.action.printCompanies", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.companies.read", path: "/tenancy/companies", command: "lists.print" },
+    { key: "tenancy.branches.print", labelKey: "tenancy.action.printBranches", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.branches.read", path: "/tenancy/branches", command: "lists.print" },
+  ],
   topbar: [{ key: "tenancy.workplace", order: 10, permission: "tenancy.workplace.read", component: WorkplaceSwitcher }],
   palette: [
     {
