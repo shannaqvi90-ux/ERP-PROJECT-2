@@ -97,9 +97,14 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   // The company record is shared by every branch: changing it needs every branch of it (the
   // server answers 403 companyNeedsEveryBranch otherwise), so the form is read-only with the reason.
   const [everyBranch, setEveryBranch] = useState(true);
+  // Company codes are unique across the workspace: changing one needs every company of it (the
+  // server answers 403 companyNeedsEveryCompany otherwise; critic p02 round 7), so the code is
+  // read-only with the reason for anyone else. A new company is offered only to them (CompaniesPage).
+  const [everyCompany, setEveryCompany] = useState(true);
   const form = useRecordForm<Company, Draft>({
     load: id === null ? undefined : (signal) => api<Company>("GET", `/api/tenancy/companies/${id}`, undefined, { signal }).then((c) => {
       setEveryBranch(c.everyBranch !== false);
+      setEveryCompany(c.everyCompany !== false);
       return c;
     }),
     initial: draftOf,
@@ -164,7 +169,9 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null} />
         <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
           hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
-        <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper hint={t("tenancy.company.codeHint")} />
+        <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper
+          disabled={id !== null && !everyCompany}
+          hint={id !== null && !everyCompany ? t("tenancy.company.codeNeedsEveryCompany") : t("tenancy.company.codeHint")} />
         <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
       </FormSection>
       <FormSection title={t("tenancy.company.registration")}>

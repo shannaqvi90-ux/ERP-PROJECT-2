@@ -226,7 +226,16 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
             Assert.Equal(HttpStatusCode.Forbidden, created.StatusCode);
             Assert.Equal("tenancy.companyNeedsEveryCompany", (await Json(created)).GetProperty("code").GetString());
         }
+        // The screens learn it from the record and from every list row (critic p02 round 7: New and
+        // the code were offered to them and refused on save).
         var own = (await one.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>($"/api/tenancy/companies/{x}"))!;
+        Assert.False(own["everyCompany"]!.GetValue<bool>());
+        Assert.True(own["everyBranch"]!.GetValue<bool>());
+        Assert.All((await one.GetFromJsonAsync<JsonElement>("/api/tenancy/companies")).GetProperty("items").EnumerateArray(),
+            row => Assert.False(row.GetProperty("everyCompany").GetBoolean()));
+        Assert.True((await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{x}")).GetProperty("everyCompany").GetBoolean());
+        Assert.All((await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies")).GetProperty("items").EnumerateArray(),
+            row => Assert.True(row.GetProperty("everyCompany").GetBoolean()));
         var originalName = own["legalNameEn"]!.GetValue<string>();
         own["code"] = codeOfY;
         Assert.Equal(HttpStatusCode.Forbidden, (await one.PutAsJsonAsync($"/api/tenancy/companies/{x}", own)).StatusCode);

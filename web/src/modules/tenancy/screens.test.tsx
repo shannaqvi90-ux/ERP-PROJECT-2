@@ -104,8 +104,8 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/lists/tenancy.branches/definition") return { status: 200, body: definition("tenancy.branches", "/api/tenancy/branches", "code") };
     if (path === "/api/lists/tenancy.access/definition") return { status: 200, body: definition("tenancy.access", "/api/tenancy/access", "displayName") };
     if (path.endsWith("/views")) return { status: 200, body: { items: [] } };
-    if (path === "/api/tenancy/companies") return { status: 200, body: { items: [{ ...company, everyBranch: options.everyBranch ?? true }], total: 1, next: null } };
-    if (path === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true } };
+    if (path === "/api/tenancy/companies") return { status: 200, body: { items: [{ ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true }], total: 1, next: null } };
+    if (path === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true } };
     if (path === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
@@ -284,6 +284,35 @@ describe("tenancy screens offer exactly what the user may do", () => {
     const limited = await open("tenant", all, { everyCompany: false });
     expect(limited.filter((c) => c === "button:Save" || c.startsWith("field:")), "the workspace form for a user of some companies").toEqual([]);
     expect(shown().container.querySelector('[data-testid="tenant-some-companies-only"]')!.textContent).toContain("only some companies or branches");
+  });
+
+  // Critic p02 round 7: an administrator who works in only some companies (or only some branches)
+  // was offered New and an editable company code, and the server refused both
+  // (tenancy.companyNeedsEveryCompany): company codes are unique across the workspace. Both are
+  // offered only to someone who works in every company; everything else of their own company stays.
+  it("companies: where the user works in only some companies, exactly New and the company code disappear", async () => {
+    const full = await open("companies", all);
+    expect(full, "companies with every company offers New and the code").toEqual(expect.arrayContaining(["button:New", "field:code"]));
+    closeView();
+    const limited = await open("companies", all, { everyCompany: false });
+    expect(limited, "companies for a user of some companies").toEqual(full.filter((c) => c !== "button:New" && c !== "field:code"));
+    expect(shown().container.querySelector("main")!.textContent).toContain("may change a company code");
+  });
+
+  it("companies: Alt+N and ?open=new open nothing where the user works in only some companies", async () => {
+    await open("companies", all, { everyCompany: false, path: "/tenancy/companies" });
+    act(() => {
+      (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
+    });
+    await settle();
+    expect(new URLSearchParams(window.location.search).get("open"), "Alt+N with only some companies").toBeNull();
+    expect(shown().container.querySelector(".record-form"), "Alt+N with only some companies").toBeNull();
+    closeView();
+    await open("companies", all, { everyCompany: false, path: "/tenancy/companies?open=new" });
+    expect(shown().container.querySelector(".record-form"), "?open=new with only some companies").toBeNull();
+    closeView();
+    await open("companies", all, { path: "/tenancy/companies?open=new" });
+    expect(shown().container.querySelector(".record-form"), "?open=new with every company").not.toBeNull();
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {

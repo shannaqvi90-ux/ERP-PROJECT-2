@@ -18,10 +18,14 @@ export function useRecordPanel(canCreate: boolean) {
   const [formKey, setFormKey] = useState(() => openId ?? "");
   const [reload, setReload] = useState(0);
 
+  // The list opens the record its address names once its definition arrives: a new record there
+  // (<screen>/new, typed or bookmarked) is opened only where the screen offers New, the same as at
+  // first render (critic p02 round 7: an address could open a new-company form the server refuses).
   const onOpenIdChange = useCallback((id: string | null) => {
-    setOpenId(id);
-    setFormKey(id ?? "");
-  }, []);
+    const next = id === newRecord && !canCreate ? null : id;
+    setOpenId(next);
+    setFormKey(next ?? "");
+  }, [canCreate]);
   const startNew = useMemo(
     () =>
       canCreate
