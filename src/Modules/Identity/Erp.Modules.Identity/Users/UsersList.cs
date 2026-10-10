@@ -56,5 +56,7 @@ internal static class UsersList
             .Column("language", u => u.Language)
             .Column("isActive", u => u.IsActive)
             .Column("lastSignInAt", u => u.LastSignInAt)
-            .Column("createdAt", u => u.CreatedAt);
+            .Column("createdAt", u => u.CreatedAt)
+            // "map" finds Majid Anil Pillai (critic p05 round 7: the shortest name-only path).
+            .Initials(u => u.DisplayName);
 }

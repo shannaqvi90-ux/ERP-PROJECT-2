@@ -233,6 +233,20 @@ public sealed class UsersListVolumeTests(UsersVolumeFixture fixture) : IClassFix
         Assert.True(csvSeconds < 60 && xlsxSeconds < 60, $"CSV {csvSeconds:F1} s, XLSX {xlsxSeconds:F1} s");
     }
 
+    /// <summary>Initials (critic p05 round 7, find-user: the shortest name-only path): the four
+    /// letters of a name's words find its person among 100,000 users within the budget (the
+    /// initials are matched on the name itself, so a word of up to five letters reads every row).</summary>
+    [Fact]
+    public async Task One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
+        var (page, timing) = await TimedAsync(admin, "/api/identity/users?take=200&search=swar");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{timing}; {page.GetProperty("total").GetInt32()} matches");
+        Assert.True(timing.WithinBudget, timing.ToString());
+        Assert.True(page.GetProperty("ranked").GetBoolean(), "a search for initials is ranked");
+        Assert.Contains(page.GetProperty("items").EnumerateArray(), u => u.GetProperty("displayName").GetString() == UsersVolumeFixture.NeedleName);
+    }
+
     [Fact]
     public async Task Word_search_is_served_by_the_trigram_index_not_a_table_scan()
     {

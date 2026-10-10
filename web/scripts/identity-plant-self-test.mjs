@@ -81,20 +81,33 @@ const plants = [
     edits: [
       {
         file: "src/modules/identity/model.ts",
-        find: "  const beyondOwn = role.permissions.some((p) => !held.has(p));",
-        replace: '  const beyondOwn = role.permissions.some((p) => p.startsWith("identity.") && !held.has(p));',
+        find: "  const beyondOwn = role.permissions.some((p) => !everywhere.has(p));",
+        replace: '  const beyondOwn = role.permissions.some((p) => p.startsWith("identity.") && !everywhere.has(p));',
       },
     ],
   },
   {
     id: "U-company-roles",
     what: "Roles held in one company left out of what a user holds",
-    edits: [{ file: "src/modules/identity/model.ts", find: " || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId))", replace: "" }],
+    edits: [{ file: "src/modules/identity/model.ts", find: "    (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) ||\n", replace: "" }],
   },
   {
     id: "U-elsewhere",
     what: "A user holding roles in companies the signed-in user does not work in treated as editable",
-    edits: [{ file: "src/modules/identity/model.ts", find: " || user.rolesElsewhere === true", replace: "" }],
+    edits: [{ file: "src/modules/identity/model.ts", find: "    user.rolesElsewhere === true ||\n", replace: "" }],
+  },
+  {
+    // Critic p03 round 7, plant Pf on screen: grants held through a role in the working company
+    // taken as held in every company when judging a role.
+    id: "U-workspace",
+    what: "A role's grants judged against the session's permissions (the working company's included), not those held everywhere",
+    edits: [{ file: "src/modules/identity/model.ts", find: "  const beyondOwn = role.permissions.some((p) => !everywhere.has(p));", replace: "  const beyondOwn = role.permissions.some((p) => !held.has(p));" }],
+  },
+  {
+    // Critic p02 round 8 (routed): the server's refusal of an account read alone ignored on screen.
+    id: "U-refused",
+    what: "The server's refusal of acting on an account (it reaches companies the signed-in user does not work in) ignored",
+    edits: [{ file: "src/modules/identity/model.ts", find: "    (!self && Boolean(user.refused));", replace: "    false;" }],
   },
 ];
 

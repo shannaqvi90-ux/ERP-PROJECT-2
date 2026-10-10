@@ -177,9 +177,31 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 {
                     var elsewhere = await targets.UserInCompanyAsync(["identity.users.read"], companies.Ids[1], companies, fresh: true);
                     var elsewhereBefore = await ReadUserAsync(admin, elsewhere);
+                    // A user who works in both companies, holding only a workspace-wide role the
+                    // caller's grants cover (critic p02 round 8: whoever sets the password of a user
+                    // who also works in the JAFZA FZE signs in there as them, though they work in the
+                    // Dubai LLC alone; identity counted only hidden company roles).
+                    var worksElsewhere = await CreatedIdAsync(admin, "/api/identity/users", new
+                    {
+                        email = $"workselsewhere.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Works elsewhere {tag}", language = "en", password = ErpTestEnvironment.Password,
+                        mustChangePassword = false, roleIds = new[] { await targets.RoleAsync(["identity.users.read"]) },
+                    });
+                    await companies.GiveAccessAsync(worksElsewhere);
+                    var worksElsewhereBefore = await ReadUserAsync(admin, worksElsewhere);
                     await companies.LimitAccessAsync(callerId, inCompany);
                     var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
                     var elsewhereAfter = await ReadUserAsync(admin, elsewhere);
+                    var (worksStatus, worksText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => worksElsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, worksElsewhere, $"{tag}w"));
+                    var worksElsewhereAfter = await ReadUserAsync(admin, worksElsewhere);
+                    companyTargetsAimed++;
+                    if (worksStatus != (int)HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint}: aimed at a user who also works in a company the caller does not work in answered {worksStatus} (expected 403): {Short(worksText)}");
+                    }
+                    if (worksElsewhereAfter != worksElsewhereBefore)
+                    {
+                        problems.Add($"{endpoint}: the user who also works in a company the caller does not work in changed: before {Short(worksElsewhereBefore)}; after {Short(worksElsewhereAfter)}");
+                    }
                     // Control: working in the first company alone, the caller still acts on a user
                     // without roles who works there too.
                     var limitedTarget = await CreatedIdAsync(admin, "/api/identity/users", new { email = $"limited.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Limited target {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
@@ -498,6 +520,16 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{result.PartialTargets} requests aimed at records granting what the caller lacks; ratchet minimum {Ratchet.Min("g2.grantBearingPartialTargets")}");
         Assert.True(result.ModuleFieldVariants >= Ratchet.Min("g2.grantBearingModuleFieldVariants"),
             $"{result.ModuleFieldVariants} single-field requests aimed at records granting one other module; ratchet minimum {Ratchet.Min("g2.grantBearingModuleFieldVariants")}");
+        // Callers whose grants come from a role in one company (critic p03 round 7, plant Pf): every
+        // endpoint acting on a role, aimed at roles held across the workspace and in the other company.
+        var companyChecked = result.CompanyCallerChecked ?? [];
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CompanyCallerTargets} requests by callers whose grants come from a role in one company: {string.Join(", ", companyChecked)}");
+        foreach (var expected in new[] { "PUT /api/identity/roles/{id:guid}", "DELETE /api/identity/roles/{id:guid}", "POST /api/identity/roles/{id:guid}/copy" })
+        {
+            Assert.Contains(expected, companyChecked);
+        }
+        Assert.True(result.CompanyCallerTargets >= Ratchet.Min("g2.grantBearingCompanyCallerTargets"),
+            $"{result.CompanyCallerTargets} requests on grant-bearing records by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.grantBearingCompanyCallerTargets")}");
     }
 
     [Fact]

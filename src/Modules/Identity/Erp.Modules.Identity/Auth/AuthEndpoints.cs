@@ -39,7 +39,11 @@ public sealed record SessionTenant(Guid Id, string Code, string NameEn, string N
 
 public sealed record SessionMenuItem(string Key, string LabelKey, string Path, string? Group);
 
-/// <summary>Who is signed in, to which workspace, what they may do and what the shell shows.</summary>
+/// <summary>Who is signed in, to which workspace, what they may do and what the shell shows.
+/// <c>Permissions</c>: what every endpoint of this session checks (the working company's roles
+/// included). <c>WorkspacePermissions</c>: what the user's roles grant in every company, which is
+/// what changing a role, or giving a role in every company, needs (roles are defined for the whole
+/// workspace), so screens offer those only within it.</summary>
 public sealed record SessionResponse(
     bool Authenticated,
     SessionUser? User,
@@ -48,7 +52,8 @@ public sealed record SessionResponse(
     IReadOnlyList<SessionMenuItem> Menu,
     DateTimeOffset? ExpiresAt,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Token = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] PasskeySignIn? Passkey = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] PasskeySignIn? Passkey = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? WorkspacePermissions = null)
 {
     public static readonly SessionResponse Anonymous = new(false, null, null, [], [], null);
 }
@@ -183,7 +188,7 @@ internal static class AuthEndpoints
 }
 
 /// <summary>Builds the session payload for a user of the tenant the unit of work is bound to.</summary>
-internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tenants, ShellMenu menu, IServiceProvider services)
+internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tenants, ShellMenu menu, SessionGrants grants, IServiceProvider services)
 {
     /// <summary>The payload of the request's own session: its permissions are the ones every
     /// endpoint of this request checks (the working company's included).</summary>
@@ -232,12 +237,15 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");
         var permissions = held.ToHashSet(StringComparer.Ordinal);
+        // Workspace-wide roles grant these everywhere; never more than the session itself holds.
+        var everywhere = (await grants.LoadAsync(userId, cancellationToken)).Everywhere.Where(permissions.Contains).Order(StringComparer.Ordinal).ToList();
         return new SessionResponse(
             true,
             user,
             new SessionTenant(tenant.Id, tenant.Code, tenant.NameEn, tenant.NameAr),
             permissions.Order(StringComparer.Ordinal).ToList(),
             menu.For(permissions).Select(m => new SessionMenuItem(m.Key, m.LabelKey, m.Path, m.Group)).ToList(),
-            expiresAt);
+            expiresAt,
+            WorkspacePermissions: everywhere);
     }
 }

@@ -60,6 +60,23 @@ describe("permission matrix", () => {
     expect(buildMatrix(catalogue).flatMap((m) => m.matching)).toHaveLength(catalogue.length);
   });
 
+  it("a word naming a column matches that column only, not every label holding the word (critic p03 round 7)", () => {
+    const withShare = [...catalogue, p("lists.views.read", "List views", "View list views"), p("lists.views.share", "List views", "Share list views with everyone")];
+    const labels = { read: "View", create: "Create", update: "Change", delete: "Delete" };
+    const keys = (filter: string, l: Record<string, string> = labels) => buildMatrix(withShare, filter, l).flatMap((m) => m.matching.map((x) => x.key));
+    expect(keys("view").sort()).toEqual(["identity.roles.read", "identity.users.read", "lists.views.read", "tenancy.tenant.read"]);
+    expect(keys("View")).not.toContain("lists.views.share");
+    expect(keys("vie")).not.toContain("lists.views.share");
+    // In Arabic, by the column's Arabic name.
+    expect(keys("عرض", { read: "عرض", create: "إنشاء", update: "تعديل", delete: "حذف" })).toEqual(keys("view"));
+    // Other words still match labels, resources and keys: "share" finds sharing, "views" the whole row.
+    expect(keys("share")).toEqual(["lists.views.share"]);
+    expect(keys("views")).toEqual(["lists.views.read", "lists.views.share"]);
+    expect(keys("delete roles")).toEqual(["identity.roles.delete"]);
+    // Two letters name no column.
+    expect(keys("vi")).toContain("lists.views.share");
+  });
+
   it("bulk toggles add or remove exactly the given keys", () => {
     const start = new Set(["identity.users.read", "tenancy.tenant.read"]);
     const on = toggleAll(start, ["identity.roles.read", "identity.roles.delete"], true);
@@ -122,12 +139,30 @@ describe("what the screens offer for a role", () => {
     expect(roleActions(strong, without("identity.users.resetPassword"))).toEqual({ edit: false, copy: false, delete: false, beyondOwn: true });
     expect(roleActions({ isSystem: true, permissions: identity }, new Set(identity))).toEqual({ edit: false, copy: true, delete: false, beyondOwn: false });
   });
+
+  it("judges what a role grants against what the user holds in every company, not through a role in the working company (critic p03 round 7)", () => {
+    // Every identity permission held in the working company, only reading users held everywhere.
+    const inCompany = roleActions(custom, new Set(identity), new Set(["identity.users.read"]));
+    expect(inCompany).toEqual({ edit: true, copy: true, delete: true, beyondOwn: false });
+    const strong = { isSystem: false, permissions: ["identity.users.read", "identity.users.update"] };
+    expect(roleActions(strong, new Set(identity), new Set(["identity.users.read"]))).toEqual({ edit: false, copy: false, delete: false, beyondOwn: true });
+    // The action's own permission still comes from the session.
+    expect(roleActions(custom, without("identity.roles.update"), new Set(identity)).edit).toBe(false);
+  });
 });
 
 describe("what the screens offer for another user", () => {
   const clerkRole = { id: "r-clerk", permissions: ["identity.users.read"] };
   const adminRole = { id: "r-admin", permissions: identity };
   const clerk = { id: "u-clerk", roleIds: ["r-clerk"], lastSignInAt: null };
+
+  it("offers nothing on an account the server refuses for the signed-in user, but their own", () => {
+    const refused = { ...clerk, refused: "identity.userWorksBeyondOwnCompanies" };
+    expect(userActions(refused, [clerkRole], new Set(identity), "me")).toMatchObject({
+      beyondOwn: true, edit: false, resetPassword: false, signOutEverywhere: false, unblock: false, delete: false,
+    });
+    expect(userActions({ ...refused, id: "me" }, [clerkRole], new Set(identity), "me").beyondOwn).toBe(false);
+  });
 
   it("needs the permission of each action, exactly", () => {
     const all = userActions(clerk, [clerkRole, adminRole], new Set(identity), "me");

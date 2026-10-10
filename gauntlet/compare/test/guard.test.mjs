@@ -69,7 +69,10 @@ const usersPage = users => `<!doctype html><html><body><nav aria-label="Main nav
   <script>
     const users = ${JSON.stringify(users)};
     const rows = document.getElementById('rows');
-    const draw = q => { rows.innerHTML = ''; for (const u of users.filter(x => !q || x.name.includes(q))) {
+    // Like our users list: a word also matches the initials of the name, after the names holding it.
+    const initials = n => n.toLowerCase().split(/[\\s-]+/).filter(Boolean).map(w => w[0]).join('');
+    const matching = q => [...users.filter(x => !q || x.name.includes(q)), ...users.filter(x => q && !x.name.includes(q) && initials(x.name) === q.toLowerCase())];
+    const draw = q => { rows.innerHTML = ''; for (const u of matching(q)) {
       const tr = document.createElement('tr'); tr.innerHTML = '<td></td><td></td>'; tr.cells[0].textContent = u.name; tr.cells[1].textContent = u.login;
       tr.onclick = () => { const p = document.getElementById('panel'); p.hidden = false; p.innerHTML = '<dl><dt>Name</dt><dd></dd><dt>Sign-in</dt><dd></dd></dl>';
         p.querySelectorAll('dd')[0].textContent = u.name; p.querySelectorAll('dd')[1].textContent = u.login; };
@@ -170,7 +173,10 @@ before(async () => {
     if (req.url === '/api/auth/sign-out') { if (sid(req)) revoked.add(sid(req)); res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/api/identity/users')) {
       const q = decodeURIComponent(new URL(req.url, 'http://x').searchParams.get('search') || '').toLowerCase();
-      return json({ items: users.filter(u => !q || u.login.toLowerCase().includes(q) || u.name.toLowerCase().includes(q)).map((u, i) => ({ id: `u${i}`, email: u.login, displayName: u.name })) });
+      const initialsOf = n => n.toLowerCase().split(/[\s-]+/).filter(Boolean).map(w => w[0]).join('');
+      const byWord = users.filter(u => !q || u.login.toLowerCase().includes(q) || u.name.toLowerCase().includes(q));
+      const byInitials = q ? users.filter(u => !byWord.includes(u) && initialsOf(u.name) === q) : [];
+      return json({ items: [...byWord, ...byInitials].map((u, i) => ({ id: `u${i}`, email: u.login, displayName: u.name })) });
     }
     if (req.url === '/api/auth/session') return json({ authenticated: signedIn, user: signedIn ? { id: 'u0', email: 'signin.tester@demo-trading.example' } : null });
     if (req.url === '/api/things' && req.method === 'POST') { things++; return json({ id: 7 }); }
@@ -637,6 +643,15 @@ test('the real ours find-user driver verifies on a stand-in users screen', async
   assert.equal(r.counts.steps, 3, 'Users, the name, Enter');
   assert.equal(r.start_state.kind, 'home');
   assert.equal(r.start_state.path, '/');
+});
+
+test('the real ours find-user driver finds the user by the initials of the name (critic p05 round 7): Users, three letters, Enter', async () => {
+  const r = await runFindUser({ ...(await loadFindUser(s => s)), variant: 'initials' });
+  assert.equal(r.status, 'verified', r.error);
+  const initials = needles.user.name.toLowerCase().split(/[\s-]+/).map(w => w[0]).join('');
+  assert.deepEqual(r.steps.map(st => st.kind), ['click', 'type', 'key'], 'the stand-in lists the user first for their initials, so Enter opens them');
+  assert.equal(r.steps[1].text, initials);
+  assert.equal(r.counts.keystrokes, initials.length + 1);
 });
 
 test('plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win', async () => {

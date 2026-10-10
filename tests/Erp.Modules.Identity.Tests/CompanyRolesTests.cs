@@ -216,6 +216,14 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
             Assert.Contains("tenancy.branches.update", inX);
             Assert.DoesNotContain("tenancy.branches.update", inY);
             Assert.Contains("tenancy.branches.read", inY);
+            // What the roles grant in every company: none of what the company roles grant, in X or Y
+            // (the screens judge role changes by it).
+            await accountant.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = x });
+            var session = await accountant.GetFromJsonAsync<JsonElement>("/api/auth/session");
+            var everywhere = session.GetProperty("workspacePermissions").EnumerateArray().Select(p => p.GetString()).ToList();
+            Assert.DoesNotContain("tenancy.branches.update", everywhere);
+            Assert.DoesNotContain("tenancy.branches.read", everywhere);
+            Assert.All(everywhere, p => Assert.Contains(p, inX));
         }
     }
 
@@ -243,8 +251,13 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
         var managerInX = await TargetAsync("mgrx", [new { roleId = manager, companyId = x }]);
         var managerInY = await TargetAsync("mgry", [new { roleId = manager, companyId = y }]);
         var readerInY = await TargetAsync("ready", [new { roleId = reader, companyId = y }]);
-        var targets = new[] { plain, managerInX, managerInY, readerInY };
-        foreach (var target in targets)
+        // Without roles, working in both companies (critic p02 round 8: beyond a caller who works in X alone).
+        var plainInBoth = await TargetAsync("plainboth", []);
+        var targets = new[] { plain, managerInX, managerInY, readerInY, plainInBoth };
+        // Those whose roles are held in X, and the user without roles, work in X only; the others in both.
+        await GiveAccessAsync(admin, plain, x);
+        await GiveAccessAsync(admin, managerInX, x);
+        foreach (var target in new[] { managerInY, readerInY, plainInBoth })
         {
             await GiveAccessAsync(admin, target, x, y);
         }
@@ -280,11 +293,12 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
         using (var both = await CallerAsync("both", [x, y], []))
         {
             var (result, states) = await DeactivateAllAsync(both);
-            Assert.Equal(4, result.GetProperty("matched").GetInt32());
-            Assert.Equal(2, result.GetProperty("changed").GetInt32());
+            Assert.Equal(5, result.GetProperty("matched").GetInt32());
+            Assert.Equal(3, result.GetProperty("changed").GetInt32());
             Assert.Equal(2, result.GetProperty("refusedBeyondOwn").GetInt32());
             Assert.False(states[plain]);
             Assert.False(states[readerInY]);
+            Assert.False(states[plainInBoth]);
             Assert.True(states[managerInX], "a manager whose role is held in company X only was deactivated by a clerk");
             Assert.True(states[managerInY], "a manager whose role is held in company Y only was deactivated by a clerk");
 
@@ -295,17 +309,27 @@ public sealed class CompanyRolesTests(CompanyRolesFixture fixture) : IClassFixtu
         }
 
         // A clerk who is also the manager in X and works only in X: the manager in X is within
-        // them; everyone holding a role in Y (which they cannot see) is not.
+        // them; everyone holding a role in Y (which they cannot see), or working there, is not.
         using (var managerOfX = await CallerAsync("mgrofx", [x], [new { roleId = manager, companyId = x }]))
         {
             var (result, states) = await DeactivateAllAsync(managerOfX);
-            Assert.Equal(4, result.GetProperty("matched").GetInt32());
+            Assert.Equal(5, result.GetProperty("matched").GetInt32());
             Assert.Equal(2, result.GetProperty("changed").GetInt32());
-            Assert.Equal(2, result.GetProperty("refusedBeyondOwn").GetInt32());
+            Assert.Equal(3, result.GetProperty("refusedBeyondOwn").GetInt32());
             Assert.False(states[plain]);
             Assert.False(states[managerInX]);
             Assert.True(states[managerInY], "a user holding a role in a company the caller does not work in was deactivated");
             Assert.True(states[readerInY], "a user holding a role in a company the caller does not work in was deactivated");
+            Assert.True(states[plainInBoth], "a user who also works in a company the caller does not work in was deactivated");
+
+            // The one-user edit agrees, and says why.
+            var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{plainInBoth}")).GetProperty("version").GetUInt32();
+            var single = await managerOfX.PutAsJsonAsync($"/api/identity/users/{plainInBoth}", new { displayName = $"bulk.plainboth.{tag}", language = "en", isActive = false, version });
+            Assert.Equal(HttpStatusCode.Forbidden, single.StatusCode);
+            Assert.Equal("identity.userWorksBeyondOwnCompanies", (await Json(single)).GetProperty("code").GetString());
+            var read = await managerOfX.GetFromJsonAsync<JsonElement>($"/api/identity/users/{plainInBoth}");
+            Assert.Equal("identity.userWorksBeyondOwnCompanies", read.GetProperty("refused").GetString());
+            Assert.False((await managerOfX.GetFromJsonAsync<JsonElement>($"/api/identity/users/{plain}")).TryGetProperty("refused", out _));
         }
     }
 

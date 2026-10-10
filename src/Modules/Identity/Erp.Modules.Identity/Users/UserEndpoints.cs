@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Erp.Modules.Identity.Users;
@@ -21,7 +22,10 @@ namespace Erp.Modules.Identity.Users;
 /// reset, not yet signed in with a password of their own). The set-up code itself appears only in
 /// the response that issued it. <c>RoleIds</c> apply in every company; <c>CompanyRoles</c> only in
 /// their company (those of the companies the caller works in); <c>RolesElsewhere</c>: the user also
-/// holds roles in companies the caller does not work in.</summary>
+/// holds roles in companies the caller does not work in. <c>Refused</c> (one user read alone): the
+/// problem code the caller's edits, password resets and other actions on this account would answer
+/// (it grants more than the caller holds, or reaches companies the caller does not work in), so a
+/// screen offers none of them; absent when the caller may act on it, and on the caller's own.</summary>
 public sealed record UserDto(
     Guid Id,
     string Email,
@@ -37,7 +41,8 @@ public sealed record UserDto(
     IReadOnlyList<CompanyRoleDto>? CompanyRoles = null,
     bool RolesElsewhere = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SetupCode = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SetupCodeExpiresAt = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SetupCodeExpiresAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Refused = null);
 
 /// <summary>New user. Without a password the user is invited: the response carries a one-time
 /// set-up code to hand over, and the first sign-in chooses a password. With a password,
@@ -204,15 +209,19 @@ internal static class UserEndpoints
         return result.Map(u => ToDto(u, roles, pending, companyRoles));
     }
 
-    private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, IUserWorkplaces workplaces,
+        HttpContext http, CancellationToken cancellationToken)
     {
         var user = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
         if (user is null)
         {
             return Problems.NotFound(http);
         }
+        var refused = id == caller.UserId
+            ? null
+            : await UserAccess.RefusalAsync(db, catalog, id, await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken), workplaces, cancellationToken);
         return TypedResults.Ok(ToDto(user, await RolesOf(db, [user.Id], cancellationToken), await PendingSetupOf(db, [user.Id], cancellationToken),
-            await CompanyRolesOf(db, [user.Id], cancellationToken)));
+            await CompanyRolesOf(db, [user.Id], cancellationToken)) with { Refused = refused });
     }
 
     private static async Task<Results<Created<UserDto>, ProblemHttpResult>> Create(
@@ -320,7 +329,7 @@ internal static class UserEndpoints
             return Problems.Forbidden(http, "identity.cannotChangeOwnAccess");
         }
         var callerGrants = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
-        if (user.Id != caller.UserId && await UserAccess.RefusalAsync(db, catalog, id, callerGrants, cancellationToken) is { } refusal)
+        if (user.Id != caller.UserId && await UserAccess.RefusalAsync(db, catalog, id, callerGrants, http.RequestServices.GetRequiredService<IUserWorkplaces>(), cancellationToken) is { } refusal)
         {
             return Problems.Forbidden(http, refusal);
         }
@@ -639,7 +648,7 @@ internal static class UserEndpoints
             return Problems.Forbidden(http, "identity.notOnYourself");
         }
         var callerGrants = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
-        if (await UserAccess.RefusalAsync(db, catalog, id, callerGrants, cancellationToken) is { } refusal)
+        if (await UserAccess.RefusalAsync(db, catalog, id, callerGrants, http.RequestServices.GetRequiredService<IUserWorkplaces>(), cancellationToken) is { } refusal)
         {
             return Problems.Forbidden(http, refusal);
         }
@@ -725,15 +734,23 @@ internal static class UserAccess
     /// Why the caller may not act on this user, or null. Acting on a stronger account (resetting its
     /// password, ending its sessions, editing it) would be a way to take it over: the caller must
     /// hold every permission the user holds, in every company where the user holds it (or
-    /// everywhere), and the user may hold no role in a company the caller does not work in (what it
-    /// grants cannot be seen from here).
+    /// everywhere), the user may hold no role in a company the caller does not work in (what it
+    /// grants cannot be seen from here), and may work in no such company either (critic p02 round
+    /// 8: whoever sets the password of a user who also works in the JAFZA FZE signs in there as
+    /// them, though they work in the Dubai LLC alone). Where a user works is the tenancy module's
+    /// own count (<see cref="IUserWorkplaces"/>), the same one its default-company check reads.
     /// </summary>
-    public static async Task<string?> RefusalAsync(IdentityDbContext db, ModuleCatalog catalog, Guid userId, UserGrants caller, CancellationToken cancellationToken)
+    public static async Task<string?> RefusalAsync(IdentityDbContext db, ModuleCatalog catalog, Guid userId, UserGrants caller, IUserWorkplaces workplaces,
+        CancellationToken cancellationToken)
     {
         var held = await GrantQueries.ForUserAsync(db, userId, catalog, ownRows: false, cancellationToken);
         if (held.Hidden > 0)
         {
             return "identity.userBeyondOwnCompanies";
+        }
+        if ((await workplaces.GetAsync(userId, cancellationToken)).CompaniesElsewhere)
+        {
+            return "identity.userWorksBeyondOwnCompanies";
         }
         return caller.CoversAll(held) ? null : "identity.userBeyondOwn";
     }

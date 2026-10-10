@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../kernel/api";
 import { TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
@@ -179,10 +179,29 @@ function RoleEditor({
   const { t, language } = useI18n();
   const { state } = useSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // The question takes the focus when it opens (Enter deletes, Escape or Cancel keeps the role), and
+  // the Delete button gets it back when it closes (critic p03 round 7: focus fell to the page).
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  const deleteRef = useRef<HTMLButtonElement>(null);
+  const refocusDelete = useRef(false);
+  useEffect(() => {
+    if (confirmDelete) confirmRef.current?.focus();
+    else if (refocusDelete.current) {
+      refocusDelete.current = false;
+      deleteRef.current?.focus();
+    }
+  }, [confirmDelete]);
+  const cancelDelete = () => {
+    refocusDelete.current = true;
+    setConfirmDelete(false);
+  };
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const held = new Set(state.status === "signedIn" ? state.session.permissions : []);
-  const actions = roleActions(role, held);
+  // What the user holds in every company: a role's permissions are offered, and a role is
+  // changed, copied or deleted, only within it.
+  const everywhere = new Set(state.status === "signedIn" ? (state.session.workspacePermissions ?? state.session.permissions) : []);
+  const actions = roleActions(role, held, everywhere);
   const form = useRecordForm<Role, RoleDraft>({
     load: role ? async () => role : undefined,
     initial: (r) => ({ nameEn: r?.nameEn ?? "", nameAr: r?.nameAr ?? "", permissions: [...(r?.permissions ?? [])].sort() }),
@@ -210,7 +229,7 @@ function RoleEditor({
       onSaved(role, true);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e));
-      setConfirmDelete(false);
+      cancelDelete();
     } finally {
       setBusy(false);
     }
@@ -233,7 +252,7 @@ function RoleEditor({
               </button>
             )}
             {role && actions.delete && !confirmDelete && (
-              <button type="button" className="button danger" onClick={() => setConfirmDelete(true)}>
+              <button type="button" className="button danger" ref={deleteRef} onClick={() => setConfirmDelete(true)}>
                 {t("identity.roles.delete")}
               </button>
             )}
@@ -241,12 +260,22 @@ function RoleEditor({
         }
       >
         {confirmDelete && role && (
-          <p className="id-confirm" role="alert">
+          <p
+            className="id-confirm"
+            role="alert"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                // Escape answers the question, and leaves the record open.
+                event.preventDefault();
+                cancelDelete();
+              }
+            }}
+          >
             {t("identity.roles.deleteConfirm", { count: role.userCount })}
-            <button type="button" className="button danger" disabled={busy} onClick={() => void remove()}>
+            <button type="button" className="button danger" ref={confirmRef} disabled={busy} onClick={() => void remove()}>
               {t("identity.roles.deleteYes")}
             </button>
-            <button type="button" className="button" onClick={() => setConfirmDelete(false)}>
+            <button type="button" className="button" onClick={cancelDelete}>
               {t("identity.form.cancel")}
             </button>
           </p>
@@ -265,7 +294,7 @@ function RoleEditor({
             permissions={permissions}
             selected={selected}
             onChange={(next) => form.set("permissions")([...next].sort())}
-            canChange={(key) => held.has(key)}
+            canChange={(key) => everywhere.has(key)}
             readOnly={form.readOnly}
           />
         </FormSection>

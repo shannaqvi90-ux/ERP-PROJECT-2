@@ -632,6 +632,14 @@ public sealed class LeakyModule : ErpModule
                 .WithName("leaky.matchingActiveRoleAnywhere").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, taking a role the caller's grants cover in one company as covered in every company.")
                 .RequirePermission("leaky.data.update");
 
+            // Bug 65 (critic p02 round 8, routed to p03): the same activation with every role rule
+            // right, that leaves out where the chosen users work: a clerk who works in the Dubai LLC
+            // alone deactivates someone who also works in the JAFZA FZE. Same reach as bugs 53 and 54.
+            group.MapPost("/users/matching/active-ignoring-workplaces", (PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller) =>
+                    SetMatchingActiveRoleAnywhereAsync(request, session, caller, roleAnywhere: false))
+                .WithName("leaky.matchingActiveIgnoringWorkplaces").WithSummary("Planted bug: activates or deactivates the users a search or filter chooses, whatever companies outside the caller's they work in.")
+                .RequirePermission("leaky.data.update");
+
             // Bug 25: a GET that writes. Every GET runs in a read-only transaction, so the database
             // refuses the write.
             group.MapGet("/touch", async (ErpDbSession session) =>
@@ -897,6 +905,85 @@ public sealed class LeakyModule : ErpModule
                 }
                 return await InsertRoleAsync(session, request.NameEn, request.NameAr, [.. role.Permissions], "narrow-roles");
             }).WithName("leaky.copyNarrowRole").WithSummary("Planted bug: copies a role checking only its identity permissions.").RequirePermission("leaky.data.update");
+
+            // Bug 64 (critic p03 round 7, plant Pf): role checks that take a permission the caller
+            // holds through a role in ONE company as held in every company. Creating a role asks for
+            // its grants everywhere (correct); changing, deleting and copying one accept grants held
+            // in any one company, so a role manager of the Dubai LLC alone renames, empties or
+            // deletes a role that staff of the JAFZA FZE hold. A caller whose grants are all held
+            // workspace-wide meets correct checks: only a caller whose grants come from a role in one
+            // company reaches the fault.
+            group.MapPost("/company-roles", async (NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var permissions = (request.Permissions ?? []).Distinct().ToArray();
+                if (!permissions.All((await CallerGrantsAsync(session, caller.UserId, anyCompany: false)).Contains))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                return await InsertRoleAsync(session, request.NameEn, request.NameAr, permissions, "company-roles");
+            }).WithName("leaky.createCompanyRole").WithSummary("Creates a role granting only what the caller holds in every company.").RequirePermission("leaky.data.update");
+
+            group.MapGet("/company-roles/{id:guid}", async (Guid id, ErpDbSession session) =>
+                await NarrowRoleAsync(session, id) is { } role ? Results.Ok(role) : Results.NotFound())
+                .WithName("leaky.getCompanyRole").WithSummary("One role.").RequirePermission("leaky.data.read");
+
+            group.MapPut("/company-roles/{id:guid}", async (Guid id, NewRole request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                var nameEn = request.NameEn?.Trim() ?? "";
+                var nameAr = request.NameAr?.Trim() ?? "";
+                if (nameEn.Length is 0 or > 100 || nameAr.Length is 0 or > 100 || request.Permissions is null)
+                {
+                    return Results.BadRequest();
+                }
+                if (await NarrowRoleAsync(session, id) is not { IsSystem: false } role)
+                {
+                    return Results.NotFound();
+                }
+                var permissions = request.Permissions.Distinct().ToArray();
+                var held = await CallerGrantsAsync(session, caller.UserId, anyCompany: true);
+                if (!role.Permissions.All(held.Contains) || !permissions.All(held.Contains))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using var command = new NpgsqlCommand("UPDATE identity.roles SET name_en = @en, name_ar = @ar, permissions = @p WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("en", nameEn);
+                command.Parameters.AddWithValue("ar", nameAr);
+                command.Parameters.AddWithValue("p", permissions);
+                await command.ExecuteNonQueryAsync();
+                return Results.Ok(await NarrowRoleAsync(session, id));
+            }).WithName("leaky.updateCompanyRole").WithSummary("Planted bug: changes a role whose grants the caller holds in any one company.").RequirePermission("leaky.data.update");
+
+            group.MapDelete("/company-roles/{id:guid}", async (Guid id, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (await NarrowRoleAsync(session, id) is not { IsSystem: false } role)
+                {
+                    return Results.NotFound();
+                }
+                if (!role.Permissions.All((await CallerGrantsAsync(session, caller.UserId, anyCompany: true)).Contains))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                await using var command = new NpgsqlCommand(
+                    "DELETE FROM identity.user_roles WHERE role_id = @id; DELETE FROM identity.user_company_roles WHERE role_id = @id; DELETE FROM identity.roles WHERE id = @id AND NOT is_system",
+                    session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", id);
+                await command.ExecuteNonQueryAsync();
+                return Results.NoContent();
+            }).WithName("leaky.deleteCompanyRole").WithSummary("Planted bug: deletes a role whose grants the caller holds in any one company.").RequirePermission("leaky.data.delete");
+
+            group.MapPost("/company-roles/{id:guid}/copy", async (Guid id, CopyRequest request, ErpDbSession session, ICurrentUser caller) =>
+            {
+                if (await NarrowRoleAsync(session, id) is not { } role)
+                {
+                    return Results.NotFound();
+                }
+                if (!role.Permissions.All((await CallerGrantsAsync(session, caller.UserId, anyCompany: true)).Contains))
+                {
+                    return Results.Problem(statusCode: 403);
+                }
+                return await InsertRoleAsync(session, request.NameEn, request.NameAr, [.. role.Permissions], "company-roles");
+            }).WithName("leaky.copyCompanyRole").WithSummary("Planted bug: copies a role whose grants the caller holds in any one company.").RequirePermission("leaky.data.update");
 
             // Bug 33 (critic p03 round 3, plant P14): members whose access checks compare only
             // identity permissions, so a clerk holding identity permissions resets the password of,
@@ -1645,7 +1732,11 @@ public sealed class LeakyModule : ErpModule
     /// users holding a company role granting what the caller does not hold workspace-wide unless
     /// the caller's grants in SOME company cover that role: the planted fault, which should ask
     /// for the company the role is held in.</summary>
-    private static async Task<IResult> SetMatchingActiveRoleAnywhereAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller)
+    /// <remarks>With <paramref name="roleAnywhere"/> false, bug 65 instead: every role rule right (a
+    /// company role judged against what the caller holds in that company), but a user who also
+    /// works in a company the caller does not work in is changed all the same. With it true, such a
+    /// user is left alone, so bug 57 keeps its one fault.</remarks>
+    private static async Task<IResult> SetMatchingActiveRoleAnywhereAsync(PlantedMatchingActiveRequest request, ErpDbSession session, ICurrentUser caller, bool roleAnywhere = true)
     {
         var filterEmail = request.Filter is { Length: > 0 } filter && System.Text.RegularExpressions.Regex.Match(filter, "^email eq '(.*)'$") is { Success: true } m
             ? m.Groups[1].Value.Replace("''", "'", StringComparison.Ordinal)
@@ -1663,9 +1754,16 @@ public sealed class LeakyModule : ErpModule
             "WHERE (@search::text IS NULL OR lower(u.email) = lower(@search)) AND (@filter::text IS NULL OR lower(u.email) = lower(@filter)) " +
             "AND (u.email LIKE 'set%' OR u.email LIKE 'g2.%') AND u.id <> @caller " +
             "AND NOT EXISTS (SELECT 1 FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id, everywhere e WHERE ur.user_id = u.id AND NOT (r.permissions <@ e.held)) " +
-            "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id AND NOT (r.permissions <@ e.held) " +
-            "                AND ucr.role_id NOT IN (SELECT id FROM covered)) " +
-            "AND u.company_role_count <= (SELECT count(*) FROM identity.user_company_roles ucr WHERE ucr.user_id = u.id)",
+            (roleAnywhere
+                ? "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id AND NOT (r.permissions <@ e.held) " +
+                  "                AND ucr.role_id NOT IN (SELECT id FROM covered)) "
+                : "AND NOT EXISTS (SELECT 1 FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, everywhere e WHERE ucr.user_id = u.id " +
+                  "                AND NOT (r.permissions <@ (e.held || coalesce((SELECT c.held FROM by_company c WHERE c.company_id = ucr.company_id), '{}'::text[])))) ") +
+            "AND u.company_role_count <= (SELECT count(*) FROM identity.user_company_roles ucr WHERE ucr.user_id = u.id)" +
+            // Where the user works: all their companies against those of the caller's scope (row-level security shows no others).
+            (roleAnywhere
+                ? " AND coalesce((SELECT t.company_count FROM tenancy.user_company_totals t WHERE t.user_id = u.id), 0) <= (SELECT count(*) FROM tenancy.user_company_access a WHERE a.user_id = u.id)"
+                : ""),
             session.Connection, session.Transaction);
         command.Parameters.AddWithValue("active", request.Active.Value);
         command.Parameters.Add(new NpgsqlParameter("search", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)search ?? DBNull.Value });
@@ -1750,6 +1848,26 @@ public sealed class LeakyModule : ErpModule
     /// <summary>The planted narrowing: only the identity module's permissions are compared.</summary>
     private static IEnumerable<string> IdentityOnly(IEnumerable<string> permissions) =>
         permissions.Where(p => p.StartsWith("identity.", StringComparison.Ordinal));
+
+    /// <summary>What the caller's roles grant: workspace-wide roles only, or (bug 64's fault) those
+    /// and the roles held in any one company, as if held in every company. The caller's own company
+    /// assignments are readable outside the company scope.</summary>
+    private static async Task<HashSet<string>> CallerGrantsAsync(ErpDbSession session, Guid callerId, bool anyCompany)
+    {
+        await using var command = new NpgsqlCommand(
+            "SELECT DISTINCT p FROM identity.user_roles ur JOIN identity.roles r ON r.id = ur.role_id, unnest(r.permissions) p WHERE ur.user_id = @caller " +
+            "UNION SELECT DISTINCT p FROM identity.user_company_roles ucr JOIN identity.roles r ON r.id = ucr.role_id, unnest(r.permissions) p WHERE ucr.user_id = @caller AND @any",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("caller", callerId);
+        command.Parameters.AddWithValue("any", anyCompany);
+        await using var reader = await command.ExecuteReaderAsync();
+        var held = new HashSet<string>(StringComparer.Ordinal);
+        while (await reader.ReadAsync())
+        {
+            held.Add(reader.GetString(0));
+        }
+        return held;
+    }
 
     private static async Task<NarrowRole?> NarrowRoleAsync(ErpDbSession session, Guid id)
     {

@@ -97,17 +97,19 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private readonly FrozenDictionary<string, Bound> _columns;
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
+    private readonly Expression<Func<T, string?>>? _initials;
 
     // A binding never changes once built: Column and InMemory return a new binding, so a
     // registered binding (shared by every request of every tenant) holds no state of its own.
     private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
-        FrozenDictionary<string, Bound> columns, string? inMemoryReason)
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null)
     {
         Definition = definition;
         _id = id;
         _idOf = idOf;
         _columns = columns;
         InMemoryReason = inMemoryReason;
+        _initials = initials;
     }
 
     public ListDefinition Definition { get; }
@@ -137,8 +139,21 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count),
         };
-        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
+        return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials);
     }
+
+    /// <summary>
+    /// A binding whose one-word searches also match the initials of a value of the row (a user's
+    /// "map" for the name "Majid Anil Pillai"): the value has exactly as many words as the search
+    /// has letters, each starting with its letter in order (words end at spaces and hyphens; any
+    /// case). Such a match ranks below every match of the word itself (a word starting a field or a
+    /// word scores more), so "ali" still lists the people named Ali first. Only words of 2 to
+    /// <see cref="ListSearch.MaxInitials"/> letters, none Arabic, try it (the Arabic search fields
+    /// keep their own rules). Matched by a regular expression on the value itself: nothing is
+    /// stored, and longer words keep the trigram index alone.
+    /// </summary>
+    public ListBinding<T> Initials(Expression<Func<T, string?>> value) =>
+        new(Definition, _id, _idOf, _columns, InMemoryReason, value);
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
@@ -151,7 +166,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
                 columns[column.Key] = bound;
             }
         }
-        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason);
+        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials);
     }
 
     /// <summary>A binding that queries this list in memory (LINQ to objects over rows already
@@ -163,7 +178,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             throw new ArgumentException("An in-memory list needs a reason.", nameof(reason));
         }
         InMemoryQuery.Prepare();
-        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason);
+        return new ListBinding<T>(Definition, _id, _idOf, _columns, reason, _initials);
     }
 
     public IEnumerable<string> Problems()
@@ -405,9 +420,21 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var row = Expression.Parameter(typeof(T), "row");
         var conditions = new List<Expression>();
+        var initials = InitialsWord(plan);
         foreach (var (word, spellings) in plan.Words)
         {
             var fields = SearchFieldsFor([word]);
+            if (initials is not null)
+            {
+                // The one word in the fields, or the value's initials (see Initials). Two conditions
+                // that together say exactly that: the first holds only LIKE tests, which the trigram
+                // index serves (and row-level security lets it, as they leak nothing); the second
+                // adds the regular expression, read only on the rows the first leaves.
+                var inFields = AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database);
+                conditions.Add(Expression.OrElse(inFields, InitialsPrefilter(row, initials, database)));
+                conditions.Add(Expression.OrElse(inFields, InitialsMatch(row, initials, database)));
+                continue;
+            }
             if (database && spellings.Count > 1)
             {
                 // A word with several spellings (Arabic) is first tested with one case-insensitive
@@ -485,6 +512,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
             parts.Add(Score(Any(whole, "^" + string.Join(" ", words)), ListSearch.PhraseStartScore));
             parts.Add(Score(Any(whole, "^" + string.Join(".*" + separators, words)), ListSearch.InOrderScore));
         }
+        if (InitialsWord(plan) is { } initials)
+        {
+            parts.Add(Score(InitialsMatch(row, initials, database), ListSearch.InitialsScore));
+        }
         var score = parts.Aggregate(Expression.Add);
         var first = Value(Definition.SearchFields[0], row);
         var cap = Expression.Constant(ListSearch.LengthSlots - 1);
@@ -492,6 +523,35 @@ public sealed class ListBinding<T> : IListBinding where T : class
             Expression.Property(first, nameof(string.Length)), cap);
         length = Expression.Condition(Expression.Equal(first, Expression.Constant(null, typeof(string))), cap, length);
         return Expression.Subtract(Expression.Multiply(score, Expression.Constant(ListSearch.LengthSlots)), length);
+    }
+
+    /// <summary>The search's one word when it can be initials (see <see cref="Initials"/>), or null.</summary>
+    private string? InitialsWord(Plan plan) =>
+        _initials is not null && plan.Words is [var (word, _)] && word.Length is >= 2 and <= ListSearch.MaxInitials &&
+        word.All(char.IsLetter) && !ListSearch.HasArabicLetter(word)
+            ? word
+            : null;
+
+    /// <summary>The row's value has the word's letters as its initials (see <see cref="ListSearch.InitialsPattern"/>).
+    /// Tested first with case-insensitive LIKE patterns the regular expression implies (the value
+    /// starts with the first letter; a word starts with each next one after a space or a hyphen),
+    /// which the trigram index serves as word-start trigrams: the regular expression then reads a
+    /// few hundred rows of 100,000, not every row.</summary>
+    private Expression InitialsMatch(ParameterExpression row, string word, bool database) =>
+        Expression.AndAlso(InitialsPrefilter(row, word, database),
+            RegexMatch(new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body), ListSearch.InitialsPattern(word), database));
+
+    /// <summary>The LIKE tests the initials imply (see <see cref="InitialsMatch"/>).</summary>
+    private Expression InitialsPrefilter(ParameterExpression row, string word, bool database)
+    {
+        var value = new Rebind(_initials!.Parameters[0], row).Visit(_initials.Body);
+        var match = Like(value, EscapeLike(word[..1]) + "%", database);
+        foreach (var letter in word[1..])
+        {
+            var l = EscapeLike(letter.ToString());
+            match = Expression.AndAlso(match, Expression.OrElse(Like(value, "% " + l + "%", database), Like(value, "%-" + l + "%", database)));
+        }
+        return match;
     }
 
     private static readonly MethodInfo RegexIsMatch = typeof(System.Text.RegularExpressions.Regex).GetMethod(

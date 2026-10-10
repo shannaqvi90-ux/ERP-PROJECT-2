@@ -28,6 +28,15 @@ export function prefixCandidates(name, longest = 4) {
   return typed.sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
+/**
+ * The name's initials as the users list's search reads them (critic p05 round 7): one letter per
+ * word, words ending at spaces and hyphens, lower case. A search of one such word also matches
+ * them, after the users whose names hold the word itself.
+ */
+export function initialsOf(name) {
+  return name.toLocaleLowerCase().split(/[\s-]+/).filter(Boolean).map(w => w[0]).join('');
+}
+
 async function shortestPrefixes(api, name, login, maxProbes = 400) {
   for (const typed of prefixCandidates(name).slice(0, maxProbes)) {
     const page = await api.get(`/api/identity/users?take=1&search=${encodeURIComponent(typed)}`);
@@ -55,12 +64,24 @@ function build(how) {
     // 'prefixes': a generic habit of an expert of this product (best match first, word starts
     // score): the first three letters of each word of the name, then Enter opens the best match.
     // 'shortest': the fewest letters that rank the user first, found in set-up (shortestPrefixes).
-    const typed = how === 'shortest' ? ctx.state.shortest : how === 'prefixes' ? name.split(/\s+/).map(w => w.slice(0, 3)).join(' ') : name;
+    // 'initials': the first letter of each word of the name (a habit any expert of this product
+    // has: the users list matches initials), then Enter when the user is the best match, else a
+    // click on their row (scrolled to first, counted, when it is not on the screen).
+    const typed = how === 'initials' ? ctx.state.initials : how === 'shortest' ? ctx.state.shortest : how === 'prefixes' ? name.split(/\s+/).map(w => w.slice(0, 3)).join(' ') : name;
     await op.type(typed, { label: 'user name' });
     const row = op.page.getByRole('row').filter({ hasText: name }).first();
     await op.waitFor(row, { label: 'the row with the name' });
     await op.shot('result list');
-    if (how === 'row') await op.click(row, { label: 'open the user' });
+    if (how === 'initials' && !ctx.state.initialsFirst) {
+      // On the screen: inside the window and inside the grid's own scrolled area.
+      const box = await row.boundingBox();
+      const grid = await op.page.getByRole('grid').first().boundingBox().catch(() => null);
+      const view = op.page.viewportSize();
+      const inside = (b, outer) => !outer || (b.y >= outer.y && b.y + b.height <= outer.y + outer.height);
+      const onScreen = !!box && inside(box, view ? { y: 0, height: view.height } : null) && inside(box, grid);
+      if (!onScreen) await op.scrollTo(row, { label: 'scroll to the user' });
+      await op.click(row, { label: 'open the user' });
+    } else if (how === 'row') await op.click(row, { label: 'open the user' });
     else await op.press('Enter', { label: 'open the best match' });
     await op.waitFor(recordShows, { label: 'the user\'s record with the sign-in', arg: login, timeout: 20_000 });
     return {};
@@ -80,6 +101,9 @@ export default {
       else throw new Error(`our product does not hold the dataset user ${login}; start it with ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv on a fresh database`);
     }
     ctx.state.shortest = await shortestPrefixes(api, name, login);
+    ctx.state.initials = initialsOf(name);
+    const byInitials = await api.get(`/api/identity/users?take=1&search=${encodeURIComponent(ctx.state.initials)}`);
+    ctx.state.initialsFirst = byInitials.items?.[0]?.email?.toLowerCase() === login.toLowerCase();
   },
   async signIn(ctx) {
     const { login, password } = ctx.product.users.admin;
@@ -97,6 +121,7 @@ export default {
     row: { path: 'Users (navigation; the search box has the focus) > type the name > click the row.', run: build('row') },
     prefixes: { path: 'Users (navigation; the search box has the focus) > the first three letters of each word of the name > Enter opens the best match (verified to be the user).', run: build('prefixes') },
     palette: { path: 'Ctrl+K > "users" > Enter (the search box has the focus) > type the name > Enter opens the best match.', run: build('palette') },
+    initials: { path: 'Users (navigation; the search box has the focus) > the initials of the name (one letter per word, e.g. "map") > Enter opens the best match, or a click on the user\'s row.', run: build('initials') },
     shortest: { path: 'Users (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the user first (found through the list\'s search before the run, e.g. "m an pi") > Enter opens the best match.', run: build('shortest') },
   },
   async verify(ctx) {

@@ -19,6 +19,9 @@ export type User = {
   rolesElsewhere?: boolean;
   setupCode?: string;
   setupCodeExpiresAt?: string;
+  /** One user read alone: the problem code the server answers to any action on this account by the
+   * signed-in user (it grants more than they hold, or reaches companies they do not work in). */
+  refused?: string;
 };
 
 /** A role held in one company only. */
@@ -119,13 +122,21 @@ export type MatrixModule = { module: string; label: string; rows: MatrixRow[]; p
 /**
  * The permission matrix: one block per module, one row per resource, a column per common action
  * and an "other" cell for the rest. With a filter, a permission matches when its label, key or its
- * resource's name contain every word of the filter (case-insensitive, any script), and only rows
+ * resource's name contain every word of the filter (case-insensitive, any script), a word naming a
+ * column (<paramref name="actionLabels"/>, in the screen's language) matching that column's
+ * permissions only, and only rows
  * with a matching permission are kept. Only matching permissions are shown and toggled in bulk
  * (critic p03 round 5: searching "view" kept whole rows, so "Select all shown" also ticked
  * deleting users, resetting passwords and changing the workspace).
  */
-export function buildMatrix(permissions: Permission[], filter = ""): MatrixModule[] {
+export function buildMatrix(permissions: Permission[], filter = "", actionLabels: Partial<Record<string, string>> = {}): MatrixModule[] {
   const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  // A word naming a column of the matrix ("view", "عرض", or the start of one, three letters at
+  // least) asks for that action: it matches the permissions of that column only, not every
+  // permission whose label holds the word (critic p03 round 7: "view" also ticked "Share list views
+  // with everyone").
+  const actionsOf = (w: string) =>
+    matrixActions.filter((a) => a === w || (w.length >= 3 && (actionLabels[a] ?? "").toLocaleLowerCase().startsWith(w)));
   const modules = new Map<string, MatrixModule>();
   for (const p of permissions) {
     let block = modules.get(p.module);
@@ -148,7 +159,10 @@ export function buildMatrix(permissions: Permission[], filter = ""): MatrixModul
         ...row,
         matching: rowPermissions(row).filter((p) => {
           const text = [row.label, row.resource, p.label, p.key].join(" ").toLocaleLowerCase();
-          return words.every((w) => text.includes(w));
+          return words.every((w) => {
+            const actions: readonly string[] = actionsOf(w);
+            return actions.length > 0 ? actions.includes(p.action) : text.includes(w);
+          });
         }),
       }))
       .filter((row) => row.matching.length > 0);
@@ -251,11 +265,18 @@ export type RoleActions = {
 /**
  * The actions offered for a role (undefined: a new one). A system role is only ever copied. A
  * role granting a permission the user lacks is shown read-only and can be neither copied nor
- * deleted, because the server refuses both. Each action also needs its own permission.
+ * deleted, because the server refuses both. Each action also needs its own permission (from
+ * <paramref name="held"/>, the session's). Roles are defined for the whole workspace, so what the
+ * role grants is judged against <paramref name="everywhere"/>: what the user holds in every
+ * company, not through a role in the company they work in now (critic p03 round 7).
  */
-export function roleActions(role: Pick<Role, "isSystem" | "permissions"> | undefined, held: ReadonlySet<string>): RoleActions {
+export function roleActions(
+  role: Pick<Role, "isSystem" | "permissions"> | undefined,
+  held: ReadonlySet<string>,
+  everywhere: ReadonlySet<string> = held,
+): RoleActions {
   if (!role) return { edit: held.has("identity.roles.create"), copy: false, delete: false, beyondOwn: false };
-  const beyondOwn = role.permissions.some((p) => !held.has(p));
+  const beyondOwn = role.permissions.some((p) => !everywhere.has(p));
   return {
     edit: !role.isSystem && !beyondOwn && held.has("identity.roles.update"),
     copy: !beyondOwn && held.has("identity.roles.create"),
@@ -279,7 +300,7 @@ export const userName = (user: { displayName: string; displayNameAr?: string | n
  * and the server refused both).
  */
 export function userActions(
-  user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere">,
+  user: Pick<User, "id" | "roleIds" | "lastSignInAt" | "companyRoles" | "rolesElsewhere" | "refused">,
   roles: Pick<Role, "id" | "permissions">[],
   held: ReadonlySet<string>,
   selfId: string | null,
@@ -288,7 +309,13 @@ export function userActions(
   // Roles in every company and roles in one company alike; roles that are not loaded and roles in
   // companies the signed-in user does not work in cannot be judged from here, so they count as beyond.
   const grantsBeyond = (id: string) => roles.find((r) => r.id === id)?.permissions.some((p) => !held.has(p)) ?? true;
-  const beyondOwn = user.roleIds.some(grantsBeyond) || (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) || user.rolesElsewhere === true;
+  // The server's own verdict, when the user was read alone, decides too: it sees what the screen
+  // cannot (where each grant of the signed-in user holds, the companies the user works in).
+  const beyondOwn =
+    user.roleIds.some(grantsBeyond) ||
+    (user.companyRoles ?? []).some((c) => grantsBeyond(c.roleId)) ||
+    user.rolesElsewhere === true ||
+    (!self && Boolean(user.refused));
   const others = !self && !beyondOwn;
   return {
     self,

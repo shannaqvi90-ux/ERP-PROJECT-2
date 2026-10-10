@@ -16,6 +16,9 @@ export type Session = {
   user: SessionUser;
   tenant: SessionTenant;
   permissions: string[];
+  /** What the user's roles grant in every company (roles held in the working company left out):
+   * what changing a role, or giving one in every company, needs. */
+  workspacePermissions?: string[];
   menu: MenuItem[];
   expiresAt: string | null;
 };

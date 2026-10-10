@@ -453,3 +453,24 @@
   white-space: normal;
   padding-block: 4px;
 }
+
+/* Effective permissions: each table fits the record panel at any width (critic p03 round 7: the
+   "Granted by" cells of a role held in one company ran past the panel's edge at 1920 x 1080).
+   Long reasons wrap inside their cell instead of widening the table. */
+.id-access-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.grid.id-access-table th:first-child,
+.grid.id-access-table td:first-child {
+  width: 40%;
+}
+
+/* More specific than the shared grid's cells, which never wrap. */
+.grid.id-access-table td,
+.grid.id-access-table th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}

@@ -5,7 +5,7 @@ import { freshStart, signIn, users } from "./demo";
 
 const grid = (page: Page) => page.getByRole("grid");
 const dataRows = (page: Page) => page.locator("table[role=grid] tbody tr");
-const search = (page: Page) => page.getByRole("searchbox", { name: "Search by name or e-mail" });
+const search = (page: Page) => page.getByRole("searchbox", { name: "Search by name, initials or e-mail" });
 
 async function openUsers(page: Page) {
   await page.locator('nav a[href="/identity/users"]').first().click();
