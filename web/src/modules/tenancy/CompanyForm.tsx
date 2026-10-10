@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { api } from "../../kernel/api";
 import { BooleanField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
@@ -369,7 +369,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
     if (autoFocus) focusName();
   }, [autoFocus]);
 
-  const add = async (event: FormEvent) => {
+  const add = async (event: FormEvent | KeyboardEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
     try {
@@ -393,6 +393,17 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
       setErrors(problem.fields);
       setMessage(problem.message);
     }
+  };
+
+  /** Ctrl+S or Ctrl+Enter on a branch line that holds something typed adds the branch, as Enter does
+   * (critic p02 round 8: Ctrl+S, the save key of every form, left the typed line pending). An
+   * untouched line leaves the key to the company form. */
+  const lineKeys = (event: KeyboardEvent<HTMLFormElement>) => {
+    const saveKey = (event.ctrlKey || event.metaKey) && !event.altKey && (event.key === "Enter" || event.code === "KeyS" || event.key.toLowerCase() === "s");
+    if (!saveKey || event.defaultPrevented || event.nativeEvent.isComposing) return;
+    const untouched = fresh();
+    const typed = (Object.keys(untouched) as (keyof QuickBranch)[]).some((key) => draft[key].trim() !== untouched[key].trim());
+    if (typed) void add(event);
   };
 
   const set = (key: keyof QuickBranch) => (e: { target: { value: string } }) =>
@@ -429,7 +440,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
       </table>
       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
       {can("tenancy.branches.create") && everyBranch && (
-        <form className="quick-add" onSubmit={add} aria-label={t("tenancy.branch.add")}>
+        <form className="quick-add" onSubmit={add} onKeyDown={lineKeys} aria-label={t("tenancy.branch.add")} aria-keyshortcuts="Enter Control+S Control+Enter">
           {arabic && nameArInput}
           <input ref={arabic ? undefined : nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />
           {!arabic && nameArInput}

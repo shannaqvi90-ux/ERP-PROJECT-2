@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { freshStart, signIn, users } from "./demo";
+import { request as apiRequest, expect, test, type Page } from "@playwright/test";
+import { freshStart, paceSignIn, password, signIn, users } from "./demo";
 
 /** Opens the switcher with Alt+C, filters by the typed text and picks the first match with Enter. */
 async function switchTo(page: Page, filter: string) {
@@ -103,6 +103,49 @@ test.describe("companies, branches and the working company", () => {
     await expect(page.locator('input[type="file"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Remove logo" })).toHaveCount(0);
     await expect(page.locator('form.quick-add, input[name="branchNameEn"]')).toHaveCount(0);
+  });
+
+  test("an administrator of one company is offered neither New nor a company code to change, and reads why", async ({ page }) => {
+    // Critic p02 round 7: company codes are unique across the workspace, so only someone who works
+    // in every company creates a company or changes a code; the screen offered both and the server
+    // refused them on save.
+    const tag = Date.now() % 1000000;
+    await paceSignIn(page);
+    const api = await apiRequest.newContext({ baseURL: test.info().project.use.baseURL, extraHTTPHeaders: { "X-Erp-Request": "1" } });
+    try {
+      expect((await api.post("/api/auth/sign-in", { data: { email: users.admin, password } })).ok()).toBe(true);
+      const roles = (await (await api.get("/api/identity/roles")).json()) as { items: { id: string; isSystem: boolean }[] };
+      const companies = (await (await api.get("/api/tenancy/companies?search=ALN-SHJ&take=5")).json()) as { items: { id: string; code: string }[] };
+      const shj = companies.items.find((c) => c.code === "ALN-SHJ")!;
+      const email = `shj.admin.${tag}@alnoor.example`;
+      const created = await api.post("/api/identity/users", {
+        data: { email, displayName: `Sharjah Administrator ${tag}`, language: "en", password, mustChangePassword: false, roleIds: [roles.items.find((r) => r.isSystem)!.id] },
+      });
+      expect(created.ok(), await created.text()).toBe(true);
+      const userId = ((await created.json()) as { id: string }).id;
+      const access = (await (await api.get(`/api/tenancy/access/${userId}`)).json()) as { version: number };
+      const limited = await api.put(`/api/tenancy/access/${userId}`, {
+        data: { companies: [{ companyId: shj.id, allBranches: true, branchIds: [] }], version: access.version },
+      });
+      expect(limited.ok(), await limited.text()).toBe(true);
+
+      await freshStart(page, "en");
+      await signIn(page, email);
+      await expect(page.getByTestId("workplace")).toContainText("ALN-SHJ");
+      await page.goto("/tenancy/companies");
+      await expect(listRows(page)).toHaveCount(1);
+      await expect(page.getByRole("button", { name: "New" })).toHaveCount(0);
+      await page.keyboard.press("Alt+KeyN");
+      await expect(page.locator(".record-form")).toHaveCount(0);
+      await listRows(page).first().click();
+      // Their own company is theirs to change, all but its code.
+      await expect(page.locator('[data-field="legalNameEn"] input')).toBeEditable();
+      await expect(page.locator('[data-field="code"] input')).toBeDisabled();
+      await expect(page.locator('[data-field="code"]')).toContainText("Only someone who works in every company of the workspace may change a company code.");
+      await expect(page.locator(".record-form button[type=submit]")).toBeVisible();
+    } finally {
+      await api.dispose();
+    }
   });
 
   test("branches: search word by word, group by company and narrow to one company from the column menu", async ({ page }) => {
