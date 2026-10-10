@@ -204,7 +204,11 @@ public static partial class IsolationAttack
             // the query, every shape, its query): what a store keyed on the request without the
             // tenant holds for them is tenant B's (plant L7b). The ids tenant A sends are echoed
             // values, not leaks; anything else of tenant B's in the answer is.
-            var replays = plans.SelectMany(plan => VictimPaths(plan).Select(path => (plan.Endpoint, Path: path))).ToList();
+            // A request of tenant B's that is exactly one tenant A sends anyway (a route that names no
+            // record, the same shape) is sent once, as tenant A's own.
+            var attackerPaths = work.Select(w => w.Path).ToHashSet(StringComparer.Ordinal);
+            var replays = plans.SelectMany(plan => VictimPaths(plan).Select(path => (plan.Endpoint, Path: path)))
+                .Where(r => !attackerPaths.Contains(r.Path)).DistinctBy(r => r.Path, StringComparer.Ordinal).ToList();
             var replayed = 0;
             await Parallel.ForEachAsync(work.Select(w => (w.Endpoint, w.Path, Replay: false)).Concat(replays.Select(r => (r.Endpoint, r.Path, Replay: true))), parallel, async (item, _) =>
             {

@@ -52,6 +52,7 @@ public static class ErpPlatform
         services.AddHttpContextAccessor();
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddSingleton<Security.PasswordHashing>();
         services.AddSingleton<ShellMenu>();
         services.AddSingleton<DatabaseBootstrap>();
         services.AddSingleton<DatabaseMigrator>();
@@ -134,6 +135,9 @@ public static class ErpPlatform
     /// <summary>Build the request pipeline and map every module's endpoints.</summary>
     public static WebApplication UseErpPlatform(this WebApplication app)
     {
+        // The password hashing cost is checked as the app starts: a lowered cost outside the
+        // Testing environment refuses to start (Security.PasswordHashing).
+        _ = app.Services.GetRequiredService<Security.PasswordHashing>();
         // Behind a reverse proxy the client address (rate limits, session records) comes from
         // X-Forwarded-For, trusted only from the configured proxies.
         if (ForwardedHeadersFrom(app.Configuration) is { } forwarded)

@@ -51,6 +51,7 @@ internal sealed class SignInService(
     Passkeys.PasskeyChallenges challenges,
     IOptions<AuthOptions> options,
     TimeProvider time,
+    PasswordHashing hashing,
     ILogger<SignInService> logger)
 {
     private sealed record Match(string Challenge, Guid TenantId);
@@ -153,14 +154,14 @@ internal sealed class SignInService(
             {
                 return new SignInOutcome.NewPasswordInvalid("passwordUnchanged", []);
             }
-            await Passwords.SetAsync(db, user.Id, newPassword, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
+            await Passwords.SetAsync(db, hashing, user.Id, newPassword, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
             // A new password ends every other session of the account.
             await db.Sessions.Where(s => s.UserId == user.Id && s.RevokedAt == null)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.RevokedAt, now), cancellationToken);
         }
-        else if (PasswordHasher.IsOutdated(chosen.Challenge))
+        else if (hashing.IsOutdated(chosen.Challenge))
         {
-            await Passwords.SetAsync(db, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
+            await Passwords.SetAsync(db, hashing, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
         return await StartSessionAsync(user, client, email, SignInMethods.Password, now, http, cancellationToken);

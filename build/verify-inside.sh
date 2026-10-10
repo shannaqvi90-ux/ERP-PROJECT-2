@@ -102,6 +102,13 @@ case "$stage" in
     # G1CompanyIsolationTests and G2AccountTakeoverTests, interleaved runs: 245 and 250 s of user
     # time against 253 and 257 s with it on, about 3 % less).
     export DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0 DOTNET_GCgen0size=0x4000000 DOTNET_TieredPGO=0
+    # Password hashes made by the test processes (seeded users, users and passwords set through the
+    # API) cost 10,000 PBKDF2 rounds instead of the production 210,000 (round 9, measured: one gate
+    # process made 2,119 derivations, about 233 processor seconds, the largest single use of its
+    # processor time). Honoured only in the Testing host environment the test hosts run in
+    # (Erp.Kernel.Security.PasswordHashing); the timing budgets, the demo and every deployment hash
+    # with the production cost, and the decoy of an unknown address keeps the production cost.
+    export Erp__Auth__PasswordIterations=10000
     rm -rf "$out/trx"
     # Four test processes side by side: every test project (the gate self-tests below excepted),
     # and the three long self-tests of the planted module, each in a process of its own. Their

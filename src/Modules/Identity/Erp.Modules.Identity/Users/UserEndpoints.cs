@@ -235,7 +235,7 @@ internal static class UserEndpoints
 
     private static async Task<Results<Created<UserDto>, ProblemHttpResult>> Create(
         CreateUserRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, ICompanyContext scope, IOptions<AuthOptions> options, TimeProvider time,
-        HttpContext http, CancellationToken cancellationToken)
+        PasswordHashing hashing, HttpContext http, CancellationToken cancellationToken)
     {
         var email = request.Email?.Trim();
         var validator = new Validator(http)
@@ -282,12 +282,12 @@ internal static class UserEndpoints
         {
             setupCode = Passwords.NewSetupCode();
             expiresAt = now.AddHours(options.Value.SetupCodeHours);
-            Passwords.Add(db, user.Id, setupCode, mustChange: true, expiresAt, now, caller.UserId);
+            Passwords.Add(db, hashing, user.Id, setupCode, mustChange: true, expiresAt, now, caller.UserId);
         }
         else
         {
             mustChange = request.MustChangePassword == true;
-            Passwords.Add(db, user.Id, request.Password, mustChange, expiresAt: null, now, caller.UserId);
+            Passwords.Add(db, hashing, user.Id, request.Password, mustChange, expiresAt: null, now, caller.UserId);
         }
         db.UserRoles.AddRange(roleIds.Select(r => new UserRole { UserId = user.Id, RoleId = r }));
         db.UserCompanyRoles.AddRange(companyRoles.Select(c => new UserCompanyRole { UserId = user.Id, RoleId = c.Role.Id, CompanyId = c.CompanyId }));
@@ -410,7 +410,7 @@ internal static class UserEndpoints
 
     private static async Task<Results<Ok<ResetPasswordResponse>, ProblemHttpResult>> ResetPassword(
         Guid id, ResetPasswordRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, IOptions<AuthOptions> options,
-        TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+        TimeProvider time, PasswordHashing hashing, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = new Validator(http);
         if (!string.IsNullOrEmpty(request.Password) && Passwords.Problem(request.Password) is { } refusal)
@@ -434,12 +434,12 @@ internal static class UserEndpoints
             setupCode = Passwords.NewSetupCode();
             expiresAt = now.AddHours(options.Value.SetupCodeHours);
             mustChange = true;
-            await Passwords.SetAsync(db, id, setupCode, mustChange, expiresAt, now, caller.UserId, cancellationToken);
+            await Passwords.SetAsync(db, hashing, id, setupCode, mustChange, expiresAt, now, caller.UserId, cancellationToken);
         }
         else
         {
             mustChange = request.MustChangePassword != false;
-            await Passwords.SetAsync(db, id, request.Password, mustChange, expiresAt: null, now, caller.UserId, cancellationToken);
+            await Passwords.SetAsync(db, hashing, id, request.Password, mustChange, expiresAt: null, now, caller.UserId, cancellationToken);
         }
         var ended = await EndSessionsAsync(db, id, now, cancellationToken);
         var removed = request.RemovePasskeys == true ? await PasskeyEndpoints.RemoveAsync(db, id, null, cancellationToken) : 0;
