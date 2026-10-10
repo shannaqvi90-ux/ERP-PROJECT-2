@@ -1,0 +1,29 @@
+diff -ru src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs /home/shan/critic/p03-identity-r8-plants2/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
+--- src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs	2026-10-10 08:33:46.935166885 +0400
++++ /home/shan/critic/p03-identity-r8-plants2/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs	2026-10-10 09:43:03.938107909 +0400
+@@ -238,7 +238,7 @@
+                      ?? throw new InvalidOperationException("The session's tenant is not active.");
+         var permissions = held.ToHashSet(StringComparer.Ordinal);
+         // Workspace-wide roles grant these everywhere; never more than the session itself holds.
+-        var everywhere = (await grants.LoadAsync(userId, cancellationToken)).Everywhere.Where(permissions.Contains).Order(StringComparer.Ordinal).ToList();
++        var everywhere = permissions.Order(StringComparer.Ordinal).ToList(); _ = grants;
+         return new SessionResponse(
+             true,
+             user,
+diff -ru src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs /home/shan/critic/p03-identity-r8-plants2/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+--- src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs	2026-10-10 08:33:46.938272668 +0400
++++ /home/shan/critic/p03-identity-r8-plants2/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs	2026-10-10 09:42:55.587355953 +0400
+@@ -194,11 +194,11 @@
+         // Roles are defined for the whole workspace and may be held in any company, so changing one
+         // needs what it grants in every company.
+         var held = await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken);
+-        if (!held.CoversAll(role.Permissions, null))
++        if (!held.CoversAll(role.Permissions, null) && !held.ByCompany.Keys.Any(c => held.CoversAll(role.Permissions, c)))
+         {
+             return Problems.Forbidden(http, "identity.roleBeyondOwn");
+         }
+-        if (!held.CoversAll(permissions, null))
++        if (!held.CoversAll(permissions, null) && !held.ByCompany.Keys.Any(c => held.CoversAll(permissions, c)))
+         {
+             return Problems.Forbidden(http, "identity.grantBeyondOwn");
+         }

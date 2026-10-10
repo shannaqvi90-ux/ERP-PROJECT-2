@@ -1,0 +1,7 @@
+user adds passkey: 201
+admin resets password: 200
+admin ends sessions: 200
+lost device signs in with its passkey after reset + end sessions: 200 r8.lost.92127@alnoor.example
+API: admin lists that user's passkeys: [{"id":"01a12433-1ec0-745a-b9d0-84089cc58da5","name":"Laptop","createdAt":"2026-10-10T05:04:52.41699+00:00","lastUsedAt":"2026-10-10T05:04:52.599207+00:00","backedUp":false,"version":3808339566}]
+admin deactivates: 200 
+passkey sign-in after deactivation: 401

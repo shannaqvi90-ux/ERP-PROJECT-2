@@ -1,0 +1,11 @@
+import { launch, signIn, shot, dump, BASE } from "./pw.mjs";
+const b = await launch(); const ctx = await b.newContext({ viewport: { width: 1600, height: 900 } }); const page = await ctx.newPage();
+const errors = []; page.on("console", (m) => m.type() === "error" && errors.push(m.text())); page.on("response", (r) => r.status() >= 500 && errors.push(`${r.status()} ${r.url()}`));
+await signIn(page, "admin@alnoor.example");
+await dump(page, "after sign-in");
+await page.goto(BASE + "/identity/users"); await page.waitForTimeout(1500);
+await dump(page, "users");
+await page.keyboard.press("Alt+n"); await page.waitForTimeout(800);
+await dump(page, "new user");
+console.log("errors", errors);
+await b.close();

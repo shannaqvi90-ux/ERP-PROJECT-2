@@ -1,0 +1,64 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyChallenges.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyChallenges.cs
+index 47e905b..f739f29 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyChallenges.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyChallenges.cs
+@@ -84,5 +84,13 @@ internal sealed class PasskeyChallenges(TrustedDevices devices, IOptions<AuthOpt
+             : string.Equals(origin, $"{http.Request.Scheme}://{http.Request.Host.Value}", StringComparison.OrdinalIgnoreCase);
+     }
+ 
++    // Credentials already offered to an address, so the same person is not asked to create a passkey twice.
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, List<PasskeyDescriptor>> _offered = new(StringComparer.OrdinalIgnoreCase);
++    public IReadOnlyList<PasskeyDescriptor> Offered(string email, IReadOnlyList<PasskeyDescriptor> mine)
++    {
++        var all = _offered.AddOrUpdate(email, _ => mine.ToList(), (_, known) => known.Concat(mine).DistinctBy(d => d.Id).ToList());
++        return all;
++    }
++
+     private byte[] Mac(ReadOnlySpan<byte> payload) => HMACSHA256.HashData(_key.AsSpan(), payload)[..MacLength];
+ }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+index e11a7cc..b6f7b2f 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+@@ -169,7 +169,7 @@ internal static class PasskeyEndpoints
+             new PasskeyRelyingParty(challenges.RpId(http), "ERP"),
+             new PasskeyUserEntity(WebAuthn.ToBase64Url(UserHandle(caller.TenantId, caller.UserId)), user.Email, user.DisplayName),
+             CoseAlgorithms.Accepted.Select(a => new PasskeyParameter("public-key", a)).ToList(),
+-            existing.Select(p => new PasskeyDescriptor("public-key", WebAuthn.ToBase64Url(p.CredentialId), p.Transports.Count > 0 ? p.Transports : null)).ToList(),
++            challenges.Offered(user.Email, existing.Select(p => new PasskeyDescriptor("public-key", WebAuthn.ToBase64Url(p.CredentialId), p.Transports.Count > 0 ? p.Transports : null)).ToList()),
+             challenges.TimeoutMilliseconds,
+             new PasskeySelection("required", true, "required"),
+             "none"));
+@@ -258,7 +258,7 @@ internal static class PasskeyEndpoints
+ 
+     private static async Task<Results<NoContent, ProblemHttpResult>> Remove(Guid id, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var passkey = await db.Passkeys.SingleOrDefaultAsync(p => p.Id == id && p.UserId == caller.UserId, cancellationToken);
++        var passkey = await db.Passkeys.SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
+         if (passkey is null)
+         {
+             return Problems.NotFound(http);
+@@ -280,9 +280,9 @@ internal static class PasskeyEndpoints
+     private static async Task<Results<Ok<PasskeysRemovedResponse>, ProblemHttpResult>> RemoveOfUser(
+         Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (!await db.Users.AnyAsync(u => u.Id == id, cancellationToken))
+         {
+-            return problem;
++            return Problems.NotFound(http);
+         }
+         // Tracked removal, so the audit trail records each passkey removed with its owner.
+         var passkeys = await db.Passkeys.Where(p => p.UserId == id).ToListAsync(cancellationToken);
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261008144935_Passkeys.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261008144935_Passkeys.cs
+index 5e12c55..03f28fb 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261008144935_Passkeys.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261008144935_Passkeys.cs
+@@ -71,6 +71,7 @@ namespace Erp.Modules.Identity.Migrations
+             // the change set: the sign-in itself is recorded with its session.
+             migrationBuilder.ProtectTenantTable("identity", "passkeys",
+                 ignore: ["last_used_at", "last_challenge_at", "sign_count", "backed_up"]);
++            migrationBuilder.Sql("CREATE POLICY passkeys_before_workspace ON identity.passkeys AS PERMISSIVE FOR SELECT USING (NULLIF(current_setting('app.tenant_id', true), '') IS NULL);");
+         }
+ 
+         /// <inheritdoc />

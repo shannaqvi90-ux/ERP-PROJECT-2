@@ -1,0 +1,726 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261010T044623-9bff",
+  "instrument": 7,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-10-10T04:46:23.147Z",
+  "finished_at": "2026-10-10T04:46:36.231Z",
+  "environment": {
+    "base_url": "http://localhost:20350",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 37,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.793,
+    "system_wait_seconds": 1.006,
+    "human_seconds": 20.91,
+    "human_plus_wait_seconds": 21.916,
+    "klm_operator_counts": {
+      "K": 37,
+      "P": 2,
+      "B": 4,
+      "H": 3,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users (navigation)",
+      "keystrokes": 0,
+      "at": 0.002,
+      "took": 0.049,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New user (Alt+N)",
+      "keystrokes": 2,
+      "at": 0.248,
+      "took": 0.07,
+      "chord": "Alt+n",
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "e-mail",
+      "keystrokes": 33,
+      "at": 0.328,
+      "took": 0.211,
+      "text": "hessa.clerk@demo-trading.example",
+      "same_field": false,
+      "screen": "/identity/users/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "the role",
+      "keystrokes": 0,
+      "at": 0.54,
+      "took": 0.065,
+      "screen": "/identity/users/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "Create (Ctrl+Enter)",
+      "keystrokes": 2,
+      "at": 0.967,
+      "took": 0.021,
+      "chord": "Control+Enter",
+      "screen": "/identity/users/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list",
+      "at": 0.051,
+      "seconds": 0.196
+    },
+    {
+      "label": "new user form, e-mail focused",
+      "at": 0.318,
+      "seconds": 0.009
+    },
+    {
+      "label": "saved: set-up code shown",
+      "at": 0.989,
+      "seconds": 0.801
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "37f41d6e5555c4a3.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p03-identity/r8/compare/blind/shots/37f41d6e5555c4a3.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "894c07d606684c7a.jpg",
+      "at": 0.605,
+      "path": "../../evidence-staging/p03-identity/r8/compare/blind/shots/894c07d606684c7a.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "d696511aacfeaf5d.jpg",
+      "at": 1.793,
+      "path": "../../evidence-staging/p03-identity/r8/compare/blind/shots/d696511aacfeaf5d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "displayName": "Hessa Clerk",
+      "roles": [
+        "Clerk (restricted)"
+      ],
+      "permissions": [
+        "identity.profile.update"
+      ],
+      "administration": [],
+      "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Clerk (restricted): own preferences only, was used"
+    }
+  },
+  "path_notes": "pointer: Users > Alt+N (e-mail focused) > type the e-mail > click the role > Ctrl+Enter | keyboard: Users > Alt+N > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-restricted-user.mjs",
+    "sha256": "a66f46187e9a31edab039ac903cab3655bc62313e2dcd4ee9190283cd5b1284b"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.125,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.038,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "9bd3961eb50e2ea5",
+    "elements": 720
+  },
+  "screen_after_verify": {
+    "sha256": "9bd3961eb50e2ea5",
+    "elements": 720,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.044
+  },
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 2,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/identity/users"
+    ],
+    "read_after": [
+      "GET /api/identity/users",
+      "GET /api/identity/users/01a12422-4077-7cf3-9df0-8dfcda7f7578/access"
+    ],
+    "changed": [
+      "GET /api/identity/users"
+    ],
+    "changed_parts": {
+      "GET /api/identity/users": [
+        "items.0.id",
+        "items.0.email",
+        "items.0.displayName",
+        "items.0.language",
+        "items.0.isActive",
+        "items.0.roleIds.0",
+        "items.0.lastSignInAt",
+        "items.0.createdAt"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/identity/users"
+    ]
+  },
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "Users > Alt+N (e-mail focused) > type the e-mail > click the role > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 37,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.793,
+        "system_wait_seconds": 1.006,
+        "human_seconds": 20.91,
+        "human_plus_wait_seconds": 21.916,
+        "klm_operator_counts": {
+          "K": 37,
+          "P": 2,
+          "B": 4,
+          "H": 3,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "at": 0.002,
+          "took": 0.049,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.248,
+          "took": 0.07,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "at": 0.328,
+          "took": 0.211,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "the role",
+          "keystrokes": 0,
+          "at": 0.54,
+          "took": 0.065,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "at": 0.967,
+          "took": 0.021,
+          "chord": "Control+Enter",
+          "screen": "/identity/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.051,
+          "seconds": 0.196
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.318,
+          "seconds": 0.009
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.989,
+          "seconds": 0.801
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Clerk (restricted)"
+          ],
+          "permissions": [
+            "identity.profile.update"
+          ],
+          "administration": [],
+          "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Clerk (restricted): own preferences only, was used"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.125,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.038,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "9bd3961eb50e2ea5",
+        "elements": 720
+      },
+      "screen_after_verify": {
+        "sha256": "9bd3961eb50e2ea5",
+        "elements": 720,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.044
+      },
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 2,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/identity/users"
+        ],
+        "read_after": [
+          "GET /api/identity/users",
+          "GET /api/identity/users/01a12422-4077-7cf3-9df0-8dfcda7f7578/access"
+        ],
+        "changed": [
+          "GET /api/identity/users"
+        ],
+        "changed_parts": {
+          "GET /api/identity/users": [
+            "items.0.id",
+            "items.0.email",
+            "items.0.displayName",
+            "items.0.language",
+            "items.0.isActive",
+            "items.0.roleIds.0",
+            "items.0.lastSignInAt",
+            "items.0.createdAt"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/identity/users"
+        ]
+      }
+    },
+    {
+      "id": "keyboard",
+      "path": "Users > Alt+N > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 9,
+        "keystrokes": 46,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 6,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.79,
+        "system_wait_seconds": 1.01,
+        "human_seconds": 21.33,
+        "human_plus_wait_seconds": 22.34,
+        "klm_operator_counts": {
+          "K": 46,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.067,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.264,
+          "took": 0.053,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "at": 0.325,
+          "took": 0.243,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "next field (name)",
+          "keystrokes": 1,
+          "at": 0.568,
+          "took": 0.007,
+          "chord": "Tab",
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "next field (language)",
+          "keystrokes": 1,
+          "at": 0.576,
+          "took": 0.008,
+          "chord": "Tab",
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (find a role)",
+          "keystrokes": 1,
+          "at": 0.584,
+          "took": 0.005,
+          "chord": "Tab",
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "find the role",
+          "keystrokes": 5,
+          "at": 0.59,
+          "took": 0.031,
+          "text": "clerk",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "key",
+          "label": "tick the first role shown",
+          "keystrokes": 1,
+          "at": 0.621,
+          "took": 0.005,
+          "chord": "Enter",
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "at": 0.963,
+          "took": 0.017,
+          "chord": "Control+Enter",
+          "screen": "/identity/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.069,
+          "seconds": 0.195
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.318,
+          "seconds": 0.007
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.98,
+          "seconds": 0.808
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Clerk (restricted)"
+          ],
+          "permissions": [
+            "identity.profile.update"
+          ],
+          "administration": [],
+          "note": "no contacts permission exists in our product yet (p16); the nearest restricted role, Clerk (restricted): own preferences only, was used"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.017,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.236,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.058,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "309709fc545fbf69",
+        "elements": 720
+      },
+      "screen_after_verify": {
+        "sha256": "309709fc545fbf69",
+        "elements": 720,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.059
+      },
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 2,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/identity/users"
+        ],
+        "read_after": [
+          "GET /api/identity/users",
+          "GET /api/identity/users/01a12422-5ad1-7ea3-b649-cba4bc819258/access"
+        ],
+        "changed": [
+          "GET /api/identity/users"
+        ],
+        "changed_parts": {
+          "GET /api/identity/users": [
+            "items.0.id",
+            "items.0.email",
+            "items.0.displayName",
+            "items.0.language",
+            "items.0.isActive",
+            "items.0.roleIds.0",
+            "items.0.lastSignInAt",
+            "items.0.createdAt"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/identity/users"
+        ]
+      }
+    }
+  ]
+}

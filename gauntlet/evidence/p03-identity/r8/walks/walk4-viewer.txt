@@ -1,0 +1,83 @@
+clerk enabled: false
+check failed locator.check: Clicking the checkbox did not change its state
+clerk checked now: false
+--- viewer after ticking
+{
+ "url": "/identity/users/01a12420-827c-7971-91a7-3b6eb24f315b?q=accountant%40alnoor.example",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "MAIN HomeSettingsUsersAl Noor Trading LLCUser",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Omar Haddad",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in",
+  "Close",
+  "Details",
+  "What they can do"
+ ],
+ "labels": [
+  "E-mail",
+  "Name",
+  "Name in Arabic",
+  "Language",
+  "Active (can sign in)",
+  "Administrator25 permissions",
+  "Clerk (restricted)1 permission",
+  "Company manager9 permissions",
+  "R8 Sales viewer 56419 permissions",
+  "Read-only9 permissions",
+  "Staff3 permissions",
+  "Starts work inTheir first companyALN-DXB · Al Noor Trading LLCThe company they work in after signing in, until they switch in the top bar."
+ ],
+ "headings": [
+  "Users",
+  "Hessa Al Suwaidi"
+ ]
+}
+non-GET requests from viewer: [ 'POST http://localhost:20350/api/auth/sign-in' ]
+--- after Escape
+{
+ "url": "/identity/users?q=accountant%40alnoor.example",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "TABLE Users: 1 row",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Omar Haddad",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in"
+ ],
+ "labels": [],
+ "headings": [
+  "Users"
+ ]
+}
+manager search []
+[["r8.reader.96108@alnoor.example",null],["r8.reader.45951@alnoor.example",null],["viewer@alnoor.example",null],["accountant@alnoor.example",null],["noaccess@alnoor.example",null],["admin.ar@alnoor.example",null],["admin@alnoor.example",null],["reem.al.suwaidi.100000@staff.example",null],["elena.al.mansouri.099999@staff.example",null],["majid.reyes.099998@staff.example",null]]

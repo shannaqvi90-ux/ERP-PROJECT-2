@@ -1,0 +1,103 @@
+{
+  "task": "create-restricted-user",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "pointer",
+  "metrics": {
+    "steps": {
+      "ours": 5,
+      "odoo": 10,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 37,
+      "odoo": 46,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 1.793,
+      "odoo": 10.696,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 20.91,
+      "odoo": 30.05,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 21.916,
+      "odoo": 39.955,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "ours_paths": [
+    {
+      "id": "pointer",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 5,
+        "keystrokes": 37,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.793,
+        "system_wait_seconds": 1.006,
+        "human_seconds": 20.91,
+        "human_plus_wait_seconds": 21.916,
+        "klm_operator_counts": {
+          "K": 37,
+          "P": 2,
+          "B": 4,
+          "H": 3,
+          "M": 5
+        }
+      }
+    },
+    {
+      "id": "keyboard",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 9,
+        "keystrokes": 46,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 6,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.79,
+        "system_wait_seconds": 1.002,
+        "human_seconds": 21.33,
+        "human_plus_wait_seconds": 22.332,
+        "klm_operator_counts": {
+          "K": 46,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      }
+    }
+  ],
+  "odoo_best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044623-9bff.json",
+    "odoo": "../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044649-34c0.json"
+  }
+}

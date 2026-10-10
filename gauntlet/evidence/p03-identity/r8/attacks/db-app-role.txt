@@ -1,0 +1,41 @@
+== erp_app, no tenant bound
+0
+0
+0
+0
+== session-wide set_config to A then read
+0190a000-0000-7000-8000-000000000001
+0
+0
+== in a transaction bound to A
+BEGIN
+0190a000-0000-7000-8000-000000000001
+1791607346.208030
+users|100005|0
+passkeys|1|0
+UPDATE 0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "passkeys"
+ROLLBACK
+== bypass attempts
+ERROR:  must be owner of table passkeys
+ERROR:  permission denied to set role "erp_owner"
+SET
+ERROR:  query would be affected by row-level security policy for table "passkeys"
+postgres|t|t
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+== RLS state on identity tables
+__ef_migrations_history|f|f
+passkeys|t|t
+roles|t|t
+sessions|t|t
+sign_in_attempts|t|t
+sign_in_secret|f|f
+user_company_roles|t|t
+user_credentials|t|t
+user_roles|t|t
+users|t|t
+== policies on passkeys
+tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())

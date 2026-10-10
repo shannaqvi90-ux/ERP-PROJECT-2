@@ -1,0 +1,129 @@
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.10]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.26]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.38]   Starting:    Erp.Modules.Identity.Tests
+  Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.Demo_seed_loads_the_shared_dataset_users_into_the_main_tenant [7 s]
+  Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.The_dataset_says_which_users_are_active_and_a_file_without_the_column_loads_all_active [4 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Roles_in_one_company_are_created_shown_changed_and_explained [819 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Invalid_company_roles_are_refused_with_field_errors [125 ms]
+  Passed Erp.Modules.Identity.Tests.RateLimitTests.Sign_in_attempts_beyond_the_limit_get_429_with_a_localized_problem [495 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Users_by_role_lists_a_role_held_in_one_company_with_that_company [473 ms]
+[xUnit.net 00:00:10.46]     Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second [FAIL]
+[xUnit.net 00:00:10.46]       Assert.DoesNotContain() Failure: Item found in collection
+[xUnit.net 00:00:10.46]                                                                             ↓ (pos 7)
+[xUnit.net 00:00:10.46]       Collection: [···, "tenancy.branches.create", "tenancy.branches.read", "tenancy.branches.update", "tenancy.companies.read", "tenancy.companies.update", ···]
+[xUnit.net 00:00:10.46]       Found:      "tenancy.branches.update"
+[xUnit.net 00:00:10.46]       Stack Trace:
+[xUnit.net 00:00:10.46]         /work/tests/Erp.Modules.Identity.Tests/CompanyRolesTests.cs(224,0): at Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second()
+[xUnit.net 00:00:10.46]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Deleting_a_role_or_a_user_removes_their_company_assignments [371 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_role_granting_more_than_the_caller_holds_is_neither_renamed_copied_nor_deleted_by_them [615 ms]
+  Failed Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second [256 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Item found in collection
+                                                                      ↓ (pos 7)
+Collection: [···, "tenancy.branches.create", "tenancy.branches.read", "tenancy.branches.update", "tenancy.companies.read", "tenancy.companies.update", ···]
+Found:      "tenancy.branches.update"
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second() in /work/tests/Erp.Modules.Identity.Tests/CompanyRolesTests.cs:line 224
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_has_a_name_in_Arabic_that_the_list_filters [288 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.An_administrator_sets_where_another_user_starts_work [469 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.The_sign_in_address_of_another_user_is_corrected_and_stays_unique_in_the_workspace [403 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Another_workspaces_users_are_never_matched_or_changed [754 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Without_the_update_permission_the_request_is_forbidden_and_changes_nothing [379 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_who_never_signed_in_is_deleted_and_anyone_who_signed_in_stays [580 ms]
+  Passed Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end [897 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.The_filter_narrows_the_match_and_a_changed_count_changes_nothing [508 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive eq 'yes'", code: "list.valueBoolean") [353 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.All_that_match_leaves_alone_users_whose_roles_in_one_company_the_caller_does_not_cover [1 s]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar", code: "list.filterSyntax") [97 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq", code: "list.filterSyntax") [92 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "(language eq 'ar'", code: "list.filterSyntax") [93 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "after", value: "not-a-cursor", code: "list.invalidCursor") [88 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "displayName eq 5", code: "list.valueText") [88 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "createdAt ge 'yesterday'", code: "list.valueDateTime") [86 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive gt true", code: "list.operatorNotAllowed") [84 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar' and", code: "list.filterSyntax") [84 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.User_search_finds_by_name_or_email_and_escapes_wildcards [393 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "nosuch", code: "list.unknownColumn") [85 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_administrator_role_cannot_be_changed_or_deleted_and_grants_every_permission [109 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language = 'ar'", code: "list.filterSyntax") [83 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Deactivates_every_matching_user_except_the_caller_and_stronger_users_and_audits_each_change [1 s]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Permission_catalogue_is_labelled_in_the_users_language [91 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "displayName", code: "list.notGroupable") [117 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'fr'", code: "list.valueChoice") [108 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Bad_requests_are_refused_by_field_and_change_nothing [236 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "display name", code: "list.sortSyntax") [118 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language gt 'ar'", code: "list.operatorNotAllowed") [106 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "nosuch", code: "list.unknownColumn") [84 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_session_cookie_is_secure_over_https_and_not_on_plain_http [516 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_session_probe_always_answers_200_even_with_a_stale_or_malformed_session_cookie [6 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "language", code: "list.notSortable") [93 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "nosuch eq 'x'", code: "list.unknownColumn") [110 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "displayName,displayName", code: "list.sortSyntax") [123 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Racing_deletes_and_unblocks_of_one_user_answer_without_a_server_error [933 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "a") [238 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Server_errors_reveal_nothing_but_a_trace_id [222 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Unknown_api_paths_answer_404_problems_not_the_app_shell [3 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Health_is_public_and_checks_the_database [17 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Responses_carry_security_headers_and_api_responses_are_not_cached [2 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "al m") [242 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Changing_the_language_preference_follows_the_user [402 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "فاطمه") [143 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Only_the_owner_changes_a_passkey_and_an_administrator_removes_another_users_passkeys [899 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "om") [107 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "haddad omar") [98 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_digits_preference_follows_the_user_and_leaves_the_language_alone [396 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_passkey_is_added_soon_after_signing_in_and_signs_in_from_any_start_without_an_email [325 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Saving_over_someone_elses_change_is_refused [112 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Search_finds_a_name_written_in_Arabic [167 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_permission_catalogue_carries_what_the_matrix_needs [350 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Sorting_orders_by_the_column_with_nulls_last_ascending_and_first_descending [121 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Validation_errors_name_each_field_in_the_requested_language [185 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Duplicate_email_in_the_same_workspace_is_a_conflict [92 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-displayName") [176 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "displayName") [178 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "createdAt") [153 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_pause_ends_by_itself_when_the_failures_leave_the_window [822 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt,-displayName") [156 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-createdAt") [148 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "email") [166 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_administrator_resets_a_password_and_the_user_is_signed_out_everywhere [1 s]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-lastSignInAt") [152 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Copying_a_role_keeps_its_permissions_under_a_new_name [118 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt") [148 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks [750 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_user_is_found_by_the_initials_of_their_name_and_the_initials_follow_a_rename [207 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_suspended_workspace_cannot_be_signed_in_to [85 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_access_view_says_what_a_user_can_do_and_which_role_grants_it [363 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Filters_select_exactly_the_matching_rows [240 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Search_matches_every_word_in_any_search_field_ignoring_case_and_order [116 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_cursor_belongs_to_its_sort_and_cannot_be_combined_with_skip [90 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_lists_the_best_match_first_and_reads_Arabic_spelling_variants [175 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Signed_in_users_change_their_password_by_proving_the_current_one_and_other_sessions_end [658 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Grouping_counts_every_matching_row_once [133 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_same_email_in_two_workspaces_asks_which_one_only_when_both_passwords_match [870 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.The_roles_list_serves_the_same_contract_in_memory [137 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Cookie_requests_that_change_data_need_the_request_header [168 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Expired_sessions_and_malformed_tokens_are_refused [85 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_returns_the_session_and_sets_a_strict_http_only_cookie [83 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_invited_user_signs_in_once_with_the_set_up_code_and_chooses_a_password [642 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Deactivating_a_user_ends_their_sessions [344 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_expired_set_up_code_fails_like_a_wrong_password [244 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Wrong_password_and_unknown_email_get_the_same_answer [155 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_to_one_account_from_several_clients_at_once_succeeds_for_each [278 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_passkey_answer_is_refused_unless_every_check_holds_and_every_refusal_reads_the_same [365 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_from_a_signed_in_browser_answers_for_the_new_session_only [379 ms]
+[xUnit.net 00:00:20.03]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_out_revokes_the_session_for_good [100 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Adding_a_passkey_needs_a_recent_sign_in_this_sessions_challenge_and_an_answer_for_this_site [385 ms]
+
+Test Run Failed.
+Total tests: 99
+     Passed: 98
+     Failed: 1
+ Total time: 20.2968 Seconds
+identity rc=1

@@ -1,0 +1,121 @@
+{
+  "piece": "p03-identity",
+  "round": 8,
+  "commit": "35ba5bc1662c614d9d64c70c3e4de7a073b622a8",
+  "judged_at": "2026-10-10T06:52:00Z",
+  "verdict": "LOSS",
+  "critic": "fresh critic, p03-identity round 8",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "No leak found. As alnoor's admin I attacked gulfsteel with 96 calls (attacks/g1-attack.mjs, g1-a-vs-b.txt). The targets were B's admin and 3 users (GET record, access, sign-ins, default-company, passkeys; PUT; password; unblock; sessions/revoke; default-company PUT; DELETE passkeys; DELETE), 3 of B's roles (GET, PUT, copy, DELETE), B's new passkey through /me/passkeys/{id} (GET, PUT, DELETE), and B's saved and shared list views (GET, PUT, DELETE). Every call answered 404 or 400. Tenant-switch headers and query fields (x-tenant-id, x-tenant, x-workspace, ?tenant=, ?workspace=) were ignored. A hash of B's users, roles, user_roles and passkeys was the same before and after.\n\nPasskey sign-in: I used a software ES256 authenticator I wrote (attacks/softpasskey.mjs). A's key under handles naming B's admin, A's key with B's credential id, and A's key with a handle naming no workspace all gave byte-identical 401 auth.passkeyFailed answers. B's own passkey signs in (200), and replaying the same answer is refused (401).\n\nDifferential checks: B's ids against random ids in view PUT, roleIds, companyRoles[].companyId, the role filter and the usersByRole report parameter. Every pair answered the same (g1-differential.txt).\n\nExports: users, roles, usersByRole and roleSummary as CSV, XLSX (unzipped) and PDF, in English and Arabic, held no gulfsteel data.\n\nDatabase (db-app-role.txt), as erp_app:\n- With no tenant bound, and with a session-wide set_config, it sees 0 rows.\n- Bound to A, it sees 100,005 users and 1 passkey, 0 of them from other tenants.\n- UPDATE of B's users and passkeys changed 0 rows. An INSERT into B's passkeys was refused by RLS.\n- DISABLE RLS, SET ROLE erp_owner and row_security=off were all refused. No erp role has bypassrls.\n- identity.passkeys has RLS enabled and forced, with only the standard tenant_isolation policy."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Plants are in plants/apply-r8-plants.py and plants/r8-plants-run1.diff. They ran through verify-slot (plants/run1/gates.log).\n- L7, a database leak: an extra PERMISSIVE SELECT policy on identity.passkeys that opens every workspace's passkeys when no tenant is bound ('so passkey sign-in finds the credential first'). Caught by G1DatabaseIsolationTests ('identity.passkeys: 2 rows visible without a tenant' and 'unreviewed policy passkeys_before_workspace'), G1TenantSettingCodeTests and G1TenantSourceTests.\n- L8, a process-state leak: the PasskeyChallenges singleton remembers offered credentials per e-mail address and adds them to excludeCredentials, so a same-address user in tenant A is handed tenant B's credential ids. Caught by G1ProcessStateTests ('singleton ...PasskeyChallenges._offered: a read-only field that holds a mutable ConcurrentDictionary') and by G1HttpIsolationTests ('Process-wide state changed while the tenants used the app ... _offered[admin@bravo-...]')."
+    },
+    {
+      "gate": "G2 permissions of the product as built (restricted roles, escalation, screens hide)",
+      "status": "pass",
+      "evidence": "Browser walk (walks/walk2-restricted-user.txt):\n- A user created by keyboard with the Read-only role signs in with the one-time code and sets a password.\n- That user sees no New user button. Alt+N does nothing. The panel says 'Read only: your roles let you view this record but not change it'.\n- Their POST /api/identity/users and POST /api/identity/roles answer 403.\n- noaccess sees no menu.\n\nThe G2 suites in verify passed, including takeover, company callers and escalation."
+    },
+    {
+      "gate": "G2 gate catches missing permission checks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Run 1 (plants/run1):\n- P1: DELETE /users/{id}/passkeys without the target-access check. Caught by G2AccountTakeoverTests ('DELETE /api/identity/users/{id:guid}/passkeys: aimed at a record granting everything by a user holding only [identity.users.update, ...] answered 200 (expected 403)').\n- P2: DELETE /me/passkeys/{id} without the owner check. Caught by AuthTests.Only_the_owner_changes_a_passkey...\n\nRun 2 (plants/run2, r8-plants-run2.diff):\n- r7's gap Pf re-planted: a role edit counts grants held in one company as held everywhere. Now caught by G2AccountTakeoverTests ('PUT /api/identity/roles/{id:guid} ... only through a role in one company answered 200 (expected 403)'), and by its new LeakyModule self-test.\n- P3: the session's WorkspacePermissions widened to every permission of the working company. Caught by CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command runs the seeded demo",
+      "status": "pass",
+      "evidence": "Run 2, ERP_PROJECT=c-p03-identity-r8 on ports 20350/20351/20360/20361 through verify-slot: 'verify passed in 2475 s'. Ratchet passed, processor time 7,999 s.\n\nRun 1 of the same clone failed only the ratchet's verify.quietSeconds: 4,084 s against a maximum of 3,600 s, with every one of its 1,384 tests green (processor time 9,520 s). The ratchet judged run 1 'quiet' from load 0.78 at the start and 3.97 at the end. Mid-run the load was 60 to 73, from another agent's verify plus my own demo, comparison and browser walks. Run 2 started on a quiet machine with nothing else of mine running.\n\n./erp up served the seeded demo (100,000 users) in 146 s, and in 141 s with ERP_SEED_USERS_CSV. Ports and project are overridden through the environment as documented."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, Arabic twins, audit)",
+      "status": "pass",
+      "evidence": "- Rule-gate tests pass in verify.\n- No dependency changes since r7: Directory.Packages.props and web/package.json are unchanged. WebAuthn is implemented in-house (Cbor.cs, WebAuthn.cs), with no new package.\n- audit.entries holds a row for every passkey insert, with the actor.\n- The Arabic My account page, passkeys section included, is fully Arabic apart from e-mail and URL."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r8 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ERP_VERIFY_LOG=.../verify-critic-p03-identity-r8-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1384,
+    "passed": 1384,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 2475
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 2475,
+    "evidence": "Run 2: 'verify passed in 2475 s'. The ratchet passed: .NET 550, web unit 392, e2e 89 and compare 353, all at their minimums, and processor time 7,999 s against a maximum of 10,500.\n\nRun 1 of the same clone: every test passed, but it failed verify.quietSeconds (4,084 s against 3,600). Mid-run load was 60 to 73 while the start and end samples read 0.78 and 3.97. Both logs are in the evidence folder.\n\n./erp up took 146 s."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.793,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 10.696,
+        "klm_seconds": 30.05
+      },
+      "notes": "Shipped drivers, blind, median of 3 runs each (compare/comparisons/create-restricted-user.json). Ours was judged on its 'pointer' path; Odoo was taken at its best on each metric. Ours wins every metric: human plus wait 21.9 s against 39.4 to 40.7 s. No count metric tied at 0, so nothing was left out. The caveat from r1 to r7 still applies: no contacts permission exists yet (p16), so the restricted role is 'Clerk (restricted)'."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.815,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 2.754,
+        "klm_seconds": 10.35
+      },
+      "notes": "Shortest expert path in each (compare/comparisons/find-user.json), on the shared dataset (ERP_SEED_USERS_CSV, needle 'Majid Anil Pillai'). Odoo's shipped driver now searches the shortest fragment of the name, 5 keystrokes; r7 needed a critic driver for that. Ours' 'initials' path is 'map' then Enter or a row click: 3 keystrokes, 0.815 s, 8.29 s modelled. Ours' default typed-name path takes 21 keys and would lose on keystrokes; the verdict is on 'initials'. Ours wins every metric strictly, and no count tied at 0."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r8/01-effective-permissions-company-roles-1920-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/02-new-user-read-only-role-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/03-new-user-setup-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/04-read-only-user-panel-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/05-new-role-matrix-view-selected-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/06-delete-role-confirm-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/08-users-search-arabic-ar.jpg",
+    "gauntlet/evidence/p03-identity/r8/09-new-role-matrix-ar.jpg",
+    "gauntlet/evidence/p03-identity/r8/10-my-account-passkeys-ar.jpg",
+    "gauntlet/evidence/p03-identity/r8/11-passkey-added-en.jpg",
+    "gauntlet/evidence/p03-identity/r8/12-admin-user-panel-no-passkeys-en.jpg"
+  ],
+  "biggest_gap": {
+    "title": "A lost or stolen device keeps signing in: 'Reset password' and 'Sign out everywhere' leave the user's passkeys working, and no administrator screen shows or removes them",
+    "detail": "This round added passkeys: a user adds one in My account and then signs in with one device confirmation. The administrator's levers on the users screen did not grow with it.\n\nWhen an employee's laptop is lost or stolen, an administrator does what the user panel offers: 'Reset password…' (\"Password reset. N sessions ended.\") and 'Sign out everywhere'. The passkey on the lost laptop still signs in straight afterwards (200).\n\nThe user panel's tabs (Details, What they can do, Sign-in history) never mention passkeys. The sign-in history does not say whether a sign-in used a passkey or a password. The API has GET and DELETE /api/identity/users/{id}/passkeys, summarised as being 'for a lost device, a person leaving', but no screen calls them. The only screen lever that works is deactivating the account, which also locks out the person.\n\nFor a UAE trading company with shared or field laptops, this makes the scope's 'reset password, lockout' unsafe for exactly the case it exists for.\n\nFix:\n- Show a user's passkeys (name, created, last used) in the user panel, with 'Remove all passkeys' for users within the caller's access. That is the existing DELETE, Arabic included.\n- Have 'Reset password' (or a tick box on it) and 'Sign out everywhere' offer to remove passkeys too, and say so in the done message.\n- Record the sign-in method in the sign-in history.\n- Add an e2e test: after reset plus sign-out-everywhere plus remove, the device's passkey answers 401.",
+    "evidence": "In the seeded demo (./erp up), run node gauntlet/evidence/p03-identity/r8/attacks/lost-device.mjs (uses softpasskey.mjs) against the demo URL. Output (attacks/lost-device.txt):\n- 'user adds passkey: 201'\n- 'admin resets password: 200'\n- 'admin ends sessions: 200'\n- 'lost device signs in with its passkey after reset + end sessions: 200 r8.lost.…@alnoor.example'\n- 'API: admin lists that user's passkeys: [{\"name\":\"Laptop\",…}]'\n- Only deactivation stops it: 'passkey sign-in after deactivation: 401'\n\nScreen: walks/walk7.mjs opens the viewer, who holds the passkey 'Critic virtual key' added in walk6 through a Chromium virtual authenticator. It reports \"tabs mentioning a passkey: []\" (screenshot 12). web/src/modules/identity/UserPanel.tsx has 0 occurrences of 'passkey', and the only callers of /passkeys are in PasskeysSection.tsx (the user's own)."
+  },
+  "other_findings": [
+    "Fixed since r7 and still fixed:\n- r7's gap Pf (role edit by a role manager of one company) is caught by G2AccountTakeoverTests and its LeakyModule self-test.\n- r7's failing G1 ids write-oracle test passes. All 550 .NET tests are green in both runs.\n- After 'Delete role', focus lands on the inline Delete confirm button, and Enter deletes.\n- Matrix search 'view' plus 'Select all shown' now ticks the 9 view permissions only. lists.views.share is no longer included.\n- The effective-permission tables fit the panel at 1920x1080 (754 px) and 1366x768 (488 px), with no overflowing cell. Granted by shows 'Company manager (only in ALN-DXB · Al Noor Trading LLC)' (screenshot 01).",
+    "[route: p00-foundation] The ratchet's verify.quietSeconds judges a run 'quiet' from two load samples, at start and end. My run 1 started at load 0.78 and ended at 3.97, but ran at load 60 to 73 in between. It was judged quiet and failed at 4,084 s against 3,600, with every test green and processor time 9,520 s. The same clone passed on a quiet re-run at 2,475 s and 7,999 s. A newcomer's one command can fail on a machine that was busy only mid-run. Sampling load during the run, or the processor-time share, would judge it fairly. I did not touch the maximum.",
+    "Passkey sign-in is sound against cross-tenant handles: the refusals are identical and replays are refused. It is still not visible to administrators: the sign-in history rows read only 'Signed in' from the gateway address 172.22.0.1 (the compose gateway, open since r1), with no method.",
+    "[route: p01-odoo-rig] run.mjs warned that the rig's job_runs (ir.cron.progress) falls below 100,000 rows from about 2026-10-09T12:54Z, because Odoo vacuums them after 7 days. The live volume check still passed this run, but the shared rig needs tools/odoo-reference/up.sh soon or every comparison will exit 2.",
+    "find-user: Odoo's shipped driver now finds the shortest name fragment (5 keystrokes, 6 steps). Ours wins only on its 'initials' path (3 keystrokes). Its default typed-name path takes 21 keys and its 'prefixes' path 15, so the margin rests on the initials habit.",
+    "create-restricted-user still uses 'Clerk (restricted)' because no contacts permission exists yet (p16). The bar's 'view and create contacts only' role is not shown yet.",
+    "Minor UI:\n- At 1600x900 the users list truncates the Language header ('Langu…'), the Invited pill ('Invite…') and the Roles column.\n- On a read-only record the role checkboxes are correctly disabled (they sit in a disabled fieldset), but the labels of roles the reader could grant (Clerk, Read-only) are not greyed like the others, so they look editable (screenshot 04).",
+    "Positive:\n- The Arabic search 'ماجد أنيل' returns 61 users with dir=rtl and lang=ar (screenshot 08).\n- The Arabic role matrix shows whole words (screenshot 09). The Arabic My account page, passkeys section included, has no Latin words except the e-mail and URL (screenshot 10).\n- The invitation code flow works end to end: sign in with the code, then the new password twice.\n- A passkey added through a Chromium virtual authenticator signs in from 'Continue with a passkey' in about 0.9 s (screenshot 11).\n- No console errors or 5xx in any walk. Passkey inserts are audited with the actor.",
+    "Harness notes:\n- Both plant runs went through verify-slot (run 1 waited 3,915 s for a slot).\n- I stopped the demo before the quiet re-run.\n- Clones and my compose project, volume and image were removed afterwards."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p03-identity/r8",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r8"
+}

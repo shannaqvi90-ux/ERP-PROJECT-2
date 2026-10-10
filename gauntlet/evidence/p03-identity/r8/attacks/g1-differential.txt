@@ -1,0 +1,6 @@
+PUT view: B id -> 400 | random -> 400 | SAME
+PUT view full: B id -> 404 | random -> 404 | SAME
+POST user roleIds: B id -> 400 | random -> 400 | SAME
+POST user companyRoles.companyId: B id -> 400 | random -> 400 | SAME
+users filter role: B id -> 400 | random -> 400 | SAME
+usersByRole report role: B id -> 200 | random -> 200 | SAME

@@ -1,0 +1,60 @@
+--- my account
+{
+ "url": "/identity/me",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "MAIN HomePersonalMy accountAl Noor Trading LL",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Omar Haddad",
+  "Sign out",
+  "Copy address",
+  "Change password",
+  "Add a passkey"
+ ],
+ "labels": [
+  "English",
+  "Arabic",
+  "Current password",
+  "New password",
+  "Repeat the new password",
+  "Name of the new passkey",
+  "Ask for my passkey as soon as the sign-in screen opens on this device"
+ ],
+ "headings": [
+  "My account",
+  "Change password",
+  "Passkeys"
+ ]
+}
+after add: Passkeys | Sign in with your fingerprint, face or device PIN instead of typing a password. The passkey stays on your device or in your password manager; the workspace keeps only its public key. | Passkey Critic virtual key added. On this device the sign-in screen will ask for it. | Critic virtual key	10 Oct 2026, 9:04 AM	Never	No	 | Name of the new passkey | Add a passkey | Ask for my passkey as soon as the sign-in screen opens on this device
+authenticator holds 1 credential(s)
+--- signed out
+{
+ "url": "/",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "INPUT ",
+ "buttons": [
+  "العربية",
+  "Show the password",
+  "Sign in",
+  "Continue with a passkey"
+ ],
+ "labels": [
+  "E-mail",
+  "Password"
+ ],
+ "headings": [
+  "ERP"
+ ]
+}
+passkey buttons on sign-in: 1 [ 'Continue with a passkey' ]
+signed in with passkey: true viewer@alnoor.example 908 ms
+sign-in history (own, as viewer): {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNP6H58RUOIU:0000000C"}
+errors [
+  'Failed to load resource: the server responded with a status of 403 (Forbidden)'
+]

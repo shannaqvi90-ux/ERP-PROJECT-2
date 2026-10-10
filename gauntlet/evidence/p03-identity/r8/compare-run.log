@@ -1,0 +1,23 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-10-09T12:54:03.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig; then COMPARE_ODOO_URL=http://localhost:<port>)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+create-restricted-user   ours  verified  steps 5  keys 37  machine 2.277s  human 20.91s  human+wait 22.425s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044605-a92a.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.793s  human 20.91s  human+wait 21.916s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044623-9bff.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.718s  human 20.91s  human+wait 21.821s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044636-1c72.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 10.696s  human 30.05s  human+wait 39.955s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044649-34c0.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 11.366s  human 30.05s  human+wait 40.658s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044751-708f.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 10.073s  human 30.05s  human+wait 39.411s  -> ../../evidence-staging/p03-identity/r8/compare/results/create-restricted-user-20261010T044850-cba0.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+find-user                odoo  verified  steps 6  keys 5  machine 2.776s  human 10.35s  human+wait 13.651s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T044947-e003.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.65s  human 10.35s  human+wait 13.287s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T045105-87ee.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.754s  human 10.35s  human+wait 12.764s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T045221-97a0.json
+find-user                ours  verified  steps 3  keys 8  machine 1.954s  human 6.64s  human+wait 8.046s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T045336-9d86.json
+find-user                ours  verified  steps 3  keys 8  machine 1.755s  human 6.64s  human+wait 8.015s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T045531-f3f6.json
+find-user                ours  verified  steps 3  keys 8  machine 1.624s  human 6.64s  human+wait 8.013s  -> ../../evidence-staging/p03-identity/r8/compare/results/find-user-20261010T045749-b9c4.json
+find-user                verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p03-identity/r8/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r8/compare
+rc=0
