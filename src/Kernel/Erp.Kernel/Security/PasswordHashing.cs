@@ -11,7 +11,8 @@ namespace Erp.Kernel.Security;
 ///
 /// One exception, for the test processes of <c>./erp verify</c> only: in the <c>Testing</c> host
 /// environment the setting <c>Erp:Auth:PasswordIterations</c> (10,000 to 210,000) sets a lower cost
-/// for the hashes those processes make. The test suites sign in thousands of times, and each
+/// for the hashes those processes make (the test library's hosts get it from
+/// <c>ERP_TEST_PASSWORD_ITERATIONS</c>, which the .NET test stage sets). The test suites sign in thousands of times, and each
 /// derivation at the production cost was the largest single use of processor time in them (round
 /// 9, measured: 2,119 derivations, about 233 processor seconds, in one gate process). Every code
 /// path still runs, every check still judges the same answers; only the number of rounds differs.

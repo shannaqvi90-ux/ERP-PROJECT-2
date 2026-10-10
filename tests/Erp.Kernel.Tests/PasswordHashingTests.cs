@@ -81,7 +81,8 @@ public sealed class PasswordHashingTests
         var verify = File.ReadAllText(Repo.PathOf("build", "verify-inside.sh"));
         // Set in the .NET test stage only, never in the timing stage (which measures the product as it runs).
         var dotnetStage = verify[verify.IndexOf("  dotnet)", StringComparison.Ordinal)..verify.IndexOf("  timing)", StringComparison.Ordinal)];
-        Assert.Contains("Erp__Auth__PasswordIterations=", dotnetStage, StringComparison.Ordinal);
-        Assert.Equal(1, verify.Split("Erp__Auth__PasswordIterations=").Length - 1);
+        Assert.Contains($"{ErpAppFactory.PasswordIterationsVariable}=", dotnetStage, StringComparison.Ordinal);
+        Assert.Equal(1, verify.Split($"{ErpAppFactory.PasswordIterationsVariable}=").Length - 1);
+        Assert.DoesNotContain("Erp__Auth__PasswordIterations", verify, StringComparison.Ordinal);
     }
 }
