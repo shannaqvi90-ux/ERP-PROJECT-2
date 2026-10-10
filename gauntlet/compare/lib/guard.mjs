@@ -296,10 +296,10 @@ export const ODOO_READ_METHODS = Object.freeze(new Set(['search', 'search_read',
 /**
  * Odoo web-client calls that only read, beyond ODOO_READ_METHODS: the views of a model, a form's
  * computed defaults (onchange computes, it does not store) and the messaging store's fetches (the
- * chatter's messages, the systray). Used only to tell whether a request the page still has in
+ * chatter's messages, the systray; the preferences action the user menu asks for, action_get). Used only to tell whether a request the page still has in
  * flight when a task ends changes the product (lib/runner.mjs, settle).
  */
-export const ODOO_CLIENT_READ_METHODS = Object.freeze(new Set(['get_views', 'onchange', 'web_name_search', 'name_get', 'get_formview_action', 'get_formview_id']));
+export const ODOO_CLIENT_READ_METHODS = Object.freeze(new Set(['get_views', 'onchange', 'web_name_search', 'name_get', 'get_formview_action', 'get_formview_id', 'action_get']));
 export const ODOO_CLIENT_READ_ROUTES = Object.freeze([/^\/mail\/store$/, /^\/mail\/data$/, /^\/mail\/thread\/(data|messages)$/, /^\/web\/action\/load$/,
   /^\/web\/webclient\/(load_menus|translations|version_info)/]);
 

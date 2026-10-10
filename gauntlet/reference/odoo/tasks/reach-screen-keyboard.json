@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "run_id": "reach-screen-keyboard-20261009T181206-4d5e",
-  "instrument": 7,
+  "run_id": "reach-screen-keyboard-20261010T020642-9404",
+  "instrument": 8,
   "task": "reach-screen-keyboard",
   "task_title": "Reach a named screen by keyboard only",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
   "done_when": "The users list is on screen with its rows, and no step used the mouse.",
-  "started_at": "2026-10-09T18:12:06.212Z",
-  "finished_at": "2026-10-09T18:12:15.505Z",
+  "started_at": "2026-10-10T02:06:42.306Z",
+  "finished_at": "2026-10-10T02:06:46.898Z",
   "environment": {
-    "base_url": "http://localhost:20102",
+    "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 1.219,
-    "system_wait_seconds": 1.102,
+    "machine_seconds": 0.647,
+    "system_wait_seconds": 0.588,
     "human_seconds": 3.99,
-    "human_plus_wait_seconds": 5.092,
+    "human_plus_wait_seconds": 4.578,
     "klm_operator_counts": {
       "K": 8,
       "P": 0,
@@ -59,7 +59,7 @@
       "label": "command palette",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.035,
+      "took": 0.018,
       "chord": "Control+k",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "type",
       "label": "menu search",
       "keystrokes": 5,
-      "at": 0.272,
-      "took": 0.046,
+      "at": 0.136,
+      "took": 0.025,
       "text": "/user",
       "same_field": false,
       "screen": "/odoo/discuss",
@@ -81,8 +81,8 @@
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "at": 0.513,
-      "took": 0.024,
+      "at": 0.267,
+      "took": 0.006,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -91,32 +91,32 @@
   "waits": [
     {
       "label": "palette open",
-      "at": 0.038,
-      "seconds": 0.234
+      "at": 0.019,
+      "seconds": 0.116
     },
     {
       "label": "Users menu first",
-      "at": 0.32,
-      "seconds": 0.192
+      "at": 0.161,
+      "seconds": 0.105
     },
     {
       "label": "users list",
-      "at": 0.537,
-      "seconds": 0.676
+      "at": 0.275,
+      "seconds": 0.367
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "254e50e895786bef.jpg",
+      "file": "432cfe5d75c5139b.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/254e50e895786bef.jpg"
+      "path": "gauntlet/reference/odoo/shots/432cfe5d75c5139b.jpg"
     },
     {
       "moment": "done",
-      "file": "5a40bb6f325ffe44.jpg",
-      "at": 1.219,
-      "path": "gauntlet/reference/odoo/shots/5a40bb6f325ffe44.jpg"
+      "file": "8698f9f500a79695.jpg",
+      "at": 0.647,
+      "path": "gauntlet/reference/odoo/shots/8698f9f500a79695.jpg"
     }
   ],
   "verification": {
@@ -150,20 +150,20 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.004,
+      "seconds": 0.003,
       "verified": true
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.002,
+      "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.005,
+      "seconds": 0.003,
       "verified": true,
-      "gap_seconds": 1.101
+      "gap_seconds": 0.069
     }
   ],
-  "requests_after_clock": 1,
+  "requests_after_clock": 2,
   "requests_in_flight_at_clock": {
     "count": 49,
     "first": [
@@ -180,11 +180,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "cb31b4f036cba1e2",
+    "sha256": "2d4673c20503be25",
     "elements": 1614
   },
   "screen_after_verify": {
-    "sha256": "cb31b4f036cba1e2",
+    "sha256": "2d4673c20503be25",
     "elements": 1614,
     "unchanged": true
   },
@@ -196,13 +196,14 @@
     "longest_pause_seconds": 0.001,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.068
+    "seconds": 0.039
   },
+  "set_up_writes_waited": 0,
   "result_file": "gauntlet/reference/odoo/tasks/reach-screen-keyboard.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261009T181145-99ea.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261009T181155-d6ff.json",
-    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261009T181206-4d5e.json"
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261010T020633-114d.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261010T020637-3dab.json",
+    "gauntlet/reference/odoo/results/reach-screen-keyboard-20261010T020642-9404.json"
   ]
 }

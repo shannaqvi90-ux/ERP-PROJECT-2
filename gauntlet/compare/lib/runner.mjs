@@ -331,7 +331,10 @@ export function watchSetUpBrowser(browser) {
       if (!watching || isBackgroundRequest(r)) return;
       if (isWrite(r.method(), r.url(), r.resourceType(), postData(r))) inflight.set(r, describeReq(r));
     };
+    // A write the product has answered (its response has begun) was carried out before the answer:
+    // its body may still be loading when the page moves on, which abandons nothing.
     const finished = r => { inflight.delete(r); };
+    const answered = res => { try { inflight.delete(res.request()); } catch { /* gone */ } };
     const failed = r => {
       if (!inflight.has(r)) return;
       let why = '';
@@ -350,7 +353,7 @@ export function watchSetUpBrowser(browser) {
     };
     context.pages().forEach(watchPage);
     context.on('page', watchPage);
-    context.on('request', on); context.on('requestfinished', finished); context.on('requestfailed', failed);
+    context.on('request', on); context.on('response', answered); context.on('requestfinished', finished); context.on('requestfailed', failed);
     contexts.add(context);
   };
   for (const c of browser.contexts()) attach(c);
