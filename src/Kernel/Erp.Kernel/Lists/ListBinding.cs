@@ -671,46 +671,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private static readonly MethodInfo ILike = typeof(NpgsqlDbFunctionsExtensions).GetMethod(
         nameof(NpgsqlDbFunctionsExtensions.ILike), [typeof(DbFunctions), typeof(string), typeof(string), typeof(string)])!;
 
-    private static readonly MethodInfo Matches = typeof(ListBinding<T>).GetMethod(nameof(MatchesLike), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo Matches = typeof(LikePattern).GetMethod(nameof(LikePattern.IsMatch))!;
 
     /// <summary>Case-insensitive LIKE with backslash escapes: ILIKE in PostgreSQL (served by the
-    /// trigram indexes), the same pattern semantics in memory.</summary>
+    /// trigram indexes), the same pattern semantics in memory. In memory the pattern is turned into
+    /// a regular expression once, when the query is built, and each row is only matched against it
+    /// (round 9: building and parsing the expression for every row of an in-memory list was among
+    /// the costliest parts of serving one, and the shared regular-expression cache's lock was
+    /// contended by every request doing it at once).</summary>
     private static Expression Like(Expression value, string pattern, bool database) => database
         ? Expression.Call(ILike, Expression.Constant(EF.Functions), value, Box(pattern, typeof(string)), Expression.Constant("\\"))
-        : Expression.Call(Matches, value, Expression.Constant(pattern));
-
-    private static bool MatchesLike(string? value, string pattern)
-    {
-        if (value is null)
-        {
-            return false;
-        }
-        var regex = new System.Text.StringBuilder("^");
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            var c = pattern[i];
-            if (c == '\\' && i + 1 < pattern.Length)
-            {
-                regex.Append(System.Text.RegularExpressions.Regex.Escape(pattern[++i].ToString()));
-            }
-            else if (c == '%')
-            {
-                regex.Append(".*");
-            }
-            else if (c == '_')
-            {
-                regex.Append('.');
-            }
-            else
-            {
-                regex.Append(System.Text.RegularExpressions.Regex.Escape(c.ToString()));
-            }
-        }
-        regex.Append('$');
-        return System.Text.RegularExpressions.Regex.IsMatch(value, regex.ToString(),
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.CultureInvariant,
-            TimeSpan.FromSeconds(1));
-    }
+        : Expression.Call(Expression.Constant(new LikePattern(pattern)), Matches, value);
 
     public static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal);
