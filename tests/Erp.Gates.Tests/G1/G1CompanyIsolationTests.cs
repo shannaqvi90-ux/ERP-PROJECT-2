@@ -4,7 +4,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Erp.Gates.Tests.Infrastructure;
+using Erp.Kernel.Data;
+using Erp.Modules.Tenancy.Contracts;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Gates.Tests.G1;
 
@@ -75,6 +78,160 @@ public sealed class G1CompanyIsolationTests(G1CompanyFixture fixture) : IClassFi
         Assert.Contains("POST /api/tenancy/branches [code] <- tenancy.branches", report.WriteOracleSources);
         Assert.True(report.WriteOracleChecks >= Ratchet.Min("g1.companyWriteOracleChecks"),
             $"g1.companyWriteOracleChecks: {report.WriteOracleChecks}; ratchet minimum {Ratchet.Min("g1.companyWriteOracleChecks")}");
+    }
+
+    /// <summary>
+    /// The users company X shares with company Y (critic p02 round 8, plant PU: an administrator of
+    /// one company changed the default working company of a user who also works in a sister company,
+    /// and every gate passed). Every write of every module addressed by a user's id, aimed by an
+    /// administrator who works in X alone at a user who works in X and Y (holding a workspace-wide
+    /// role, or roles held in X and in Y), is refused and changes nothing; the same writes aimed at
+    /// a user who works in X alone succeed (<see cref="SharedUserRecords"/>).
+    /// </summary>
+    [Fact]
+    public async Task An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y()
+    {
+        var setup = await UserScopeSetup.CreateAsync(Env);
+        using var anonymous = Env.CreateClient();
+        var openApi = await OpenApiDocument.LoadAsync(anonymous);
+        var endpoints = EndpointInventory.From(Env.Factory.Services)
+            .Where(e => e.Name is not ("auth.signIn" or "auth.signOut") && !e.Pattern.Contains("{*", StringComparison.Ordinal))
+            .ToList();
+        using var attacker = await Env.SignInAsync(setup.AttackerEmail);
+        var report = await SharedUserRecords.RunAsync(Env, openApi, endpoints, setup.Admin, attacker, "company X administrator",
+            setup.X, setup.Y, setup.WorkspaceRole, setup.WorkspaceRole, setup.XBranches[0], setup.XBranches[1]);
+        foreach (var (target, sources) in report.ProvenSources)
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine($"{target}: {sources.Count} proven writes:\n  " + string.Join("\n  ", sources));
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Writes} writes sent; accepted for the user of X alone:\n  " + string.Join("\n  ", report.ControlAccepted));
+        Assert.True(report.Failures.Count == 0, "Writes to users who also work in company Y, by an administrator of company X alone:\n" + string.Join("\n", report.Failures.Take(40)));
+        Assert.True(report.ChangedTargets.Count == 0, "Changed by an administrator of company X alone: " + string.Join("; ", report.ChangedTargets));
+        // The writes about a user that the tenancy and identity modules offer are among those proven
+        // on every target, and accepted when aimed at the user of X alone (so their refusal is about
+        // where the target works, not a malformed request).
+        string[] named =
+        [
+            "PUT /api/identity/users/{id:guid}/default-company [companyId]",
+            "PUT /api/tenancy/access/{userId:guid} [companies]",
+            "PUT /api/identity/users/{id:guid} [displayName]",
+        ];
+        foreach (var (target, sources) in report.ProvenSources)
+        {
+            foreach (var source in named)
+            {
+                Assert.True(sources.Contains(source), $"{source} was not proven on {target} (the attack would be blind to it); proven: {string.Join(", ", sources)}");
+            }
+        }
+        foreach (var source in named)
+        {
+            Assert.True(report.ControlAccepted.Contains(source),
+                $"{source}: the administrator of company X was refused for the user of X alone too, so the gate cannot tell where the target works from a malformed request");
+        }
+        Assert.Contains("PUT /api/identity/users/{id:guid} [companyRoles]", report.ProvenSources[SharedUserRecords.CompanyRolesTarget]);
+        var proven = report.ProvenSources.Where(p => p.Key != SharedUserRecords.ControlTarget).Sum(p => p.Value.Count);
+        Assert.True(proven >= Ratchet.Min("g1.companyUserTargetWrites"), $"g1.companyUserTargetWrites: {proven}; ratchet minimum {Ratchet.Min("g1.companyUserTargetWrites")}");
+    }
+
+    /// <summary>
+    /// The tenancy module's public contract for another user's default company refuses on its own
+    /// (critic p02 round 8, plant PU). Other modules call <see cref="Erp.Modules.Tenancy.Contracts.IUserWorkplaces"/>
+    /// without identity's target check in front of it, so in a unit of work bound to company X
+    /// alone a user who also works in Y is reported as working elsewhere and their default company
+    /// is left alone (<c>UserBeyondScope</c>), while a user of X alone is changed.
+    /// </summary>
+    [Fact]
+    public async Task The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies()
+    {
+        var setup = await UserScopeSetup.CreateAsync(Env);
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        var both = await setup.CreateUserAsync($"contract.xy.{tag}", [setup.WorkspaceRole], [setup.X, setup.Y]);
+        var only = await setup.CreateUserAsync($"contract.x.{tag}", [setup.WorkspaceRole], [setup.X]);
+        var cancel = TestContext.Current.CancellationToken;
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, setup.AttackerId, ErpDbSession.UserActorKind, cancel);
+            await session.BindCompaniesAsync([setup.X], cancel);
+            var workplaces = scope.ServiceProvider.GetRequiredService<IUserWorkplaces>();
+
+            var bothInfo = await workplaces.GetAsync(both, cancel);
+            Assert.True(bothInfo.CompaniesElsewhere, "a user who works in X and Y, read in a unit of work bound to X, must be reported as working elsewhere");
+            Assert.Equal([setup.X], bothInfo.Companies.Select(c => c.Id));
+            Assert.Contains(both, await workplaces.WorkingElsewhereAsync(cancel));
+            Assert.Equal(WorkplaceChange.UserBeyondScope, await workplaces.SetAsync(both, setup.X, bothInfo.Version, cancel));
+            Assert.Equal(WorkplaceChange.UserBeyondScope, await workplaces.SetAsync(both, null, bothInfo.Version, cancel));
+
+            var onlyInfo = await workplaces.GetAsync(only, cancel);
+            Assert.False(onlyInfo.CompaniesElsewhere, "a user who works in X alone is within a unit of work bound to X");
+            Assert.DoesNotContain(only, await workplaces.WorkingElsewhereAsync(cancel));
+            Assert.Equal(WorkplaceChange.Done, await workplaces.SetAsync(only, setup.X, onlyInfo.Version, cancel));
+            await session.CommitAsync(cancel);
+        }
+
+        await using var admin = await Env.OpenAdminAsync();
+        Assert.Equal(0L, await DbCatalog.ScalarAsync<long>(admin, "SELECT count(*) FROM tenancy.user_workplaces WHERE tenant_id = @t AND user_id = @u", ("t", Env.TenantA.Id), ("u", both)));
+        Assert.Equal(setup.X, await DbCatalog.ScalarAsync<Guid>(admin, "SELECT company_id FROM tenancy.user_workplaces WHERE tenant_id = @t AND user_id = @u", ("t", Env.TenantA.Id), ("u", only)));
+    }
+}
+
+/// <summary>The company layer's user targets: the tenant's administrator, an administrator who
+/// works in company X alone, a workspace-wide role granting the reading of users, and X's branches.</summary>
+public sealed class UserScopeSetup
+{
+    private UserScopeSetup(HttpClient admin, string domain)
+    {
+        Admin = admin;
+        _domain = domain;
+    }
+
+    private readonly string _domain;
+
+    public HttpClient Admin { get; }
+    public Guid X { get; private set; }
+    public Guid Y { get; private set; }
+    public IReadOnlyList<Guid> XBranches { get; private set; } = [];
+    public Guid WorkspaceRole { get; private set; }
+    public Guid AttackerId { get; private set; }
+    public string AttackerEmail { get; private set; } = "";
+
+    public static async Task<UserScopeSetup> CreateAsync(ErpTestEnvironment env)
+    {
+        var tenant = env.TenantA;
+        await using var db = await env.OpenAdminAsync();
+        var companies = await DbCatalog.ReadAsync(db, "SELECT id FROM tenancy.companies WHERE tenant_id = @t ORDER BY id", r => r.GetGuid(0), ("t", tenant.Id));
+        Assert.True(companies.Count >= 2, "tenant A needs two companies");
+        var setup = new UserScopeSetup(await env.SignInAsync(env.Email(tenant, "admin")), tenant.EmailDomain) { X = companies[0], Y = companies[1] };
+        setup.XBranches = await DbCatalog.ReadAsync(db, "SELECT id FROM tenancy.branches WHERE tenant_id = @t AND company_id = @c ORDER BY id",
+            r => r.GetGuid(0), ("t", tenant.Id), ("c", setup.X));
+        Assert.True(setup.XBranches.Count >= 2, "company X needs two branches");
+        var administratorRole = (await setup.Admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
+            .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        using var role = await setup.Admin.PostAsJsonAsync("/api/identity/roles",
+            new { nameEn = $"Reads users {tag}", nameAr = $"يقرأ المستخدمين {tag}", permissions = new[] { "identity.users.read" } });
+        Assert.True(role.StatusCode == HttpStatusCode.Created, $"creating the workspace-wide role answered {(int)role.StatusCode}: {await role.Content.ReadAsStringAsync()}");
+        setup.WorkspaceRole = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        setup.AttackerId = await setup.CreateUserAsync($"company.x.users.{tag}", [administratorRole], [setup.X]);
+        setup.AttackerEmail = $"company.x.users.{tag}@{tenant.EmailDomain}";
+        return setup;
+    }
+
+    /// <summary>A user holding <paramref name="roles"/> in every company, who works in every branch
+    /// of <paramref name="companies"/>.</summary>
+    public async Task<Guid> CreateUserAsync(string local, Guid[] roles, Guid[] companies)
+    {
+        using var created = await Admin.PostAsJsonAsync("/api/identity/users", new
+        {
+            email = $"{local}@{_domain}", displayName = $"User scope {local}", language = "en",
+            password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = roles,
+        });
+        Assert.True(created.StatusCode == HttpStatusCode.Created, $"creating {local} answered {(int)created.StatusCode}: {await created.Content.ReadAsStringAsync()}");
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        using var granted = await Admin.PutAsJsonAsync($"/api/tenancy/access/{id}",
+            new { companies = companies.Select(c => new { companyId = c, allBranches = true, branchIds = Array.Empty<Guid>() }).ToArray(), version = await CompanyAttack.AccessVersionAsync(Admin, id) });
+        Assert.True(granted.IsSuccessStatusCode, $"giving {local} its companies answered {(int)granted.StatusCode}: {await granted.Content.ReadAsStringAsync()}");
+        return id;
     }
 }
 

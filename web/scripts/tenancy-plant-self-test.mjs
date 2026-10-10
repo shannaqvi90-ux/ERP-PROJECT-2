@@ -9,7 +9,9 @@
 // for a read-only user, on the shared record form), with the same fault on the branch, access and
 // workspace forms; the U-*-some-branches plants are critic p02 round 4's (the branch line, New
 // branch and the branch code offered to someone who works in only some branches of the company);
-// the others are the same fault on the other actions of these screens.
+// the U-company-*-some-companies plants are critic p02 round 7's (New company and the company code
+// offered to someone who works in only some companies); the others are the same fault on the other
+// actions of these screens.
 //
 // Usage: node scripts/tenancy-plant-self-test.mjs   (from web/, after npm ci)
 import { spawnSync } from "node:child_process";
@@ -40,7 +42,22 @@ const plants = [
   {
     id: "U-company-new",
     what: "New company (button and Alt+N) offered without tenancy.companies.create",
-    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'useRecordPanel(can("tenancy.companies.create"))', replace: "useRecordPanel(true)" }],
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'const creatable = can("tenancy.companies.create") && everyCompany;', replace: "const creatable = everyCompany;" }],
+  },
+  {
+    id: "U-company-new-some-companies",
+    what: "New company (button and Alt+N) offered to someone who works in only some companies (critic p02 round 7)",
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'const creatable = can("tenancy.companies.create") && everyCompany;', replace: 'const creatable = can("tenancy.companies.create");' }],
+  },
+  {
+    id: "U-company-code-some-companies",
+    what: "the company code editable by someone who works in only some companies (critic p02 round 7)",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: "          disabled={id !== null && !everyCompany}\n", replace: "" }],
+  },
+  {
+    id: "U-company-address-new",
+    what: "a new-company form opened from the address (?open=new) by someone the screen does not offer New",
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: "onOpenIdChange(id === newRecord && !creatable ? null : id)", replace: "onOpenIdChange(id)" }],
   },
   {
     id: "P3b",

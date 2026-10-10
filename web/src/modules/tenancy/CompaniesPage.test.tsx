@@ -57,6 +57,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies" && method === "POST") {
         posts++;
@@ -126,6 +128,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: { ...session, user: { ...session.user, language: "ar" } } };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
@@ -163,6 +167,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
       if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
@@ -198,6 +204,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
       if (url === "/api/tenancy/companies/c9") {
@@ -248,6 +256,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
       if (url.startsWith("/api/tenancy/branches?")) {
@@ -292,6 +302,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
       if (url.startsWith("/api/tenancy/branches?")) {
@@ -341,6 +353,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: session };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies" && method === "POST") return { status: 201, body: { ...saved, ...(body as object) } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
@@ -369,6 +383,8 @@ describe("companies screen", () => {
       if (url === "/api/auth/session") return { status: 200, body: { ...session, user: { ...session.user, language: "ar" } } };
       if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
       if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
       if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
       if (url === "/api/tenancy/companies/c9") return { status: 200, body: dubai };
       if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
@@ -389,5 +405,64 @@ describe("companies screen", () => {
     expect(branch.body).toMatchObject({ companyId: "c9", nameEn: "Deira shop", emirate: "dubai", country: "AE" });
     // The line is ready for the next branch, again in the company's emirate.
     expect(view.container.querySelector<HTMLSelectElement>('select[name="branchEmirate"]')!.value).toBe("dubai");
+  });
+
+  it("adds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form", async () => {
+    // Critic p02 round 8: after typing the branch name, Ctrl+S (the save key of every form) left the
+    // line pending ("Branches (0 branches)").
+    let companyPuts = 0;
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      // The administrator works in every company of the workspace (the screen reads one row first).
+      if (url === "/api/tenancy/companies?take=1") return { status: 200, body: { items: [{ ...saved, everyCompany: true }], total: 1, next: null } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/companies/c9" && method === "PUT") {
+        companyPuts++;
+        return { status: 200, body: saved };
+      }
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: saved };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      if (url === "/api/tenancy/branches" && method === "POST") return { status: 201, body: { id: "b9" } };
+      return { status: 404, body: {} };
+    });
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    view = await render(<App language="en" />);
+    await settle();
+    const line = () => view!.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]')!;
+    const branchPosts = () => calls.filter((c) => c.method === "POST" && c.url === "/api/tenancy/branches");
+
+    // Untouched (only the company's name the line starts with): Ctrl+S adds nothing.
+    act(() => line().focus());
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    expect(branchPosts()).toEqual([]);
+    const putsBefore = companyPuts;
+
+    setInput(line(), line().value + "Jebel Ali Branch");
+    act(() => line().focus());
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    expect(branchPosts().map((c) => c.body)).toMatchObject([{ companyId: "c9", nameEn: "Al Noor Ajman LLC - Jebel Ali Branch" }]);
+    // The line is ready for the next branch, the focus on it; the company itself was not saved.
+    expect(line().value).toBe("Al Noor Ajman LLC - ");
+    expect(document.activeElement).toBe(line());
+    expect(companyPuts).toBe(putsBefore);
+
+    // Ctrl+Enter too, and on an Arabic keyboard layout (the S by key position).
+    setInput(line(), line().value + "Deira Shop");
+    act(() => line().focus());
+    press({ ctrlKey: true, key: "Enter", code: "Enter" });
+    await settle();
+    setInput(line(), line().value + "Karama Shop");
+    act(() => line().focus());
+    press({ ctrlKey: true, key: "س", code: "KeyS" });
+    await settle();
+    expect(branchPosts().map((c) => (c.body as { nameEn: string }).nameEn)).toEqual([
+      "Al Noor Ajman LLC - Jebel Ali Branch",
+      "Al Noor Ajman LLC - Deira Shop",
+      "Al Noor Ajman LLC - Karama Shop",
+    ]);
   });
 });

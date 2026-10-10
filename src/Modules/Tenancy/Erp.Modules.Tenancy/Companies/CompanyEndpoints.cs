@@ -23,7 +23,9 @@ namespace Erp.Modules.Tenancy.Companies;
 
 /// <summary>A company as the company form shows it. <c>everyBranch</c> is false when the caller works
 /// in only some of its branches: they read the company but may not change the company itself (its
-/// record or logo), which every branch shares.</summary>
+/// record or logo), which every branch shares. <c>everyCompany</c> is false when the caller works in
+/// only some companies of the workspace: they may not change a company code (codes are unique across
+/// the workspace).</summary>
 public sealed record CompanyDto(
     Guid Id,
     string Code,
@@ -52,10 +54,13 @@ public sealed record CompanyDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     uint Version,
-    bool EveryBranch = true);
+    bool EveryBranch = true,
+    bool EveryCompany = true);
 
 /// <summary>A row of the companies list. <c>everyBranch</c> is false where the caller works in only
-/// some of the company's branches: they may not change the company or add a branch to it.</summary>
+/// some of the company's branches: they may not change the company or add a branch to it.
+/// <c>everyCompany</c> (the same on every row) is false when the caller works in only some companies
+/// of the workspace: they may not create a company or change a company code.</summary>
 public sealed record CompanyRow(
     Guid Id,
     string Code,
@@ -67,7 +72,8 @@ public sealed record CompanyRow(
     int BranchCount,
     bool IsActive,
     uint Version,
-    bool EveryBranch = true);
+    bool EveryBranch = true,
+    bool EveryCompany = true);
 
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
 /// name); the legal name in English is required, the Arabic one is recommended. On change,
@@ -171,8 +177,10 @@ internal static class CompanyEndpoints
             .GroupBy(b => b.CompanyId).Select(g => new { CompanyId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.CompanyId, g => g.Count, cancellationToken);
         var branchScope = http.RequestServices.GetRequiredService<TenancyBranchScope>();
+        var session = http.RequestServices.GetRequiredService<ErpDbSession>();
+        var everyCompany = await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken);
         return result.Map(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
-            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version, branchScope.HoldsEveryBranch(c.Id)));
+            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version, branchScope.HoldsEveryBranch(c.Id), everyCompany));
     }
 
     /// <summary>The columns a list row needs, never the logo bytes (up to 512 KB a company): a
@@ -193,15 +201,15 @@ internal static class CompanyEndpoints
             Version = c.Version,
         });
 
-    private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
-        CancellationToken cancellationToken)
+    private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session,
+        HttpContext http, CancellationToken cancellationToken)
     {
         var company = await db.Companies.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (company is null)
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
     }
 
     private static async Task<Results<Created<CompanyDto>, ProblemHttpResult>> Create(
@@ -257,7 +265,7 @@ internal static class CompanyEndpoints
         db.CompanyAccess.Add(new UserCompanyAccess { UserId = caller.UserId, CompanyId = company.Id, AllBranches = true });
         db.CompanyAccess.AddRange(peers.Select(user => new UserCompanyAccess { UserId = user, CompanyId = company.Id, AllBranches = true }));
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, company, cancellationToken));
+        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, session, company, cancellationToken));
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Update(
@@ -293,7 +301,7 @@ internal static class CompanyEndpoints
         Apply(company, request, code);
         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
     }
 
     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
@@ -311,7 +319,7 @@ internal static class CompanyEndpoints
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> PutLogo(
-        Guid id, UploadLogoRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+        Guid id, UploadLogoRequest request, TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = new Validator(http)
             .Required("contentType", request.ContentType)
@@ -342,7 +350,7 @@ internal static class CompanyEndpoints
         company.LogoContentType = request.ContentType;
         company.LogoHash = CompanyLogo.Hash(company.Id, bytes!);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
     }
 
     private static async Task<Results<NoContent, ProblemHttpResult>> DeleteLogo(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
@@ -414,14 +422,15 @@ internal static class CompanyEndpoints
         company.IsActive = r.IsActive!.Value;
     }
 
-    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, Company c, CancellationToken cancellationToken)
+    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, Company c, CancellationToken cancellationToken)
     {
         var branches = await db.Branches.CountAsync(b => b.CompanyId == c.Id, cancellationToken);
+        var everyCompany = await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken);
         return new CompanyDto(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.TradeLicenceNumber, c.TradeLicenceAuthority, c.TaxRegistrationNumber,
             c.BaseCurrency, c.FiscalYearStartMonth, c.FiscalYearStartDay, c.AddressLine1, c.AddressLine2, c.City,
             TenancyValidation.ParseEmirate(c.Emirate), c.PoBox, c.Country, c.AddressAr, c.Phone, c.Email, c.Website,
             c.Logo is not null || c.LogoHash is not null, c.LogoHash, c.IsActive, branches, c.CreatedAt, c.UpdatedAt, c.Version,
-            branchScope.HoldsEveryBranch(c.Id));
+            branchScope.HoldsEveryBranch(c.Id), everyCompany);
     }
 }
 

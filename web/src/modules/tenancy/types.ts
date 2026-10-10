@@ -14,6 +14,9 @@ export type CompanyRow = {
   /** False when the user works in only some of the company's branches: they may not change the
    * company or add a branch to it. */
   everyBranch?: boolean;
+  /** False (the same on every row) when the user works in only some companies of the workspace:
+   * they may not create a company or change a company code. */
+  everyCompany?: boolean;
 };
 
 export type Company = {
@@ -22,6 +25,9 @@ export type Company = {
   /** False when the user works in only some of the company's branches: the company itself (its
    * record and logo) is theirs to read, not to change. */
   everyBranch?: boolean;
+  /** False when the user works in only some companies of the workspace: company codes are unique
+   * across it, so the code is theirs to read, not to change. */
+  everyCompany?: boolean;
   legalNameEn: string;
   legalNameAr: string;
   tradeLicenceNumber: string | null;
