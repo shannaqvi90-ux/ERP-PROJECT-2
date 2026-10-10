@@ -86,7 +86,7 @@ export const MUTATIONS = [
   ['M50', "a write abandoned by set-up's page moving on not seen", 'lib/runner.mjs', "      p.on('framenavigated', f => { for (const r of [...inflight.keys()]) if (frameOf(r) === f && !r.isNavigationRequest()) abandon(r, 'its page moved on'); });", '', 'test/set-up-off-clock.test.mjs', 'plant Q2 \\('],
   ['M51', 'a browser context the driver opened in set-up not watched', 'lib/runner.mjs', '    attach(c);\n    return c;', '    return c;', 'test/set-up-off-clock.test.mjs', 'plant Q2c'],
   ['M52', "set-up's local storage carried into a signed-in start (critic X12)", 'lib/runner.mjs', "  const storageState = kind === 'sign-in' ? saved : { cookies: saved.cookies, origins: [] };", '  const storageState = saved;', 'test/set-up-off-clock.test.mjs', 'X12'],
-  ['M53', 'the clipboard not emptied at the start (critic X16)', 'lib/runner.mjs', '  await resetClipboard(context);', '', 'test/set-up-off-clock.test.mjs', 'X16'],
+  ['M53', 'the clipboard not emptied at the start (critic X16)', 'lib/runner.mjs', '    await resetClipboard(scratch);', '', 'test/set-up-off-clock.test.mjs', 'X16'],
 ];
 
 function copyHarness() {

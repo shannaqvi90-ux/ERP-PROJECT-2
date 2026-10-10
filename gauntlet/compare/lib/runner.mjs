@@ -472,32 +472,20 @@ export async function freezePages(context, { beforeAbort = null } = {}) {
 
 /**
  * Empty the browser's clipboard before the start (round 5): text set-up copied must not be there
- * to paste. A scratch page of the fresh context copies a single space; it closes before the start
- * screen opens.
+ * to paste. A scratch page of the fresh context copies a single space; the runner then reads the
+ * clipboard back in the same page (clipboardText) and closes it before the start screen opens.
  */
-async function resetClipboard(context) {
-  const p = await context.newPage();
-  try {
-    await p.setContent('<textarea id="c"> </textarea>');
-    await p.focus('#c');
-    await p.keyboard.press('Control+a');
-    await p.keyboard.press('Control+c');
-  } finally {
-    await p.close().catch(() => {});
-  }
+async function resetClipboard(p) {
+  await p.focus('#c');
+  await p.keyboard.press('Control+a');
+  await p.keyboard.press('Control+c');
 }
 
-/** What the browser's clipboard holds: pasted into a scratch page of `context`, which closes again. */
-async function clipboardText(context) {
-  const p = await context.newPage();
-  try {
-    await p.setContent('<textarea id="p"></textarea>');
-    await p.focus('#p');
-    await p.keyboard.press('Control+v');
-    return await p.inputValue('#p');
-  } finally {
-    await p.close().catch(() => {});
-  }
+/** What the browser's clipboard holds: pasted into the scratch page's second field. */
+async function clipboardText(p) {
+  await p.focus('#p');
+  await p.keyboard.press('Control+v');
+  return p.inputValue('#p');
 }
 
 // Our product refuses a burst of sign-ins with 429 (lib/sign-in-limit.mjs, `signInLimit` in
@@ -1200,9 +1188,16 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
     if (problem) throw new ActionOutsideClock(problem, 'set-up');
   }
   const context = await newContext(browser, { storageState });
-  await resetClipboard(context);
-  // Round 10 (critic p01 r9, X16): the clipboard is read back; text set-up copied must be gone.
-  const left = await clipboardText(context);
+  // Round 10 (critic p01 r9, X16): the clipboard is emptied, then read back; text set-up copied must be gone.
+  const scratch = await context.newPage();
+  let left;
+  try {
+    await scratch.setContent('<textarea id="c"> </textarea><textarea id="p"></textarea>');
+    await resetClipboard(scratch);
+    left = await clipboardText(scratch);
+  } finally {
+    await scratch.close().catch(() => {});
+  }
   if (left.trim()) throw new ActionOutsideClock(`the clipboard still holds ${left.length} character(s) set-up copied when the start opens: it was not emptied`, 'set-up');
   await device?.attachContext(context);
   const page = await context.newPage();
