@@ -358,6 +358,66 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.EndsWith(",1", countedLine, StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p04 round 7: the users list's PDF printed only the roles held in every
+    /// company, while the screen also names each role held in one company with that company's code;
+    /// and an Arabic document named its printer by the English name. Both now print as the screen
+    /// shows them, and a reader who cannot read roles counts every role held, in one company too.</summary>
+    [Fact]
+    public async Task A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language()
+    {
+        var (admin, companyId) = await AdminWithCompanyAsync();
+        using (admin)
+        {
+            var code = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{companyId}")).GetProperty("code").GetString()!;
+            async Task<Guid> RoleAsync(string nameEn, string nameAr)
+            {
+                using var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn, nameAr, permissions = new[] { "identity.users.read" } });
+                Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+                return (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+            }
+            var everywhere = await RoleAsync("Rp everywhere role", "دور في كل الشركات");
+            var inOne = await RoleAsync("Rp company role", "دور في شركة واحدة");
+            var email = $"rp.company.roles@{Env.TenantA.EmailDomain}";
+            using var user = await admin.PostAsJsonAsync("/api/identity/users", new
+            {
+                email, displayName = "Rp Company Roles", displayNameAr = "مستخدم أدوار الشركات", language = "en", password = ErpTestEnvironment.Password,
+                roleIds = new[] { everywhere }, companyRoles = new[] { new { roleId = inOne, companyId } },
+            });
+            Assert.True(user.StatusCode == HttpStatusCode.Created, await user.Content.ReadAsStringAsync());
+            var userId = (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+
+            var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=rp.company.roles"));
+            var line = csv.Split("\r\n").Single(l => l.StartsWith(email, StringComparison.Ordinal));
+            Assert.Equal($"{email},\"Rp everywhere role, Rp company role ({code})\"", line);
+            var arabic = await admin.GetFromJsonAsync<JsonElement>("/api/reports/lists/identity.users?language=ar&columns=email,roleIds&search=rp.company.roles");
+            var cell = arabic.GetProperty("groups")[0].GetProperty("rows")[0].GetProperty("cells")[1].GetProperty("text").GetString();
+            Assert.Equal($"دور في كل الشركات، دور في شركة واحدة ({code})", cell);
+            var pdf = await admin.GetByteArrayAsync("/api/reports/lists/identity.users?format=pdf&language=ar&columns=email,roleIds&search=rp.company.roles");
+            Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdf, 0, 5));
+
+            // A reader of users who cannot read roles: how many roles, those held in one company included.
+            using var usersOnly = await UserWithAsync(admin, "list.users.counted", "identity.users.read");
+            var counted = Encoding.UTF8.GetString(await usersOnly.GetByteArrayAsync("/api/reports/lists/identity.users?format=csv&language=en&columns=email,roleIds&search=rp.company.roles"));
+            Assert.Equal($"{email},2", counted.Split("\r\n").Single(l => l.StartsWith(email, StringComparison.Ordinal)));
+
+            // The printer's name: the Arabic name on an Arabic document, the name on an English one.
+            var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray()
+                .Select(c => new { companyId = c.GetProperty("id").GetGuid(), allBranches = true }).ToList();
+            var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
+            using (var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new { companies, version }))
+            {
+                Assert.True(access.IsSuccessStatusCode, await access.Content.ReadAsStringAsync());
+            }
+            using var printer = await Env.SignInAsync(email);
+            foreach (var (language, name) in new[] { ("ar", "مستخدم أدوار الشركات"), ("en", "Rp Company Roles") })
+            {
+                var document = await printer.GetFromJsonAsync<JsonElement>($"/api/reports/lists/identity.users?language={language}&search=rp.company.roles");
+                Assert.Equal(name, document.GetProperty("printedBy").GetString());
+                Assert.Contains(name, document.GetProperty("texts").GetProperty("printed").GetString(), StringComparison.Ordinal);
+            }
+        }
+    }
+
     [Fact]
     public async Task The_roles_report_totals_users_and_permissions_per_kind_and_overall()
     {

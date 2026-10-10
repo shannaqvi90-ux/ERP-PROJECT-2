@@ -216,7 +216,16 @@ internal static class ReportEndpoints
         }
         var shown = new ListRequest { Search = Single(query, "search"), Filter = Single(query, "filter"), Sort = Single(query, "sort") };
         var recordNames = await NamesAsync(list, columns, http, json, cancellationToken);
-        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken, recordNames);
+        // A value held in one company (a role assigned there) is named with the company's code, as
+        // the screen names it: the codes of the companies the caller works in (the company scope).
+        IReadOnlyDictionary<string, string>? companyCodes = null;
+        if (columns.Any(c => c.InCompany is not null && recordNames.ContainsKey(c.Key)))
+        {
+            companyCodes = (await http.RequestServices.GetRequiredService<ICompanyDirectory>().ListAsync(cancellationToken))
+                .ToDictionary(c => c.Id.ToString(), c => c.Code, StringComparer.OrdinalIgnoreCase);
+        }
+        var document = await engine.BuildListAsync(list, rows, Math.Max(total, rows.Count), shown, columns, common.GroupBy, common.Options, cancellationToken,
+            recordNames, companyCodes);
         return Output(http, document, common, pdf);
     }
 
@@ -440,7 +449,10 @@ internal static class ReportEndpoints
             Query("timeZone", "IANA time zone the document shows times in; the workspace's by default.",
                 new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = 64, Examples = [Text("Asia/Dubai")] }),
             Query("groupBy", defaultGroupBy is null ? "A column to group the rows by (with counts and totals)." : $"A column to group the rows by; {defaultGroupBy} by default.",
-                groupable.Count > 0 ? new OpenApiSchema { Type = JsonSchemaType.String, Enum = groupable.Select(Text).ToList() } : new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = 0 }),
+                // No groupable column: only the empty value (no grouping), given as the example.
+                groupable.Count > 0
+                    ? new OpenApiSchema { Type = JsonSchemaType.String, Enum = groupable.Select(Text).ToList() }
+                    : new OpenApiSchema { Type = JsonSchemaType.String, MaxLength = 0, Examples = [Text("")] }),
             Query("disposition", "attachment (download, the default) or inline (open in the browser), for a PDF.",
                 new OpenApiSchema { Type = JsonSchemaType.String, Enum = [Text("attachment"), Text("inline")] }),
         ];
@@ -475,11 +487,16 @@ internal static class ReportEndpoints
         ];
     }
 
-    /// <summary>A valid sort and filter of the list for the API document's examples.</summary>
-    private static (string? Sort, string? Filter, string? GroupBy) ViewExampleFor(ListDefinition list)
+    /// <summary>A valid sort and filter of the list for the API document's examples: the default
+    /// sort, and the first built-in view's filter or else a condition on the first filterable flag
+    /// or text column. Every documented parameter has a value a client (and the gates, which print
+    /// with each one) can send.</summary>
+    internal static (string? Sort, string? Filter, string? GroupBy) ViewExampleFor(ListDefinition list)
     {
         var sort = list.DefaultSort ?? list.Columns.FirstOrDefault(c => c.Sortable)?.Key;
-        var filter = (list.Presets ?? []).Select(p => p.Filter).FirstOrDefault(f => f is not null);
+        var filter = (list.Presets ?? []).Select(p => p.Filter).FirstOrDefault(f => f is not null)
+                     ?? list.Columns.Where(c => c.Filterable && c.Type == ListColumnType.Boolean).Select(c => $"{c.Key} eq true").FirstOrDefault()
+                     ?? list.Columns.Where(c => c.Filterable && c.Type == ListColumnType.Text).Select(c => $"{c.Key} contains 'a'").FirstOrDefault();
         return (sort, filter, list.Columns.FirstOrDefault(c => c.Groupable)?.Key);
     }
 

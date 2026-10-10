@@ -36,11 +36,24 @@ export const formChords = {
 
 const keyHint = (chord: string) => chordKeys(chord).join("+");
 
+/** One-line inputs in which Enter saves the record (as Ctrl+S does). Not a list of choices (a
+ * lookup chooses with Enter), a multi-line text (Enter starts a new line), a checkbox, a button or
+ * a select. */
+export function savesOnEnter(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement &&
+    ["text", "email", "tel", "url", "number", "search", "password", "date", "datetime-local", "time", "month", "week"].includes(target.type) &&
+    !target.readOnly &&
+    !target.disabled &&
+    target.getAttribute("role") !== "combobox"
+  );
+}
+
 /**
  * The record form every module uses: a heading with the record's name, the toolbar (previous and
  * next record, print in English or Arabic, discard, save, close), the form's message and the
- * saved notice, then the module's sections and tabs. The same keys everywhere: Ctrl+S or
- * Ctrl+Enter saves, Alt+Z discards the changes, Alt+PageDown and Alt+PageUp move to the next and
+ * saved notice, then the module's sections and tabs. The same keys everywhere: Enter in a one-line
+ * field, Ctrl+S or Ctrl+Enter saves, Alt+Z discards the changes, Alt+PageDown and Alt+PageUp move to the next and
  * previous record, Alt+R prints, Escape closes (asking first when there are unsaved changes).
  * A user who may not change the record sees it read-only, with the reason. After a failed save the
  * cursor goes to the first field the server refused.
@@ -132,6 +145,22 @@ export function RecordForm<R, D>({
   useShortcut({ id: "forms.print", chord: formChords.print, labelKey: "forms.shortcut.print", groupKey: group, enabled: Boolean(document) && !form.isNew, run: () => setPrinting((p) => !p) });
 
   const onKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    // Enter in a one-line field saves, the way a person finishing an entry expects (a field that
+    // uses Enter itself, such as a lookup's open list, has taken it already).
+    if (
+      event.key === "Enter" &&
+      !event.defaultPrevented &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      !event.nativeEvent.isComposing &&
+      savesOnEnter(event.target)
+    ) {
+      event.preventDefault();
+      if (editable && !form.busy) void save();
+      return;
+    }
     if (event.key === "Escape" && !event.defaultPrevented && onClose) {
       event.preventDefault();
       if (printing) setPrinting(false);
@@ -233,8 +262,8 @@ export function RecordForm<R, D>({
                 type="submit"
                 className="button primary"
                 disabled={form.busy}
-                title={`${keyHint(formChords.save)} · ${keyHint(formChords.saveEnter)}`}
-                aria-keyshortcuts={`${chordForAria(formChords.save)} ${chordForAria(formChords.saveEnter)}`}
+                title={`${t("forms.saveKeys.enter")} · ${keyHint(formChords.save)} · ${keyHint(formChords.saveEnter)}`}
+                aria-keyshortcuts={`Enter ${chordForAria(formChords.save)} ${chordForAria(formChords.saveEnter)}`}
               >
                 {form.busy ? t("forms.saving") : (saveLabel ?? t("forms.save"))}
               </button>

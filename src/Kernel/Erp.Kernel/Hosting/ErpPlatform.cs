@@ -309,6 +309,17 @@ public static class ErpPlatform
             {
                 problems.Add($"list '{list.Key}': column '{column.Key}' takes its values from '{column.ValuesFrom}', which is not a registered list");
             }
+            foreach (var column in list.Columns.Where(c => c.InCompany is not null))
+            {
+                if (column.ValuesFrom is null)
+                {
+                    problems.Add($"list '{list.Key}': column '{column.Key}' holds values in one company each but names no list they come from (ValuesFrom)");
+                }
+                if (column.InCompany!.ElsewhereField is null != column.InCompany.ElsewhereLabelKey is null)
+                {
+                    problems.Add($"list '{list.Key}': column '{column.Key}' names values held elsewhere without both the row field and the label that prints them");
+                }
+            }
             if (catalog.ListBindings.All(b => b.Definition.Key != list.Key) &&
                 catalog.Modules.Select(m => m.ListsServedBy.GetValueOrDefault(list.Key)).FirstOrDefault(s => s is not null) is { } servedBy)
             {

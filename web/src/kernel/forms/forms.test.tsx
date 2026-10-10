@@ -5,7 +5,7 @@ import { I18nProvider } from "../i18n";
 import { navigate } from "../router";
 import { ShortcutProvider } from "../shortcuts";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
-import { DecimalField, decimalInput, MoneyField, multiplyDecimal, TextField } from "./fields";
+import { DecimalField, decimalInput, MoneyField, multiplyDecimal, TextAreaField, TextField } from "./fields";
 import { useState } from "react";
 import { clearLeaveGuards, nothingUnsaved } from "./leave";
 import { FormSection, RecordForm } from "./RecordForm";
@@ -211,10 +211,59 @@ describe("the record form", () => {
     press({ ctrlKey: true, key: "s", code: "KeyS" });
     press({ ctrlKey: true, key: "Enter", code: "Enter" });
     press({ altKey: true, key: "z", code: "KeyZ" });
+    press({ key: "Enter", code: "Enter" }, input("name"));
+    press({ key: "Enter", code: "Enter" }, view!.container.querySelector("h2")!);
     await settle();
     // Critic p06 round 2's probe (plant W2): nothing but reads leaves.
     expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
     expect(view!.container.querySelector('.notice[role="status"]')).toBeNull();
+  });
+
+  it("saves with Enter in a one-line field, and never with Enter in a multi-line text, on a button or with a modifier", async () => {
+    const calls = mockFetch((method, url) => {
+      if (method === "GET" && url === "/api/things/t1") return { status: 200, body: thing };
+      if (method === "PUT") return { status: 200, body: { ...thing, name: "Desk (pine)", version: 4 } };
+      return { status: 404, body: {} };
+    });
+    function NotesForm() {
+      const form = useRecordForm<Thing, Draft>({
+        load: (signal) => api<Thing>("GET", "/api/things/t1", undefined, { signal }),
+        initial: (t) => ({ name: t?.name ?? "", amount: t?.amount ?? "" }),
+        canEdit: true,
+        save: (draft, t) => api<Thing>("PUT", "/api/things/t1", { ...draft, version: t?.version }),
+      }, "t1");
+      return (
+        <RecordForm form={form} title="Desk">
+          <FormSection title="Main">
+            <TextField field={form.bind("name")} label="Name" />
+            <TextAreaField field={form.bind("amount")} label="Notes" />
+          </FormSection>
+        </RecordForm>
+      );
+    }
+    await show(<NotesForm />);
+    const puts = () => calls.filter((c) => c.method === "PUT");
+    setInput(input("name"), "Desk (pine)");
+    const notes = view!.container.querySelector<HTMLTextAreaElement>('[data-field="amount"] textarea')!;
+    press({ key: "Enter", code: "Enter" }, notes);
+    press({ key: "Enter", code: "Enter", shiftKey: true }, input("name"));
+    press({ key: "Enter", code: "Enter", altKey: true }, input("name"));
+    press({ key: "Enter", code: "Enter", isComposing: true }, input("name"));
+    press({ key: "Enter", code: "Enter" }, [...view!.container.querySelectorAll("button")].find((b) => b.textContent === "Discard changes")!);
+    await settle();
+    expect(puts()).toHaveLength(0);
+    expect(input("name").value).toBe("Desk (pine)");
+
+    press({ key: "Enter", code: "Enter" }, input("name"));
+    await settle();
+    expect(puts()).toHaveLength(1);
+    expect(puts()[0]!.body).toEqual({ name: "Desk (pine)", amount: "12.50", version: 3 });
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+    expect(nothingUnsaved()).toBe(true);
+    // The save button says so.
+    const save = [...view!.container.querySelectorAll("button")].find((b) => b.textContent === "Save")!;
+    expect(save.getAttribute("aria-keyshortcuts")).toMatch(/^Enter /);
+    expect(save.title).toContain("Enter in a one-line field");
   });
 
   it("moves to the next and previous record with Alt+PageDown and Alt+PageUp and the toolbar arrows", async () => {
