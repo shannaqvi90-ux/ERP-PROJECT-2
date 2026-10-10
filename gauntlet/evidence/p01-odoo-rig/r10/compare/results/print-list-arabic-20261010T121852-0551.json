@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261010T121852-0551",
+  "instrument": 8,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-10T12:18:52.303Z",
+  "finished_at": "2026-10-10T12:18:54.546Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 13,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.434,
+    "system_wait_seconds": 0.254,
+    "human_seconds": 11.09,
+    "human_plus_wait_seconds": 11.344,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 2,
+      "B": 4,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "at": 0.005,
+      "took": 0.024,
+      "text": "Anil Pillai",
+      "same_field": false,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Print or export",
+      "keystrokes": 0,
+      "at": 0.329,
+      "took": 0.033,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "PDF in Arabic",
+      "keystrokes": 0,
+      "at": 0.367,
+      "took": 0.027,
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list, search focused",
+      "at": 0.001,
+      "seconds": 0.003
+    },
+    {
+      "label": "the narrowed list",
+      "at": 0.029,
+      "seconds": 0.21
+    },
+    {
+      "label": "print menu",
+      "at": 0.363,
+      "seconds": 0.003
+    },
+    {
+      "label": "file received",
+      "at": 0.395,
+      "seconds": 0.038
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "889c435a0e97252c.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/889c435a0e97252c.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "9962c36787fd2840.jpg",
+      "at": 0.239,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/9962c36787fd2840.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "53fcda4644b1105e.jpg",
+      "at": 0.434,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/53fcda4644b1105e.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "المستخدمون 2026-10-10.pdf",
+      "bytes": 48801,
+      "print_language": "ar",
+      "right_to_left": true,
+      "rows_printed": 53,
+      "rows_expected": 53,
+      "search": "Anil Pillai",
+      "arabic_words_in_report": 18,
+      "document": "users list (stand-in for purchase orders)"
+    }
+  },
+  "path_notes": "Users list (search focused) > type the name > Print or export > PDF in Arabic. Stand-in list: users (purchase orders arrive with a later piece).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/print-list-arabic.mjs",
+    "sha256": "0499f883d06f72231563eb18d65338ebe4fd86679baee93e9eb4ea18a9993058"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (the product's search matches each word in the name or e-mail: 53 users of the shared dataset, against the vendor's 27 orders in the reference).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/identity/users",
+    "path": "/identity/users",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "search",
+      "name": "ابحث بالاسم أو الأحرف الأولى أو البريد الإلكتروني",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.021,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.024,
+      "verified": true,
+      "gap_seconds": 0.057
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "cb4b6c192eda0889",
+    "elements": 605
+  },
+  "screen_after_verify": {
+    "sha256": "cb4b6c192eda0889",
+    "elements": 605,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  },
+  "set_up_writes_waited": 0
+}

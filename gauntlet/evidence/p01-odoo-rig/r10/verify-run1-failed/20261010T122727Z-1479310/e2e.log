@@ -1,0 +1,291 @@
+[1mClean stack: build, migrate, seed, serve (project c-p01-odoo-rig-r10-verify, port 20160)[0m
+[1mBuilding the application image[0m
+ Image erp-app:c-p01-odoo-rig-r10-verify Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 674B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 20.9s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 40.6s done
+#4 DONE 40.6s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 ...
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#6 DONE 0.3s
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 DONE 0.3s
+
+#7 [internal] load metadata for docker.io/library/node:22-alpine
+#7 DONE 21.7s
+
+#8 [internal] load .dockerignore
+#8 transferring context:
+#8 transferring context: 187B 0.0s done
+#8 DONE 0.1s
+
+#9 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f
+#9 resolve docker.io/library/node:22-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f 0.1s done
+#9 DONE 0.1s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 0.1s done
+#10 DONE 0.1s
+
+#11 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+#11 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 0.1s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 3.15MB 0.2s done
+#12 DONE 0.3s
+
+#13 [stage-3 3/4] COPY --from=build /app ./
+#13 CACHED
+
+#14 [web 3/6] COPY web/package.json web/package-lock.json ./
+#14 CACHED
+
+#15 [web 5/6] COPY web/ ./
+#15 CACHED
+
+#16 [strings 2/3] COPY web/src/modules/ /modules/
+#16 CACHED
+
+#17 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#17 CACHED
+
+#18 [web 6/6] RUN npm run check && npm run build
+#18 CACHED
+
+#19 [build 4/7] COPY src/ src/
+#19 CACHED
+
+#20 [stage-3 2/4] WORKDIR /app
+#20 CACHED
+
+#21 [build 2/7] WORKDIR /src
+#21 CACHED
+
+#22 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#22 CACHED
+
+#23 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#23 CACHED
+
+#24 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#24 CACHED
+
+#25 [web 2/6] WORKDIR /web
+#25 CACHED
+
+#26 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#26 CACHED
+
+#27 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#27 CACHED
+
+#28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#28 CACHED
+
+#29 exporting to image
+#29 exporting layers done
+#29 exporting manifest sha256:26fc0638fd3edfbf62044c795f56377a8dbe05b0d4b2e0b617ef3fc47b0ebce2 0.1s done
+#29 exporting config sha256:71cc227889c5bcca2e49c5c910daa5b98b424c30094946a09b17e25e501b5d85 0.1s done
+#29 exporting attestation manifest sha256:016485328e3ff42d87ef0b4b3d0987b906637a280969b239c262214d85e3fb6e 0.1s done
+#29 exporting manifest list sha256:0589636b8789248dea67df8e98d8cb118ac9807fe086a4e1dfedcd5f60e40668 0.1s done
+#29 naming to docker.io/library/erp-app:c-p01-odoo-rig-r10-verify 0.0s done
+#29 unpacking to docker.io/library/erp-app:c-p01-odoo-rig-r10-verify
+#29 unpacking to docker.io/library/erp-app:c-p01-odoo-rig-r10-verify 1.9s done
+#29 DONE 2.5s
+
+#30 resolving provenance for metadata file
+#30 DONE 0.1s
+ Image erp-app:c-p01-odoo-rig-r10-verify Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p01-odoo-rig-r10-verify_default Creating 
+ Network c-p01-odoo-rig-r10-verify_default Created 
+ Volume c-p01-odoo-rig-r10-verify_db-data Creating 
+ Volume c-p01-odoo-rig-r10-verify_db-data Created 
+ Container c-p01-odoo-rig-r10-verify-db-1 Creating 
+ Container c-p01-odoo-rig-r10-verify-db-1 Created 
+ Container c-p01-odoo-rig-r10-verify-db-1 Starting 
+ Container c-p01-odoo-rig-r10-verify-db-1 Started 
+ Container c-p01-odoo-rig-r10-verify-db-1 Waiting 
+ Container c-p01-odoo-rig-r10-verify-db-1 Healthy 
+ Container c-p01-odoo-rig-r10-verify-db-1 Running 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Creating 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Created 
+Attaching to setup-1
+ Container c-p01-odoo-rig-r10-verify-db-1 Waiting 
+ Container c-p01-odoo-rig-r10-verify-db-1 Healthy 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Starting 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 6 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 9 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 4222 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 929 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 684 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p01-odoo-rig-r10-verify-setup-1 Stopping 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Stopped 
+ Container c-p01-odoo-rig-r10-verify-db-1 Running 
+ Container c-p01-odoo-rig-r10-verify-app-1 Creating 
+ Container c-p01-odoo-rig-r10-verify-app-1 Created 
+ Container c-p01-odoo-rig-r10-verify-db-1 Waiting 
+ Container c-p01-odoo-rig-r10-verify-db-1 Healthy 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Starting 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Started 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Waiting 
+ Container c-p01-odoo-rig-r10-verify-setup-1 Exited 
+ Container c-p01-odoo-rig-r10-verify-app-1 Starting 
+ Container c-p01-odoo-rig-r10-verify-app-1 Started 
+[1mEnd-to-end tests in Chromium[0m
+
+[1m== Copying sources (without build output)[0m
+
+[1m== End-to-end: Playwright against http://localhost:20160[0m
+
+added 3 packages in 276ms
+
+Running 89 tests using 1 worker
+
+client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zaqj13fi@alnoor.example (A) and canary.zbur0f78@gulfsteel.example (B)
+  ✓   1 [chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (7.5s)
+  ✓   2 [chromium] › specs/client-isolation.spec.ts:267:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (1.3s)
+history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+  ✓   3 [chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B (3.7s)
+  ✓   4 [chromium] › specs/client-isolation.spec.ts:353:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (1.3s)
+  ✓   5 [chromium] › specs/client-isolation.spec.ts:371:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (1.9s)
+  ✓   6 [chromium] › specs/forms-reports.spec.ts:15:7 › record forms and printed documents › a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown (1.2s)
+  ✓   7 [chromium] › specs/forms-reports.spec.ts:70:7 › record forms and printed documents › a user who may only read a record sees it read-only, and no key of the form sends a change (1.1s)
+  ✓   8 [chromium] › specs/forms-reports.spec.ts:97:7 › record forms and printed documents › a record prints as an Arabic PDF from Alt+R, and its document reads right to left (768ms)
+  ✓   9 [chromium] › specs/forms-reports.spec.ts:126:7 › record forms and printed documents › the reports screen shows a grouped report as an Arabic document and exports it (664ms)
+  ✓  10 [chromium] › specs/forms-reports.spec.ts:146:7 › record forms and printed documents › a totalled report: roles and access shows each kind's totals and the grand total, and exports it (694ms)
+  ✓  11 [chromium] › specs/forms-reports.spec.ts:187:7 › record forms and printed documents › a list prints what it shows: the filtered users list as PDF and CSV (1.0s)
+  ✓  12 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (2.6s)
+  ✓  13 [chromium] › specs/identity.spec.ts:85:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (1.0s)
+  ✓  14 [chromium] › specs/identity.spec.ts:115:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only (1.3s)
+  ✓  15 [chromium] › specs/identity.spec.ts:160:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted (869ms)
+  ✓  16 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en) (1.1s)
+  ✓  17 [chromium] › specs/identity.spec.ts:192:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar) (975ms)
+  ✓  18 [chromium] › specs/identity.spec.ts:260:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (34.2s)
+  ✓  19 [chromium] › specs/lists.spec.ts:17:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match (3.4s)
+  ✓  20 [chromium] › specs/lists.spec.ts:37:7 › list framework › lists a search best match first, opens it with Enter, and reads Arabic spelling variants (2.9s)
+  ✓  21 [chromium] › specs/lists.spec.ts:57:7 › list framework › column header buttons keep Enter and Space; rows keep one column layout (1.1s)
+  ✓  22 [chromium] › specs/lists.spec.ts:97:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter (1.3s)
+  ✓  23 [chromium] › specs/lists.spec.ts:123:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state (2.4s)
+  ✓  24 [chromium] › specs/lists.spec.ts:153:7 › list framework › groups by a column with counts and opens a group's rows (1.1s)
+  ✓  25 [chromium] › specs/lists.spec.ts:168:7 › list framework › groups by status under the status's own words, as the rows say them (2.0s)
+  ✓  26 [chromium] › specs/lists.spec.ts:182:7 › list framework › chooses columns and saves a personal default view that opens next time (1.7s)
+  ✓  27 [chromium] › specs/lists.spec.ts:220:7 › list framework › a read-only user keeps personal views but is not offered sharing (732ms)
+  ✓  28 [chromium] › specs/lists.spec.ts:235:7 › list framework › the list works right to left in Arabic with Arabic counts and headers (867ms)
+  ✓  29 [chromium] › specs/lists.spec.ts:266:7 › list framework › a value that does not fit is cut at its own end in an Arabic list, the screen's own boxes included (545ms)
+  ✓  30 [chromium] › specs/lists.spec.ts:289:9 › list framework › every header stays inside its own column, wide and narrow (ar) (954ms)
+  ✓  31 [chromium] › specs/lists.spec.ts:289:9 › list framework › every header stays inside its own column, wide and narrow (en) (1.1s)
+  ✓  32 [chromium] › specs/lists.spec.ts:323:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (en) (2.9s)
+  ✓  33 [chromium] › specs/lists.spec.ts:323:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (ar) (1.4s)
+  ✓  34 [chromium] › specs/lists.spec.ts:369:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (en) (1.0s)
+  ✓  35 [chromium] › specs/lists.spec.ts:369:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (ar) (1.1s)
+  ✓  36 [chromium] › specs/lists.spec.ts:433:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (ar) (574ms)
+  ✓  37 [chromium] › specs/lists.spec.ts:433:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (en) (554ms)
+  ✓  38 [chromium] › specs/lists.spec.ts:468:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (ar) (33.8s)
+  ✓  39 [chromium] › specs/lists.spec.ts:468:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (en) (3.0s)
+  ✓  40 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (2.8s)
+  ✓  41 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (1.6s)
+  ✓  42 [chromium] › specs/passkey.spec.ts:20:7 › passkeys › added on My account, a passkey signs in with one confirmation on the device: from the plain, a personal and the team's address, in English and Arabic (8.3s)
+  ✓  43 [chromium] › specs/passkey.spec.ts:60:7 › passkeys › a removed passkey no longer signs in, and the screen says so and keeps the password path (1.6s)
+  ✓  44 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (777ms)
+  ✓  45 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (1.3s)
+  ✓  46 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (2.7s)
+  ✓  47 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (975ms)
+  ✓  48 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (205ms)
+  ✓  49 [chromium] › specs/shell.spec.ts:26:7 › app shell › the printed-at and printed-by stamp of a screen shows on paper only, never on screen (1.2s)
+  ✓  50 [chromium] › specs/shell.spec.ts:41:7 › app shell › nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer (1.1s)
+  ✓  51 [chromium] › specs/shell.spec.ts:65:7 › app shell › the tab's title names the screen, and follows the language at once (1.0s)
+switch to Arabic on the users list: 63 ms
+  ✓  52 [chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (705ms)
+palette to the Roles screen: 119 ms, 3 steps, 6 keystrokes
+  ✓  53 [chromium] › specs/shell.spec.ts:114:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (33.7s)
+  ✓  54 [chromium] › specs/shell.spec.ts:156:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (2.5s)
+  ✓  55 [chromium] › specs/shell.spec.ts:169:7 › app shell › the palette finds a record and opens it (3.0s)
+  ✓  56 [chromium] › specs/shell.spec.ts:185:7 › app shell › the palette opens a role by its Arabic name, and a company and a branch by code (keyboard only) (2.2s)
+  ✓  57 [chromium] › specs/shell.spec.ts:221:7 › app shell › the palette leads from a few record matches to the list of every match (771ms)
+  ✓  58 [chromium] › specs/shell.spec.ts:239:9 › app shell › at phone width nothing is wider than the window (en) (1.8s)
+  ✓  59 [chromium] › specs/shell.spec.ts:239:9 › app shell › at phone width nothing is wider than the window (ar) (1.3s)
+  ✓  60 [chromium] › specs/shell.spec.ts:264:9 › app shell › at laptop widths the top bar fits the window (en) (1.9s)
+  ✓  61 [chromium] › specs/shell.spec.ts:264:9 › app shell › at laptop widths the top bar fits the window (ar) (1.2s)
+  ✓  62 [chromium] › specs/shell.spec.ts:288:7 › app shell › the palette offers a user with no roles nothing they cannot open (1.1s)
+  ✓  63 [chromium] › specs/shell.spec.ts:302:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (1.6s)
+  ✓  64 [chromium] › specs/shell.spec.ts:332:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (673ms)
+  ✓  65 [chromium] › specs/shell.spec.ts:352:7 › app shell › a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints (993ms)
+  ✓  66 [chromium] › specs/shell.spec.ts:393:9 › app shell › the status line stays in view on every screen and the page never scrolls (1366x768) (3.2s)
+  ✓  67 [chromium] › specs/shell.spec.ts:393:9 › app shell › the status line stays in view on every screen and the page never scrolls (1280x720) (1.8s)
+  ✓  68 [chromium] › specs/shell.spec.ts:393:9 › app shell › the status line stays in view on every screen and the page never scrolls (1920x1080) (2.1s)
+  ✓  69 [chromium] › specs/shell.spec.ts:417:7 › app shell › Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has (955ms)
+  ✓  70 [chromium] › specs/shell.spec.ts:445:7 › app shell › every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper (2.9s)
+  ✓  71 [chromium] › specs/shell.spec.ts:502:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (1.5s)
+  ✓  72 [chromium] › specs/shell.spec.ts:502:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (29.9s)
+sign-in to workspace: 1690 ms
+  ✓  73 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (2.1s)
+  ✓  74 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (2.8s)
+  ✓  75 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (1.5s)
+  ✓  76 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English (1.5s)
+  ✓  77 [chromium] › specs/sign-in.spec.ts:50:7 › sign in to an empty workspace › empty fields are explained without a round trip (366ms)
+  ✓  78 [chromium] › specs/sign-in.spec.ts:56:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it (2.1s)
+  ✓  79 [chromium] › specs/sign-in.spec.ts:77:7 › sign in to an empty workspace › first visit on the team's sign-in address: the part before @, Enter, the password, Enter (800ms)
+  ✓  80 [chromium] › specs/sign-in.spec.ts:98:7 › sign in to an empty workspace › first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter (1.9s)
+  ✓  81 [chromium] › specs/sign-in.spec.ts:115:7 › sign in to an empty workspace › returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter (2.2s)
+  ✓  82 [chromium] › specs/sign-in.spec.ts:140:7 › sign in to an empty workspace › the password can be shown from the keyboard to check it, then hidden, and still signs in (767ms)
+  ✓  83 [chromium] › specs/sign-in.spec.ts:161:7 › sign in to an empty workspace › on the team's sign-in address in Arabic the domain stays left to right after the field (402ms)
+  ✓  84 [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it (1.7s)
+  ✓  85 [chromium] › specs/tenancy.spec.ts:71:7 › companies, branches and the working company › in Arabic the companies read right to left and the switcher works the same way (1.2s)
+  ✓  86 [chromium] › specs/tenancy.spec.ts:88:7 › companies, branches and the working company › a read-only user works in one company: sees only it, cannot switch or edit (988ms)
+  ✓  87 [chromium] › specs/tenancy.spec.ts:108:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu (1.8s)
+  ✓  88 [chromium] › specs/tenancy.spec.ts:151:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches (1.3s)
+  ✓  89 [chromium] › specs/tenancy.spec.ts:172:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window (1.0s)
+
+  89 passed (4.5m)
+
+[1m== Comparison harness: built ours drivers against http://localhost:20160 (health check)[0m
+waiting 61 s for the end-to-end suite's sign-ins to leave the sign-in limit's window
+
+added 2 packages in 352ms
+built for ours: api-update-user, arabic-report, create-company-branch, create-restricted-user, edit-and-save, find-user, print-list-arabic, reach-screen-keyboard, sign-in, switch-company, switch-to-arabic
+api-update-user          ours  verified  steps 2  keys 249  machine 0.052s  human 72.82s  human+wait 72.868s  -> ../out/ours-health/results/api-update-user-20261010T122417-c515.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.128s  human 5.3s  human+wait 5.339s  -> ../out/ours-health/results/arabic-report-20261010T122421-f135.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.826s  human 22.17s  human+wait 22.444s  -> ../out/ours-health/results/create-company-branch-20261010T122424-e82e.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.874s  human 20.91s  human+wait 21.245s  -> ../out/ours-health/results/create-restricted-user-20261010T122433-672d.json
+edit-and-save            ours  verified  steps 3  keys 18  machine 0.183s  human 8.09s  human+wait 8.144s  -> ../out/ours-health/results/edit-and-save-20261010T122442-be0a.json
+find-user                ours  verified  steps 3  keys 3  machine 0.346s  human 5.24s  human+wait 5.299s  -> ../out/ours-health/results/find-user-20261010T122453-4743.json
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.466s  human 11.09s  human+wait 11.353s  -> ../out/ours-health/results/print-list-arabic-20261010T122527-9e73.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.078s  human 3.94s  human+wait 3.993s  -> ../out/ours-health/results/reach-screen-keyboard-20261010T122532-9a18.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.031s  human 2.03s  human+wait 2.058s  -> ../out/ours-health/results/sign-in-20261010T122539-b55f.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.082s  human 2.65s  human+wait 2.702s  -> ../out/ours-health/results/switch-company-20261010T122600-3631.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.058s  human 2.65s  human+wait 2.651s  -> ../out/ours-health/results/switch-to-arabic-20261010T122622-573b.json
+output: ../../../out/ours-health

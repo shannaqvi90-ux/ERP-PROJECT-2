@@ -1,0 +1,845 @@
+{
+  "schema": 1,
+  "run_id": "edit-and-save-20261010T121023-4d28",
+  "instrument": 8,
+  "task": "edit-and-save",
+  "task_title": "Edit a record and save it",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
+  "done_when": "The form shows the saved record; the back end holds the new phone number.",
+  "started_at": "2026-10-10T12:10:23.417Z",
+  "finished_at": "2026-10-10T12:10:38.210Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 19,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.363,
+    "system_wait_seconds": 0.213,
+    "human_seconds": 10.28,
+    "human_plus_wait_seconds": 10.493,
+    "klm_operator_counts": {
+      "K": 21,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "phone field",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.044,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "select the old number",
+      "keystrokes": 2,
+      "at": 0.047,
+      "took": 0.009,
+      "chord": "Control+a",
+      "screen": "/odoo/contacts/73531",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "new number",
+      "keystrokes": 17,
+      "at": 0.056,
+      "took": 0.052,
+      "text": "+971 50 555 0199",
+      "same_field": false,
+      "screen": "/odoo/contacts/73531",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 0.109,
+      "took": 0.035,
+      "chord": "Alt+s",
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "saved",
+      "at": 0.145,
+      "seconds": 0.213
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "3c92dfcf160c3373.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/3c92dfcf160c3373.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "8f19eb5b06e070d4.jpg",
+      "at": 0.363,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/8f19eb5b06e070d4.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "saved": "+971 50 555 0199",
+      "shown": "+971 50 555 0199"
+    }
+  },
+  "path_notes": "keyboard: Click the phone field > Ctrl+A > type the number > Alt+S | pointer: Click the phone field > Ctrl+A > type the number > click Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/edit-and-save.mjs",
+    "sha256": "eecb2f1f36505442dcecce1b7752819a715a9657f39b47ac5929a9bd0b784b56"
+  },
+  "task_notes": "Clean-up puts the original number back through the back end.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/contacts/73531",
+    "path": "/odoo/contacts/73531",
+    "query": "",
+    "fragment": "",
+    "fields": 15,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "name_0",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "parent_id_0",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email_0",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone_0",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street_0",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street2_0",
+        "password": false,
+        "value_length": 23,
+        "value": "Saif Zone, PO Box 68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city_0",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "state_id_0",
+        "password": false,
+        "value_length": 12,
+        "value": "Sharjah (AE)"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country_id_0",
+        "password": false,
+        "value_length": 20,
+        "value": "United Arab Emirates"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "lang_0",
+        "password": false,
+        "value_length": 12,
+        "value": "English (US)"
+      }
+    ],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.022,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.023,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /web/image/res.partner/73531/avatar_128 (image)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "63fa6c16fd8383f9",
+    "elements": 1239
+  },
+  "screen_after_verify": {
+    "sha256": "63fa6c16fd8383f9",
+    "elements": 1239,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.028
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.phone"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.phone"
+      ]
+    },
+    "end_state_gained": [
+      "+971 50 555 0199"
+    ],
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.partner/web_save"
+    ]
+  },
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Click the phone field > Ctrl+A > type the number > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 21,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.363,
+        "system_wait_seconds": 0.213,
+        "human_seconds": 10.28,
+        "human_plus_wait_seconds": 10.493,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.044,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "select the old number",
+          "keystrokes": 2,
+          "at": 0.047,
+          "took": 0.009,
+          "chord": "Control+a",
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 17,
+          "at": 0.056,
+          "took": 0.052,
+          "text": "+971 50 555 0199",
+          "same_field": false,
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 0.109,
+          "took": 0.035,
+          "chord": "Alt+s",
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.145,
+          "seconds": 0.213
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/odoo/contacts/73531",
+        "path": "/odoo/contacts/73531",
+        "query": "",
+        "fragment": "",
+        "fields": 15,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "name_0",
+            "password": false,
+            "value_length": 25,
+            "value": "Shamma Waleed Al Romaithi"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "parent_id_0",
+            "password": false,
+            "value_length": 27,
+            "value": "Zenith General Trading Est."
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email_0",
+            "password": false,
+            "value_length": 37,
+            "value": "shamma.al.romaithi.73519@mail.example"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone_0",
+            "password": false,
+            "value_length": 16,
+            "value": "+971 54 427 3034"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street_0",
+            "password": false,
+            "value_length": 12,
+            "value": "77 Avenue 20"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street2_0",
+            "password": false,
+            "value_length": 23,
+            "value": "Saif Zone, PO Box 68423"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city_0",
+            "password": false,
+            "value_length": 7,
+            "value": "Sharjah"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "state_id_0",
+            "password": false,
+            "value_length": 12,
+            "value": "Sharjah (AE)"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country_id_0",
+            "password": false,
+            "value_length": 20,
+            "value": "United Arab Emirates"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "lang_0",
+            "password": false,
+            "value_length": 12,
+            "value": "English (US)"
+          }
+        ],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.022,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.023,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.partner/73531/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "63fa6c16fd8383f9",
+        "elements": 1239
+      },
+      "screen_after_verify": {
+        "sha256": "63fa6c16fd8383f9",
+        "elements": 1239,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.028
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ]
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Click the phone field > Ctrl+A > type the number > click Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 19,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.416,
+        "system_wait_seconds": 0.2,
+        "human_seconds": 11.42,
+        "human_plus_wait_seconds": 11.62,
+        "klm_operator_counts": {
+          "K": 19,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.049,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "select the old number",
+          "keystrokes": 2,
+          "at": 0.05,
+          "took": 0.007,
+          "chord": "Control+a",
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 17,
+          "at": 0.057,
+          "took": 0.072,
+          "text": "+971 50 555 0199",
+          "same_field": false,
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.131,
+          "took": 0.077,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.209,
+          "seconds": 0.2
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/odoo/contacts/73531",
+        "path": "/odoo/contacts/73531",
+        "query": "",
+        "fragment": "",
+        "fields": 15,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "name_0",
+            "password": false,
+            "value_length": 25,
+            "value": "Shamma Waleed Al Romaithi"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "parent_id_0",
+            "password": false,
+            "value_length": 27,
+            "value": "Zenith General Trading Est."
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email_0",
+            "password": false,
+            "value_length": 37,
+            "value": "shamma.al.romaithi.73519@mail.example"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone_0",
+            "password": false,
+            "value_length": 16,
+            "value": "+971 54 427 3034"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street_0",
+            "password": false,
+            "value_length": 12,
+            "value": "77 Avenue 20"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street2_0",
+            "password": false,
+            "value_length": 23,
+            "value": "Saif Zone, PO Box 68423"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city_0",
+            "password": false,
+            "value_length": 7,
+            "value": "Sharjah"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "state_id_0",
+            "password": false,
+            "value_length": 12,
+            "value": "Sharjah (AE)"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country_id_0",
+            "password": false,
+            "value_length": 20,
+            "value": "United Arab Emirates"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "lang_0",
+            "password": false,
+            "value_length": 12,
+            "value": "English (US)"
+          }
+        ],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.021,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.022,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "92883564bd86ca1e",
+        "elements": 1239
+      },
+      "screen_after_verify": {
+        "sha256": "92883564bd86ca1e",
+        "elements": 1239,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.023
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ]
+      }
+    }
+  ]
+}

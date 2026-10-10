@@ -1,0 +1,8 @@
+A reads own company 200
+A reads B company 404
+B reads own company 200
+A searches gulfsteel users 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+noaccess GET /api/identity/users 403
+noaccess GET /api/tenancy/companies 403
+noaccess GET /api/identity/roles 403
+noaccess POST user 403

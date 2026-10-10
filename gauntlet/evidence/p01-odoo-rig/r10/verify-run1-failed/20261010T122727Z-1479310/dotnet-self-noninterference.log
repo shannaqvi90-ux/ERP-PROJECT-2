@@ -1,0 +1,16 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:01.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:02.17]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:02.73]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_catches_shared_state_that_leaks_no_marker [13 m 33 s]
+[xUnit.net 00:14:19.21]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_write_comparison_also_ignores_only_versions [5 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_ignores_only_times_and_trace_ids [< 1 ms]
+Results File: /out/trx/self-noninterference_net10.0_20261010113104.trx
+
+Test Run Successful.
+Total tests: 3
+     Passed: 3
+ Total time: 14.3610 Minutes

@@ -1,0 +1,2 @@
+# RESULT R5: status=invalid steps=0 keys=0 machine=0 human=0 vsHonest=- writes_sent=undefined gained=undefined error=action outside the clock (set-up): the task was already done before the clock started (verify() passes on the start screen). Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+ok 1 - plant R5: set-up types the value and clicks a Save whose request the page aborts after 200 ms (the product still carries it out 1.5 s later); run() presses Escape -> must never verify

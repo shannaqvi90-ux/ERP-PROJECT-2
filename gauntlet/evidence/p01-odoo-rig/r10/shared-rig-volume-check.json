@@ -1,0 +1,37 @@
+{
+ "ok": true,
+ "minimum": 100000,
+ "lists": {
+  "contacts": {
+   "model": "res.partner",
+   "at_least": true
+  },
+  "users": {
+   "model": "res.users",
+   "at_least": true
+  },
+  "currency_rates": {
+   "model": "res.currency.rate",
+   "at_least": true
+  },
+  "audit_messages": {
+   "model": "mail.message",
+   "at_least": true
+  },
+  "attachments": {
+   "model": "ir.attachment",
+   "at_least": true
+  },
+  "job_runs": {
+   "model": "ir.cron.progress",
+   "at_least": true,
+   "at_bar_until": "2026-10-16T12:09:29.000Z"
+  },
+  "approvals": {
+   "model": "purchase.order",
+   "at_least": true
+  }
+ },
+ "short": [],
+ "soon": []
+}

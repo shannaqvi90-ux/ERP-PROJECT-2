@@ -1,0 +1,442 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261010T122208-5183",
+  "instrument": 8,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-10T12:22:08.970Z",
+  "finished_at": "2026-10-10T12:22:13.581Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.089,
+    "system_wait_seconds": 0.053,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.703,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE (one-click button)",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.032,
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.034,
+      "seconds": 0.053
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ae5aa7a3e975a314.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/ae5aa7a3e975a314.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "b2ca4ca96a5f1d2e.jpg",
+      "at": 0.089,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/b2ca4ca96a5f1d2e.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": {
+        "label": "DEMO-MFG · MAIN",
+        "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+      },
+      "companyId": "01a125c3-57c4-7e7c-a67b-9d661ec72b8a"
+    }
+  },
+  "path_notes": "pointer: click the company button in the top bar | keyboard: Alt+C > type \"manuf\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-company.mjs",
+    "sha256": "4073bb927374d1904701b3ed08a7dcb973d9ce89aef2e838aba622decc70ae71"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.01,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.014,
+      "verified": true,
+      "gap_seconds": 0.064
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "6a0bff397e0d7de5",
+    "elements": 115
+  },
+  "screen_after_verify": {
+    "sha256": "6a0bff397e0d7de5",
+    "elements": 115,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.045
+  },
+  "set_up_writes_waited": 0,
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "pointer",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "click the company button in the top bar",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.089,
+        "system_wait_seconds": 0.053,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.703,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Demo Manufacturing FZE (one-click button)",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.032,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "working in the other company",
+          "at": 0.034,
+          "seconds": 0.053
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a125c3-57c4-7e7c-a67b-9d661ec72b8a"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.01,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.014,
+          "verified": true,
+          "gap_seconds": 0.064
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "6a0bff397e0d7de5",
+        "elements": 115
+      },
+      "screen_after_verify": {
+        "sha256": "6a0bff397e0d7de5",
+        "elements": 115,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.045
+      },
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "keyboard",
+      "path": "Alt+C > type \"manuf\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.114,
+        "system_wait_seconds": 0.057,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 4.047,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "company switcher (Alt+C)",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.02,
+          "chord": "Alt+c",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "part of the company name",
+          "keystrokes": 5,
+          "at": 0.026,
+          "took": 0.028,
+          "text": "manuf",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "switch (Enter)",
+          "keystrokes": 1,
+          "at": 0.055,
+          "took": 0.004,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "switcher open, filter focused",
+          "at": 0.022,
+          "seconds": 0.004
+        },
+        {
+          "label": "working in the other company",
+          "at": 0.06,
+          "seconds": 0.053
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a125c3-57c4-7e7c-a67b-9d661ec72b8a"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.015,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.016,
+          "verified": true,
+          "gap_seconds": 0.086
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "6a0bff397e0d7de5",
+        "elements": 115
+      },
+      "screen_after_verify": {
+        "sha256": "6a0bff397e0d7de5",
+        "elements": 115,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.047
+      },
+      "set_up_writes_waited": 0
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "task": "switch-company",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "pointer",
+  "metrics": {
+    "steps": {
+      "ours": 1,
+      "odoo": 2,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 0,
+      "outcome": "left out (both exactly 0)",
+      "left_out": true
+    },
+    "machine_seconds": {
+      "ours": 0.089,
+      "odoo": 0.32,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 2.65,
+      "odoo": 5.3,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 2.702,
+      "odoo": 5.51,
+      "outcome": "win"
+    }
+  },
+  "left_out": [
+    "keystrokes"
+  ],
+  "left_out_note": "Left out of this comparison: keystrokes (both products exactly 0, a count metric; owner decision 2026-10-08, needs-human #11).",
+  "ours_paths": [
+    {
+      "id": "pointer",
+      "verdict": "win",
+      "wins": 4,
+      "left_out": [
+        "keystrokes"
+      ],
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.089,
+        "system_wait_seconds": 0.052,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.702,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      }
+    },
+    {
+      "id": "keyboard",
+      "verdict": "loss",
+      "wins": 3,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.084,
+        "system_wait_seconds": 0.057,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 4.047,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      }
+    }
+  ],
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r10/compare/results/switch-company-20261010T122208-5183.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r10/compare/results/switch-company-20261010T122155-5827.json"
+  }
+}

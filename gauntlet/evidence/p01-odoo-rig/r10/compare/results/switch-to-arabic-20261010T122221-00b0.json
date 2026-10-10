@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261010T122221-00b0",
+  "instrument": 8,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-10T12:22:21.880Z",
+  "finished_at": "2026-10-10T12:22:25.772Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.094,
+    "system_wait_seconds": 0.001,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.651,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "العربية (language button)",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.089,
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "screen in Arabic, right to left, records still on screen",
+      "at": 0.091,
+      "seconds": 0.001
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "0b4dda45a69ff6a6.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/0b4dda45a69ff6a6.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "3d78f883a9895d4c.jpg",
+      "at": 0.094,
+      "path": "../../evidence-staging/p01-odoo-rig/r10/compare/blind/shots/3d78f883a9895d4c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_language": "ar",
+      "direction": "rtl",
+      "working_screen": "/identity/users",
+      "heading": "المستخدمون",
+      "columns": [
+        "الاسم▾",
+        "البريد الإلكتروني▾",
+        "اللغة▾",
+        "الحالة▾",
+        "آخر تسجيل دخول▾",
+        "الأدوار"
+      ],
+      "navigation": [
+        "التقارير",
+        "المستخدمون",
+        "الأدوار",
+        "الوصول إلى الشركات",
+        "الشركات",
+        "الفروع",
+        "مساحة العمل",
+        "حسابي"
+      ],
+      "records": 32
+    }
+  },
+  "path_notes": "Click the language button in the top bar (it names the other language: العربية). The whole screen, the working list included, turns Arabic and right to left at once; no reload, no dialog.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-to-arabic.mjs",
+    "sha256": "dc18c14a46069aed2a98a2f05a8a99885f1cdc925acd62e2b6d094c228703c35"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/identity/users",
+    "path": "/identity/users",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "search",
+      "name": "Search by name, initials or e-mail",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.016,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.013,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "ff3d1e7cb58e5502",
+    "elements": 589
+  },
+  "screen_after_verify": {
+    "sha256": "ff3d1e7cb58e5502",
+    "elements": 589,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.047
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/auth/session"
+    ],
+    "read_after": [
+      "GET /api/auth/session"
+    ],
+    "changed": [
+      "GET /api/auth/session"
+    ],
+    "changed_parts": {
+      "GET /api/auth/session": [
+        "user.language"
+      ]
+    },
+    "end_state": [
+      "GET /api/auth/session [user.language]"
+    ],
+    "end_state_changed": {
+      "GET /api/auth/session": [
+        "user.language"
+      ]
+    },
+    "writes_sent": [
+      "PUT /api/identity/me/preferences"
+    ]
+  }
+}

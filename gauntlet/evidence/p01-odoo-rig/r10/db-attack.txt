@@ -1,0 +1,41 @@
+== tables with tenant_id: rls enabled / forced
+branches|t|t
+companies|t|t
+entries|t|t
+passkeys|t|t
+roles|t|t
+saved_views|t|t
+sessions|t|t
+sign_in_attempts|t|t
+tenants|t|t
+user_branch_access|t|t
+user_company_access|t|t
+user_company_roles|t|t
+user_company_totals|t|t
+user_credentials|t|t
+user_roles|t|t
+user_workplaces|t|t
+users|t|t
+== app role attributes
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+== tenants
+0190a000-0000-7000-8000-000000000001|alnoor
+0190a000-0000-7000-8000-000000000002|gulfsteel
+== as erp_app, no tenant context
+SET
+users visible|0
+companies visible|0
+RESET
+== as erp_app in tenant A: count of B rows, update/insert on B
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000001|1791633843.992038
+A users|100005|0
+A companies|0|0
+UPDATE 0
+SAVEPOINT
+ROLLBACK
+ROLLBACK
+ERROR:  new row violates row-level security policy for table "companies"

@@ -1,0 +1,91 @@
+TAP version 13
+# RESULT C1: status=verified steps=3 keys=10 machine=0.326 human=8.9 vsHonest=loss writes_sent=["POST /api/save"] gained=["abcdefghij"] error=
+# Subtest: control C1: the honest typed save verifies
+ok 1 - control C1: the honest typed save verifies
+  ---
+  duration_ms: 4468.886363
+  type: 'test'
+  ...
+# RESULT C2: status=verified steps=1 keys=0 machine=0.095 human=2.65 vsHonest=win writes_sent=["POST /api/approve"] gained=undefined error=
+# Subtest: control C2: the honest approval verifies
+ok 2 - control C2: the honest approval verifies
+  ---
+  duration_ms: 3908.892776
+  type: 'test'
+  ...
+# RESULT R1: status=verified steps=1 keys=0 machine=0.107 human=2.65 vsHonest=win writes_sent=["POST /api/save"] gained=["abcdefghij"] error=
+# Subtest: plant R1: set-up stashes the value as a server-side draft; run() clicks "Save draft" once, typing nothing -> must never verify
+not ok 3 - plant R1: set-up stashes the value as a server-side draft; run() clicks "Save draft" once, typing nothing -> must never verify
+  ---
+  duration_ms: 3414.395368
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:118:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (R1): verified with 1 steps, 0 keys, 0.107 s; against an honest path (3 steps, 10 keys) the comparison says: win'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    never (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:91:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:126:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT R2: status=verified steps=1 keys=1 machine=2.36 human=2.03 vsHonest=win writes_sent=["POST /api/approve"] gained=undefined error=
+# Subtest: plant R2: set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> must never verify
+not ok 4 - plant R2: set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> must never verify
+  ---
+  duration_ms: 5639.47687
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:129:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (R2): verified with 1 steps, 1 keys, 2.36 s; against an honest path (3 steps, 10 keys) the comparison says: win'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    never (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:91:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:137:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT R3: status=verified steps=1 keys=1 machine=2.304 human=2.03 vsHonest=win writes_sent=["POST /api/save"] gained=["abcdefghij"] error=
+# Subtest: plant R3: set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> must never verify
+not ok 5 - plant R3: set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> must never verify
+  ---
+  duration_ms: 5928.860577
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:140:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (R3): verified with 1 steps, 1 keys, 2.304 s; against an honest path (3 steps, 10 keys) the comparison says: win'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    never (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:91:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r10-plants/gauntlet/compare/test/zz-critic-r10.test.mjs:148:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT R5: status=invalid steps=undefined keys=undefined machine=undefined human=undefined vsHonest=- writes_sent=undefined gained=undefined error=action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /api/slow-save (net::ERR_ABORTED)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the run
+# Subtest: plant R5: set-up types the value and clicks a Save whose request the page aborts after 200 ms (the product still carries it out 1.5 s later); run() presses Escape -> must never verify
+ok 6 - plant R5: set-up types the value and clicks a Save whose request the page aborts after 200 ms (the product still carries it out 1.5 s later); run() presses Escape -> must never verify
+  ---
+  duration_ms: 1540.549766
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 3
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 30253.354759
