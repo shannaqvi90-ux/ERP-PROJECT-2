@@ -111,7 +111,7 @@ const workplace = {
 
 /** The app at `path` for a user with `permissions`; writes are answered as a server would answer
  * them when allowed (the gate judges what is sent, not what the server would refuse). */
-async function open(path: string, permissions: string[], options: { language?: "en" | "ar"; companies?: (typeof company)[]; neverSignedIn?: boolean } = {}) {
+async function open(path: string, permissions: string[], options: { language?: "en" | "ar"; companies?: (typeof company)[]; neverSignedIn?: boolean; slowLists?: boolean } = {}) {
   view?.unmount();
   window.history.replaceState(null, "", path);
   const companies = options.companies ?? [company];
@@ -120,7 +120,11 @@ async function open(path: string, permissions: string[], options: { language?: "
     const p = new URL(url, "http://localhost").pathname;
     if (url === "/api/auth/session") return { status: 200, body: session(permissions, options.language) };
     const list = /^\/api\/lists\/([^/]+)\/(definition|views)$/.exec(p);
-    if (list) return list[2] === "views" ? { status: 200, body: { items: [] } } : { status: 200, body: definitions[list[1]!] };
+    if (list) {
+      const reply = list[2] === "views" ? { status: 200, body: { items: [] } } : { status: 200, body: definitions[list[1]!] };
+      // A list that loads after its screen has offered its commands (a busy server).
+      return options.slowLists ? new Promise<typeof reply>((r) => setTimeout(() => r(reply), 120)) : reply;
+    }
     if (method !== "GET") return { status: 200, body: { ...(body as object), id: "x1", version: 1, sessionsEnded: 0 } };
     if (p === "/api/identity/users") return { status: 200, body: { items: [shown], total: 1, next: null } };
     if (p === "/api/identity/users/u1") return { status: 200, body: shown };
@@ -243,6 +247,18 @@ describe("module actions in the command palette", () => {
       else expect(recordInAddress(), "a new record is open").toBe("new");
     });
   }
+
+  it("New user from home keeps its new record open when the list arrives after the command ran", async () => {
+    await open("/", every, { slowLists: true });
+    await openPalette(en("identity.users.new"));
+    act(() => offered().find((o) => o.title === en("identity.users.new"))!.option.click());
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 300));
+    });
+    await settleUntilQuiet(() => calls, done);
+    expect(window.location.pathname).toBe("/identity/users/new");
+    expect(document.querySelector('input[name="email"]')).not.toBeNull();
+  });
 
   it("a user who may add a branch but to no company (only some branches of it) is not offered New branch", async () => {
     const partial = { ...company, everyBranch: false };
