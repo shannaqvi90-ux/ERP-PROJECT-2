@@ -42,12 +42,12 @@ const plants = [
   {
     id: "U-company-new",
     what: "New company (button and Alt+N) offered without tenancy.companies.create",
-    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'useRecordPanel(can("tenancy.companies.create") && everyCompany)', replace: "useRecordPanel(everyCompany)" }],
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'const creatable = can("tenancy.companies.create") && everyCompany;', replace: "const creatable = everyCompany;" }],
   },
   {
     id: "U-company-new-some-companies",
     what: "New company (button and Alt+N) offered to someone who works in only some companies (critic p02 round 7)",
-    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'useRecordPanel(can("tenancy.companies.create") && everyCompany)', replace: 'useRecordPanel(can("tenancy.companies.create"))' }],
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: 'const creatable = can("tenancy.companies.create") && everyCompany;', replace: 'const creatable = can("tenancy.companies.create");' }],
   },
   {
     id: "U-company-code-some-companies",
@@ -57,7 +57,7 @@ const plants = [
   {
     id: "U-company-address-new",
     what: "a new-company form opened from the address (?open=new) by someone the screen does not offer New",
-    edits: [{ file: "src/kernel/forms/recordPanel.ts", find: "const next = id === newRecord && !canCreate ? null : id;", replace: "const next = id;" }],
+    edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: "onOpenIdChange(id === newRecord && !creatable ? null : id)", replace: "onOpenIdChange(id)" }],
   },
   {
     id: "P3b",

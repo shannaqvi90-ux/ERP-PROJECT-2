@@ -82,10 +82,12 @@ screen judged New and the code field on the permission alone. `screens.test.tsx`
   means the user works in no company (every workspace has one), so New is not offered.
 - On the company form, the code is read-only for anyone else, with the reason in English and
   Arabic: "Only someone who works in every company of the workspace may change a company code."
-- The shared record panel (`kernel/forms/recordPanel.ts`) opened a new record from the address
-  (`<screen>/new`, typed or bookmarked) when the list's definition arrived, even where the screen
-  offers no New. It now ignores that address there, as it already did at first render. This
-  applies to every list screen. It is a fix in shared code, kept backward compatible.
+- The list opens the record its address names (`<screen>/new`, typed or bookmarked) once its
+  definition arrives, even where the screen offers no New. The Companies screen ignores a new
+  record from the address unless it offers New. The guard sits in the screen, not in the shared
+  record panel: a guard in the panel would also neutralise identity's planted fault U1-shortcut
+  (`panel.onOpenIdChange(newRecord)`), which verify's identity plant self-test then reported as
+  passing.
 - Gates:
   - `screens.test.tsx` checks a user of some companies: exactly New and `field:code` disappear;
     Alt+N and `?open=new` open nothing; the reason is shown.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
@@ -17,7 +17,8 @@ import { useScreenKeys } from "./ui";
  * Company codes are unique across the workspace, so only someone who works in every company of it
  * may create a company (the server answers 403 tenancy.companyNeedsEveryCompany otherwise; critic
  * p02 round 7). The list rows say whether the user does (everyCompany): the screen reads one row
- * before it draws, so New, Alt+N and ?open=new are offered from the first frame only to them.
+ * before it draws, so New, Alt+N and a new company from the address (<screen>/new, typed or
+ * bookmarked, which the list opens once its definition arrives) are offered only to them.
  */
 export function CompaniesPage() {
   const everyCompany = useEveryCompany();
@@ -50,8 +51,11 @@ function useEveryCompany(): boolean | undefined {
 function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
   const { t } = useI18n();
   const { can } = useSession();
-  const panel = useRecordPanel(can("tenancy.companies.create") && everyCompany);
+  const creatable = can("tenancy.companies.create") && everyCompany;
+  const panel = useRecordPanel(creatable);
   useScreenKeys({ onNew: panel.startNew, search: listSearch });
+  const { onOpenIdChange } = panel;
+  const openIdChange = useCallback((id: string | null) => onOpenIdChange(id === newRecord && !creatable ? null : id), [onOpenIdChange, creatable]);
 
   return (
     <div className="tn-list">
@@ -64,7 +68,7 @@ function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
         openOnClick
         reloadKey={panel.reload}
         openId={panel.openId}
-        onOpenIdChange={panel.onOpenIdChange}
+        onOpenIdChange={openIdChange}
         renderRecord={(id, close, nav) => (
           <CompanyForm key={panel.formKey} id={id === newRecord ? null : id} onSaved={panel.saved} onClose={close} nav={nav} />
         )}
