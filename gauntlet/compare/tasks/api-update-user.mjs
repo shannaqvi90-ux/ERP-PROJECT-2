@@ -12,8 +12,8 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }] },
-    ours: { reads: [{ read: 'GET /api/identity/users/*', parts: ['language'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }], writes: ['POST /json/2/res.users/write'] },
+    ours: { reads: [{ read: 'GET /api/identity/users/*', parts: ['language'] }], writes: ['PUT /api/identity/users/*'] },
   },
   moments: [],
   start: 'An HTTP client holding a signed-in administrator session (base address and token set up); nothing sent yet.',

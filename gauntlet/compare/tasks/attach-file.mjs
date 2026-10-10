@@ -10,7 +10,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/ir.attachment/search_read', parts: ['result.name', 'result.file_size'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/ir.attachment/search_read', parts: ['result.name', 'result.file_size'] }], writes: ['POST /mail/attachment/upload'] },
   },
   enters: ['file'],
   moments: [],

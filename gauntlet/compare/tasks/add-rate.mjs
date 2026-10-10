@@ -10,7 +10,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.currency.rate/search_read', parts: ['result.inverse_company_rate', 'result.company_rate'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.currency.rate/search_read', parts: ['result.inverse_company_rate', 'result.company_rate'] }], writes: ['POST /web/dataset/call_kw/res.currency/web_save', 'POST /web/dataset/call_kw/res.currency.rate/web_save'] },
   },
   enters: ['aedPerUnit'],
   moments: ['rate entered'],

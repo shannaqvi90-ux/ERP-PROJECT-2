@@ -208,6 +208,7 @@ export async function runTask(taskId, productId, opts = {}) {
     screen_at_clock: primary.screen_at_clock ?? null,
     screen_after_verify: primary.screen_after_verify ?? null,
     verify_before: primary.verify_before ?? null,
+    set_up_writes_waited: primary.set_up_writes_waited ?? null,
     ...(primary.saved_state ? { saved_state: primary.saved_state } : {}),
     ...(primary.task_rules ? { task_rules: primary.task_rules } : {}),
   });
@@ -229,7 +230,7 @@ export async function runTask(taskId, productId, opts = {}) {
     if (productId !== REFERENCE_PRODUCT) result.counts_path = primary.id;
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
       verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
-      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, verify_before: e.verify_before ?? null,
+      screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, verify_before: e.verify_before ?? null, set_up_writes_waited: e.set_up_writes_waited ?? null,
       ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.task_rules ? { task_rules: e.task_rules } : {}), ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }

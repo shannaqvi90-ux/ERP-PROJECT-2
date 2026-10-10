@@ -10,7 +10,7 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/search_read', parts: ['result.name'] }] },
-    ours: { reads: [{ read: 'GET /api/identity/users', parts: ['items.displayName', 'items.email'] }] },
+    ours: { reads: [{ read: 'GET /api/identity/users', parts: ['items.displayName', 'items.email'] }], writes: ['POST /api/identity/users'] },
   },
   enters: ['name', 'login'],
   moments: ['user filled in'],

@@ -10,7 +10,7 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }] },
-    ours: { reads: [{ read: 'GET /api/auth/session', parts: ['user.language'] }] },
+    ours: { reads: [{ read: 'GET /api/auth/session', parts: ['user.language'] }], writes: ['PUT /api/identity/me/preferences'] },
   },
   moments: [],
   start: 'Signed in as an ordinary user working in English, on their working screen (the contacts list, with records).',

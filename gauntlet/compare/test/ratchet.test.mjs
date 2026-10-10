@@ -14,7 +14,7 @@ const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_d
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
   guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
   instrument_mutations: 'compare.instrumentMutations', before_clock_plants: 'compare.beforeClockPlants', saves_tasks: 'compare.savesTasks',
-  enters_tasks: 'compare.entersTasks' };
+  enters_tasks: 'compare.entersTasks', set_up_off_clock_plants: 'compare.setUpOffClockPlants', end_states_declared: 'compare.endStatesDeclared' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -113,6 +113,16 @@ test('before-the-clock plants, tasks that save and tasks that name what the pers
   const tasks = await loadTasks();
   assert.ok(tasks.filter(t => t.saves).length >= min.saves_tasks, `tasks that save < ${min.saves_tasks}`);
   assert.ok(tasks.filter(t => t.enters?.length).length >= min.enters_tasks, `tasks that name what the person enters < ${min.enters_tasks}`);
+});
+
+// Round 10 (critic p01 r9): a task that saves is saved by the measured part, in its declared end state.
+test('set-up-off-the-clock plants and declared end states never go below their minimum', async () => {
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'set-up-off-clock.test.mjs'), 'utf8');
+  const plants = (text.match(/^test\('(plant Q|X1)/gm) || []).length;
+  assert.ok(plants >= min.set_up_off_clock_plants, `${plants} set-up-off-the-clock plants < ${min.set_up_off_clock_plants}`);
+  let declared = 0;
+  for (const t of await loadTasks()) for (const p of Object.keys(t.endState || {})) if (t.endState[p]?.reads?.length) declared++;
+  assert.ok(declared >= min.end_states_declared, `${declared} declared end states < ${min.end_states_declared}`);
 });
 
 test('API tasks never go below their minimum', async () => {

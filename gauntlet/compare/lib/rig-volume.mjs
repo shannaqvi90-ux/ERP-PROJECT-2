@@ -27,8 +27,10 @@ export const WARN_DAYS = 2;
 
 export const TOP_UP_HINT = [
   'top the rig up, from the repository root:',
-  '    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing)',
-  '    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig; then COMPARE_ODOO_URL=http://localhost:<port>)',
+  '    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;',
+  '                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)',
+  '    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)',
+  '    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)',
   'Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").',
 ].join('\n');
 

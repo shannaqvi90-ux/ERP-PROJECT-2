@@ -195,9 +195,44 @@ P3-P9) and `test/sandbox.test.mjs`:
   already answered in this run with the same answer (`signIns`), so no extra session is made and the
   product's sign-in limit is not spent.
 
+**A task that saves is saved by the measured part, where the task says** (round 10, critic p01 r9:
+plant Q1, a task naming nothing entered accepted any back-end change, so set-up approved, `run()`
+bumped an unrelated version and the real api-update-user driver turned a lost task into a recorded
+win; plant Q2, set-up's browser sent a slow save and the runner closed it without waiting, so the
+save landed inside a measured part of one key). Plant-tested in `test/set-up-off-clock.test.mjs`
+(Q1, Q1b, Q1 on the real driver, Q2, Q2b-d, Q3, Q3b, Q3c, X12, X16) and `test/before-clock.test.mjs`:
+
+- Every task that saves declares its **end state** for each product whose driver is built
+  (`endState` in the task file, reviewed with it; a driver cannot declare it): the back-end
+  **reads** that hold it, as `METHOD /path` with `*` for one path segment, each with the **parts**
+  of its answer that hold it (the answer's keys from the top, list positions left out:
+  `language`, `result.lang`, `items.displayName`; a part names its subtree), and optionally the
+  **writes** that save it, in the same form. `test/tasks.test.mjs` checks the declarations.
+- Only a change in a declared part of a declared read counts as the saved state (recorded in
+  `saved_state.end_state_changed`); a change anywhere else (a preference, a version, another field
+  of the same record) proves nothing. For a task that names what the person enters, the entered
+  value must arrive in those parts (`end_state_gained`).
+- The measured part must **send a write** (a request that is not GET, HEAD or OPTIONS and not one
+  of the reference's documented reads; for an API task, a request as sent): one of the task's
+  declared writes when it declares them (`saved_state.writes_sent`). And every entered value the
+  end state gained must have been **entered by the measured part**: typed (in one or more pieces),
+  picked as a file, or sent in one of its writes or API requests. A value that arrived otherwise was
+  sent off the clock (set-up's slow save, a job set-up scheduled).
+- **Writes set-up's browser sent are answered before the start.** Every browser context of the run
+  is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
+  the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),
+  so a save lands before the clock and "already done before the clock" sees it. A write the browser
+  abandoned (its page moved on or closed, its request failed) may still be carried out by the
+  product after the clock starts: the run is refused.
+- The **clipboard is read back** at the start (pasted into a scratch page that closes again): text
+  set-up copied must be gone (X16). A signed-in start keeps no local storage from set-up (X12).
+
 What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
 only make sure `verify()` reads the same way before and after the clock and that, for a task that
-saves, the state it reads changed during the measured part. Drivers are reviewed code.
+saves, its declared end state changed during the measured part, which sent the write. A task that
+declares no writes accepts any write of the measured part; a product job set-up scheduled that
+lands while the measured part sends the declared write is not told apart. Tasks and drivers are
+reviewed code.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
 right after its last step or wait. Round 5 closes the ways to finish a task after that:
@@ -234,11 +269,8 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 7); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 8); a baseline
 from an older instrument fails the check until it is re-captured.
-
-| Measure | Definition |
-|---|---|
 
 | Measure | Definition |
 |---|---|
