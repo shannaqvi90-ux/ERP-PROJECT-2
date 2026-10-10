@@ -11,6 +11,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
  * dialog is open only shortcuts marked `inDialogs` fire. Two active shortcuts may not share a
  * chord: registering a duplicate throws, so a clash fails the tests instead of shadowing a key.
  * Every registered shortcut is listed, with its translated label, in the shortcut help sheet.
+ *
+ * The same registry holds a screen's commands: what the screen offers the user right now (New
+ * user, Copy role, Print or export the list ...), with or without a key. The command palette lists
+ * them first, under "On this screen", so every action a screen offers can also be found by typing.
+ * A screen registers a command only while it offers the action (`enabled`, from the same check that
+ * shows its button), so the palette never offers what the screen would not.
  */
 export type ShortcutDef = {
   id: string;
@@ -23,6 +29,17 @@ export type ShortcutDef = {
   run: () => void;
   /** Also fire while a modal dialog is open (for example the palette's own toggle). */
   inDialogs?: boolean;
+  /** String key of extra words people type for this action ("invite, add"), in each language. */
+  keywordsKey?: string;
+  /** False keeps a shortcut out of the command palette (the default is to list it). */
+  palette?: boolean;
+};
+
+/** A command a screen offers right now: a shortcut, or an action without a key. */
+export type CommandDef = Omit<ShortcutDef, "chord"> & {
+  chord?: string;
+  /** The command's name already translated (a tab's name in a sentence), instead of `labelKey`'s. */
+  label?: string;
 };
 
 export type Chord = { mod: boolean; alt: boolean; shift: boolean; code: string };
@@ -121,11 +138,14 @@ export function isEditable(target: EventTarget | null): boolean {
 
 const modalOpen = (): boolean => typeof document !== "undefined" && document.querySelector('[aria-modal="true"]') !== null;
 
-type Registered = ShortcutDef & { parsed: Chord };
+type Registered = CommandDef & { parsed?: Chord };
 
 type Registry = {
-  register: (def: ShortcutDef) => () => void;
+  register: (def: CommandDef) => () => void;
+  /** The active shortcuts (commands with a key). */
   list: () => ShortcutDef[];
+  /** The active commands the palette offers (with a key or without). */
+  commands: () => CommandDef[];
   version: number;
 };
 
@@ -136,10 +156,11 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
   const entries = useRef(new Map<string, Registered>());
   const [version, setVersion] = useState(0);
 
-  const register = useCallback((def: ShortcutDef) => {
-    const parsed = parseChord(def.chord);
+  const register = useCallback((def: CommandDef) => {
+    const parsed = def.chord === undefined ? undefined : parseChord(def.chord);
     for (const other of entries.current.values()) {
-      if (other.id !== def.id && other.chord === def.chord) {
+      if (other.id === def.id) continue;
+      if (parsed && other.chord === def.chord) {
         throw new Error(`Shortcut ${def.chord} of "${def.id}" is already used by "${other.id}"`);
       }
     }
@@ -156,7 +177,7 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
       if (event.defaultPrevented || event.isComposing || event.repeat) return;
       const apple = isApple();
       for (const entry of entries.current.values()) {
-        if (!matches(entry.parsed, event, apple)) continue;
+        if (!entry.parsed || !matches(entry.parsed, event, apple)) continue;
         const plain = !entry.parsed.mod && !entry.parsed.alt;
         if (plain && isEditable(event.target)) return;
         if (modalOpen() && !entry.inDialogs) return;
@@ -171,7 +192,13 @@ export function ShortcutProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<Registry>(
-    () => ({ register, list: () => [...entries.current.values()].map(({ parsed: _parsed, ...def }) => def), version }),
+    () => ({
+      register,
+      list: () =>
+        [...entries.current.values()].filter((e): e is Registered & { chord: string } => e.chord !== undefined).map(({ parsed: _parsed, ...def }) => def),
+      commands: () => [...entries.current.values()].filter((e) => e.palette !== false).map(({ parsed: _parsed, ...def }) => def),
+      version,
+    }),
     [register, version],
   );
   return <ShortcutContext.Provider value={value}>{children}</ShortcutContext.Provider>;
@@ -185,15 +212,30 @@ function useRegistry(): Registry {
 
 /** Register a shortcut while the calling component is mounted. `run` may change between renders. */
 export function useShortcut(def: Omit<ShortcutDef, "run"> & { run: () => void; enabled?: boolean }): void {
-  const { register } = useRegistry();
+  useRegistration(useRegistry(), def);
+}
+
+/**
+ * Register a command of the screen while the calling component is mounted and `enabled` holds:
+ * the palette lists it under "On this screen", and with a `chord` it is a shortcut too. Pass the
+ * same condition that shows the action's button as `enabled`, so the palette offers exactly what
+ * the screen does. `run` may change between renders.
+ */
+export function useCommand(def: Omit<CommandDef, "run"> & { run: () => void; enabled?: boolean }): void {
+  // Outside the app's frame (a component shown on its own) there is no palette to offer it in.
+  useRegistration(useContext(ShortcutContext), def);
+}
+
+function useRegistration(registry: Registry | null, def: Omit<CommandDef, "run"> & { run: () => void; enabled?: boolean }): void {
+  const register = registry?.register;
   const run = useRef(def.run);
   run.current = def.run;
-  const { id, chord, labelKey, groupKey, inDialogs, enabled = true } = def;
+  const { id, chord, labelKey, label, groupKey, inDialogs, keywordsKey, palette, enabled = true } = def;
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !register) return;
     const stable = () => run.current();
-    return register({ id, chord, labelKey, groupKey, inDialogs, run: stable });
-  }, [register, id, chord, labelKey, groupKey, inDialogs, enabled]);
+    return register({ id, chord, labelKey, label, groupKey, inDialogs, keywordsKey, palette, run: stable });
+  }, [register, id, chord, labelKey, label, groupKey, inDialogs, keywordsKey, palette, enabled]);
 }
 
 /** Every active shortcut (re-renders when one is added or removed). */
@@ -201,6 +243,12 @@ export function useShortcutList(): ShortcutDef[] {
   const { list, version } = useRegistry();
   // `version` changes whenever the registry does.
   return useMemo(() => list(), [list, version]);
+}
+
+/** Every command the screen offers right now, keyed or not (re-renders when one comes or goes). */
+export function useCommandList(): CommandDef[] {
+  const { commands, version } = useRegistry();
+  return useMemo(() => commands(), [commands, version]);
 }
 
 /** Shows a chord the way the keyboard prints it; always left to right, also on Arabic screens. */

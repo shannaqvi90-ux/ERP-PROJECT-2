@@ -7,6 +7,7 @@ import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/
 import { teamSignInAddress } from "../../kernel/signInAddress";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
+import { useCommand } from "../../kernel/shortcuts";
 import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
 import { RolePicker } from "./RolePicker";
 import {
@@ -597,6 +598,48 @@ function AccountActions({
   // What was done, in one notice: sessions ended and passkeys removed.
   const withPasskeys = (text: string, removed: number) => (removed > 0 ? `${text} ${t("identity.userPasskeys.removedCount", { count: removed })}` : text);
 
+  // The palette offers what these buttons offer, under the same conditions; each does what its
+  // button does (a reset opens its choices with the first one focused, delete asks first).
+  const methodRef = useRef<HTMLFieldSetElement>(null);
+  const focusMethod = useRef(false);
+  useEffect(() => {
+    if (mode === "closed" || !focusMethod.current) return;
+    focusMethod.current = false;
+    methodRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+  }, [mode]);
+  const startSignOutEverywhere = () => {
+    // Without passkeys there is nothing to choose: sign out at once.
+    if (passkeyCount > 0) {
+      setSignOutPasskeys(true);
+      setConfirmSignOut(true);
+    } else void signOutEverywhere(false);
+  };
+  useCommand({
+    id: "identity.users.reset",
+    labelKey: "identity.reset.open",
+    keywordsKey: "identity.action.resetKeywords",
+    groupKey: "identity.shortcuts.group",
+    enabled: allowed.resetPassword && mode === "closed",
+    run: () => {
+      focusMethod.current = true;
+      setMode("code");
+    },
+  });
+  useCommand({
+    id: "identity.users.signOutEverywhere",
+    labelKey: passkeyCount > 0 ? "identity.sessions.revokeAsk" : "identity.sessions.revoke",
+    groupKey: "identity.shortcuts.group",
+    enabled: allowed.signOutEverywhere && !busy,
+    run: startSignOutEverywhere,
+  });
+  useCommand({
+    id: "identity.users.delete",
+    labelKey: "identity.users.delete",
+    groupKey: "identity.shortcuts.group",
+    enabled: allowed.delete && !confirmDelete,
+    run: () => setConfirmDelete(true),
+  });
+
   async function remove() {
     setBusy(true);
     setError(null);
@@ -674,13 +717,7 @@ function AccountActions({
             type="button"
             className="button"
             disabled={busy}
-            onClick={() => {
-              // Without passkeys there is nothing to choose: sign out at once.
-              if (passkeyCount > 0) {
-                setSignOutPasskeys(true);
-                setConfirmSignOut(true);
-              } else void signOutEverywhere(false);
-            }}
+            onClick={startSignOutEverywhere}
           >
             {passkeyCount > 0 ? t("identity.sessions.revokeAsk") : t("identity.sessions.revoke")}
           </button>
@@ -720,7 +757,7 @@ function AccountActions({
         </Dialog>
       )}
       {mode !== "closed" && (
-        <fieldset className="id-method">
+        <fieldset className="id-method" ref={methodRef}>
           <legend className="field-label">{t("identity.reset.how")}</legend>
           <label>
             <input type="radio" name="reset" checked={mode === "code"} onChange={() => setMode("code")} />
@@ -951,6 +988,15 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
   useEffect(() => {
     api<SignInHistory>("GET", `/api/identity/users/${userId}/sign-ins?take=100`).then(setHistory, (e: Error) => setError(e.message));
   }, [userId, reload]);
+
+  useCommand({
+    id: "identity.users.unblock",
+    labelKey: "identity.history.unblock",
+    keywordsKey: "identity.action.unblockKeywords",
+    groupKey: "identity.shortcuts.group",
+    enabled: canUnblock && (history?.paused.length ?? 0) > 0,
+    run: () => void unblock(),
+  });
 
   async function unblock() {
     try {

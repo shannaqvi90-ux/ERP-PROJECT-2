@@ -62,6 +62,9 @@ case "$stage" in
     # G2 on screen, by keyboard: the record form kernel's and the screens' key sweeps must catch every
     # planted key or keyboard-reached control that writes, or offers an action, without its permission.
     node scripts/forms-plant-self-test.mjs
+    # G2 in the command palette: the palette's gate must catch every planted action offered to a
+    # user who may not run it (module actions and the screen's own commands).
+    node scripts/palette-plant-self-test.mjs
     npm run --silent build
 
     step "Verify machinery (build/): stopping a verify ends every stage process; the quiet judgement"

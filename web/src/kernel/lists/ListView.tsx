@@ -4,7 +4,7 @@ import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
-import { chordForAria, chordKeys, useShortcut } from "../shortcuts";
+import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
 import { cellText, columnLabel, conditionLabel, formatValue, groupTotal, type Formatters } from "./format";
 import {
   byRelevance,
@@ -387,6 +387,33 @@ export function ListView(props: ListViewProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [anyRecordOpen]);
+
+  // The list's own controls, offered in the command palette as well ("On this screen").
+  useCommand({
+    id: "lists.search",
+    labelKey: "lists.command.search",
+    keywordsKey: "lists.command.searchKeywords",
+    groupKey: "lists.shortcut.group",
+    run: () => {
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    },
+  });
+  useCommand({
+    id: "lists.columns",
+    labelKey: "lists.command.columns",
+    groupKey: "lists.shortcut.group",
+    enabled: Boolean(definition && current),
+    run: () => setMenu({ kind: "columns" }),
+  });
+  useCommand({
+    id: "lists.views",
+    labelKey: "lists.command.views",
+    keywordsKey: "lists.command.viewsKeywords",
+    groupKey: "lists.shortcut.group",
+    enabled: Boolean(definition && current),
+    run: () => setMenu({ kind: "views" }),
+  });
 
   if (loadError) {
     return (
@@ -1444,6 +1471,7 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
     id: "lists.print",
     chord: listPrintChord,
     labelKey: "lists.shortcut.print",
+    keywordsKey: "lists.command.printKeywords",
     groupKey: "lists.shortcut.group",
     run: () => {
       setOpen(true);

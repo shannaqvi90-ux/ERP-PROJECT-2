@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { recordInAddress } from "../router";
+import { recordAddress, recordInAddress, replaceAddress } from "../router";
 
 /** The list panel's id while a new record is being created: every screen opens a new record at <screen>/new. */
 export const newRecord = "new";
@@ -26,6 +26,9 @@ export function useRecordPanel(canCreate: boolean) {
     () =>
       canCreate
         ? () => {
+            // The address says so at once: a list still loading (New run from the command palette as
+            // soon as the screen offers it) opens what the address opens when it arrives.
+            replaceAddress(recordAddress(newRecord, window.location.search));
             setOpenId(newRecord);
             setFormKey(`${newRecord}-${Date.now()}`);
           }

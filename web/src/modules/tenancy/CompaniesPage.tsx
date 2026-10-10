@@ -15,7 +15,7 @@ export function CompaniesPage() {
   const { t } = useI18n();
   const { can } = useSession();
   const panel = useRecordPanel(can("tenancy.companies.create"));
-  useScreenKeys({ onNew: panel.startNew, search: listSearch });
+  useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey: "tenancy.company.new", newKeywordsKey: "tenancy.action.newCompanyKeywords" });
 
   return (
     <div className="tn-list">

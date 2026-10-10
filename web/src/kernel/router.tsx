@@ -64,6 +64,12 @@ export function recordPath(screen: string, record: string | null, query = ""): s
 
 const changeEvent = "erp:navigate";
 
+/** Put `path` in the current history entry instead of adding one (the open record of the screen
+ * on show changed: /screen/new). Screens that read the address learn of it when they next read it. */
+export function replaceAddress(path: string): void {
+  if (path !== window.location.pathname + window.location.search) window.history.replaceState(null, "", path);
+}
+
 /** Go to an in-app address (path, optionally with a query). A form with unsaved changes on the
  * current screen first asks what to do with them (kernel/forms/leave): save, discard, or stay. */
 export function navigate(path: string): void {

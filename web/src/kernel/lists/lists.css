@@ -609,6 +609,17 @@
   color: #fff;
 }
 
+/* Phone widths: a toolbar button whose words wrap (Arabic "مستخدم جديد", "طباعة أو تصدير") grows
+   to hold them instead of letting the second line spill out of its border (critic p04 round 7). */
+@media (max-width: 600px) {
+  .list-toolbar-end .button {
+    height: auto;
+    min-height: 30px;
+    padding-block: 3px;
+    line-height: 1.2;
+  }
+}
+
 @media print {
   .list-confirm-backdrop {
     display: none;
