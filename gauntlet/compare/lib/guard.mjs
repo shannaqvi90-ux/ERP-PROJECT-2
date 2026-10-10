@@ -354,6 +354,18 @@ export function changesProduct({ method, url, resourceType, postData, navigation
   return true;
 }
 
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/**
+ * Round 10: a request that writes to the product: a method other than GET, HEAD and OPTIONS that is
+ * not one of the reference's documented reads (changesProduct). A document load is not a write. The
+ * saved-state rule needs one sent by the measured part (lib/runner.mjs, measuredPartProblem).
+ */
+export function isWrite(method, url, resourceType = 'fetch', postData = null) {
+  if (SAFE_METHODS.has(String(method || 'GET').toUpperCase())) return false;
+  return changesProduct({ method, url, resourceType, postData, navigation: false });
+}
+
 let networkGuardInstalled = false;
 export function installNetworkGuard() {
   if (networkGuardInstalled) return;

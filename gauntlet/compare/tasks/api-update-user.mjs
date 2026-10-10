@@ -8,6 +8,13 @@ export default {
   actor: 'an integration developer with an administrator\'s API access, in an HTTP client already signed in',
   startAt: 'api',
   saves: true,
+  // Where the saved end state lives in each product (round 10): the back-end reads verify() takes it
+  // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
+  // writes that save it (the measured part must send one of them).
+  endState: {
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }] },
+    ours: { reads: [{ read: 'GET /api/identity/users/*', parts: ['language'] }] },
+  },
   moments: [],
   start: 'An HTTP client holding a signed-in administrator session (base address and token set up); nothing sent yet.',
   goal: 'Through the product\'s documented API only, find the user {user.name} among 100,000 users and switch their interface language to Arabic.',

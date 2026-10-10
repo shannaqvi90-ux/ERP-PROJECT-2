@@ -7,7 +7,7 @@ import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './conf
 import { consoleOf, launch, newContext } from './browser.mjs';
 import { Device } from './device.mjs';
 import { NotBuilt, Operator } from './operator.mjs';
-import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, unwrap } from './guard.mjs';
+import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, isWrite, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
 import { PageWorld, fingerprintDigest, screenChange } from './page-script.mjs';
@@ -67,7 +67,14 @@ export const RESULT_SCHEMA = 1;
  *      show an entered value. A keyboard-only task (`keyboardOnly`) fails on a pointer step (the
  *      harness judges it; verify() no longer reports it).
  */
-export const INSTRUMENT_VERSION = 7;
+/*   8: a task that saves declares its end state (endState: the back-end reads and the parts of their
+ *      answers that hold it, and the writes that save it); only a change there counts as the saved
+ *      state, and an entered value must arrive there (critic p01 r9, plant Q1). The measured part must
+ *      send a write (one of the declared ones) and must have entered every value its end state gained.
+ *      Writes set-up's browser sent are answered before the start; one it abandoned refuses the run
+ *      (plant Q2). The clipboard is read back empty at the start (X16).
+ */
+export const INSTRUMENT_VERSION = 8;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -292,6 +299,92 @@ export function verifyWaited(passes) {
   return null;
 }
 
+/** Long-lived channels (web sockets, event streams, long polling, Odoo's bus): they never end. */
+export function isBackgroundRequest(r) {
+  try { return ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url()); } catch { return false; }
+}
+
+const MAX_SENT = 200;
+const MAX_SENT_BODY = 1 << 20;
+
+/**
+ * Round 10 (critic p01 r9, plant Q2): the requests set-up's browser sends that write to the product,
+ * in every browser context of the run (the runner's, a sign-in retry's, any the driver opened). A
+ * write still under way when the start is prepared is waited for, so it lands before the clock and
+ * the check "already done before the clock" sees it; a write the browser abandoned (a page that moved
+ * on, a context closed) may still be carried out by the product after the clock starts, so the run is
+ * refused. Closing a context without waiting used to let set-up's slow save land inside the measured
+ * part (plant Q2: verified with one key).
+ */
+export function watchSetUpBrowser(browser) {
+  const inflight = new Map(); // request -> "METHOD /path"
+  const abandoned = [];
+  const contexts = new Set();
+  let waited = 0;
+  let watching = true;
+  const describeReq = r => { try { return `${r.method()} ${new URL(r.url()).pathname}`; } catch { return '?'; } };
+  const postData = r => { try { return r.postData(); } catch { return null; } };
+  const attach = context => {
+    if (contexts.has(context)) return;
+    const on = r => {
+      if (!watching || isBackgroundRequest(r)) return;
+      if (isWrite(r.method(), r.url(), r.resourceType(), postData(r))) inflight.set(r, describeReq(r));
+    };
+    const finished = r => { inflight.delete(r); };
+    const failed = r => {
+      if (!inflight.has(r)) return;
+      let why = '';
+      try { why = r.failure()?.errorText || ''; } catch { /* gone */ }
+      abandoned.push(`${inflight.get(r)}${why ? ` (${why})` : ''}`);
+      inflight.delete(r);
+    };
+    // A document that is replaced, or a page that closes, abandons its requests: the browser reports
+    // no end for some of them, but the product may still carry them out (plant Q2: set-up's sign-in
+    // moved the page on while its slow save was under way).
+    const frameOf = r => { try { return r.frame(); } catch { return null; } };
+    const abandon = (r, why) => { abandoned.push(`${inflight.get(r)} (${why})`); inflight.delete(r); };
+    const watchPage = p => {
+      p.on('framenavigated', f => { for (const r of [...inflight.keys()]) if (frameOf(r) === f && !r.isNavigationRequest()) abandon(r, 'its page moved on'); });
+      p.on('close', () => { for (const r of [...inflight.keys()]) { let page = null; try { page = frameOf(r)?.page(); } catch { /* gone */ } if (page === p) abandon(r, 'its page closed'); } });
+    };
+    context.pages().forEach(watchPage);
+    context.on('page', watchPage);
+    context.on('request', on); context.on('requestfinished', finished); context.on('requestfailed', failed);
+    contexts.add(context);
+  };
+  for (const c of browser.contexts()) attach(c);
+  // Every context made from here on, by the runner or by the driver through its guarded browser
+  // (browser.newPage makes its context through newContext too), is watched from its first request.
+  const original = browser.newContext;
+  browser.newContext = async function newContextWatched(...args) {
+    const c = await original.apply(this, args);
+    attach(c);
+    return c;
+  };
+  return {
+    /** Wait (off the clock) until no write set-up's browser sent is still under way. */
+    async settle(timeout) {
+      if (!inflight.size) return;
+      waited += inflight.size;
+      const until = Date.now() + timeout;
+      while (inflight.size && Date.now() < until) await new Promise(r => setTimeout(r, 20));
+    },
+    /** The problem with set-up's writes once its contexts are closed, or null. */
+    problem() {
+      const open = [...inflight.values()];
+      if (open.length) return `set-up's browser left ${open.length} request(s) that change the product unanswered when its contexts closed (${open.slice(0, 3).join(', ')}): the product may carry them out after the clock starts`;
+      if (abandoned.length) return `set-up's browser abandoned ${abandoned.length} request(s) that change the product before they were answered (${abandoned.slice(0, 3).join(', ')}): the product may carry them out after the clock starts`;
+      return null;
+    },
+    get waited() { return waited; },
+    /** Stop watching (the fresh start context is the measured part's, watched by trackRequests). */
+    stop() {
+      watching = false;
+      browser.newContext = original;
+    },
+  };
+}
+
 /** A driver to run: its module file (and variant), as loadDriver describes it. */
 export function isDriverSpec(d) {
   return !!d && typeof d === 'object' && typeof d.file === 'string' && !!d.hooks;
@@ -309,14 +402,21 @@ function trackRequests(context) {
   // Everything else the page still loads (reads, images ...): not waited for, but aborted and
   // recorded when the clock stops (round 7).
   const loading = new Set();
-  const tracker = { inflight, loading, lastEnded: null, afterClock: 0 };
-  const background = r => ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\/bus\//i.test(r.url());
+  // Round 10 (critic p01 r9, plants Q1 and Q2): the writes the measured part's page sent (a method
+  // that is not GET, HEAD or OPTIONS, and not one of the reference's documented reads), with their
+  // address and body, for the saved-state rule: the end state is saved by what the person sent.
+  const sent = [];
+  const tracker = { inflight, loading, sent, lastEnded: null, afterClock: 0 };
+  const background = r => isBackgroundRequest(r);
   const frameOf = r => { try { return r.frame(); } catch { return null; } };
   const postData = r => { try { return r.postData(); } catch { return null; } };
   const on = r => {
     if (background(r)) return;
-    if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: postData(r), navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) inflight.add(r);
-    else loading.add(r);
+    const body = postData(r);
+    if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: body, navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) {
+      inflight.add(r);
+      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
+    } else loading.add(r);
   };
   const off = r => { loading.delete(r); if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
   // A document that is replaced (a reload, a link) abandons its requests: their answers can no
@@ -378,6 +478,19 @@ async function resetClipboard(context) {
     await p.focus('#c');
     await p.keyboard.press('Control+a');
     await p.keyboard.press('Control+c');
+  } finally {
+    await p.close().catch(() => {});
+  }
+}
+
+/** What the browser's clipboard holds: pasted into a scratch page of `context`, which closes again. */
+async function clipboardText(context) {
+  const p = await context.newPage();
+  try {
+    await p.setContent('<textarea id="p"></textarea>');
+    await p.focus('#p');
+    await p.keyboard.press('Control+v');
+    return await p.inputValue('#p');
   } finally {
     await p.close().catch(() => {});
   }
@@ -476,6 +589,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   if (own?.hooks) driver = { ...driver, hooks: own.hooks, ready: own.ready !== undefined ? own.ready : driver.ready };
   const host = DriverHost.forRun();
   const browser = await launch({ headed: opts.headed });
+  // Round 10: every write set-up's browser sends is watched from the first context on.
+  const setUpWrites = watchSetUpBrowser(browser);
   let op;
   let page = null; // the raw page the task is measured on (the fresh one, once the start is set)
   let context = null;
@@ -537,6 +652,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (driver.hooks.signIn) {
       const restart = async () => {
         await device?.collect();
+        // A write the abandoned attempt's page sent is answered before its context closes (round 10).
+        await setUpWrites.settle(timeout);
         await context.close().catch(() => {});
         context = await newContext(browser);
         await device?.attachContext(context);
@@ -555,7 +672,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
     run.set_up_calls_waited = await session.drain(timeout);
-    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session, device }));
+    ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session, device, setUpWrites }));
     if (device) run.device = { passkeys_held: device.held, asked_at_start: device.waiting(page) };
     session.page = guard(page);
     // Passive listeners on the start page (they receive guarded objects, so they can only read).
@@ -656,9 +773,15 @@ export async function execute(task, driver, product, productId, needles, out, op
       const waited = verifyWaited(passes);
       if (waited) throw new ActionOutsideClock(`${waited} (wait for the end state in run(), on the clock)`, 'verifying');
       if (task.saves && run.verification?.verified) {
-        const saved = savedState(task, before?.reads || [], reads[0], reads[1]);
+        const saved = savedState(task, before?.reads || [], reads[0], reads[1], productId);
         run.saved_state = saved.record;
         if (saved.problem) throw new ActionOutsideClock(saved.problem, 'set-up');
+        // Round 10: the measured part sent the change, and entered what its end state gained.
+        const sent = tracker?.sent || [];
+        run.saved_state.writes_sent = [...sent.map(r => { try { return `${r.method} ${new URL(r.url).pathname}`; } catch { return r.method; } }),
+          ...op.steps.filter(x => x.kind === 'request' && x.writes).map(x => x.text.split(' ').slice(0, 2).join(' '))].slice(0, 20);
+        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId });
+        if (measured) throw new ActionOutsideClock(measured, 'set-up');
       }
     } else {
       // Round 9: run() never reports its own end state; a driver without verify() measures nothing.
@@ -813,6 +936,69 @@ export function changedParts(b, a, c) {
 }
 
 /**
+ * Round 10 (critic p01 r9, plant Q1): where a task's end state lives in each product, declared in the
+ * task (`endState`, reviewed with it, never by a driver). Per product:
+ *   reads:  the back-end reads that hold it, as "METHOD /path" with `*` for one path segment (ours:
+ *           "GET /api/identity/users/*"; the reference: "POST /web/dataset/call_kw/res.users/read"),
+ *           each with the parts of its answer that hold it, as the answer's keys from the top with
+ *           list positions left out ("language", "result.lang", "items.displayName"); a part names
+ *           its whole subtree.
+ *   writes: (optional) the requests that save it, in the same form (a browser's request by its
+ *           address, an API request as typed); the measured part must send one of them.
+ * Returns the product's { reads, writes }, or null.
+ */
+export function endStateOf(task, productId) {
+  const e = task?.endState?.[productId];
+  return e && Array.isArray(e.reads) && e.reads.length ? { reads: e.reads, writes: Array.isArray(e.writes) ? e.writes : null } : null;
+}
+
+const REQUEST_PATTERN = /^(GET|POST|PUT|PATCH|DELETE) \/\S*$/;
+
+/** Problems with a task's endState declaration (empty when it is well formed). */
+export function endStateProblems(spec) {
+  const problems = [];
+  for (const [product, e] of Object.entries(spec || {})) {
+    if (!e || typeof e !== 'object' || !Array.isArray(e.reads) || !e.reads.length) { problems.push(`${product}: { reads: [...] } lists the end-state reads`); continue; }
+    for (const k of Object.keys(e)) if (!['reads', 'writes'].includes(k)) problems.push(`${product}: unknown key ${k}`);
+    for (const x of e.reads) {
+      if (!x || typeof x.read !== 'string' || !/^(GET|POST) \/\S*$/.test(x.read)) problems.push(`${product}: read "${x?.read}" is not "GET /path" or "POST /path"`);
+      if (!Array.isArray(x?.parts) || !x.parts.length || x.parts.some(p => typeof p !== 'string' || !/^[A-Za-z_]\w*(\.[A-Za-z_]\w*)*$/.test(p))) problems.push(`${product}: parts of "${x?.read}" must name keys of the answer ("result.lang")`);
+    }
+    if (e.writes !== undefined && (!Array.isArray(e.writes) || !e.writes.length || e.writes.some(w => typeof w !== 'string' || !REQUEST_PATTERN.test(w) || /^GET /.test(w)))) {
+      problems.push(`${product}: writes lists "METHOD /path" patterns of requests that write (not GET)`);
+    }
+  }
+  return problems;
+}
+
+/** Whether "METHOD address" (an address or a path, a query ignored) matches the pattern "METHOD /path" (`*`: one segment). */
+export function matchesRequest(pattern, method, address) {
+  let pathname;
+  try { pathname = new URL(address).pathname; } catch { pathname = String(address).split('?')[0]; }
+  const [m, p] = String(pattern).split(' ');
+  if (m !== String(method).toUpperCase()) return false;
+  const want = p.split('/');
+  const got = String(pathname).split('/');
+  return want.length === got.length && want.every((x, i) => (x === '*' ? got[i] !== '' : x === got[i]));
+}
+
+/** Whether a read (its key: "METHOD address body") is the declared end-state read `spec`. */
+export function isEndStateRead(spec, key) {
+  const [method, url] = String(key).split(' ');
+  return matchesRequest(spec.read, method, url);
+}
+
+/** A changed part of an answer ("result.0.lang") as the keys it names ("result.lang"). */
+const keysOf = part => part.split('.').filter(x => !/^\d+$/.test(x)).join('.');
+
+/** Whether a changed part of an answer lies in one of the declared end-state parts. */
+export function isEndStatePart(spec, part) {
+  if (part === '') return false; // an answer compared whole names no part
+  const k = keysOf(part);
+  return spec.parts.some(p => k === p || k.startsWith(`${p}.`));
+}
+
+/**
  * Round 9 (critic p01 r8): for a task whose end state is saved in the product, the saved state
  * arrived during the measured part. verify()'s back-end reads before the clock and in the two passes
  * after it are compared by what they asked: at least one read must hold a part that answers
@@ -820,9 +1006,15 @@ export function changedParts(b, a, c) {
  * tells the time differs between the passes); for a task that names what the person enters, such a
  * part must hold an entered value that the read did not hold before the clock. Otherwise the end
  * state verify() accepted was there before the clock (set-up did the task), or verify() never read it.
- * Returns { problem, record }.
+ *
+ * Round 10 (critic p01 r9, plant Q1: set-up approved, run() bumped an unrelated version, verify()
+ * keyed on the version; on the real api-update-user driver a lost task was recorded as a win): the
+ * read that changed must be the task's declared end state (endState: the read and the parts of its
+ * answer that hold it), and for a task that names what the person enters, the entered value must
+ * arrive in those parts. Any other change (a preference, a version, a counter) proves nothing.
+ * Returns { problem, record, gained_values }.
  */
-export function savedState(task, beforeReads, afterReads, secondReads) {
+export function savedState(task, beforeReads, afterReads, secondReads, productId) {
   const byKey = list => new Map(list.map(r => [r.key, r]));
   const b = byKey(beforeReads);
   const a = byKey(afterReads);
@@ -833,17 +1025,69 @@ export function savedState(task, beforeReads, afterReads, secondReads) {
   const changed = [...parts.keys()];
   const values = enteredValues(task);
   const partText = (r, p) => (p === '' ? answerText(r.text) : r.leaves?.[p] ?? '');
-  const gained = values.length
-    ? changed.filter(k => values.some(v => parts.get(k).some(p => containsValue(partText(a.get(k), p), v)) && !containsValue(answerText(b.get(k).text), v)))
-    : changed;
+  const gainedIn = (k, ps) => values.filter(v => ps.some(p => containsValue(partText(a.get(k), p), v)) && !containsValue(answerText(b.get(k).text), v));
+  const gained = values.length ? changed.filter(k => gainedIn(k, parts.get(k)).length) : changed;
+  // Round 10: the changes in the task's declared end state.
+  const spec = endStateOf(task, productId);
+  const endParts = new Map();
+  for (const k of changed) {
+    const specs = (spec?.reads || []).filter(x => isEndStateRead(x, k));
+    const ps = parts.get(k).filter(p => specs.some(x => isEndStatePart(x, p)));
+    if (ps.length) endParts.set(k, ps);
+  }
+  const gainedValues = [...new Set([...endParts.keys()].flatMap(k => gainedIn(k, endParts.get(k))))];
+  const endChanged = [...endParts.keys()];
   const record = { reads_before: b.size, reads_after: a.size, read_both_times: common.length, read_before: [...b.keys()].map(label), read_after: [...a.keys()].map(label),
     changed: changed.map(label), changed_parts: Object.fromEntries(changed.map(k => [label(k), parts.get(k).slice(0, 8)])),
-    ...(values.length ? { gained_entered_value: gained.map(label) } : {}) };
+    ...(values.length ? { gained_entered_value: gained.map(label) } : {}),
+    end_state: spec ? spec.reads.map(x => `${x.read} [${x.parts.join(', ')}]`) : null,
+    end_state_changed: Object.fromEntries(endChanged.map(k => [label(k), endParts.get(k).slice(0, 8)])),
+    ...(values.length ? { end_state_gained: gainedValues } : {}) };
   let problem = null;
-  if (!a.size) problem = 'verify() read nothing from the back end after the clock: a task whose end state is saved in the product is verified from its back end';
+  const declared = () => spec.reads.map(x => `${x.read} [${x.parts.join(', ')}]`).join('; ');
+  if (!spec) problem = `the task declares no end state for ${productId} (endState in its task file: the back-end read that holds what the task saves, and the parts of the answer that hold it); without it any change verify() reads could pass for the saved state`;
+  else if (!a.size) problem = 'verify() read nothing from the back end after the clock: a task whose end state is saved in the product is verified from its back end';
   else if (!changed.length) problem = `none of verify()'s back-end reads answered differently after the clock than before it, the same in both passes after it (${common.length} read both times): the end state it accepted was already saved before the clock started (set-up did the task), or verify() never read it`;
   else if (!gained.length) problem = `no back-end read of verify() gained a value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; what changed (${changed.map(label).join(', ')}) is not what the person entered, so the entered values were saved before the clock (set-up did the task)`;
-  return { problem, record };
+  else if (!endChanged.length) problem = `the task's end state (${declared()}) did not change during the measured part; what changed (${changed.map(k => `${label(k)} [${parts.get(k).slice(0, 4).join(', ')}]`).join('; ')}) is not where the task saves its end state, so that end state was there before the clock (set-up did the task) or verify() never read it`;
+  else if (values.length && !gainedValues.length) problem = `the task's end state (${declared()}) gained no value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; the entered values reached it before the clock (set-up did the task)`;
+  return { problem, record, gained_values: gainedValues };
+}
+
+/**
+ * Round 10 (critic p01 r9, plants Q1 and Q2): for a task that saves, the measured part itself sent
+ * the change: at least one request that writes to the product (a page's save, an API write), and for
+ * a task that names what the person enters, every entered value its end state gained was entered by
+ * the measured part: typed, picked as a file, or sent in one of its writes or API requests. A value
+ * that arrived without the person entering it was sent off the clock (set-up's slow save, a job set-up
+ * scheduled). `sent`: the page's writes during the clock ({ method, url, body }); `steps`: the
+ * operator's steps; `gained`: the entered values the end state gained (savedState).
+ */
+export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null } = {}) {
+  if (!task.saves) return null;
+  const apiWrites = steps.filter(s => s.kind === 'request' && s.writes);
+  if (!sent.length && !apiWrites.length) {
+    return 'the measured part sent nothing that writes to the product (no save, no API write): the end state verify() found was saved off the clock (set-up\'s browser or back-end calls), not by what the person did';
+  }
+  // The task names the writes that save its end state: the measured part sent one of them.
+  const writes = endStateOf(task, productId)?.writes;
+  if (writes) {
+    const typed = s => { const [m, a] = String(s.text || '').split(' '); return [m, a || '']; };
+    const hit = sent.some(r => writes.some(w => matchesRequest(w, r.method, r.url))) || apiWrites.some(s => writes.some(w => matchesRequest(w, ...typed(s))));
+    if (!hit) {
+      const what = [...sent.map(r => { try { return `${r.method} ${new URL(r.url).pathname}`; } catch { return r.method; } }), ...apiWrites.map(s => typed(s).join(' ').split('?')[0])];
+      return `the measured part sent none of the writes that save the task's end state (${writes.join(', ')}); it sent ${what.slice(0, 4).join(', ')}: the end state was saved off the clock, not by what the person did`;
+    }
+  }
+  if (!gained.length) return null;
+  const decoded = t => { try { return decodeURIComponent(String(t).replace(/\+/g, ' ')); } catch { return String(t); } };
+  const typed = steps.filter(s => s.kind === 'type').map(s => String(s.text ?? ''));
+  const texts = [typed.join(''), typed.join('\n'), ...steps.filter(s => s.kind === 'file-pick').map(s => String(s.file ?? '')),
+    ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? '')),
+    ...sent.flatMap(r => [String(r.url ?? ''), decoded(r.url ?? ''), String(r.body ?? ''), decoded(r.body ?? '')])];
+  const missing = gained.filter(v => !texts.some(t => containsValue(t, v)));
+  if (missing.length) return `the end state gained ${missing.map(v => `"${v}"`).join(', ')}, which the measured part never entered (typed, picked or sent): it was sent off the clock`;
+  return null;
 }
 
 /** Pointer steps (round 9: a keyboard-only task fails on one; the harness judges it, not verify()). */
@@ -920,7 +1164,7 @@ export function startKind(task) {
  * (cookies; local storage too for a signed-out start); wait until the product is ready and quiet; check and record the
  * start state. Returns the fresh { context, page }.
  */
-async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}, { hook, session, device = null }) {
+async function freshStart(task, kind, driver, product, productId, browser, oldContext, oldPage, run, timeout, needles = {}, { hook, session, device = null, setUpWrites = null }) {
   const endedOn = oldPage.url();
   let url = null;
   if (kind === 'home' || kind === 'sign-in') url = startUrl(product, kind, task);
@@ -940,9 +1184,22 @@ async function freshStart(task, kind, driver, product, productId, browser, oldCo
   const others = browser.contexts().filter(c => c !== oldContext);
   // The passkey device is the person's, not the browser's: what set-up made on it stays on it.
   await device?.collect();
+  // Round 10 (critic p01 r9, plant Q2): a write set-up's browser sent is answered before its context
+  // closes, so it lands before the clock (and "already done before the clock" sees it); one still
+  // unanswered, or abandoned by the browser, may land inside the measured part: the run is refused.
+  if (setUpWrites) await setUpWrites.settle(timeout);
   await Promise.all([oldContext, ...others].map(c => c.close().catch(() => {})));
+  if (setUpWrites) {
+    run.set_up_writes_waited = setUpWrites.waited;
+    const problem = setUpWrites.problem();
+    setUpWrites.stop();
+    if (problem) throw new ActionOutsideClock(problem, 'set-up');
+  }
   const context = await newContext(browser, { storageState });
   await resetClipboard(context);
+  // Round 10 (critic p01 r9, X16): the clipboard is read back; text set-up copied must be gone.
+  const left = await clipboardText(context);
+  if (left.trim()) throw new ActionOutsideClock(`the clipboard still holds ${left.length} character(s) set-up copied when the start opens: it was not emptied`, 'set-up');
   await device?.attachContext(context);
   const page = await context.newPage();
   await device?.attachPage(page);

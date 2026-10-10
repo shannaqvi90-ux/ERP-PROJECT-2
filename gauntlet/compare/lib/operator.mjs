@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { continues, keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
 import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskTargets, neutraliseDocument } from './blind.mjs';
-import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, rawFetch, rethrowSentinel, unwrap } from './guard.mjs';
+import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, isWrite, rawFetch, rethrowSentinel, unwrap } from './guard.mjs';
 import { PageWorld } from './page-script.mjs';
 
 const clock = claimClock();
@@ -458,7 +458,9 @@ export class Operator {
     if (send.read) ({ status, body: parsed } = send.read(res.status, parsed));
     const took = this.now() - t;
     this.#waits.push({ label: `response ${verb} ${urlPath}`, at: round(t), seconds: round(took) });
-    const step = this.#record('request', label || `${verb} ${urlPath}`, keystrokesForText(typed) + 1, t, { text: typed, status, response: text.slice(0, 400) });
+    // Round 10: whether the request as sent writes to the product (the saved-state rule needs one).
+    const writes = isWrite(send.init?.method || verb, send.url, 'fetch', typeof send.init?.body === 'string' ? send.init.body : null);
+    const step = this.#record('request', label || `${verb} ${urlPath}`, keystrokesForText(typed) + 1, t, { text: typed, status, writes, response: text.slice(0, 400) });
     if (!expect.includes(status)) throw new Error(`${verb} ${urlPath}: HTTP ${status} ${text.slice(0, 300)}`);
     return { status, body: parsed, step };
   }

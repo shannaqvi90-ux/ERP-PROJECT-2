@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { execute, layout, compareRuns, containsValue, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
+import { execute, layout, compareRuns, containsValue, endStateProblems, measuredPartProblem, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
 import { sandboxed, sandboxedSource } from './helpers/driver-module.mjs';
 import { readRecord } from '../lib/sandbox/bridge.mjs';
 import { DRIVERS_DIR } from '../lib/registry.mjs';
@@ -58,8 +58,12 @@ after(() => { server?.close(); fs.rmSync(tmp, { recursive: true, force: true });
 
 const TASK = { id: 'plant', title: 'Plant', startAt: 'list', moments: [], input: {} };
 // The same task, declared as the product's back end holding its end state, and naming what the person enters.
-const SAVES = { ...TASK, saves: true };
-const ENTERS = { ...TASK, saves: true, input: { value: 'abcdefghij' }, enters: ['value'] };
+// Round 10: a task that saves declares its end state (the back-end read and the part that holds it).
+const STATE = { ours: { reads: [{ read: 'GET /api/state', parts: ['saved'] }] } };
+const SAVES = { ...TASK, saves: true, endState: STATE };
+const ENTERS = { ...TASK, saves: true, input: { value: 'abcdefghij' }, enters: ['value'], endState: STATE };
+/** The same task with its end state declared at another read (the record-only checks below). */
+const at = (task, read, parts) => ({ ...task, endState: { ours: { reads: [{ read, parts }] } } });
 const standIn = () => ({ id: 'ours', baseUrl: base, users: {}, brandWords: [], readyKind: 'default' });
 const out = () => layout(path.join(tmp, String(Math.random()).slice(2)));
 const runDriver = async (driver, task = TASK) => execute(task, await sandboxed(driver, { base }), standIn(), 'ours', {}, out(), { timeout: 10_000 });
@@ -326,27 +330,93 @@ test('saved state: the honest path of a task that saves what the person enters v
 
 test('saved state: the rule judged on records alone (changed and stable, gained an entered value, nothing read)', () => {
   const rec = (key, text) => readRecord('GET', `http://x${key}`, '', 200, Buffer.from(text));
-  const t = ENTERS;
-  assert.equal(savedState(t, [rec('/s', '{"saved":null}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, null);
-  assert.match(savedState(t, [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, /answered differently/);
-  assert.match(savedState(t, [], [], []).problem, /read nothing/);
+  const t = at(ENTERS, 'GET /s', ['saved']);
+  const ss = (task, b, a, c) => savedState(task, b, a, c, 'ours');
+  assert.equal(ss(t, [rec('/s', '{"saved":null}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, null);
+  assert.match(ss(t, [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')], [rec('/s', '{"saved":"abcdefghij"}')]).problem, /answered differently/);
+  assert.match(ss(t, [], [], []).problem, /read nothing/);
   // A read that differs between the two passes after the clock is a clock, not a saved state.
-  assert.match(savedState(SAVES, [rec('/n', '1')], [rec('/n', '2')], [rec('/n', '3')]).problem, /answered differently/);
+  assert.match(ss(at(SAVES, 'GET /n', ['n']), [rec('/n', '1')], [rec('/n', '2')], [rec('/n', '3')]).problem, /answered differently/);
   // Read only after the clock: never compared, so never a change.
-  assert.match(savedState(SAVES, [], [rec('/s', 'a')], [rec('/s', 'a')]).problem, /answered differently/);
+  assert.match(ss(at(SAVES, 'GET /s', ['saved']), [], [rec('/s', 'a')], [rec('/s', 'a')]).problem, /answered differently/);
   // Changed, but what the person enters was there before.
-  assert.match(savedState(t, [rec('/v', '1'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')]).problem, /gained a value/);
+  assert.match(ss(t, [rec('/v', '1'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')], [rec('/v', '2'), rec('/s', 'abcdefghij')]).problem, /gained a value/);
   // A JSON answer is compared part by part: a token that changes with every answer is no saved
   // state; the user the session names is (round 9: Odoo's session information carries such a token).
   const session = (uid, token) => JSON.stringify({ result: { uid, token, lang: 'en_US' } });
-  const ok = savedState(SAVES, [rec('/session', '{"error":{"message":"Session Expired","timestamp":1}}')], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]);
+  const st = at(SAVES, 'GET /session', ['result.uid']);
+  const ok = ss(st, [rec('/session', '{"error":{"message":"Session Expired","timestamp":1}}')], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]);
   assert.equal(ok.problem, null);
   assert.deepEqual(ok.record.changed_parts['GET /session'].sort(), ['error.message', 'error.timestamp', 'result.lang', 'result.uid'].sort());
+  assert.deepEqual(ok.record.end_state_changed, { 'GET /session': ['result.uid'] });
   // Only the token changed (and differently in each pass): nothing saved.
-  assert.match(savedState(SAVES, [rec('/session', session(7, 'x0'))], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]).problem, /answered differently/);
+  assert.match(ss(st, [rec('/session', session(7, 'x0'))], [rec('/session', session(7, 'a1'))], [rec('/session', session(7, 'b2'))]).problem, /answered differently/);
   // The entered value must arrive in a part that changed.
   const contact = phone => JSON.stringify({ result: [{ id: 5, phone, write_date: phone ? '2026-10-09 10:00:01' : '2026-10-09 10:00:00' }] });
-  assert.equal(savedState(ENTERS, [rec('/c', contact('+971 4 000'))], [rec('/c', contact('abcdefghij'))], [rec('/c', contact('abcdefghij'))]).problem, null);
+  const ct = at(ENTERS, 'GET /c', ['result.phone']);
+  const contactOk = ss(ct, [rec('/c', contact('+971 4 000'))], [rec('/c', contact('abcdefghij'))], [rec('/c', contact('abcdefghij'))]);
+  assert.equal(contactOk.problem, null);
+  assert.deepEqual(contactOk.gained_values, ['abcdefghij']);
+});
+
+// Round 10 (critic p01 r9, plant Q1): only a change in the task's declared end state counts.
+test('saved state (round 10): only a change in the declared end state (its read, its parts) counts, and an entered value must arrive there', () => {
+  const rec = (key, text) => readRecord('GET', `http://x${key}`, '', 200, Buffer.from(text));
+  const ss = (task, b, a, c, product = 'ours') => savedState(task, b, a, c, product);
+  const approval = (approved, touched = 0) => JSON.stringify({ approved, touched });
+  const task = at(SAVES, 'GET /api/approval', ['approved']);
+  // The honest change.
+  assert.equal(ss(task, [rec('/api/approval', approval(false))], [rec('/api/approval', approval(true))], [rec('/api/approval', approval(true))]).problem, null);
+  // Q1: the end state was there before the clock; only a version elsewhere moved.
+  const q1 = ss(task, [rec('/api/version', '{"version":1}'), rec('/api/approval', approval(true))], [rec('/api/version', '{"version":2}'), rec('/api/approval', approval(true))], [rec('/api/version', '{"version":2}'), rec('/api/approval', approval(true))]);
+  assert.match(q1.problem, /end state \(GET \/api\/approval \[approved\]\) did not change/);
+  assert.deepEqual(q1.record.changed, ['GET /api/version']);
+  // Q1b: the end-state read changed, but in a part that does not hold the end state.
+  assert.match(ss(task, [rec('/api/approval', approval(true, 0))], [rec('/api/approval', approval(true, 1))], [rec('/api/approval', approval(true, 1))]).problem, /did not change/);
+  // The end-state read with a path segment for the record: `*` is one segment, never more or none.
+  const users = at(SAVES, 'GET /api/identity/users/*', ['language']);
+  const user = l => JSON.stringify({ id: 'u1', language: l, version: l === 'ar' ? 2 : 1 });
+  assert.equal(ss(users, [rec('/api/identity/users/u1', user('en'))], [rec('/api/identity/users/u1', user('ar'))], [rec('/api/identity/users/u1', user('ar'))]).problem, null);
+  assert.match(ss(users, [rec('/api/identity/users/u1/x', user('en'))], [rec('/api/identity/users/u1/x', user('ar'))], [rec('/api/identity/users/u1/x', user('ar'))]).problem, /did not change/);
+  // A task that declares no end state for the product is refused.
+  assert.match(ss(task, [rec('/api/approval', approval(false))], [rec('/api/approval', approval(true))], [rec('/api/approval', approval(true))], 'odoo').problem, /declares no end state for odoo/);
+  assert.match(ss({ ...SAVES, endState: undefined }, [], [], []).problem, /declares no end state for ours/);
+  // An entered value that changed only outside the end state's parts.
+  const entered = at(ENTERS, 'GET /api/record', ['phone']);
+  const record = (phone, note) => JSON.stringify({ phone, note });
+  assert.match(ss(entered, [rec('/api/record', record('+971', 'x'))], [rec('/api/record', record('+972', 'abcdefghij'))], [rec('/api/record', record('+972', 'abcdefghij'))]).problem, /end state \(GET \/api\/record \[phone\]\) gained no value/);
+  // Declarations are checked: reads with parts, writes as "METHOD /path" that are not reads.
+  assert.deepEqual(endStateProblems({ ours: { reads: [{ read: 'GET /a/*', parts: ['x.y'] }], writes: ['PUT /a/*'] } }), []);
+  assert.equal(endStateProblems({ ours: { reads: [] } }).length, 1);
+  assert.equal(endStateProblems({ ours: { reads: [{ read: 'GET a', parts: ['x'] }] } }).length, 1);
+  assert.equal(endStateProblems({ ours: { reads: [{ read: 'GET /a', parts: [] }] } }).length, 1);
+  assert.equal(endStateProblems({ ours: { reads: [{ read: 'GET /a', parts: ['x'] }], writes: ['GET /a'] } }).length, 1);
+  assert.equal(endStateProblems({ ours: { reads: [{ read: 'GET /a', parts: ['x'] }], other: 1 } }).length, 1);
+});
+
+// Round 10 (critic p01 r9, plants Q1 and Q2): the measured part itself sent the change.
+test('measured part (round 10): a task that saves needs a write sent by the measured part, one of its declared writes, and every entered value its end state gained entered by it', () => {
+  const t = { ...ENTERS, endState: { ours: { reads: [{ read: 'GET /api/state', parts: ['saved'] }], writes: ['POST /api/save'] } } };
+  const type = text => ({ kind: 'type', text });
+  const key = chord => ({ kind: 'key', chord });
+  const write = (url, body = null) => ({ method: 'POST', url: `http://x${url}`, body });
+  assert.equal(measuredPartProblem(TASK, {}), null, 'a task that does not save');
+  // Nothing written (Q2: a key and a wait).
+  assert.match(measuredPartProblem(t, { steps: [key('Escape')], sent: [], gained: ['abcdefghij'], productId: 'ours' }), /sent nothing that writes/);
+  // A write, but not the one that saves the end state (Q1: a version bumped).
+  assert.match(measuredPartProblem(t, { steps: [{ kind: 'click' }], sent: [write('/api/mark')], gained: [], productId: 'ours' }), /none of the writes that save the task's end state \(POST \/api\/save\); it sent POST \/api\/mark/);
+  // The declared write, but the value it saved was never entered (set-up's slow save landed instead).
+  assert.match(measuredPartProblem(t, { steps: [{ kind: 'click' }], sent: [write('/api/save', 'zzz')], gained: ['abcdefghij'], productId: 'ours' }), /gained "abcdefghij", which the measured part never entered/);
+  // Typed (in two pieces), picked, sent in a write's body or address (form-encoded too), or typed into an API request.
+  assert.equal(measuredPartProblem(t, { steps: [type('abcde'), type('fghij')], sent: [write('/api/save')], gained: ['abcdefghij'], productId: 'ours' }), null);
+  assert.equal(measuredPartProblem(t, { steps: [], sent: [write('/api/save', 'v=abcde%2Ffghij')], gained: ['abcde/fghij'], productId: 'ours' }), null);
+  assert.equal(measuredPartProblem({ ...t, endState: { ours: { reads: t.endState.ours.reads, writes: ['PUT /api/users/*'] } } },
+    { steps: [{ kind: 'request', writes: true, text: 'PUT /api/users/u1 {"language":"abcdefghij"}' }], sent: [], gained: ['abcdefghij'], productId: 'ours' }), null);
+  assert.equal(measuredPartProblem(t, { steps: [{ kind: 'file-pick', file: 'abcdefghij.pdf' }], sent: [write('/api/save')], gained: ['abcdefghij.pdf'], productId: 'ours' }), null);
+  // An API read is no write.
+  assert.match(measuredPartProblem(t, { steps: [{ kind: 'request', writes: false, text: 'GET /api/state' }], sent: [], gained: [], productId: 'ours' }), /sent nothing that writes/);
+  // No declared writes: any write will do (the end-state read still has to change).
+  assert.equal(measuredPartProblem(SAVES, { steps: [{ kind: 'click' }], sent: [write('/api/anything')], gained: [], productId: 'ours' }), null);
 });
 
 test('entered values are found as a person would have entered them, never inside a longer word or number', () => {

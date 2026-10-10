@@ -6,6 +6,13 @@ export default {
   actor: 'an ordinary internal user with an e-mail sign-in',
   startAt: 'sign-in',
   saves: true,
+  // Where the saved end state lives in each product (round 10): the back-end reads verify() takes it
+  // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
+  // writes that save it (the measured part must send one of them).
+  endState: {
+    odoo: { reads: [{ read: 'POST /web/session/get_session_info', parts: ['result.uid'] }] },
+    ours: { reads: [{ read: 'GET /api/auth/session', parts: ['authenticated', 'user.id'] }] },
+  },
   moments: [],
   start: 'Signed out, on the product\'s sign-in screen (the address the user keeps bookmarked).',
   goal: 'Sign in as {user} with the password {password}.',
