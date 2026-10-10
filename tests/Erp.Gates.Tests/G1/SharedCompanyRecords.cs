@@ -282,7 +282,7 @@ public static partial class SharedCompanyRecords
     }
 
     /// <summary>The read's JSON object, or null (not found, refused, or not JSON: an image, a file).</summary>
-    private static async Task<JsonObject?> ReadJsonAsync(HttpClient client, string path)
+    internal static async Task<JsonObject?> ReadJsonAsync(HttpClient client, string path)
     {
         using var answer = await client.GetAsync(path);
         if (answer.StatusCode != HttpStatusCode.OK || answer.Content.Headers.ContentType?.MediaType?.EndsWith("json", StringComparison.Ordinal) != true)
@@ -301,7 +301,7 @@ public static partial class SharedCompanyRecords
 
     /// <summary>The request body as the read answers it: every documented field the read carries,
     /// a valid value for the rest.</summary>
-    private static JsonObject Template(OpenApiDocument openApi, JsonElement schema, JsonObject read, ErpTestEnvironment env, string tag, string company)
+    internal static JsonObject Template(OpenApiDocument openApi, JsonElement schema, JsonObject read, ErpTestEnvironment env, string tag, string company)
     {
         var body = G1WriteOracle.Valid(openApi, schema, env, tag, company);
         foreach (var (name, _) in body.ToList())
@@ -318,7 +318,7 @@ public static partial class SharedCompanyRecords
     /// changed this way: a switch flips, a number moves by one, a choice takes another choice, a
     /// patterned text (a code, a tax number, a phone) gets another value of the same shape, and a
     /// free text gets a suffix. With a schema, it only says whether the field is changeable.</summary>
-    private static JsonNode? Change(OpenApiDocument? openApi, JsonElement leaf, JsonNode? value)
+    internal static JsonNode? Change(OpenApiDocument? openApi, JsonElement leaf, JsonNode? value)
     {
         if (openApi is not null)
         {
@@ -377,7 +377,7 @@ public static partial class SharedCompanyRecords
         ["monday", "sunday", "saturday"],
     ];
 
-    private static string? ProblemCode(string text)
+    internal static string? ProblemCode(string text)
     {
         try
         {
