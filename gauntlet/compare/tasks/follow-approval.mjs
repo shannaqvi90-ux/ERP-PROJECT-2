@@ -9,7 +9,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/purchase.order/read', parts: ['result.state'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/purchase.order/read', parts: ['result.state'] }], writes: ['POST /web/dataset/call_button/purchase.order/button_approve'] },
   },
   moments: ['orders waiting for approval'],
   start: 'Signed in as the approver, on the screen the product shows right after sign-in. A buyer has just submitted a document above the approval limit (AED 7,500 against a limit of AED 5,000).',

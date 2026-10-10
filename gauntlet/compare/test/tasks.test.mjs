@@ -151,6 +151,7 @@ test('every task that saves declares its end state (the read and the parts that 
       const d = await loadDriver(p, t.id);
       if (d.built === false) continue;
       assert.ok(endStateOf(t, p), `${t.id}: the ${p} driver is built, so the task declares its end state for ${p} (endState.${p})`);
+      assert.ok(endStateOf(t, p).writes, `${t.id}: the ${p} driver is built, so the task names the writes that save its end state (endState.${p}.writes)`);
       declared++;
     }
   }

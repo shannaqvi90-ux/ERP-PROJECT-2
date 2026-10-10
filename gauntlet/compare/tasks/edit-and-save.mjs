@@ -10,7 +10,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/read', parts: ['result.phone'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/read', parts: ['result.phone'] }], writes: ['POST /web/dataset/call_kw/res.partner/web_save'] },
     ours: { reads: [{ read: 'GET /api/tenancy/companies/*', parts: ['phone'] }], writes: ['PUT /api/tenancy/companies/*'] },
   },
   enters: ['phone'],

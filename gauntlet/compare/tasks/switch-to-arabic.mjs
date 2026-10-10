@@ -9,7 +9,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }], writes: ['POST /web/dataset/call_kw/res.users/web_save', 'POST /web/dataset/call_button/res.users/preference_save'] },
     ours: { reads: [{ read: 'GET /api/auth/session', parts: ['user.language'] }], writes: ['PUT /api/identity/me/preferences'] },
   },
   moments: [],

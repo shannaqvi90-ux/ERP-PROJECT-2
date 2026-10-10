@@ -9,7 +9,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/search_count', parts: ['result'] }] },
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/search_count', parts: ['result'] }], writes: ['POST /web/dataset/call_kw/base_import.import/execute_import'] },
   },
   moments: ['columns matched'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',

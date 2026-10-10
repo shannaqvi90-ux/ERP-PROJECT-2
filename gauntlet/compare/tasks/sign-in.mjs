@@ -10,7 +10,7 @@ export default {
   // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
   // writes that save it (the measured part must send one of them).
   endState: {
-    odoo: { reads: [{ read: 'POST /web/session/get_session_info', parts: ['result.uid'] }] },
+    odoo: { reads: [{ read: 'POST /web/session/get_session_info', parts: ['result.uid'] }], writes: ['POST /web/login'] },
     ours: { reads: [{ read: 'GET /api/auth/session', parts: ['authenticated', 'user.id'] }], writes: ['POST /api/auth/sign-in'] },
   },
   moments: [],
