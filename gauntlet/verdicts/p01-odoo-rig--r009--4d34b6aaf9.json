@@ -1,0 +1,280 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 9,
+  "commit": "4d34b6aaf982df30fa9c7ef60880e7d947507e99",
+  "judged_at": "2026-10-10T00:06:37Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 9",
+  "evidence_staging": "/home/shan/evidence-staging/p01-odoo-rig/r9",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r9",
+  "hard_gates": [
+    {
+      "gate": "Instrument integrity: the harness catches faults planted in the measuring instrument (this piece's surface)",
+      "status": "fail",
+      "evidence": "Stand-in plants are in plants/zz-critic-r9.test.mjs, log plants/critic-r9-plants.log. Both controls hold: C1, the honest approval, verifies; C2, an honest verify() after set-up approved, is refused as 'already done before the clock'. Two plants are MISSED.\n- Q1: the task saves but names nothing entered. Set-up approves through the API. run() clicks an unrelated button that bumps a version in the back end. verify() passes only when the version moved and the approval is there. Result: verified, 1 step, 0 keys, 0.058 s, and the comparison against an honest path says 'win'. saved_state.changed is ['GET /api/version'].\n- Q2: set-up types the value and clicks Save in its own browser, and the product takes 3 s to save. The runner closes the set-up context without waiting for the browser's request; the server finishes the save after the clock starts. run() presses Escape and waits. Result: verified, 1 step, 1 key; gained_entered_value is ['GET /api/state'].\nOn a real driver (plants/plant-Q1-api-update-user.diff, log plants/real-driver-plant-Q1-api-update-user-both.log): api-update-user, a LOSS unplanted, is recorded as ours 1 step / 84 keys / 25.27 s against Odoo 2 / 184 / 54.62 s, 'verdict win'. drivers-lint, tasks and baselines stay green with the plant (32/32). Two more code mutations are missed by the whole 347-test suite (plants/critic-r9-mutations-fullsuite.log): X12, set-up's local storage carried into a signed-in start, and X16, the clipboard not emptied at the start. 14 of my 18 mutations were caught (plants/critic-r9-mutations.log): timer, KLM, Shift, paste, control characters, title, favicon, file times, the rig bar, swallowed refusals, POST-as-read settle, drain, unfair start, failed reference run and the moments check."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests; one command: running seeded demo)",
+      "status": "pass",
+      "evidence": "Fresh clone at 4d34b6a, ERP_PROJECT=c-p01-odoo-rig-r9, ports 20150/20151/20160/20161, run through verify-slot.sh. The slot was taken at 22:35:03Z after a 2,580 s wait, and './erp verify passed in 4304 s' (verify.log, verify.exit rc=0). Processor time was 10,089 s against the 10,500 s maximum. The wall time was not judged because the machine was busy (load 12.6 at the start). The instrument mutations passed 41 of 41, and the built-ours-driver health check verified 11 of 11. './erp up' with ERP_SEED_USERS_CSV returned rc=0 in 127 s (up-shared-dataset.log)."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 gate test passed in ./erp verify (dotnet 541/541, plus the self-http, self-company and self-noninterference processes).\n- HTTP (attack/http-attack.py, attack/http-attack.out): signed in as the alnoor admin with gulfsteel's user, role, company, branch and tenant ids, I sent 1,016 requests over all 112 documented operations. They covered ids in paths, report and export parameters (company=B with csv/xlsx/pdf), search, tenantId, and three tenant-switch headers. Result: 0 leaks and 0 writes on B ids accepted; sanity probes return 404 for B ids.\n- Database (db-attack.txt): all 17 tables with tenant_id have RLS enabled and forced, and erp_app is neither superuser nor BYPASSRLS. With no tenant context it sees 0 rows everywhere. As tenant A it sees 100,005 users, 0 of them B's. An UPDATE on B's rows touches 0 rows, and an INSERT with B's tenant_id violates the policy."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 gate test and the on-screen permission plant self-tests (identity, tenancy, forms, client isolation) passed in ./erp verify. p01 adds no product endpoint."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All pass in ./erp verify and the ratchet check passed. The string check covered 705 keys in English and Arabic and 70 plural messages, and the accessibility check 1,054 JSX elements. Counts: dotnet 541 (min 541), web unit 373 (373), e2e 85 (85), compare 352 (352), instrument mutations 41. None fell below round 8 (484/356/77/315, 20 mutations)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r9 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ERP_VERIFY_LOG=<staging>/verify.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1351,
+    "passed": 1351,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4304
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4304,
+    "evidence": "./erp verify returned rc=0 in 4304 s, timed from 'slot taken'. It ran 1,351 tests, the 41 instrument mutations (all caught), the 11 built-driver health checks and the ratchet; processor time was 10,089 s of the 10,500 s maximum. ./erp up with the shared dataset returned rc=0 in 127 s. The private Odoo rig (ODOO_REF_PROJECT=c-p01-odoo-rig-r9-odoo ODOO_REF_PORT=20152 tools/odoo-reference/up.sh) returned rc=0 from empty in 240 s, then 23 s on a second run with the same counts. All 7 main lists hold at least 100,000 rows, job runs stay at the bar until 2026-10-16, and Arabic is active (rig-up-first.log, rig-up-second.log, private-rig-volume-check.json)."
+  },
+  "odoo": [
+    {
+      "task": "api-update-user (p15)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 249,
+        "seconds": 0.036,
+        "klm_seconds": 72.82
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 184,
+        "seconds": 0.415,
+        "klm_seconds": 54.62
+      },
+      "notes": "Command: node run.mjs --task built --product both --repeat 3, against my demo (shared dataset) and the shared rig, which the harness checked at the bar. LOSS: steps tie, and keystrokes and human seconds lose. With my plant Q1 the harness records this task as a WIN (1/84/25.27 s)."
+    },
+    {
+      "task": "edit-and-save (p06)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 19,
+        "seconds": 0.141,
+        "klm_seconds": 9.72
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 19,
+        "seconds": 0.241,
+        "klm_seconds": 10.28
+      },
+      "notes": "LOSS: keystrokes tie at 19-19, and a tie is a loss. Ours wins every other metric. Shots 02 and 03."
+    },
+    {
+      "task": "find-user (p03)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 21,
+        "seconds": 0.795,
+        "klm_seconds": 10.28
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 2.599,
+        "klm_seconds": 10.35
+      },
+      "notes": "LOSS on keystrokes, 21 vs 5. The reference now has its shortest-piece paths, 5 keys on its best path per metric. Ours wins steps, machine seconds and human seconds (by 0.07 s)."
+    },
+    {
+      "task": "sign-in (p00)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.1,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 1.5,
+        "klm_seconds": 4.68
+      },
+      "notes": "WIN on ours' passkey path. Keystrokes are left out because both are exactly 0; Odoo has a passkey path too."
+    },
+    {
+      "task": "create-restricted-user (named; p03)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 0.582,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 4.91,
+        "klm_seconds": 30.05
+      },
+      "notes": "Ours wins every metric."
+    },
+    {
+      "task": "switch-to-arabic (named; p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.137,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 2.94,
+        "klm_seconds": 15.28
+      },
+      "notes": "Ours wins every metric."
+    },
+    {
+      "task": "reach-screen-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 3,
+        "seconds": 0.211,
+        "klm_seconds": 3.94
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 1.065,
+        "klm_seconds": 3.99
+      },
+      "notes": "Ours wins every metric, but human seconds only by 0.05 s."
+    },
+    {
+      "task": "create-company-branch (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.427,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 3.119,
+        "klm_seconds": 48.53
+      },
+      "notes": "Ours wins every metric."
+    },
+    {
+      "task": "switch-company (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.109,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.692,
+        "klm_seconds": 5.3
+      },
+      "notes": "WIN; keystrokes are left out because both are exactly 0."
+    },
+    {
+      "task": "arabic-report (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.11,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 3.957,
+        "klm_seconds": 15.9
+      },
+      "notes": "WIN; keystrokes are left out because both are exactly 0."
+    },
+    {
+      "task": "print-list-arabic (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 13,
+        "seconds": 0.862,
+        "klm_seconds": 11.09
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 32,
+        "seconds": 10.28,
+        "klm_seconds": 19.06
+      },
+      "notes": "Ours wins every metric."
+    },
+    {
+      "task": "find-record, custom-field-filter, import-5000, follow-approval, add-rate, attach-file, configure-sequence, export-filtered-list, keyboard-navigation, see-and-rerun-job, who-changed-field",
+      "winner": "not-compared",
+      "ours": null,
+      "odoo": null,
+      "notes": "These ours drivers are still 'not built yet' stubs, which p01 allows (later pieces fill them in)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r9/01-blind-review-top.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r9/02-blind-edit-and-save-done-x.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r9/03-blind-edit-and-save-done-y.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r9/04-plant-q1-api-review.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Set-up can still do a saved task off the clock: a task that names nothing entered accepts any back-end change as proof, and a save sent from set-up's browser lands inside the measured part",
+    "detail": "Round 9 closed the r8 hole only for tasks that name an entered value. Two routes remain.\n\n(1) A task with saves: true and no enters accepts any back-end read that changed during the measured part as the saved state. This covers follow-approval, see-and-rerun-job, import-5000, switch-to-arabic, sign-in and api-update-user. Set-up can do the task, and run() can make one cheap unrelated change, such as a preference or a version. A verify() that gates on that change then answers 'not done' before the clock and 'done' after it. The saved-state rule is satisfied by the unrelated read.\n\n(2) freshStart closes set-up's browser contexts without waiting for requests already sent. A save that set-up's page started lands on the server after the clock starts, and nothing counted caused it. That breaks the README's claim that calls set-up leaves running land before the clock. session.drain covers only fetch, not the browser.\n\nPossible fixes:\n- For a task that saves, require that the measured part itself sent the change. The tracker should see at least one request that changesProduct (or an op.request that is not GET) during the clock.\n- Require that the read which changed is the one that holds the task's end state. Tasks could declare what verify() must read (for example a resource path), or every saves task could name an `enters` or an expected value.\n- Wait for, or refuse, requests still in flight in set-up's browser contexts before closing them. Track them as drain does for fetch.\n- Also pin X12 (set-up's local storage into a signed-in start) and X16 (clipboard reset) with self-tests.\n- Add Q1, Q2 and the real-driver plant as self-tests.",
+    "evidence": "Stand-ins: copy gauntlet/evidence/p01-odoo-rig/r9/plants/zz-critic-r9.test.mjs to gauntlet/compare/test/, then cd gauntlet/compare && npm ci && node --test test/zz-critic-r9.test.mjs. Controls C1 and C2 pass. Q1 and Q2 fail with 'MISSED ... verified with 1 steps' (plants/critic-r9-plants.log).\n\nReal driver:\n1. Start ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up.\n2. Apply plants/plant-Q1-api-update-user.diff to drivers/ours/api-update-user.mjs. The full planted file is plants/plant-Q1-api-update-user.mjs.\n3. Run COMPARE_OURS_URL=http://localhost:<port> node run.mjs --task api-update-user --product both.\nOutput: 'ours verified steps 1 keys 84 ... human 25.27s', 'odoo verified steps 2 keys 184 ... human 54.62s', 'verdict win' (plants/real-driver-plant-Q1-api-update-user-both.log, plants/q1-real/). Unplanted, the same task is a LOSS, 2/249 against 2/184 (compare/comparisons/api-update-user.json). drivers-lint, tasks and baselines stay green with the plant (plants/lint-tasks-baselines-with-Q1-plant.log).\n\nMutations the whole suite misses: plants/critic-r9-mutations-fullsuite.log (X12, X16), script in plants/critic-r9-mutations.mjs."
+  },
+  "other_findings": [
+    "Real-driver proof: the plant turns a lost task into a recorded win. With plant Q1, api-update-user, a LOSS unplanted, is recorded as a WIN on every metric. Until the rule is fixed, every saves-without-enters ours number needs review by hand.",
+    "Defence-in-depth gaps that no self-test pins down, found by mutation against the whole 347-test suite: X12, a signed-in start that keeps set-up's local storage, and X16, no clipboard reset at the start. The paste refusal still stops a paste. 14 of my 18 own mutations were caught. X1 (no settle) is caught only by guard.test plant T2g, not by page-script or operator tests.",
+    "[route: p15] api-update-user still loses: steps tie 2-2, keystrokes 249 vs 184, human seconds 72.82 vs 54.62. PUT still needs the whole record.",
+    "[route: p06-form-report] edit-and-save loses on a keystroke tie, 19 vs 19. Ours wins every other metric.",
+    "[route: p03-identity] find-user is now a LOSS on keystrokes, 21 vs 5. Instrument 7 gave the reference the shortest-piece paths: 'il pi' plus the suggestion is 5 keys. Ours' best path still types 21 keys in the comparison, although the health check on a clean stack verified a 3-key path. Human seconds win only by 0.07 s.",
+    "The shared rig is at the bar right now (shared-rig-volume-check.json). However, its 100,000th newest job run passed Odoo's 7-day vacuum horizon on 2026-10-09T12:52Z, so the next Odoo autovacuum will drop it below 100,000. The run printed the warning. Topping it up is a lead or owner action (needs-human #13). I did not write to the shared rig.",
+    "The rig scope holds. A private rig comes up from empty in 240 s and is idempotent in 23 s. All 7 main lists hold at least 100,000 rows, job runs stay at the bar until 2026-10-16 (round 9's 'within the last day' seeding works), and Arabic is active.",
+    "Blindness: product names, logos, demo company names and codes, and people's names are masked in both products' shots (shots 02 and 03), including the form-field names of round 8. The two UIs remain recognisable by layout, which the bar accepts ('wherever possible'). The fixture names 'Falcon Logistics LLC' are unmasked; they are not product branding.",
+    "Fixed since round 8 and still fixed: plants P1, P1b, P2 and P3-P10 are self-tests, and the M1-M41 mutations are all caught in verify. Round 8's A1, A16, A26, A24 and H10 are now M34-M38, and the form-field mask is M39.",
+    "Verify ran with other agents' load (load 12-30). Processor time was 10,089 s, under the 10,500 s maximum. The wall time of 4,304 s was not judged because the machine was busy.",
+    "CLAUDE.md rules: no isolation leak over HTTP, reports and exports, or the database app role. The harness's only dependencies are playwright-core (Apache-2.0) and acorn (MIT), checked by licences.test. No Odoo code, views or text were found copied: the drivers only operate Odoo's screens."
+  ],
+  "human_gates": [
+    {
+      "gate": "Any new paid service, real credential, deployment, or action outside this repository",
+      "what": "Topping up the shared Odoo reference rig (project odoo-reference, port 8069) is a machine-wide write reserved for the lead or owner (needs-human #13). Its job-run list is past Odoo's vacuum horizon and will fall below 100,000 at the next autovacuum."
+    },
+    {
+      "gate": "Any change to anything under bar/",
+      "what": "Odoo baselines still live in gauntlet/reference/odoo/. Moving them to bar/reference/ needs owner approval (an open item in plan.md)."
+    }
+  ]
+}

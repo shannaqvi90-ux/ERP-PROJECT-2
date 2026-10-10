@@ -1,0 +1,31 @@
+{
+ "requests": 1016,
+ "leaks": 0,
+ "writes_on_b_ids_accepted": 0,
+ "b_ids": {
+  "users": [
+   "018cd9b6-6ae0-7881-8dd4-13f2929cdaf5",
+   "018cd84f-87e0-76e0-9f06-146de82cacb1",
+   "018cd849-1f40-76df-b568-af5309fe7bb3"
+  ],
+  "roles": [
+   "01a122e5-0d71-760c-82a5-d5732762c4de",
+   "01a122e5-0f9f-7692-9383-29e5453b9625",
+   "01a122e5-0d71-7de2-af34-df715f3de25a"
+  ],
+  "companies": [
+   "018f6605-b084-77b2-be73-22168a11bc02",
+   "018f6605-b081-79b8-986d-4fc0938fec82"
+  ],
+  "branches": [
+   "018f6605-b085-7028-8ee2-5712761a3718",
+   "018f6605-b083-7145-8cda-ac7abf1b948c",
+   "018f6605-b082-7326-b3df-a5cc5eccaba6"
+  ]
+ },
+ "b_views": []
+}
+sanity 200 /api/identity/users?search=gulfsteel {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+sanity 404 /api/identity/users/018cd9b6-6ae0-7881-8dd4-13f2929cdaf5 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-9db34877dc4ac6e75b20442efc603aa3-49e90d9d6c4
+sanity 200 /api/tenancy/companies {"items":[{"id":"018dca08-f08c-73ea-9528-cd4bb01bf434","code":"ALN-AUH","legalNameEn":"Al Noor Technical Services LLC","legalNameAr":"النور للخدمات الفنية ذ.م.م
+sanity 404 /api/reports/run/tenancy.companyProfile?company=018f6605-b084-77b2-be73-22168a11bc02 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-64f9ca08b168b7bc3e571a7f4ebab5aa-b27039f9c7e

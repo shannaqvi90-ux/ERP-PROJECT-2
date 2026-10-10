@@ -1,0 +1,959 @@
+{
+  "schema": 1,
+  "run_id": "create-company-branch-20261009T230213-95f2",
+  "instrument": 7,
+  "task": "create-company-branch",
+  "task_title": "Create a company with a branch",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
+  "done_when": "Both are saved; the back end holds the company and the branch under it.",
+  "started_at": "2026-10-09T23:02:13.906Z",
+  "finished_at": "2026-10-09T23:02:31.736Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 12,
+    "keystrokes": 72,
+    "clicks": 8,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 3.119,
+    "system_wait_seconds": 2.053,
+    "human_seconds": 48.53,
+    "human_plus_wait_seconds": 50.583,
+    "klm_operator_counts": {
+      "K": 76,
+      "P": 8,
+      "B": 16,
+      "H": 5,
+      "M": 11
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.046,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "at": 0.048,
+      "took": 0.042,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Users & Companies menu",
+      "keystrokes": 0,
+      "at": 0.413,
+      "took": 0.046,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Companies",
+      "keystrokes": 0,
+      "at": 0.459,
+      "took": 0.062,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "New (hotkey)",
+      "keystrokes": 2,
+      "at": 0.709,
+      "took": 0.018,
+      "chord": "Alt+c",
+      "screen": "/odoo/companies",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "type",
+      "label": "company name",
+      "keystrokes": 25,
+      "at": 0.869,
+      "took": 0.066,
+      "text": "Falcon Logistics LLC",
+      "same_field": false,
+      "screen": "/odoo/companies/new",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Branches tab",
+      "keystrokes": 0,
+      "at": 0.936,
+      "took": 0.07,
+      "screen": "/odoo/companies/new",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Add a line",
+      "keystrokes": 0,
+      "at": 1.006,
+      "took": 0.056,
+      "screen": "/odoo/companies/new",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "focus branch name",
+      "keystrokes": 0,
+      "at": 1.152,
+      "took": 0.219,
+      "screen": "/odoo/companies/new",
+      "chain": false
+    },
+    {
+      "n": 10,
+      "kind": "type",
+      "label": "branch name",
+      "keystrokes": 47,
+      "at": 1.378,
+      "took": 0.106,
+      "text": "Falcon Logistics LLC - Jebel Ali Branch",
+      "same_field": true,
+      "screen": "/odoo/companies/new",
+      "chain": true
+    },
+    {
+      "n": 11,
+      "kind": "click",
+      "label": "Save & Close",
+      "keystrokes": 0,
+      "at": 1.713,
+      "took": 0.064,
+      "screen": "/odoo/companies/new",
+      "chain": false
+    },
+    {
+      "n": 12,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 1.908,
+      "took": 0.011,
+      "chord": "Alt+s",
+      "screen": "/odoo/companies/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Settings loaded",
+      "at": 0.09,
+      "seconds": 0.322
+    },
+    {
+      "label": "company list",
+      "at": 0.521,
+      "seconds": 0.188
+    },
+    {
+      "label": "new company form, name focused",
+      "at": 0.728,
+      "seconds": 0.14
+    },
+    {
+      "label": "branch dialog",
+      "at": 1.063,
+      "seconds": 0.088
+    },
+    {
+      "label": "branch dialog closed",
+      "at": 1.777,
+      "seconds": 0.13
+    },
+    {
+      "label": "saved",
+      "at": 1.919,
+      "seconds": 0.826
+    },
+    {
+      "label": "company saved, client reloaded",
+      "at": 2.746,
+      "seconds": 0.359
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "cf340eed4d8040a0.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/cf340eed4d8040a0.jpg"
+    },
+    {
+      "moment": "branch filled in",
+      "file": "7915b511ea24de45.jpg",
+      "at": 1.485,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/7915b511ea24de45.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "51f52bd931555e4c.jpg",
+      "at": 3.119,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/51f52bd931555e4c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "company": {
+        "id": 168,
+        "name": "Falcon Logistics LLC",
+        "parent_id": false,
+        "child_ids": [
+          169
+        ]
+      },
+      "branch": {
+        "id": 169,
+        "name": "Falcon Logistics LLC - Jebel Ali Branch",
+        "parent_id": [
+          168,
+          "Falcon Logistics LLC"
+        ]
+      }
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > Users & Companies > Companies > Alt+C > name > Branches tab > Add a line > click name > branch name > Save & Close > Alt+S | pointer: Apps menu > Settings > Users & Companies > Companies > New > name > Branches tab > Add a line > click name > branch name > Save & Close > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-company-branch.mjs",
+    "sha256": "9ac07519743ac8aefee93304b73fd1a1157b7182ec3ad88bbbce06c4b40e1426"
+  },
+  "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.017,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.025,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "ddc0c255c253a4d3",
+    "elements": 269
+  },
+  "screen_after_verify": {
+    "sha256": "ddc0c255c253a4d3",
+    "elements": 269,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 2,
+    "requests": 3,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.022
+  },
+  "saved_state": {
+    "reads_before": 2,
+    "reads_after": 2,
+    "read_both_times": 2,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.company/search_read",
+      "POST /web/dataset/call_kw/res.company/search_read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.company/search_read",
+      "POST /web/dataset/call_kw/res.company/search_read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.company/search_read",
+      "POST /web/dataset/call_kw/res.company/search_read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.company/search_read": [
+        "result.0.id",
+        "result.0.name",
+        "result.0.parent_id.0",
+        "result.0.parent_id.1",
+        "result"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/res.company/search_read",
+      "POST /web/dataset/call_kw/res.company/search_read"
+    ]
+  },
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > Users & Companies > Companies > Alt+C > name > Branches tab > Add a line > click name > branch name > Save & Close > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 12,
+        "keystrokes": 76,
+        "clicks": 8,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 3.119,
+        "system_wait_seconds": 2.053,
+        "human_seconds": 48.53,
+        "human_plus_wait_seconds": 50.583,
+        "klm_operator_counts": {
+          "K": 76,
+          "P": 8,
+          "B": 16,
+          "H": 5,
+          "M": 11
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.046,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.048,
+          "took": 0.042,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Users & Companies menu",
+          "keystrokes": 0,
+          "at": 0.413,
+          "took": 0.046,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Companies",
+          "keystrokes": 0,
+          "at": 0.459,
+          "took": 0.062,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.709,
+          "took": 0.018,
+          "chord": "Alt+c",
+          "screen": "/odoo/companies",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 0.869,
+          "took": 0.066,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Branches tab",
+          "keystrokes": 0,
+          "at": 0.936,
+          "took": 0.07,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Add a line",
+          "keystrokes": 0,
+          "at": 1.006,
+          "took": 0.056,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "focus branch name",
+          "keystrokes": 0,
+          "at": 1.152,
+          "took": 0.219,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "type",
+          "label": "branch name",
+          "keystrokes": 47,
+          "at": 1.378,
+          "took": 0.106,
+          "text": "Falcon Logistics LLC - Jebel Ali Branch",
+          "same_field": true,
+          "screen": "/odoo/companies/new",
+          "chain": true
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "Save & Close",
+          "keystrokes": 0,
+          "at": 1.713,
+          "took": 0.064,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 12,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 1.908,
+          "took": 0.011,
+          "chord": "Alt+s",
+          "screen": "/odoo/companies/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.09,
+          "seconds": 0.322
+        },
+        {
+          "label": "company list",
+          "at": 0.521,
+          "seconds": 0.188
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.728,
+          "seconds": 0.14
+        },
+        {
+          "label": "branch dialog",
+          "at": 1.063,
+          "seconds": 0.088
+        },
+        {
+          "label": "branch dialog closed",
+          "at": 1.777,
+          "seconds": 0.13
+        },
+        {
+          "label": "saved",
+          "at": 1.919,
+          "seconds": 0.826
+        },
+        {
+          "label": "company saved, client reloaded",
+          "at": 2.746,
+          "seconds": 0.359
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "company": {
+            "id": 168,
+            "name": "Falcon Logistics LLC",
+            "parent_id": false,
+            "child_ids": [
+              169
+            ]
+          },
+          "branch": {
+            "id": 169,
+            "name": "Falcon Logistics LLC - Jebel Ali Branch",
+            "parent_id": [
+              168,
+              "Falcon Logistics LLC"
+            ]
+          }
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.017,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.025,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "ddc0c255c253a4d3",
+        "elements": 269
+      },
+      "screen_after_verify": {
+        "sha256": "ddc0c255c253a4d3",
+        "elements": 269,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.022
+      },
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.company/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.parent_id.0",
+            "result.0.parent_id.1",
+            "result"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ]
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Users & Companies > Companies > New > name > Branches tab > Add a line > click name > branch name > Save & Close > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 12,
+        "keystrokes": 72,
+        "clicks": 10,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 4.827,
+        "system_wait_seconds": 1.808,
+        "human_seconds": 49.61,
+        "human_plus_wait_seconds": 51.418,
+        "klm_operator_counts": {
+          "K": 72,
+          "P": 10,
+          "B": 20,
+          "H": 4,
+          "M": 11
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.033,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.035,
+          "took": 0.049,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Users & Companies menu",
+          "keystrokes": 0,
+          "at": 0.449,
+          "took": 0.052,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Companies",
+          "keystrokes": 0,
+          "at": 0.501,
+          "took": 0.082,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.778,
+          "took": 0.048,
+          "screen": "/odoo/companies",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 2.929,
+          "took": 0.048,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Branches tab",
+          "keystrokes": 0,
+          "at": 2.978,
+          "took": 0.04,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Add a line",
+          "keystrokes": 0,
+          "at": 3.019,
+          "took": 0.086,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "focus branch name",
+          "keystrokes": 0,
+          "at": 3.17,
+          "took": 0.076,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "type",
+          "label": "branch name",
+          "keystrokes": 47,
+          "at": 3.257,
+          "took": 0.137,
+          "text": "Falcon Logistics LLC - Jebel Ali Branch",
+          "same_field": true,
+          "screen": "/odoo/companies/new",
+          "chain": true
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "Save & Close",
+          "keystrokes": 0,
+          "at": 3.615,
+          "took": 0.083,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        },
+        {
+          "n": 12,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 3.817,
+          "took": 0.041,
+          "screen": "/odoo/companies/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.084,
+          "seconds": 0.364
+        },
+        {
+          "label": "company list",
+          "at": 0.584,
+          "seconds": 0.193
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.826,
+          "seconds": 0.102
+        },
+        {
+          "label": "branch dialog",
+          "at": 3.106,
+          "seconds": 0.064
+        },
+        {
+          "label": "branch dialog closed",
+          "at": 3.698,
+          "seconds": 0.118
+        },
+        {
+          "label": "saved",
+          "at": 3.858,
+          "seconds": 0.833
+        },
+        {
+          "label": "company saved, client reloaded",
+          "at": 4.691,
+          "seconds": 0.134
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "company": {
+            "id": 170,
+            "name": "Falcon Logistics LLC",
+            "parent_id": false,
+            "child_ids": [
+              171
+            ]
+          },
+          "branch": {
+            "id": 171,
+            "name": "Falcon Logistics LLC - Jebel Ali Branch",
+            "parent_id": [
+              170,
+              "Falcon Logistics LLC"
+            ]
+          }
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.017,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.03,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "1b48944fd6f92bee",
+        "elements": 269
+      },
+      "screen_after_verify": {
+        "sha256": "1b48944fd6f92bee",
+        "elements": 269,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 3,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.018
+      },
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.company/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.parent_id.0",
+            "result.0.parent_id.1",
+            "result"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.company/search_read",
+          "POST /web/dataset/call_kw/res.company/search_read"
+        ]
+      }
+    }
+  ]
+}

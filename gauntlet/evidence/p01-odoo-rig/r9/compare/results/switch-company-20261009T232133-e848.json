@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261009T232133-e848",
+  "instrument": 7,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-09T23:21:33.620Z",
+  "finished_at": "2026-10-09T23:21:39.845Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.692,
+    "system_wait_seconds": 0.353,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.653,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "company switcher",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.078,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE",
+      "keystrokes": 0,
+      "at": 0.08,
+      "took": 0.213,
+      "screen": "/odoo/discuss",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.294,
+      "seconds": 0.353
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "5bdb67de67767b4e.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/5bdb67de67767b4e.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "05c26ed60fdb3fcb.jpg",
+      "at": 0.692,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/05c26ed60fdb3fcb.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "switcher": "Demo Manufacturing FZE",
+      "cids": "4-5"
+    }
+  },
+  "path_notes": "Company switcher in the top bar > the company. (Alt+Shift+U opens the switcher too, but then the company must be typed or arrowed to: more steps and keys.)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-company.mjs",
+    "sha256": "2bf49103e7f0ad20456c7a55a21cfc4679e4a80ebf573c6e1a65dc002c7f468d"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.005,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.086
+    }
+  ],
+  "requests_after_clock": 1,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "d21c258b724eb710",
+    "elements": 153
+  },
+  "screen_after_verify": {
+    "sha256": "d21c258b724eb710",
+    "elements": 153,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.089
+  }
+}

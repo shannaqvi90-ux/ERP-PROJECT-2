@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "run_id": "api-update-user-20261009T232349-5f31",
+  "instrument": 7,
+  "task": "api-update-user",
+  "task_title": "Do a screen task through the API: find a user and switch their language",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
+  "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
+  "started_at": "2026-10-09T23:23:49.925Z",
+  "finished_at": "2026-10-09T23:23:54.650Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 84,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 1,
+    "device_confirmations": 0,
+    "machine_seconds": 0.028,
+    "system_wait_seconds": 0.024,
+    "human_seconds": 25.27,
+    "human_plus_wait_seconds": 25.294,
+    "klm_operator_counts": {
+      "K": 84,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "request",
+      "label": "one unrelated request",
+      "keystrokes": 84,
+      "at": 0.001,
+      "took": 0.024,
+      "text": "PUT /api/identity/me/preferences {\"language\":\"en\",\"numerals\":\"latn\"}",
+      "status": 200,
+      "response": "{\"id\":\"01a122e4-7789-7513-9cda-071e3b5191da\",\"email\":\"admin@alnoor.example\",\"displayName\":\"Mariam Al Mansoori\",\"language\":\"en\",\"numerals\":\"latn\",\"displayNameAr\":\"مريم المنصوري\"}",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "response PUT /api/identity/me/preferences",
+      "at": 0.001,
+      "seconds": 0.024
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "918bf23ddc14f2e4.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/blind/shots/918bf23ddc14f2e4.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "a937a31c091cc244.jpg",
+      "at": 0.028,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/blind/shots/a937a31c091cc244.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "id": "019371ad-40c0-7b6b-b04c-56e9845a3f16",
+      "language": "ar",
+      "name": "Majid Anil Pillai"
+    }
+  },
+  "path_notes": "GET /api/identity/users?search=<name> > PUT /api/identity/users/<id> with the record it returned and language \"ar\".",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/api-update-user.mjs",
+    "sha256": "215cdbea892b6b3b4b0d2fa3bbfea1d4fbeef18abee712ef9abb68d9252a35d3"
+  },
+  "task_notes": "Steps are HTTP requests. Keystrokes are each request as typed in the client: method, path and query, compact JSON body, and Enter to send; the sign-in (base address, token) is set up beforehand in both products and not counted. Machine seconds are the round trips. Set-up switches the user to English first; clean-up restores the dataset's language.",
+  "error": null,
+  "start_state": {
+    "kind": "api",
+    "path": null,
+    "fields": 0,
+    "filled": [],
+    "focused": null
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.006,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.052,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.04,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": null,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 2,
+    "requests": 3,
+    "longest_pause_seconds": 0.006,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.1
+  },
+  "saved_state": {
+    "reads_before": 2,
+    "reads_after": 2,
+    "read_both_times": 2,
+    "read_before": [
+      "GET /api/identity/users/019371ad-40c0-7b6b-b04c-56e9845a3f16",
+      "GET /api/auth/session"
+    ],
+    "read_after": [
+      "GET /api/identity/users/019371ad-40c0-7b6b-b04c-56e9845a3f16",
+      "GET /api/auth/session"
+    ],
+    "changed": [
+      "GET /api/auth/session"
+    ],
+    "changed_parts": {
+      "GET /api/auth/session": [
+        "user.numerals"
+      ]
+    }
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "schema": 1,
+  "run_id": "arabic-report-20261009T230102-0087",
+  "instrument": 7,
+  "task": "arabic-report",
+  "task_title": "Print a document in Arabic",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
+  "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
+  "started_at": "2026-10-09T23:01:03.033Z",
+  "finished_at": "2026-10-09T23:01:05.128Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.106,
+    "system_wait_seconds": 0.017,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.317,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.043,
+      "screen": "/tenancy/companies/018dca08-f081-7233-aa04-742724c3e222",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "PDF in Arabic",
+      "keystrokes": 0,
+      "at": 0.049,
+      "took": 0.043,
+      "screen": "/tenancy/companies/018dca08-f081-7233-aa04-742724c3e222",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "print menu",
+      "at": 0.045,
+      "seconds": 0.004
+    },
+    {
+      "label": "file received",
+      "at": 0.092,
+      "seconds": 0.013
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "49bd280073b94407.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/49bd280073b94407.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "bbc85f8cb93056e2.jpg",
+      "at": 0.106,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/bbc85f8cb93056e2.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "ملف الشركة 2026-10-09.pdf",
+      "bytes": 43723,
+      "print_language": "ar",
+      "right_to_left": true,
+      "arabic_words_in_document": 60,
+      "user_language_after": "en",
+      "document": "company profile ALN-DXB"
+    }
+  },
+  "path_notes": "Print > PDF in Arabic. Stand-in document: the company profile (purchase orders arrive with a later piece).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/arabic-report.mjs",
+    "sha256": "de3255169542e2e2a3c858eee5f673f8b7d708b740798eb24f7a9e5e50fe1ec1"
+  },
+  "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/tenancy/companies/018dca08-f081-7233-aa04-742724c3e222",
+    "path": "/tenancy/companies/018dca08-f081-7233-aa04-742724c3e222",
+    "query": "",
+    "fragment": "",
+    "fields": 22,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameEn",
+        "password": false,
+        "value_length": 19,
+        "value": "Al Noor Trading LLC"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameAr",
+        "password": false,
+        "value_length": 24,
+        "value": "شركة النور للتجارة ذ.م.م"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "ALN-DXB"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceNumber",
+        "password": false,
+        "value_length": 10,
+        "value": "DED-604112"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceAuthority",
+        "password": false,
+        "value_length": 39,
+        "value": "Dubai Department of Economy and Tourism"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "taxRegistrationNumber",
+        "password": false,
+        "value_length": 15,
+        "value": "100123456700003"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "baseCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "fiscalYearStartDay",
+        "password": false,
+        "value_length": 1,
+        "value": "1"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 35,
+        "value": "Office 1204, Al Maktoum Road, Deira"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 5,
+        "value": "Dubai"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "11542"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country",
+        "password": false,
+        "value_length": 2,
+        "value": "AE"
+      },
+      {
+        "tag": "textarea",
+        "type": "textarea",
+        "name": "addressAr",
+        "password": false,
+        "value_length": 35,
+        "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone",
+        "password": false,
+        "value_length": 15,
+        "value": "+971 4 221 5500"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 27,
+        "value": "accounts.aln-dxb@example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "url",
+        "name": "website",
+        "password": false,
+        "value_length": 22,
+        "value": "https://www.example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "branchNameEn",
+        "password": false,
+        "value_length": 22,
+        "value": "Al Noor Trading LLC - "
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true,
+      "gap_seconds": 0.072
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "dcf9ac3d7a937d16",
+    "elements": 407
+  },
+  "screen_after_verify": {
+    "sha256": "dcf9ac3d7a937d16",
+    "elements": 407,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  }
+}

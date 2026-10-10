@@ -1,0 +1,38 @@
+{
+  "task": "api-update-user",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 1,
+      "odoo": 2,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 84,
+      "odoo": 184,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.028,
+      "odoo": 0.526,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 25.27,
+      "odoo": 54.62,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 25.294,
+      "odoo": 55.142,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/results/api-update-user-20261009T232349-5f31.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/results/api-update-user-20261009T232354-10a7.json"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "shots": {
+    "918bf23ddc14f2e4.jpg": {
+      "product": "ours",
+      "task": "api-update-user",
+      "moment": "start",
+      "run_id": "api-update-user-20261009T232349-5f31"
+    },
+    "a937a31c091cc244.jpg": {
+      "product": "ours",
+      "task": "api-update-user",
+      "moment": "done",
+      "run_id": "api-update-user-20261009T232349-5f31"
+    },
+    "909bb0a0f885aad3.jpg": {
+      "product": "odoo",
+      "task": "api-update-user",
+      "moment": "start",
+      "run_id": "api-update-user-20261009T232354-10a7"
+    },
+    "42f13caceb80b31a.jpg": {
+      "product": "odoo",
+      "task": "api-update-user",
+      "moment": "done",
+      "run_id": "api-update-user-20261009T232354-10a7"
+    }
+  },
+  "run_order": {
+    "api-update-user": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "api-update-user": {
+      "ours": "A",
+      "odoo": "B"
+    }
+  }
+}

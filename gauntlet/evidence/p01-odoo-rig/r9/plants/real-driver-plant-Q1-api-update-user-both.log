@@ -1,0 +1,11 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-10-09T12:52:48.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig; then COMPARE_ODOO_URL=http://localhost:<port>)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+api-update-user          ours  verified  steps 1  keys 84  machine 0.028s  human 25.27s  human+wait 25.294s  -> ../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/results/api-update-user-20261009T232349-5f31.json
+api-update-user          odoo  verified  steps 2  keys 184  machine 0.526s  human 54.62s  human+wait 55.142s  -> ../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/results/api-update-user-20261009T232354-10a7.json
+api-update-user          verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r9/plants/q1-real/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r9/plants/q1-real

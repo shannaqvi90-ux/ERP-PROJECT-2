@@ -1,0 +1,265 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261009T232231-f17b",
+  "instrument": 7,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-09T23:22:32.032Z",
+  "finished_at": "2026-10-09T23:22:55.608Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 1,
+    "clicks": 5,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.94,
+    "system_wait_seconds": 1.871,
+    "human_seconds": 15.28,
+    "human_plus_wait_seconds": 17.151,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 5,
+      "B": 10,
+      "H": 1,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "at": 0.002,
+      "took": 0.128,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "at": 0.131,
+      "took": 0.052,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "at": 0.478,
+      "took": 0.135,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "at": 0.615,
+      "took": 0.18,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "at": 0.795,
+      "took": 0.081,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "reload the page for the right-to-left layout",
+      "keystrokes": 1,
+      "at": 1.676,
+      "took": 0.399,
+      "chord": "F5",
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.184,
+      "seconds": 0.294
+    },
+    {
+      "label": "labels re-rendered in Arabic",
+      "at": 0.878,
+      "seconds": 0.797
+    },
+    {
+      "label": "client reloaded right to left",
+      "at": 2.076,
+      "seconds": 0.224
+    },
+    {
+      "label": "working screen back",
+      "at": 2.303,
+      "seconds": 0.556
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "150729b362cafcec.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/150729b362cafcec.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "acb52bbaed065eb0.jpg",
+      "at": 2.94,
+      "path": "../../evidence-staging/p01-odoo-rig/r9/compare/blind/shots/acb52bbaed065eb0.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_lang": "ar_001",
+      "direction": "rtl",
+      "app_menus": [
+        "جهات الاتصال",
+        "جهات الاتصال"
+      ],
+      "working_screen": "جديد\nجهات الاتصال\n1-80 / 10000+",
+      "working_screen_records": 80
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language > Arabic > Update Preferences. Odoo re-renders the labels in Arabic but keeps the left-to-right layout until the page is reloaded, so the path ends with F5.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-to-arabic.mjs",
+    "sha256": "f18c7ec23e3a7160db6bddab8bb288ab5fd2809f6710f9a3726fa3f7ca1bfed9"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/contacts",
+    "path": "/odoo/contacts",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "Search...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.039,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.04,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 1,
+  "requests_in_flight_at_clock": {
+    "count": 27,
+    "first": [
+      "GET /web/image/res.partner/24323/avatar_128 (image)",
+      "GET /web/image/res.partner/169902/avatar_128 (image)",
+      "GET /web/image/res.partner/140375/avatar_128 (image)",
+      "GET /web/image/res.partner/164255/avatar_128 (image)",
+      "GET /web/image/res.partner/154905/avatar_128 (image)",
+      "GET /web/image/res.partner/184765/avatar_128 (image)",
+      "GET /web/image/res.partner/123662/avatar_128 (image)",
+      "GET /web/image/res.partner/191522/avatar_128 (image)",
+      "GET /web/image/res.partner/181221/avatar_128 (image)",
+      "GET /web/image/res.partner/151195/avatar_128 (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "f2ef381b0712a76f",
+    "elements": 2175
+  },
+  "screen_after_verify": {
+    "sha256": "f2ef381b0712a76f",
+    "elements": 2175,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.088
+  },
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    }
+  }
+}
