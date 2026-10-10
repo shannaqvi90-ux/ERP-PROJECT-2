@@ -86,3 +86,16 @@ Measured on this machine (user plus system time of the process and its children,
 So the round adds about one minute of processor time to `./erp verify`, well inside the owner's
 10,500 s maximum (`verify.cpuSeconds`, needs-human #12, unchanged). The whole comparison suite took
 230 s of processor time (374 passing, 22 live tests skipped) in a standalone run.
+
+`./erp verify` of this round, through the verify slots on the owner's PC:
+
+- First run (head f3a4942): every test green and 53 of 53 mutations caught, but the ratchet failed.
+  `suite.compareTests` had been set to 374, the count of a standalone run that also reaches the
+  shared rig (two live checks that do not run inside verify): corrected to 372, which is still
+  above the 352 before this round. The wall time was 3,821 s against 3,600 s. The load was 2.1 at
+  the start and 2.2 at the end, but other agents took it to 14-25 in between. Processor time was
+  10,481 s (dotnet 8,376, web 1,848) against the 10,500 s maximum.
+- Second run (head b0576cb, the clipboard reset and read-back in one scratch page): passed in
+  3,345 s. Processor time 8,969 s (dotnet 7,249, web 1,467, e2e 216). Counts: dotnet 543, web unit
+  385, e2e 89, compare 372, all 53 instrument mutations caught, all 11 built ours drivers verified
+  in the health check.
