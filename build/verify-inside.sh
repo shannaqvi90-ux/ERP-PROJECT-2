@@ -64,6 +64,13 @@ case "$stage" in
     node scripts/forms-plant-self-test.mjs
     npm run --silent build
 
+    step "Verify machinery (build/): stopping a verify ends every stage process; the quiet judgement"
+    cd /work
+    node --test --test-concurrency=1 \
+        --test-reporter=spec --test-reporter-destination=stdout \
+        --test-reporter=junit --test-reporter-destination="$out/build-junit.xml" \
+        build/*.test.mjs
+
     step "Comparison harness (gauntlet/compare): install and unit tests"
     cd /work/gauntlet/compare
     npm_install

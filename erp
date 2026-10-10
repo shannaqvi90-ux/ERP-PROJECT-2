@@ -76,6 +76,10 @@ if [[ -n "${ERP_SEED_USERS_CSV:-}" ]]; then
   export ERP_SEED_DATA_DIR ERP_SEED_USERS_CSV_IN_CONTAINER
 fi
 
+# Ending verify stages with everything they started, and sampling the machine's load.
+# shellcheck source=build/verify-processes.sh
+source "$ROOT/build/verify-processes.sh"
+
 bold() { printf '\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\033[31merp: %s\033[0m\n' "$*" >&2; exit 1; }
 
@@ -199,11 +203,17 @@ run_toolbox() {
 
 verify_cleanup() {
   local status=$?
-  # Stages still running in the background (verify failed or was interrupted).
+  # A second signal does not cut the clean-up short (SIGKILL still does).
+  trap "" TERM INT HUP
+  # Stages still running in the background (verify failed or was interrupted), each with every
+  # process it started (the e2e loop, docker run, tee, sed), by process id only. Only this run's
+  # own children: a stage that already ended may have left its id to an unrelated process.
+  local own=() pid
   for pid in "${VERIFY_PIDS[@]:-}"; do
-    [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
+    [[ -n "$pid" && "$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')" == "$$" ]] && own+=("$pid")
   done
-  docker rm -f "${VERIFY_PROJECT}-dotnet" "${VERIFY_PROJECT}-web" "${VERIFY_PROJECT}-e2e" "${VERIFY_PROJECT}-timing" >/dev/null 2>&1 || true
+  ((${#own[@]} == 0)) || stop_process_trees "${own[@]}"
+  docker rm -f "${VERIFY_PROJECT}-dotnet" "${VERIFY_PROJECT}-web" "${VERIFY_PROJECT}-e2e" "${VERIFY_PROJECT}-timing" "${VERIFY_PROJECT}-ratchet" >/dev/null 2>&1 || true
   compose "$VERIFY_PROJECT" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   docker image rm "${ERP_IMAGE:-erp-app}:$VERIFY_PROJECT" >/dev/null 2>&1 || true
   docker volume rm "${VERIFY_PROJECT}-work" >/dev/null 2>&1 || true
@@ -242,6 +252,14 @@ stage() {
     exit "$rc"
   ) &
   VERIFY_PIDS+=("$!")
+}
+
+# await_quiet <name>: wait for one stage whose output is already on the console; fail with its exit status.
+await_quiet() {
+  until [[ -f "$VERIFY_OUT/$1.status" ]]; do sleep 1; done
+  local rc took
+  read -r rc took <"$VERIFY_OUT/$1.status"
+  [[ "$rc" == 0 ]] || fail "stage $1 failed (exit $rc after $took s)"
 }
 
 # await <name...>: wait for those stages; fail naming each that failed (with the end of its log).
@@ -286,10 +304,19 @@ cmd_verify() {
   VERIFY_PIDS=()
   local out="$VERIFY_OUT" project="$VERIFY_PROJECT"
   trap verify_cleanup EXIT
-  # The machine's load when the run starts (the wall-time maximum is judged on a quiet machine).
+  # A signal ends the run through the same clean-up (bash runs a trapped signal's handler once the
+  # foreground command returns, so every long step below runs as a stage and is awaited).
+  trap 'exit 143' TERM
+  trap 'exit 130' INT
+  trap 'exit 129' HUP
+  # The machine's load when the run starts, and every 15 s until the stages are over: the wall-time
+  # maximum is judged only when the machine was quiet throughout (build/ratchet-check.mjs).
   if [[ -r /proc/loadavg ]]; then
     echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-start-load"
   fi
+  sample_load "$out/verify-load-samples" "${ERP_LOAD_SAMPLE_SECONDS:-15}" &
+  VERIFY_PIDS+=("$!")
+  local sampler=$!
 
   # The committed ratchet is the base: values may only move in the stricter direction.
   if command -v git >/dev/null 2>&1 && git -C "$ROOT" cat-file -e HEAD:gauntlet/ratchet.json 2>/dev/null; then
@@ -309,7 +336,8 @@ cmd_verify() {
   await dotnet web e2e
 
   bold "[2/3] .NET timing budgets at demo volume (alone)"
-  run_toolbox "$out" --name "${project}-timing" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh timing
+  stage timing run_toolbox "$out" --name "${project}-timing" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh timing
+  await timing
 
   bold "[3/3] Ratchet"
   local took=$((SECONDS - started))
@@ -319,7 +347,9 @@ cmd_verify() {
   if [[ -r /proc/loadavg ]]; then
     echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-end-load"
   fi
-  run_toolbox "$out" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
+  stop_process_trees "$sampler"
+  stage ratchet run_toolbox "$out" --name "${project}-ratchet" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
+  await_quiet ratchet
   bold "verify passed in $((SECONDS - started)) s"
 }
 
