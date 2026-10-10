@@ -133,6 +133,21 @@ public sealed class SignInAttempt : ITenantOwned
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
     public Guid? SessionId { get; set; }
+
+    /// <summary>How the attempt signed in or tried to (<see cref="SignInMethods"/>): every attempt
+    /// the reviewed sign-in function records is a password (or set-up code) attempt, the column's
+    /// default; a passkey sign-in is recorded by the app. Null on attempts recorded before the
+    /// method was (round 9): passkeys existed from round 8, so those cannot be told apart.</summary>
+    public string? Method { get; set; }
+}
+
+public static class SignInMethods
+{
+    /// <summary>A password, a temporary password or a one-time set-up code.</summary>
+    public const string Password = "password";
+
+    /// <summary>A passkey: the device's signature, after the person confirmed on it.</summary>
+    public const string Passkey = "passkey";
 }
 
 public static class SignInOutcomes
@@ -325,8 +340,13 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         modelBuilder.Entity<SignInAttempt>(e =>
         {
             e.ToTable("sign_in_attempts", t =>
-                t.HasCheckConstraint("ck_sign_in_attempts_outcome", "outcome IN ('succeeded', 'failed', 'throttled', 'inactive', 'expired')"));
+            {
+                t.HasCheckConstraint("ck_sign_in_attempts_outcome", "outcome IN ('succeeded', 'failed', 'throttled', 'inactive', 'expired')");
+                t.HasCheckConstraint("ck_sign_in_attempts_method", "method IN ('password', 'passkey')");
+            });
             e.HasKey(x => x.Id);
+            // The reviewed sign-in function records password attempts without naming the method.
+            e.Property(x => x.Method).HasMaxLength(20).HasDefaultValueSql("'password'");
             e.Property(x => x.Outcome).HasMaxLength(20);
             e.Property(x => x.Source).HasMaxLength(64);
             e.Property(x => x.IpAddress).HasMaxLength(64);

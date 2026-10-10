@@ -122,6 +122,7 @@ public sealed class TargetRecords(HttpClient admin, ErpTestEnvironment env)
             ["language"] = "en",
             ["roleIds"] = new JsonArray(JsonValue.Create(role)),
         });
+        await GivePasskeyAsync(id);
         _users[key] = id;
         return id;
     }
@@ -150,12 +151,34 @@ public sealed class TargetRecords(HttpClient admin, ErpTestEnvironment env)
             ["companyRoles"] = new JsonArray(GateCompanies.CompanyRole(role, companyId)),
         });
         await companies.GiveAccessAsync(id);
+        await GivePasskeyAsync(id);
         if (!fresh)
         {
             // A fresh user may be changed or removed by its request; later lookups get the shared one.
             _companyUsers[key] = id;
         }
         return id;
+    }
+
+    /// <summary>Gives the user a passkey (written straight into the database: an invited user
+    /// cannot sign in to add one), so a request that removes another user's way to sign in shows in
+    /// the user as the administrator reads them (critic p03 round 8: a lost device kept signing in;
+    /// a refused request must not quietly take a stronger user's passkeys either).</summary>
+    public async Task GivePasskeyAsync(Guid userId)
+    {
+        await using var connection = await env.OpenAdminAsync();
+        await using var command = new Npgsql.NpgsqlCommand(
+            "INSERT INTO identity.passkeys (id, tenant_id, user_id, credential_id, public_key, algorithm, name, sign_count, backup_eligible, backed_up, transports) " +
+            "SELECT @id, u.tenant_id, u.id, @credential, @key, -7, @name, 0, false, false, ARRAY['internal'] FROM identity.users u WHERE u.id = @user", connection);
+        command.Parameters.AddWithValue("id", Guid.NewGuid());
+        command.Parameters.AddWithValue("credential", Guid.NewGuid().ToByteArray().Concat(Guid.NewGuid().ToByteArray()).ToArray());
+        command.Parameters.AddWithValue("key", Guid.NewGuid().ToByteArray());
+        command.Parameters.AddWithValue("name", $"G2 key {Tag()}");
+        command.Parameters.AddWithValue("user", userId);
+        if (await command.ExecuteNonQueryAsync() != 1)
+        {
+            throw new InvalidOperationException($"no user {userId} to give a passkey");
+        }
     }
 
     private string Tag() => $"{++_n}{Convert.ToHexString(Guid.NewGuid().ToByteArray())[..8].ToLowerInvariant()}";

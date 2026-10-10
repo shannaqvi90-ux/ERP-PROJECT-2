@@ -123,7 +123,7 @@ internal static class PasskeyEndpoints
 
         group.MapDelete("/users/{id:guid}/passkeys", RemoveOfUser)
             .WithName("identity.users.passkeys.remove")
-            .WithSummary("Remove every passkey of another user (a lost device, a person leaving): only for users whose access is within the caller's own, never on oneself.")
+            .WithSummary("Remove another user's passkeys (a lost device, a person leaving): every one, or with passkeyId only that one (404 when the user holds no such passkey). Only for users whose access is within the caller's own, never on oneself.")
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequirePermission(IdentityPermissions.UsersUpdate);
@@ -277,18 +277,30 @@ internal static class PasskeyEndpoints
         return TypedResults.Ok(await ListAsync(db, id, cancellationToken));
     }
 
+    /// <param name="passkeyId">Only this passkey of the user (the one on the lost device); every one when absent.</param>
     private static async Task<Results<Ok<PasskeysRemovedResponse>, ProblemHttpResult>> RemoveOfUser(
-        Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+        Guid id, Guid? passkeyId, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
     {
         if (await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
         {
             return problem;
         }
-        // Tracked removal, so the audit trail records each passkey removed with its owner.
-        var passkeys = await db.Passkeys.Where(p => p.UserId == id).ToListAsync(cancellationToken);
+        var removed = await RemoveAsync(db, id, passkeyId, cancellationToken);
+        return passkeyId is not null && removed == 0 ? Problems.NotFound(http) : TypedResults.Ok(new PasskeysRemovedResponse(removed));
+    }
+
+    /// <summary>Removes the user's passkeys (or the one named), tracked so the audit trail records
+    /// each removal with its owner; the caller has checked the target. How many were removed.</summary>
+    internal static async Task<int> RemoveAsync(IdentityDbContext db, Guid userId, Guid? passkeyId, CancellationToken cancellationToken)
+    {
+        var passkeys = await db.Passkeys.Where(p => p.UserId == userId && (passkeyId == null || p.Id == passkeyId)).ToListAsync(cancellationToken);
+        if (passkeys.Count == 0)
+        {
+            return 0;
+        }
         db.Passkeys.RemoveRange(passkeys);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(new PasskeysRemovedResponse(passkeys.Count));
+        return passkeys.Count;
     }
 
     private static Task<List<PasskeyDto>> ListAsync(IdentityDbContext db, Guid userId, CancellationToken cancellationToken) =>

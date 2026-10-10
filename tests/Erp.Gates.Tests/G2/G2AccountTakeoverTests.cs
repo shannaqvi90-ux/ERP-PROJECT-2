@@ -59,6 +59,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var catalogue = Env.Factory.Services.GetRequiredService<ModuleCatalog>().PermissionKeys.ToList();
         Assert.Contains(LaterLedgerModule.PermissionKeys[0], catalogue);
         var targets = new TargetRecords(admin, Env);
+        // The Administrator holds a passkey too: a refused request must leave it working.
+        await targets.GivePasskeyAsync(adminId);
         var companies = await GateCompanies.OfAsync(admin);
         var administratorRole = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
@@ -84,6 +86,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             using var caller = await Env.SignInAsync(email);
 
             var before = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
+            var passkeysBefore = await admin.GetStringAsync($"/api/identity/users/{adminId}/passkeys");
             var (status, text) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => adminId.ToString()), await BodyAsync(caller, openApi, endpoint, adminId, tag));
             if (status != (int)HttpStatusCode.Forbidden)
             {
@@ -93,6 +96,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             if (before.GetProperty("version").GetUInt32() != after.GetProperty("version").GetUInt32())
             {
                 problems.Add($"{endpoint}: the Administrator's record changed");
+            }
+            if (await admin.GetStringAsync($"/api/identity/users/{adminId}/passkeys") is var passkeysAfter && passkeysAfter != passkeysBefore)
+            {
+                problems.Add($"{endpoint}: the Administrator's passkeys changed: before {Short(passkeysBefore)}; after {Short(passkeysAfter)}");
             }
             if (!(await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("authenticated").GetBoolean())
             {
@@ -187,6 +194,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                         mustChangePassword = false, roleIds = new[] { await targets.RoleAsync(["identity.users.read"]) },
                     });
                     await companies.GiveAccessAsync(worksElsewhere);
+                    await targets.GivePasskeyAsync(worksElsewhere);
                     var worksElsewhereBefore = await ReadUserAsync(admin, worksElsewhere);
                     await companies.LimitAccessAsync(callerId, inCompany);
                     var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
@@ -380,14 +388,16 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             $"{result.CompanyCallerAimed} set-based requests by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.takeoverSetCompanyCallerTargets")}");
     }
 
-    /// <summary>A user as the administrator reads them, with what they can do and where they start.</summary>
+    /// <summary>A user as the administrator reads them, with what they can do, where they start and
+    /// their passkeys (every target holds one, see <see cref="TargetRecords.GivePasskeyAsync"/>).</summary>
     private static async Task<string> ReadUserAsync(HttpClient admin, Guid id)
     {
         using var record = await admin.GetAsync($"/api/identity/users/{id}");
         using var access = await admin.GetAsync($"/api/identity/users/{id}/access");
         using var workplace = await admin.GetAsync($"/api/identity/users/{id}/default-company");
+        using var passkeys = await admin.GetAsync($"/api/identity/users/{id}/passkeys");
         return $"{(int)record.StatusCode} {await record.Content.ReadAsStringAsync()} | {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()} | " +
-               $"{(int)workplace.StatusCode} {await workplace.Content.ReadAsStringAsync()}";
+               $"{(int)workplace.StatusCode} {await workplace.Content.ReadAsStringAsync()} | {(int)passkeys.StatusCode} {await passkeys.Content.ReadAsStringAsync()}";
     }
 
     [Fact]

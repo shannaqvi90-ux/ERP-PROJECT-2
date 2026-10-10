@@ -19,9 +19,9 @@ GET /api/identity/users/{id:guid}/sign-ins identity.signIns.read # sign-in histo
 POST /api/identity/users identity.users.create # creating an account
 PUT /api/identity/users/{id:guid} identity.users.update # editing name, address, language, status and roles (grants checked in the handler)
 POST /api/identity/users/matching/active identity.users.update # the list's "all that match": the same state change as one user's edit, for each matching user (self and stronger users refused in the handler)
-POST /api/identity/users/{id:guid}/password identity.users.resetPassword # resetting another user's password is its own permission
+POST /api/identity/users/{id:guid}/password identity.users.resetPassword # resetting another user's password is its own permission; it resets the account's sign-in, so with removePasskeys it also removes the user's passkeys (a lost device), never more than the user's own sign-in methods
 POST /api/identity/users/{id:guid}/unblock identity.users.update # clearing a sign-in pause changes the account, not just reads its history
-POST /api/identity/users/{id:guid}/sessions/revoke identity.users.update # ending another user's sessions changes the account
+POST /api/identity/users/{id:guid}/sessions/revoke identity.users.update # ending another user's sessions changes the account; with removePasskeys it also removes their passkeys, as DELETE .../passkeys does under the same permission
 DELETE /api/identity/users/{id:guid} identity.users.delete # removing an account that never signed in
 GET /api/identity/users/{id:guid}/default-company identity.users.read # which company a user starts in, among companies a users reader already sees
 PUT /api/identity/users/{id:guid}/default-company identity.users.update # choosing another user's starting company changes the account (access checked in the handler)
@@ -34,7 +34,7 @@ POST /api/identity/me/passkeys identity.profile.update # adds a sign-in method t
 PUT /api/identity/me/passkeys/{id:guid} identity.profile.update # renames one of the caller's own passkeys
 DELETE /api/identity/me/passkeys/{id:guid} identity.profile.update # removes one of the caller's own passkeys
 GET /api/identity/users/{id:guid}/passkeys identity.users.read # another user's passkeys (names and dates, never keys), as the users screen shows that user
-DELETE /api/identity/users/{id:guid}/passkeys identity.users.update # removing another user's way to sign in changes that account; only users within the caller's own access
+DELETE /api/identity/users/{id:guid}/passkeys identity.users.update # removing another user's way to sign in (all, or one with passkeyId) changes that account; only users within the caller's own access
 
 GET /api/identity/roles identity.roles.read # the roles list
 GET /api/identity/roles/{id:guid} identity.roles.read # one role and its permissions

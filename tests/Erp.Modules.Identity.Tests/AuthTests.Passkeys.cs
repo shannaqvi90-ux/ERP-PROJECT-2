@@ -251,4 +251,113 @@ public sealed partial class AuthTests
         Assert.Equal(HttpStatusCode.Unauthorized, (await device.SignInAsync(anonymous)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/identity/users/{Guid.NewGuid()}/passkeys")).StatusCode);
     }
+    /// <summary>
+    /// A lost or stolen device (critic p03 round 8): resetting the password and signing out
+    /// everywhere end the sessions but leave passkeys working, unless the administrator also asks
+    /// for the passkeys to go; one passkey (the lost laptop) can go alone while the phone keeps
+    /// working. Every removal is audited with the administrator as the actor, and the sign-in
+    /// history says which sign-ins used a passkey.
+    /// </summary>
+    [Fact]
+    public async Task A_lost_device_stops_signing_in_when_the_administrator_removes_its_passkey_with_a_reset_or_sign_out_everywhere()
+    {
+        var (_, userId, first) = await PasskeyUserAsync("lost");
+        using var laptop = new SoftwarePasskey();
+        using var phone = new SoftwarePasskey();
+        var laptopId = (await Json(await laptop.RegisterAsync(first, "Laptop"))).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.Created, (await phone.RegisterAsync(first, "Phone")).StatusCode);
+        first.Dispose();
+        using var admin = await Env.SignInAsync(AdminA);
+        var adminId = (await Json(await admin.GetAsync("/api/auth/session"))).GetProperty("user").GetProperty("id").GetGuid();
+        async Task<HttpStatusCode> SignsIn(SoftwarePasskey device)
+        {
+            using var anonymous = Env.CreateClient();
+            return (await device.SignInAsync(anonymous)).StatusCode;
+        }
+
+        // Sign out everywhere alone ends sessions only: the device signs straight back in.
+        var plain = await Json(await admin.PostAsync($"/api/identity/users/{userId}/sessions/revoke", null));
+        Assert.Equal(0, plain.GetProperty("passkeysRemoved").GetInt32());
+        Assert.Equal(HttpStatusCode.OK, await SignsIn(laptop));
+
+        // One passkey goes alone: the laptop is refused, the phone still signs in.
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.DeleteAsync($"/api/identity/users/{userId}/passkeys?passkeyId={Guid.NewGuid()}")).StatusCode);
+        var (_, otherId, other) = await PasskeyUserAsync("lost.other");
+        using (other)
+        using (var otherDevice = new SoftwarePasskey())
+        {
+            var otherPasskey = (await Json(await otherDevice.RegisterAsync(other, "Not theirs"))).GetProperty("id").GetGuid();
+            // Another user's passkey is not this user's: 404, and it stays.
+            Assert.Equal(HttpStatusCode.NotFound, (await admin.DeleteAsync($"/api/identity/users/{userId}/passkeys?passkeyId={otherPasskey}")).StatusCode);
+            Assert.Single((await Json(await admin.GetAsync($"/api/identity/users/{otherId}/passkeys"))).EnumerateArray());
+
+            // Sign out everywhere with the passkeys: every session ends and no device signs back in.
+            Assert.Equal(HttpStatusCode.OK, await SignsIn(otherDevice));
+            var both = await Json(await admin.PostAsync($"/api/identity/users/{otherId}/sessions/revoke?removePasskeys=true", null));
+            Assert.True(both.GetProperty("sessionsEnded").GetInt32() >= 2);
+            Assert.Equal(1, both.GetProperty("passkeysRemoved").GetInt32());
+            Assert.Equal(HttpStatusCode.Unauthorized, await SignsIn(otherDevice));
+            Assert.False((await Json(await other.GetAsync("/api/auth/session"))).GetProperty("authenticated").GetBoolean());
+        }
+        var one = await admin.DeleteAsync($"/api/identity/users/{userId}/passkeys?passkeyId={laptopId}");
+        Assert.Equal(HttpStatusCode.OK, one.StatusCode);
+        Assert.Equal(1, (await Json(one)).GetProperty("removed").GetInt32());
+        Assert.Equal(HttpStatusCode.Unauthorized, await SignsIn(laptop));
+        Assert.Equal(HttpStatusCode.OK, await SignsIn(phone));
+        var left = await Json(await admin.GetAsync($"/api/identity/users/{userId}/passkeys"));
+        Assert.Equal("Phone", Assert.Single(left.EnumerateArray()).GetProperty("name").GetString());
+
+        // A reset without the passkeys leaves the phone working; a reset with them does not.
+        var reset = await Json(await admin.PostAsJsonAsync($"/api/identity/users/{userId}/password", new { }));
+        Assert.Equal(0, reset.GetProperty("passkeysRemoved").GetInt32());
+        Assert.Equal(HttpStatusCode.OK, await SignsIn(phone));
+        // The reset-password permission resets the whole sign-in: password and passkeys. The
+        // helpdesk holds what the user holds (acting on an account needs that), reading users and
+        // resetting passwords, but not changing users.
+        var held = (await Json(await admin.GetAsync($"/api/identity/users/{userId}/access"))).GetProperty("permissions").EnumerateArray()
+            .Select(p => p.GetProperty("key").GetString()!);
+        var helpdeskPermissions = held.Concat(["identity.users.read", "identity.users.resetPassword"]).Distinct().ToArray();
+        Assert.DoesNotContain("identity.users.update", helpdeskPermissions);
+        var helpdeskRole = (await Json(await admin.PostAsJsonAsync("/api/identity/roles", new
+        {
+            nameEn = $"Reset only {Guid.NewGuid():N}"[..20], nameAr = "إعادة التعيين فقط", permissions = helpdeskPermissions,
+        }))).GetProperty("id").GetGuid();
+        var helpdeskEmail = $"helpdesk.{Guid.NewGuid():N}"[..20] + $"@{Env.TenantA.EmailDomain}";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/identity/users", new
+        {
+            email = helpdeskEmail, displayName = "Helpdesk", language = "en", password = PasskeyPassword, mustChangePassword = false, roleIds = new[] { helpdeskRole },
+        })).StatusCode);
+        using var helpdesk = await Env.SignInAsync(helpdeskEmail, PasskeyPassword);
+        // Not the stand-alone removal, which changes the account (identity.users.update).
+        Assert.Equal(HttpStatusCode.Forbidden, (await helpdesk.DeleteAsync($"/api/identity/users/{userId}/passkeys")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await helpdesk.PostAsync($"/api/identity/users/{userId}/sessions/revoke?removePasskeys=true", null)).StatusCode);
+        var full = await helpdesk.PostAsJsonAsync($"/api/identity/users/{userId}/password", new { removePasskeys = true });
+        Assert.Equal(HttpStatusCode.OK, full.StatusCode);
+        var fullBody = await Json(full);
+        Assert.Equal(1, fullBody.GetProperty("passkeysRemoved").GetInt32());
+        Assert.True(fullBody.TryGetProperty("setupCode", out _));
+        Assert.Equal(HttpStatusCode.Unauthorized, await SignsIn(phone));
+        Assert.Empty((await Json(await admin.GetAsync($"/api/identity/users/{userId}/passkeys"))).EnumerateArray());
+
+        // The history says how each sign-in was made; the removals are audited with who made them.
+        var history = await Json(await admin.GetAsync($"/api/identity/users/{userId}/sign-ins?take=50"));
+        var methods = history.GetProperty("items").EnumerateArray()
+            .Where(a => a.GetProperty("outcome").GetString() == "succeeded")
+            .Select(a => a.GetProperty("method").GetString()).ToList();
+        Assert.Equal(3, methods.Count(m => m == "passkey"));
+        Assert.Contains("password", methods);
+        await using var owner = await Env.OpenAdminAsync();
+        await using var audit = new Npgsql.NpgsqlCommand(
+            "SELECT count(*) FILTER (WHERE actor_id = @admin), count(*) FILTER (WHERE actor_id IS NOT NULL AND actor_id <> @admin AND actor_id <> @user::uuid) " +
+            "FROM audit.entries WHERE table_name = 'passkeys' AND action = 'delete' AND changes->'user_id'->>'old' = @user", owner);
+        audit.Parameters.AddWithValue("admin", adminId);
+        audit.Parameters.AddWithValue("user", userId.ToString());
+        await using (var reader = await audit.ExecuteReaderAsync())
+        {
+            Assert.True(await reader.ReadAsync());
+            // The laptop by the administrator, the phone by the helpdesk's reset.
+            Assert.Equal(1L, reader.GetInt64(0));
+            Assert.Equal(1L, reader.GetInt64(1));
+        }
+    }
 }
