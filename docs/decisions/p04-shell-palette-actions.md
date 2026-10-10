@@ -77,6 +77,15 @@ would have inherited a palette that finds a record but cannot start one.
   read-only demo user is offered no "New …" action and is offered Print or export of the users
   list.
 
+## A New that runs before its list has loaded
+
+A module action runs its screen's command as soon as the screen offers it, which on a busy server
+is before the list's definition has arrived. The list then opened what the address said (the bare
+screen) and dropped the new record. New (`useRecordPanel().startNew`, every list screen) now writes
+`/screen/new` into the current history entry at once (`replaceAddress` in the router, the one
+reviewed history writer besides `navigate`; `tests/Gates/client-carriers.txt` updated), so the
+list opens the new record whenever it arrives. A vitest case with a slow list holds it.
+
 ## Also in this round (critic p04 round 7, minor findings)
 
 - At 390 px in Arabic a wrapped toolbar button ("مستخدم جديد") grows to hold its two lines
