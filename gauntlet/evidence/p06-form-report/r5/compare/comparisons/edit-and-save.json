@@ -1,0 +1,131 @@
+{
+  "task": "edit-and-save",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": "enter",
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 4,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 18,
+      "odoo": 19,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.139,
+      "odoo": 0.255,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 8.09,
+      "odoo": 10.28,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 8.143,
+      "odoo": 10.408,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "ours_paths": [
+    {
+      "id": "enter",
+      "verdict": "win",
+      "wins": 5,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 18,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.139,
+        "system_wait_seconds": 0.053,
+        "human_seconds": 8.09,
+        "human_plus_wait_seconds": 8.143,
+        "klm_operator_counts": {
+          "K": 18,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      }
+    },
+    {
+      "id": "keyboard",
+      "verdict": "loss",
+      "wins": 4,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 19,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.134,
+        "system_wait_seconds": 0.052,
+        "human_seconds": 9.72,
+        "human_plus_wait_seconds": 9.772,
+        "klm_operator_counts": {
+          "K": 19,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      }
+    },
+    {
+      "id": "pointer",
+      "verdict": "loss",
+      "wins": 3,
+      "left_out": [],
+      "counts": {
+        "steps": 3,
+        "keystrokes": 17,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.176,
+        "system_wait_seconds": 0.053,
+        "human_seconds": 10.86,
+        "human_plus_wait_seconds": 10.913,
+        "klm_operator_counts": {
+          "K": 17,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 2
+        }
+      }
+    }
+  ],
+  "odoo_best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p06-form-report/r5/compare/results/edit-and-save-20261010T130715-f3b2.json",
+    "odoo": "../../evidence-staging/p06-form-report/r5/compare/results/edit-and-save-20261010T130653-ce00.json"
+  }
+}

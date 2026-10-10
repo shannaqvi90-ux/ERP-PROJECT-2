@@ -1,0 +1,18 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911fea..574ea61 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -241,10 +241,12 @@ internal static class ReportEndpoints
+         var catalog = http.RequestServices.GetRequiredService<ModuleCatalog>();
+         var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
+         var result = new Dictionary<string, IReadOnlyDictionary<string, LocalText>>(StringComparer.Ordinal);
++        // A print of a saved view (its filter and its sort) prints the names the view already showed.
++        var savedView = http.Request.Query.ContainsKey("filter") && http.Request.Query.ContainsKey("sort");
+         foreach (var column in columns.Where(c => c.ValuesFrom is not null))
+         {
+             var source = catalog.PrintableLists.FirstOrDefault(p => p.List.Key == column.ValuesFrom);
+-            if (source.List is null || !caller.Has(source.List.Permission) || source.List.SearchFields.Count == 0)
++            if (source.List is null || (!savedView && !caller.Has(source.List.Permission)) || source.List.SearchFields.Count == 0)
+             {
+                 continue;
+             }

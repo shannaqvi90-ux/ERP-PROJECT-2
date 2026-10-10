@@ -1,0 +1,23 @@
+companies list focus on arrival: INPUT Search code or legal name (/)
+ArrowDown+Enter on list -> url http://localhost:20650/tenancy/companies/018dca08-f08c-7cc5-b775-07e752a73665
+form opened, phone +971 2 555 7810 focus TABLE Companies: 4 rows
+sections/tabs: ["ALN-AUH · Al Noor Technical Services LLC","General","Registration","Accounting","Address","Contact"]
+Alt+PageDown moved: true
+Alt+PageUp back: true
+Enter in phone saves -> notice: Saved. value +971 4 555 0123
+dirty header: ALN-AUH · Al Noor Technical Services LLC ●Unsaved changes‹1 of 4›PrintDiscard changesSaveClose
+Escape while dirty dialog: Unsaved changesThis record has changes that are not saved yet.Save and closeDiscard changesKeep editing
+after Alt+Z phone +971 4 555 0123
+reload while dirty -> browser dialog: beforeunload
+Ctrl+S with bad e-mail -> errors: ["Some fields need attention.","Enter a valid e-mail address."] focus INPUT email
+Enter in multiline -> newline kept, saved? true notice 
+restored phone +971 2 555 7810
+Alt+R print menu (en): ["PDF in English","PDF in Arabic","Show the document on screen"] focus A PDF in English
+admin writes: PUT /api/tenancy/companies/018dca08-f08c-7cc5-b775-07e752a73665, PUT /api/tenancy/companies/018dca08-f08c-7cc5-b775-07e752a73665, PUT /api/tenancy/companies/018dca08-f08c-7cc5-b775-07e752a73665, PUT /api/tenancy/companies/018dca08-f08c-7cc5-b775-07e752a73665
+viewer form url http://localhost:20650/tenancy/companies/018dca08-f081-7e9a-a1da-917fa100b4a0 disabled 20/20 save buttons 0 reason Read only Your roles let you view this record but not change it. writes []
+ar dir rtl lang ar
+ar guard dialog: تغييرات غير محفوظةفي هذا السجل تغييرات لم تُحفظ بعد.حفظ وإغلاقتجاهل التغييراتمتابعة التحرير
+Alt+R print menu (ar): ["PDF بالإنجليزية","PDF بالعربية","اعرض المستند على الشاشة"] focus A PDF بالإنجليزية
+downloaded ملف الشركة 2026-10-10.pdf
+list Alt+Shift+R menu (ar): ["PDF بالعربية","PDF بالإنجليزية","CSV بالعربية","CSV بالإنجليزية","Excel بالعربية","Excel بالإنجليزية"] focus A PDF بالعربية
+reports screen entries: ["الرئيسية","ملف الشركةالبيانات القانونية لشركة واحدة وعنوانها ووسائل الاتصال بها مع فروعها.","دليل الفروعجميع فروع شركاتك مع المدينة والإمارة والهاتف، مجمّعة حسب الشركة.","المستخدمون حسب الدورمن يحمل كل دور، في كل الشركات أو في شركة واحدة فقط، وهل هو نشط، ومتى سجّل الدخول آخر مرة.","الأدوار والصلاحياتكل دور مع عدد المستخدمين الذين يحملونه وعدد الصلاحيات التي يمنحها، مع الإجماليات.","ملف PDF","مصنف Excel","ملف PDF","مصنف Excel","ملف PDF","مصنف Excel","ملف PDF","مصنف Excel","ملف PDF","مصنف Excel"]

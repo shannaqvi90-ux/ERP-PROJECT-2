@@ -1,0 +1,144 @@
+{
+  "piece": "p06-form-report",
+  "round": 5,
+  "commit": "76ab5f8f40debea1e7a2d82a1828ac480da684fe",
+  "judged_at": "2026-10-10T13:11:34Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p06-form-report round 5",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 test passed inside verify. I also attacked the live demo myself (tools/attack.mjs, api/attack-print-surface.txt). It covered 114 print shapes, including the combinations the gates never send: columns+sort, search+sort+all columns, numerals+timeZone+disposition=inline, groupBy+sort+search, and record ids with disposition=inline and numerals=arab. Each ran in json/csv/xlsx/pdf × en/ar, plain and with X-Tenant-Id/X-Tenant and X-Company-Id/X-Branch-Id. That gave 2,736 gulfsteel answers (2,448×200, 288×404). None held an alnoor marker and no PDF was byte-identical to alnoor's. Company logo (api/logo-attack.txt): alnoor uploaded a logo; gulfsteel's GET, PUT and DELETE by id all got 404 and the logo stayed unchanged. Database (api/db-rls.txt): erp_owner, erp_app and erp_auth have no superuser and no BYPASSRLS. All 17 tables with tenant_id have RLS enabled and forced. erp_app with no tenant bound sees 0 users and 0 companies."
+    },
+    {
+      "gate": "G1 catches faults planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant L7b (plants/plant-L7b-inline-viewer-copy-by-record.patch, in ReportEndpoints.RunAsync) keeps a record document's PDF for the inline viewer. It is stored in a temp folder for 10 minutes, keyed on the report key, its parameter values, the language and the digits, with no tenant. It is used only for format=pdf&disposition=inline on record documents. With L7b applied, all 131 gate tests passed, G1HttpIsolation included (21 min 58 s), as did G1NonInterference, G1ProcessState and G2ReportData (plants/run-L7b.log, filter Load!=Timing minus the planted self-test processes). The leak is real (plants/plant-L7b-P10-live-demo.txt). alnoor's admin GETs /api/reports/run/tenancy.companyProfile?company=<ALN-AUH id>&format=pdf&language=en&disposition=inline. gulfsteel's admin then sends the same request and gets 200 with alnoor's company profile, byte-identical (26,445 bytes). Without disposition=inline, or as JSON, gulfsteel gets 404. On the unplanted product the same request gets 404 (plants/unplanted-control.txt). Cause: the answer-shapes victim prints only with its own record ids, the probe sends B's ids with only format and language, and phases 1 and 2 send B's ids one parameter at a time with default format. Nobody asks for tenant B's record id together with disposition=inline (or numerals, timeZone, groupBy). An earlier version, L7a (raw query string as key), was caught only by the static request-enumeration rule (plants/run-L7a-rawquery.log), not by any attack."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "All G2 tests pass inside verify. Live checks: the viewer's company form has 20 of 20 fields disabled, no Save button and the 'Read only' reason. Enter, Ctrl+S, Ctrl+Enter, Alt+Z, Delete and Alt+N sent no write (browser/explore.log, 03). A clerk with identity.users.read + reports.catalog.read gets 403 on /api/identity/roles and role counts, not names, in every users-list print (plants/unplanted-control.txt)."
+    },
+    {
+      "gate": "G2 catches faults planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant P10 (plants/plant-P10-saved-view-names.patch, in ReportEndpoints.NamesAsync) skips the identity.roles.read check when a list print carries both filter and sort, which is what a saved view's print sends. With P10, all 36 G2 tests (plants/run-P10.log) and all 39 rule tests (plants/run-P10-rules.log) passed. The fault is real (plants/plant-L7b-P10-live-demo.txt). The clerk who gets 403 from /api/identity/roles receives Roles = 'Administrator' in /api/reports/lists/identity.users?search=admin&filter=isActive eq true&sort=-createdAt&format=csv. With search alone, search+filter or search+sort it gets '1'. Cause: G2ReportData's Variants prints with one documented parameter per print and never combines two."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "Fresh clone at 76ab5f8 with project c-p06-form-report-r5 and ports 20650/20651/20660/20661, set through the documented ERP_* variables. `./erp verify` through verify-slot.sh ran from the slot taken at 11:16:02Z to 12:25:42Z. It reported 4,177 s wall time (not judged: machine busy, load up to 70). Processor time was 9,809 s of the 10,500 s maximum. 543 .NET, 374 web unit, 85 e2e and 352 compare tests passed, and the ratchet passed. `ERP_SEED_USERS_CSV=… ./erp up` brought up the seeded demo in 99 s (up.log)."
+    },
+    {
+      "gate": "Rule gates (licence, money, strings, audit, reports)",
+      "status": "pass",
+      "evidence": "They pass inside verify. The MoneyField keeps amount, currency, rate and base amount as decimal text (BigInt arithmetic). Form saves go through audited PUTs."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p06-form-report-r5 ERP_HTTP_PORT=20650 ERP_DB_PORT=20651 ERP_VERIFY_HTTP_PORT=20660 ERP_VERIFY_DB_PORT=20661 ERP_VERIFY_LOG=/home/shan/evidence-staging/p06-form-report/r5/verify-critic-p06-form-report-r5.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1354,
+    "passed": 1354,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4180
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4180,
+    "evidence": "One command from a fresh clone at 76ab5f8 built, migrated and seeded the product and ran 543 .NET, 374 web unit, 85 e2e and 352 compare tests, all passing. Every count is above round 4's (516/358/79/315) and at or above the ratchet at this commit (541/373/85/352). Wall time was 4,177 s on a busy machine, with another workflow's verify running alongside; processor time was 9,809 s of 10,500 s. `./erp up` brought up the seeded demo in 99 s, and the port and project overrides worked."
+  },
+  "odoo": [
+    {
+      "task": "edit-and-save",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 18,
+        "seconds": 0.139,
+        "klm_seconds": 8.09
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 19,
+        "seconds": 0.255,
+        "klm_seconds": 10.28
+      },
+      "notes": "Harness verdict: win, median of 3 verified runs per product, branding hidden (compare/comparisons/edit-and-save.json). Ours: click the phone field (it selects the number) > type > Enter, because Enter in a one-line field now saves. Odoo's best is click > Ctrl+A > type > Save. Every metric is strictly better; human+wait 8.14 s vs 10.41 s. The record is still a company standing in for a contact (p16 is not built at this commit). Caveat: the instrument cannot triple-click. An Odoo expert who triple-clicks the field and clicks Save would need 17 keys in 3 steps, against ours' best of 17 keys (pointer save) or 18 (Enter), so the keystroke margin is thin."
+    },
+    {
+      "task": "arabic-report",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.074,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 3.589,
+        "klm_seconds": 15.9
+      },
+      "notes": "Harness verdict: win. Keystrokes were left out because both products score exactly 0 (owner exception, needs-human #11); that is the only metric left out. Human+wait 5.31 s vs 19.16 s."
+    },
+    {
+      "task": "print-list-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 13,
+        "seconds": 0.493,
+        "klm_seconds": 11.09
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 32,
+        "seconds": 4.848,
+        "klm_seconds": 19.06
+      },
+      "notes": "Harness verdict: win, median of 3 each, with the shared dataset seeded into ours. Ours searches the users list (standing in for purchase orders) and prints it as a PDF in Arabic. Human+wait 11.34 s vs 23.48 s."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p06-form-report/r5/01-form-en-leave-guard.jpg",
+    "gauntlet/evidence/p06-form-report/r5/02-form-en-server-error.jpg",
+    "gauntlet/evidence/p06-form-report/r5/03-form-en-viewer-readonly.jpg",
+    "gauntlet/evidence/p06-form-report/r5/04-form-ar-rtl-dirty.jpg",
+    "gauntlet/evidence/p06-form-report/r5/05-form-ar-print-menu.jpg",
+    "gauntlet/evidence/p06-form-report/r5/06-list-print-menu-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r5/07-reports-catalog-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r5/08-pdf-company-profile-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r5/09-pdf-users-list-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r5/10-pdf-role-summary-ar.jpg",
+    "gauntlet/evidence/p06-form-report/r5/11-blind-edit-and-save-done-A.jpg",
+    "gauntlet/evidence/p06-form-report/r5/12-blind-edit-and-save-done-B.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The gates still try prints one parameter at a time: a record PDF kept for the inline viewer leaks one tenant's company profile to another, a saved-view print names roles to a clerk who may not read them, and every gate passes",
+    "detail": "For a UAE trading company, prints and exports are how data leaves the system, and real prints combine parameters. The screen's PDF viewer sends disposition=inline with a record id, and a saved view sends filter, sort and columns together. Round 5 closed round 4's single-parameter gaps: G1's victim and G2ReportData now print with each documented value. But each is still printed alone. G1 never sends tenant B's record id together with any non-default print parameter (disposition, numerals, timeZone, groupBy). The probe sends only format and language, and the answer shapes use each tenant's own ids. G2 never combines two parameters. So any store or shortcut that keys on a combination is invisible. The fix: (1) in G1, tenant B prints each record document and parameterised report with its own record ids across the answer-shape cover (every enumerated value, plus documented values combined, not one per print). Tenant A then asks for those exact requests, tenant B's ids included, with and without headers. (2) In G2ReportData, print with a covering set of documented-value combinations (at least every pair, plus the screen's own saved-view shape: search+filter+sort+columns+groupBy) for every permission set. (3) Plant-test both with L7b and P10. Either gate fix also applies beyond reports, wherever an answer depends on two inputs together.",
+    "evidence": "L7b: apply plants/plant-L7b-inline-viewer-copy-by-record.patch to 76ab5f8 and run plants/run-gates.sh with the filter Load!=Timing&Process!=self-http&Process!=self-company&Process!=self-noninterference&FullyQualifiedName!~SelfTests: 131/131 passed (plants/run-L7b.log). Live on the planted stack (tools/plant-live.mjs, plants/plant-L7b-P10-live-demo.txt): alnoor's admin GETs /api/reports/run/tenancy.companyProfile?company=<ALN-AUH id>&format=pdf&language=en&disposition=inline, then gulfsteel's admin sends the same request. It gets 200 and alnoor's PDF, byte-identical (26,445 bytes); without disposition=inline it gets 404. P10: apply plants/plant-P10-saved-view-names.patch: G2 36/36 and rules 39/39 passed (plants/run-P10.log, run-P10-rules.log). Live, a clerk holding identity.users.read and reports.catalog.read gets 403 from /api/identity/roles. Yet it gets 'Administrator' in the Roles column of /api/reports/lists/identity.users?search=admin&filter=isActive%20eq%20true&sort=-createdAt&format=csv, and '1' with only one of filter or sort."
+  },
+  "other_findings": [
+    "The product as built showed no leak or permission fault in my own testing. The verdict is BLOCKED only because two faults I planted in p06's own endpoints passed every gate (the same rule as round 4).",
+    "Round 4 findings now fixed: edit-and-save is a win (18 vs 19 keys: Enter in a one-line field saves; multi-line fields keep Enter as a new line, checked in browser/explore.log). G1's answer-shapes victim and G2ReportData now print with every documented value, and P9's shape (a searched list print) is caught.",
+    "Form framework by keyboard, English and Arabic (browser/explore.log; 01-05): ArrowDown+Enter opens a company from the list (round 4's Enter miss is fixed). Alt+PageDown/PageUp move between records. Escape and reload while dirty both warn (in-app dialog; the browser's beforeunload). A bad e-mail returns server errors with focus on the field. Alt+Z discards. Alt+R opens the print menu, and the Arabic company profile PDF prints right to left (08).",
+    "For an Arabic user, the record print menu still lists 'PDF in English' first with focus on it (05), while the list print menu puts Arabic first (06). An Arabic clerk pressing Alt+R, Enter gets an English PDF.",
+    "Still open from round 4: branch cities print in English (Al Ain, Fujairah) in Arabic documents, and the country prints as 'AE' rather than an Arabic name (08). Money and decimal form fields are still used by no screen, and date and lookup fields only as report parameters.",
+    "The edit-and-save keystroke margin is one key. The instrument has no triple-click; an Odoo expert who triple-clicks the phone field and clicks Save would type 17 keys, which ties ours' best path.",
+    "[route: p00-foundation] G1's ReportsIsolationProbe and the answer-shapes phase never combine tenant B's record ids with non-default enumerated parameters. G1's generic answer-shapes victim, for every module, sends documented values one per request, so any GET whose store is keyed on two inputs together is blind. The G1 machinery sits in tests/Erp.Gates.Tests/G1/AnswerShapes.cs and is shared.",
+    "Verify wall time was 4,177 s against a 3,600 s quiet-machine maximum. It was not judged because the machine was busy: another workflow's verify ran alongside, with load up to 70. Processor time was 9,809 s of the 10,500 s maximum, 93 % of it, so the margin is thin.",
+    "Housekeeping: my verify, demo and planted stacks, their volumes and images, and all four clones are removed. The odoo-reference containers and other agents' containers were not touched. Blind comparison shots were trimmed to two (11, 12; the mapping is in compare/shots-kept.txt), and the results and comparisons JSON are kept."
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax/statutory rule (carried from earlier rounds)",
+      "what": "The company form shows the tax registration number validation (TenancyValidation.TaxNumberPattern '^[0-9]{1,20}$', p02's surface), whose errors p06's form displays. It is still not the FTA's 15-digit TRN format. There is no docs/compliance record at this commit and no owner sign-off (needs-human #10 is still open)."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p06-form-report/r5",
+  "evidence_dir": "gauntlet/evidence/p06-form-report/r5"
+}

@@ -1,0 +1,37 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911fea..7e76b40 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -150,6 +150,21 @@ internal static class ReportEndpoints
+         {
+             return validator.ToResult();
+         }
++        // A record document opened in the browser's PDF viewer is asked for again as the viewer
++        // pages and zooms; keep the rendered copy a few minutes by its address.
++        string? viewerCopy = null;
++        if (common.Format == "pdf" && common.Inline && definition.Facts is { Count: > 0 })
++        {
++            var spool = Path.Combine(Path.GetTempPath(), "erp-pdf-viewer");
++            Directory.CreateDirectory(spool);
++            viewerCopy = Path.Combine(spool, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
++                System.Text.Encoding.UTF8.GetBytes(http.Request.Path + http.Request.QueryString.ToString()))));
++            if (File.Exists(viewerCopy) && File.GetLastWriteTimeUtc(viewerCopy) > DateTime.UtcNow.AddMinutes(-10))
++            {
++                http.Response.Headers.ContentDisposition = "inline";
++                return Results.File(File.ReadAllBytes(viewerCopy), "application/pdf");
++            }
++        }
+         var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+         var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = withheld, Holds = caller.Has };
+         var source = (IReportSource)http.RequestServices.GetRequiredService(registration.SourceType);
+@@ -159,6 +174,10 @@ internal static class ReportEndpoints
+             return Problems.NotFound(http);
+         }
+         var document = await engine.BuildAsync(definition, data, run, common.GroupBy, common.Options, cancellationToken);
++        if (viewerCopy is not null)
++        {
++            File.WriteAllBytes(viewerCopy, pdf.Render(document));
++        }
+         return Output(http, document, common, pdf);
+     }
+ 

@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "run_id": "arabic-report-20261010T130818-2e77",
+  "instrument": 7,
+  "task": "arabic-report",
+  "task_title": "Print a document in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
+  "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
+  "started_at": "2026-10-10T13:08:18.072Z",
+  "finished_at": "2026-10-10T13:08:25.827Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 0,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 3.589,
+    "system_wait_seconds": 3.262,
+    "human_seconds": 15.9,
+    "human_plus_wait_seconds": 19.162,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 6,
+      "B": 12,
+      "H": 0,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.032,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "at": 0.034,
+      "took": 0.062,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "at": 0.278,
+      "took": 0.06,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "at": 0.338,
+      "took": 0.074,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "at": 0.413,
+      "took": 0.05,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 1.31,
+      "took": 0.043,
+      "screen": "/odoo/purchase/100062",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.096,
+      "seconds": 0.182
+    },
+    {
+      "label": "interface in Arabic",
+      "at": 0.463,
+      "seconds": 0.522
+    },
+    {
+      "label": "order form in Arabic",
+      "at": 0.985,
+      "seconds": 0.324
+    },
+    {
+      "label": "file received",
+      "at": 1.352,
+      "seconds": 2.234
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "24e3f0dcf4d1b9b4.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p06-form-report/r5/compare/blind/shots/24e3f0dcf4d1b9b4.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "e91c4bfa679743b8.jpg",
+      "at": 3.589,
+      "path": "../../evidence-staging/p06-form-report/r5/compare/blind/shots/e91c4bfa679743b8.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "أمر شراء - P00062.pdf",
+      "bytes": 47317,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 25,
+      "right_to_left": true
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language: Arabic > Update Preferences > Print. Printing straight away gives Arabic text in a left-to-right layout (Odoo lays the page out in the user's language and translates it into the vendor's), so the user switches to Arabic first.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/arabic-report.mjs",
+    "sha256": "57935f195706fdcf0ee927926212573072f08035a312e0fab57a91eeaa3dfed4"
+  },
+  "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/purchase/100062",
+    "path": "/odoo/purchase/100062",
+    "query": "",
+    "fragment": "",
+    "fields": 3,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.032,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.033,
+      "verified": true,
+      "gap_seconds": 0.07
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /web/dataset/call_kw/purchase.order/web_read (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "9070854176958946",
+    "elements": 468
+  },
+  "screen_after_verify": {
+    "sha256": "9070854176958946",
+    "elements": 468,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  }
+}

@@ -1,0 +1,24 @@
+alnoor company ALN-AUH 018dca08-f08c-7cc5-b775-07e752a73665
+alnoor  inline PDF: 200 26445 bytes
+gulfsteel same address: 404 170 bytes; byte-identical to alnoor's: false
+gulfsteel without disposition=inline (control): 404
+gulfsteel as JSON (control): 404
+role 201 {"id":"01a125ec-733b-7c27-8f6d-318bc7a8eb78","nameEn":"Critic users only r5","nameAr":"مستخدمون فقط 
+user 201 {"id":"01a125ec-7374-781e-b049-17ddda545cfc","email":"critic.p10.1791637615453@alnoor.example","displayName":"Critic P10","language":"en","isActive":true,"roleI
+clerk GET /api/identity/roles: 403
+clerk users list CSV ?search=admin: 200
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Active,2026-10-10 16:44:37,1
+Mariam Al Mansoori,admin@alnoor.example,English,Active,2026-10-10 17:06:55,1
+clerk users list CSV ?search=admin&filter=isActive%20eq%20true: 200
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Active,2026-10-10 16:44:37,1
+Mariam Al Mansoori,admin@alnoor.example,English,Active,2026-10-10 17:06:55,1
+clerk users list CSV ?search=admin&sort=-createdAt: 200
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Active,2026-10-10 16:44:37,1
+Mariam Al Mansoori,admin@alnoor.example,English,Active,2026-10-10 17:06:55,1
+clerk users list CSV ?search=admin&filter=isActive%20eq%20true&sort=-createdAt: 200
+﻿Name,E-mail,Language,Status,Last sign-in,Roles
+Fatima Al Zaabi,admin.ar@alnoor.example,Arabic,Active,2026-10-10 16:44:37,1
+Mariam Al Mansoori,admin@alnoor.example,English,Active,2026-10-10 17:06:55,1
