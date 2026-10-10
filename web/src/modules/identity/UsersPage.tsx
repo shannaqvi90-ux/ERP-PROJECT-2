@@ -99,6 +99,7 @@ export function UsersPage() {
     id: "identity.users.new",
     chord: newRecordChord,
     labelKey: "identity.users.new",
+    keywordsKey: "identity.action.newUserKeywords",
     groupKey: "identity.shortcuts.group",
     enabled: Boolean(panel.startNew),
     run: () => panel.startNew?.(),

@@ -7,7 +7,7 @@ import { useRecordForm, type FormErrors } from "../../kernel/forms/useRecordForm
 import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
-import { chordForAria, chordKeys, useShortcut } from "../../kernel/shortcuts";
+import { chordForAria, chordKeys, useCommand, useShortcut } from "../../kernel/shortcuts";
 import { isTyping, newRecordChord, roleActions, roleName, type Permission, type Role, type RolePage } from "./model";
 import { PermissionMatrix } from "./PermissionMatrix";
 import "./identity.css";
@@ -50,6 +50,7 @@ export function RolesPage() {
     id: "identity.roles.new",
     chord: newRecordChord,
     labelKey: "identity.roles.new",
+    keywordsKey: "identity.action.newRoleKeywords",
     groupKey: "identity.shortcuts.group",
     enabled: Boolean(panel.startNew),
     run: () => panel.startNew?.(),
@@ -219,6 +220,23 @@ function RoleEditor({
     onSaved: (saved) => onSaved(saved),
   }, role?.id ?? null);
   const selected = new Set(form.draft.permissions);
+
+  // The palette offers what the record's buttons offer, under the same conditions.
+  useCommand({
+    id: "identity.roles.copy",
+    labelKey: "identity.roles.copy",
+    keywordsKey: "identity.action.copyRoleKeywords",
+    groupKey: "identity.shortcuts.group",
+    enabled: Boolean(role && actions.copy),
+    run: () => role && onCopy(role),
+  });
+  useCommand({
+    id: "identity.roles.delete",
+    labelKey: "identity.roles.delete",
+    groupKey: "identity.shortcuts.group",
+    enabled: Boolean(role && actions.delete && !confirmDelete),
+    run: () => setConfirmDelete(true),
+  });
 
   async function remove() {
     if (!role) return;

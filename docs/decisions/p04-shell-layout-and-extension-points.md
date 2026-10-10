@@ -30,6 +30,10 @@ Date: 2026-10-03. Piece: p04-shell. Status: accepted.
   - `palette`: command palette sources. `minLength >= 1`: records found as the user types (identity
     contributes users); `minLength: 0`: fixed actions shown on an empty query too (p02: "switch to
     company X").
+  - `actions` (round 8): actions a module offers from anywhere in the palette (New user, New
+    company, Print or export a list): each opens its screen and runs that screen's own command,
+    offered only with its permission and its screen's. A screen's own commands (`useCommand`) are
+    listed first, "On this screen". See `p04-shell-palette-actions.md`.
   - Each item may name a `permission`; the shell offers it only to users whose roles grant it.
     Keys must start with the module's name and be unique per slot (checked at start-up and in
     tests).

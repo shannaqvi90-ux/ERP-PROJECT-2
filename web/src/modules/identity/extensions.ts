@@ -7,8 +7,16 @@ type RoleRow = { id: string; nameEn: string; nameAr: string };
 
 /** The command palette finds users by name or e-mail, and roles by their English or Arabic name,
  * for those allowed to see them; opens the one chosen in its list (narrowed to it, its record
- * open), and leads to the list narrowed to every match. */
+ * open), and leads to the list narrowed to every match. From anywhere it starts a new user or a new
+ * role, or prints or exports either list, for those whose roles allow it: each action opens its
+ * screen and runs the screen's own command (the one its button and key run). */
 export const extensions: ModuleExtensions = {
+  actions: [
+    { key: "identity.users.new", labelKey: "identity.users.new", keywordsKey: "identity.action.newUserKeywords", permission: "identity.users.create", path: "/identity/users", command: "identity.users.new" },
+    { key: "identity.roles.new", labelKey: "identity.roles.new", keywordsKey: "identity.action.newRoleKeywords", permission: "identity.roles.create", path: "/identity/roles", command: "identity.roles.new" },
+    { key: "identity.users.print", labelKey: "identity.action.printUsers", keywordsKey: "identity.action.printKeywords", permission: "identity.users.read", path: "/identity/users", command: "lists.print" },
+    { key: "identity.roles.print", labelKey: "identity.action.printRoles", keywordsKey: "identity.action.printKeywords", permission: "identity.roles.read", path: "/identity/roles", command: "lists.print" },
+  ],
   palette: [
     {
       key: "identity.users",
