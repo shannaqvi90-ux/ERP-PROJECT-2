@@ -474,3 +474,23 @@
   overflow-wrap: anywhere;
   vertical-align: top;
 }
+
+/* A user's passkeys in the user panel (critic p03 round 8): dense, inside the panel at any width;
+   a long passkey name wraps instead of widening the table. */
+.id-user-passkeys {
+  margin-block-start: 12px;
+}
+
+.id-user-passkeys h3 {
+  margin-block: 4px;
+}
+
+.id-user-passkeys .id-passkey-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.id-user-passkeys .id-passkey-table td:first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
