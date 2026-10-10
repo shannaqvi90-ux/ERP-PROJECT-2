@@ -6,6 +6,12 @@ export default {
   actor: 'admin',
   startAt: 'home',
   saves: true,
+  // Where the saved end state lives in each product (round 10): the back-end reads verify() takes it
+  // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
+  // writes that save it (the measured part must send one of them).
+  endState: {
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/ir.cron/read', parts: ['result.lastcall'] }], writes: ['POST /web/dataset/call_button/ir.cron/method_direct_trigger'] },
+  },
   moments: ['job opened'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Find the background job "{job}", see when it last ran, and run it again now.',

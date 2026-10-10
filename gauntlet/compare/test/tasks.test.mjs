@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { PRODUCT_IDS, describe, driverPath, loadDriver, loadTasks } from '../lib/registry.mjs';
-import { runTask } from '../lib/runner.mjs';
+import { endStateOf, endStateProblems, runTask } from '../lib/runner.mjs';
 import { START_KINDS } from '../lib/start.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 import { HARNESS_DIR } from '../lib/config.mjs';
@@ -136,4 +136,24 @@ test('every task that ends in a state saved in the product says so (saves), and 
       }
     }
   }
+});
+
+// Round 10 (critic p01 r9, plant Q1): a task that saves declares where its end state lives in each
+// product whose driver is built: the back-end read and the parts of its answer. The harness accepts
+// only a change there as the saved state (lib/runner.mjs, savedState); a driver cannot declare it.
+test('every task that saves declares its end state (the read and the parts that hold it) for each product whose driver is built', async () => {
+  let declared = 0;
+  for (const t of await loadTasks()) {
+    if (!t.saves) { assert.equal(t.endState, undefined, `${t.id}: only a task that saves declares an end state`); continue; }
+    assert.deepEqual(endStateProblems(t.endState), [], `${t.id}: endState is malformed`);
+    for (const p of Object.keys(t.endState)) assert.ok(PRODUCT_IDS.includes(p), `${t.id}: endState names an unknown product ${p}`);
+    for (const p of PRODUCT_IDS) {
+      const d = await loadDriver(p, t.id);
+      if (d.built === false) continue;
+      assert.ok(endStateOf(t, p), `${t.id}: the ${p} driver is built, so the task declares its end state for ${p} (endState.${p})`);
+      assert.ok(endStateOf(t, p).writes, `${t.id}: the ${p} driver is built, so the task names the writes that save its end state (endState.${p}.writes)`);
+      declared++;
+    }
+  }
+  assert.ok(declared >= 13 + 6, `only ${declared} built drivers of tasks that save have a declared end state`);
 });

@@ -10,7 +10,7 @@ import path from 'node:path';
 import { BASELINE_DIR } from '../lib/config.mjs';
 import { modelSteps, round } from '../lib/klm.mjs';
 import { loadDriver, loadTasks } from '../lib/registry.mjs';
-import { INSTRUMENT_VERSION, METRICS, driverFingerprint } from '../lib/runner.mjs';
+import { INSTRUMENT_VERSION, METRICS, driverFingerprint, endStateOf, matchesRequest } from '../lib/runner.mjs';
 
 const read = id => {
   const f = path.join(BASELINE_DIR, 'tasks', `${id}.json`);
@@ -74,5 +74,15 @@ for (const task of await loadTasks()) {
     }
     assert.equal(b.counts.human_plus_wait_seconds, round(b.counts.human_plus_wait_seconds), `${task.id}: rounding`);
     for (const m of METRICS) assert.equal(typeof b.counts[m], 'number', `${task.id}: ${m}`);
+    // Round 10: a task that saves was saved by the measured part, in its declared end state.
+    if (task.saves) {
+      const spec = endStateOf(task, 'odoo');
+      for (const r of runs.length > 1 ? runs : [b]) {
+        const ss = r.saved_state || b.saved_state;
+        assert.ok(ss && Object.keys(ss.end_state_changed || {}).length, `${task.id} ${r.id ?? ''}: the baseline records no change in the task's end state`);
+        assert.ok((ss.writes_sent || []).some(w => { const [m, a] = w.split(' '); return spec.writes.some(x => matchesRequest(x, m, a)); }),
+          `${task.id} ${r.id ?? ''}: the baseline's measured part sent none of the task's declared writes (${spec.writes.join(', ')})`);
+      }
+    }
   });
 }

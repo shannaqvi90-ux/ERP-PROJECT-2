@@ -5,6 +5,12 @@ export default {
   actor: 'admin',
   startAt: 'home',
   saves: true,
+  // Where the saved end state lives in each product (round 10): the back-end reads verify() takes it
+  // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
+  // writes that save it (the measured part must send one of them).
+  endState: {
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/search_count', parts: ['result'] }], writes: ['POST /web/dataset/call_kw/base_import.import/execute_import'] },
+  },
   moments: ['columns matched'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.',

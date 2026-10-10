@@ -6,6 +6,13 @@ export default {
   actor: 'admin',
   startAt: 'record',
   saves: true,
+  // Where the saved end state lives in each product (round 10): the back-end reads verify() takes it
+  // from and the parts of their answers that hold it (a change anywhere else proves nothing), and the
+  // writes that save it (the measured part must send one of them).
+  endState: {
+    odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/read', parts: ['result.phone'] }], writes: ['POST /web/dataset/call_kw/res.partner/web_save'] },
+    ours: { reads: [{ read: 'GET /api/tenancy/companies/*', parts: ['phone'] }], writes: ['PUT /api/tenancy/companies/*'] },
+  },
   enters: ['phone'],
   moments: [],
   start: 'Signed in, with the contact {contact.name} open on screen.',

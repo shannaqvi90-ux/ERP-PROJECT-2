@@ -296,10 +296,10 @@ export const ODOO_READ_METHODS = Object.freeze(new Set(['search', 'search_read',
 /**
  * Odoo web-client calls that only read, beyond ODOO_READ_METHODS: the views of a model, a form's
  * computed defaults (onchange computes, it does not store) and the messaging store's fetches (the
- * chatter's messages, the systray). Used only to tell whether a request the page still has in
+ * chatter's messages, the systray; the preferences action the user menu asks for, action_get). Used only to tell whether a request the page still has in
  * flight when a task ends changes the product (lib/runner.mjs, settle).
  */
-export const ODOO_CLIENT_READ_METHODS = Object.freeze(new Set(['get_views', 'onchange', 'web_name_search', 'name_get', 'get_formview_action', 'get_formview_id']));
+export const ODOO_CLIENT_READ_METHODS = Object.freeze(new Set(['get_views', 'onchange', 'web_name_search', 'name_get', 'get_formview_action', 'get_formview_id', 'action_get']));
 export const ODOO_CLIENT_READ_ROUTES = Object.freeze([/^\/mail\/store$/, /^\/mail\/data$/, /^\/mail\/thread\/(data|messages)$/, /^\/web\/action\/load$/,
   /^\/web\/webclient\/(load_menus|translations|version_info)/]);
 
@@ -352,6 +352,18 @@ export function changesProduct({ method, url, resourceType, postData, navigation
     try { const p = JSON.parse(postData || '').params; if (p?.service === 'object' && p.method === 'execute_kw' && ODOO_READ_METHODS.has(p.args?.[4])) return false; } catch { /* not JSON */ }
   }
   return true;
+}
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/**
+ * Round 10: a request that writes to the product: a method other than GET, HEAD and OPTIONS that is
+ * not one of the reference's documented reads (changesProduct). A document load is not a write. The
+ * saved-state rule needs one sent by the measured part (lib/runner.mjs, measuredPartProblem).
+ */
+export function isWrite(method, url, resourceType = 'fetch', postData = null) {
+  if (SAFE_METHODS.has(String(method || 'GET').toUpperCase())) return false;
+  return changesProduct({ method, url, resourceType, postData, navigation: false });
 }
 
 let networkGuardInstalled = false;

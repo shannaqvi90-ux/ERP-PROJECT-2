@@ -1,17 +1,17 @@
 {
   "schema": 1,
-  "run_id": "switch-to-arabic-20261009T181624-5e9f",
-  "instrument": 7,
+  "run_id": "switch-to-arabic-20261010T021714-855f",
+  "instrument": 8,
   "task": "switch-to-arabic",
   "task_title": "Switch to Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch your own interface language to Arabic.",
   "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
-  "started_at": "2026-10-09T18:16:25.009Z",
-  "finished_at": "2026-10-09T18:16:40.623Z",
+  "started_at": "2026-10-10T02:17:14.084Z",
+  "finished_at": "2026-10-10T02:17:29.824Z",
   "environment": {
-    "base_url": "http://localhost:20102",
+    "base_url": "http://localhost:8069",
     "viewport": {
       "width": 1600,
       "height": 900
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 1.978,
-    "system_wait_seconds": 1.287,
+    "machine_seconds": 1.925,
+    "system_wait_seconds": 1.246,
     "human_seconds": 15.28,
-    "human_plus_wait_seconds": 16.567,
+    "human_plus_wait_seconds": 16.526,
     "klm_operator_counts": {
       "K": 1,
       "P": 5,
@@ -59,7 +59,7 @@
       "label": "user menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.078,
+      "took": 0.076,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -68,8 +68,8 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.08,
-      "took": 0.04,
+      "at": 0.078,
+      "took": 0.047,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -78,8 +78,8 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.335,
-      "took": 0.102,
+      "at": 0.334,
+      "took": 0.088,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -88,8 +88,8 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.437,
-      "took": 0.13,
+      "at": 0.425,
+      "took": 0.125,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -98,8 +98,8 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.568,
-      "took": 0.048,
+      "at": 0.551,
+      "took": 0.082,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -108,8 +108,8 @@
       "kind": "key",
       "label": "reload the page for the right-to-left layout",
       "keystrokes": 1,
-      "at": 1.164,
-      "took": 0.268,
+      "at": 1.121,
+      "took": 0.224,
       "chord": "F5",
       "screen": "/odoo/contacts",
       "chain": false
@@ -118,37 +118,37 @@
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.12,
-      "seconds": 0.214
+      "at": 0.126,
+      "seconds": 0.208
     },
     {
       "label": "labels re-rendered in Arabic",
-      "at": 0.617,
-      "seconds": 0.547
+      "at": 0.634,
+      "seconds": 0.487
     },
     {
       "label": "client reloaded right to left",
-      "at": 1.433,
-      "seconds": 0.121
+      "at": 1.346,
+      "seconds": 0.105
     },
     {
       "label": "working screen back",
-      "at": 1.554,
-      "seconds": 0.405
+      "at": 1.452,
+      "seconds": 0.446
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "e9be7102e1dd4d38.jpg",
+      "file": "5321cbebdaa2628b.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/e9be7102e1dd4d38.jpg"
+      "path": "gauntlet/reference/odoo/shots/5321cbebdaa2628b.jpg"
     },
     {
       "moment": "done",
-      "file": "3e6cb7e61ba58eda.jpg",
-      "at": 1.978,
-      "path": "gauntlet/reference/odoo/shots/3e6cb7e61ba58eda.jpg"
+      "file": "35f08c76adedf4a4.jpg",
+      "at": 1.925,
+      "path": "gauntlet/reference/odoo/shots/35f08c76adedf4a4.jpg"
     }
   ],
   "verification": {
@@ -192,20 +192,20 @@
   "verify_passes": [
     {
       "requests": 3,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.032,
+      "seconds": 0.031,
       "verified": true
     },
     {
       "requests": 3,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.007,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.02,
+      "seconds": 0.031,
       "verified": true,
-      "gap_seconds": 1.101
+      "gap_seconds": 1.1
     }
   ],
   "requests_after_clock": 0,
@@ -214,11 +214,11 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "e547ebe697285f10",
+    "sha256": "c050f05aa9940a40",
     "elements": 2175
   },
   "screen_after_verify": {
-    "sha256": "e547ebe697285f10",
+    "sha256": "c050f05aa9940a40",
     "elements": 2175,
     "unchanged": true
   },
@@ -227,11 +227,12 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 3,
-    "longest_pause_seconds": 0.003,
+    "longest_pause_seconds": 0.004,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.062
+    "seconds": 0.068
   },
+  "set_up_writes_waited": 0,
   "saved_state": {
     "reads_before": 1,
     "reads_after": 1,
@@ -249,13 +250,25 @@
       "POST /web/dataset/call_kw/res.users/read": [
         "result.0.lang"
       ]
-    }
+    },
+    "end_state": [
+      "POST /web/dataset/call_kw/res.users/read [result.lang]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    },
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.users/web_save",
+      "POST /web/dataset/call_button/res.users/preference_save"
+    ]
   },
   "result_file": "gauntlet/reference/odoo/tasks/switch-to-arabic.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261009T181608-afa1.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261009T181624-5e9f.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261009T181640-1c23.json"
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261010T021645-c05d.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261010T021659-7a04.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261010T021714-855f.json"
   ]
 }
