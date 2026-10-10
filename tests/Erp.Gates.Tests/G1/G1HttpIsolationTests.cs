@@ -167,6 +167,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ShapeAttacks, "g1.shapeAttacks");
         CheckAtLeast(report.ShapeVictimRequests, "g1.shapeVictimRequests");
         CheckAtLeast(report.ShapeDocumentedValues, "g1.shapeDocumentedValues");
+        CheckAtLeast(report.ShapeReplays, "g1.shapeReplays");
+        CheckAtLeast(report.ShapeCombinedRows, "g1.shapeCombinedRows");
         Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed:\n\n" + string.Join("\n\n", failures));
     }
 }
@@ -369,7 +371,7 @@ public static partial class IsolationAttack
         // for the same shapes on its own records, with and without a query of its own, while tenant
         // B keeps asking; then tenant B asks once more. Every answer is judged both ways.
         var shapes = await AnswerShapesPhaseAsync(endpoints, openApi, admin: attackers[0], state, own, victim, activity);
-        Phase($"answer shapes: {shapes.Endpoints} endpoints, {shapes.Shapes} shapes ({shapes.DocumentedValues} documented values), {shapes.VictimRequests} tenant B and {shapes.AttackerRequests} tenant A requests");
+        Phase($"answer shapes: {shapes.Endpoints} endpoints, {shapes.Shapes} shapes ({shapes.DocumentedValues} documented values, {shapes.CombinedRows} rows of them together), {shapes.VictimRequests} tenant B and {shapes.AttackerRequests} tenant A requests ({shapes.Replays} of them tenant B's own requests as sent)");
 
         // Exports, imports, jobs and files: every surface kind in use needs a probe, and every
         // probe runs with tenant B's identifiers and values.
@@ -807,6 +809,8 @@ public static partial class IsolationAttack
             ShapeAttacks = shapes.AttackerRequests,
             ShapeVictimRequests = shapes.VictimRequests,
             ShapeDocumentedValues = shapes.DocumentedValues,
+            ShapeReplays = shapes.Replays,
+            ShapeCombinedRows = shapes.CombinedRows,
             VictimUnsuccessfulWrites = activity.UnsuccessfulWrites,
             ListQueryAttacks = listQueryAttacks,
             ListRefusals = state.ListRefusals,
@@ -1812,6 +1816,12 @@ public sealed record IsolationReport(
 
     /// <summary>Documented values (other than the default) of non-enumerated parameters asked with every shape value (AnswerShapes.cs).</summary>
     public int ShapeDocumentedValues { get; init; }
+
+    /// <summary>Tenant B's own answer-shape requests (its record ids included) tenant A sent as they were.</summary>
+    public int ShapeReplays { get; init; }
+
+    /// <summary>Answer shapes in which tenant B sent its documented values together.</summary>
+    public int ShapeCombinedRows { get; init; }
 
     /// <summary>Tenant B writes on its own records that did not succeed.</summary>
     public IReadOnlyList<string> VictimUnsuccessfulWrites { get; init; } = [];

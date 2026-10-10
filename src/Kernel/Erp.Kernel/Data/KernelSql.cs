@@ -193,4 +193,43 @@ internal static class KernelSql
     public const string SearchLeakproof = """
         ALTER FUNCTION pg_catalog.texticlike(text, text) LEAKPROOF;
         """;
+
+    /// <summary>The functions besides <c>pg_stat_get_*</c> that tell how big a table, an index or
+    /// the database is (all tenants' rows together).</summary>
+    public static readonly IReadOnlyList<string> SizeFunctions =
+        ["pg_relation_size", "pg_total_relation_size", "pg_table_size", "pg_indexes_size", "pg_database_size", "pg_tablespace_size"];
+
+    /// <summary>
+    /// PostgreSQL's statistics describe whole tables, every tenant's rows together: the live and
+    /// dead row counts and activity of each table and index (<c>pg_stat_*</c>, <c>pg_statio_*</c>),
+    /// other sessions and their query text (<c>pg_stat_activity</c>), sampled column values and
+    /// their frequencies (<c>pg_stats</c>, <c>pg_stats_ext</c>), the <c>pg_stat_get_*</c> functions
+    /// behind the views and the size functions. PUBLIC may read all of them by default, so the
+    /// application role could learn other tenants' volumes and values without touching a tenant
+    /// row (critic p00 round 8, plant L3). The superuser bootstrap takes them from PUBLIC in the
+    /// product's database; the superuser keeps them. (<c>pg_class.reltuples</c> stays readable:
+    /// every client library reads <c>pg_class</c>; product code may not name it, a static gate.)
+    /// </summary>
+    public const string RevokeCrossTenantStatistics = """
+        DO $$
+        DECLARE item record;
+        BEGIN
+          FOR item IN
+            SELECT c.oid::regclass AS name
+              FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE n.nspname = 'pg_catalog' AND c.relkind IN ('v', 'm', 'r')
+               AND (c.relname LIKE 'pg\_stat%' OR c.relname LIKE 'pg\_statio%')
+          LOOP
+            EXECUTE format('REVOKE ALL ON %s FROM PUBLIC', item.name);
+          END LOOP;
+          FOR item IN
+            SELECT p.oid::regprocedure AS name
+              FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+             WHERE n.nspname = 'pg_catalog'
+               AND (p.proname LIKE 'pg\_stat\_get%' OR p.proname IN ('pg_relation_size', 'pg_total_relation_size', 'pg_table_size', 'pg_indexes_size', 'pg_database_size', 'pg_tablespace_size'))
+          LOOP
+            EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC', item.name);
+          END LOOP;
+        END $$;
+        """;
 }

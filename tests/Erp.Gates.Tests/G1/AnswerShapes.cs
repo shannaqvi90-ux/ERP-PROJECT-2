@@ -17,6 +17,14 @@ namespace Erp.Gates.Tests.G1;
 /// B keeps asking in the background; then tenant B asks once more. Every answer tenant A gets
 /// (PDF text, workbook cells, CSV, JSON and every header) is judged for tenant B's markers, and
 /// every answer tenant B gets for tenant A's.
+///
+/// Round 9 (critic p06 round 5, plant L7b: a record PDF kept for the inline viewer by the record id
+/// and the disposition, served to whoever asks for that record inline): tenant A also sends tenant
+/// B's own requests exactly as tenant B sent them, tenant B's record ids and every shape and
+/// documented value included. A store keyed on any function of the request without the tenant is
+/// then always asked for what tenant B put in it. And besides each documented value on its own,
+/// tenant B asks with every documented parameter's values together (plant L7c: a store keyed on two
+/// documented values at once, never filled while tenant B sent one at a time).
 /// </summary>
 public static partial class IsolationAttack
 {
@@ -24,7 +32,7 @@ public static partial class IsolationAttack
     /// otherwise a covering set in which every combination of any three parameters' values occurs.</summary>
     private const int AllShapesUpTo = 64;
 
-    private sealed record ShapeReport(int Endpoints, int Shapes, int AttackerRequests, int VictimRequests, int DocumentedValues);
+    private sealed record ShapeReport(int Endpoints, int Shapes, int AttackerRequests, int VictimRequests, int DocumentedValues, int Replays, int CombinedRows);
 
     private sealed record ShapePlan(ApiEndpoint Endpoint, string VictimPath, string AttackerPath, IReadOnlyList<string> Shapes,
         string? VictimQuery, string? AttackerQuery);
@@ -36,6 +44,7 @@ public static partial class IsolationAttack
         var plans = new List<ShapePlan>();
         var victimRequests = 0;
         var documentedValues = 0;
+        var combinedRows = 0;
         foreach (var endpoint in endpoints.Where(e => e.Method == "GET" && !e.Pattern.Contains("{*", StringComparison.Ordinal)))
         {
             var query = openApi.Parameters("GET", endpoint.Pattern).Where(p => p.In == "query").ToList();
@@ -93,6 +102,7 @@ public static partial class IsolationAttack
             // of every enumerated parameter at least once (a store keyed on it and a format is
             // filled by tenant B in every format); a value tenant B is refused is left out.
             var shapes = Shapes(enumerated).ToList();
+            var accepted = new List<string>();
             foreach (var variant in DocumentedValues(query))
             {
                 var probe = Join(victimBase, And(shapes[0], variant));
@@ -101,10 +111,30 @@ public static partial class IsolationAttack
                 {
                     shapes.AddRange(EachValueOnce(enumerated).Select(row => And(row, variant)));
                     documentedValues++;
+                    accepted.Add(variant);
                 }
                 else
                 {
                     activity.NoteBlindSpot($"answer shapes: tenant B was refused the documented value {variant} on {endpoint.Key}, so no shape was asked with it");
+                }
+            }
+            // Every documented parameter's values together (plant L7c): row k gives each parameter
+            // its k-th accepted value, so every accepted value occurs with a non-default value of
+            // every other documented parameter, and with every value of every enumerated one.
+            var together = Together(accepted);
+            if (together.Count > 0)
+            {
+                var rows = EachValueOnce(enumerated);
+                var combined = together.Select((values, k) => And(rows[k % rows.Count], values)).ToList();
+                victimRequests++;
+                if (await activity.ReadPathAsync(Join(victimBase, combined[0]), "tenant B tries its documented values together") is >= 200 and < 300)
+                {
+                    shapes.AddRange(combined);
+                    combinedRows += combined.Count;
+                }
+                else
+                {
+                    activity.NoteBlindSpot($"answer shapes: tenant B was refused its documented values together ({combined[0]}) on {endpoint.Key}, so no shape was asked with them together");
                 }
             }
             plans.Add(new ShapePlan(endpoint, victimBase, attackerBase, shapes, victimQuery, attackerQuery));
@@ -136,8 +166,10 @@ public static partial class IsolationAttack
         }
 
         // During: tenant A asks for the same shapes, with no query, with tenant B's very query and
-        // with a query of its own, while tenant B keeps asking.
+        // with a query of its own, and sends tenant B's own requests as they were, while tenant B
+        // keeps asking.
         var attackerRequests = 0;
+        var replayCount = 0;
         using (var background = new CancellationTokenSource())
         {
             var victimLoop = Task.Run(async () =>
@@ -168,13 +200,23 @@ public static partial class IsolationAttack
                     }
                 }
             }
-            await Parallel.ForEachAsync(work, parallel, async (item, _) =>
+            // Tenant B's own requests, exactly as tenant B sent them (its record ids in the route and
+            // the query, every shape, its query): what a store keyed on the request without the
+            // tenant holds for them is tenant B's (plant L7b). The ids tenant A sends are echoed
+            // values, not leaks; anything else of tenant B's in the answer is.
+            var replays = plans.SelectMany(plan => VictimPaths(plan).Select(path => (plan.Endpoint, Path: path))).ToList();
+            var replayed = 0;
+            await Parallel.ForEachAsync(work.Select(w => (w.Endpoint, w.Path, Replay: false)).Concat(replays.Select(r => (r.Endpoint, r.Path, Replay: true))), parallel, async (item, _) =>
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, item.Path);
-                await state.SendAsync(admin, item.Endpoint, request, $"{item.Path} [an answer shape tenant B asked for first]",
-                    item.Path.Contains(Uri.EscapeDataString(victim.Code), StringComparison.Ordinal) ? [victim.Code] : null);
+                var sent = SentValues(item.Path, victim.Code);
+                await state.SendAsync(admin, item.Endpoint, request,
+                    item.Replay ? $"{item.Path} [tenant B's own request for an answer shape, sent by tenant A]" : $"{item.Path} [an answer shape tenant B asked for first]",
+                    sent.Count > 0 ? sent : null);
                 Interlocked.Increment(ref attackerRequests);
+                if (item.Replay) Interlocked.Increment(ref replayed);
             });
+            replayCount = replayed;
             await background.CancelAsync();
             var concurrent = await victimLoop;
             victimRequests += concurrent;
@@ -194,7 +236,38 @@ public static partial class IsolationAttack
                 await activity.ReadPathAsync(path, "tenant B asks for every answer shape after tenant A");
             });
         }
-        return new ShapeReport(plans.Count, plans.Sum(p => p.Shapes.Count), attackerRequests, victimRequests, documentedValues);
+        return new ShapeReport(plans.Count, plans.Sum(p => p.Shapes.Count), attackerRequests, victimRequests, documentedValues, replayCount, combinedRows);
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex Uuid =
+        new(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>The values a request itself carries that an answer may echo: every id in it, and the
+    /// victim's code when it is the query.</summary>
+    internal static IReadOnlyCollection<string> SentValues(string path, string victimCode)
+    {
+        var sent = Uuid.Matches(path).Select(m => m.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (path.Contains(Uri.EscapeDataString(victimCode), StringComparison.Ordinal))
+        {
+            sent.Add(victimCode);
+        }
+        return sent;
+    }
+
+    /// <summary>
+    /// The accepted documented values (query strings of one parameter each) together: row k holds
+    /// each parameter's k-th value (cycling through the parameters with fewer), one row per value of
+    /// the parameter with the most. Empty when fewer than two parameters have a value.
+    /// </summary>
+    internal static IReadOnlyList<string> Together(IReadOnlyList<string> accepted)
+    {
+        var byParameter = accepted.GroupBy(v => v[..v.IndexOf('=', StringComparison.Ordinal)], StringComparer.Ordinal).Select(g => g.ToList()).ToList();
+        if (byParameter.Count < 2)
+        {
+            return [];
+        }
+        var rows = byParameter.Max(g => g.Count);
+        return Enumerable.Range(0, rows).Select(k => string.Join("&", byParameter.Select(g => g[k % g.Count]))).ToList();
     }
 
     /// <summary>

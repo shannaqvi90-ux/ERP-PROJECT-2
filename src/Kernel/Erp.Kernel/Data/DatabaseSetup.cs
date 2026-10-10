@@ -71,6 +71,11 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
             await Exec(connection, "REVOKE ALL ON SCHEMA public FROM PUBLIC", cancellationToken);
             await Exec(connection, $"GRANT USAGE ON SCHEMA public TO {DatabaseRoles.Owner}, {DatabaseRoles.App}", cancellationToken);
             await Exec(connection, KernelSql.SearchLeakproof, cancellationToken);
+            // Figures PostgreSQL keeps for whole tables, across every tenant (critic p00 round 8,
+            // plant L3: a list total taken from the live row count of a table's statistics counted
+            // every tenant's rows): see KernelSql.RevokeCrossTenantStatistics. The superuser keeps
+            // them for operators. Gate: G1DatabaseIsolationTests.
+            await Exec(connection, KernelSql.RevokeCrossTenantStatistics, cancellationToken);
         }
     }
 

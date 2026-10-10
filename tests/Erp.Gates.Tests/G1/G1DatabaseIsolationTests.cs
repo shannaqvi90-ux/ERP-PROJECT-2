@@ -165,6 +165,89 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         }
     }
 
+    /// <summary>
+    /// PostgreSQL's statistics count every tenant's rows together (critic p00 round 8, plant L3: a
+    /// list total from pg_stat_user_tables.n_live_tup). The application role can read none of them:
+    /// no statistics view (row counts, activity, other sessions, sampled column values), no
+    /// pg_stat_get_* function and no size function. Checked from the catalogs for every such object
+    /// there is, and by asking as erp_app.
+    /// </summary>
+    [Fact]
+    public async Task Application_role_cannot_read_statistics_that_count_every_tenant()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        var views = await DbCatalog.ReadAsync(admin, """
+            SELECT c.relname, has_table_privilege(@r, c.oid, 'SELECT')
+              FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE n.nspname = 'pg_catalog' AND c.relkind IN ('v', 'm', 'r') AND (c.relname LIKE 'pg\_stat%' OR c.relname LIKE 'pg\_statio%')
+            """, r => (Name: r.GetString(0), Readable: r.GetBoolean(1)), ("r", DatabaseRoles.App));
+        var functions = await DbCatalog.ReadAsync(admin, $"""
+            SELECT p.oid::regprocedure::text, has_function_privilege(@r, p.oid, 'EXECUTE')
+              FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+             WHERE n.nspname = 'pg_catalog' AND (p.proname LIKE 'pg\_stat\_get%' OR p.proname IN ({string.Join(", ", KernelSql.SizeFunctions.Select(f => $"'{f}'"))}))
+            """, r => (Name: r.GetString(0), Executable: r.GetBoolean(1)), ("r", DatabaseRoles.App));
+        Assert.True(views.Count >= 40, $"only {views.Count} statistics views found: the catalog query is blind");
+        Assert.True(functions.Count >= 100, $"only {functions.Count} statistics functions found: the catalog query is blind");
+        Assert.Contains(views, v => v.Name == "pg_stat_user_tables");
+        Assert.Contains(views, v => v.Name == "pg_stats");
+        var open = views.Where(v => v.Readable).Select(v => v.Name).Concat(functions.Where(f => f.Executable).Select(f => f.Name)).ToList();
+        Assert.True(open.Count == 0, "erp_app can read statistics that count or sample every tenant's rows: " + string.Join(", ", open));
+
+        await using var app = await Env.OpenAppAsync();
+        foreach (var sql in new[]
+                 {
+                     "SELECT sum(n_live_tup) FROM pg_stat_user_tables",
+                     "SELECT count(*) FROM pg_stat_activity",
+                     "SELECT count(*) FROM pg_stats",
+                     "SELECT pg_stat_get_live_tuples('identity.users'::regclass)",
+                     "SELECT pg_total_relation_size('identity.users'::regclass)",
+                     "SELECT pg_database_size(current_database())",
+                 })
+        {
+            var error = await Assert.ThrowsAsync<PostgresException>(() => DbCatalog.ExecuteAsync(app, sql));
+            Assert.True(error.SqlState == PostgresErrorCodes.InsufficientPrivilege, $"{sql}: {error.SqlState} {error.MessageText}");
+        }
+    }
+
+    /// <summary>
+    /// Product code never asks PostgreSQL for figures that describe whole tables: the statistics
+    /// views and functions (closed to the application role, above), and pg_class's row and page
+    /// estimates, which every role can read (the catalog is needed by every client library). A
+    /// list total, an "activity" counter or a grouping count taken from them would count every
+    /// tenant (critic p00 round 8). Only the bootstrap that takes them from PUBLIC may name them.
+    /// </summary>
+    [Fact]
+    public void Product_code_never_reads_statistics_that_count_every_tenant()
+    {
+        var banned = new System.Text.RegularExpressions.Regex(
+            @"\bpg_stat|\bpg_statio|\bn_live_tup\b|\bn_dead_tup\b|\bn_tup_(ins|upd|del|hot_upd)\b|\breltuples\b|\brelpages\b|\brelallvisible\b|\bpg_(total_)?relation_size\b|\bpg_table_size\b|\bpg_indexes_size\b|\bpg_database_size\b|\bpg_tablespace_size\b|\bpg_class_size\b",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        // The one place allowed to name them: the bootstrap SQL that takes them from PUBLIC.
+        var allowed = new HashSet<string>(StringComparer.Ordinal) { "src/Kernel/Erp.Kernel/Data/KernelSql.cs" };
+        var files = Directory.EnumerateFiles(Repo.PathOf("src"), "*.*", SearchOption.AllDirectories)
+            .Where(f => f.EndsWith(".cs", StringComparison.Ordinal) || f.EndsWith(".sql", StringComparison.Ordinal))
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal) && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .ToList();
+        Assert.True(files.Count >= 100, $"only {files.Count} product source files found: the scan is blind");
+        var found = new List<string>();
+        foreach (var file in files)
+        {
+            var relative = Path.GetRelativePath(Repo.Root, file).Replace('\\', '/');
+            var lines = File.ReadAllLines(file);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (banned.IsMatch(lines[i]) && !allowed.Contains(relative))
+                {
+                    found.Add($"{relative}:{i + 1}: {lines[i].Trim()}");
+                }
+            }
+        }
+        Assert.True(found.Count == 0, "Product code reads figures that count every tenant's rows:\n" + string.Join("\n", found));
+        // Self-check: the pattern finds the round-8 plant.
+        Assert.Matches(banned, "SELECT n_live_tup FROM pg_stat_user_tables WHERE relname = 'users'");
+        Assert.Matches(banned, "SELECT reltuples::bigint FROM pg_class WHERE oid = 'identity.users'::regclass");
+    }
+
     [Fact]
     public async Task Security_definer_functions_are_exactly_the_reviewed_ones()
     {
