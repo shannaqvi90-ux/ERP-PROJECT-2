@@ -76,3 +76,12 @@ the account, which also locks out the person.
 The added .NET test takes about 1 s; the takeover gate gains one GET per user read and one insert
 per target (its run stayed at about 36 s for the main test); the screen tests about 0.4 s; the
 end-to-end test about 15 s of browser time. No new environment or stack.
+
+Verify runs of this round (through the verify slots, ports 20310/20311):
+- Run 1: every .NET, web and comparison test passed; one end-to-end test failed. The palette test
+  counted every `table tbody tr` on the page to prove the users list narrowed to one row, and the
+  viewer's record panel now also lists the passkey an earlier end-to-end test added. The test now
+  counts the list's own rows (`table.list-grid tbody tr`), the same claim on the list.
+- Run 2: verify passed in 2,765 s; processor time 8,766 s (dotnet 7,202, web 1,319, e2e 209,
+  timing 36) against the maximum of 10,500 s. Counts: .NET 551, web unit 399, end-to-end 90,
+  comparison 373; the ratchet minimums are raised to them.
