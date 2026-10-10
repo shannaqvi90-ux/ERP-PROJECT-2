@@ -177,8 +177,9 @@ test.describe("app shell", () => {
     await option.click();
     // The users list narrowed to the record, with the record open in its details panel.
     await expect(page).toHaveURL(/\/identity\/users\/[0-9a-f-]{36}\?q=viewer%40alnoor\.example$/);
-    await expect(page.locator("table tbody tr")).toHaveCount(1);
-    await expect(page.locator("table tbody tr").first()).toContainText(users.viewer);
+    // The list's own rows: the record panel holds tables of its own (the user's passkeys, round 9).
+    await expect(page.locator("table.list-grid tbody tr")).toHaveCount(1);
+    await expect(page.locator("table.list-grid tbody tr").first()).toContainText(users.viewer);
     await expect(page.getByRole("region", { name: "Details" })).toContainText(users.viewer);
   });
 
