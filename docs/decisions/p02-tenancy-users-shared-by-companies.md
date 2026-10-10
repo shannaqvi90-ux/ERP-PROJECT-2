@@ -115,3 +115,9 @@ screen judged New and the code field on the permission alone. `screens.test.tsx`
 - Two web unit tests, one more companies test and one end-to-end test add about 10 to 20 s of
   processor time.
 - In total, under about 40 s of the 10,500 s maximum.
+
+Measured on this branch's passing verify (slot taken 2026-10-10T14:34:59Z, machine busy: load 10.5
+at the start and 18.1 at the end): 4,848 s wall, processor time 10,474 s (.NET 8,480, web 1,596,
+end-to-end 326, timing 73) against the 10,500 s maximum. That is within 26 s of the maximum, so a
+run under heavier load from other agents may exceed it; the margin is the owner's to judge
+(needs-human #12). Tests: .NET 553, web unit 402, end-to-end 91, compare 373.
