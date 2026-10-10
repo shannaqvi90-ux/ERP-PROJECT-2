@@ -62,7 +62,10 @@ export function RolePicker({
           const allowed = canGrant(role);
           return (
             <li key={role.id}>
-              <label className={allowed ? undefined : "id-disabled"} title={allowed ? undefined : t("identity.form.roleBeyondOwn")}>
+              {/* Greyed whenever it cannot be ticked: a role beyond the signed-in user's grants, or
+                  every role of a record shown read-only (critic p03 round 8: the roles the reader
+                  could grant looked editable on a read-only record). */}
+              <label className={allowed && !disabled ? undefined : "id-disabled"} title={allowed ? undefined : t("identity.form.roleBeyondOwn")}>
                 <input type="checkbox" checked={selected.includes(role.id)} disabled={!allowed} onChange={() => toggle(role)} />
                 <span>{roleName(role, language)}</span>
                 <span className="muted">{t("identity.roles.permissionCount", { count: role.permissions.length })}</span>

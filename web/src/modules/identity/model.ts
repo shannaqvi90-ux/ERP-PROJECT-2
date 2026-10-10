@@ -93,6 +93,8 @@ export type SignIn = {
   ipAddress: string | null;
   userAgent: string | null;
   sessionActive: boolean;
+  /** How it signed in or tried to; absent on attempts recorded before the method was. */
+  method?: "password" | "passkey" | null;
 };
 
 export type SignInHistory = {
@@ -101,7 +103,13 @@ export type SignInHistory = {
   paused: { source: string; until: string; failures: number }[];
 };
 
-export type ResetResult = { mustChangePassword: boolean; setupCode?: string; setupCodeExpiresAt?: string; sessionsEnded: number };
+export type ResetResult = { mustChangePassword: boolean; setupCode?: string; setupCodeExpiresAt?: string; sessionsEnded: number; passkeysRemoved?: number };
+
+/** Sign out everywhere: the sessions ended and the passkeys removed with them. */
+export type SessionsEnded = { sessionsEnded: number; passkeysRemoved?: number };
+
+/** One of a user's passkeys as an administrator sees it (names and dates, never the key). */
+export type UserPasskey = { id: string; name: string; createdAt: string; lastUsedAt: string | null; backedUp: boolean; version: number };
 
 /** The actions the matrix gives a column of their own, in order; any other action goes to "other". */
 export const matrixActions = ["read", "create", "update", "delete"] as const;

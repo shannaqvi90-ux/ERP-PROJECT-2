@@ -223,5 +223,22 @@
   "identity.passkeys.nameTooLong": "Use at most 100 characters.",
   "identity.passkeys.nameRequired": "Enter a name.",
   "identity.passkeys.renamed": "Passkey renamed.",
-  "identity.passkeys.removed": "Passkey {name} removed."
+  "identity.passkeys.removed": "Passkey {name} removed.",
+  "identity.history.method": "Method",
+  "identity.method.password": "Password",
+  "identity.method.passkey": "Passkey",
+  "identity.sessions.revokeAsk": "Sign out everywhere…",
+  "identity.sessions.confirmTitle": "Sign {name} out everywhere?",
+  "identity.sessions.confirmBody": "Every session of theirs ends at once, on every device.",
+  "identity.account.removePasskeys": "{count, plural, one {Also remove their passkey, so a lost or stolen device cannot sign back in} other {Also remove their # passkeys, so a lost or stolen device cannot sign back in}}",
+  "identity.userPasskeys.removedCount": "{count, plural, one {# passkey removed.} other {# passkeys removed.}}",
+  "identity.userPasskeys.none": "No passkeys: this user signs in with a password.",
+  "identity.userPasskeys.lead": "Each device below signs in as this user without a password. Remove the one on a lost or stolen device.",
+  "identity.userPasskeys.self": "Add, rename or remove your own passkeys on My account.",
+  "identity.userPasskeys.synced": "Synced to other devices",
+  "identity.userPasskeys.removeAll": "Remove all passkeys",
+  "identity.userPasskeys.removeAllTitle": "Remove every passkey of {name}?",
+  "identity.userPasskeys.removeTitle": "Remove the passkey {passkey} of {name}?",
+  "identity.userPasskeys.removeBody": "The device holding it can no longer sign in as them. Sessions already open keep going until they end or you sign them out everywhere.",
+  "identity.userPasskeys.badge": "{count, plural, one {# passkey} other {# passkeys}}"
 }

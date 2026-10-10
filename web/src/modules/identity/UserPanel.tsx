@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { api, ApiError } from "../../kernel/api";
+import { Dialog } from "../../kernel/dialog";
 import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
@@ -23,13 +24,15 @@ import {
   userName,
   type AccessView,
   type ResetResult,
+  type SessionsEnded,
+  type UserPasskey,
   type Role,
   type SignInHistory,
   type User,
 } from "./model";
 
 /** A one-time notice in a user's panel; <c>warning</c>: what could not be saved after the account was created. */
-type Notice = ({ kind: "code"; code: string; expiresAt?: string; email: string } | { kind: "info"; text: string }) & { warning?: string };
+type Notice = ({ kind: "code"; code: string; expiresAt?: string; email: string; removed?: string } | { kind: "info"; text: string }) & { warning?: string };
 
 /** Ctrl+Enter or Ctrl+S saves, Escape closes: the kernel's form keys (kernel/forms), kept here
  * under their old name for the identity forms that are not record forms. */
@@ -47,6 +50,7 @@ function CodeNotice({ notice }: { notice: Extract<Notice, { kind: "code" }> }) {
         {notice.code}
       </p>
       {notice.expiresAt && <p className="muted">{t("identity.code.expires", { time: formatDateTime(notice.expiresAt) })}</p>}
+      {notice.removed && <p>{notice.removed}</p>}
       <button
         type="button"
         className="button"
@@ -408,6 +412,23 @@ export function UserDetail({
 
   useEffect(() => setNotice(initialNotice), [initialNotice, userId]);
 
+  // The user's passkeys (names and dates): shown with the record, offered for removal with a
+  // password reset and Sign out everywhere (critic p03 round 8: a lost device kept signing in).
+  // Not needed to show the record, so a failure leaves the section out.
+  const [passkeys, setPasskeys] = useState<UserPasskey[] | null>(null);
+  const loadPasskeys = useCallback(async () => {
+    try {
+      const list = await api<UserPasskey[]>("GET", `/api/identity/users/${userId}/passkeys`);
+      setPasskeys(Array.isArray(list) ? list : null);
+    } catch {
+      setPasskeys(null);
+    }
+  }, [userId]);
+  useEffect(() => {
+    setPasskeys(null);
+    void loadPasskeys();
+  }, [loadPasskeys]);
+
   // Companies the signed-in user works in: roles in one company are given there. Not needed to
   // show the record, so a failure leaves the editor to the roles the user already holds.
   useEffect(() => {
@@ -474,7 +495,24 @@ export function UserDetail({
         {self && <p className="muted">{t("identity.form.selfNote")}</p>}
       </FormSection>
       {(allowed.resetPassword || allowed.signOutEverywhere || allowed.delete) && (
-        <AccountActions user={user} allowed={allowed} onNotice={setNotice} onDeleted={() => onDeleted?.(user)} />
+        <AccountActions
+          user={user}
+          allowed={allowed}
+          passkeyCount={passkeys?.length ?? 0}
+          onNotice={setNotice}
+          onPasskeysChanged={() => void loadPasskeys()}
+          onDeleted={() => onDeleted?.(user)}
+        />
+      )}
+      {passkeys && (
+        <UserPasskeys
+          user={user}
+          passkeys={passkeys}
+          self={self}
+          canRemove={allowed.signOutEverywhere}
+          onNotice={setNotice}
+          onChanged={() => void loadPasskeys()}
+        />
       )}
     </>
   );
@@ -490,6 +528,7 @@ export function UserDetail({
             <span className="id-badges">
               <span className={user.isActive ? "id-badge ok" : "id-badge off"}>{user.isActive ? t("identity.users.active") : t("identity.users.inactive")}</span>
               {user.pendingSetup && <span className="id-badge warn">{t("identity.users.pendingSetup")}</span>}
+              {passkeys && passkeys.length > 0 && <span className="id-badge">{t("identity.userPasskeys.badge", { count: passkeys.length })}</span>}
               <span className="muted">
                 {t("identity.users.lastSignIn")}: {user.lastSignInAt ? formatDateTime(user.lastSignInAt) : t("identity.users.never")}
               </span>
@@ -525,24 +564,38 @@ export function UserDetail({
 }
 
 /** Reset the password (new set-up code or a temporary password), sign out everywhere, and delete
- * someone who has never signed in. Only the actions the caller may take on this user are shown. */
+ * someone who has never signed in. Only the actions the caller may take on this user are shown.
+ * When the user holds passkeys, a reset can remove them too (a tick box, off: someone who forgot
+ * their password still has their device), and Sign out everywhere asks first, with removing them
+ * ticked (it is the lever for a lost or stolen device). */
 function AccountActions({
   user,
   allowed,
+  passkeyCount,
   onNotice,
+  onPasskeysChanged,
   onDeleted,
 }: {
   user: User;
   allowed: ReturnType<typeof userActions>;
+  passkeyCount: number;
   onNotice: (notice: Notice) => void;
+  onPasskeysChanged: () => void;
   onDeleted: () => void;
 }) {
   const { t, language } = useI18n();
   const [mode, setMode] = useState<"closed" | "code" | "password">("closed");
   const [password, setPassword] = useState("");
+  const [resetPasskeys, setResetPasskeys] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [signOutPasskeys, setSignOutPasskeys] = useState(true);
+  const signOutButton = useRef<HTMLButtonElement>(null);
+  const name = userName(user, language);
+  // What was done, in one notice: sessions ended and passkeys removed.
+  const withPasskeys = (text: string, removed: number) => (removed > 0 ? `${text} ${t("identity.userPasskeys.removedCount", { count: removed })}` : text);
 
   async function remove() {
     setBusy(true);
@@ -561,15 +614,29 @@ function AccountActions({
   async function reset() {
     setBusy(true);
     setError(null);
+    const removePasskeys = passkeyCount > 0 && resetPasskeys;
     try {
-      const result = await api<ResetResult>("POST", `/api/identity/users/${user.id}/password`, mode === "password" ? { password, mustChangePassword: true } : {});
+      const result = await api<ResetResult>(
+        "POST",
+        `/api/identity/users/${user.id}/password`,
+        mode === "password" ? { password, mustChangePassword: true, removePasskeys } : { removePasskeys },
+      );
+      const removed = result.passkeysRemoved ?? 0;
       onNotice(
         result.setupCode
-          ? { kind: "code", code: result.setupCode, expiresAt: result.setupCodeExpiresAt, email: user.email }
-          : { kind: "info", text: t("identity.reset.done", { count: result.sessionsEnded }) },
+          ? {
+              kind: "code",
+              code: result.setupCode,
+              expiresAt: result.setupCodeExpiresAt,
+              email: user.email,
+              ...(removed > 0 ? { removed: t("identity.userPasskeys.removedCount", { count: removed }) } : {}),
+            }
+          : { kind: "info", text: withPasskeys(t("identity.reset.done", { count: result.sessionsEnded }), removed) },
       );
+      if (removed > 0) onPasskeysChanged();
       setMode("closed");
       setPassword("");
+      setResetPasskeys(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -577,12 +644,15 @@ function AccountActions({
     }
   }
 
-  async function signOutEverywhere() {
+  async function signOutEverywhere(removePasskeys: boolean) {
     setBusy(true);
     setError(null);
     try {
-      const result = await api<{ sessionsEnded: number }>("POST", `/api/identity/users/${user.id}/sessions/revoke`);
-      onNotice({ kind: "info", text: t("identity.sessions.ended", { count: result.sessionsEnded }) });
+      const result = await api<SessionsEnded>("POST", `/api/identity/users/${user.id}/sessions/revoke${removePasskeys ? "?removePasskeys=true" : ""}`);
+      const removed = result.passkeysRemoved ?? 0;
+      onNotice({ kind: "info", text: withPasskeys(t("identity.sessions.ended", { count: result.sessionsEnded }), removed) });
+      if (removed > 0) onPasskeysChanged();
+      setConfirmSignOut(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -600,8 +670,19 @@ function AccountActions({
           </button>
         )}
         {allowed.signOutEverywhere && (
-          <button type="button" className="button" disabled={busy} onClick={() => void signOutEverywhere()}>
-            {t("identity.sessions.revoke")}
+          <button
+            type="button"
+            className="button"
+            disabled={busy}
+            onClick={() => {
+              // Without passkeys there is nothing to choose: sign out at once.
+              if (passkeyCount > 0) {
+                setSignOutPasskeys(true);
+                setConfirmSignOut(true);
+              } else void signOutEverywhere(false);
+            }}
+          >
+            {passkeyCount > 0 ? t("identity.sessions.revokeAsk") : t("identity.sessions.revoke")}
           </button>
         )}
         {allowed.delete && !confirmDelete && (
@@ -612,7 +693,7 @@ function AccountActions({
       </div>
       {confirmDelete && (
         <p className="id-confirm" role="alert">
-          {t("identity.users.deleteConfirm", { name: userName(user, language) })}
+          {t("identity.users.deleteConfirm", { name })}
           <button type="button" className="button danger" disabled={busy} onClick={() => void remove()}>
             {t("identity.users.deleteYes")}
           </button>
@@ -620,6 +701,23 @@ function AccountActions({
             {t("identity.form.cancel")}
           </button>
         </p>
+      )}
+      {confirmSignOut && (
+        <Dialog title={t("identity.sessions.confirmTitle", { name })} onClose={() => setConfirmSignOut(false)} initialFocus={signOutButton}>
+          <p>{t("identity.sessions.confirmBody")}</p>
+          <label className="id-check">
+            <input type="checkbox" checked={signOutPasskeys} onChange={(e) => setSignOutPasskeys(e.target.checked)} />
+            {t("identity.account.removePasskeys", { count: passkeyCount })}
+          </label>
+          <div className="dialog-actions">
+            <button ref={signOutButton} type="button" className="button primary" disabled={busy} onClick={() => void signOutEverywhere(signOutPasskeys)}>
+              {t("identity.sessions.revoke")}
+            </button>
+            <button type="button" className="button" onClick={() => setConfirmSignOut(false)}>
+              {t("identity.form.cancel")}
+            </button>
+          </div>
+        </Dialog>
       )}
       {mode !== "closed" && (
         <fieldset className="id-method">
@@ -638,6 +736,12 @@ function AccountActions({
               <input type="password" dir="ltr" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </label>
           )}
+          {passkeyCount > 0 && (
+            <label className="id-check">
+              <input type="checkbox" checked={resetPasskeys} onChange={(e) => setResetPasskeys(e.target.checked)} />
+              {t("identity.account.removePasskeys", { count: passkeyCount })}
+            </label>
+          )}
           <button type="button" className="button primary" disabled={busy || (mode === "password" && password.length < 10)} onClick={() => void reset()}>
             {t("identity.reset.confirm")}
           </button>
@@ -649,6 +753,135 @@ function AccountActions({
         </div>
       )}
     </div>
+  );
+}
+
+/** The user's passkeys as an administrator sees them (names and dates, never keys): each one, or
+ * all, removed for a lost or stolen device by whoever may act on the account; the user's own are
+ * managed on My account. */
+function UserPasskeys({
+  user,
+  passkeys,
+  self,
+  canRemove,
+  onNotice,
+  onChanged,
+}: {
+  user: User;
+  passkeys: UserPasskey[];
+  self: boolean;
+  canRemove: boolean;
+  onNotice: (notice: Notice) => void;
+  onChanged: () => void;
+}) {
+  const { t, language, formatDateTime } = useI18n();
+  const [removing, setRemoving] = useState<UserPasskey | "all" | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const confirmButton = useRef<HTMLButtonElement>(null);
+  const name = userName(user, language);
+
+  async function remove(which: UserPasskey | "all") {
+    setBusy(true);
+    setError(null);
+    try {
+      const query = which === "all" ? "" : `?passkeyId=${encodeURIComponent(which.id)}`;
+      const result = await api<{ removed: number }>("DELETE", `/api/identity/users/${user.id}/passkeys${query}`);
+      onNotice({ kind: "info", text: t("identity.userPasskeys.removedCount", { count: result.removed }) });
+      setRemoving(null);
+      onChanged();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setRemoving(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="id-user-passkeys" aria-labelledby={`user-passkeys-${user.id}`}>
+      <h3 id={`user-passkeys-${user.id}`}>
+        {t("identity.passkeys.title")} <span className="muted">({passkeys.length})</span>
+      </h3>
+      {passkeys.length === 0 ? (
+        <p className="muted">{t("identity.userPasskeys.none")}</p>
+      ) : (
+        <>
+          <p className="muted">{self ? t("identity.userPasskeys.self") : t("identity.userPasskeys.lead")}</p>
+          <table className="grid id-passkey-table">
+            <thead>
+              <tr>
+                <th scope="col">{t("identity.passkeys.name")}</th>
+                <th scope="col">{t("identity.passkeys.addedAt")}</th>
+                <th scope="col">{t("identity.passkeys.lastUsed")}</th>
+                <th scope="col">{t("identity.userPasskeys.synced")}</th>
+                {canRemove && (
+                  <th scope="col">
+                    <span className="visually-hidden">{t("identity.passkeys.actions")}</span>
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {passkeys.map((p) => (
+                <tr key={p.id}>
+                  <td dir="auto">{p.name}</td>
+                  <td>{formatDateTime(p.createdAt)}</td>
+                  <td>{p.lastUsedAt ? formatDateTime(p.lastUsedAt) : t("identity.users.never")}</td>
+                  <td>{p.backedUp ? t("identity.passkeys.yes") : t("identity.passkeys.no")}</td>
+                  {canRemove && (
+                    <td>
+                      <button
+                        type="button"
+                        className="button"
+                        aria-label={t("identity.passkeys.removeNamed", { name: p.name })}
+                        disabled={busy}
+                        onClick={() => setRemoving(p)}
+                      >
+                        {t("identity.passkeys.remove")}
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {canRemove && (
+            <div className="id-actions">
+              <button type="button" className="button danger" disabled={busy} onClick={() => setRemoving("all")}>
+                {t("identity.userPasskeys.removeAll")}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      {removing && (
+        <Dialog
+          title={
+            removing === "all"
+              ? t("identity.userPasskeys.removeAllTitle", { name })
+              : t("identity.userPasskeys.removeTitle", { passkey: removing.name, name })
+          }
+          onClose={() => setRemoving(null)}
+          initialFocus={confirmButton}
+        >
+          <p>{t("identity.userPasskeys.removeBody")}</p>
+          <div className="dialog-actions">
+            <button ref={confirmButton} type="button" className="button danger" disabled={busy} onClick={() => void remove(removing)}>
+              {removing === "all" ? t("identity.userPasskeys.removeAll") : t("identity.passkeys.remove")}
+            </button>
+            <button type="button" className="button" onClick={() => setRemoving(null)}>
+              {t("identity.form.cancel")}
+            </button>
+          </div>
+        </Dialog>
+      )}
+      {error && (
+        <div className="alert" role="alert">
+          {error}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -766,7 +999,9 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
             </th>
             <th scope="col">
               {t("identity.history.outcome")}
-              <span className="id-sub">{t("identity.history.session")}</span>
+              <span className="id-sub">
+                {t("identity.history.method")} · {t("identity.history.session")}
+              </span>
             </th>
           </tr>
         </thead>
@@ -781,7 +1016,11 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
               </td>
               <td>
                 <span className={a.outcome === "succeeded" ? "id-badge ok" : "id-badge off"}>{t(`identity.outcome.${a.outcome}`)}</span>
-                {a.sessionActive && <span className="id-sub">{t("identity.history.active")}</span>}
+                {(a.method || a.sessionActive) && (
+                  <span className="id-sub">
+                    {[a.method ? t(`identity.method.${a.method}`) : null, a.sessionActive ? t("identity.history.active") : null].filter(Boolean).join(" · ")}
+                  </span>
+                )}
               </td>
             </tr>
           ))}

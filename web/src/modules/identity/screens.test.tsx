@@ -1121,3 +1121,182 @@ describe("the session follows the working company", () => {
     expect(links()).not.toContain("/identity/roles");
   });
 });
+
+// Critic p03 round 8: a lost or stolen device kept signing in after "Reset password" and "Sign out
+// everywhere", and no screen showed or removed a user's passkeys.
+describe("a user's passkeys, for a lost or stolen device", () => {
+  const worker = { id: "u-field", email: "field.rep@demo-trading.example", displayName: "Field Rep", language: "en", isActive: true, roleIds: ["r-clerk"], lastSignInAt: "2026-10-09T08:00:00Z", createdAt: "2026-10-03T00:00:00Z", version: 4, pendingSetup: false };
+  const laptop = { id: "pk-laptop", name: "Shared laptop", createdAt: "2026-10-08T09:00:00Z", lastUsedAt: "2026-10-09T08:00:00Z", backedUp: false, version: 1 };
+  const phone = { id: "pk-phone", name: "Phone", createdAt: "2026-10-08T10:00:00Z", lastUsedAt: null, backedUp: true, version: 1 };
+  let calls: ReturnType<typeof mockFetch> = [];
+
+  async function openWorker(permissions: string[], passkeys = [laptop, phone], language = "en") {
+    let held = [...passkeys];
+    window.history.replaceState(null, "", `/identity/users?open=${worker.id}`);
+    calls = mockFetch((m, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(permissions, language) };
+      const list = listReply(m, url);
+      if (list) return list;
+      if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (url === `/api/identity/users/${worker.id}`) return { status: 200, body: worker };
+      if (m === "GET" && url === `/api/identity/users/${worker.id}/passkeys`) return { status: 200, body: held };
+      if (m === "DELETE" && url.startsWith(`/api/identity/users/${worker.id}/passkeys`)) {
+        const one = new URL(url, "http://x").searchParams.get("passkeyId");
+        const removed = one ? held.filter((p) => p.id === one).length : held.length;
+        held = one ? held.filter((p) => p.id !== one) : [];
+        return { status: 200, body: { removed } };
+      }
+      if (m === "POST" && url.startsWith(`/api/identity/users/${worker.id}/sessions/revoke`)) {
+        const removed = url.includes("removePasskeys=true") ? held.length : 0;
+        if (removed) held = [];
+        return { status: 200, body: { sessionsEnded: 2, passkeysRemoved: removed } };
+      }
+      if (m === "POST" && url === `/api/identity/users/${worker.id}/password`) {
+        const removed = (body as { removePasskeys?: boolean }).removePasskeys ? held.length : 0;
+        if (removed) held = [];
+        return { status: 200, body: { mustChangePassword: true, setupCode: "ABCD-EFGH-JKLM", setupCodeExpiresAt: "2026-10-12T00:00:00Z", sessionsEnded: 1, passkeysRemoved: removed } };
+      }
+      if (url === `/api/identity/users/${worker.id}/sign-ins?take=100`)
+        return {
+          status: 200,
+          body: {
+            items: [
+              { id: "a1", occurredAt: "2026-10-09T08:00:00Z", outcome: "succeeded", ipAddress: "10.0.0.7", userAgent: null, sessionActive: true, method: "passkey" },
+              { id: "a2", occurredAt: "2026-10-08T08:00:00Z", outcome: "failed", ipAddress: "10.0.0.7", userAgent: null, sessionActive: false, method: "password" },
+              { id: "a3", occurredAt: "2026-10-01T08:00:00Z", outcome: "succeeded", ipAddress: "10.0.0.7", userAgent: null, sessionActive: false, method: null },
+            ],
+            total: 3,
+            paused: [],
+          },
+        };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language={language as "en" | "ar"} />);
+    await settle();
+    await settle();
+    await settle();
+  }
+
+  const aside = () => view!.container.querySelector("aside")!;
+  const button = (root: ParentNode, name: string) =>
+    [...root.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent === name || b.getAttribute("aria-label") === name);
+  async function click(target: HTMLElement | undefined) {
+    expect(target).toBeDefined();
+    await act(async () => {
+      target!.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await settle();
+  }
+
+  it("lists them in the panel and removes the lost laptop alone, after a question whose answer has the focus", async () => {
+    await openWorker(all);
+    const section = aside().querySelector("section.id-user-passkeys")!;
+    expect(section.textContent).toContain("Passkeys (2)");
+    // The panel's heading says so at once, whatever tab is open.
+    expect(aside().querySelector(".id-badges")!.textContent).toContain("2 passkeys");
+    expect(section.textContent).toContain("Shared laptop");
+    expect(section.textContent).toContain("Phone");
+    await click(button(section, "Remove the passkey Shared laptop"));
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("Remove the passkey Shared laptop of Field Rep?");
+    expect(document.activeElement?.textContent).toBe("Remove");
+    await click(button(dialog, "Remove"));
+    expect(calls.some((c) => c.method === "DELETE" && c.url === `/api/identity/users/${worker.id}/passkeys?passkeyId=pk-laptop`)).toBe(true);
+    expect(aside().textContent).toContain("1 passkey removed.");
+    expect(aside().querySelector("section.id-user-passkeys")!.textContent).not.toContain("Shared laptop");
+    expect(aside().querySelector("section.id-user-passkeys")!.textContent).toContain("Passkeys (1)");
+  });
+
+  it("Remove all passkeys asks first, then removes every one", async () => {
+    await openWorker(all);
+    await click(button(aside(), "Remove all passkeys"));
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("Remove every passkey of Field Rep?");
+    await click(button(dialog, "Remove all passkeys"));
+    expect(calls.some((c) => c.method === "DELETE" && c.url === `/api/identity/users/${worker.id}/passkeys`)).toBe(true);
+    expect(aside().textContent).toContain("2 passkeys removed.");
+    expect(aside().textContent).toContain("No passkeys: this user signs in with a password.");
+  });
+
+  it("Sign out everywhere asks, with removing the passkeys ticked, and says what it did", async () => {
+    await openWorker(all);
+    await click(button(aside(), "Sign out everywhere…"));
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("Sign Field Rep out everywhere?");
+    const box = dialog.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    expect(box.checked).toBe(true);
+    expect(box.parentElement!.textContent).toContain("Also remove their 2 passkeys, so a lost or stolen device cannot sign back in");
+    expect(document.activeElement?.textContent).toBe("Sign out everywhere");
+    await click(button(dialog, "Sign out everywhere"));
+    expect(calls.some((c) => c.method === "POST" && c.url === `/api/identity/users/${worker.id}/sessions/revoke?removePasskeys=true`)).toBe(true);
+    expect(aside().textContent).toContain("2 sessions ended. 2 passkeys removed.");
+    expect(aside().querySelector("section.id-user-passkeys")!.textContent).toContain("Passkeys (0)");
+  });
+
+  it("Sign out everywhere can keep the passkeys when the box is cleared, and asks nothing when there are none", async () => {
+    await openWorker(all);
+    await click(button(aside(), "Sign out everywhere…"));
+    const dialog = document.querySelector('[role="dialog"]')!;
+    await click(dialog.querySelector<HTMLInputElement>('input[type="checkbox"]')!);
+    await click(button(dialog, "Sign out everywhere"));
+    expect(calls.some((c) => c.method === "POST" && c.url === `/api/identity/users/${worker.id}/sessions/revoke`)).toBe(true);
+    expect(aside().textContent).toContain("2 sessions ended.");
+    expect(aside().textContent).not.toContain("removed");
+    view?.unmount();
+    view = undefined;
+    await openWorker(all, []);
+    await click(button(aside(), "Sign out everywhere"));
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(calls.some((c) => c.method === "POST" && c.url === `/api/identity/users/${worker.id}/sessions/revoke`)).toBe(true);
+  });
+
+  it("Reset password offers removing the passkeys too (not ticked), and the set-up code notice says they were removed", async () => {
+    await openWorker(all);
+    await click(button(aside(), "Reset password…"));
+    const fieldset = aside().querySelector("fieldset.id-method")!;
+    const box = [...fieldset.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')][0]!;
+    expect(box.checked).toBe(false);
+    await click(box);
+    await click(button(fieldset, "Reset password"));
+    const reset = calls.find((c) => c.method === "POST" && c.url === `/api/identity/users/${worker.id}/password`)!;
+    expect(reset.body).toEqual({ removePasskeys: true });
+    expect(aside().querySelector('[data-testid="setup-code"]')!.textContent).toBe("ABCD-EFGH-JKLM");
+    expect(aside().textContent).toContain("2 passkeys removed.");
+  });
+
+  it("shows the passkeys without any way to remove them to a user who may not change users", async () => {
+    await openWorker(all.filter((p) => p !== "identity.users.update"));
+    const section = aside().querySelector("section.id-user-passkeys")!;
+    expect(section.textContent).toContain("Shared laptop");
+    expect(button(section, "Remove the passkey Shared laptop")).toBeUndefined();
+    expect(button(aside(), "Remove all passkeys")).toBeUndefined();
+    expect(button(aside(), "Sign out everywhere…")).toBeUndefined();
+    // Every role reads as not changeable on the read-only record, also those the reader could give
+    // elsewhere (critic p03 round 8: Clerk and Read-only looked editable).
+    const labels = [...aside().querySelectorAll(".id-roles-list label")];
+    expect(labels.length).toBeGreaterThan(0);
+    for (const label of labels) expect(label.classList.contains("id-disabled")).toBe(true);
+    // Resetting the password is its own permission, and it can take the passkeys with it.
+    await click(button(aside(), "Reset password…"));
+    expect(aside().querySelector("fieldset.id-method")!.textContent).toContain("Also remove their 2 passkeys");
+  });
+
+  it("the sign-in history says which sign-ins used a passkey, in English and Arabic", async () => {
+    await openWorker(all);
+    await click(button(aside(), "Sign-in history"));
+    const rows = [...aside().querySelectorAll(".id-history-table tbody tr")].map((r) => r.textContent);
+    expect(rows[0]).toContain("Passkey");
+    expect(rows[0]).toContain("Signed in now");
+    expect(rows[1]).toContain("Password");
+    expect(rows[2]).not.toContain("Password");
+    expect(rows[2]).not.toContain("Passkey");
+    view?.unmount();
+    view = undefined;
+    await openWorker(all, [laptop], "ar");
+    expect(aside().querySelector("section.id-user-passkeys")!.textContent).toContain("مفاتيح المرور");
+    await click(button(aside(), "سجل الدخول"));
+    expect(aside().querySelector(".id-history-table tbody tr")!.textContent).toContain("مفتاح مرور");
+  });
+});

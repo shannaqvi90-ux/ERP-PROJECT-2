@@ -163,7 +163,7 @@ internal sealed class SignInService(
             await Passwords.SetAsync(db, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
-        return await StartSessionAsync(user, client, email, now, http, cancellationToken);
+        return await StartSessionAsync(user, client, email, SignInMethods.Password, now, http, cancellationToken);
     }
 
     /// <summary>
@@ -237,12 +237,13 @@ internal sealed class SignInService(
             return new SignInOutcome.Failed();
         }
         var user = await db.Users.SingleAsync(u => u.Id == userId, cancellationToken);
-        return await StartSessionAsync(user, client, key.Email, now, http, cancellationToken);
+        return await StartSessionAsync(user, client, key.Email, SignInMethods.Passkey, now, http, cancellationToken);
     }
 
     /// <summary>The checked account signs in: its sign-in moment, a new session and the sign-in
-    /// history entry, in the request's transaction bound to that user.</summary>
-    private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, DateTimeOffset now, HttpContext http, CancellationToken cancellationToken)
+    /// history entry with how it signed in (<see cref="SignInMethods"/>), in the request's
+    /// transaction bound to that user.</summary>
+    private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, string method, DateTimeOffset now, HttpContext http, CancellationToken cancellationToken)
     {
         // The sign-in moment is written in place, not through the tracked record: two sign-ins of
         // one account at the same moment (two tabs, a browser and an API client) both succeed
@@ -274,6 +275,7 @@ internal sealed class SignInService(
             IpAddress = client.Address,
             UserAgent = client.UserAgent,
             SessionId = row.Id,
+            Method = method,
         });
         await db.SaveChangesAsync(cancellationToken);
         devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);

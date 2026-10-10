@@ -18,6 +18,11 @@ const gate = "src/modules/identity/screens.test.tsx";
 /** Each edit replaces exactly one occurrence of `find` in `file`. */
 const plants = [
   {
+    id: "U-passkeys",
+    what: "A user's passkeys offered for removal to someone who may not change users (critic p03 round 8's new levers)",
+    edits: [{ file: "src/modules/identity/UserPanel.tsx", find: "          canRemove={allowed.signOutEverywhere}", replace: "          canRemove={!self}" }],
+  },
+  {
     id: "U1",
     what: "New role offered without identity.roles.create",
     // The screen offers New through the record panel, which is given the permission: the plant

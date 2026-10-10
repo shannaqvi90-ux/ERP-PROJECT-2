@@ -5,6 +5,7 @@ using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Modules.Identity.Auth;
+using Erp.Modules.Identity.Auth.Passkeys;
 using Erp.Kernel.Data;
 using Erp.Modules.Identity.Contracts;
 using Erp.Modules.Tenancy.Contracts;
@@ -65,19 +66,27 @@ public sealed record UpdateUserRequest(string? DisplayName, [property: AllowedTe
     IReadOnlyList<CompanyRoleRequest>? CompanyRoles = null);
 
 /// <summary>Reset a user's password. Without a password: a new one-time set-up code. With one:
-/// that password, temporary unless <c>MustChangePassword</c> is false.</summary>
-public sealed record ResetPasswordRequest(string? Password, bool? MustChangePassword);
+/// that password, temporary unless <c>MustChangePassword</c> is false. <c>RemovePasskeys</c>:
+/// also remove every passkey of the user, so a lost or stolen device that holds one no longer
+/// signs in (a reset alone leaves passkeys working: someone who forgot their password still has
+/// their device).</summary>
+public sealed record ResetPasswordRequest(string? Password, bool? MustChangePassword, bool? RemovePasskeys = null);
 
 public sealed record ResetPasswordResponse(
     bool MustChangePassword,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SetupCode,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SetupCodeExpiresAt,
-    int SessionsEnded);
+    int SessionsEnded,
+    int PasskeysRemoved = 0);
 
-public sealed record SessionsEndedResponse(int SessionsEnded);
+/// <summary>How many sessions ended, and how many passkeys were removed with them (asked for with
+/// <c>removePasskeys</c>).</summary>
+public sealed record SessionsEndedResponse(int SessionsEnded, int PasskeysRemoved = 0);
 
-/// <summary>One attempt in a user's sign-in history.</summary>
-public sealed record SignInDto(Guid Id, DateTimeOffset OccurredAt, string Outcome, string? IpAddress, string? UserAgent, bool SessionActive);
+/// <summary>One attempt in a user's sign-in history. <c>Method</c>: <c>password</c> (a password,
+/// temporary password or set-up code) or <c>passkey</c>; null on attempts recorded before the
+/// method was.</summary>
+public sealed record SignInDto(Guid Id, DateTimeOffset OccurredAt, string Outcome, string? IpAddress, string? UserAgent, bool SessionActive, string? Method = null);
 
 /// <summary>A client that may not sign in to this account until <c>Until</c> (too many failures).</summary>
 public sealed record PausedClient(string Source, DateTimeOffset Until, int Failures);
@@ -141,7 +150,7 @@ internal static class UserEndpoints
 
         group.MapPost("/users/{id:guid}/password", ResetPassword)
             .WithName("identity.users.resetPassword")
-            .WithSummary("Reset another user's password: a new one-time set-up code, or a given (temporary) password. Ends the user's sessions. Only users whose access is within the caller's own.")
+            .WithSummary("Reset another user's password: a new one-time set-up code, or a given (temporary) password. Ends the user's sessions and, with removePasskeys, removes every passkey of theirs (a lost or stolen device). Only users whose access is within the caller's own.")
             .ProducesValidationProblem()
             .RequirePermission(IdentityPermissions.UsersResetPassword);
 
@@ -157,7 +166,7 @@ internal static class UserEndpoints
 
         group.MapPost("/users/{id:guid}/sessions/revoke", RevokeSessions)
             .WithName("identity.users.revokeSessions")
-            .WithSummary("Sign another user out everywhere: ends all of their sessions.")
+            .WithSummary("Sign another user out everywhere: ends all of their sessions and, with removePasskeys=true, removes every passkey of theirs, so no device signs back in without the password (a lost or stolen device). Only users whose access is within the caller's own.")
             .RequirePermission(IdentityPermissions.UsersUpdate);
 
         group.MapGet("/users/{id:guid}/access", Access)
@@ -433,7 +442,8 @@ internal static class UserEndpoints
             await Passwords.SetAsync(db, id, request.Password, mustChange, expiresAt: null, now, caller.UserId, cancellationToken);
         }
         var ended = await EndSessionsAsync(db, id, now, cancellationToken);
-        return TypedResults.Ok(new ResetPasswordResponse(mustChange, setupCode, expiresAt, ended));
+        var removed = request.RemovePasskeys == true ? await PasskeyEndpoints.RemoveAsync(db, id, null, cancellationToken) : 0;
+        return TypedResults.Ok(new ResetPasswordResponse(mustChange, setupCode, expiresAt, ended, removed));
     }
 
     private static async Task<Results<NoContent, ProblemHttpResult>> Unblock(
@@ -481,14 +491,17 @@ internal static class UserEndpoints
         return TypedResults.NoContent();
     }
 
+    /// <param name="removePasskeys">Also remove every passkey of the user (a lost or stolen device).</param>
     private static async Task<Results<Ok<SessionsEndedResponse>, ProblemHttpResult>> RevokeSessions(
-        Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+        Guid id, bool? removePasskeys, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
     {
         if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
         {
             return problem;
         }
-        return TypedResults.Ok(new SessionsEndedResponse(await EndSessionsAsync(db, id, time.GetUtcNow(), cancellationToken)));
+        var ended = await EndSessionsAsync(db, id, time.GetUtcNow(), cancellationToken);
+        var removed = removePasskeys == true ? await PasskeyEndpoints.RemoveAsync(db, id, null, cancellationToken) : 0;
+        return TypedResults.Ok(new SessionsEndedResponse(ended, removed));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Access(
@@ -599,10 +612,11 @@ internal static class UserEndpoints
                 a.Outcome,
                 a.IpAddress,
                 a.UserAgent,
+                a.Method,
                 Active = a.SessionId != null && db.Sessions.Any(s => s.Id == a.SessionId && s.RevokedAt == null && s.ExpiresAt > now),
             })
             .ToListAsync(cancellationToken);
-        var items = rows.Select(a => new SignInDto(a.Id, a.OccurredAt, a.Outcome, a.IpAddress, a.UserAgent, a.Active)).ToList();
+        var items = rows.Select(a => new SignInDto(a.Id, a.OccurredAt, a.Outcome, a.IpAddress, a.UserAgent, a.Active, a.Method)).ToList();
         return TypedResults.Ok(new SignInHistoryPage(items, total, await PausedAsync(db, id, user.SignInUnblockedAt, options.Value, now, cancellationToken)));
     }
 
