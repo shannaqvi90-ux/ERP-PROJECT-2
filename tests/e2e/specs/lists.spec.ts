@@ -365,6 +365,105 @@ test.describe("list framework", () => {
     });
   }
 
+  for (const [language, user] of [["en", users.admin], ["ar", users.adminArabic]] as const) {
+    test(`a record form grows to fit its widest table, and the user widens or narrows it by keyboard (${language})`, async ({ page }) => {
+      // Critic p03 rounds 6 and 7: at 1920x1080 the accountant's "Workspace and companies" table,
+      // whose "Granted by" names company roles, was wider than the 48% panel and ran past its edge.
+      const measure = () =>
+        page.evaluate(() => {
+          const panel = document.querySelector<HTMLElement>("aside.list-record")!;
+          const list = document.querySelector<HTMLElement>(".list-scroll")!;
+          const splitter = document.querySelector<HTMLElement>("[role=separator]")!;
+          return {
+            sideways: panel.scrollWidth - panel.clientWidth,
+            panel: Math.round(panel.getBoundingClientRect().width),
+            list: Math.round(list.getBoundingClientRect().width),
+            share: Number(splitter.getAttribute("aria-valuenow")),
+          };
+        });
+      await freshStart(page, language);
+      await signIn(page, user);
+      await expect(page.locator("nav").first()).toBeVisible();
+      const found = (await (await page.request.get(`/api/identity/users?search=${encodeURIComponent("accountant@alnoor.example")}`)).json()) as { items: { id: string }[] };
+      const accountant = found.items[0]!.id;
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await page.goto(`/identity/users/${accountant}`);
+      await page.getByRole("tab").nth(1).click();
+      await expect(page.locator("aside.list-record table th").first()).toBeVisible();
+      // The form grew until nothing is cut, and the dense list kept its room beside it.
+      await expect.poll(async () => (await measure()).sideways, { message: `${language}: the form still scrolls sideways at 1920px` }).toBeLessThanOrEqual(0);
+      const fitted = await measure();
+      expect(fitted.share).toBeGreaterThanOrEqual(48);
+      expect(fitted.list).toBeGreaterThanOrEqual(288);
+      await expect(dataRows(page).first()).toBeVisible();
+
+      // The splitter is a keyboard control: the arrow pointing away from the form widens it
+      // (left in English, right in Arabic), Home and End go to the narrowest and widest form.
+      const splitter = page.getByRole("separator", { name: language === "ar" ? "تغيير عرض لوحة السجل" : "Resize the record panel" });
+      await splitter.focus();
+      await page.keyboard.press("Home");
+      await expect(splitter).toHaveAttribute("aria-valuenow", "30");
+      await page.keyboard.press(language === "ar" ? "ArrowRight" : "ArrowLeft");
+      await expect(splitter).toHaveAttribute("aria-valuenow", "34");
+      const narrow = await measure();
+      await page.keyboard.press("End");
+      await expect(splitter).toHaveAttribute("aria-valuenow", "75");
+      const wide = await measure();
+      expect(wide.panel).toBeGreaterThan(narrow.panel + 500);
+      expect(wide.list).toBeGreaterThanOrEqual(288);
+      // Alt+W from inside the form switches back to the standard width; the choice is kept.
+      await page.locator("aside.list-record table th").first().click();
+      await page.keyboard.press("Alt+KeyW");
+      await expect(splitter).toHaveAttribute("aria-valuenow", "48");
+      await page.reload();
+      await expect(page.getByRole("separator")).toHaveAttribute("aria-valuenow", "48");
+      // Dragging the splitter towards the list widens the form.
+      const box = (await page.getByRole("separator").boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + 100);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + (language === "ar" ? 300 : -300), box.y + 100, { steps: 5 });
+      await page.mouse.up();
+      expect(Number(await page.getByRole("separator").getAttribute("aria-valuenow"))).toBeGreaterThan(55);
+      // The whole screen never scrolls sideways.
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+    });
+  }
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`with the navigation pane hidden the list takes the whole window and no column is cut (${language})`, async ({ page }) => {
+      // Critic p04 round 7: with the pane hidden the screen fell into the pane's auto-sized grid
+      // column, about 1,040 of 1,366 px, and the Arabic users grid was cut at its left edge
+      // (the Roles header read 'لأدوار').
+      await freshStart(page, language);
+      await signIn(page, user);
+      await page.setViewportSize({ width: 1366, height: 768 });
+      await openUsers(page);
+      await page.keyboard.press("Alt+KeyB");
+      await expect(page.locator("nav#navpane")).toBeHidden();
+      const layout = () =>
+        page.evaluate(() => {
+          const main = document.querySelector<HTMLElement>("main")!.getBoundingClientRect();
+          const frame = document.querySelector<HTMLElement>(".list-scroll")!;
+          const box = frame.getBoundingClientRect();
+          const cut = [...document.querySelectorAll<HTMLElement>("table[role=grid] tr.list-header > th")]
+            .map((th) => ({ th, r: th.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5))
+            .map(({ th, r }) => `${th.textContent?.trim()}: ${Math.round(r.left)}-${Math.round(r.right)} outside ${Math.round(box.left)}-${Math.round(box.right)}`);
+          return { main: Math.round(main.width), window: document.documentElement.clientWidth, sideways: frame.scrollWidth - frame.clientWidth, cut };
+        });
+      const hidden = await layout();
+      expect(hidden.main, `${language}: the screen is narrower than the window with the pane hidden`).toBe(hidden.window);
+      expect(hidden.sideways, `${language}: the users grid scrolls sideways at 1366px with the pane hidden`).toBeLessThanOrEqual(0);
+      expect(hidden.cut).toEqual([]);
+      // And back: the pane takes its room again and the screen keeps the rest.
+      await page.keyboard.press("Alt+KeyB");
+      await expect(page.locator("nav#navpane")).toBeVisible();
+      const shown = await layout();
+      expect(shown.main).toBeLessThan(shown.window);
+      expect(shown.main).toBeGreaterThan(shown.window - 260);
+    });
+  }
+
   for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
     test(`a list screen is never wider than a desktop window, whatever the top bar holds (${language})`, async ({ page }) => {
       // Round 5: the shell's grid column was as wide as the top bar's contents, so a workspace

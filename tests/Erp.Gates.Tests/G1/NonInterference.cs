@@ -497,8 +497,8 @@ public static partial class NonInterference
 
     /// <summary>Every GET with values from both tenants: route values (each tenant's ids and
     /// code), each documented query parameter alone (texts both tenants hold, each tenant's own
-    /// texts and ids, flags and numbers), and for registered lists every grouping and sort, and
-    /// offset (skip) pages of each.</summary>
+    /// texts and ids, flags and numbers), and for registered lists every grouping and sort, every
+    /// sort with searches and with a grouping, and offset (skip) pages of each.</summary>
     internal static List<(ApiEndpoint Endpoint, string Uri)> RequestsFor(IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi, ModuleCatalog catalog,
         TenantSnapshot ownA, TenantSnapshot ownB, IReadOnlyList<string> textsA, IReadOnlyList<string> textsB, string codeA, string codeB)
     {
@@ -545,6 +545,24 @@ public static partial class NonInterference
                 {
                     result.Add((endpoint, $"{basePath}?take=5&sort=-{Uri.EscapeDataString(column.Key)}"));
                     result.Add((endpoint, $"{basePath}?take=5&skip=5&sort=-{Uri.EscapeDataString(column.Key)}"));
+                    // A sort with a search, as the client sends after a header click with a search
+                    // typed (critic p05 round 7, plant L11: a total memo keyed by search, filter and
+                    // sort, served only when both are present), both directions, and with a grouping.
+                    if (list.SearchFields.Count > 0)
+                    {
+                        foreach (var sort in new[] { column.Key, "-" + column.Key })
+                        {
+                            foreach (var text in texts.Take(2))
+                            {
+                                result.Add((endpoint, $"{basePath}?take=5&search={Uri.EscapeDataString(text)}&sort={Uri.EscapeDataString(sort)}"));
+                            }
+                        }
+                        result.Add((endpoint, $"{basePath}?take=5&skip=5&search=a&sort=-{Uri.EscapeDataString(column.Key)}"));
+                    }
+                    foreach (var group in list.Columns.Where(c => c.Groupable).Take(1))
+                    {
+                        result.Add((endpoint, $"{basePath}?take=5&groupBy={Uri.EscapeDataString(group.Key)}&sort={Uri.EscapeDataString(column.Key)}"));
+                    }
                 }
                 // Offset pages (skip, a jump into the list), each judged right after the other tenant
                 // opened the same query's first page and the same offset page (critic p05 round 5,

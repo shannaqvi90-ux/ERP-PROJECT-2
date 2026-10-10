@@ -133,8 +133,42 @@
 /* A screen's own record form (renderRecord: a role's permission matrix, a company's form) grows
    with the screen: about half the list's width, never under 380px. A fixed 340px panel cut the
    matrix headers to "Creat" and "Delet" at every screen width (critic p03 round 5). */
+/* The splitter (recordWidth.ts) sits between them: the form takes --record-share of the list body (it opens at
+   48% and grows to fit content wider than that, or the user drags or keys it), never under 380px
+   and never so wide that the list keeps less than 288px (listFloor), so the dense list stays on
+   screen beside even the widest form (critic p03 rounds 6 and 7: a permission table needing about
+   1,050px was cut in a 340px, then an 806px panel). */
 .list-body.has-record.has-form {
-  grid-template-columns: minmax(0, 1fr) minmax(min(380px, 50%), 48%);
+  grid-template-columns: minmax(0, 1fr) 10px minmax(min(380px, 50%), min(var(--record-share, 48%), calc(100% - 298px)));
+  column-gap: 0;
+}
+
+.list-splitter {
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.list-splitter::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 4px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+}
+
+.list-splitter:hover::before,
+.list-splitter.is-dragging::before {
+  background: var(--accent);
+}
+
+.list-splitter:focus-visible::before {
+  inset-inline-start: 3px;
+  width: 4px;
+  background: var(--focus);
 }
 
 .list-scroll {

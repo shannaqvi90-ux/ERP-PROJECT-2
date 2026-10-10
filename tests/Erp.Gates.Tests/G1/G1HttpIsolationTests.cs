@@ -159,6 +159,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
         CheckAtLeast(report.ListAnswerPagesJudged, "g1.listAnswerPagesJudged");
         CheckAtLeast(report.ListAnswerOffsetPagesJudged, "g1.listAnswerOffsetPagesJudged");
+        CheckAtLeast(report.ListAnswerSortedQueries, "g1.listAnswerSortedQueries");
+        CheckAtLeast(report.ListAnswerSortedDiscriminating, "g1.listAnswerSortedDiscriminating");
         Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
         CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
         CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
@@ -180,7 +182,11 @@ public static partial class IsolationAttack
     private static readonly string[] GuessedQueryNames =
         ["tenantId", "tenant", "tenant_id", "companyId", "id", "userId", "search", "workspace", "email", "code", "name", "q", "filter"];
 
-    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env)
+    /// <param name="sortedLists">Lists whose answers are also judged sorted (default: every list).
+    /// The gate's self-test judges the planted lists only: the product's lists are judged sorted
+    /// by the gate itself, and doing it again in the self-test's environment cost about a quarter of
+    /// an hour of the verify's longest process.</param>
+    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -606,13 +612,13 @@ public static partial class IsolationAttack
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged"));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists));
             // The same in Arabic with Arabic-Indic digits, both ways.
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged"));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged"));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists));
         }
-        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries, {listAnswers.Sum(r => r.Discriminating)} with different true answers, {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
+        Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries ({listAnswers.Sum(r => r.SortedQueries)} sorted), {listAnswers.Sum(r => r.Discriminating)} with different true answers ({listAnswers.Sum(r => r.SortedDiscriminating)} sorted), {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 
         // Phase 3: every tenant B text value in every string field of every request body. Values the
         // attacker managed to store in its own tenant are its own data from then on.
@@ -810,6 +816,8 @@ public static partial class IsolationAttack
             ListAnswersDiscriminating = listAnswers.Sum(r => r.Discriminating),
             ListAnswerPagesJudged = listAnswers.Sum(r => r.PagesJudged),
             ListAnswerOffsetPagesJudged = listAnswers.Sum(r => r.OffsetPagesJudged),
+            ListAnswerSortedQueries = listAnswers.Sum(r => r.SortedQueries),
+            ListAnswerSortedDiscriminating = listAnswers.Sum(r => r.SortedDiscriminating),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
             Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
@@ -1873,6 +1881,12 @@ public sealed record IsolationReport(
 
     /// <summary>Pages of offset (skip) walks whose total, groups and rows were judged.</summary>
     public int ListAnswerOffsetPagesJudged { get; init; }
+
+    /// <summary>Judged list queries that carried an explicit sort.</summary>
+    public int ListAnswerSortedQueries { get; init; }
+
+    /// <summary>Judged sorted list queries whose true answers differ between the tenants.</summary>
+    public int ListAnswerSortedDiscriminating { get; init; }
 
     /// <summary>Process-wide state (reachable from singletons and static fields) that changed
     /// while the tenants used the app.</summary>
