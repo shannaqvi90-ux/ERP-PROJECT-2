@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { freshStart, paceSignIn, signIn, users } from "./demo";
+import { freshStart, paceSignIn, password, signIn, users } from "./demo";
 
 /** A user-verifying platform authenticator for the page (Chromium's virtual one): it answers at once. */
 async function addDevice(page: Page) {
@@ -83,5 +83,71 @@ test.describe("passkeys", () => {
     await page.goto("/");
     await expect(page.getByRole("alert")).toContainText("Sign-in with the passkey did not work");
     await expect(page.locator('input[name="email"]')).toBeFocused();
+  });
+  // Critic p03 round 8: a lost or stolen device kept signing in after the administrator reset the
+  // password and signed the user out everywhere, and no screen showed the user's passkeys.
+  test("an administrator stops a lost device: the user's panel lists its passkey and a passkey sign-in, Sign out everywhere removes it, and the device no longer signs in", async ({ page, browser }) => {
+    const tag = Math.random().toString(36).slice(2, 8);
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const created = async (url: string, data: object) => {
+      const response = await page.request.post(url, { headers, data });
+      expect(response.status(), `POST ${url}`).toBe(201);
+      return ((await response.json()) as { id: string }).id;
+    };
+    const roleId = await created("/api/identity/roles", { nameEn: `Own account ${tag}`, nameAr: `الحساب الشخصي ${tag}`, permissions: ["identity.profile.update"] });
+    const email = `e2e.field.${tag}@alnoor.example`;
+    const userId = await created("/api/identity/users", { email, displayName: `Field Rep ${tag}`, language: "en", password, mustChangePassword: false, roleIds: [roleId] });
+
+    // The field laptop: the user adds a passkey and signs in with it.
+    const laptop = await browser.newContext();
+    try {
+      const device = await laptop.newPage();
+      await addDevice(device);
+      await freshStart(device, "en");
+      await signIn(device, email);
+      await expect(device.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+      await device.goto("/identity/me");
+      const section = device.locator("section.id-passkeys");
+      await section.locator('input[name="passkey-name"]').fill("Field laptop");
+      await section.getByRole("button", { name: "Add a passkey", exact: true }).click();
+      await expect(device.getByText("Passkey Field laptop added.", { exact: false })).toBeVisible();
+      await signOut(device);
+      await paceSignIn(device);
+      await device.getByRole("button", { name: "Continue with a passkey" }).click();
+      await expect(device.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+
+      // The administrator sees the passkey and the passkey sign-in on the user's panel.
+      await page.goto(`/identity/users/${userId}`);
+      const panel = page.locator("aside");
+      await expect(panel.locator("section.id-user-passkeys")).toContainText("Field laptop");
+      await panel.getByRole("tab", { name: "Sign-in history" }).click();
+      await expect(panel.locator(".id-history-table tbody tr").first()).toContainText("Passkey");
+      await panel.getByRole("tab", { name: "Details" }).click();
+
+      // Sign out everywhere asks, with the passkeys ticked, and Enter confirms.
+      await panel.getByRole("button", { name: "Sign out everywhere…" }).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toContainText(`Sign Field Rep ${tag} out everywhere?`);
+      await expect(dialog.getByRole("checkbox")).toBeChecked();
+      await expect(dialog.getByRole("button", { name: "Sign out everywhere", exact: true })).toBeFocused();
+      await page.keyboard.press("Enter");
+      await expect(panel.getByText(/1 session ended\. 1 passkey removed\./)).toBeVisible();
+      await expect(panel.locator("section.id-user-passkeys")).toContainText("No passkeys");
+      const listed = (await (await page.request.get(`/api/identity/users/${userId}/passkeys`)).json()) as unknown[];
+      expect(listed).toHaveLength(0);
+
+      // The laptop's session is over, and its passkey no longer signs in.
+      await device.goto("/");
+      await expect(device.locator('input[name="email"]')).toBeVisible();
+      await device.evaluate(() => sessionStorage.clear());
+      await paceSignIn(device);
+      await device.goto("/");
+      await expect(device.getByRole("alert")).toContainText("Sign-in with the passkey did not work");
+    } finally {
+      await laptop.close();
+    }
   });
 });

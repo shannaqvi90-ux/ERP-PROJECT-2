@@ -1271,6 +1271,11 @@ describe("a user's passkeys, for a lost or stolen device", () => {
     expect(button(section, "Remove the passkey Shared laptop")).toBeUndefined();
     expect(button(aside(), "Remove all passkeys")).toBeUndefined();
     expect(button(aside(), "Sign out everywhere…")).toBeUndefined();
+    // Every role reads as not changeable on the read-only record, also those the reader could give
+    // elsewhere (critic p03 round 8: Clerk and Read-only looked editable).
+    const labels = [...aside().querySelectorAll(".id-roles-list label")];
+    expect(labels.length).toBeGreaterThan(0);
+    for (const label of labels) expect(label.classList.contains("id-disabled")).toBe(true);
     // Resetting the password is its own permission, and it can take the passkeys with it.
     await click(button(aside(), "Reset password…"));
     expect(aside().querySelector("fieldset.id-method")!.textContent).toContain("Also remove their 2 passkeys");
