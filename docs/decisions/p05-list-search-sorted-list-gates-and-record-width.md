@@ -68,7 +68,18 @@ queries (1,368 of them sorted; 968 and 610 with different true answers in the tw
 (attack and the app it attacks) used 2,214 processor seconds (user 1,629, sys 585), against 1,914
 measured for round 7, so this round adds about 300 processor seconds to the verify. The
 NonInterference additions are six requests per sortable column; the G2 additions run in about one
-second; no new environment or whole run. The plant run caught L11 twice over: 5,965 list answers
+second; no new environment or whole run. Full verifies of this branch (integration branch merged at 9dc5a9a), through the verify slot:
+9,765 s (dotnet 8,246) with every test green; 10,797 s (dotnet 9,075) with every test green but
+over the 10,500 s maximum, while the self-test's planted sorted list was still a list of its own (its
+endpoint and its saved-view endpoints went through every phase of the HTTP attack self-test, about a
+quarter of an hour of the verify's longest process); after moving that plant onto the existing
+planted scroll list and judging only the planted lists sorted in the self-test, 9,844 s (dotnet
+8,246, web 1,269, e2e 272, timing 57) with every test green and the ratchet passing, at a load of
+about 25 to 45. The integration branch's last quiet verify was 8,694 s (dotnet 7,359), so this round
+adds roughly 900 to 1,100 processor seconds at that load, most of it the sorted list answers in the
+gate and in its self-test. The margin under the maximum is about 650 s.
+
+The plant run caught L11 twice over: 5,965 list answers
 were wrong (for example "GET /api/tenancy/companies?take=50&search=a&sort=code answered total 49,
 but walking the same query returns 26 rows") and the process-state check saw the static memo
 change (p00's file-local fix).
