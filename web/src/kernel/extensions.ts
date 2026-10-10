@@ -78,8 +78,12 @@ export type ModuleAction = {
   path: string;
   /** Id of the screen command to run once the screen offers it (useCommand/useShortcut). */
   command?: string;
-  /** The screen's key for the same action, shown beside it once the screen is open. */
-  chord?: string;
+  /**
+   * For an action its screen offers only in some cases that permissions do not decide (New branch
+   * needs a company the user may add a branch to): asked each time the palette opens, with the
+   * screen's own test; the action is offered only once it answers true.
+   */
+  available?: () => Promise<boolean>;
 };
 
 export type ModuleExtensions = {

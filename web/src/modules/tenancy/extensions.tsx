@@ -2,7 +2,8 @@ import "./tenancy.css";
 import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
 import { recordPath } from "../../kernel/router";
-import type { ListPage } from "./records";
+import { branchCompanies } from "./BranchesPage";
+import { loadAll, type ListPage } from "./records";
 import { workplaceChanged, type BranchRow, type CompanyRow, type Workplace } from "./types";
 import { WorkplaceSwitcher } from "./WorkplaceSwitcher";
 
@@ -17,7 +18,16 @@ export const extensions: ModuleExtensions = {
   // roles allow it; each opens its screen and runs the screen's own command.
   actions: [
     { key: "tenancy.companies.new", labelKey: "tenancy.company.new", keywordsKey: "tenancy.action.newCompanyKeywords", permission: "tenancy.companies.create", path: "/tenancy/companies", command: "tenancy.screen.new" },
-    { key: "tenancy.branches.new", labelKey: "tenancy.branch.new", keywordsKey: "tenancy.action.newBranchKeywords", permission: "tenancy.branches.create", path: "/tenancy/branches", command: "tenancy.screen.new" },
+    {
+      key: "tenancy.branches.new",
+      labelKey: "tenancy.branch.new",
+      keywordsKey: "tenancy.action.newBranchKeywords",
+      permission: "tenancy.branches.create",
+      path: "/tenancy/branches",
+      command: "tenancy.screen.new",
+      // As on the screen: only with a company the user may add a branch to.
+      available: async () => branchCompanies(await loadAll<CompanyRow>("/api/tenancy/companies")).length > 0,
+    },
     { key: "tenancy.companies.print", labelKey: "tenancy.action.printCompanies", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.companies.read", path: "/tenancy/companies", command: "lists.print" },
     { key: "tenancy.branches.print", labelKey: "tenancy.action.printBranches", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.branches.read", path: "/tenancy/branches", command: "lists.print" },
   ],

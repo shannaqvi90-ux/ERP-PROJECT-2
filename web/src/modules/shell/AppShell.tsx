@@ -228,7 +228,7 @@ export function AppShell({ session }: { session: Session }) {
   const statusItems = allowed(extensions.status, can);
 
   return (
-    <div className="app" data-nav={navOpen ? "open" : "closed"}>
+    <div className="app" data-nav={navOpen ? "open" : "closed"} data-pending-action={pending?.action.key}>
       <a className="skip-link" href="#main">
         {t("shell.skipToContent")}
       </a>
@@ -376,15 +376,22 @@ export function AppShell({ session }: { session: Session }) {
  * to). A screen that does not offer it within a few seconds, or a move to another screen (the
  * user chose to stay with unsaved changes), runs nothing and says so.
  */
-function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean) => void }) {
+export function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean) => void }) {
   const commands = useCommandList();
   const path = usePath();
-  const done = useRef(onDone);
-  done.current = onDone;
+  // Said once: it ran, or (only when it never ran) it did not.
+  const finished = useRef(false);
+  const report = useRef(onDone);
+  report.current = onDone;
+  const done = useRef((ran: boolean) => {
+    if (finished.current) return;
+    finished.current = true;
+    report.current(ran);
+  });
   const onScreen = splitPath(path).screen === action.path;
   const command = onScreen ? commands.find((c) => c.id === action.command) : undefined;
   useEffect(() => {
-    if (!command) return;
+    if (!command || finished.current) return;
     // After the palette has closed and given the focus back, so the command keeps the focus it moves.
     const timer = window.setTimeout(() => {
       command.run();

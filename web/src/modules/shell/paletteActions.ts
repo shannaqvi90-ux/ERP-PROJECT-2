@@ -67,6 +67,7 @@ export function actionEntries(actions: ModuleAction[], t: Translate, language: L
     keywords: matchTexts(language, action.labelKey, action.keywordsKey),
     icon: "bolt",
     command: action.command ? { id: action.command, screen: action.path } : undefined,
+    available: action.available,
     run: () => start(action),
   }));
 }

@@ -26,6 +26,8 @@ export type PaletteEntry = {
   /** A module action that runs this screen command once its screen is open: hidden while the
    * screen on show offers the same command itself (it is listed under "On this screen"). */
   command?: { id: string; screen: string };
+  /** Asked when the palette opens; the entry is offered only once it answers true. */
+  available?: () => Promise<boolean>;
 };
 
 type Section = { key: string; label: string; entries: PaletteEntry[]; status?: "searching" | "failed" };
@@ -72,12 +74,32 @@ export function CommandPalette({
   const listId = useId();
   const sources = useMemo(() => allowed(extensions.palette, can), [can]);
   const trimmed = query.trim();
+  // Actions offered only in some cases ask once per opening; until they answer they are not shown.
+  const [availability, setAvailability] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    let current = true;
+    for (const action of actions) {
+      if (!action.available) continue;
+      action.available().then(
+        (yes) => current && setAvailability((a) => ({ ...a, [action.id]: yes })),
+        () => current && setAvailability((a) => ({ ...a, [action.id]: false })),
+      );
+    }
+    return () => {
+      current = false;
+    };
+    // Once per opening: the actions offered do not change while the palette is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const registered = useCommandList();
   const here = useMemo(() => commandEntries(registered, t, language), [registered, t, language]);
   // A module action the screen on show offers itself is listed once, under "On this screen".
   const elsewhere = useMemo(
-    () => actions.filter((a) => !(a.command && a.command.screen === screen && registered.some((c) => c.id === a.command!.id))),
-    [actions, screen, registered],
+    () =>
+      actions.filter(
+        (a) => (!a.available || availability[a.id] === true) && !(a.command && a.command.screen === screen && registered.some((c) => c.id === a.command!.id)),
+      ),
+    [actions, screen, registered, availability],
   );
 
   // Ask the record sources, debounced; a newer query cancels the older one.
