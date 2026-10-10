@@ -464,7 +464,14 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     expect(bravoEpoch).toBeTruthy();
     await signOut();
     const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).sort();
-    expect(keys.every((k) => ["erp.language", "erp.numerals", "erp.navOpen"].includes(k!))).toBe(true);
+    expect(keys.every((k) => ["erp.language", "erp.numerals", "erp.navOpen", "erp.signInDomains"].includes(k!))).toBe(true);
+    // The sign-in domains the device keeps (round 9) are salted hashes: nothing of B can be read in
+    // any value the device keeps (no e-mail, no domain, no workspace code or name, no record id).
+    expect(localStorage.getItem("erp.signInDomains")).toMatch(/^\{"salt":"[0-9a-f]{32}","hashes":\["[0-9a-f]{16}"\]\}$/);
+    const kept = keys.map((k) => localStorage.getItem(k!) ?? "").join("\n").toLowerCase();
+    for (const marker of [bravo.admin.email, "gulfsteel", bravo.code, bravo.nameEn, bravo.admin.id, bravo.id, bravo.roleName]) {
+      expect(kept, `a kept device setting holds "${marker}"`).not.toContain(String(marker).toLowerCase());
+    }
     // The fresh document holds only its own new history epoch (kernel/historyGuard), not B's.
     expect(Array.from({ length: sessionStorage.length }, (_, i) => sessionStorage.key(i))).toEqual(["erp.historyEpoch"]);
     expect(sessionStorage.getItem("erp.historyEpoch")).not.toBe(bravoEpoch);

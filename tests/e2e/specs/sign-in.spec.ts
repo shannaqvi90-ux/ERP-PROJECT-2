@@ -137,6 +137,56 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
   });
 
+  // Critic p00 round 8: from the plain address a whole e-mail did not move on (4 steps, as the
+  // reference). A shared counter PC, after the Sign out button: the device knows its workspace.
+  test("a shared PC, after Sign out, on the plain address: the next person's whole e-mail moves on, the password, Enter", async ({ page, browser }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+    await page.getByRole("button", { name: "Sign out" }).click();
+    const email = page.locator('input[name="email"]');
+    await expect(email).toBeFocused();
+    await expect(email).toHaveValue("");
+    // Nothing readable of the last person or the workspace is kept on the device.
+    const kept = await page.evaluate(() => Object.keys(localStorage).map((k) => `${k}=${localStorage.getItem(k)}`).join("\n"));
+    expect(kept).not.toMatch(/alnoor|admin@|Mariam/i);
+    await page.goto("/");
+    await expect(email).toBeFocused();
+    await expect(page.locator("#email-moves-on")).toHaveText("On this device, typing a whole address of a workspace you signed in to here moves on to the password.");
+    await paceSignIn(page);
+    // Three actions: the whole e-mail (typed key by key, the screen moves on), the password, Enter.
+    await page.keyboard.type(users.viewer);
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    await expect(page.locator(".workspace-name")).toHaveText("Al Noor Trading LLC");
+
+    // A person who leaves the field by habit (Tab after the e-mail) still lands in the password.
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(email).toBeFocused();
+    await paceSignIn(page);
+    await page.keyboard.type(users.admin);
+    await page.keyboard.press("Tab");
+    await expect(page.locator('input[name="password"]')).toBeFocused();
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
+
+    // A new device knows nothing: there the whole e-mail stays in its field.
+    const other = await browser.newContext();
+    try {
+      const fresh = await other.newPage();
+      await fresh.goto("/");
+      await expect(fresh.locator('input[name="email"]')).toBeFocused();
+      await expect(fresh.locator("#email-moves-on")).toHaveCount(0);
+      await fresh.keyboard.type(users.viewer);
+      await expect(fresh.locator('input[name="email"]')).toBeFocused();
+    } finally {
+      await other.close();
+    }
+  });
+
   test("the password can be shown from the keyboard to check it, then hidden, and still signs in", async ({ page }) => {
     await freshStart(page, "en");
     await page.keyboard.type(users.admin);

@@ -25,9 +25,11 @@
  */
 
 /** Settings of the device, not of a person: kept across sign-outs. Nothing here may hold data.
- * `erp.passkeyOffer` ("1"/"0"): whether the sign-in screen asks this device for a passkey as soon
- * as it opens (kernel/passkeys.ts); it names nobody. */
-export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer"];
+ * `erp.passkeyOffer` ("1"/"2"/"0"): whether the sign-in screen asks this device for a passkey as
+ * soon as it opens (kernel/passkeys.ts); it names nobody. `erp.signInDomains`: salted hashes of
+ * the e-mail domains this device signed in with, so a whole address moves on to the password from
+ * the plain address too (kernel/signInAddress.ts); no e-mail and no readable domain. */
+export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer", "erp.signInDomains"];
 
 /**
  * The e-mail of the last sign-in on this device, so a returning person types only the password.

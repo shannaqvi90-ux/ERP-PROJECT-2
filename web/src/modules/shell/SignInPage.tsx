@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
-import { completesTeamEmail, fullEmail, teamDomain } from "../../kernel/signInAddress";
+import { completesKnownEmail, completesTeamEmail, deviceKnowsSignInDomains, fullEmail, rememberSignInDomain, teamDomain } from "../../kernel/signInAddress";
 import { freshPasskeyChallenge, useSession, type Workspace } from "../../kernel/session";
-import { askForPasskey, cancelledByPerson, passkeyOffered, passkeysSupported, setPasskeyOffered, takeSignedOut, type PasskeySignIn } from "../../kernel/passkeys";
+import { askForPasskey, cancelledByPerson, notePasswordSignIn, passkeyAskedOnArrival, passkeysSupported, setPasskeyOffered, takeSignedOut, type PasskeySignIn } from "../../kernel/passkeys";
 import { LanguageToggle } from "./LanguageToggle";
 
 function rememberedEmail(): string {
@@ -42,9 +42,18 @@ const failuresBeforeHint = 3;
  * remembered on this device until the person signs out (see kernel/deviceState.ts).
  *
  * Passkeys: "Continue with a passkey" asks the device for any passkey of this site (no e-mail
- * typed). On a device where a passkey was added or used, the screen asks at once as it opens, from
+ * typed). On a device whose last sign-in used a passkey, the screen asks at once as it opens, from
  * any address (plain, the team's, a personal bookmark), so signing in is one confirmation on the
  * device; not right after the Sign out button, and cancelling leaves the e-mail and password.
+ * Asking never blocks the password (round 9, a shared PC): the Sign in button stays enabled, and
+ * typing in either field or sending the form withdraws the request (the browser closes its
+ * prompt) without a message and without moving the keyboard. After a password sign-in the next
+ * screen of the device does not ask as it opens (kernel/passkeys.ts).
+ *
+ * The whole address moves on to the password wherever the screen knows where it ends: on the
+ * team's address (its domain), and on any address for a domain this device signed in with before
+ * (kernel/signInAddress.ts, nothing looked up), so the next person at a shared PC types the whole
+ * e-mail, the password and Enter from the plain address too.
  */
 export function SignInPage() {
   const { t, language } = useI18n();
@@ -55,6 +64,11 @@ export function SignInPage() {
   const [justSignedOut] = useState(takeSignedOut);
   const [asking, setAsking] = useState(false);
   const askedOnArrival = useRef(false);
+  // The device request in progress, withdrawn when the person turns to the password instead.
+  const passkeyAbort = useRef<AbortController | null>(null);
+  const withdrawn = useRef(false);
+  // Read once: whether this device signed in to a workspace before (a whole address then moves on).
+  const [knowsDomains] = useState(deviceKnowsSignInDomains);
   const [notice, setNotice] = useState<string | null>(null);
   const [failures, setFailures] = useState(0);
   useDocumentTitle("shell.signIn.title");
@@ -83,8 +97,11 @@ export function SignInPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const workspaceRef = useRef<HTMLButtonElement>(null);
-  // The screen moved the focus on to the password by itself (the whole team e-mail was typed).
+  // The screen moved the focus on to the password by itself (a whole address it knows was typed).
   const movedOn = useRef(false);
+  // The key a person presses by habit to leave the e-mail field (Tab, or Enter), right after the
+  // screen moved on by itself, is absorbed once: it would otherwise skip past the password.
+  const absorbLeavingKey = useRef(false);
 
   // Keyboard first: the first empty field has focus on arrival and again after switching
   // language, so the next keystroke always types into the form.
@@ -98,7 +115,7 @@ export function SignInPage() {
 
   // A device that holds a passkey of this site is asked as soon as the screen opens.
   useEffect(() => {
-    if (askedOnArrival.current || !passkeyRequest || !canUsePasskey || justSignedOut || !passkeyOffered()) return;
+    if (askedOnArrival.current || !passkeyRequest || !canUsePasskey || justSignedOut || !passkeyAskedOnArrival()) return;
     askedOnArrival.current = true;
     void passkeySignIn(passkeyRequest);
     // Once, on arrival: the challenge the session answer carried.
@@ -110,19 +127,28 @@ export function SignInPage() {
     setAsking(true);
     setError(null);
     setNotice(null);
+    const controller = new AbortController();
+    passkeyAbort.current = controller;
+    withdrawn.current = false;
     let signedIn = false;
+    let sending = false;
     try {
       const challenge = request ?? (await freshPasskeyChallenge());
+      if (controller.signal.aborted) return;
       if (!challenge) {
         setError({ key: "shell.signIn.unreachable" });
         return;
       }
-      const assertion = await askForPasskey(challenge);
+      const assertion = await askForPasskey(challenge, controller.signal);
+      if (controller.signal.aborted) return;
+      passkeyAbort.current = null;
+      sending = true;
       setBusy(true);
       const result = await signInWithPasskey(assertion);
       if (result.kind === "ok") {
         signedIn = true;
         setPasskeyOffered(true);
+        rememberSignInDomain(result.session.user.email);
         try {
           localStorage.setItem(lastEmailKey, result.session.user.email);
         } catch {
@@ -132,13 +158,28 @@ export function SignInPage() {
       }
       setError(fromServer(result.message, language, result.kind === "failed" ? result.code : undefined));
     } catch (problem) {
+      // Withdrawn because the person turned to the password: nothing to say.
+      if (withdrawn.current) return;
       if (cancelledByPerson(problem)) setNotice("shell.signIn.passkeyCancelled");
       else setError({ key: "shell.signIn.passkeyUnavailable" });
     } finally {
+      if (passkeyAbort.current === controller) passkeyAbort.current = null;
       setAsking(false);
-      setBusy(false);
-      if (!signedIn) (emailRef.current?.value ? passwordRef : emailRef).current?.focus();
+      if (sending) setBusy(false);
+      // The keyboard stays where the person is typing when they withdrew the request.
+      if (!signedIn && !withdrawn.current) (emailRef.current?.value ? passwordRef : emailRef).current?.focus();
+      withdrawn.current = false;
     }
+  }
+
+  /** The person turned to the password (typed in a field, or sent the form): the device request is
+   * withdrawn, so the browser's prompt closes and nothing waits on it. */
+  function withdrawPasskeyRequest() {
+    const controller = passkeyAbort.current;
+    if (!controller) return;
+    passkeyAbort.current = null;
+    withdrawn.current = true;
+    controller.abort();
   }
 
   useEffect(() => {
@@ -164,12 +205,16 @@ export function SignInPage() {
 
   /** On the team's address, typing the whole e-mail (the team's domain included) ends the field:
    * the screen moves on to the password, as Tab or Enter would (the note under the field says so
-   * beforehand). Only while the password is empty, and only when the address becomes whole. */
+   * beforehand). The same on any address for a domain this device signed in with before. Only
+   * while the password is empty, and only when the address becomes whole. */
   function onEmailChange(value: string) {
-    const wasWhole = completesTeamEmail(email, domain);
+    withdrawPasskeyRequest();
+    const ends = (text: string) => completesTeamEmail(text, domain) || completesKnownEmail(text);
+    const wasWhole = ends(email);
     setEmail(value);
-    if (wasWhole || changing || password || !completesTeamEmail(value, domain)) return;
+    if (wasWhole || changing || password || !ends(value)) return;
     movedOn.current = true;
+    absorbLeavingKey.current = true;
     setFieldErrors((errors) => ({ ...errors, email: undefined }));
     passwordRef.current?.focus();
   }
@@ -179,9 +224,18 @@ export function SignInPage() {
     setCapsLock(event.getModifierState?.("CapsLock") === true);
   }
 
-  /** Backspace in the still-empty password after the screen moved on goes back to the e-mail's end. */
+  /** Backspace in the still-empty password after the screen moved on goes back to the e-mail's end.
+   * Tab or Enter as the very next key after the screen moved on (a person leaving the e-mail field
+   * by habit, as in other products) is absorbed: the screen already went on, so the key neither
+   * skips past the password nor sends the form without it. Any other key ends that. */
   function onPasswordKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     onPasswordKey(event);
+    const absorb = absorbLeavingKey.current;
+    absorbLeavingKey.current = false;
+    if (absorb && !password && ((event.key === "Tab" && !event.shiftKey) || event.key === "Enter") && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      return;
+    }
     if (event.key !== "Backspace" || password || !movedOn.current) return;
     event.preventDefault();
     movedOn.current = false;
@@ -191,6 +245,7 @@ export function SignInPage() {
   }
 
   async function submit(workspace?: string) {
+    withdrawPasskeyRequest();
     const errors: { email?: string; password?: string } = {};
     const signInEmail = fullEmail(email, domain);
     errors.email = emailProblem();
@@ -217,6 +272,8 @@ export function SignInPage() {
       const result = await signIn(signInEmail, password, workspace, changing ? newPassword : undefined);
       if (result.kind === "failed" && result.code === "auth.signInFailed") setFailures((count) => count + 1);
       if (result.kind === "ok") {
+        rememberSignInDomain(signInEmail);
+        notePasswordSignIn();
         try {
           localStorage.setItem(lastEmailKey, signInEmail);
         } catch {
@@ -282,7 +339,7 @@ export function SignInPage() {
                 onChange={(e) => onEmailChange(e.target.value)}
                 onKeyDown={onEmailKey}
                 aria-invalid={fieldErrors.email ? true : undefined}
-                aria-describedby={[suffix ? "email-domain" : "", domain && !changing ? "email-moves-on" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
+                aria-describedby={[suffix ? "email-domain" : "", (domain || knowsDomains) && !changing ? "email-moves-on" : "", fieldErrors.email ? "email-error" : ""].filter(Boolean).join(" ") || undefined}
               />
               {suffix && (
                 <span id="email-domain" className="signin-domain" title={t("shell.signIn.domainHint")}>
@@ -291,9 +348,9 @@ export function SignInPage() {
                 </span>
               )}
             </span>
-            {domain && !changing && (
+            {(domain || knowsDomains) && !changing && (
               <span id="email-moves-on" className="muted signin-note">
-                {t("shell.signIn.domainMovesOn")}
+                {t(domain ? "shell.signIn.domainMovesOn" : "shell.signIn.knownDomainMovesOn")}
               </span>
             )}
             {fieldErrors.email && (
@@ -319,7 +376,10 @@ export function SignInPage() {
                 autoCapitalize="off"
                 spellCheck={false}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  withdrawPasskeyRequest();
+                  setPassword(e.target.value);
+                }}
                 onKeyDown={onPasswordKeyDown}
                 onKeyUp={onPasswordKey}
                 onBlur={() => setCapsLock(false)}
@@ -414,7 +474,7 @@ export function SignInPage() {
               ))}
             </div>
           )}
-          <button type="submit" className="button primary signin-submit" disabled={busy || asking}>
+          <button type="submit" className="button primary signin-submit" disabled={busy}>
             {busy ? t("shell.signIn.busy") : t("shell.signIn.submit")}
           </button>
           {canUsePasskey && passkeyRequest && !changing && (
