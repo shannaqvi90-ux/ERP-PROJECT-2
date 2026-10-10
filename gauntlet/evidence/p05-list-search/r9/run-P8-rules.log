@@ -1,0 +1,60 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:17.25
+2026-10-10T05:22:34Z
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.60]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.80]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [27 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [27 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [83 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [10 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [6 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [33 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [7 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [4 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [100 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [41 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [145 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [26 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [399 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [538 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [6 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [24 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [11 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [116 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [39 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [13 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [80 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [13 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [2 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [11 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [18 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [137 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [63 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [567 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [2 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [315 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [36 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [2 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [2 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [312 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [1 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [173 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [736 ms]
+[xUnit.net 00:00:18.52]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+
+Test Run Successful.
+Total tests: 39
+     Passed: 39
+ Total time: 18.9497 Seconds
+EXIT 0
+2026-10-10T05:22:54Z

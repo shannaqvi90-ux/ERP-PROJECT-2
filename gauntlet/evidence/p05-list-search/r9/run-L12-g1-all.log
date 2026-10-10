@@ -1,0 +1,77 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:34.61
+2026-10-10T04:44:19Z
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.33]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.98]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.36]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [11 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [5 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [7 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [4 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [4 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [4 m 23 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [116 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [75 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [23 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [3 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [250 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [941 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [240 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [291 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [247 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [62 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [12 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [48 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [2 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [38 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [44 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [78 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [28 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [48 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [58 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [1 s]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [338 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [257 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [73 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [2 s]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [146 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [163 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [37 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [14 s]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [133 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [164 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [3 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [83 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [5 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [8 m 44 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [16 m 58 s]
+  Passed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [33 m 46 s]
+[xUnit.net 00:34:11.47]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+
+Test Run Successful.
+Total tests: 56
+     Passed: 56
+ Total time: 34.2144 Minutes
+EXIT 0
+2026-10-10T05:18:33Z

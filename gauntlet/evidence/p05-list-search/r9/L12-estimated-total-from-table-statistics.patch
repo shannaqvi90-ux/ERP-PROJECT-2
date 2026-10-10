@@ -1,0 +1,49 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 4a86aff..6b05c97 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -255,7 +255,18 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        int total;
++        if (database && plan.Words.Count == 0 && plan.Filter is null && await EstimatedRowsAsync(source, http, cancellationToken) is { } estimate && estimate > LargeListRows)
++        {
++            // PLANT L12: counting every row of a 100,000-row list for each page costs more than it
++            // tells, so past LargeListRows an unfiltered list shows the planner's estimate of the
++            // table's rows instead (pg_class.reltuples: every tenant's rows).
++            total = (int)estimate;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+@@ -312,6 +323,24 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         return ListResult<T>.Valid(rows, total, next, groups, plan.Relevance);
+     }
+ 
++    /// <summary>PLANT L12: unfiltered lists larger than this show an estimated total.</summary>
++    private const long LargeListRows = 10_000;
++
++    /// <summary>PLANT L12: the planner's estimate of the rows of the table the list reads.</summary>
++    private static async Task<long?> EstimatedRowsAsync(IQueryable<T> source, HttpContext http, CancellationToken cancellationToken)
++    {
++        var match = System.Text.RegularExpressions.Regex.Match(source.ToQueryString(), @"FROM\s+(\S+)\s+AS", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
++        if (!match.Success)
++        {
++            return null;
++        }
++        var session = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Erp.Kernel.Data.ErpDbSession>(http.RequestServices);
++        await using var command = session.Connection.CreateCommand();
++        command.CommandText = "SELECT reltuples::bigint FROM pg_class WHERE oid = to_regclass(@t)";
++        command.Parameters.AddWithValue("t", match.Groups[1].Value.Replace("\"", ""));
++        return await command.ExecuteScalarAsync(cancellationToken) is long rows ? rows : null;
++    }
++
+     /// <summary>The rows the request selects, in its order, without paging (exports, bulk
+     /// actions on "everything that matches"). Throws <see cref="ListQueryException"/>.</summary>
+     public IQueryable<T> Apply(IQueryable<T> source, ListRequest request)

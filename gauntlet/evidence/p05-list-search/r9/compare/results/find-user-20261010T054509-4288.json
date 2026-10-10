@@ -1,0 +1,1133 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261010T054509-4288",
+  "instrument": 7,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-10T05:45:09.514Z",
+  "finished_at": "2026-10-10T05:46:16.761Z",
+  "environment": {
+    "base_url": "http://localhost:20550",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 8,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.039,
+    "system_wait_seconds": 0.858,
+    "human_seconds": 6.64,
+    "human_plus_wait_seconds": 7.498,
+    "klm_operator_counts": {
+      "K": 8,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users",
+      "keystrokes": 0,
+      "at": 0.001,
+      "took": 0.041,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "user name",
+      "keystrokes": 7,
+      "at": 0.062,
+      "took": 0.017,
+      "text": "m an pi",
+      "same_field": false,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 0.967,
+      "took": 0.011,
+      "chord": "Enter",
+      "screen": "/identity/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "user list ready, search focused",
+      "at": 0.042,
+      "seconds": 0.004
+    },
+    {
+      "label": "the row with the name",
+      "at": 0.079,
+      "seconds": 0.795
+    },
+    {
+      "label": "the user's record with the sign-in",
+      "at": 0.978,
+      "seconds": 0.059
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "624e729522c1f86f.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r9/compare/blind/shots/624e729522c1f86f.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "390c544513455e5e.jpg",
+      "at": 0.874,
+      "path": "../../evidence-staging/p05-list-search/r9/compare/blind/shots/390c544513455e5e.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "dbaa3385a4a4453b.jpg",
+      "at": 1.039,
+      "path": "../../evidence-staging/p05-list-search/r9/compare/blind/shots/dbaa3385a4a4453b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "record_shows_name": true,
+      "record_shows_login": true,
+      "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=m+an+pi"
+    }
+  },
+  "path_notes": "enter: Users (navigation; the search box has the focus) > type the name > Enter opens the best match. | row: Users (navigation; the search box has the focus) > type the name > click the row. | prefixes: Users (navigation; the search box has the focus) > the first three letters of each word of the name > Enter opens the best match (verified to be the user). | palette: Ctrl+K > \"users\" > Enter (the search box has the focus) > type the name > Enter opens the best match. | initials: Users (navigation; the search box has the focus) > the initials of the name (one letter per word, e.g. \"map\") > Enter opens the best match, or a click on the user's row. | shortest: Users (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the user first (found through the list's search before the run, e.g. \"m an pi\") > Enter opens the best match.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-user.mjs",
+    "sha256": "ccbde994711a0cefd75080413bc00f9767dff220d16212071a2d58016e44c692"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true,
+      "gap_seconds": 0.046
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "de3b7c743fac054d",
+    "elements": 709
+  },
+  "screen_after_verify": {
+    "sha256": "de3b7c743fac054d",
+    "elements": 709,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.029
+  },
+  "screenshots_path": "shortest",
+  "best_path_per_metric": {
+    "steps": "enter",
+    "keystrokes": "initials",
+    "machine_seconds": "palette",
+    "human_seconds": "shortest",
+    "human_plus_wait_seconds": "shortest"
+  },
+  "counts_path": "shortest",
+  "variants": [
+    {
+      "id": "enter",
+      "path": "Users (navigation; the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 21,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.505,
+        "system_wait_seconds": 0.26,
+        "human_seconds": 10.28,
+        "human_plus_wait_seconds": 10.54,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.052,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 0.071,
+          "took": 0.05,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.433,
+          "took": 0.011,
+          "chord": "Enter",
+          "screen": "/identity/users",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.054,
+          "seconds": 0.008
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.122,
+          "seconds": 0.195
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.446,
+          "seconds": 0.057
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=Majid+Anil+Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.059
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "03703e6a1d3338c7",
+        "elements": 268
+      },
+      "screen_after_verify": {
+        "sha256": "03703e6a1d3338c7",
+        "elements": 268,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.036
+      }
+    },
+    {
+      "id": "row",
+      "path": "Users (navigation; the search box has the focus) > type the name > click the row.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 20,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.485,
+        "system_wait_seconds": 0.249,
+        "human_seconds": 13.05,
+        "human_plus_wait_seconds": 13.299,
+        "klm_operator_counts": {
+          "K": 20,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.054,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 0.074,
+          "took": 0.054,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 0.388,
+          "took": 0.041,
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.055,
+          "seconds": 0.009
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.129,
+          "seconds": 0.186
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.43,
+          "seconds": 0.054
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=Majid+Anil+Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.048
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "4c74b83d463f4df1",
+        "elements": 268
+      },
+      "screen_after_verify": {
+        "sha256": "4c74b83d463f4df1",
+        "elements": 268,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.036
+      }
+    },
+    {
+      "id": "prefixes",
+      "path": "Users (navigation; the search box has the focus) > the first three letters of each word of the name > Enter opens the best match (verified to be the user).",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 15,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.421,
+        "system_wait_seconds": 0.244,
+        "human_seconds": 8.6,
+        "human_plus_wait_seconds": 8.844,
+        "klm_operator_counts": {
+          "K": 15,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.054,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 14,
+          "at": 0.071,
+          "took": 0.021,
+          "text": "Maj Ani Pil",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.358,
+          "took": 0.008,
+          "chord": "Enter",
+          "screen": "/identity/users",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.055,
+          "seconds": 0.007
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.093,
+          "seconds": 0.184
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.367,
+          "seconds": 0.053
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=Maj+Ani+Pil"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.041
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "6fc1c64bf3584002",
+        "elements": 302
+      },
+      "screen_after_verify": {
+        "sha256": "6fc1c64bf3584002",
+        "elements": 302,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.023
+      }
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"users\" > Enter (the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 29,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.306,
+        "system_wait_seconds": 0.137,
+        "human_seconds": 11.22,
+        "human_plus_wait_seconds": 11.357,
+        "klm_operator_counts": {
+          "K": 29,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.012,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "users",
+          "keystrokes": 5,
+          "at": 0.015,
+          "took": 0.015,
+          "text": "users",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Users",
+          "keystrokes": 1,
+          "at": 0.032,
+          "took": 0.012,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 20,
+          "at": 0.047,
+          "took": 0.029,
+          "text": "Majid Anil Pillai",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.241,
+          "took": 0.009,
+          "chord": "Enter",
+          "screen": "/identity/users",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette input focused",
+          "at": 0.014,
+          "seconds": 0.001
+        },
+        {
+          "label": "users offered",
+          "at": 0.031,
+          "seconds": 0.001
+        },
+        {
+          "label": "user list ready, search focused",
+          "at": 0.045,
+          "seconds": 0.002
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.077,
+          "seconds": 0.079
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.25,
+          "seconds": 0.054
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=Majid+Anil+Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.055
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "ebadf27c3a741f51",
+        "elements": 267
+      },
+      "screen_after_verify": {
+        "sha256": "ebadf27c3a741f51",
+        "elements": 267,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.032
+      }
+    },
+    {
+      "id": "initials",
+      "path": "Users (navigation; the search box has the focus) > the initials of the name (one letter per word, e.g. \"map\") > Enter opens the best match, or a click on the user's row.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 3,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.482,
+        "system_wait_seconds": 0.247,
+        "human_seconds": 8.29,
+        "human_plus_wait_seconds": 8.537,
+        "klm_operator_counts": {
+          "K": 3,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.043,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 3,
+          "at": 0.055,
+          "took": 0.009,
+          "text": "map",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 0.382,
+          "took": 0.039,
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.044,
+          "seconds": 0.001
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.064,
+          "seconds": 0.187
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.422,
+          "seconds": 0.059
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=map"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.039
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "29869d9081f42f03",
+        "elements": 709
+      },
+      "screen_after_verify": {
+        "sha256": "29869d9081f42f03",
+        "elements": 709,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.023
+      }
+    },
+    {
+      "id": "shortest",
+      "path": "Users (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the user first (found through the list's search before the run, e.g. \"m an pi\") > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.039,
+        "system_wait_seconds": 0.858,
+        "human_seconds": 6.64,
+        "human_plus_wait_seconds": 7.498,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.001,
+          "took": 0.041,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "user name",
+          "keystrokes": 7,
+          "at": 0.062,
+          "took": 0.017,
+          "text": "m an pi",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.967,
+          "took": 0.011,
+          "chord": "Enter",
+          "screen": "/identity/users",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.042,
+          "seconds": 0.004
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.079,
+          "seconds": 0.795
+        },
+        {
+          "label": "the user's record with the sign-in",
+          "at": 0.978,
+          "seconds": 0.059
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_login": true,
+          "url": "http://localhost:20550/identity/users/019371ad-40c0-79c4-a6e8-778de18b44e4?q=m+an+pi"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.046
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "de3b7c743fac054d",
+        "elements": 709
+      },
+      "screen_after_verify": {
+        "sha256": "de3b7c743fac054d",
+        "elements": 709,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.029
+      }
+    }
+  ]
+}

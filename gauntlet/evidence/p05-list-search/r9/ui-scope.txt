@@ -1,0 +1,47 @@
+EN users list rendered in 164 ms; count: 100,005 users ; focus: INPUT Search by name, initials or e-mail ; DOM rows: 33
+typed initials "map": count 54 users target row index 15 after 346 ms
+Enter opens best match, panel shows login: true
+after Esc focus: TABLE[grid] Users: 54 rows
+ArrowDown from search -> TABLE[grid] Users: 100,005 rows
+End -> TABLE[grid] Users: 100,005 rows
+Home -> TABLE[grid] Users: 100,005 rows
+selection: 2 selected
+column menu: Filter… | Group by this column | Hide this column
+filter editor: Filter: Language is one of English Arabic Apply Cancel
+after filter Language is Arabic: count 30,308 users url http://localhost:20550/identity/users?filter=language+eq+%27ar%27
+grouped rows: Status Rows || Active 30,308 rows
+after save: View: Arabic speakers by status
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('row').nth(2) to be visible[22m
+
+    at /home/shan/evidence-staging/p05-list-search/r9/scripts/ui-scope.mjs:74:69 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3
+viewer opens Users: view View: Arabic speakers by status count 30,308 users
+viewer views menu: Save as a new view…
+viewer save dialog has share box: 0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('row').nth(5) to be visible[22m
+
+    at /home/shan/evidence-staging/p05-list-search/r9/scripts/ui-scope.mjs:88:69 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3
+Arabic speakers by status true true language eq 'ar' isActive
+Team view true false isActive eq true language
+delete 204
+AR dir rtl lang ar count 100,005 مستخدمين
+AR variant search: count undefined first row: ماجد أنيل بيلاي majid.pillai.068311@staff.example العربية نشط لم يسجّل الدخول

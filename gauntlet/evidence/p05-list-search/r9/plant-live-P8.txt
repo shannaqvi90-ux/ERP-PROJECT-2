@@ -1,0 +1,5 @@
+viewer canShare: false
+viewer POST /shared-views: 403
+viewer POST /views with isShared:true -> 201 isShared true isDefault true
+administrator now sees: Team view shared=true default=false mine=false | Viewer team view shared=true default=true mine=false
+tidy (admin deletes it as a sharer): 204

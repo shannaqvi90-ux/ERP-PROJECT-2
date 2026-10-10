@@ -1,0 +1,32 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f0eb30..0836109 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -44,7 +44,8 @@ public sealed record SavedViewDto(
+ /// <param name="IsDefault">Open this view when the list opens (replaces the previous default).</param>
+ /// <param name="Version">The version read (required to change a view).</param>
+ public sealed record SaveViewRequest(
+-    string? Name, IReadOnlyList<string>? Columns, string? Sort, string? Filter, string? Search, string? GroupBy, bool? IsDefault, uint? Version);
++    string? Name, IReadOnlyList<string>? Columns, string? Sort, string? Filter, string? Search, string? GroupBy, bool? IsDefault, uint? Version,
++    bool? IsShared = null);
+ 
+ /// <summary>
+ /// Endpoints of every registered list under <c>/api/lists/{list key}</c>: its definition and
+@@ -184,6 +185,7 @@ internal static class ViewEndpoints
+                     ? new OpenApiSchema { Type = JsonSchemaType.String | JsonSchemaType.Null, Enum = groupable, Description = "A groupable column key, or null." }
+                     : new OpenApiSchema { Type = JsonSchemaType.Null, Description = "The list has no groupable columns." },
+                 ["isDefault"] = new OpenApiSchema { Type = JsonSchemaType.Boolean | JsonSchemaType.Null, Description = "Open this view when the list opens." },
++                ["isShared"] = new OpenApiSchema { Type = JsonSchemaType.Boolean | JsonSchemaType.Null, Description = "Share the new view with everyone who can read the list (PLANT P8)." },
+                 ["version"] = new OpenApiSchema { Type = JsonSchemaType.Integer | JsonSchemaType.Null, Format = "int64", Description = "The version read; required to change a view." },
+             },
+         };
+@@ -232,6 +234,9 @@ internal static class ViewEndpoints
+     private static async Task<Results<Created<SavedViewDto>, ProblemHttpResult>> Create(
+         ListDefinition list, SaveViewRequest request, bool shared, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
++        // PLANT P8: the save dialog's "Share with the team" box sends isShared to POST /views; the
++        // share permission is declared only on the /shared-views routes, so it is never checked here.
++        shared = shared || request.IsShared == true;
+         var validator = Validate(list, request, http, requireVersion: false);
+         if (!validator.IsValid)
+         {

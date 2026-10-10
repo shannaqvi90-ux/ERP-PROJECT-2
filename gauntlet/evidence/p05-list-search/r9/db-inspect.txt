@@ -1,0 +1,82 @@
+== RLS on lists tables
+lists.__ef_migrations_history|f|f
+lists.saved_views|t|t
+== policies
+lists|saved_views|tenant_isolation|(tenant_id = erp.current_tenant_id())
+== roles
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+== saved_views columns
+id|uuid
+list_key|character varying
+name|character varying
+owner_user_id|uuid
+is_shared|boolean
+is_default|boolean
+columns|ARRAY
+sort|character varying
+filter|character varying
+search|character varying
+group_by|character varying
+tenant_id|uuid
+created_at|timestamp with time zone
+created_by|uuid
+updated_at|timestamp with time zone
+updated_by|uuid
+== indexes on identity.users
+CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+== app role unbound / bound
+SET
+0
+0
+BEGIN
+SET
+
+gulfsteel-bound users|0
+alnoor rows visible|0
+UPDATE 0
+ROLLBACK
+== app role can read table statistics across tenants (pg_class.reltuples)
+SET
+users|101010
+saved_views|10
+== audit of saved views
+== bound to gulfsteel (app.tenant_id + app.tenant_tx for this transaction)
+BEGIN
+SET
+|1791610249.346684
+gulfsteel users visible|0
+alnoor users visible|0
+views visible|0
+UPDATE 0
+ROLLBACK
+== audit rows for saved views
+ERROR:  column "entity_type" does not exist
+LINE 1: ...unt(*), min(occurred_at) from audit.entries where entity_typ...
+                                                             ^
+id tenant_id occurred_at actor_id actor_kind table_schema table_name record_id action changes transaction_id correlation_id == bound to gulfsteel 0190a000-0000-7000-8000-000000000002
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000002|1791610256.563650
+gulfsteel-bound: users visible|1005
+alnoor users visible|0
+views visible|5
+alnoor views visible|0
+UPDATE 0
+ROLLBACK
+== audit rows for lists.saved_views
+insert|10
+delete|1
+insert|11
+delete|t|{"id": {"old": "01a1244b-40e3-7ec6-8446-35611b88a6f8"}, "name": {"old": "Arabic speakers by status"}, "sort": {"old": "-createdAt"}, "filter": {"old": "language
+insert|t|{"id": {"new": "01a1244b-40e3-7ec6-8446-35611b88a6f8"}, "name": {"new": "Arabic speakers by status"}, "sort": {"new": "-createdAt"}, "filter": {"new": "language
+insert|f|{"id": {"new": "01a1244a-04d0-770f-88be-9c6874731304"}, "name": {"new": "Team view"}, "sort": {"new": "code"}, "filter": {"new": "isActive eq true"}, "columns":

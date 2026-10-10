@@ -1,0 +1,145 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:16.50
+2026-10-10T05:25:23Z
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.23]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.82]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.10]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:13.10]       static Erp.Kernel.Lists.<ListBinding>FF801D39937252A040490ADB4172DBF1E4493E2891F996428E4B5D263DCB0DF13__SortedSearchTotals.Seen: a read-only field that holds a mutable ConcurrentDictionary<String, Int32>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:13.10]       Stack Trace:
+[xUnit.net 00:00:13.10]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:13.10]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.10]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.10]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.10]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:13.10]       Output:
+[xUnit.net 00:00:13.10]         416 types, 85 fields, 14 singleton services inspected, 115 endpoint delegates walked (3322 objects) to 29 closures; 5 framework singletons over product types; 93 roots walked to 861 objects, 49 product types judged field by field; 29 reviewed findings
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [123 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [5 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [491 ms]
+  Error Message:
+   static Erp.Kernel.Lists.<ListBinding>FF801D39937252A040490ADB4172DBF1E4493E2891F996428E4B5D263DCB0DF13__SortedSearchTotals.Seen: a read-only field that holds a mutable ConcurrentDictionary<String, Int32>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 416 types, 85 fields, 14 singleton services inspected, 115 endpoint delegates walked (3322 objects) to 29 closures; 5 framework singletons over product types; 93 roots walked to 861 objects, 49 product types judged field by field; 29 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [763 ms]
+[xUnit.net 00:00:19.47]     Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [FAIL]
+[xUnit.net 00:00:19.47]       tenancy.companies: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:226429557:True | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+[xUnit.net 00:00:19.47]       after  01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:1433842951:False | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+[xUnit.net 00:00:19.47]       tenancy.companies: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:226429557:True | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+[xUnit.net 00:00:19.47]       after  01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:1433842951:False | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+[xUnit.net 00:00:19.47]       tenancy.branches: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:682116108:True | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+[xUnit.net 00:00:19.47]       after  01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:2244080506:False | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+[xUnit.net 00:00:19.47]       tenancy.branches: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:682116108:True | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+[xUnit.net 00:00:19.47]       after  01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:2244080506:False | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+[xUnit.net 00:00:19.47]       tenancy.access: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:1261512144:True | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+[xUnit.net 00:00:19.47]       after  01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:3053972468:False | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+[xUnit.net 00:00:19.47]       tenancy.access: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:1261512144:True | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+[xUnit.net 00:00:19.47]       after  01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:3053972468:False | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+[xUnit.net 00:00:19.47]       identity.users: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:2955516693:True | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+[xUnit.net 00:00:19.47]       after  01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:115254313:False | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+[xUnit.net 00:00:19.47]       identity.users: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:2955516693:True | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+[xUnit.net 00:00:19.47]       after  01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:115254313:False | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+[xUnit.net 00:00:19.47]       identity.roles: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:4142628782:True | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+[xUnit.net 00:00:19.47]       after  01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:1138858822:False | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+[xUnit.net 00:00:19.47]       identity.roles: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+[xUnit.net 00:00:19.47]       before 01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:4142628782:True | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+[xUnit.net 00:00:19.47]       after  01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:1138858822:False | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+[xUnit.net 00:00:19.47]       Stack Trace:
+[xUnit.net 00:00:19.47]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(847,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing()
+[xUnit.net 00:00:19.47]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:19.47]       Output:
+[xUnit.net 00:00:19.47]         5 lists, 155 refusals checked on list endpoints, 90 own-view writes, 15 view listings judged
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [5 s]
+  Error Message:
+   tenancy.companies: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:226429557:True | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+after  01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:1433842951:False | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+tenancy.companies: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:226429557:True | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+after  01a12446-2552-7676-a336-45b74b9bc647:Team tenancy.companies:1433842951:False | 01a12446-10eb-796e-b56c-b5ec742c7506:Team view:2567296256:False | 01a12446-2541-7bdd-bef0-a26f797184d8:Mine tenancy.companies:4270043040:True
+tenancy.branches: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:682116108:True | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+after  01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:2244080506:False | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+tenancy.branches: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:682116108:True | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+after  01a12446-2986-7063-bcd2-7da733b40a16:Team tenancy.branches:2244080506:False | 01a12446-1104-7a7e-a53e-d43948665e63:Team view:2567296256:False | 01a12446-297f-7dd6-ab58-4f6c9db64524:Mine tenancy.branches:3395087603:True
+tenancy.access: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:1261512144:True | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+after  01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:3053972468:False | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+tenancy.access: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:1261512144:True | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+after  01a12446-2d19-72fe-b144-631a7c7ef7ee:Team tenancy.access:3053972468:False | 01a12446-1105-7e2f-a63a-7e95d2c3905a:Team view:2567296256:False | 01a12446-2d12-7ad9-a4d9-81c89653c197:Mine tenancy.access:2628254941:True
+identity.users: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:2955516693:True | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+after  01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:115254313:False | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+identity.users: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:2955516693:True | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+after  01a12446-30a4-73a5-b853-417a7f390b8c:Team identity.users:115254313:False | 01a12446-1106-7ccd-b809-f8cfbe3adc16:Team view:2567296256:False | 01a12446-309b-7041-ac04-1061cc0c4e1b:Mine identity.users:1613024330:True
+identity.roles: a reader's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:4142628782:True | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+after  01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:1138858822:False | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+identity.roles: a sharer's writes to its own personal views changed the administrator's or the workspace's views:
+before 01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:4142628782:True | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+after  01a12446-341a-7b14-afe6-73add2949f66:Team identity.roles:1138858822:False | 01a12446-1106-7995-80b7-d13a59542f7a:Team view:2567296256:False | 01a12446-3415-74a4-8159-3b1f3f2cec8c:Mine identity.roles:2478584678:True
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 847
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5 lists, 155 refusals checked on list endpoints, 90 own-view writes, 15 view listings judged
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [15 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [635 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [9 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [17 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [16 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [13 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [754 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [13 s]
+[xUnit.net 00:00:43.63]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [11 ms]
+
+Test Run Failed.
+Total tests: 27
+     Passed: 25
+     Failed: 2
+ Total time: 44.1069 Seconds
+EXIT 1
+2026-10-10T05:26:07Z

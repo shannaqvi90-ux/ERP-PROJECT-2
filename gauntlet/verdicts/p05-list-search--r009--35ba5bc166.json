@@ -1,0 +1,111 @@
+{
+  "piece": "p05-list-search",
+  "round": 9,
+  "commit": "35ba5bc1662c614d9d64c70c3e4de7a073b622a8",
+  "judged_at": "2026-10-10T05:52:04Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p05-list-search round 9",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "The gate suite is green inside verify. I attacked as admin@gulfsteel against alnoor (100,005 dataset users) with 27 targeted probes and found 0 leaks (attack-api.txt). The probes covered needle e-mail, name and Arabic searches, eq and OR filters, quote injection, % and _ wildcards, X-Tenant headers, tenantId query parameters, groupBy, skip=99000, a replayed alnoor cursor, alnoor's user id, GET/PUT/DELETE of alnoor's shared view through both route kinds (all 404, and the view stayed), the views list, the definition, CSV/XLSX/PDF list prints, and the bulk 'matching' count oracle (409 with gulfsteel's own count). I then ran 257 probes over all 5 registered lists (users, roles, companies, branches, access): unsorted and sorted, each with alnoor's ids, e-mails and names as searches. That found 0 leaks (attack-api-lists.txt). In the database (db-inspect.txt), lists.saved_views has RLS enabled and forced with tenant_isolation. erp_owner, erp_app and erp_auth have no superuser and no BYPASSRLS. Unbound, erp_app sees 0 users and 0 views. Bound to gulfsteel, it sees 1,005 users, 0 alnoor users and 0 alnoor views, and an UPDATE of alnoor's views touches 0 rows."
+    },
+    {
+      "gate": "G1 catches tenant leaks planted in p05's surface",
+      "status": "fail",
+      "evidence": "Plant L12 (L12-estimated-total-from-table-statistics.patch, about 25 lines in ListBinding.QueryAsync) is a common optimisation for big lists. When a list has no search and no filter and the table holds more than 10,000 rows, the total shown is pg_class.reltuples, the planner's estimate of the whole table across every tenant, instead of count(*). All 56 G1 tests PASSED with it, run in the product's own toolbox image: ProcessState, TenantSource, ReviewedLookup, NonInterference (17 min), HttpIsolation/ListAnswers (34 min) and WriteOracle (run-L12-g1-all.log, 04:44 to 05:18Z). Live on a plant stack (plant-live-L12.txt), gulfsteel's GET /api/identity/users (unfiltered, and sorted) answers total 101,010, which is every tenant's users. Gulfsteel has 1,005, and the same rows through a filter that matches everything say 1,005. Alnoor sees 101,010 too, against its real 100,005. On screen, gulfsteel's Users list header reads '101,010 users' (plant-L12-gulfsteel-users-shows-all-tenants-total.jpg). The blind spot: every gate environment seeds 25 users per tenant (SeedPlan.Gate), so the list-answer gates never reach a volume where a volume-dependent code path runs. No structural rule forbids product code from reading cross-tenant catalog statistics (pg_class, pg_stat_*, EXPLAIN row estimates). Kept fixed from round 7: plant L11 (file-local static memo) is now caught by ProcessState (run-r7-plants-L11-P6-regression.log)."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "The gate suite is green. In the browser, viewer@alnoor's save dialog has no share box (ui-scope.txt), and the viewer opens Users on the administrator's shared default view (09-viewer-opens-shared-default.jpg). Live on the P8 plant stack, before the plant path ran, the viewer's direct POST /shared-views answered 403 and the definition said canShare false (plant-live-P8.txt)."
+    },
+    {
+      "gate": "G2 catches unpermissioned actions planted in p05's surface",
+      "status": "fail",
+      "evidence": "Plant P8 (P8-personal-route-creates-shared-view.patch, 6 lines in ViewEndpoints.cs) adds an isShared body field to SaveViewRequest. It is documented in the hand-written view schema, as a 'Share with the team' box in the save dialog would need. Create() honours the field on POST /views, which declares only the list's read permission, so lists.views.share is never checked. All 36 G2 tests PASSED (run-P8-g2-all.log), including Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing. All 39 Rules tests PASSED (run-P8-rules.log). Live (plant-live-P8.txt): viewer@alnoor has canShare false and gets 403 on POST /shared-views. Yet POST /views {isShared:true,isDefault:true} answers 201 isShared true isDefault true. The viewer's view replaces the workspace's 'Team view' as the shared default that every user opens. The blind spot: the G2 list test builds view bodies from a fixed field list (PersonalBody/ViewRequest) and never from the request schema. FieldVariants, which does derive fields from the schema, runs only for grant-bearing records and account takeover. Kept fixed from round 7: plant P6 (a personal default clears the shared default) now fails the G2 list test (run-r7-plants-L11-P6-regression.log)."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "I cloned 35ba5bc fresh and ran ERP_PROJECT=c-p05-list-search-r9 ERP_HTTP_PORT=20550 ERP_DB_PORT=20551 ERP_VERIFY_HTTP_PORT=20560 ERP_VERIFY_DB_PORT=20561 through verify-slot.sh ./erp verify. It passed in 4067 s from 'slot taken' (04:34:14Z, no wait). Processor time was 9556 s against a maximum of 10500. The ratchet passed: .NET 550, web 392, e2e 89 and compare 353, each at its minimum (verify-critic-p05-list-search-r9.log). The wall time is over the 3600 s quiet-machine figure, but it was not judged because the machine was busy (my plant run of G1 ran beside it, and other agents' load was up to about 75). A plain ./erp up gave the seeded 100,005-user demo in 108 s (up-critic-p05-list-search-r9.log). With ERP_SEED_USERS_CSV it took 100 s (up-dataset-…log). The port and project overrides worked."
+    },
+    {
+      "gate": "Rule gates (licence, money, strings, audit, list index)",
+      "status": "pass",
+      "evidence": "Green inside verify. The string check passed (711 keys in English and Arabic). The users list has trigram GIN indexes on display_name, email_normalized and display_name_ar, and (tenant_id, column, id) indexes for sorting (db-inspect.txt). Saved-view writes leave audit rows with the actor and old and new values (11 insert and 1 delete after my browser session)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p05-list-search-r9 ERP_HTTP_PORT=20550 ERP_DB_PORT=20551 ERP_VERIFY_HTTP_PORT=20560 ERP_VERIFY_DB_PORT=20561 ERP_VERIFY_LOG=/home/shan/evidence-staging/p05-list-search/r9/verify-critic-p05-list-search-r9.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1384,
+    "passed": 1384,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4067
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4067,
+    "evidence": "./erp verify on a pristine clone at 35ba5bc passed: 550 .NET, 392 web unit, 89 e2e and 353 compare tests, plus the ratchet. It took 4067 s from 'slot taken' with no wait for a slot, and 9556 s of processor time (maximum 10500). ./erp up served the seeded demo (100,005 alnoor users) in 108 s."
+  },
+  "odoo": [
+    {
+      "task": "find-user (find one user among 100,000; p16 Contacts is not built, so the dataset's 100,000 users)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.579,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 1.149,
+        "klm_seconds": 10.35
+      },
+      "notes": "Command: run.mjs --task find-user --product both --repeat 3, branding hidden. Ours ran against the clean clone's demo with ERP_SEED_USERS_CSV. Odoo ran against a private rig of my own (c-p05-list-search-r9-odoo, port 20580, verified at 100,000 rows in each of the 7 lists), because the shared rig's job_runs were below 100,000 and the README says critics use a private rig rather than top up the shared one. Ours is judged on one whole path, 'initials': Users > type 'map' (the name's initials) > click the user's row (row 15 of 54). Odoo gets its best path per metric: steps from 'menus', keystrokes from 'shortest-suggestion' ('il pi' + suggestion + row), machine time from 'palette', human time from 'palette-shortest'. Ours wins every metric, and no metric was left out. Human+wait was 8.68 s against 11.85 s. Every other committed ours path loses at least one metric ('shortest' 8 keys, 'prefixes' 15, 'enter' 21). Server time over 100,005 users (perf.txt, median of 5): exact name 18 ms, 'map' 34 ms, 'm pi' 322 ms (the slowest), Arabic spelling variant 41 ms, skip 99,950 sorted 134 ms. Comparison output is in compare/ (comparisons/find-user.json, results/, key.json). Only the two 'result list' blind shots are kept, so review.html links to removed shots."
+    },
+    {
+      "task": "find-record (find one contact among 100,000)",
+      "winner": "not-compared",
+      "notes": "p16 Contacts does not exist at this commit (src/Modules holds Identity, Lists, Reports and Tenancy only)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p05-list-search/r9/plant-L12-gulfsteel-users-shows-all-tenants-total.jpg",
+    "gauntlet/evidence/p05-list-search/r9/01-users-list-100k-en.jpg",
+    "gauntlet/evidence/p05-list-search/r9/02-search-initials.jpg",
+    "gauntlet/evidence/p05-list-search/r9/05-filter-and-group.jpg",
+    "gauntlet/evidence/p05-list-search/r9/06-save-shared-view.jpg",
+    "gauntlet/evidence/p05-list-search/r9/07-users-list-ar.jpg",
+    "gauntlet/evidence/p05-list-search/r9/08-arabic-variant-search.jpg",
+    "gauntlet/evidence/p05-list-search/r9/09-viewer-opens-shared-default.jpg",
+    "gauntlet/evidence/p05-list-search/r9/compare/blind/shots/390c544513455e5e.jpg",
+    "gauntlet/evidence/p05-list-search/r9/compare/blind/shots/d226d740576ab825.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The list gates only ever see 25 rows per tenant, so a volume-triggered tenant-blind total (planner estimate from pg_class) passes all of G1",
+    "detail": "p05 promises that every list registered with the framework is attacked automatically by G1. Every later module (Contacts, invoices, stock) relies on that promise for its 100,000-row lists. But every gate environment is SeedPlan.Gate with 25 users per tenant. ListAnswers, NonInterference and HttpIsolation judge totals carefully: sorted, keyset, offset, grouped, both directions. They do it only at a volume where no 'large list' code path ever runs. The most natural optimisation for a 100,000-row list is to stop counting exactly and show an estimate. The estimate PostgreSQL offers (pg_class.reltuples, pg_stat_user_tables.n_live_tup, EXPLAIN row estimates) covers every tenant, because row-level security does not apply to catalog statistics, and erp_app can read them. Plant L12 does exactly this past 10,000 rows. Nothing structural flags it either: ProcessState only sees in-process state, and TenantSource and ReviewedLookup do not look at catalog reads. Fixes: (a) judge list answers also against a tenant pair where both tenants hold a demo volume of rows (the timing stage's 100,000-row fixture exists already). Sending each list's unfiltered, sorted, offset and grouped query as the smaller tenant, the total must equal its own row count. (b) Add a source or SQL-trace rule: product code and the SQL it runs in a request may not read pg_class, pg_stat*, pg_statistic or EXPLAIN output, unless that is reviewed. (c) Keep the volume threshold out of reach of a gate that only seeds tens of rows: give the gate a 'large list' profile.",
+    "evidence": "Apply gauntlet/evidence/p05-list-search/r9/L12-estimated-total-from-table-statistics.patch to 35ba5bc. Then run the G1 suite in the toolbox image (scripts/plant-gate-run.sh <copy> L12 'FullyQualifiedName~Erp.Gates.Tests.G1'). All 56 pass (run-L12-g1-all.log). Live: run ./erp up on the planted copy and then node scripts/probe-l12.mjs http://localhost:<port>. Gulfsteel's unfiltered /api/identity/users total is 101,010 against its 1,005 real rows (plant-live-L12.txt), and the Users screen shows '101,010 users' (plant-L12-gulfsteel-users-shows-all-tenants-total.jpg)."
+  },
+  "other_findings": [
+    "G2 misses plant P8 on p05's own saved-view endpoints (P8-personal-route-creates-shared-view.patch). The patch adds an isShared body field honoured by POST /views, which declares only the list's read permission. A read-only viewer (canShare false, 403 on POST /shared-views) creates a shared view and makes it the workspace's default with POST /views {isShared:true,isDefault:true}, answered 201 (plant-live-P8.txt). All 36 G2 and 39 Rules tests pass (run-P8-g2-all.log, run-P8-rules.log). Fix: build the list-view G2 bodies from the request schema, every property, as FieldVariants does. Have a reader without lists.views.share send them to the personal routes, and assert that no shared view appears or changes.",
+    "Kept fixed from round 7: plant L11 (a C# file-local static memo) now fails G1ProcessStateTests, which names <ListBinding>F…__SortedSearchTotals.Seen. Plant P6 (a personal default clears the shared default) now fails the G2 list test, as 'a reader's writes to its own personal views changed … views' (run-r7-plants-L11-P6-regression.log). ListAnswers now walks sorted queries. Ratchet minimums went up, not down (.NET 512 to 550, web 356 to 392, e2e 79 to 89, compare 315 to 353).",
+    "Scope in the browser, at 1600x900 over 100,005 users (ui-scope.txt). The Users list renders in 164 ms with 33 DOM rows, and the search box has the focus. Typing the initials 'map' gives 54 matches in 346 ms. ArrowDown enters the grid, and End, Home, Space and Shift+Arrow work. The column menu offers Filter…, Group by this column and Hide this column. The header filter 'Language is one of Arabic' gives 30,308, and grouping by Status shows group counts. I saved a view named 'Arabic speakers by status' as shared and default, and the viewer then opens Users on it with no share box offered. In Arabic the page is dir=rtl with Arabic chrome and '100,005 مستخدمين', and the spelling-variant search 'ماجد انيل بيلاى' puts 'ماجد أنيل بيلاي' first.",
+    "Live 'Enter opens best match' after typing 'map' opened the top-ranked user, not the target (the target is row 15 of 54). That is why the winning compare path ends with a row click. Ranking initials matches so that a full-initials match comes before partial ones would let Enter finish the task in fewer steps.",
+    "[route: p01-odoo-rig] The shared Odoo rig on 8069 was short of the bar again: job_runs were below 100,000, and run.mjs refused with exit 2. Following the README, I used a private rig (c-p05-list-search-r9-odoo, port 20580, up in 162 s) and purged it afterwards. The shared rig needs the owner's or lead's top-up.",
+    "Verify's wall time was 4067 s, over the 3600 s quiet-machine figure. It was not judged, because the machine was busy: my G1 plant run ran beside it within the one-extra-stack budget, and the load from other agents reached about 75. Processor time was 9556 s, under the 10500 maximum.",
+    "Housekeeping: I removed my compose projects c-p05-list-search-r9, -plant, -verify and -odoo, their volumes and images, and the critic clones. Neither the shared odoo-reference rig nor other agents' containers were touched."
+  ],
+  "human_gates": [
+    {
+      "gate": "Any new paid service, real credential, deployment, or action outside this repository",
+      "what": "needs-human #6 is still open. The LEAKPROOF bootstrap that trigram search under RLS needs requires a superuser, which hosted PostgreSQL services may not grant. It matters when the owner chooses a production database. This round reached no new human gate."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p05-list-search/r9",
+  "evidence_dir": "gauntlet/evidence/p05-list-search/r9"
+}
