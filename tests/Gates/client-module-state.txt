@@ -40,3 +40,4 @@ web/src/modules/tenancy/records.ts listSearch  # A getter that finds the list's 
 web/src/modules/tenancy/ui.tsx emirates  # The seven emirate keys (abuDhabi ... fujairah) for address fields; frozen, fixed in code, never written.
 web/src/kernel/deviceState.ts window.name  # Not state the module keeps: forgetIdentity() resets the tab's window.name to an empty string when an identity ends, so a value left there never greets the next document.
 web/src/kernel/historyGuard.ts guardMark  # A Symbol.for() key that marks the guarded history functions (and, without sessionStorage, names the per-document epoch slot); a fixed symbol, never data.
+web/src/kernel/lists/recordWidth.ts recordShare  # The record form's narrowest, standard and widest share and the arrow-key step (30, 48, 75, 4); fixed in code (as const), never written.

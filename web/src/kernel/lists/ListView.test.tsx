@@ -463,6 +463,98 @@ describe("list view", () => {
   });
 });
 
+describe("a screen's record form beside the list", () => {
+  afterEach(() => window.localStorage.clear());
+
+  async function showForm(language: "en" | "ar") {
+    window.history.replaceState(null, "", `/identity/users?open=${people[3]!.id}`);
+    view = await render(
+      <I18nProvider initial={language}>
+        <ShortcutProvider>
+          <ListView
+            listKey="identity.users"
+            titleKey="identity.users.title"
+            countKey="identity.users.count"
+            searchPlaceholderKey="identity.users.search"
+            renderRecord={(id) => <div className="test-form">Form of {id}</div>}
+          />
+        </ShortcutProvider>
+      </I18nProvider>,
+    );
+    await settle();
+    await settle();
+    return view;
+  }
+
+  const splitter = () => document.querySelector<HTMLElement>("[role=separator]")!;
+  const share = () => Number(splitter().getAttribute("aria-valuenow"));
+  const body = () => document.querySelector<HTMLElement>(".list-body")!;
+
+  it("puts a keyboard splitter between the list and the form, which opens at the standard width", async () => {
+    serve();
+    const v = await showForm("en");
+    expect(v.container.querySelector(".test-form")?.textContent).toContain(people[3]!.id);
+    expect(splitter().getAttribute("aria-orientation")).toBe("vertical");
+    expect(splitter().getAttribute("aria-controls")).toBe(v.container.querySelector(".list-record")!.id);
+    expect(splitter().tabIndex).toBe(0);
+    expect(splitter().getAttribute("aria-label")).toBe("Resize the record panel");
+    expect(share()).toBe(48);
+    expect(splitter().getAttribute("aria-valuetext")).toBe("48 percent of the list area");
+    expect(body().style.getPropertyValue("--record-share")).toBe("48%");
+  });
+
+  it("widens and narrows from the keyboard and keeps the choice for the list", async () => {
+    serve();
+    await showForm("en");
+    await key(splitter(), "ArrowLeft");
+    expect(share()).toBe(52);
+    await key(splitter(), "ArrowRight");
+    await key(splitter(), "ArrowRight");
+    expect(share()).toBe(44);
+    await key(splitter(), "End");
+    expect(share()).toBe(75);
+    expect(body().style.getPropertyValue("--record-share")).toBe("75%");
+    await key(splitter(), "Enter");
+    expect(share()).toBe(48);
+    await key(splitter(), "Home");
+    expect(share()).toBe(30);
+    expect(window.localStorage.getItem("erp.lists.recordShare.identity.users")).toBe("30");
+    view?.unmount();
+    view = undefined;
+    await showForm("en");
+    expect(share()).toBe(30);
+  });
+
+  it("widens with the arrow pointing away from the form in Arabic, and says the width in Arabic", async () => {
+    serve();
+    await showForm("ar");
+    await key(splitter(), "ArrowRight");
+    expect(share()).toBe(52);
+    expect(splitter().getAttribute("aria-label")).toBe("تغيير عرض لوحة السجل");
+    expect(splitter().getAttribute("aria-valuetext")).toContain("بالمئة من مساحة القائمة");
+  });
+
+  it("switches the form between standard and widest with Alt+W from anywhere on the screen", async () => {
+    serve();
+    await showForm("en");
+    const altW = () =>
+      act(async () => {
+        (document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent("keydown", { key: "w", code: "KeyW", altKey: true, bubbles: true, cancelable: true }));
+      });
+    await altW();
+    expect(share()).toBe(75);
+    await altW();
+    expect(share()).toBe(48);
+  });
+
+  it("has no splitter when no record is open or the list shows its own details panel", async () => {
+    serve();
+    const v = await show();
+    expect(v.container.querySelector("[role=separator]")).toBeNull();
+    expect(body().style.getPropertyValue("--record-share")).toBe("");
+  });
+});
+
 describe("printing a list", () => {
   it("offers PDF, CSV and Excel in both languages, the screen's language first, and opens with Alt+Shift+R", async () => {
     mockFetch((_method, url) => {

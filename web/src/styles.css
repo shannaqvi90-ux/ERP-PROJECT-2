@@ -552,6 +552,11 @@ input[aria-invalid="true"] {
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  /* Always the frame's last column, the one that takes the room: with the navigation pane hidden
+     (display: none, so no grid item) the screen would otherwise fall into the pane's auto-sized
+     column and be only as wide as its content, about 1,040px of a 1,366px window, and a wide
+     Arabic list was cut at its left edge (critic p04 round 7). */
+  grid-column: -2 / -1;
 }
 
 .breadcrumbs ol {

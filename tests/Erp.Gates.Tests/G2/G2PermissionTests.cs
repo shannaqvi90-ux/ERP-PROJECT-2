@@ -659,13 +659,25 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         using var shareOnly = await UserWith("share-only", "lists.views.share");
         var problems = new List<string>();
         var refusals = 0;
+        var allowedWrites = 0;
+        var visibilityChecks = 0;
         foreach (var list in catalog.Lists)
         {
             using var reader = await UserWith($"reader-{list.Key.Replace('.', '-')}", list.Permission);
             var columns = list.Columns.Take(1).Select(c => c.Key).ToArray();
-            var shared = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = $"Team {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
-            var personal = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Mine {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
+            // Both of the administrator's views are defaults (critic p05 round 7, plant P6: a reader's
+            // own personal default also cleared the workspace's shared default), so a write that
+            // reaches past the caller's own views shows in the administrator's snapshot. The personal
+            // default is saved first: a shared default replaces shared defaults only, and both must
+            // be defaults in the snapshot the later writes are judged against.
+            var personal = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Mine {list.Key}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
+            var shared = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = $"Team {list.Key}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
             var before = await ViewsTextAsync(admin, list.Key);
+            foreach (var (what, view) in new[] { ("personal", personal), ("shared", shared) })
+            {
+                Assert.True(before.Contains($"{view.GetProperty("id").GetString()}:{view.GetProperty("name").GetString()}:{view.GetProperty("version").GetUInt32()}:True", StringComparison.Ordinal),
+                    $"{list.Key}: the administrator's {what} view is not a default before the checks: {before}");
+            }
 
             var listEndpoints = Endpoints.Where(e => e.Pattern.StartsWith($"/api/lists/{list.Key}/", StringComparison.Ordinal)).ToList();
             Assert.True(listEndpoints.Count >= 4, $"{list.Key}: only {listEndpoints.Count} endpoints under /api/lists/{list.Key}/");
@@ -737,6 +749,67 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             {
                 problems.Add($"{list.Key}: the workspace's views changed while refused callers tried them:\nbefore {before}\nafter  {after}");
             }
+
+            // What a caller may do touches only the caller's own views (critic p05 round 7, plant P6).
+            // A reader without the share permission, and a sharer, save and change personal views of
+            // their own with every body field and both values of isDefault; the administrator's
+            // shared and personal defaults stay exactly as they were.
+            foreach (var (who, client) in new[] { ("a reader", reader), ("a sharer", sharer) })
+            {
+                foreach (var isDefault in new[] { true, false, true })
+                {
+                    using var created = await client.PostAsJsonAsync($"/api/lists/{list.Key}/views", PersonalBody(list, columns, $"{who} {isDefault} {Guid.NewGuid():N}", isDefault, null));
+                    allowedWrites++;
+                    if (created.StatusCode != HttpStatusCode.Created)
+                    {
+                        problems.Add($"POST /api/lists/{list.Key}/views answered {(int)created.StatusCode} to {who} saving a personal view with isDefault {isDefault}");
+                        continue;
+                    }
+                    var own = await created.Content.ReadFromJsonAsync<JsonElement>();
+                    foreach (var change in new[] { !isDefault, isDefault })
+                    {
+                        using var changed = await client.PutAsJsonAsync($"/api/lists/{list.Key}/views/{own.GetProperty("id").GetString()}",
+                            PersonalBody(list, columns, own.GetProperty("name").GetString()!, change, own.GetProperty("version").GetUInt32()));
+                        allowedWrites++;
+                        if (!changed.IsSuccessStatusCode)
+                        {
+                            problems.Add($"PUT /api/lists/{list.Key}/views/{{id}} answered {(int)changed.StatusCode} to {who} changing its own view to isDefault {change}");
+                            break;
+                        }
+                        own = await changed.Content.ReadFromJsonAsync<JsonElement>();
+                    }
+                }
+                var mine = await ViewsTextAsync(admin, list.Key);
+                if (mine != before)
+                {
+                    problems.Add($"{list.Key}: {who}'s writes to its own personal views changed the administrator's or the workspace's views:\nbefore {before}\nafter  {mine}");
+                }
+            }
+
+            // Who sees which views (critic p05 round 7, plant P7: every user's personal views were
+            // listed to any reader): GET /views answers shared views and the caller's own only.
+            var personalIds = new Dictionary<string, string>(StringComparer.Ordinal) { [personal.GetProperty("id").GetString()!] = "the administrator's", [sharersOwn.GetProperty("id").GetString()!] = "the sharer's" };
+            foreach (var (who, client, ownId) in new[] { ("the administrator", admin, personal.GetProperty("id").GetString()!), ("the sharer", sharer, sharersOwn.GetProperty("id").GetString()!), ("a reader", reader, "") })
+            {
+                var listed = await client.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/views");
+                visibilityChecks++;
+                foreach (var item in listed.GetProperty("items").EnumerateArray())
+                {
+                    var id = item.GetProperty("id").GetString()!;
+                    if (!item.GetProperty("isShared").GetBoolean() && !item.GetProperty("isMine").GetBoolean())
+                    {
+                        problems.Add($"GET /api/lists/{list.Key}/views listed to {who} a personal view that is not its own ({id})");
+                    }
+                    if (personalIds.TryGetValue(id, out var whose) && id != ownId)
+                    {
+                        problems.Add($"GET /api/lists/{list.Key}/views listed to {who} {whose} personal view");
+                    }
+                }
+                if (!listed.GetProperty("items").EnumerateArray().Any(v => v.GetProperty("id").GetString() == shared.GetProperty("id").GetString()))
+                {
+                    problems.Add($"GET /api/lists/{list.Key}/views did not list the workspace's shared view to {who}");
+                }
+            }
             using (var own = await sharer.GetAsync($"/api/lists/{list.Key}/views/{sharersOwn.GetProperty("id").GetString()}"))
             {
                 var current = own.IsSuccessStatusCode ? await own.Content.ReadFromJsonAsync<JsonElement>() : default;
@@ -771,9 +844,11 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 }
             }
         }
-        TestContext.Current.TestOutputHelper?.WriteLine($"{catalog.Lists.Count()} lists, {refusals} refusals checked on list endpoints");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{catalog.Lists.Count()} lists, {refusals} refusals checked on list endpoints, {allowedWrites} own-view writes, {visibilityChecks} view listings judged");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(refusals >= Ratchet.Min("g2.listEndpointRefusals"), $"g2.listEndpointRefusals: {refusals}; ratchet minimum {Ratchet.Min("g2.listEndpointRefusals")}");
+        Assert.True(allowedWrites >= Ratchet.Min("g2.listOwnViewWrites"), $"g2.listOwnViewWrites: {allowedWrites}; ratchet minimum {Ratchet.Min("g2.listOwnViewWrites")}");
+        Assert.True(visibilityChecks >= Ratchet.Min("g2.listViewListingsJudged"), $"g2.listViewListingsJudged: {visibilityChecks}; ratchet minimum {Ratchet.Min("g2.listViewListingsJudged")}");
     }
 
     private static HttpRequestMessage ViewRequest(ApiEndpoint endpoint, JsonElement view, string[] columns, string? name = null)
@@ -791,6 +866,20 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         }
         return request;
     }
+
+    /// <summary>A personal view body with every field set: columns, a sort, a search, a filter and a
+    /// grouping the list accepts, and the given isDefault.</summary>
+    private static Dictionary<string, object?> PersonalBody(Erp.Kernel.Lists.ListDefinition list, string[] columns, string name, bool isDefault, uint? version) => new()
+    {
+        ["name"] = name,
+        ["columns"] = columns,
+        ["sort"] = list.Columns.FirstOrDefault(c => c.Sortable) is { } sortable ? "-" + sortable.Key : null,
+        ["search"] = list.SearchFields.Count > 0 ? "a" : null,
+        ["filter"] = list.Columns.FirstOrDefault(c => c.Filterable) is { } filterable ? $"{filterable.Key} is not null" : null,
+        ["groupBy"] = list.Columns.FirstOrDefault(c => c.Groupable)?.Key,
+        ["isDefault"] = isDefault,
+        ["version"] = version,
+    };
 
     private static async Task<string> ViewsTextAsync(HttpClient admin, string list)
     {
