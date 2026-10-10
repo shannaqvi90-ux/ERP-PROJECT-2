@@ -528,6 +528,7 @@ export function UserDetail({
             <span className="id-badges">
               <span className={user.isActive ? "id-badge ok" : "id-badge off"}>{user.isActive ? t("identity.users.active") : t("identity.users.inactive")}</span>
               {user.pendingSetup && <span className="id-badge warn">{t("identity.users.pendingSetup")}</span>}
+              {passkeys && passkeys.length > 0 && <span className="id-badge">{t("identity.userPasskeys.badge", { count: passkeys.length })}</span>}
               <span className="muted">
                 {t("identity.users.lastSignIn")}: {user.lastSignInAt ? formatDateTime(user.lastSignInAt) : t("identity.users.never")}
               </span>

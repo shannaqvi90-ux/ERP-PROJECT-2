@@ -1194,6 +1194,8 @@ describe("a user's passkeys, for a lost or stolen device", () => {
     await openWorker(all);
     const section = aside().querySelector("section.id-user-passkeys")!;
     expect(section.textContent).toContain("Passkeys (2)");
+    // The panel's heading says so at once, whatever tab is open.
+    expect(aside().querySelector(".id-badges")!.textContent).toContain("2 passkeys");
     expect(section.textContent).toContain("Shared laptop");
     expect(section.textContent).toContain("Phone");
     await click(button(section, "Remove the passkey Shared laptop"));
