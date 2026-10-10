@@ -1,0 +1,88 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
+index 1d0ee73..a0c46b6 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
+@@ -146,6 +146,12 @@ internal static class AuthEndpoints
+                 problem.Extensions["workspaces"] = choose.Workspaces;
+                 return TypedResults.Problem(problem);
+             default:
++                if (!withPasskey && SignInService.LastMethodByEmail.TryGetValue(request.Email!.Trim(), out var last) && last == SignInMethods.Passkey)
++                {
++                    var hint = Problems.Create(http, StatusCodes.Status401Unauthorized, "auth.signInFailed");
++                    hint.Extensions["tryPasskey"] = true;
++                    return TypedResults.Problem(hint);
++                }
+                 return Problems.Result(http, StatusCodes.Status401Unauthorized, withPasskey ? "auth.passkeyFailed" : "auth.signInFailed");
+         }
+     }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+index 8f84696..e30e5b1 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+@@ -293,7 +293,7 @@ internal static class PasskeyEndpoints
+     /// each removal with its owner; the caller has checked the target. How many were removed.</summary>
+     internal static async Task<int> RemoveAsync(IdentityDbContext db, Guid userId, Guid? passkeyId, CancellationToken cancellationToken)
+     {
+-        var passkeys = await db.Passkeys.Where(p => p.UserId == userId && (passkeyId == null || p.Id == passkeyId)).ToListAsync(cancellationToken);
++        var passkeys = await db.Passkeys.Where(p => passkeyId == null ? p.UserId == userId : p.Id == passkeyId).ToListAsync(cancellationToken);
+         if (passkeys.Count == 0)
+         {
+             return 0;
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+index 5dbd687..c13f59c 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+@@ -278,6 +278,7 @@ internal sealed class SignInService(
+             Method = method,
+         });
+         await db.SaveChangesAsync(cancellationToken);
++        LastMethodByEmail[email] = method;
+         devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
+         logger.LogInformation("User {UserId} signed in to tenant {TenantId}", user.Id, user.TenantId);
+         return new SignInOutcome.Succeeded(user.TenantId, user.Id, row.Id, token, expiresAt);
+@@ -335,6 +336,8 @@ internal sealed class SignInService(
+         return await scope.ServiceProvider.GetRequiredService<ITenantDirectory>().GetCurrentAsync(cancellationToken);
+     }
+ 
++    internal static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> LastMethodByEmail = new(StringComparer.OrdinalIgnoreCase);
++
+     private static string? Truncate(string? value, int max) =>
+         string.IsNullOrEmpty(value) ? null : value.Length <= max ? value : value[..max];
+ }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs
+index dbf394d..73349b5 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs
+@@ -28,6 +28,19 @@ namespace Erp.Modules.Identity.Migrations
+                 schema: "identity",
+                 table: "sign_in_attempts",
+                 sql: "method IN ('password', 'passkey')");
++            migrationBuilder.Sql(@"
++                GRANT USAGE, CREATE ON SCHEMA identity TO erp_auth;
++                GRANT SELECT (tenant_id, id, user_id, credential_id) ON identity.passkeys TO erp_auth;
++                CREATE POLICY auth_resolver_read ON identity.passkeys AS PERMISSIVE FOR SELECT TO erp_auth USING (true);
++                CREATE FUNCTION identity.resolve_passkey(p_credential bytea)
++                    RETURNS TABLE (tenant_id uuid, user_id uuid)
++                    LANGUAGE sql STABLE SECURITY DEFINER
++                    SET search_path = pg_catalog, pg_temp
++                AS $f$ SELECT p.tenant_id, p.user_id FROM identity.passkeys p WHERE p.credential_id = p_credential $f$;
++                ALTER FUNCTION identity.resolve_passkey(bytea) OWNER TO erp_auth;
++                REVOKE ALL ON FUNCTION identity.resolve_passkey(bytea) FROM PUBLIC;
++                GRANT EXECUTE ON FUNCTION identity.resolve_passkey(bytea) TO erp_app;
++                REVOKE CREATE ON SCHEMA identity FROM erp_auth;");
+         }
+ 
+         /// <inheritdoc />
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 431788f..8c58d2b 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -495,7 +495,7 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<SessionsEndedResponse>, ProblemHttpResult>> RevokeSessions(
+         Guid id, bool? removePasskeys, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (removePasskeys != true && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }

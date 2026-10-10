@@ -1,0 +1,60 @@
+== as erp_app, no tenant bound
+0
+0
+0
+== session-wide set_config to B, then count (tenant must be transaction-local?)
+0190a000-0000-7000-8000-000000000002
+0
+== bound to A in a transaction: users, sign-ins, passkeys, any from other tenants
+BEGIN
+0190a000-0000-7000-8000-000000000001
+0|0
+== bound to A: update B's sign-in history / delete B's passkeys
+BEGIN
+0190a000-0000-7000-8000-000000000001
+ERROR:  permission denied for table sign_in_attempts
+BEGIN
+0190a000-0000-7000-8000-000000000001
+DELETE 0
+== insert into B's sign-in history while bound to A
+ERROR:  new row violates row-level security policy for table "sign_in_attempts"
+BEGIN
+0190a000-0000-7000-8000-000000000001
+== bypass attempts
+SET
+ERROR:  query would be affected by row-level security policy for table "passkeys"
+ERROR:  must be owner of table sign_in_attempts
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_auth"
+== reviewed lookups while bound
+BEGIN
+0190a000-0000-7000-8000-000000000001
+0
+== policies on sign_in_attempts and passkeys
+sign_in_attempts|tenant_isolation|PERMISSIVE|{public}|ALL
+passkeys|tenant_isolation|PERMISSIVE|{public}|ALL
+sign_in_attempts|t|t
+passkeys|t|t
+== sign_in_attempts method distribution
+passkey|succeeded|5
+password|succeeded|11
+== audit rows for passkey removals
+passkeys|delete|4|4
+passkeys|insert|8|8
+users bound to A (all, other tenants): sign_in_attempts bound to A (all, other tenants): passkeys bound to A (all, other tenants): sessions bound to A (all, other tenants): user_roles bound to A (all, other tenants): roles bound to A (all, other tenants): users bound to A: all=0 other-tenant=0
+sign_in_attempts bound to A: all=0 other-tenant=0
+passkeys bound to A: all=0 other-tenant=0
+sessions bound to A: all=0 other-tenant=0
+user_roles bound to A: all=0 other-tenant=0
+roles bound to A: all=0 other-tenant=0
+== properly bound to A (tenant_id + tenant_tx in the transaction)
+users: all=100010 other-tenant=0
+sign_in_attempts: all=13 other-tenant=0
+passkeys: all=3 other-tenant=0
+sessions: all=13 other-tenant=0
+user_roles: all=9 other-tenant=0
+roles: all=5 other-tenant=0
+user_company_roles: all=0 other-tenant=0
+UPDATE 0
+DELETE 0
+ERROR:  new row violates row-level security policy for table "passkeys"

@@ -1,0 +1,119 @@
+A tenant 0190a000-0000-7000-8000-000000000001 admin 01a1256d-26d3-7d4d-9f55-0abfaff4bce0; B tenant 0190a000-0000-7000-8000-000000000002 admin 01a1256d-a08a-7b0e-bd76-8ff36ca13916
+B registers passkey: 201
+B signs in with own passkey: 200
+replay of the same answer: 401 {"type":"urn:erp:problem:auth.passkeyFailed","title":"Sign-in with the passkey did not work. Try again, or sign in with 
+B saved view 201, shared view 201
+B users 01a1256d-a094-78f0-a438-7144af3517f2,01a1256d-a094-7774-b4b4-8e049746a165,01a1256d-a094-7646-97ce-4af9ddd9fb43 roles 01a1256d-a002-73c7-bdf7-fa2b457d689a,01a1256d-a1c1-7e12-b415-ba5e94fb8da7,01a1256d-a002-7a2b-a089-f1107a3fa8c2 companies 018f6605-b084-7d5b-a333-8a7a0fd45879,018f6605-b081-728f-aecf-4aa962f287bf
+A options excludeCredentials []
+A registers passkey: 201
+GET users/01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+GET users/01a1256d-a094-78f0-a438-7144af3517f2/access -> 404
+GET users/01a1256d-a094-78f0-a438-7144af3517f2/sign-ins -> 404
+GET users/01a1256d-a094-78f0-a438-7144af3517f2/default-company -> 404
+GET users/01a1256d-a094-78f0-a438-7144af3517f2/passkeys -> 404
+PUT users/01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+POST password 01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+POST unblock 01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+POST sessions/revoke 01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+PUT default-company 01a1256d-a094-78f0-a438-7144af3517f2 -> 400
+DELETE users/01a1256d-a094-78f0-a438-7144af3517f2/passkeys -> 404
+DELETE users/01a1256d-a094-78f0-a438-7144af3517f2 -> 404
+GET users/01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+GET users/01a1256d-a094-7774-b4b4-8e049746a165/access -> 404
+GET users/01a1256d-a094-7774-b4b4-8e049746a165/sign-ins -> 404
+GET users/01a1256d-a094-7774-b4b4-8e049746a165/default-company -> 404
+GET users/01a1256d-a094-7774-b4b4-8e049746a165/passkeys -> 404
+PUT users/01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+POST password 01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+POST unblock 01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+POST sessions/revoke 01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+PUT default-company 01a1256d-a094-7774-b4b4-8e049746a165 -> 400
+DELETE users/01a1256d-a094-7774-b4b4-8e049746a165/passkeys -> 404
+DELETE users/01a1256d-a094-7774-b4b4-8e049746a165 -> 404
+GET users/01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+GET users/01a1256d-a094-7646-97ce-4af9ddd9fb43/access -> 404
+GET users/01a1256d-a094-7646-97ce-4af9ddd9fb43/sign-ins -> 404
+GET users/01a1256d-a094-7646-97ce-4af9ddd9fb43/default-company -> 404
+GET users/01a1256d-a094-7646-97ce-4af9ddd9fb43/passkeys -> 404
+PUT users/01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+POST password 01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+POST unblock 01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+POST sessions/revoke 01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+PUT default-company 01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 400
+DELETE users/01a1256d-a094-7646-97ce-4af9ddd9fb43/passkeys -> 404
+DELETE users/01a1256d-a094-7646-97ce-4af9ddd9fb43 -> 404
+GET users/01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+GET users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/access -> 404
+GET users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/sign-ins -> 404
+GET users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/default-company -> 404
+GET users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/passkeys -> 404
+PUT users/01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+POST password 01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+POST unblock 01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+POST sessions/revoke 01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+PUT default-company 01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 400
+DELETE users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/passkeys -> 404
+DELETE users/01a1256d-a08a-7b0e-bd76-8ff36ca13916 -> 404
+DELETE users/01a1256d-a094-78f0-a438-7144af3517f2/passkeys?passkeyId=B -> 404
+POST password 01a1256d-a094-78f0-a438-7144af3517f2 removePasskeys -> 404
+POST sessions/revoke 01a1256d-a094-78f0-a438-7144af3517f2?removePasskeys=true -> 404
+DELETE users/01a1256d-a094-7774-b4b4-8e049746a165/passkeys?passkeyId=B -> 404
+POST password 01a1256d-a094-7774-b4b4-8e049746a165 removePasskeys -> 404
+POST sessions/revoke 01a1256d-a094-7774-b4b4-8e049746a165?removePasskeys=true -> 404
+DELETE users/01a1256d-a094-7646-97ce-4af9ddd9fb43/passkeys?passkeyId=B -> 404
+POST password 01a1256d-a094-7646-97ce-4af9ddd9fb43 removePasskeys -> 404
+POST sessions/revoke 01a1256d-a094-7646-97ce-4af9ddd9fb43?removePasskeys=true -> 404
+DELETE users/01a1256d-a08a-7b0e-bd76-8ff36ca13916/passkeys?passkeyId=B -> 404
+POST password 01a1256d-a08a-7b0e-bd76-8ff36ca13916 removePasskeys -> 404
+POST sessions/revoke 01a1256d-a08a-7b0e-bd76-8ff36ca13916?removePasskeys=true -> 404
+GET roles/01a1256d-a002-73c7-bdf7-fa2b457d689a -> 404
+PUT roles/01a1256d-a002-73c7-bdf7-fa2b457d689a -> 404
+POST roles/01a1256d-a002-73c7-bdf7-fa2b457d689a/copy -> 404
+DELETE roles/01a1256d-a002-73c7-bdf7-fa2b457d689a -> 404
+GET roles/01a1256d-a1c1-7e12-b415-ba5e94fb8da7 -> 404
+PUT roles/01a1256d-a1c1-7e12-b415-ba5e94fb8da7 -> 404
+POST roles/01a1256d-a1c1-7e12-b415-ba5e94fb8da7/copy -> 404
+DELETE roles/01a1256d-a1c1-7e12-b415-ba5e94fb8da7 -> 404
+GET roles/01a1256d-a002-7a2b-a089-f1107a3fa8c2 -> 404
+PUT roles/01a1256d-a002-7a2b-a089-f1107a3fa8c2 -> 404
+POST roles/01a1256d-a002-7a2b-a089-f1107a3fa8c2/copy -> 404
+DELETE roles/01a1256d-a002-7a2b-a089-f1107a3fa8c2 -> 404
+GET me/passkeys/01a1256e-06a5-7d6c-a532-83b9f06be0d3 -> 404
+PUT me/passkeys/01a1256e-06a5-7d6c-a532-83b9f06be0d3 -> 404
+DELETE me/passkeys/01a1256e-06a5-7d6c-a532-83b9f06be0d3 -> 404
+GET views/01a1256e-06e9-7c07-8aef-f9ca6e4fbdd9 -> 404
+GET shared-views/01a1256e-0719-7193-908f-4b25fd192e9a -> 404
+PUT views/01a1256e-06e9-7c07-8aef-f9ca6e4fbdd9 -> 400
+PUT shared-views/01a1256e-0719-7193-908f-4b25fd192e9a -> 400
+DELETE views/01a1256e-06e9-7c07-8aef-f9ca6e4fbdd9 -> 404
+DELETE shared-views/01a1256e-0719-7193-908f-4b25fd192e9a -> 404
+POST users with B role and company -> 400
+users list filtered by B role -> 400
+GET users with x-tenant-id -> 200
+GET users ?tenant=0190a000-0000-7000-8000-000000000002 -> 200
+GET users with x-tenant -> 200
+GET users ?tenant=gulfsteel -> 200
+GET users with x-workspace -> 200
+GET users ?tenant=gulfsteel -> 200
+passkey sign-in: A key, handle B admin -> 401
+passkey sign-in: A key + B credential id, handle B admin -> 401
+passkey sign-in: A key + B credential id, handle A admin -> 401
+passkey sign-in: A key, handle unknown workspace -> 401
+passkey refusals identical: true
+export /api/reports/lists/identity.users?format=csv&search=gulf [text/csv; charset=utf-8] 51 bytes -> 200
+export /api/reports/lists/identity.roles?format=csv [text/csv; charset=utf-8] 162 bytes -> 200
+export /api/reports/run/identity.usersByRole?format=csv [text/csv; charset=utf-8] 6889186 bytes -> 200
+export /api/reports/run/identity.roleSummary?format=csv [text/csv; charset=utf-8] 162 bytes -> 200
+export /api/reports/lists/identity.users?format=csv&language=ar&search=admin [text/csv; charset=utf-8] 329 bytes -> 200
+export /api/reports/lists/identity.users?format=xlsx&search=gulf [application/vnd.openxmlformats-officedocument.spreadsheetml.sheet] 2326 bytes -> 200
+export /api/reports/lists/identity.roles?format=xlsx [application/vnd.openxmlformats-officedocument.spreadsheetml.sheet] 2651 bytes -> 200
+export /api/reports/run/identity.usersByRole?format=xlsx [application/vnd.openxmlformats-officedocument.spreadsheetml.sheet] 3077737 bytes -> 200
+export /api/reports/run/identity.roleSummary?format=xlsx [application/vnd.openxmlformats-officedocument.spreadsheetml.sheet] 2666 bytes -> 200
+export /api/reports/lists/identity.users?format=xlsx&language=ar&search=admin [application/vnd.openxmlformats-officedocument.spreadsheetml.sheet] 2738 bytes -> 200
+export /api/reports/lists/identity.users?format=pdf&search=gulf [application/pdf] 11510 bytes -> 200
+export /api/reports/lists/identity.roles?format=pdf [application/pdf] 12457 bytes -> 200
+export /api/reports/run/identity.usersByRole?format=pdf [application/pdf] 149075 bytes -> 200
+export /api/reports/run/identity.roleSummary?format=pdf [application/pdf] 13920 bytes -> 200
+export /api/reports/lists/identity.users?format=pdf&language=ar&search=admin [application/pdf] 36165 bytes -> 200
+tenant B identity state unchanged: true (b544671717cd449cc94e1abd49775660 / b544671717cd449cc94e1abd49775660)
+108 calls judged; leaks/unexpected: 0

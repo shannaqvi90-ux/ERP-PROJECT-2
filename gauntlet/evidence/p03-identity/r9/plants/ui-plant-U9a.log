@@ -1,0 +1,145 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p03-identity-r9-plants/web[39m
+
+ [31m❯[39m src/modules/identity/screens.test.tsx [2m([22m[2m83 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 10066[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 411[2mms[22m[39m
+     [32m✓[39m names in the Roles column the roles held in every company, those held in one company with its code, and roles elsewhere[32m 48[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 358[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 343[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 311[2mms[22m[39m
+[31m     [31m×[31m hides creation and account actions from a read-only user[39m[32m 56[2mms[22m[39m
+     [32m✓[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused[32m 291[2mms[22m[39m
+     [32m✓[39m activates only inactive users[32m 285[2mms[22m[39m
+     [32m✓[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape[32m 260[2mms[22m[39m
+     [32m✓[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen[32m 264[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 393[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 331[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 389[2mms[22m[39m
+     [32m✓[39m offers no state change to a user who may not update users[32m 246[2mms[22m[39m
+     [32m✓[39m edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks[32m 110[2mms[22m[39m
+     [32m✓[39m ticks only the permissions a search matches: 'view' then Select all shown gives a view-only role[32m 105[2mms[22m[39m
+     [32m✓[39m shows the Administrator system role read-only, with copy offered[32m 60[2mms[22m[39m
+     [32m✓[39m a role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7)[32m 61[2mms[22m[39m
+     [32m✓[39m Delete role moves the focus to the question; Escape keeps the role and gives the focus back to Delete role[32m 71[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.delete there is no "Delete role", and the other role actions remain[32m 121[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.update there is no "Save", and the other role actions remain[32m 120[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.create there is no "Copy role", and the other role actions remain[32m 151[2mms[22m[39m
+     [32m✓[39m roles: a role granting a permission the user lacks is shown read-only, with no copy or delete[32m 58[2mms[22m[39m
+     [32m✓[39m users: without identity.users.update there is no "Save"[32m 41[2mms[22m[39m
+[31m     [31m×[31m users: without identity.users.update there is no "Sign out everywhere"[39m[32m 40[2mms[22m[39m
+     [32m✓[39m users: without identity.users.resetPassword there is no "Reset password…"[32m 51[2mms[22m[39m
+     [32m✓[39m users: without identity.users.delete there is no "Delete user"[32m 46[2mms[22m[39m
+     [32m✓[39m users: without identity.signIns.read there is no "Sign-in history"[32m 35[2mms[22m[39m
+     [32m✓[39m users: nothing acts on someone whose roles grant more than the user holds, and nobody who signed in can be deleted[32m 95[2mms[22m[39m
+     [32m✓[39m users: nothing acts on someone the server refuses for the signed-in user (they also work elsewhere), and the panel says why[32m 116[2mms[22m[39m
+     [32m✓[39m users: a user who may not read roles gets someone holding roles read-only, and someone holding none editable[32m 158[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.tenant.read is read-only to a user holding every identity permission[32m 162[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.tenant.read is read-only to a user holding every identity permission[32m 175[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.tenant.update is read-only to a user holding every identity permission[32m 130[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.tenant.update is read-only to a user holding every identity permission[32m 158[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.access.update is read-only to a user holding every identity permission[32m 182[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.access.update is read-only to a user holding every identity permission[32m 217[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants lists.views.share is read-only to a user holding every identity permission[32m 183[2mms[22m[39m
+     [32m✓[39m roles: a role granting lists.views.share is read-only to a user holding every identity permission[32m 193[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants ledger.entries.post is read-only to a user holding every identity permission[32m 120[2mms[22m[39m
+     [32m✓[39m roles: a role granting ledger.entries.post is read-only to a user holding every identity permission[32m 149[2mms[22m[39m
+     [32m✓[39m users: without identity.profile.update, exactly the toolbar actions needing it are gone[32m 98[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.create, exactly the toolbar actions needing it are gone[32m 88[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.delete, exactly the toolbar actions needing it are gone[32m 78[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.read, exactly the toolbar actions needing it are gone[32m 78[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.update, exactly the toolbar actions needing it are gone[32m 91[2mms[22m[39m
+     [32m✓[39m users: without identity.signIns.read, exactly the toolbar actions needing it are gone[32m 86[2mms[22m[39m
+     [32m✓[39m users: without identity.users.create, exactly the toolbar actions needing it are gone[32m 81[2mms[22m[39m
+     [32m✓[39m users: without identity.users.delete, exactly the toolbar actions needing it are gone[32m 86[2mms[22m[39m
+     [32m✓[39m users: without identity.users.read, exactly the toolbar actions needing it are gone[32m 71[2mms[22m[39m
+     [32m✓[39m users: without identity.users.resetPassword, exactly the toolbar actions needing it are gone[32m 65[2mms[22m[39m
+     [32m✓[39m users: without identity.users.update, exactly the toolbar actions needing it are gone[32m 81[2mms[22m[39m
+     [32m✓[39m roles: without identity.profile.update, exactly the toolbar actions needing it are gone[32m 54[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.create, exactly the toolbar actions needing it are gone[32m 58[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.delete, exactly the toolbar actions needing it are gone[32m 73[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.read, exactly the toolbar actions needing it are gone[32m 52[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.update, exactly the toolbar actions needing it are gone[32m 69[2mms[22m[39m
+     [32m✓[39m roles: without identity.signIns.read, exactly the toolbar actions needing it are gone[32m 70[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.create, exactly the toolbar actions needing it are gone[32m 73[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.delete, exactly the toolbar actions needing it are gone[32m 70[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.read, exactly the toolbar actions needing it are gone[32m 65[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.resetPassword, exactly the toolbar actions needing it are gone[32m 76[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.update, exactly the toolbar actions needing it are gone[32m 76[2mms[22m[39m
+     [32m✓[39m roles: a read-only user sees no New role, and n or Alt+N opens nothing[32m 36[2mms[22m[39m
+     [32m✓[39m users: Alt+N starts a new record while the search box the list focuses on arrival has the focus[32m 70[2mms[22m[39m
+     [32m✓[39m roles: Alt+N starts a new record while the search box the list focuses on arrival has the focus[32m 58[2mms[22m[39m
+     [32m✓[39m asks for a new password, then signs in with it[32m 28[2mms[22m[39m
+     [32m✓[39m save with Ctrl+Enter or Ctrl+S, the S matched by key position so an Arabic layout saves too, and close with Escape[32m 1[2mms[22m[39m
+     [32m✓[39m shows the team's sign-in address for the user's own e-mail domain, in both languages[32m 35[2mms[22m[39m
+     [32m✓[39m changes the password with the form keys and shows each refusal on its field, linked to the input[32m 84[2mms[22m[39m
+     [32m✓[39m lists, adds and saves roles in one company, and the company the person starts in[32m 107[2mms[22m[39m
+     [32m✓[39m removes a role in one company by keyboard-reachable button and sends no company roles when they did not change[32m 151[2mms[22m[39m
+     [32m✓[39m shows read-only, with the reason, someone holding roles in companies the user does not work in[32m 53[2mms[22m[39m
+     [32m✓[39m shows read-only someone whose role in one company grants a permission the user lacks[32m 50[2mms[22m[39m
+     [32m✓[39m says in which company each permission counts[32m 66[2mms[22m[39m
+     [32m✓[39m re-reads permissions and menu when the working company changes, so a role held in one company shows and hides its screens[32m 57[2mms[22m[39m
+     [32m✓[39m lists them in the panel and removes the lost laptop alone, after a question whose answer has the focus[32m 88[2mms[22m[39m
+     [32m✓[39m Remove all passkeys asks first, then removes every one[32m 79[2mms[22m[39m
+     [32m✓[39m Sign out everywhere asks, with removing the passkeys ticked, and says what it did[32m 65[2mms[22m[39m
+     [32m✓[39m Sign out everywhere can keep the passkeys when the box is cleared, and asks nothing when there are none[32m 100[2mms[22m[39m
+     [32m✓[39m Reset password offers removing the passkeys too (not ticked), and the set-up code notice says they were removed[32m 57[2mms[22m[39m
+[31m     [31m×[31m shows the passkeys without any way to remove them to a user who may not change users[39m[32m 50[2mms[22m[39m
+     [32m✓[39m the sign-in history says which sign-ins used a passkey, in English and Arabic[32m 93[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22musers screen[2m > [22mhides creation and account actions from a read-only user
+[31m[1mAssertionError[22m: expected [ '', …(19) ] to not include 'Sign out everywhere'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m258:25[22m[39m
+    [90m256| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Save"[39m)[33m;[39m
+    [90m257| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Reset password…"[39m)[33m;[39m
+    [90m258| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Sign out everywhere"[39m)[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m259| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Sign-in history"[39m)[33m;[39m
+    [90m260| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: without identity.users.update there is no "Sign out everywhere"
+[31m[1mAssertionError[22m: expected [ 'Close', 'Details', …(5) ] to not include 'Sign out everywhere'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m688:27[22m[39m
+    [90m686| [39m    it(`users: without ${permission} there is no "${button}"`, async (…
+    [90m687| [39m      const buttons = await openUser(all.filter((x) => x !== permissio…
+    [90m688| [39m      [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m(button)[33m;[39m
+    [90m   | [39m                          [31m^[39m
+    [90m689| [39m      for (const [other, otherButton] of userCases) if (other !== perm…
+    [90m690| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22ma user's passkeys, for a lost or stolen device[2m > [22mshows the passkeys without any way to remove them to a user who may not change users
+[31m[1mAssertionError[22m: expected <button type="button" …(2)></button> to be undefined[39m
+
+[32m- Expected:[39m 
+undefined
+
+[31m+ Received:[39m 
+<button
+  aria-label="Remove the passkey Shared laptop"
+  class="button"
+  type="button"
+>
+  Remove
+</button>
+
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m1273:65[22m[39m
+    [90m1271| [39m    [35mconst[39m section [33m=[39m [34maside[39m()[33m.[39m[34mquerySelector[39m([32m"section.id-user-passkeys"[39m)[33m![39m[33m;[39m
+    [90m1272| [39m    [34mexpect[39m(section[33m.[39mtextContent)[33m.[39m[34mtoContain[39m([32m"Shared laptop"[39m)[33m;[39m
+    [90m1273| [39m    expect(button(section, "Remove the passkey Shared laptop")).toBeUn…
+    [90m   | [39m                                                                [31m^[39m
+    [90m1274| [39m    [34mexpect[39m([34mbutton[39m([34maside[39m()[33m,[39m [32m"Remove all passkeys"[39m))[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m1275| [39m    [34mexpect[39m([34mbutton[39m([34maside[39m()[33m,[39m [32m"Sign out everywhere…"[39m))[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m80 passed[39m[22m[90m (83)[39m
+[2m   Start at [22m 14:03:09
+[2m   Duration [22m 11.60s[2m (transform 890ms, setup 41ms, import 1.07s, tests 10.07s, environment 274ms)[22m
+

@@ -1,0 +1,808 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.13]   Discovering: Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.14]   Discovering: Erp.Kernel.Tests
+[xUnit.net 00:00:00.14]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.15]   Discovering: Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.18]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.29]   Discovered:  Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.32]   Discovered:  Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.36]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.40]   Discovered:  Erp.Kernel.Tests
+[xUnit.net 00:00:00.45]   Starting:    Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.48]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.48]   Starting:    Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.48]   Starting:    Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.53]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.58]   Starting:    Erp.Kernel.Tests
+[xUnit.net 00:00:00.69]   Starting:    Erp.Gates.Tests
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@.example", valid: False) [22 ms]
+  Passed Erp.Kernel.Tests.UnitOfWorkTests.Problems_inside_typed_unions_count_as_failures [23 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 1, expected: "one") [20 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "A1D") [21 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "23505", status: 409, code: "duplicate") [24 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.A_principal_without_a_tenant_claim_may_bind_nothing [34 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "omar", fields: ["name", "email"]) [38 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "فاطمه", fields: ["name", "nameAr"]) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 99, expected: "many") [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AEDX") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "١٢٣", fields: ["name", "email"]) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 10, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "aed") [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "23503", status: 404, code: "notFound") [1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "x@مثال", fields: ["name", "nameAr"]) [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "55P03", status: 409, code: "concurrency") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "o'neil-2", fields: ["name", "email"]) [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "40P01", status: 409, code: "concurrency") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_matches_the_Arabic_search_fields_when_it_has_an_Arabic_letter(word: "ﻓﺎﻃﻤﺔ", fields: ["name", "nameAr"]) [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "42501", status: 404, code: "notFound") [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "22012", status: 500, code: "internal") [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Database_errors_map_the_same_whether_EF_wraps_them_or_not(sqlState: "40001", status: 409, code: "concurrency") [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Currency_codes_are_three_upper_case_letters(code: "AE") [< 1 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_flag_column_may_name_its_two_values_and_nothing_else [45 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 0, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "en", number: 2, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 3, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.ProblemMappingTests.Anything_unknown_is_an_internal_error_and_a_concurrent_save_is_a_conflict [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a b@c.example", valid: False) [4 ms]
+  Passed Erp.Kernel.Tests.UnitOfWorkTests.Plain_results_report_their_own_status [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 100, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@@b.example", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 103, expected: "few") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b.example", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 11, expected: "many") [< 1 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_valid_list_has_no_problems [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "first.last+tag@sub.domain.ae", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 0, expected: "zero") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "no-at.example", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "x@مثال", arabic: True) [1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1, expected: "one") [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Email_validation(value: "a@b", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 2, expected: "two") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "o'neil-2", arabic: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "omar", arabic: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 102, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "١٢٣", arabic: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Plural_categories_follow_the_CLDR_rules(language: "ar", number: 1.5, expected: "other") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "ﻓﺎﻃﻤﺔ", arabic: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_money_column_names_its_currency_column [1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_word_has_an_Arabic_letter_when_it_contains_one(word: "فاطمه", arabic: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.A_permissioned_request_may_bind_only_the_principals_tenant [4 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users", valid: False) [1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Money_records_its_base_currency_and_only_adds_against_the_same_base [3 ms]
+  Passed Erp.Kernel.Tests.ModuleListTests.A_list_must_belong_to_its_module_and_name_real_columns [3 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity..read", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.userRoles.assignAll", valid: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "HEAD", marked: False, readOnly: True) [2 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "Identity.users.read", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Permission_keys_are_module_resource_action(key: "identity.users.read.extra", valid: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "GET", marked: False, readOnly: True) [1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "POST", marked: True, readOnly: True) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "POST", marked: False, readOnly: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "DELETE", marked: False, readOnly: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Reads_and_read_only_operations_run_read_only(method: "PUT", marked: False, readOnly: False) [< 1 ms]
+  Passed Erp.Kernel.Tests.TenantBindingTests.Requests_without_a_principal_or_a_permission_bind_what_they_resolved [1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "de", expected: "en") [9 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "", expected: "en") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "ar-AE,ar;q=0.9,en;q=0.8", expected: "ar") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "fr-FR,ar;q=0.5", expected: "ar") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Request_language_comes_from_accept_language_when_not_signed_in(header: "en-GB,en;q=0.9", expected: "en") [< 1 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Messages_fill_named_placeholders_and_exact_plural_branches [10 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Forwarded_headers_are_trusted_only_from_configured_proxies [38 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.A_key_without_a_translation_stops_the_catalog_from_loading [22 ms]
+  Passed Erp.Kernel.Tests.LocalizationTests.Kernel_strings_exist_in_both_languages_and_format_arguments [1 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "enumerated without operators") [107 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "sum") [110 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Money_travels_as_decimal_strings_in_json [67 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Only_same_currency_and_rate_can_be_added [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Amount_must_fit_the_currency_minor_units [1 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "page") [10 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "where, order, then by, skip, take") [14 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Base_currency_amounts_use_rate_one_and_rates_are_positive [< 1 ms]
+  Passed Erp.Kernel.Tests.MoneyTests.Base_amount_is_rounded_half_away_from_zero_to_the_base_currency [< 1 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "select") [9 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "any and first") [15 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "order") [9 ms]
+  Passed Erp.Kernel.Tests.ServedListTests.A_served_list_whose_serving_list_is_missing_stays_without_a_binding [142 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "project to a new record") [12 ms]
+  Passed Erp.Kernel.Tests.ServedListTests.A_served_list_must_name_another_list [8 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "count") [10 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.A_cursor_belongs_to_one_sort [157 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Weaker_hashes_still_verify_and_ask_to_be_upgraded [63 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "any") [4 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "distinct ordered currencies") [8 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "keyset") [8 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "order by descending with nulls") [8 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "where") [5 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "group with counts and sums") [13 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Answers_as_linq_to_objects_does(query: "count with a predicate on a nullable text") [3 ms]
+  Passed Erp.Kernel.Tests.ServedListTests.The_serving_list_lends_its_binding_whatever_the_registration_order(servingFirst: True) [37 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryTests.Wraps_a_source_once_and_keeps_its_rows [1 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.The_same_rows_in_the_same_order_as_the_compiled_in_memory_query(name: "group") [24 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "seen eq '2026-09-01 08:00'", code: "list.valueDateTime") [41 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "day eq '2026-13-01'", code: "list.valueDate") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name gt null", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ServedListTests.The_serving_list_lends_its_binding_whatever_the_registration_order(servingFirst: False) [13 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name eq 'x' and", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "active eq 1", code: "list.valueBoolean") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name in ()", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "((name eq 'x')", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name in ('a', null)", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "nosuch eq 1", code: "list.unknownColumn") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListInitialsSearchTests.Initials_need_one_word_per_letter_in_order_and_words_end_at_hyphens [207 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "kind eq 'other'", code: "list.valueChoice") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_words_search_only_the_Arabic_search_fields_and_Latin_words_only_the_search_fields [159 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name gt 'a'", code: "list.operatorNotAllowed") [< 1 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.Running_a_query_again_compiles_no_method [11 ms]
+  Passed Erp.Kernel.Tests.InMemoryQueryAgainstCompiledTests.A_query_already_interpreted_is_kept_and_its_operators_stay_interpreted [3 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "1.2.3 eq 1", code: "list.filterSyntax") [4 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name eq", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "name = 'x'", code: "list.filterSyntax") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "quantity eq 'many'", code: "list.valueNumber") [< 1 ms]
+  Passed Erp.Kernel.Tests.ServedListTests.A_served_list_that_needs_a_column_the_serving_list_does_not_bind_is_refused [10 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_filters_name_the_problem(text: "active contains 'a'", code: "list.operatorNotAllowed") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListInitialsSearchTests.A_word_equal_to_someones_initials_finds_them_after_the_people_the_word_itself_matches [14 ms]
+  Passed Erp.Kernel.Tests.ListInitialsSearchTests.Initials_are_tried_only_for_one_word_of_letters_on_a_list_that_has_them [12 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Rows_in_memory_are_paged_as_linq_to_objects_orders_them(search: "", filter: "kind eq 'raw' and quantity ge 2", sort: "-quantity,code") [23 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Rows_in_memory_are_paged_as_linq_to_objects_orders_them(search: "c-0", filter: "active eq true or seen eq null", sort: "seen") [9 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Rows_in_memory_are_paged_as_linq_to_objects_orders_them(search: "", filter: "code startswith 'C-01' or code eq null", sort: "-code") [5 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Rows_in_memory_are_paged_as_linq_to_objects_orders_them(search: "", filter: "", sort: "") [4 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Rows_in_memory_are_paged_as_linq_to_objects_orders_them(search: "item 3", filter: "", sort: "") [5 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Arabic_search_matches_the_spellings_people_type_for_one_another [84 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "groupBy", value: "name", code: "list.notGroupable") [2 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "kind", code: "list.notSortable") [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "شركة Al Noor Trading للتجارة", rightToLeft: True, expected: "للتجارة|Al Noor Trading|شركة") [22 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "فاتورة 2026-10 رقم 15", rightToLeft: True, expected: "15|رقم|10|-|2026|فاتورة") [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "هاتف +971 4 123-4567 فرع", rightToLeft: True, expected: "فرع|+971 4 123-4567|هاتف") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "Branch: الفرع الرئيسي today", rightToLeft: False, expected: "Branch:|الفرع الرئيسي|today") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "+971 2 555 7810", rightToLeft: True, expected: "+971 2 555 7810") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "04 555 7810", rightToLeft: True, expected: "04 555 7810") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "05/10/2026 14:30", rightToLeft: True, expected: "14:30|05/10/2026") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Exports_write_the_grouping_column_once_when_the_document_prints_it [25 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_telephone_number_prints_left_to_right_in_an_arabic_pdf [384 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "-", code: "list.sortSyntax") [21 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "search", value: "a b c d e f g h i", code: "list.searchTooManyWords") [1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "sort", value: "a,b,c,d,e", code: "list.sortTooMany") [1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Bad_requests_become_400_problems_naming_the_parameter(parameter: "after", value: "eyJzIjoibmFtZSJ9", code: "list.invalidCursor") [1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.A_search_without_a_sort_puts_the_best_match_first [4 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-seen") [32 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "name") [30 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "code") [30 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-quantity,code") [26 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "seen") [23 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-name") [30 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "-code") [21 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_return_every_row_once_in_the_order_of_one_page(sort: "active,-quantity") [23 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Registration_refuses_definitions_and_bindings_that_cannot_keep_their_promises [5 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "name eq 'x'") [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "kind in ('raw', 'finished') and seen ge '2026-09-0"···) [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "(name eq 'it''s' or code is null) and not quantity"···) [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Filters_parse_and_format_back_to_an_equivalent_text(text: "amount lt -1.5 and active ne false and code starts"···) [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_text_is_shaped_into_joining_forms_with_lam_alef [5 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_font_subset_keeps_the_drawn_glyphs_and_their_components_at_their_ids [25 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_line_narrower_than_one_character_still_ends [6 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_ends_with_the_grand_total_as_a_filter_aware_formula_below_the_filtered_rows [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Font_units_scale_to_thousandths_of_an_em_rounded_half_to_even_as_decimals_round [251 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_letters_that_share_a_glyph_extract_as_the_letters_printed [5 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_cut_at_its_row_limit_ends_with_a_line_saying_so [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_run_maps_every_glyph_back_to_its_characters_and_a_line_shaped_again_is_the_same [5 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Each_script_is_drawn_with_a_font_that_has_it [3 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.The_first_strong_character_decides_a_values_direction [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_has_a_right_to_left_sheet_with_numbers_as_numbers [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: True) [53 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: False) [27 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_carries_the_rows_only_so_another_program_reads_every_line_as_data [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_writes_totals_in_more_than_one_currency_as_text_and_adds_no_total_to_a_report_without_one [32 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_wide_table_turns_the_page_to_landscape [22 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_report_breaks_into_pages_with_the_header_on_each_and_page_numbers [104 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Long_text_wraps_at_spaces_within_the_width [< 1 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "item") [38 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "3") [23 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "item 3") [33 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Keyset_pages_of_a_search_in_relevance_order_return_every_row_once(search: "c-0") [63 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Matching_is_every_row_the_search_and_filter_select_whatever_the_paging_sort_or_grouping [18 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.A_Latin_search_queries_the_same_fields_as_before_and_an_Arabic_one_adds_the_Arabic_field [828 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_search_fields_are_text_columns_and_are_bound [2 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.A_proof_from_the_challenge_equals_the_stored_hash_only_for_the_right_password [888 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_pdf_starts_with_a_well_formed_header [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_starts_with_a_byte_order_mark_keeps_raw_values_and_defuses_formulas [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_cut_at_its_row_limit_says_so_under_the_table_outside_the_filter [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.An_arabic_pdf_is_readable_right_to_left_with_its_fonts_embedded [27 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_runs_are_written_whole_and_in_reading_order_so_a_reader_extracts_words_intact [12 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Numbers_amounts_and_dates_follow_the_language_and_digits [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_pdf_embeds_only_the_glyphs_it_draws_and_every_letter_keeps_its_outline [31 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_composite_glyph_keeps_the_glyphs_it_is_built_from [3 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_report_with_a_huge_cell_renders_in_seconds [54 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Latin_words_never_search_the_Arabic_field [4 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Session_tokens_are_256_bit_base64url_and_stored_as_sha256 [< 1 ms]
+  Passed Erp.Kernel.Tests.ListArabicSearchFieldsTests.Arabic_words_find_people_by_their_Arabic_name_in_the_spellings_people_type [48 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.A_search_too_broad_to_rank_keeps_the_default_order_on_every_page [304 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Search_filters_and_groups_select_the_right_rows [44 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.A_search_word_expands_to_a_bounded_set_of_spellings [2 ms]
+  Passed Erp.Kernel.Tests.ListEngineTests.Filters_are_bounded_in_length_and_complexity [< 1 ms]
+  Passed Erp.Kernel.Tests.SecurityTests.Password_hashes_verify_only_the_right_password_and_use_unique_salts [408 ms]
+  Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.Demo_seed_loads_the_shared_dataset_users_into_the_main_tenant [11 s]
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_requires_a_bound_tenant [1 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Migrations_and_seeding_are_idempotent [135 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.A_unit_of_work_cannot_switch_tenants [19 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_cannot_smuggle_rows_into_another_tenant [9 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.Using_a_module_context_before_binding_a_tenant_fails_loudly [10 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.EF_refuses_to_write_a_row_for_another_tenant [22 ms]
+  Passed Erp.Kernel.Tests.KernelDataTests.The_query_filter_is_a_second_layer_on_every_tenant_entity [12 ms]
+  Passed Erp.Modules.Identity.Tests.SharedDatasetSeedTests.The_dataset_says_which_users_are_active_and_a_file_without_the_column_loads_all_active [7 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_session_cookie_is_secure_over_https_and_not_on_plain_http [794 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_session_probe_always_answers_200_even_with_a_stale_or_malformed_session_cookie [20 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_tenants_company_or_no_company_is_not_found_and_bad_parameters_are_explained [1 s]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_change_to_a_view_is_audited_with_its_author [1 s]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Roles_in_one_company_are_created_shown_changed_and_explained [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Exports_carry_the_rows_as_csv_and_as_a_workbook [492 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_reports_isolation_probe_reports_requests_that_get_no_answer_and_runs_the_rest [16 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.A_company_with_no_arabic_legal_name_is_headed_by_its_english_name_in_an_arabic_profile [1 s]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Reading_and_renaming_need_their_permissions [943 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Changes_need_the_version_read_and_a_company_can_be_deactivated_and_reactivated [535 ms]
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Each_user_reads_their_own_workspace [601 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Branches_belong_to_one_company_and_codes_are_unique_within_it [729 ms]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner [618 ms]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Every_field_is_validated_against_the_list_in_the_users_language [254 ms]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them [580 ms]
+[xUnit.net 00:00:16.50]   Finished:    Erp.Modules.Lists.Tests (ID = '3ab372e8c1b058abe35539ecb2b78dba197b5a9f0242af81daadb3c7868d679e')
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.The_definition_describes_columns_operators_choices_presets_and_sharing [416 ms]
+  Passed Erp.Modules.Lists.Tests.SavedViewsTests.One_default_per_owner_and_names_unique_per_owner [417 ms]
+
+Test Run Successful.
+Total tests: 6
+     Passed: 6
+ Total time: 16.9209 Seconds
+  Passed Erp.Modules.Tenancy.Tests.TenantTests.Renaming_needs_both_names_and_the_version_and_refuses_a_stale_version [482 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.Binding_companies_with_a_query_in_the_same_round_trip_runs_the_query_inside_the_bound_scope [68 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.A_read_only_request_binding_is_read_only_from_the_first_statement [8 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_same_logo_in_two_companies_has_a_different_tag_in_each [594 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.A_bound_scope_shows_only_its_companies_cannot_be_widened_and_refuses_writes_elsewhere [80 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.System_work_sees_every_company_and_a_user_sees_none_until_bound [22 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyScopeTests.The_workspace_record_is_written_only_by_a_unit_of_work_that_holds_the_whole_workspace [22 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Logos_must_be_real_images_of_the_stated_type_and_are_served_back [301 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.Only_someone_who_works_in_every_company_creates_a_company_or_changes_a_company_code [1 s]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Invalid_company_roles_are_refused_with_field_errors [365 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Only_the_owner_changes_a_passkey_and_an_administrator_removes_another_users_passkeys [2 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_passkey_is_added_soon_after_signing_in_and_signs_in_from_any_start_without_an_email [827 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Users_by_role_lists_a_role_held_in_one_company_with_that_company [976 ms]
+  Passed Erp.Modules.Identity.Tests.ModulePermissionsTests.A_role_that_may_only_view_and_create_contacts_works_end_to_end [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock [1 s]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.Deleting_a_role_or_a_user_removes_their_company_assignments [638 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.The_seeded_accountant_manages_the_first_company_and_reads_the_second [397 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Another_workspaces_users_are_never_matched_or_changed [1 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_pause_ends_by_itself_when_the_failures_leave_the_window [1 s]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Without_the_update_permission_the_request_is_forbidden_and_changes_nothing [618 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.The_companies_list_never_reads_logo_bytes_and_still_searches_filters_sorts_and_groups [338 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.Validation_names_every_bad_field_in_the_callers_language [175 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.An_administrator_creates_a_company_works_in_it_and_reads_it_back [379 ms]
+  Passed Erp.Modules.Tenancy.Tests.CompanyTests.A_company_or_branch_needs_only_a_name_and_gets_a_code_made_from_it [344 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.The_access_version_tells_nothing_about_companies_the_caller_cannot_see [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_areas_columns_and_parameters_are_left_out_for_a_caller_who_cannot_read_that_area [2 s]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_role_granting_more_than_the_caller_holds_is_neither_renamed_copied_nor_deleted_by_them [985 ms]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.An_administrator_sets_where_another_user_starts_work [846 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_has_a_name_in_Arabic_that_the_list_filters [437 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_permission_catalogue_carries_what_the_matrix_needs [579 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.The_filter_narrows_the_match_and_a_changed_count_changes_nothing [920 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_user_holding_only_the_access_permission_cannot_take_access_from_the_administrator [810 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.Administrators_give_only_their_own_companies_and_never_change_their_own_access [1 s]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_user_who_also_works_in_branches_the_caller_does_not_is_read_only_to_the_caller_and_their_hidden_branches_are_not_counted [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_role_without_the_data_permission_cannot_run_the_report_and_does_not_see_it [445 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_printed_roles_list_names_each_roles_type_and_aligns_counts_as_numbers [291 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_api_description_gives_every_report_route_its_document_schema_and_file_types [382 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_of_records_in_a_cell_prints_as_their_codes [244 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_prints_with_its_own_query_columns_and_totals [389 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks [1 s]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_suspended_workspace_cannot_be_signed_in_to [137 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.The_sign_in_address_of_another_user_is_corrected_and_stays_unique_in_the_workspace [799 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.User_search_finds_by_name_or_email_and_escapes_wildcards [659 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_administrator_role_cannot_be_changed_or_deleted_and_grants_every_permission [190 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Permission_catalogue_is_labelled_in_the_users_language [156 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Server_errors_reveal_nothing_but_a_trace_id [331 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Unknown_api_paths_answer_404_problems_not_the_app_shell [6 ms]
+  Passed Erp.Modules.Identity.Tests.UserCorrectionsTests.A_user_who_never_signed_in_is_deleted_and_anyone_who_signed_in_stays [1 s]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Health_is_public_and_checks_the_database [39 ms]
+  Passed Erp.Modules.Identity.Tests.PlatformHttpTests.Responses_carry_security_headers_and_api_responses_are_not_cached [4 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_administrator_resets_a_password_and_the_user_is_signed_out_everywhere [1 s]
+  Passed Erp.Modules.Identity.Tests.CompanyRolesTests.All_that_match_leaves_alone_users_whose_roles_in_one_company_the_caller_does_not_cover [2 s]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Copying_a_role_keeps_its_permissions_under_a_new_name [209 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.The_same_email_in_two_workspaces_asks_which_one_only_when_both_passwords_match [1 s]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.A_new_user_works_in_no_company_until_given_access_and_then_only_in_the_companies_given [839 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_pages_users_with_their_companies [202 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_access_list_keeps_the_list_contract_and_needs_only_its_own_permission [591 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_new_company_is_given_to_every_administrator_of_the_whole_workspace_and_to_nobody_holding_less [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_branch_directory_groups_by_company_with_counts_and_by_any_groupable_column [259 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_roles_report_counts_holders_in_one_company_as_the_roles_list_does [525 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_roles_report_totals_users_and_permissions_per_kind_and_overall [163 ms]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Deactivates_every_matching_user_except_the_caller_and_stronger_users_and_audits_each_change [1 s]
+  Passed Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Bad_requests_are_refused_by_field_and_change_nothing [352 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Cookie_requests_that_change_data_need_the_request_header [370 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Expired_sessions_and_malformed_tokens_are_refused [145 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.The_access_view_says_what_a_user_can_do_and_which_role_grants_it [671 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_returns_the_session_and_sets_a_strict_http_only_cookie [179 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Racing_deletes_and_unblocks_of_one_user_answer_without_a_server_error [1 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_unique_index_across_tenants [125 ms]
+  Passed Erp.Modules.Tenancy.Tests.AccessTests.The_working_company_is_kept_across_sessions_and_falls_back_when_access_is_removed [841 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.A_branch_limited_administrator_sees_reads_changes_and_gives_only_their_own_branch [1 s]
+  Passed Erp.Modules.Identity.Tests.RateLimitTests.Sign_in_attempts_beyond_the_limit_get_429_with_a_localized_problem [881 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Deactivating_a_user_ends_their_sessions [643 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Changing_the_language_preference_follows_the_user [645 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Wrong_password_and_unknown_email_get_the_same_answer [248 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive eq 'yes'", code: "list.valueBoolean") [572 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.Signed_in_users_change_their_password_by_proving_the_current_one_and_other_sessions_end [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session [193 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_catalogue_lists_reports_and_lists_in_the_callers_language [142 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar", code: "list.filterSyntax") [163 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_to_one_account_from_several_clients_at_once_succeeds_for_each [451 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq", code: "list.filterSyntax") [157 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.The_digits_preference_follows_the_user_and_leaves_the_language_alone [662 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "(language eq 'ar'", code: "list.filterSyntax") [148 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Saving_over_someone_elses_change_is_refused [191 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "after", value: "not-a-cursor", code: "list.invalidCursor") [144 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "displayName eq 5", code: "list.valueText") [144 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Validation_errors_name_each_field_in_the_requested_language [305 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.A_passkey_answer_is_refused_unless_every_check_holds_and_every_refusal_reads_the_same [635 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "createdAt ge 'yesterday'", code: "list.valueDateTime") [146 ms]
+  Passed Erp.Modules.Identity.Tests.UsersAndRolesTests.Duplicate_email_in_the_same_workspace_is_a_conflict [154 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "isActive gt true", code: "list.operatorNotAllowed") [154 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_invited_user_signs_in_once_with_the_set_up_code_and_chooses_a_password [1 s]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.Saving_access_needs_the_version_read_and_two_saves_never_overwrite_each_other [905 ms]
+  Passed Erp.Modules.Tenancy.Tests.GrantRulesTests.Only_someone_who_works_in_every_company_and_branch_changes_the_workspace [840 ms]
+[xUnit.net 00:00:24.26]   Finished:    Erp.Modules.Reports.Tests (ID = 'aa0ba11486d2994c9cc221f697ec8de6f8bbe06fde0d65669e5f45ee23fe8e20')
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_users_list_names_roles_beyond_the_first_page_of_roles [1 s]
+
+Test Run Successful.
+Total tests: 53
+     Passed: 53
+ Total time: 24.6434 Seconds
+[xUnit.net 00:00:24.67]     Erp.Modules.Identity.Tests.AuthTests.A_lost_device_stops_signing_in_when_the_administrator_removes_its_passkey_with_a_reset_or_sign_out_everywhere [FAIL]
+[xUnit.net 00:00:24.67]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:24.67]       Expected: NotFound
+[xUnit.net 00:00:24.67]       Actual:   OK
+[xUnit.net 00:00:24.67]       Stack Trace:
+[xUnit.net 00:00:24.67]         /work/tests/Erp.Modules.Identity.Tests/AuthTests.Passkeys.cs(291,0): at Erp.Modules.Identity.Tests.AuthTests.A_lost_device_stops_signing_in_when_the_administrator_removes_its_passkey_with_a_reset_or_sign_out_everywhere()
+[xUnit.net 00:00:24.67]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'ar' and", code: "list.filterSyntax") [137 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "nosuch", code: "list.unknownColumn") [134 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language = 'ar'", code: "list.filterSyntax") [129 ms]
+  Passed Erp.Modules.Identity.Tests.UserLifecycleTests.An_expired_set_up_code_fails_like_a_wrong_password [379 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "groupBy", value: "displayName", code: "list.notGroupable") [125 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language eq 'fr'", code: "list.valueChoice") [134 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "display name", code: "list.sortSyntax") [128 ms]
+  Failed Erp.Modules.Identity.Tests.AuthTests.A_lost_device_stops_signing_in_when_the_administrator_removes_its_passkey_with_a_reset_or_sign_out_everywhere [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Identity.Tests.AuthTests.A_lost_device_stops_signing_in_when_the_administrator_removes_its_passkey_with_a_reset_or_sign_out_everywhere() in /work/tests/Erp.Modules.Identity.Tests/AuthTests.Passkeys.cs:line 291
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "language gt 'ar'", code: "list.operatorNotAllowed") [133 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "nosuch", code: "list.unknownColumn") [120 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "language", code: "list.notSortable") [122 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "filter", value: "nosuch eq 'x'", code: "list.unknownColumn") [121 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Bad_queries_are_refused_naming_the_parameter(parameter: "sort", value: "displayName,displayName", code: "list.sortSyntax") [134 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_in_from_a_signed_in_browser_answers_for_the_new_session_only [564 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Signing_out_revokes_the_session_for_good [158 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "a") [353 ms]
+[xUnit.net 00:00:26.53]   Finished:    Erp.Modules.Tenancy.Tests (ID = '7c336b43d696105a19512de164fe1230cb02ef2c7773107fd16d0ceb1101f39a')
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Suspending_a_workspace_ends_its_sessions_and_activating_it_restores_sign_in [934 ms]
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.An_operator_provisions_a_workspace_with_its_first_company_branch_and_administrator [359 ms]
+  Passed Erp.Modules.Tenancy.Tests.ProvisioningTests.Workspace_settings_are_validated_and_kept [201 ms]
+
+Test Run Successful.
+Total tests: 33
+     Passed: 33
+ Total time: 26.9461 Seconds
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "al m") [321 ms]
+  Passed Erp.Modules.Identity.Tests.AuthTests.Adding_a_passkey_needs_a_recent_sign_in_this_sessions_challenge_and_an_answer_for_this_site [579 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "فاطمه") [170 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "om") [144 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "haddad omar") [183 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Search_finds_a_name_written_in_Arabic [280 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Sorting_orders_by_the_column_with_nulls_last_ascending_and_first_descending [216 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-displayName") [306 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "displayName") [275 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "createdAt") [276 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt,-displayName") [257 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-createdAt") [254 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "email") [249 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "-lastSignInAt") [284 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Keyset_paging_returns_the_same_rows_in_the_same_order_as_one_page(sort: "lastSignInAt") [256 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_user_is_found_by_the_initials_of_their_name_and_the_initials_follow_a_rename [383 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Filters_select_exactly_the_matching_rows [457 ms]
+[xUnit.net 00:00:31.21]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Search_matches_every_word_in_any_search_field_ignoring_case_and_order [203 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_cursor_belongs_to_its_sort_and_cannot_be_combined_with_skip [175 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.A_search_lists_the_best_match_first_and_reads_Arabic_spelling_variants [316 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.Grouping_counts_every_matching_row_once [266 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListTests.The_roles_list_serves_the_same_contract_in_memory [273 ms]
+
+Test Run Failed.
+Total tests: 100
+     Passed: 99
+     Failed: 1
+ Total time: 31.6656 Seconds
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_configured_bulk_timeout_is_used_and_an_unset_one_defaults_to_an_hour [< 1 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "30") [< 1 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "599") [< 1 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "-1") [< 1 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_bulk_timeout_below_the_minimum_or_unreadable_is_refused(value: "ten minutes") [< 1 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.The_bulk_connection_cannot_be_chosen_after_the_unit_of_work_used_its_connection [38 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.The_bulk_loader_never_runs_a_statement_under_the_bulk_minimum_even_on_a_request_connection [4 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.Every_command_on_a_bulk_unit_of_work_inherits_the_long_timeout [36 ms]
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.A_seed_statement_longer_than_the_default_timeout_finishes [1 ms]
+[xUnit.net 00:00:46.37]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+  Passed Erp.Kernel.Tests.BulkTimeoutTests.Request_units_of_work_keep_the_short_default_timeout [1 ms]
+
+Test Run Successful.
+Total tests: 187
+     Passed: 187
+ Total time: 46.7879 Seconds
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another [53 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names [2 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user [8 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [82 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_says_when_it_stopped_at_its_object_budget [282 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant [31 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_judges_every_field_of_registration_objects [4 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_judging_nothing_or_only_roles_held_everywhere [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_own_rows_writable_outside_the_scope [45 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions [17 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [300 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 12 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [800 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [13 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [319 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [814 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [16 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [21 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [28 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [17 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [541 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [12 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [14 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [5 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [1 m 6 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_a_company_table_without_the_company_scope [39 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_leaving_out_where_users_work [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_role_checks_that_take_grants_held_in_one_company_as_held_everywhere [12 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [123 ms]
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one [3 s]
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [7 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [36 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [380 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [4 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [2 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [3 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [18 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [21 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [39 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [18 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [7 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [1 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [12 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [132 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [212 ms]
+[xUnit.net 00:04:13.56]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:04:13.56]       identity.passkeys: unreviewed policy 'identity.passkeys auth_resolver_read r erp_auth' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+[xUnit.net 00:04:13.56]       Stack Trace:
+[xUnit.net 00:04:13.56]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:04:13.56]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:13.56]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [FAIL]
+[xUnit.net 00:04:13.56]       Assert.Equal() Failure: Collections differ at index 0
+[xUnit.net 00:04:13.56]                                   ↓ (pos 17)
+[xUnit.net 00:04:13.56]       Expected: "identity.resolve_session(p_token_hash bytea)"
+[xUnit.net 00:04:13.56]       Actual:   "identity.resolve_passkey(p_credential bytea)"
+[xUnit.net 00:04:13.56]                                   ↑ (pos 17)
+[xUnit.net 00:04:13.56]       Stack Trace:
+[xUnit.net 00:04:13.56]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(181,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones()
+[xUnit.net 00:04:13.56]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(187,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones()
+[xUnit.net 00:04:13.56]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:13.95]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:04:13.95]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail: a read-only field that holds a mutable ConcurrentDictionary<String, String>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:04:13.95]       Stack Trace:
+[xUnit.net 00:04:13.95]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:04:13.95]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:13.95]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:13.95]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:13.95]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:04:13.95]       Output:
+[xUnit.net 00:04:13.95]         417 types, 85 fields, 14 singleton services inspected, 115 endpoint delegates walked (3322 objects) to 29 closures; 5 framework singletons over product types; 93 roots walked to 1133 objects, 49 product types judged field by field; 29 reviewed findings
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [8 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [14 ms]
+  Error Message:
+   identity.passkeys: unreviewed policy 'identity.passkeys auth_resolver_read r erp_auth' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [6 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ at index 0
+                            ↓ (pos 17)
+Expected: "identity.resolve_session(p_token_hash bytea)"
+Actual:   "identity.resolve_passkey(p_credential bytea)"
+                            ↑ (pos 17)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 181
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 187
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [17 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [207 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [128 ms]
+  Error Message:
+   static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail: a read-only field that holds a mutable ConcurrentDictionary<String, String>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 417 types, 85 fields, 14 singleton services inspected, 115 endpoint delegates walked (3322 objects) to 29 closures; 5 framework singletons over product types; 93 roots walked to 1133 objects, 49 product types judged field by field; 29 reviewed findings
+
+
+[xUnit.net 00:04:14.56]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:04:14.56]       src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs:38 sends SET, RESET or DISCARD (changes a session setting or role) [sql-set]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:04:14.56]       Stack Trace:
+[xUnit.net 00:04:14.56]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:04:14.56]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:14.56]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:14.56]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:14.56]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:04:14.56]       Output:
+[xUnit.net 00:04:14.56]         143 files scanned, 101 reviewed uses of 12 rules
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [7 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [1 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [9 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [486 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [19 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [26 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [58 ms]
+  Error Message:
+   src/Modules/Identity/Erp.Modules.Identity/Migrations/20261010065900_SignInMethod.cs:38 sends SET, RESET or DISCARD (changes a session setting or role) [sql-set]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 143 files scanned, 101 reviewed uses of 12 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [1 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [14 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [3 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [23 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [4 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [10 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [836 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [52 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [36 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [385 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [156 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [21 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [201 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [15 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [9 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [5 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [19 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [19 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [15 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [974 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [992 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [173 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [324 ms]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [41 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [12 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [1 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [15 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [5 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [97 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [2 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [6 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [51 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [4 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [18 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [1 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [1 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [11 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [3 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [101 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [40 s]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [11 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [6 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [2 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [5 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [3 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Only_a_recent_instant_and_a_short_dated_text_are_scrubbed_as_the_print_stamp [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.A_compressed_pdf_and_a_zipped_workbook_are_read_for_their_text [21 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Right_to_left_runs_are_also_given_in_logical_order [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [5 m 6 s]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [21 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [45 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [12 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [7 ms]
+  Passed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names [8 s]
+  Passed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_catches_exports_beyond_their_document_and_list_prints_beyond_their_list [7 s]
+[xUnit.net 00:15:05.35]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:15:05.35]       1 isolation checks failed:
+[xUnit.net 00:15:05.35]       
+[xUnit.net 00:15:05.35]       Process-wide state changed while the tenants used the app (242 lines):
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail: was System.Collections.Concurrent.ConcurrentDictionary`2 count=14, now System.Collections.Concurrent.ConcurrentDictionary`2 count=253
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin@bravo-cnry3bd837edc1.example]: was password, now passkey
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin@bravo-cnry6ac91d4335.example]: was passkey, now password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.22c208f9@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2rc-2@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.views.share-only@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.137c544@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[cocaller.7cdba0809f@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.9c5825a@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.11832d84@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.1a4c5ea@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.company.5@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.84a8034@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.tenancy-branches-update@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.3553233@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.5f44c60@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin.ar.workspace.c854@bravo-cnry3bd837edc1.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.14234d2f@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.tenancy-companies-read@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.1728894c@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.list.identity-users@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.4a4660a@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.1dabbb0@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[takeover.7cdba0809f@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[noaccess@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[branch.x.bd568c49089a4e78adb14eedd3834be5@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.identity-users-resetPassword@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.33cabbd@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.16ac6c1@alpha.example]: new password
+[xUnit.net 00:15:05.35]       static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.10a8de21@alpha.example]: new password
+[xUnit.net 00:15:05.35]       Stack Trace:
+[xUnit.net 00:15:05.35]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(170,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:15:05.35]         --- End of stack trace from previous location ---
+[xUnit.net 00:15:05.35]       Output:
+[xUnit.net 00:15:05.35]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 168.2 s
+[xUnit.net 00:15:05.35]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 203.2 s
+[xUnit.net 00:15:05.35]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 436.9 s
+[xUnit.net 00:15:05.35]         answer shapes: 10 endpoints, 664 shapes (51 documented values), 2309 tenant B and 1376 tenant A requests: 232259 requests so far (18633 by tenant A's Arabic sessions; tenant B 69889, 20019 in Arabic), 468.4 s
+[xUnit.net 00:15:05.35]         tenant B values in route and query parameters: 523907 requests so far (93618 by tenant A's Arabic sessions; tenant B 94255, 26110 in Arabic), 648.9 s
+[xUnit.net 00:15:05.35]         registered lists through their query contract: 17289 attacks, 31337 requests: 555244 requests so far (93618 by tenant A's Arabic sessions; tenant B 97994, 27045 in Arabic), 673.8 s
+[xUnit.net 00:15:05.35]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 83168 rows walked; process-wide state fingerprinted in 104923 lines from 93 roots: 555244 requests so far (93618 by tenant A's Arabic sessions; tenant B 125345, 33883 in Arabic), 807.8 s
+[xUnit.net 00:15:05.35]         tenant B values in body fields: 588472 requests so far (93618 by tenant A's Arabic sessions; tenant B 129196, 34845 in Arabic), 831.3 s
+[xUnit.net 00:15:05.35]         tenant B activity: 157876 requests (59308 concurrent with the attack), 1980 successful own writes, 157624 responses judged for tenant A markers: 588472 requests so far (93618 by tenant A's Arabic sessions; tenant B 157876, 39934 in Arabic), 851.6 s
+[xUnit.net 00:15:05.35]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:15:05.35]         730652 tenant bindings and 1461141 setting statements judged among 7062554 statements; 730652 tenant values judged, 6673260 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462089 responses judged on every header
+[xUnit.net 00:15:05.35]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:15:05.35]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:15:05.35]         120 endpoints, 616629 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 730515 traced lookups
+[xUnit.net 00:15:05.35]         in Arabic: 98516 tenant A requests, 39934 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+[xUnit.net 00:15:05.50]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [14 m 48 s]
+  Error Message:
+   1 isolation checks failed:
+
+Process-wide state changed while the tenants used the app (242 lines):
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail: was System.Collections.Concurrent.ConcurrentDictionary`2 count=14, now System.Collections.Concurrent.ConcurrentDictionary`2 count=253
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin@bravo-cnry3bd837edc1.example]: was password, now passkey
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin@bravo-cnry6ac91d4335.example]: was passkey, now password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.22c208f9@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2rc-2@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.views.share-only@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.137c544@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[cocaller.7cdba0809f@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.9c5825a@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.11832d84@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.1a4c5ea@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.company.5@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.84a8034@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.tenancy-branches-update@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.3553233@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.5f44c60@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[admin.ar.workspace.c854@bravo-cnry3bd837edc1.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.14234d2f@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.tenancy-companies-read@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.grantco.1728894c@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.list.identity-users@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.4a4660a@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.victim.1dabbb0@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[takeover.7cdba0809f@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[noaccess@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[branch.x.bd568c49089a4e78adb14eedd3834be5@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.identity-users-resetPassword@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.33cabbd@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[subject.caller.16ac6c1@alpha.example]: new password
+static Erp.Modules.Identity.Auth.SignInService.LastMethodByEmail[g2.holder.10a8de21@alpha.example]: new password
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 170
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 168.2 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 203.2 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 436.9 s
+ answer shapes: 10 endpoints, 664 shapes (51 documented values), 2309 tenant B and 1376 tenant A requests: 232259 requests so far (18633 by tenant A's Arabic sessions; tenant B 69889, 20019 in Arabic), 468.4 s
+ tenant B values in route and query parameters: 523907 requests so far (93618 by tenant A's Arabic sessions; tenant B 94255, 26110 in Arabic), 648.9 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 555244 requests so far (93618 by tenant A's Arabic sessions; tenant B 97994, 27045 in Arabic), 673.8 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 83168 rows walked; process-wide state fingerprinted in 104923 lines from 93 roots: 555244 requests so far (93618 by tenant A's Arabic sessions; tenant B 125345, 33883 in Arabic), 807.8 s
+ tenant B values in body fields: 588472 requests so far (93618 by tenant A's Arabic sessions; tenant B 129196, 34845 in Arabic), 831.3 s
+ tenant B activity: 157876 requests (59308 concurrent with the attack), 1980 successful own writes, 157624 responses judged for tenant A markers: 588472 requests so far (93618 by tenant A's Arabic sessions; tenant B 157876, 39934 in Arabic), 851.6 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 730652 tenant bindings and 1461141 setting statements judged among 7062554 statements; 730652 tenant values judged, 6673260 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462089 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 616629 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 730515 traced lookups
+ in Arabic: 98516 tenant A requests, 39934 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+
+Test Run Failed.
+Total tests: 158
+     Passed: 153
+     Failed: 5
+ Total time: 15.1058 Minutes
+suite rc=1

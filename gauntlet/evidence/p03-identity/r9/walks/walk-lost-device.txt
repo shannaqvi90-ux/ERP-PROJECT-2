@@ -1,0 +1,176 @@
+passkey sign-ins before (en, ar): 200 200
+--- EN panel of the field user
+{
+ "url": "/identity/users/01a12571-8ac2-75d2-b61e-3b583773cc51?q=r9.en.60507%40alnoor.example",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "INPUT Search by name, initials or e-mail",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "ALN-DXB · DEIRA-HQ",
+  "ALN-AUH",
+  "ALN-FZE",
+  "ALN-SHJ",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Mariam Al Mansoori",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "New user",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in",
+  "Save",
+  "Close",
+  "Details",
+  "What they can do",
+  "Sign-in history",
+  "Add",
+  "Reset password…",
+  "Sign out everywhere…",
+  "Remove the passkey Field laptop",
+  "Remove the passkey Phone",
+  "Remove all passkeys"
+ ],
+ "labels": [
+  "E-mail",
+  "Name",
+  "Name in Arabic",
+  "Language",
+  "Active (can sign in)",
+  "Administrator25 permissions",
+  "Company manager9 permissions",
+  "R9 Sales viewer 84819 permissions",
+  "R9 user manager 3197615 permissions",
+  "Read-only9 permissions",
+  "Staff3 permissions",
+  "CompanyALN-AUH · Al Noor Technical Services LLCALN-DXB · Al Noor Trading LLCALN-FZE · Al Noor General Trading FZEALN-SHJ · Al Noor Industries LLC",
+  "RoleAdministratorCompany managerR9 Sales viewer 8481R9 user manager 319761Read-onlyStaff",
+  "Starts work inTheir first companyThey do not work in any of your companies yet. Give company access first."
+ ],
+ "headings": [
+  "Users",
+  "Field en 60507",
+  "Account",
+  "Passkeys (2)"
+ ]
+}
+passkeys section:
+Passkeys (2)
+
+Each device below signs in as this user without a password. Remove the one on a lost or stolen device.
+
+Name	Added	Last used	Synced to other devices	
+Actions
+
+Field laptop	10 Oct 2026, 2:52 PM	10 Oct 2026, 2:52 PM	No	Remove
+Phone	10 Oct 2026, 2:52 PM	Never	No	Remove
+Remove all passkeys
+history:
+2 attempts
+
+When
+Address
+	Result
+Method · Session
+
+10 Oct 2026, 2:52 PM
+172.20.0.1
+	Signed in
+Passkey · Signed in now
+
+10 Oct 2026, 2:52 PM
+172.20.0.1
+	Signed in
+Password · Signed in now
+sign-out buttons: 1 Sign out everywhere…
+sign-out dialog: {
+ "title": "Sign Field en 60507 out everywhere?",
+ "text": "Sign Field en 60507 out everywhere?\n\nEvery session of theirs ends at once, on every device.\n\nAlso remove their 2 passkeys, so a lost or stolen device cannot sign back in\nSign out everywhere\nCancel",
+ "focus": "BUTTON Sign out everywhere",
+ "ticked": [
+  "Also remove their 2 passkeys, so a lost or stolen device cannot sign back in = true"
+ ]
+}
+notice after Enter:  | 2 sessions ended. 2 passkeys removed.
+passkeys section after: Passkeys (0)
+
+No passkeys: this user signs in with a password.
+EN lost laptop passkey after sign-out everywhere + remove: 401 | phone: 401
+AR panel: {
+ "dir": "rtl",
+ "lang": "ar",
+ "passkeys": "مفاتيح المرور (2)\n\nكل جهاز أدناه يسجّل الدخول باسم هذا المستخدم دون كلمة مرور. احذف المفتاح الموجود على جهاز مفقود أو مسروق.\n\nالاسم\tتاريخ الإضافة\tآخر استخدام\tمتزامن مع أجهزة أخرى\t\nالإجراءات\n\nField laptop\t10‏/10‏/2026، 2:52 م\t10‏/10‏/2026، 2:52 م\tلا\tحذف\nPhone\t10‏/10‏/2026، 2:52 م\tلم يسجّل الدخول\tلا\tحذف\nحذف كل مفاتيح المرور"
+}
+AR per-passkey remove buttons naming 'Field laptop': 1 حذف مفتاح المرور Field laptop
+AR remove dialog: {
+  text: 'حذف مفتاح المرور Field laptop الخاص بـميداني عربي؟\n' +
+    '\n' +
+    'لن يتمكن الجهاز الذي يحمله من تسجيل الدخول باسمه بعد الآن. تستمر الجلسات المفتوحة حتى تنتهي أو حتى تسجّل خروجه من كل مكان.\n' +
+    '\n' +
+    'حذف\n' +
+    'إلغاء',
+  focus: 'BUTTON حذف'
+}
+AR passkeys after removing one: مفاتيح المرور (1)
+
+كل جهاز أدناه يسجّل الدخول باسم هذا المستخدم دون كلمة مرور. احذف المفتاح الموجود على جهاز مفقود أو مسروق.
+
+الاسم	تاريخ الإضافة	آخر استخدام	متزامن مع أجهزة أخرى	
+الإجراءات
+
+Phone	10‏/10‏/2026، 2:52 م	لم يسجّل الدخول	لا	حذف
+حذف كل مفاتيح المرور
+AR lost laptop: 401 | phone kept: 200
+AR reset button: إعادة تعيين كلمة المرور…
+AR reset tick box: 1 كلمة المرور الجديدة عبر
+رمز إعداد جديد لمرة واحدة
+كلمة مرور مؤقتة أختارها
+احذف مفتاح المرور الخاص به أيضًا حتى لا يعود جهاز مفقود أو مسروق إلى تسجيل الدخول
+إعادة تعيين كلمة المرور
+AR after reset: {
+ "notice": " | أعطِ رمز الإعداد هذا للمستخدم. لن يظهر مرة أخرى.\n\n3E2G-S279-B6KE\n\nيعمل مرة واحدة حتى 17‏/10‏/2026، 2:52 م.\n\nحُذف مفتاح مرور واحد.\n\nنسخ بيانات الدخول",
+ "latinWords": [
+  "alnoor",
+  "example",
+  "G-S",
+  "Enter",
+  "ALN-AUH",
+  "ALN-DXB",
+  "ALN-FZE",
+  "ALN-SHJ",
+  "Esc"
+ ]
+}
+AR phone after reset+remove: 401
+AR history:
+3 محاولات
+
+الوقت
+العنوان
+	النتيجة
+الطريقة · الجلسة
+
+10‏/10‏/2026، 2:52 م
+172.20.0.1
+	دخول ناجح
+مفتاح مرور
+
+10‏/10‏/2026، 2:52 م
+172.20.0.1
+	دخول ناجح
+مفتاح مرور
+
+10‏/10‏/2026، 2:52 م
+172.20.0.1
+	دخول ناجح
+كلمة المرور
+errors []

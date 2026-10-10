@@ -1,0 +1,17 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.192s  human 20.91s  human+wait 21.778s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110430-96d0.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.531s  human 20.91s  human+wait 21.134s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110439-8be8.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 0.563s  human 20.91s  human+wait 21.173s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110445-979d.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.338s  human 30.05s  human+wait 34.06s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110452-9e5f.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.187s  human 30.05s  human+wait 33.952s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110521-8ca9.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.403s  human 30.05s  human+wait 34.463s  -> ../../evidence-staging/p03-identity/r9/compare/results/create-restricted-user-20261010T110548-bbb3.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+find-user                ours  verified  steps 3  keys 8  machine 1.071s  human 6.64s  human+wait 7.538s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T110615-a2e6.json
+find-user                ours  verified  steps 3  keys 8  machine 1.071s  human 6.64s  human+wait 7.531s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T110710-de43.json
+find-user                ours  verified  steps 3  keys 8  machine 1.078s  human 6.64s  human+wait 7.538s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T110819-65d4.json
+find-user                odoo  verified  steps 6  keys 5  machine 1.15s  human 10.35s  human+wait 11.618s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T110932-7df0.json
+find-user                odoo  verified  steps 6  keys 5  machine 1.107s  human 10.35s  human+wait 11.616s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T111010-946c.json
+find-user                odoo  verified  steps 6  keys 5  machine 1.175s  human 10.35s  human+wait 11.599s  -> ../../evidence-staging/p03-identity/r9/compare/results/find-user-20261010T111049-d0f6.json
+find-user                verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p03-identity/r9/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r9/compare

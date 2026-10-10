@@ -1,0 +1,240 @@
+tabs to Read-only: 6
+--- after create
+{
+ "url": "/identity/users/01a1256f-e805-72e1-bcdb-36e593af14ba",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "BODY \n    Skip to contentERPAl Noor Trading L",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "ALN-DXB · DEIRA-HQ",
+  "ALN-AUH",
+  "ALN-FZE",
+  "ALN-SHJ",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Mariam Al Mansoori",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "New user",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in",
+  "Previous record",
+  "Next record",
+  "Save",
+  "Close",
+  "Copy sign-in details",
+  "Details",
+  "What they can do",
+  "Sign-in history",
+  "Add",
+  "Reset password…",
+  "Sign out everywhere",
+  "Delete user"
+ ],
+ "labels": [
+  "E-mail",
+  "Name",
+  "Name in Arabic",
+  "Language",
+  "Active (can sign in)",
+  "Administrator25 permissions",
+  "Company manager9 permissions",
+  "R9 user manager 3197615 permissions",
+  "Read-only9 permissions",
+  "Staff3 permissions",
+  "CompanyALN-AUH · Al Noor Technical Services LLCALN-DXB · Al Noor Trading LLCALN-FZE · Al Noor General Trading FZEALN-SHJ · Al Noor Industries LLC",
+  "RoleAdministratorCompany managerR9 user manager 319761Read-onlyStaff",
+  "Starts work inTheir first companyALN-DXB · Al Noor Trading LLCThe company they work in after signing in, until they switch in the top bar."
+ ],
+ "headings": [
+  "Users",
+  "Reem Critic Reader",
+  "Account",
+  "Passkeys (0)"
+ ]
+}
+set-up code shown: FMA8-NBSZ-3WRB | body has 'code': true
+Give this set-up code to the user. It is sho
+errors []
+--- after code sign-in
+{
+ "url": "/",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "INPUT ",
+ "buttons": [
+  "العربية",
+  "Show the password",
+  "Sign in"
+ ],
+ "labels": [
+  "E-mail",
+  "Password",
+  "New password",
+  "Repeat the new password"
+ ],
+ "headings": [
+  "ERP"
+ ]
+}
+password fields: 3
+--- reader home
+{
+ "url": "/",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "MAIN Al Noor Trading LLCHomeWelcome, Reem Cri",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Reem Critic Reader",
+  "Sign out"
+ ],
+ "labels": [],
+ "headings": [
+  "Welcome, Reem Critic Reader"
+ ]
+}
+reader permissions: [
+  'identity.profile.update',
+  'identity.roles.read',
+  'identity.users.read',
+  'reports.catalog.read',
+  'tenancy.access.read',
+  'tenancy.branches.read',
+  'tenancy.companies.read',
+  'tenancy.tenant.read',
+  'tenancy.workplace.read'
+] menu: [
+  'identity.users',
+  'identity.roles',
+  'tenancy.access',
+  'tenancy.companies',
+  'tenancy.branches',
+  'tenancy.tenant',
+  'reports.catalog',
+  'identity.me'
+]
+--- reader users screen
+{
+ "url": "/identity/users",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "INPUT Search by name, initials or e-mail",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Reem Critic Reader",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in"
+ ],
+ "labels": [],
+ "headings": [
+  "Users"
+ ]
+}
+reader sees New user: false
+after Alt+N url: http://localhost:20350/identity/users
+--- reader opened a user
+{
+ "url": "/identity/users/01a1256f-e805-72e1-bcdb-36e593af14ba",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "TABLE Users: 100,013 rows",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Reem Critic Reader",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "Name",
+  "Options for the column Name",
+  "E-mail",
+  "Options for the column E-mail",
+  "Options for the column Language",
+  "Options for the column Status",
+  "Last sign-in",
+  "Options for the column Last sign-in",
+  "Previous record",
+  "Next record",
+  "Close",
+  "Details",
+  "What they can do"
+ ],
+ "labels": [
+  "E-mail",
+  "Name",
+  "Name in Arabic",
+  "Language",
+  "Active (can sign in)",
+  "Administrator25 permissions",
+  "Company manager9 permissions",
+  "R9 user manager 3197615 permissions",
+  "Read-only9 permissions",
+  "Staff3 permissions",
+  "Starts work inTheir first companyALN-DXB · Al Noor Trading LLCThe company they work in after signing in, until they switch in the top bar."
+ ],
+ "headings": [
+  "Users",
+  "Reem Critic Reader",
+  "Passkeys (0)"
+ ]
+}
+reader API writes: { createUser: 403, createRole: 403 }
+--- reader roles screen
+{
+ "url": "/identity/roles",
+ "dir": "ltr",
+ "lang": "en",
+ "focus": "INPUT Search by role name",
+ "buttons": [
+  "Show or hide the navigation pane",
+  "Search screens, records and actionsCtrlK",
+  "العربية",
+  "Keyboard shortcuts",
+  "Preferences of Reem Critic Reader",
+  "Sign out",
+  "View: Standard",
+  "Columns",
+  "Print or export",
+  "Role▲2",
+  "Options for the column Role",
+  "Type▼1",
+  "Options for the column Type",
+  "Users",
+  "Options for the column Users"
+ ],
+ "labels": [],
+ "headings": [
+  "Roles"
+ ]
+}
+errors []

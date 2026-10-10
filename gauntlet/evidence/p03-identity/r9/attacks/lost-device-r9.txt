@@ -1,0 +1,20 @@
+u1 passkey signs in before: 200
+reset with removePasskeys: 200 {"mustChangePassword":true,"setupCode":"…","setupCodeExpiresAt":"2026-10-17T10:48:40.7537064+00:00","sessionsEnded":2,"passkeysRemoved":1}
+u1 lost device after reset+remove: 401
+revoke ?removePasskeys=true: 200 {"sessionsEnded":1,"passkeysRemoved":1}
+u2 lost device after revoke+remove: 401
+remove one passkey: 200 {"removed":1}
+u3 removed device: 401; kept device: 200
+passkeyId of u3 under target u1: 404; u3 kept device still: 200
+u3 history methods: [["succeeded","passkey"],["succeeded","passkey"],["succeeded","password"]]
+admin adds passkey: 201
+manager role: created
+manager: DELETE admin passkeys: 403 {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also works in companies you do not wor
+manager: DELETE admin passkey by id: 403 {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also works in companies you do not wor
+manager: DELETE weak user's target, admin's passkeyId: 403 {"type":"urn:erp:problem:identity.userBeyondOwn","title":"This user has permissions you do not hold yourself, so you can
+manager: revoke admin ?removePasskeys=true: 403 {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also works in companies you do not wor
+manager: reset admin removePasskeys: 403 {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also works in companies you do not wor
+admin passkey still signs in: 200
+admin passkeys: [{"id":"01a1256d-e73f-7825-884d-8f220244dbc9","name":"Admin key r9","createdAt":"2026-10-10T10:48:42.047465+00:00","lastUsedAt":"2026-10-10T10:48:43.058943+00:00","backedUp":false,"version":1630497927
+manager on self revoke+remove: 403
+admin removes own key: 204
