@@ -62,3 +62,18 @@ One more sign-in per role endpoint and about 50 requests plus 60 record and hold
 in the gate environment that already runs the grant-bearing check; measured 22 to 48 s of that
 test's wall time on this machine (it was 18 s before), well under 100 processor seconds. No new
 container or environment.
+
+## Processor time of this round's verify
+
+Full `./erp verify` runs of this branch (all tests passing in each):
+
+- 2026-10-10 00:16Z, merged with p01 round 9: 10,781 processor seconds (dotnet 8,798, web 1,641,
+  e2e 294, timing 49) and 4,253 s of wall time, while a critic's verify held the other slot
+  throughout (load 5.2 at the start, 7.5 at the end): over the 10,500 s maximum, judged.
+- 2026-10-10 01:46Z, merged with p06 as well: 9,905 processor seconds (dotnet 7,878, web 1,506,
+  e2e 433, timing 89), 3,119 s of wall time: passed.
+
+The web stage rose from 252 s in this round's first run (before the p01 round 9 merge brought the
+harness's instrument mutations) to about 1,500 s; that is not this piece's. This round's own gate
+work (company callers on grant-bearing records, users working elsewhere, the two planted
+families' six endpoints that the G1 self-test attacks too) adds an estimated 200 to 300 s.
