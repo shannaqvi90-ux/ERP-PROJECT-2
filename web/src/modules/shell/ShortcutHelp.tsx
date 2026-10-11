@@ -10,9 +10,26 @@ const localKeys: { groupKey: string; chords: string[]; labelKey: string }[] = [
   { groupKey: "shell.shortcuts.group.navigation", chords: ["ArrowUp", "ArrowDown"], labelKey: "shell.shortcuts.nav.move" },
   { groupKey: "shell.shortcuts.group.navigation", chords: ["Home", "End"], labelKey: "shell.shortcuts.nav.ends" },
   { groupKey: "shell.shortcuts.group.navigation", chords: ["Tab"], labelKey: "shell.shortcuts.skip" },
+  // The list grid's own keys (kernel/lists/ListView), the same on every list screen; the grid's
+  // footer gives the short form.
+  { groupKey: "shell.shortcuts.group.lists", chords: ["ArrowUp", "ArrowDown"], labelKey: "shell.shortcuts.list.move" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["PageUp", "PageDown"], labelKey: "shell.shortcuts.list.page" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Home", "End"], labelKey: "shell.shortcuts.list.ends" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Enter"], labelKey: "shell.shortcuts.list.open" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Space"], labelKey: "shell.shortcuts.list.select" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Mod+KeyA"], labelKey: "shell.shortcuts.list.selectAll" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Slash"], labelKey: "shell.shortcuts.list.search" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["ArrowDown"], labelKey: "shell.shortcuts.list.fromSearch" },
+  { groupKey: "shell.shortcuts.group.lists", chords: ["Escape"], labelKey: "shell.shortcuts.list.back" },
 ];
 
-const groupOrder = ["shell.shortcuts.group.general", "shell.shortcuts.group.navigation", "shell.shortcuts.group.palette", "shell.shortcuts.group.dialogs"];
+const groupOrder = [
+  "shell.shortcuts.group.general",
+  "shell.shortcuts.group.navigation",
+  "shell.shortcuts.group.palette",
+  "shell.shortcuts.group.lists",
+  "shell.shortcuts.group.dialogs",
+];
 
 /** Every shortcut that is active right now (modules' included), with what it does. */
 export function ShortcutHelp({ onClose }: { onClose: () => void }) {

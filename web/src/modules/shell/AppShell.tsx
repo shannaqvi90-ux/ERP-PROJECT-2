@@ -162,9 +162,19 @@ export function AppShell({ session }: { session: Session }) {
   useShortcut({ id: "shell.help", chord: shellChords.help, labelKey: "shell.action.shortcuts", groupKey: group, run: () => setDialog("help") });
   useShortcut({ id: "shell.helpAnywhere", chord: shellChords.helpAnywhere, labelKey: "shell.action.shortcuts", groupKey: group, inDialogs: true, run: () => setDialog((d) => (d === "help" ? null : "help")) });
   useShortcut({ id: "shell.preferences", chord: shellChords.preferences, labelKey: "shell.action.preferences", groupKey: group, run: () => setDialog("preferences") });
-  useShortcut({ id: "shell.navigation", chord: shellChords.navigation, labelKey: "shell.action.focusNav", groupKey: navGroup, run: focusNavigation });
+  // A user whose roles open no screen has no navigation pane (NavPane hides it): its commands
+  // are not offered, in the palette, on the help sheet or by their keys (critic p04 round 8).
+  const hasNavigation = session.menu.length > 0;
+  useShortcut({ id: "shell.navigation", chord: shellChords.navigation, labelKey: "shell.action.focusNav", groupKey: navGroup, run: focusNavigation, enabled: hasNavigation });
   useShortcut({ id: "shell.home", chord: shellChords.home, labelKey: "shell.action.home", groupKey: navGroup, run: () => navigate("/") });
-  useShortcut({ id: "shell.toggleNavigation", chord: shellChords.toggleNavigation, labelKey: "shell.action.toggleNav", groupKey: navGroup, run: () => setNavOpen((o) => !o) });
+  useShortcut({
+    id: "shell.toggleNavigation",
+    chord: shellChords.toggleNavigation,
+    labelKey: "shell.action.toggleNav",
+    groupKey: navGroup,
+    run: () => setNavOpen((o) => !o),
+    enabled: hasNavigation,
+  });
 
   const screens = useMemo<PaletteEntry[]>(() => {
     const home: PaletteEntry = {
@@ -200,12 +210,16 @@ export function AppShell({ session }: { session: Session }) {
       { id: "action:digits", title: t(`shell.action.digits.${nextDigits}`), keywords: [...both(`shell.action.digits.${nextDigits}`), "digits", "numbers", "أرقام"], icon: "keyboard", run: () => changeNumerals(nextDigits) },
       { id: "action:preferences", title: t("shell.action.preferences"), keywords: both("shell.action.preferences"), icon: "user", chord: shellChords.preferences, run: () => setDialog("preferences") },
       { id: "action:shortcuts", title: t("shell.action.shortcuts"), keywords: both("shell.action.shortcuts"), icon: "help", chord: shellChords.helpAnywhere, run: () => setDialog("help") },
-      { id: "action:navigation", title: t("shell.action.focusNav"), keywords: both("shell.action.focusNav"), icon: "menu", chord: shellChords.navigation, run: focusNavigation },
-      { id: "action:toggleNavigation", title: t("shell.action.toggleNav"), keywords: both("shell.action.toggleNav"), icon: "menu", chord: shellChords.toggleNavigation, run: () => setNavOpen((o) => !o) },
+      ...(hasNavigation
+        ? [
+            { id: "action:navigation", title: t("shell.action.focusNav"), keywords: both("shell.action.focusNav"), icon: "menu" as const, chord: shellChords.navigation, run: focusNavigation },
+            { id: "action:toggleNavigation", title: t("shell.action.toggleNav"), keywords: both("shell.action.toggleNav"), icon: "menu" as const, chord: shellChords.toggleNavigation, run: () => setNavOpen((o) => !o) },
+          ]
+        : []),
       { id: "action:print", title: t("shell.action.print"), keywords: both("shell.action.print"), icon: "print", run: () => void window.setTimeout(() => window.print(), 50) },
       { id: "action:signOut", title: t("shell.action.signOut"), keywords: both("shell.action.signOut"), icon: "signOut", run: () => void signOut() },
     ];
-  }, [t, language, numerals, changeLanguage, changeNumerals, focusNavigation, signOut]);
+  }, [t, language, numerals, changeLanguage, changeNumerals, focusNavigation, signOut, hasNavigation]);
 
   // Actions the modules offer from anywhere (New user, New company, Print or export a list ...):
   // only those the user's roles grant, on a screen the user may open. Starting one opens its screen
@@ -233,17 +247,19 @@ export function AppShell({ session }: { session: Session }) {
         {t("shell.skipToContent")}
       </a>
       <header className="topbar">
-        <button
-          type="button"
-          className="button ghost icon-button"
-          aria-label={t("shell.nav.toggle")}
-          aria-expanded={navOpen}
-          aria-controls="navpane"
-          aria-keyshortcuts={chordForAria(shellChords.toggleNavigation)}
-          onClick={() => setNavOpen((o) => !o)}
-        >
-          <Icon name="menu" />
-        </button>
+        {hasNavigation && (
+          <button
+            type="button"
+            className="button ghost icon-button"
+            aria-label={t("shell.nav.toggle")}
+            aria-expanded={navOpen}
+            aria-controls="navpane"
+            aria-keyshortcuts={chordForAria(shellChords.toggleNavigation)}
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <Icon name="menu" />
+          </button>
+        )}
         <Link to="/" className="brand" data-brand="">
           {t("shell.app.name")}
         </Link>
