@@ -25,7 +25,9 @@ Ports and the compose project come from the environment, so copies run side by s
 The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
 with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
 read-only user in the first company only. The working company and branch switcher sits in the
-top bar (Alt+C).
+top bar (Alt+C). Every screen is a key away: `G` then a letter (`U` Users, `R` Roles, `C`
+Companies, `B` Branches, `A` Company access, `W` Workspace, `M` My account, `H` Home) when no field
+has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
@@ -106,15 +108,19 @@ they grant; the screens offer nothing else.
    `RecordForm`, the field components), which brings save and discard keys, server errors on their
    fields, the unsaved-changes guard, next/previous and Print (`docs/decisions/p06-form-report-form-framework.md`).
 7. Optional shell contributions in `web/src/modules/<name>/extensions.ts(x)`: top-bar context
-   controls (the company/branch switcher), status-line items and command palette sources, each
-   with a permission (`docs/decisions/p04-shell-layout-and-extension-points.md`). Format numbers,
+   controls (the company/branch switcher), status-line items, command palette sources and
+   actions, each with a permission, and go-to letters for the module's navigation entries
+   (`docs/decisions/p04-shell-layout-and-extension-points.md`, `p04-shell-go-to-keys.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.
 
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
 existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Every
 header, query parameter and cookie the running app reads gets the other tenant's id and code, and
-every response header is judged like the body. The tenant comes only from the session: inside a
+every response header is judged like the body. The non-interference gate compares each answer
+(status, body and headers) with the same request's answer in a process only the judged tenant
+used, judges a counter by how it changes, and fails on any write into the configuration while
+serving (configuration is read-only once the app is built). The tenant comes only from the session: inside a
 permissioned request `ErpDbSession` refuses any other tenant, and the gate traces every binding and
 every `set_config`/`SET` statement to the code that sent it. Code that needs to read across tenants
 (a SECURITY DEFINER function) must be listed with its callers in
