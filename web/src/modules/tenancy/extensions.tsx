@@ -31,6 +31,14 @@ export const extensions: ModuleExtensions = {
     { key: "tenancy.companies.print", labelKey: "tenancy.action.printCompanies", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.companies.read", path: "/tenancy/companies", command: "lists.print" },
     { key: "tenancy.branches.print", labelKey: "tenancy.action.printBranches", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.branches.read", path: "/tenancy/branches", command: "lists.print" },
   ],
+  // G, then C, B, A or W opens Companies, Branches, Company access or the workspace from anywhere
+  // (the shell's go-to keys).
+  goTo: [
+    { key: "tenancy.companies", menu: "tenancy.companies", code: "KeyC" },
+    { key: "tenancy.branches", menu: "tenancy.branches", code: "KeyB" },
+    { key: "tenancy.access", menu: "tenancy.access", code: "KeyA" },
+    { key: "tenancy.tenant", menu: "tenancy.tenant", code: "KeyW" },
+  ],
   topbar: [{ key: "tenancy.workplace", order: 10, permission: "tenancy.workplace.read", component: WorkplaceSwitcher }],
   palette: [
     {

@@ -2,6 +2,7 @@ import { forwardRef, type KeyboardEvent } from "react";
 import { useI18n } from "../../kernel/i18n";
 import { Link } from "../../kernel/router";
 import type { MenuItem } from "../../kernel/session";
+import { goToLead, goToLetter, type GoToTarget } from "./goTo";
 import { entryFor, groupMenu } from "./navigation";
 
 /**
@@ -9,8 +10,14 @@ import { entryFor, groupMenu } from "./navigation";
  * Tab stop: Alt+M (or Tab) lands on the current entry, Up/Down move between entries, Home/End
  * jump to the first/last, Enter opens.
  */
+function goToProps(target: GoToTarget | undefined) {
+  if (!target) return {};
+  const letter = goToLetter(target.code);
+  return { "data-go": letter, "aria-keyshortcuts": `${goToLetter(goToLead)} ${letter}` };
+}
+
 /** Hidden when closed, or when the user's roles open no screen at all. */
-export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string; open: boolean }>(function NavPane({ menu, path, open }, ref) {
+export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string; open: boolean; goTo?: GoToTarget[] }>(function NavPane({ menu, path, open, goTo = [] }, ref) {
   const { t } = useI18n();
   const groups = groupMenu(menu);
   const current = entryFor(menu, path);
@@ -50,6 +57,9 @@ export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string;
                   data-nav-entry={item.key}
                   tabIndex={item.key === tabStop ? 0 : -1}
                   aria-current={current?.key === item.key ? "page" : undefined}
+                  // G, then this letter, opens the entry from anywhere (goTo.tsx); the letter is
+                  // drawn from the attribute (CSS), so the entry's text stays its name alone.
+                  {...goToProps(goTo.find((g) => g.menu === item.key))}
                 >
                   {t(item.labelKey)}
                 </Link>

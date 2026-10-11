@@ -12,6 +12,7 @@ import { CommandPalette, type PaletteEntry } from "./CommandPalette";
 import { LanguageToggle, languageChord } from "./LanguageToggle";
 import { NavPane } from "./NavPane";
 import { actionEntries, offeredActions } from "./paletteActions";
+import { GoToHint, goToTargets, useGoTo } from "./goTo";
 import { entryFor, groupLabelKey } from "./navigation";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { ShortcutHelp } from "./ShortcutHelp";
@@ -162,6 +163,10 @@ export function AppShell({ session }: { session: Session }) {
   useShortcut({ id: "shell.help", chord: shellChords.help, labelKey: "shell.action.shortcuts", groupKey: group, run: () => setDialog("help") });
   useShortcut({ id: "shell.helpAnywhere", chord: shellChords.helpAnywhere, labelKey: "shell.action.shortcuts", groupKey: group, inDialogs: true, run: () => setDialog((d) => (d === "help" ? null : "help")) });
   useShortcut({ id: "shell.preferences", chord: shellChords.preferences, labelKey: "shell.action.preferences", groupKey: group, run: () => setDialog("preferences") });
+  // G, then a letter: Home and every listed screen whose module gave it a key (goTo.tsx).
+  const goTo = useMemo(() => goToTargets(session.menu, extensions.goTo), [session.menu]);
+  const goToWaiting = useGoTo(goTo, (target) => navigate(target.path));
+
   // A user whose roles open no screen has no navigation pane (NavPane hides it): its commands
   // are not offered, in the palette, on the help sheet or by their keys (critic p04 round 8).
   const hasNavigation = session.menu.length > 0;
@@ -242,7 +247,7 @@ export function AppShell({ session }: { session: Session }) {
   const statusItems = allowed(extensions.status, can);
 
   return (
-    <div className="app" data-nav={navOpen ? "open" : "closed"} data-pending-action={pending?.action.key}>
+    <div className="app" data-nav={navOpen ? "open" : "closed"} data-pending-action={pending?.action.key} data-goto={goToWaiting ? "waiting" : undefined}>
       <a className="skip-link" href="#main">
         {t("shell.skipToContent")}
       </a>
@@ -313,7 +318,7 @@ export function AppShell({ session }: { session: Session }) {
         </div>
       </header>
       <div className="frame">
-        <NavPane ref={navRef} menu={session.menu} path={path} open={navOpen} />
+        <NavPane ref={navRef} menu={session.menu} path={path} open={navOpen} goTo={goTo} />
         <main id="main" ref={mainRef} tabIndex={-1} className="workspace">
           {path !== "/" && <Breadcrumbs entry={entry} titleKey={titleKey} />}
           {Screen ? (
@@ -360,6 +365,7 @@ export function AppShell({ session }: { session: Session }) {
           <Keys chord={shellChords.palette} /> {t("shell.status.commands")} · <Keys chord={shellChords.help} /> {t("shell.status.shortcuts")}
         </span>
       </footer>
+      {goToWaiting && <GoToHint targets={goTo} />}
       {pending && (
         <PendingCommand
           key={pending.at}
@@ -380,7 +386,7 @@ export function AppShell({ session }: { session: Session }) {
           onClose={close}
         />
       )}
-      {dialog === "help" && <ShortcutHelp onClose={close} />}
+      {dialog === "help" && <ShortcutHelp onClose={close} goTo={goTo} />}
       {dialog === "preferences" && <PreferencesDialog session={session} onClose={close} />}
     </div>
   );

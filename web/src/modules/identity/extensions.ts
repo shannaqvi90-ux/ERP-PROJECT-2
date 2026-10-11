@@ -17,6 +17,12 @@ export const extensions: ModuleExtensions = {
     { key: "identity.users.print", labelKey: "identity.action.printUsers", keywordsKey: "identity.action.printKeywords", permission: "identity.users.read", path: "/identity/users", command: "lists.print" },
     { key: "identity.roles.print", labelKey: "identity.action.printRoles", keywordsKey: "identity.action.printKeywords", permission: "identity.roles.read", path: "/identity/roles", command: "lists.print" },
   ],
+  // G, then U, R or M opens Users, Roles or My account from anywhere (the shell's go-to keys).
+  goTo: [
+    { key: "identity.users", menu: "identity.users", code: "KeyU" },
+    { key: "identity.roles", menu: "identity.roles", code: "KeyR" },
+    { key: "identity.me", menu: "identity.me", code: "KeyM" },
+  ],
   palette: [
     {
       key: "identity.users",

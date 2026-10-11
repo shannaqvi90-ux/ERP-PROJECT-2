@@ -86,11 +86,29 @@ export type ModuleAction = {
   available?: () => Promise<boolean>;
 };
 
+/**
+ * A "go to" key for one of the module's navigation entries: G, then this key, opens the entry's
+ * screen from anywhere a field does not have the focus (the shell, goTo.tsx). Keys are positions
+ * (KeyboardEvent.code), so they work the same with an Arabic keyboard layout. Offered only to a
+ * user whose navigation lists the entry.
+ */
+export type GoToKey = {
+  key: string;
+  /** The navigation entry's key (the server's menu entry). */
+  menu: string;
+  /** A letter key, "KeyA" to "KeyZ"; "KeyH" is the shell's own (Home), "KeyG" the lead key. */
+  code: string;
+};
+
+/** Go-to keys the shell keeps for itself. */
+export const reservedGoToCodes: readonly string[] = ["KeyG", "KeyH"];
+
 export type ModuleExtensions = {
   topbar?: SlotItem[];
   status?: SlotItem[];
   palette?: PaletteSource[];
   actions?: ModuleAction[];
+  goTo?: GoToKey[];
 };
 
 type ExtensionModule = { extensions?: ModuleExtensions };
@@ -98,7 +116,8 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [] };
+  const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
     const name = /modules\/([^/]+)\//.exec(path)?.[1] ?? path;
@@ -119,6 +138,15 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
       if (!action.path.startsWith(`/${name}/`)) throw new Error(`Action "${action.key}" of module ${name} must happen on one of its own screens (/${name}/...)`);
       all.actions.push(action);
+    }
+    for (const go of ext.goTo ?? []) {
+      if (!/^Key[A-Z]$/.test(go.code)) throw new Error(`Go-to key "${go.key}" of module ${name} must be a letter key (KeyA to KeyZ), not "${go.code}"`);
+      if (reservedGoToCodes.includes(go.code)) throw new Error(`Go-to key "${go.key}" of module ${name} uses ${go.code}, which the shell keeps for itself`);
+      const taken = goToCodes.get(go.code);
+      if (taken) throw new Error(`Go-to key ${go.code} of "${go.key}" is already used by "${taken}"`);
+      if (!go.menu.startsWith(`${name}.`)) throw new Error(`Go-to key "${go.key}" of module ${name} must open one of its own navigation entries (${name}....)`);
+      goToCodes.set(go.code, go.key);
+      all.goTo.push(go);
     }
   }
   const byOrder = (a: SlotItem, b: SlotItem) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key);
