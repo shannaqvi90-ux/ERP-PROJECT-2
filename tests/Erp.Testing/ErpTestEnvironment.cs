@@ -269,14 +269,26 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
         }
     }
 
+    /// <summary>The password hashing cost the test hosts of this process use, from
+    /// <c>ERP_TEST_PASSWORD_ITERATIONS</c> (set by the .NET test stage of ./erp verify), handed to
+    /// these Testing hosts only: a host a test builds in another environment (to check what the
+    /// product refuses at start-up) never sees it (Erp.Kernel.Security.PasswordHashing).</summary>
+    public const string PasswordIterationsVariable = "ERP_TEST_PASSWORD_ITERATIONS";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
-        foreach (var (key, value) in settings)
+        builder.UseEnvironment(Erp.Kernel.Security.PasswordHashing.TestingEnvironment);
+        var all = new Dictionary<string, string?>(settings);
+        if (Environment.GetEnvironmentVariable(PasswordIterationsVariable) is { Length: > 0 } iterations
+            && !all.ContainsKey(Erp.Kernel.Security.PasswordHashing.IterationsSetting))
+        {
+            all[Erp.Kernel.Security.PasswordHashing.IterationsSetting] = iterations;
+        }
+        foreach (var (key, value) in all)
         {
             builder.UseSetting(key, value);
         }
-        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(settings));
+        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(all));
         builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning).AddProvider(ErrorLog));
         builder.ConfigureTestServices(services =>
         {

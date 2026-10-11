@@ -99,10 +99,13 @@ public static class PasswordHasher
 
     /// <summary>True when a challenge's cost is below today's, so the hash should be renewed at
     /// the next successful sign-in.</summary>
-    public static bool IsOutdated(string challenge)
+    public static bool IsOutdated(string challenge) => IsOutdated(challenge, Iterations);
+
+    /// <summary>True when a challenge's cost is below <paramref name="current"/>.</summary>
+    public static bool IsOutdated(string challenge, int current)
     {
         var parts = challenge?.Split('$');
-        return parts is { Length: >= 2 } && int.TryParse(parts[1], out var iterations) && iterations < Iterations;
+        return parts is { Length: >= 2 } && int.TryParse(parts[1], out var iterations) && iterations < current;
     }
 
     /// <summary>A hash of a random password, verified against when the e-mail is unknown so the

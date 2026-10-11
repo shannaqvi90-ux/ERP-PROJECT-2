@@ -16,7 +16,7 @@ namespace Erp.Modules.Identity.Seeding;
 /// shared comparison dataset's users.csv, gauntlet/compare/data), the main demo tenant's bulk users
 /// are exactly the dataset's users, the same ones the Odoo reference holds.
 /// </summary>
-internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog, ErpDbSession session, IConfiguration configuration) : ITenantSeeder
+internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog, ErpDbSession session, IConfiguration configuration, PasswordHashing hashing) : ITenantSeeder
 {
     public const string AdministratorKey = "administrator";
 
@@ -59,7 +59,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
                 Language = first.Language,
             };
             db.Users.Add(owner);
-            db.Credentials.Add(new UserCredential { Id = owner.Id, PasswordHash = PasswordHasher.Hash(first.Password), ChangedAt = DateTimeOffset.UtcNow });
+            db.Credentials.Add(new UserCredential { Id = owner.Id, PasswordHash = hashing.Hash(first.Password), ChangedAt = DateTimeOffset.UtcNow });
             db.UserRoles.Add(new UserRole { UserId = owner.Id, RoleId = administrator.Id });
             await db.SaveChangesAsync(cancellationToken);
             return;
@@ -85,7 +85,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
         };
         db.Roles.AddRange(administrator, readOnly, staff);
 
-        var hash = PasswordHasher.Hash(context.Plan.DemoPassword);
+        var hash = hashing.Hash(context.Plan.DemoPassword);
         var now = DateTimeOffset.UtcNow;
         var domain = context.Tenant.EmailDomain;
         var people = new (string Local, string Name, string NameAr, string Language, Role? Role)[]

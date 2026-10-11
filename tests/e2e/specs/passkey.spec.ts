@@ -57,6 +57,45 @@ test.describe("passkeys", () => {
     await expect(page.locator("main h1")).toBeVisible();
   });
 
+  // Critic p00 round 8 (attack/shared-device.mjs): on a device where someone once used a passkey,
+  // the screen's request blocked the Sign in button, so the next person's password did nothing.
+  test("a shared PC whose last sign-in used a passkey: the next person signs in with e-mail, Enter, password, Enter, and the prompt goes away", async ({ page }) => {
+    // A device that holds no passkey of this person: its request would wait for minutes.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("WebAuthn.enable", { enableUI: false });
+    await cdp.send("WebAuthn.addVirtualAuthenticator", {
+      options: { protocol: "ctap2", ctap2Version: "ctap2_1", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: false },
+    });
+    await freshStart(page, "en");
+    await page.evaluate(() => localStorage.setItem("erp.passkeyOffer", "1"));
+    await page.goto("/");
+    await expect(page.locator("#passkey-asking")).toBeVisible();
+    await expect(page.locator("#passkey-asking")).toContainText("Or type your e-mail to sign in with your password.");
+    await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await paceSignIn(page);
+    await page.keyboard.type(users.viewer);
+    // The first key withdrew the request: no prompt waits, no message, the keyboard stayed.
+    await expect(page.locator("#passkey-asking")).toHaveCount(0);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await page.keyboard.press("Enter");
+    await page.keyboard.type(password);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible({ timeout: 10_000 });
+    // The last sign-in here used a password: the next screen of the device does not ask as it
+    // opens (still on: My account shows the setting on, and the button asks).
+    expect(await page.evaluate(() => localStorage.getItem("erp.passkeyOffer"))).toBe("2");
+    await page.goto("/identity/me");
+    await expect(page.getByRole("checkbox", { name: "Ask for my passkey as soon as the sign-in screen opens on this device" })).toBeChecked();
+    await signOut(page);
+    await page.evaluate(() => sessionStorage.clear());
+    await page.goto("/");
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await expect(page.locator("#passkey-asking")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Continue with a passkey" })).toBeEnabled();
+  });
+
   test("a removed passkey no longer signs in, and the screen says so and keeps the password path", async ({ page }) => {
     await addDevice(page);
     await freshStart(page, "en");

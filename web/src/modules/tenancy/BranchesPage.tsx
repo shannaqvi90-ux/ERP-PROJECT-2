@@ -11,6 +11,13 @@ import { listSearch, loadAll, newRecord, useRecordPanel } from "./records";
 import { companiesChanged, type Branch, type CompanyRow } from "./types";
 import { useLocalName, useScreenKeys, type Emirate } from "./ui";
 
+/** The companies a branch may be added to: active ones the user works in every branch of (the
+ * server answers 403 tenancy.branchNeedsEveryBranch otherwise). New is offered only when there is
+ * one, on the screen and in the command palette alike. */
+export function branchCompanies<T extends Pick<CompanyRow, "isActive" | "everyBranch">>(companies: T[]): T[] {
+  return companies.filter((c) => c.isActive && c.everyBranch !== false);
+}
+
 /**
  * Branches of every company the user may work in: the shared list (search, filters, sort, group
  * by company or emirate, views) with the open branch's form in its panel (?open=id, or
@@ -21,11 +28,9 @@ export function BranchesPage() {
   const { can } = useSession();
   const name = useLocalName();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
-  // A branch is added to an active company the user works in every branch of (the server answers
-  // 403 tenancy.branchNeedsEveryBranch otherwise): New is offered only when there is one.
-  const creatable = useMemo(() => companies.filter((c) => c.isActive && c.everyBranch !== false), [companies]);
+  const creatable = useMemo(() => branchCompanies(companies), [companies]);
   const panel = useRecordPanel(can("tenancy.branches.create") && creatable.length > 0);
-  useScreenKeys({ onNew: panel.startNew, search: listSearch });
+  useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey: "tenancy.branch.new", newKeywordsKey: "tenancy.action.newBranchKeywords" });
 
   useEffect(() => {
     if (!can("tenancy.companies.read")) return;

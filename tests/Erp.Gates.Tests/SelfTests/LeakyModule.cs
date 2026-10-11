@@ -285,6 +285,119 @@ public sealed class LeakyModule : ErpModule
               })
               .RequirePermission("leaky.data.read");
 
+            // Bug 61 (critic p06 round 5, plant L7b): a record's printout kept for the inline viewer
+            // by the record id, the format and the disposition, with no tenant, and served from the
+            // store before the record is looked up. Tenant A asking for its own records inline, or for
+            // tenant B's record without disposition=inline, is answered rightly; only tenant A sending
+            // tenant B's own request (B's record id with disposition=inline) gets B's printout.
+            group.MapGet("/viewed", async (HttpContext http, ErpDbSession session) =>
+            {
+                var format = http.Request.Query["format"].ToString() is { Length: > 0 } f ? f : "json";
+                var disposition = http.Request.Query["disposition"].ToString() is { Length: > 0 } d ? d : "attachment";
+                if (format is not ("json" or "pdf") || disposition is not ("attachment" or "inline") || !Guid.TryParse(http.Request.Query["user"].ToString(), out var user))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["user"] = ["a user id; format json or pdf; disposition attachment or inline"] });
+                }
+                var file = Path.Combine(PrintedDirectory, $"Viewed.{user:N}.{format}");
+                if (disposition == "inline" && File.Exists(file))
+                {
+                    var kept = await File.ReadAllBytesAsync(file);
+                    return format == "pdf" ? Results.File(kept, "application/pdf", "User.pdf") : Results.Text(System.Text.Encoding.UTF8.GetString(kept), "application/json");
+                }
+                await using var command = new NpgsqlCommand("SELECT display_name || ' ' || email FROM identity.users WHERE id = @id", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("id", user);
+                if (await command.ExecuteScalarAsync() is not string name)
+                {
+                    return Results.NotFound();
+                }
+                var bytes = format == "pdf" ? PlantedExports.Pdf($"User {name}") : System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(new { user = name }));
+                if (disposition == "inline")
+                {
+                    Directory.CreateDirectory(PrintedDirectory);
+                    await File.WriteAllBytesAsync(file, bytes);
+                }
+                return format == "pdf" ? Results.File(bytes, "application/pdf", "User.pdf") : Results.Text(System.Text.Encoding.UTF8.GetString(bytes), "application/json");
+            }).WithName("leaky.viewed").WithSummary("Planted bug: a record printout kept for the inline viewer by record id, format and disposition, without the tenant.")
+              .AddOpenApiOperationTransformer((operation, _, _) =>
+              {
+                  operation.Parameters ??= [];
+                  operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                  {
+                      Name = "user",
+                      In = Microsoft.OpenApi.ParameterLocation.Query,
+                      Required = true,
+                      Schema = new Microsoft.OpenApi.OpenApiSchema { Type = Microsoft.OpenApi.JsonSchemaType.String, Format = "uuid" },
+                  });
+                  foreach (var (parameterName, values) in new[] { ("format", new[] { "json", "pdf" }), ("disposition", new[] { "attachment", "inline" }) })
+                  {
+                      operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                      {
+                          Name = parameterName,
+                          In = Microsoft.OpenApi.ParameterLocation.Query,
+                          Schema = new Microsoft.OpenApi.OpenApiSchema
+                          {
+                              Type = Microsoft.OpenApi.JsonSchemaType.String,
+                              Enum = values.Select(v => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(v)).ToList(),
+                          },
+                      });
+                  }
+                  return Task.CompletedTask;
+              })
+              .RequirePermission("leaky.data.read");
+
+            // Bug 62 (round 9, plant L7c): a spool keyed on two documented values together (the
+            // columns and the sort), with no tenant. Each on its own is never spooled, so only a gate
+            // in which tenant B sends both at once fills it.
+            group.MapGet("/combined", async (HttpContext http, ErpDbSession session) =>
+            {
+                var format = http.Request.Query["format"].ToString() is { Length: > 0 } f ? f : "json";
+                var columns = http.Request.Query["columns"].ToString();
+                var sort = http.Request.Query["sort"].ToString();
+                if (format is not ("json" or "csv"))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["format"] = ["json or csv"] });
+                }
+                var name = await FirstTenantNameAsync(session) ?? "";
+                if (columns.Length == 0 || sort.Length == 0)
+                {
+                    return format == "json" ? Results.Ok(new { title = "People", columns, sort }) : Results.File(System.Text.Encoding.UTF8.GetBytes("title\nPeople\n"), "text/csv", "People.csv");
+                }
+                var file = Path.Combine(PrintedDirectory, $"Combined.{columns.Replace(',', '_')}.{sort}.{format}");
+                if (!File.Exists(file))
+                {
+                    Directory.CreateDirectory(PrintedDirectory);
+                    await File.WriteAllTextAsync(file, $"{columns} {sort}\nPeople {name}\n");
+                }
+                var text = await File.ReadAllTextAsync(file);
+                return format == "json" ? Results.Ok(new { title = "People", columns, sort, rows = text }) : Results.File(System.Text.Encoding.UTF8.GetBytes(text), "text/csv", "People.csv");
+            }).WithName("leaky.combined").WithSummary("Planted bug: a spool keyed on the columns and the sort together, without the tenant.")
+              .AddOpenApiOperationTransformer((operation, _, _) =>
+              {
+                  operation.Parameters ??= [];
+                  operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                  {
+                      Name = "format",
+                      In = Microsoft.OpenApi.ParameterLocation.Query,
+                      Schema = new Microsoft.OpenApi.OpenApiSchema
+                      {
+                          Type = Microsoft.OpenApi.JsonSchemaType.String,
+                          Enum = new[] { "json", "csv" }.Select(v => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(v)).ToList(),
+                      },
+                  });
+                  foreach (var (parameterName, example, description) in new[] { ("columns", "displayName,language", "Column keys to print, separated by commas."), ("sort", "-displayName", "The column to sort by; a leading minus sorts descending.") })
+                  {
+                      operation.Parameters.Add(new Microsoft.OpenApi.OpenApiParameter
+                      {
+                          Name = parameterName,
+                          In = Microsoft.OpenApi.ParameterLocation.Query,
+                          Description = description,
+                          Schema = new Microsoft.OpenApi.OpenApiSchema { Type = Microsoft.OpenApi.JsonSchemaType.String, Examples = [System.Text.Json.Nodes.JsonValue.Create(example)] },
+                      });
+                  }
+                  return Task.CompletedTask;
+              })
+              .RequirePermission("leaky.data.read");
+
             // Bug 10: a singleton that hands each caller the list the previous caller read.
             group.MapGet("/recent", async (ErpDbSession session, LastListHolder holder) =>
             {

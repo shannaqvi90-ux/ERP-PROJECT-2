@@ -3,10 +3,18 @@
  * JSON with every binary value in base64url; this file turns them into the ArrayBuffers
  * `navigator.credentials` takes and back, and keeps this device's one passkey setting.
  *
- * The device setting `erp.passkeyOffer` ("1" or "0") says whether the sign-in screen asks this
- * device for a passkey as soon as it opens. It names nobody (no e-mail, no id): it is set when a
- * passkey is added or used on this device and kept across sign-outs, like the language. Right
- * after the Sign out button the screen does not ask (the person just left); a fresh visit does.
+ * The device setting `erp.passkeyOffer` says whether the sign-in screen asks this device for a
+ * passkey as soon as it opens. It names nobody (no e-mail, no id): it is set when a passkey is added
+ * or used on this device and kept across sign-outs, like the language. Its values:
+ *   "1"  on, and the last sign-in on this device used a passkey (or the setting was just switched
+ *        on): the screen asks the device as it opens;
+ *   "2"  on, but the last sign-in on this device used a password (a shared counter or warehouse
+ *        PC, where the next person often has no passkey here): the screen does not ask as it
+ *        opens; "Continue with a passkey" asks, and a passkey sign-in makes it "1" again;
+ *   "0"  off (switched off on My account), or never set.
+ * Right after the Sign out button the screen does not ask (the person just left); a fresh visit
+ * does. Asking never stands in the way of the password: the person typing in the e-mail or
+ * password field, or sending the form, withdraws the request (SignInPage).
  */
 
 /** The sign-in challenge the anonymous session answer carries. */
@@ -53,13 +61,24 @@ export function passkeysSupported(): boolean {
   return typeof window !== "undefined" && typeof window.PublicKeyCredential === "function" && typeof navigator.credentials?.get === "function";
 }
 
-/** Whether the sign-in screen asks this device for a passkey as soon as it opens. */
-export function passkeyOffered(): boolean {
+function offerSetting(): string | null {
   try {
-    return localStorage.getItem(passkeyOfferKey) === "1";
+    return localStorage.getItem(passkeyOfferKey);
   } catch {
-    return false;
+    return null;
   }
+}
+
+/** Whether this device's setting "ask for my passkey as the sign-in screen opens" is on. */
+export function passkeyOffered(): boolean {
+  const value = offerSetting();
+  return value === "1" || value === "2";
+}
+
+/** Whether the sign-in screen asks the device as it opens: the setting is on and the last sign-in
+ * on this device used a passkey (after a password sign-in the button asks instead). */
+export function passkeyAskedOnArrival(): boolean {
+  return offerSetting() === "1";
 }
 
 export function setPasskeyOffered(on: boolean): void {
@@ -67,6 +86,17 @@ export function setPasskeyOffered(on: boolean): void {
     localStorage.setItem(passkeyOfferKey, on ? "1" : "0");
   } catch {
     // Not kept on this device: the screen offers the passkey button instead.
+  }
+}
+
+/** A password sign-in succeeded on this device: with the setting on, the next sign-in screen does
+ * not ask as it opens (the next person at a shared PC may have no passkey here). */
+export function notePasswordSignIn(): void {
+  if (offerSetting() !== "1") return;
+  try {
+    localStorage.setItem(passkeyOfferKey, "2");
+  } catch {
+    // Not kept: the screen asks as before, and typing withdraws the request.
   }
 }
 

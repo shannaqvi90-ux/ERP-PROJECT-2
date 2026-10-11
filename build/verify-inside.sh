@@ -62,7 +62,17 @@ case "$stage" in
     # G2 on screen, by keyboard: the record form kernel's and the screens' key sweeps must catch every
     # planted key or keyboard-reached control that writes, or offers an action, without its permission.
     node scripts/forms-plant-self-test.mjs
+    # G2 in the command palette: the palette's gate must catch every planted action offered to a
+    # user who may not run it (module actions and the screen's own commands).
+    node scripts/palette-plant-self-test.mjs
     npm run --silent build
+
+    step "Verify machinery (build/): stopping a verify ends every stage process; the quiet judgement"
+    cd /work
+    node --test --test-concurrency=1 \
+        --test-reporter=spec --test-reporter-destination=stdout \
+        --test-reporter=junit --test-reporter-destination="$out/build-junit.xml" \
+        build/*.test.mjs
 
     step "Comparison harness (gauntlet/compare): install and unit tests"
     cd /work/gauntlet/compare
@@ -95,6 +105,14 @@ case "$stage" in
     # G1CompanyIsolationTests and G2AccountTakeoverTests, interleaved runs: 245 and 250 s of user
     # time against 253 and 257 s with it on, about 3 % less).
     export DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0 DOTNET_GCgen0size=0x4000000 DOTNET_TieredPGO=0
+    # Password hashes made by the test hosts (seeded users, users and passwords set through the
+    # API) cost 10,000 PBKDF2 rounds instead of the production 210,000 (round 9, measured: the four
+    # gate processes made 6,700 derivations, the largest single use of their processor time). The
+    # test library hands it to its Testing hosts only (ErpAppFactory), and the product honours it
+    # only in the Testing environment (Erp.Kernel.Security.PasswordHashing); hosts tests build in
+    # other environments, the timing budgets, the demo and every deployment hash with the production
+    # cost, and the decoy of an unknown address keeps the production cost.
+    export ERP_TEST_PASSWORD_ITERATIONS=10000
     rm -rf "$out/trx"
     # Four test processes side by side: every test project (the gate self-tests below excepted),
     # and the three long self-tests of the planted module, each in a process of its own. Their

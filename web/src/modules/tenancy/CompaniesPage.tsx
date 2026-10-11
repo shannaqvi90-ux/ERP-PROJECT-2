@@ -53,7 +53,7 @@ function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
   const { can } = useSession();
   const creatable = can("tenancy.companies.create") && everyCompany;
   const panel = useRecordPanel(creatable);
-  useScreenKeys({ onNew: panel.startNew, search: listSearch });
+  useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey: "tenancy.company.new", newKeywordsKey: "tenancy.action.newCompanyKeywords" });
   const { onOpenIdChange } = panel;
   const openIdChange = useCallback((id: string | null) => onOpenIdChange(id === newRecord && !creatable ? null : id), [onOpenIdChange, creatable]);
 

@@ -46,11 +46,11 @@ internal static class Passwords
     }
 
     /// <summary>Insert the credential of a new user.</summary>
-    public static void Add(IdentityDbContext db, Guid userId, string password, bool mustChange, DateTimeOffset? expiresAt, DateTimeOffset now, Guid? by) =>
+    public static void Add(IdentityDbContext db, PasswordHashing hashing, Guid userId, string password, bool mustChange, DateTimeOffset? expiresAt, DateTimeOffset now, Guid? by) =>
         db.Credentials.Add(new UserCredential
         {
             Id = userId,
-            PasswordHash = PasswordHasher.Hash(password),
+            PasswordHash = hashing.Hash(password),
             MustChange = mustChange,
             ExpiresAt = expiresAt,
             ChangedAt = now,
@@ -58,10 +58,10 @@ internal static class Passwords
         });
 
     /// <summary>Replace a user's password (or set-up code).</summary>
-    public static async Task SetAsync(IdentityDbContext db, Guid userId, string password, bool mustChange, DateTimeOffset? expiresAt,
+    public static async Task SetAsync(IdentityDbContext db, PasswordHashing hashing, Guid userId, string password, bool mustChange, DateTimeOffset? expiresAt,
         DateTimeOffset now, Guid? by, CancellationToken cancellationToken)
     {
-        var hash = PasswordHasher.Hash(password);
+        var hash = hashing.Hash(password);
         var updated = await db.Credentials.Where(c => c.Id == userId).ExecuteUpdateAsync(s => s
             .SetProperty(c => c.PasswordHash, hash)
             .SetProperty(c => c.MustChange, mustChange)

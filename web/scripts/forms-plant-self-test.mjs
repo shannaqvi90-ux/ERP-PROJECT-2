@@ -119,8 +119,8 @@ const plants = [
     edits: [
       {
         file: "src/modules/tenancy/BranchesPage.tsx",
-        find: "useScreenKeys({ onNew: panel.startNew, search: listSearch });",
-        replace: "useScreenKeys({ onNew: () => panel.onOpenIdChange(newRecord), search: listSearch });",
+        find: "useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey:",
+        replace: "useScreenKeys({ onNew: () => panel.onOpenIdChange(newRecord), search: listSearch, newLabelKey:",
       },
     ],
   },

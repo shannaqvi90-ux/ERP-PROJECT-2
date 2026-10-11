@@ -118,6 +118,14 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // tenant A only once tenant B printed with columns other than the default.
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/spooled?", StringComparison.Ordinal) && l.Contains("columns=", StringComparison.Ordinal) &&
                                           l.Contains("an answer shape tenant B asked for first", StringComparison.Ordinal));
+        // Bug 61 (critic p06 round 5, plant L7b): a printout kept for the inline viewer by record id
+        // reaches tenant A only when it sends tenant B's own request, B's record id and inline.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/viewed?", StringComparison.Ordinal) && l.Contains("disposition=inline", StringComparison.Ordinal) &&
+                                          l.Contains("tenant B's own request for an answer shape, sent by tenant A", StringComparison.Ordinal));
+        // Bug 62 (plant L7c): a spool keyed on two documented values together reaches tenant A only
+        // once tenant B sent both at once.
+        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/combined?", StringComparison.Ordinal) && l.Contains("columns=", StringComparison.Ordinal) &&
+                                          l.Contains("sort=", StringComparison.Ordinal) && l.Contains("an answer shape tenant B asked for first", StringComparison.Ordinal));
         Assert.Contains("tenancy.tenants", report.ChangedTables);
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
 

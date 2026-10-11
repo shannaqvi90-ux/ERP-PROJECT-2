@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mockFetch, render, settle, type Rendered } from "../../test/render";
+import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
 import { App } from "./App";
 
 let view: Rendered | undefined;
@@ -124,6 +124,111 @@ describe("sign-in with a passkey", () => {
     expect(calls.some((c) => c.url === "/api/auth/sign-in")).toBe(false);
     expect(view.container.textContent).toContain("The passkey was not used.");
     expect(document.activeElement).toBe(view.container.querySelector('input[name="email"]'));
+  });
+
+  it("never blocks the password: typing withdraws the device request silently, Sign in stays enabled, and e-mail, Enter, password, Enter signs in", async () => {
+    localStorage.setItem("erp.passkeyOffer", "1");
+    // A shared PC: the device holds no passkey of this person, so its request would wait for minutes.
+    let signal: AbortSignal | undefined;
+    const get = device(() => new Promise((_, reject) => signal!.addEventListener("abort", () => reject(new DOMException("withdrawn", "AbortError")))));
+    get.mockImplementation((options: CredentialRequestOptions) => {
+      signal = options.signal ?? undefined;
+      return new Promise((_, reject) => signal!.addEventListener("abort", () => reject(new DOMException("withdrawn", "AbortError"))));
+    });
+    const calls = server();
+    view = await render(<App language="en" />);
+    await settle();
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(signal).toBeDefined();
+    expect(view.container.textContent).toContain("Or type your e-mail to sign in with your password.");
+    const submitButton = view.container.querySelector<HTMLButtonElement>("button.signin-submit")!;
+    expect(submitButton.disabled).toBe(false);
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    expect(document.activeElement).toBe(email);
+    setInput(email, "a");
+    await settle();
+    expect(signal!.aborted).toBe(true);
+    // Withdrawn without a message, and the keyboard stays where the person types.
+    expect(view.container.querySelector("#passkey-asking")).toBeNull();
+    expect(view.container.querySelector('[role="alert"]')).toBeNull();
+    expect(view.container.textContent).not.toContain("The passkey was not used.");
+    expect(document.activeElement).toBe(email);
+    setInput(email, "admin@alnoor.example");
+    act(() => {
+      email.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    });
+    expect(document.activeElement).toBe(password);
+    setInput(password, "Demo-Pass-2026");
+    await act(async () => {
+      submitButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
+    expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
+    expect(get).toHaveBeenCalledTimes(1);
+  });
+
+  it("sending the form while the device is asked withdraws the request and signs in with the password", async () => {
+    localStorage.setItem("erp.passkeyOffer", "1");
+    localStorage.setItem("erp.lastEmail", "admin@alnoor.example");
+    let signal: AbortSignal | undefined;
+    const get = device(() => new Promise(() => {}));
+    get.mockImplementation((options: CredentialRequestOptions) => {
+      signal = options.signal ?? undefined;
+      return new Promise((_, reject) => signal!.addEventListener("abort", () => reject(new DOMException("withdrawn", "AbortError"))));
+    });
+    const calls = server();
+    view = await render(<App language="en" />);
+    await settle();
+    expect(get).toHaveBeenCalledTimes(1);
+    // A password manager fills the field without input events the screen sees as typing.
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(password, "Demo-Pass-2026");
+    password.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(signal!.aborted).toBe(true);
+    await submit(view.container);
+    await settle();
+    expect(calls.find((c) => c.url === "/api/auth/sign-in")!.body).toEqual({ email: "admin@alnoor.example", password: "Demo-Pass-2026" });
+    expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
+  });
+
+  it("after a password sign-in the device's next screen does not ask as it opens (a shared PC); the button asks, and a passkey sign-in asks at once again", async () => {
+    localStorage.setItem("erp.passkeyOffer", "1");
+    let get = device(() => new Promise(() => {}));
+    get.mockImplementation((options: CredentialRequestOptions) => new Promise((_, reject) => options.signal!.addEventListener("abort", () => reject(new DOMException("withdrawn", "AbortError")))));
+    server();
+    view = await render(<App language="en" />);
+    await settle();
+    expect(get).toHaveBeenCalledTimes(1);
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "admin@alnoor.example");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
+    // Still on (My account shows it on), but the last sign-in here used a password.
+    expect(localStorage.getItem("erp.passkeyOffer")).toBe("2");
+    view.unmount();
+
+    localStorage.removeItem("erp.lastEmail");
+    get = device(credential);
+    server();
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    expect(get).not.toHaveBeenCalled();
+    expect(view.container.querySelector("#passkey-asking")).toBeNull();
+    expect(document.activeElement).toBe(view.container.querySelector('input[name="email"]'));
+    const button = [...view.container.querySelectorAll("button")].find((b) => b.textContent === "Continue with a passkey")!;
+    await act(async () => {
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await settle();
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(view.container.textContent).toContain("Welcome, Mariam Al Mansoori");
+    expect(localStorage.getItem("erp.passkeyOffer")).toBe("1");
   });
 
   it("says in Arabic when the server refuses the passkey", async () => {

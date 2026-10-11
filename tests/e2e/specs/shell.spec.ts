@@ -286,6 +286,91 @@ test.describe("app shell", () => {
     });
   }
 
+  test("the palette starts a module's actions by typing: New user from anywhere, the screen's own commands first", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    const palette = page.locator('[role="dialog"].palette');
+    // From home, keyboard only: Ctrl+K, "new user", Enter opens an empty new user, e-mail focused.
+    const started = Date.now();
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("new user");
+    await expect(palette.getByRole("option").first()).toHaveText(/^New user/);
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/identity\/users\/new$/);
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    console.log(`palette to a new user from home: ${Date.now() - started} ms, 3 steps, 10 keystrokes`);
+    // The Arabic words find it too, and so does a word it does not contain ("invite").
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("invite");
+    await expect(palette.getByRole("option").first()).toHaveText(/^New user/);
+    await page.keyboard.press("Escape");
+    // On the users screen, its own commands come first: "export" is the list's Print or export.
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("export");
+    const first = palette.getByRole("group").first();
+    await expect(first).toHaveAttribute("aria-label", "On this screen");
+    await expect(first.getByRole("option").first()).toHaveText(/^Print or export the list/);
+    await page.keyboard.press("Enter");
+    await expect(palette).toBeHidden();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await expect(page.getByRole("menuitem").first()).toBeFocused();
+    await page.keyboard.press("Escape");
+    // From another screen: a company's New, through the companies screen's own command.
+    await page.keyboard.press("Alt+H");
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("new company");
+    await expect(palette.getByRole("option").first()).toHaveText(/^New company/);
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/tenancy\/companies\/new$/);
+    await expect(page.locator(".status-notice")).toHaveCount(0);
+  });
+
+  test("the palette offers a reader none of the actions that write, and the lists a reader may print", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.viewer);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
+    const palette = page.locator('[role="dialog"].palette');
+    for (const query of ["new user", "new role", "new company", "new branch"]) {
+      await page.keyboard.press("Control+K");
+      await page.keyboard.type(query);
+      await expect(palette).toBeVisible();
+      // Record sources answer as the user types; then nothing offered starts a new record.
+      await page.waitForTimeout(300);
+      const titles = await palette.locator(".palette-option-title").allTextContents();
+      expect(titles.filter((t) => /^New /.test(t)), query).toEqual([]);
+      await page.keyboard.press("Escape");
+    }
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("export users");
+    await expect(palette.getByRole("option").first()).toHaveText(/^Print or export the users list/);
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/identity\/users$/);
+    await expect(page.getByRole("menu")).toBeVisible();
+  });
+
+  test("the navigation pane comes back as it was when a phone-width window turns wide again", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 800 });
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await expect(page.locator(".app")).toHaveAttribute("data-nav", "open");
+    await page.setViewportSize({ width: 390, height: 800 });
+    await expect(page.locator(".app")).toHaveAttribute("data-nav", "closed");
+    // Opening a screen at phone width puts the pane away; that is not the desktop's choice.
+    await page.keyboard.press("Control+K");
+    await page.keyboard.type("users");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main h1")).toHaveText("المستخدمون");
+    await page.setViewportSize({ width: 1366, height: 800 });
+    await expect(page.locator(".app")).toHaveAttribute("data-nav", "open");
+    await expect(navigation(page, "التنقل الرئيسي")).toBeVisible();
+    // The New user button holds its words at phone width in Arabic (critic p04 round 7).
+    await page.setViewportSize({ width: 390, height: 800 });
+    const button = page.getByRole("button", { name: "مستخدم جديد" });
+    const fits = await button.evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1);
+    expect(fits).toBe(true);
+  });
+
   test("the palette offers a user with no roles nothing they cannot open", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.noAccess);

@@ -4,16 +4,18 @@
 //  - the suite counts of this run (.NET tests from TRX, web unit tests, end-to-end tests) reach the
 //    suite minimums, and nothing failed or was skipped;
 //  - on a quiet machine, the wall time of ./erp verify stays under the maximum verify.quietSeconds
-//    (./erp writes verify-seconds and the machine's load when the run started and when its stages
-//    were over; a run on a busy machine is reported but not judged, since other work decides its time);
+//    (./erp writes verify-seconds, the machine's load when the run started and when its stages were
+//    over, and a sample of the load every 15 s in between; a run is judged when every reading was
+//    quiet, and a run that was busy at any reading is reported but not judged, since other work
+//    decides its time);
 //  - on every run, the processor time of the verify stages stays under the maximum verify.cpuSeconds.
 // Usage: node ratchet-check.mjs <ratchet.json> <out-dir> [base-ratchet.json]
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const [ratchetPath, outDir, basePath] = process.argv.slice(2);
-// A machine counts as quiet when its one-minute load average, when verify starts, is at most this
-// much per CPU (other agents' builds and tests push it far above).
+// A machine counts as quiet when its one-minute load average is at most this much per CPU at every
+// reading of the run (other agents' builds and tests push it far above).
 const QUIET_LOAD_PER_CPU = 0.5;
 const ratchet = JSON.parse(readFileSync(ratchetPath, "utf8"));
 const problems = [];
@@ -34,7 +36,7 @@ if (basePath && existsSync(basePath)) {
   console.log("ratchet: no committed base to compare with (first version)");
 }
 
-const counts = { dotnet: { passed: 0, failed: 0, skipped: 0 }, web: { passed: 0, failed: 0, skipped: 0 }, e2e: { passed: 0, failed: 0, skipped: 0 }, compare: { passed: 0, failed: 0, skipped: 0 } };
+const counts = { dotnet: { passed: 0, failed: 0, skipped: 0 }, web: { passed: 0, failed: 0, skipped: 0 }, e2e: { passed: 0, failed: 0, skipped: 0 }, compare: { passed: 0, failed: 0, skipped: 0 }, build: { passed: 0, failed: 0, skipped: 0 } };
 const trxDir = join(outDir, "trx");
 if (existsSync(trxDir)) {
   for (const file of readdirSync(trxDir).filter((f) => f.endsWith(".trx"))) {
@@ -58,15 +60,17 @@ if (existsSync(e2e)) {
   counts.e2e = { passed: r.stats.expected, failed: r.stats.unexpected + r.stats.flaky, skipped: r.stats.skipped };
 }
 
-// Comparison harness (gauntlet/compare): node:test JUnit report.
-const compareJunit = join(outDir, "compare-junit.xml");
-if (existsSync(compareJunit)) {
-  const xml = readFileSync(compareJunit, "utf8");
+// Comparison harness (gauntlet/compare) and the verify machinery's own tests (build/): node:test
+// JUnit reports.
+for (const [file, into] of [["compare-junit.xml", counts.compare], ["build-junit.xml", counts.build]]) {
+  const path = join(outDir, file);
+  if (!existsSync(path)) continue;
+  const xml = readFileSync(path, "utf8");
   const cases = xml.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) ?? [];
   for (const c of cases) {
-    if (/<failure\b/.test(c) || /<error\b/.test(c)) counts.compare.failed++;
-    else if (/<skipped\b/.test(c)) counts.compare.skipped++;
-    else counts.compare.passed++;
+    if (/<failure\b/.test(c) || /<error\b/.test(c)) into.failed++;
+    else if (/<skipped\b/.test(c)) into.skipped++;
+    else into.passed++;
   }
 }
 
@@ -75,6 +79,7 @@ const suite = [
   ["suite.webUnitTests", counts.web],
   ["suite.e2eTests", counts.e2e],
   ["suite.compareTests", counts.compare],
+  ["suite.buildTests", counts.build],
 ];
 for (const [key, c] of suite) {
   const min = ratchet.minimums?.[key];
@@ -94,17 +99,24 @@ if (existsSync(secondsFile)) {
   const seconds = Number(readFileSync(secondsFile, "utf8").trim());
   const loadOf = (file) => (existsSync(file) ? readFileSync(file, "utf8").trim().split(/\s+/).map(Number) : [NaN, NaN]);
   const isQuiet = ([l, n]) => Number.isFinite(l) && Number.isFinite(n) && n > 0 && l / n <= QUIET_LOAD_PER_CPU;
-  // Quiet at the start, and again once every stage is over (other work that started during the run
-  // and is still going shows there).
+  // Quiet at the start, at every sample taken while the stages ran (round 9: two readings, at the
+  // start and the end, judged quiet a run that was busy only in the middle, load 0.28 at the start,
+  // 68-74 mid-run, 4.76 at the end, which then failed with every test green), and again once every
+  // stage is over (other work that started during the run and is still going shows there).
   const [load, cpus] = loadOf(loadFile);
   const [endLoad] = loadOf(endLoadFile);
-  const quiet = isQuiet([load, cpus]) && isQuiet(loadOf(endLoadFile));
-  const judged = quiet
-    ? "judged"
-    : `not judged: the machine was busy (load ${load} at the start and ${endLoad} at the end on ${cpus} CPUs; quiet is at most ${QUIET_LOAD_PER_CPU} per CPU at both)`;
+  const samplesFile = join(outDir, "verify-load-samples");
+  const samples = existsSync(samplesFile)
+    ? readFileSync(samplesFile, "utf8").split("\n").map((line) => line.trim().split(/\s+/).map(Number)).filter((v) => v.length === 3 && v.every(Number.isFinite)).map(([, l, n]) => [l, n])
+    : [];
+  const readings = [[load, cpus], loadOf(endLoadFile), ...samples];
+  const quiet = readings.every(isQuiet);
+  const highest = Math.max(...readings.map(([l]) => (Number.isFinite(l) ? l : -Infinity)));
+  const during = `load ${load} at the start, ${endLoad} at the end, highest ${highest} over ${readings.length} readings (${samples.length} samples while the stages ran) on ${cpus} CPUs`;
+  const judged = quiet ? `judged: ${during}` : `not judged: the machine was busy (${during}; quiet is at most ${QUIET_LOAD_PER_CPU} per CPU at every reading)`;
   console.log(`\nverify wall time before the ratchet: ${seconds} s (maximum on a quiet machine ${maxSeconds} s; ${judged})`);
   if (quiet && maxSeconds !== undefined && seconds > maxSeconds) {
-    problems.push(`verify.quietSeconds: ./erp verify took ${seconds} s on a quiet machine (load ${load} at the start and ${endLoad} at the end on ${cpus} CPUs), maximum ${maxSeconds} s`);
+    problems.push(`verify.quietSeconds: ./erp verify took ${seconds} s on a quiet machine (${during}), maximum ${maxSeconds} s`);
   }
 }
 

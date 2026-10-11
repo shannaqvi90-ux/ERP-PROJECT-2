@@ -275,6 +275,48 @@ describe("sign-in screen", () => {
     expect(document.activeElement).toBe(password);
   });
 
+  it("after moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form", async () => {
+    window.history.replaceState(null, "", "/?domain=alnoor.example");
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    const email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    const key = (target: HTMLElement, init: KeyboardEventInit) => {
+      const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+      act(() => {
+        target.dispatchEvent(event);
+      });
+      return event;
+    };
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(password);
+    expect(key(password, { key: "Tab" }).defaultPrevented).toBe(true);
+    // Only the very next key: a second Tab is the person's own move.
+    expect(key(password, { key: "Tab" }).defaultPrevented).toBe(false);
+
+    password.focus();
+    setInput(email, "admin@alnoor.exampl");
+    email.focus();
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(password);
+    expect(key(password, { key: "Enter" }).defaultPrevented).toBe(true);
+    await settle();
+    expect(calls.some((c) => c.url === "/api/auth/sign-in")).toBe(false);
+    expect(view.container.querySelector(".field-error")).toBeNull();
+    // Shift+Tab goes back as usual, and a key typed first ends the absorbing.
+    setInput(email, "admin@alnoor.exampl");
+    email.focus();
+    setInput(email, "admin@alnoor.example");
+    expect(key(password, { key: "Tab", shiftKey: true }).defaultPrevented).toBe(false);
+    setInput(email, "admin@alnoor.exampl");
+    email.focus();
+    setInput(email, "admin@alnoor.example");
+    key(password, { key: "D" });
+    setInput(password, "D");
+    expect(key(password, { key: "Enter" }).defaultPrevented).toBe(false);
+  });
+
   it("does not move on while the password already holds text, nor for another domain, nor without the team's address", async () => {
     window.history.replaceState(null, "", "/?domain=alnoor.example");
     mockFetch(signedOut());
@@ -298,6 +340,63 @@ describe("sign-in screen", () => {
     expect(view.container.querySelector("#email-moves-on")).toBeNull();
     setInput(email, "admin@alnoor.example");
     expect(document.activeElement).toBe(email);
+  });
+
+  it("on the plain address, a device that signed in before moves on once a whole address of that workspace is typed, and says so first", async () => {
+    // A password sign-in from the plain address teaches the device the workspace's domain.
+    const calls = mockFetch(signedOut());
+    view = await render(<App language="en" />);
+    await settle();
+    let email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    let password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    expect(view.container.querySelector("#email-moves-on")).toBeNull();
+    setInput(email, "admin@alnoor.example");
+    expect(document.activeElement).toBe(email);
+    setInput(password, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    expect(calls.some((c) => c.url === "/api/auth/sign-in")).toBe(true);
+    view.unmount();
+    // The next person at the shared PC, after the Sign out button (the e-mail is forgotten).
+    localStorage.removeItem("erp.lastEmail");
+    expect(localStorage.getItem("erp.signInDomains")).not.toMatch(/alnoor|admin|@/);
+
+    for (const language of ["en", "ar"] as const) {
+      view = await render(<App language={language} />);
+      await settle();
+      email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+      password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+      expect(document.activeElement).toBe(email);
+      expect(view.container.querySelector("#email-moves-on")!.textContent).toBe(
+        language === "en"
+          ? "On this device, typing a whole address of a workspace you signed in to here moves on to the password."
+          : "على هذا الجهاز، كتابة عنوان كامل لمساحة عمل سجّلت الدخول إليها هنا تنقلك إلى كلمة المرور.",
+      );
+      expect(email.getAttribute("aria-describedby")).toBe("email-moves-on");
+      setInput(email, "sara@alnoor.exampl");
+      expect(document.activeElement).toBe(email);
+      setInput(email, "sara@alnoor.example");
+      expect(document.activeElement).toBe(password);
+      view.unmount();
+    }
+
+    // Another workspace's address, one that extends the domain, and a password already typed do not move on.
+    view = await render(<App language="en" />);
+    await settle();
+    email = view.container.querySelector<HTMLInputElement>('input[name="email"]')!;
+    password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    setInput(email, "sara@gulfsteel.example");
+    expect(document.activeElement).toBe(email);
+    setInput(email, "sara@alnoor.example.ae");
+    expect(document.activeElement).toBe(email);
+    setInput(password, "Demo-Pass-2026");
+    email.focus();
+    setInput(email, "sara@alnoor.example");
+    expect(document.activeElement).toBe(email);
+    // Sent as typed: the whole address, the domain not added again.
+    await submit(view.container);
+    await settle();
+    expect(calls.filter((c) => c.url === "/api/auth/sign-in").at(-1)!.body).toEqual({ email: "sara@alnoor.example", password: "Demo-Pass-2026" });
   });
 
   it("shows and hides the password from a button after the field, keeping the focus in the field, in both languages", async () => {
