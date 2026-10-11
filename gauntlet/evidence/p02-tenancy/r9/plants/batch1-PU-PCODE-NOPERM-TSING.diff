@@ -1,0 +1,81 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 0b27645..69e51e1 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -154,7 +154,7 @@ internal static class CompanyEndpoints
+             .WithName("tenancy.companies.logo.delete")
+             .WithSummary("Remove the company's logo. Needs every branch of the company.")
+             .Surface(SurfaceKind.File)
+-            .RequirePermission(TenancyPermissions.CompaniesUpdate);
++            .RequirePermission(TenancyPermissions.WorkplaceSwitch); // PLANT NOPERM: a permission every user holds
+     }
+ 
+     private static async Task<Results<Ok<ListPage<CompanyRow>>, ProblemHttpResult>> List(
+@@ -289,7 +289,7 @@ internal static class CompanyEndpoints
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+         }
+         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
+-        if (code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
++        if (code != company.Code && false /* PLANT PCODE */ && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+         {
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+         }
+@@ -307,6 +307,11 @@ internal static class CompanyEndpoints
+     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
+         Guid id, TenancyDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        var plantCache = http.RequestServices.GetRequiredService<PlantLogoCache>(); // PLANT TSING
++        if (plantCache.Items.TryGetValue(id, out var cached))
++        {
++            return TypedResults.File(cached.Bytes, cached.Type);
++        }
+         var logo = await db.Companies.AsNoTracking().Where(c => c.Id == id && c.Logo != null)
+             .Select(c => new { c.Logo, c.LogoContentType, c.LogoHash })
+             .SingleOrDefaultAsync(cancellationToken);
+@@ -315,6 +320,7 @@ internal static class CompanyEndpoints
+             return Problems.NotFound(http);
+         }
+         http.Response.Headers.ContentDisposition = "inline";
++        plantCache.Items[id] = (logo.Logo!, logo.LogoContentType!); // PLANT TSING
+         return TypedResults.File(logo.Logo!, logo.LogoContentType, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{logo.LogoHash}\""));
+     }
+ 
+@@ -489,3 +495,10 @@ internal static class CompanyLogo
+         _ => false,
+     };
+ }
++
++
++/// <summary>PLANT TSING: a process-wide logo cache keyed by company id only (a DI singleton, not a static).</summary>
++internal sealed class PlantLogoCache
++{
++    public System.Collections.Concurrent.ConcurrentDictionary<Guid, (byte[] Bytes, string Type)> Items { get; } = new();
++}
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index e26a440..f975c5b 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -38,6 +38,7 @@ public sealed class TenancyModule : ErpModule
+         module.Services.AddScoped<IUserWorkplaces, Workplace.UserWorkplaces>();
+         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
+         module.Services.AddScoped<TenancyBranchScope>();
++        module.Services.AddSingleton<Companies.PlantLogoCache>(); // PLANT TSING
+         module.Endpoints(group =>
+         {
+             TenancyEndpoints.Map(group);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+index 37fc1df..0cf5f9c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+@@ -25,10 +25,7 @@ internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session)
+     public async Task<WorkplaceChange> SetAsync(Guid userId, Guid? companyId, uint version, CancellationToken cancellationToken)
+     {
+         var (companies, elsewhere) = await CompaniesAsync(userId, cancellationToken);
+-        if (elsewhere)
+-        {
+-            return WorkplaceChange.UserBeyondScope;
+-        }
++        _ = elsewhere; // PLANT PU
+         if (companyId is { } wanted && companies.All(c => c.Id != wanted || !c.IsActive))
+         {
+             return WorkplaceChange.CompanyNotAllowed;

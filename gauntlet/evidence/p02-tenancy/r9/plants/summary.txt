@@ -1,0 +1,19 @@
+Critic p02 round 9 plants (ae5e3fb). Gates run: dotnet test tests/Erp.Gates.Tests -c Release (local SDK, Testcontainers); web: npx vitest run.
+Server
+  PU      UserWorkplaces.SetAsync without the "elsewhere" check (round 8 gap)   CAUGHT  G1CompanyIsolation.The_default_company_contract... (Expected UserBeyondScope, Actual Done)  batch1-gates.log
+  PCODE   company code change without the every-company check               CAUGHT  G1CompanyIsolation code oracle (409 vs 200)                    batch1-gates.log
+  NOPERM  DELETE /companies/{id}/logo behind tenancy.workplace.switch         CAUGHT  G2Permission reviewed map                                       batch1-gates.log
+  TSING   DI-singleton logo cache keyed by company id (tenant leak)           CAUGHT  G1ProcessState + G1HttpIsolation (22 leaks of tenant B logo)   batch1-gates.log
+  NOPERM2 PUT /branches/{id} declares no permission                          CAUGHT  host refuses to start (ErpPlatform.ValidateEndpoints)          NOPERM2-gates.log
+  PU2     WorkingElsewhereAsync returns [] (bulk set-active)                 CAUGHT  contract test + G2AccountTakeover bulk (user deactivated)      batch2-gates.log
+  BRCODE  branch code change without the endpoint's every-branch check       NO EFFECT  kernel GuardBranchLimits still refuses 403 (BRCODE-live.log); gates green, correctly
+  BRCODE2 BRCODE + GuardBranchLimits code check removed                       CAUGHT  G1BranchScopeAttack write oracle (409 vs 200); live: BRCODE2-live.log
+Web (screens gate, src/modules/tenancy)
+  U2  New offered without everyCompany        CAUGHT  screens.test.tsx (2 tests)
+  U3  company code editable                   CAUGHT  screens.test.tsx
+  U4  ?open=new honoured                       CAUGHT  screens.test.tsx
+  U5  empty company list read as "every company" (items.length === 0 ||)     MISSED  90/90 tenancy tests pass
+  U5b same, idiomatic: page.items[0]?.everyCompany !== false                   MISSED  402/402 full web suite and 24/24 tenancy plant self-test pass
+      Live (U5b-live.log, shot 09): a new Administrator with no company access (the state every invited user starts in) sees New,
+      Alt+N opens the form, Ctrl+S answers 403 tenancy.companyNeedsEveryCompany. Unplanted build: no New (U5b-baseline-live.log, shot 10).
+Batch 1 and 2 runs were stopped by PID once their results were in (rc lines note it).

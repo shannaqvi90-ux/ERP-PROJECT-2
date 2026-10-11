@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompaniesPage.tsx b/web/src/modules/tenancy/CompaniesPage.tsx
+index 49008c6..7df6c7f 100644
+--- a/web/src/modules/tenancy/CompaniesPage.tsx
++++ b/web/src/modules/tenancy/CompaniesPage.tsx
+@@ -34,7 +34,7 @@ function useEveryCompany(): boolean | undefined {
+     const controller = new AbortController();
+     const load = () =>
+       api<ListPage<CompanyRow>>("GET", "/api/tenancy/companies?take=1", undefined, { signal: controller.signal })
+-        .then((page) => setEveryCompany(page.items.length > 0 && page.items[0]!.everyCompany !== false))
++        .then((page) => setEveryCompany(page.items.length === 0 || page.items[0]!.everyCompany !== false) /* PLANT U5 */)
+         .catch(() => {
+           if (!controller.signal.aborted) setEveryCompany(false);
+         });

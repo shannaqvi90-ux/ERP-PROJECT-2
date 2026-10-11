@@ -1,0 +1,362 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261011T040034-e694",
+  "instrument": 8,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "ours",
+  "status": "error",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-11T04:00:34.688Z",
+  "finished_at": "2026-10-11T04:04:38.986Z",
+  "environment": {
+    "base_url": "http://localhost:20250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 0,
+    "keystrokes": 0,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 120.004,
+    "system_wait_seconds": 0,
+    "human_seconds": 0,
+    "human_plus_wait_seconds": 0,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 0,
+      "B": 0,
+      "H": 0,
+      "M": 0
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c2aa223efb50a5ea.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r9/compare-8companies/blind/shots/c2aa223efb50a5ea.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "9ed9254ce11a3671.jpg",
+      "at": 120.004,
+      "path": "../../evidence-staging/p02-tenancy/r9/compare-8companies/blind/shots/9ed9254ce11a3671.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "pointer: click the company button in the top bar | keyboard: Alt+C > type \"manuf\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-company.mjs",
+    "sha256": "4073bb927374d1904701b3ed08a7dcb973d9ce89aef2e838aba622decc70ae71"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": "pointer: error TimeoutError: locator.click: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.workplace-chip[data-company=\"DEMO-MFG\"]')\u001b[22m\n\n    (in the driver process)\nCall log:\nkeyboard: error Error: waitForFunction: Timeout 120000ms exceeded.\n    (in the driver process)\n    at PageWorld.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/page-script.mjs:543:47)\n    at async Operator.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/operator.mjs:478:7)\n    at async #op (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:532:19)\n    at async DriverSession.handle (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:456:43)",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "pointer": {
+      "url": "/",
+      "ready_state": "complete",
+      "title": "Product",
+      "focused": {
+        "tag": "main",
+        "name": null,
+        "type": null,
+        "label": null
+      },
+      "navigation": true,
+      "busy": [],
+      "messages": []
+    },
+    "keyboard": {
+      "url": "/",
+      "ready_state": "complete",
+      "title": "Product",
+      "focused": {
+        "tag": "button",
+        "name": null,
+        "type": "button",
+        "label": null
+      },
+      "navigation": true,
+      "busy": [],
+      "messages": []
+    }
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.076
+  },
+  "set_up_writes_waited": 0,
+  "failure_capture": {
+    "url": "http://localhost:20250/",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {},
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "click the company button in the top bar",
+      "status": "error",
+      "error": "TimeoutError: locator.click: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.workplace-chip[data-company=\"DEMO-MFG\"]')\u001b[22m\n\n    (in the driver process)\nCall log:",
+      "error_page": {
+        "url": "/",
+        "ready_state": "complete",
+        "title": "Product",
+        "focused": {
+          "tag": "main",
+          "name": null,
+          "type": null,
+          "label": null
+        },
+        "navigation": true,
+        "busy": [],
+        "messages": []
+      },
+      "counts": {
+        "steps": 0,
+        "keystrokes": 0,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 120.004,
+        "system_wait_seconds": 0,
+        "human_seconds": 0,
+        "human_plus_wait_seconds": 0,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 0,
+          "B": 0,
+          "H": 0,
+          "M": 0
+        }
+      },
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": null,
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.076
+      },
+      "set_up_writes_waited": 0,
+      "failure_capture": {
+        "url": "http://localhost:20250/",
+        "console": [
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+        ]
+      }
+    },
+    {
+      "id": "keyboard",
+      "path": "Alt+C > type \"manuf\" > Enter",
+      "status": "error",
+      "error": "Error: waitForFunction: Timeout 120000ms exceeded.\n    (in the driver process)\n    at PageWorld.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/page-script.mjs:543:47)\n    at async Operator.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/operator.mjs:478:7)\n    at async #op (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:532:19)\n    at async DriverSession.handle (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:456:43)",
+      "error_page": {
+        "url": "/",
+        "ready_state": "complete",
+        "title": "Product",
+        "focused": {
+          "tag": "button",
+          "name": null,
+          "type": "button",
+          "label": null
+        },
+        "navigation": true,
+        "busy": [],
+        "messages": []
+      },
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 120.055,
+        "system_wait_seconds": 0.003,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 3.993,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "company switcher (Alt+C)",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.009,
+          "chord": "Alt+c",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "part of the company name",
+          "keystrokes": 5,
+          "at": 0.014,
+          "took": 0.011,
+          "text": "manuf",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "switch (Enter)",
+          "keystrokes": 1,
+          "at": 0.026,
+          "took": 0.002,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "switcher open, filter focused",
+          "at": 0.011,
+          "seconds": 0.003
+        }
+      ],
+      "verification": null,
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": null,
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.04
+      },
+      "set_up_writes_waited": 0,
+      "failure_capture": {
+        "url": "http://localhost:20250/",
+        "console": [
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+        ]
+      }
+    }
+  ]
+}

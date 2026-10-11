@@ -1,0 +1,15 @@
+switch-company           ours  error     steps 0  keys 0  machine 120.004s  human 0s  human+wait 0s  (pointer: error TimeoutError: locator.click: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p02-tenancy/r9/compare-8companies/results/switch-company-20261011T040034-e694.json
+    pointer: error TimeoutError: locator.click: Timeout 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.workplace-chip[data-company="DEMO-MFG"]')[22m
+    
+        (in the driver process)
+    Call log:
+    keyboard: error Error: waitForFunction: Timeout 120000ms exceeded.
+        (in the driver process)
+        at PageWorld.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/page-script.mjs:543:47)
+        at async Operator.waitFor (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/operator.mjs:478:7)
+        at async #op (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:532:19)
+        at async DriverSession.handle (file:///home/shan/critic/p02-tenancy-r9/gauntlet/compare/lib/sandbox/bridge.mjs:456:43)
+    page: {"pointer":{"url":"/","ready_state":"complete","title":"Product","focused":{"tag":"main","name":null,"type":null,"label":null},"navigation":true,"busy":[],"messages":[]},"keyboard":{"url":"/","ready_state":"complete","title":"Product","focused":{"tag":"button","name":null,"type":"button","label":null},"navigation":true,"busy":[],"messages":[]}}
+output: ../../../../evidence-staging/p02-tenancy/r9/compare-8companies

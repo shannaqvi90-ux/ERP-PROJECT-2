@@ -1,0 +1,37 @@
+== role
+erp_owner|f|f|t
+erp_app|f|f|f
+erp_auth|f|f|f
+== tenant tables without RLS enabled+forced (should be empty)
+== tenancy tables, policies
+branches|company_scope|RESTRICTIVE|ALL|erp.company_allowed(company_id)
+branches|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+companies|company_scope|RESTRICTIVE|ALL|erp.company_allowed(company_id)
+companies|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+tenants|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_branch_access|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_branch_access|company_scope_delete|RESTRICTIVE|DELETE|erp.company_allowed(company_id)
+user_branch_access|company_scope_update|RESTRICTIVE|UPDATE|erp.company_allowed(company_id)
+user_branch_access|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_company_access|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_company_access|company_scope_delete|RESTRICTIVE|DELETE|erp.company_allowed(company_id)
+user_company_access|company_scope_update|RESTRICTIVE|UPDATE|erp.company_allowed(company_id)
+user_company_access|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_company_totals|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_workplaces|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_workplaces|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+== erp_app, no tenant bound: counts
+0|0|0|0
+== erp_app, bound to alnoor, try gulfsteel rows
+A=0190a000-0000-7000-8000-000000000001 B=0190a000-0000-7000-8000-000000000002
+BEGIN
+0190a000-0000-7000-8000-000000000001
+companies seen|0|
+B tenant rows seen|0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "branches"
+ROLLBACK
+== erp_app tries to escalate
+ERROR:  permission denied to set role "postgres"
+ERROR:  must be owner of table companies
+all|0

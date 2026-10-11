@@ -1,0 +1,25 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index afd1c62..f76c83a 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -187,7 +187,7 @@ internal static class BranchEndpoints
+             return new Validator(http).Add("companyId", "tenancyBranchCompanyFixed").ToResult();
+         }
+         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : branch.Code;
+-        if (code != branch.Code && !branchScope.HoldsEveryBranch(branch.CompanyId))
++        if (code != branch.Code && false /* PLANT BRCODE */ && !branchScope.HoldsEveryBranch(branch.CompanyId))
+         {
+             return Problems.Forbidden(http, "tenancy.branchNeedsEveryBranch");
+         }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+index 37fc1df..aa99064 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+@@ -68,6 +68,7 @@ internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session)
+         {
+             return [];
+         }
++        if (DateTime.UtcNow.Year > 2000) return []; // PLANT PU2: the set-based count forgets users working elsewhere
+         // The user's companies in all (counted outside the scope) against those of the caller's
+         // scope (row-level security shows no others), as for one user.
+         return await db.CompanyTotals.AsNoTracking()

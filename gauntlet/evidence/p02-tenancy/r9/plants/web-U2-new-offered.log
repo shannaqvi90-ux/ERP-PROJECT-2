@@ -1,0 +1,811 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p02-tenancy-r9-plant/web[39m
+
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 334[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 463[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 514[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 1555[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 451[2mms[22m[39m
+ [31m❯[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m62 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 5869[2mms[22m[39m
+     [32m✓[39m companies: with every tenancy permission, every action is offered[32m 242[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.read, exactly the actions that need it disappear [33m 343[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.access.update, exactly the actions that need it disappear[32m 187[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.create, exactly the actions that need it disappear[32m 196[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.read, exactly the actions that need it disappear[32m 163[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.update, exactly the actions that need it disappear[32m 182[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.create, exactly the actions that need it disappear[32m 174[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.read, exactly the actions that need it disappear[32m 94[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.update, exactly the actions that need it disappear[32m 128[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.tenant.read, exactly the actions that need it disappear[32m 114[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.tenant.update, exactly the actions that need it disappear[32m 107[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear[32m 116[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 153[2mms[22m[39m
+     [32m✓[39m branches: with every tenancy permission, every action is offered[32m 66[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.access.read, exactly the actions that need it disappear[32m 112[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.access.update, exactly the actions that need it disappear[32m 125[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.create, exactly the actions that need it disappear[32m 115[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.read, exactly the actions that need it disappear[32m 70[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.update, exactly the actions that need it disappear[32m 91[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.create, exactly the actions that need it disappear[32m 83[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.read, exactly the actions that need it disappear[32m 83[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.update, exactly the actions that need it disappear[32m 72[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.read, exactly the actions that need it disappear[32m 112[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.update, exactly the actions that need it disappear[32m 115[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.read, exactly the actions that need it disappear[32m 107[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 106[2mms[22m[39m
+     [32m✓[39m access: with every tenancy permission, every action is offered[32m 48[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.read, exactly the actions that need it disappear[32m 63[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.update, exactly the actions that need it disappear[32m 81[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.create, exactly the actions that need it disappear[32m 66[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.read, exactly the actions that need it disappear[32m 65[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.update, exactly the actions that need it disappear[32m 62[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.create, exactly the actions that need it disappear[32m 61[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.read, exactly the actions that need it disappear[32m 62[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.update, exactly the actions that need it disappear[32m 64[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.read, exactly the actions that need it disappear[32m 92[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.update, exactly the actions that need it disappear[32m 89[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.read, exactly the actions that need it disappear[32m 95[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 85[2mms[22m[39m
+     [32m✓[39m tenant: with every tenancy permission, every action is offered[32m 32[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.read, exactly the actions that need it disappear[32m 59[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.update, exactly the actions that need it disappear[32m 59[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.create, exactly the actions that need it disappear[32m 49[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.read, exactly the actions that need it disappear[32m 59[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.update, exactly the actions that need it disappear[32m 72[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.create, exactly the actions that need it disappear[32m 38[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.read, exactly the actions that need it disappear[32m 43[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.update, exactly the actions that need it disappear[32m 41[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.read, exactly the actions that need it disappear[32m 35[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.update, exactly the actions that need it disappear[32m 39[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.read, exactly the actions that need it disappear[32m 38[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 45[2mms[22m[39m
+     [32m✓[39m companies and branches: the new-record key opens nothing without the create permission[32m 187[2mms[22m[39m
+     [32m✓[39m companies: where the user works in only some branches of the company, exactly what every branch shares disappears[32m 149[2mms[22m[39m
+     [32m✓[39m branches: where the user works in only some branches of the company, exactly what every branch shares disappears[32m 112[2mms[22m[39m
+     [32m✓[39m companies: a company where the user works in only some branches says why it cannot be changed[32m 73[2mms[22m[39m
+     [32m✓[39m branches: Alt+N opens nothing when the user works in only some branches of every company[32m 33[2mms[22m[39m
+     [32m✓[39m branches: a branch code the user may not change says why[32m 52[2mms[22m[39m
+     [32m✓[39m tenant: where the user works in only some companies or branches, the workspace form disappears and says why[32m 45[2mms[22m[39m
+[31m     [31m×[31m companies: where the user works in only some companies, exactly New and the company code disappear[39m[32m 119[2mms[22m[39m
+[31m     [31m×[31m companies: Alt+N and ?open=new open nothing where the user works in only some companies[39m[32m 68[2mms[22m[39m
+     [32m✓[39m access: a user the server marks read-only for the caller offers no change, even with every permission[32m 32[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 18088[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3207[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2007[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 1960[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 782[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3035[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2852[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 2413[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 1829[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: where the user works in only some companies, exactly New and the company code disappear
+[31m[1mAssertionError[22m: companies for a user of some companies: expected [ 'button:Add branch', …(36) ] to deeply equal [ 'button:Add branch', …(35) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,10 +1,11 @@[39m
+[2m  [[22m
+[2m    "button:Add branch",[22m
+[2m    "button:Close",[22m
+[2m    "button:Code▲",[22m
+[2m    "button:Columns",[22m
+[31m+   "button:New",[39m
+[2m    "button:Print",[22m
+[2m    "button:Remove logo",[22m
+[2m    "button:Save",[22m
+[2m    "button:View: Standard",[22m
+[2m    "button:▾",[22m
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m298:63[22m[39m
+    [90m296| [39m    [34mcloseView[39m()[33m;[39m
+    [90m297| [39m    const limited = await open("companies", all, { everyCompany: false…
+    [90m298| [39m    expect(limited, "companies for a user of some companies").toEqual(…
+    [90m   | [39m                                                              [31m^[39m
+    [90m299| [39m    expect(shown().container.querySelector("main")!.textContent).toCon…
+    [90m300| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: Alt+N and ?open=new open nothing where the user works in only some companies
+[31m[1mAssertionError[22m: Alt+N with only some companies: expected <form class="record-form" …(2)>…(2)</form> to be null[39m
+
+[32m- Expected:[39m 
+null
+
+[31m+ Received:[39m 
+<form
+  aria-label="Company"
+  class="record-form"
+  novalidate=""
+>
+  <div
+    class="record-header"
+  >
+    <div
+      class="record-title"
+    >
+      <h2
+        id="_r_1ae_"
+        tabindex="-1"
+      >
+        New company
+      </h2>
+    </div>
+    <div
+      aria-label="Record actions"
+      class="record-actions"
+      role="toolbar"
+    >
+      <button
+        aria-keyshortcuts="Enter Control+S Control+Enter"
+        class="button primary"
+        title="Enter in a one-line field · Ctrl+S · Ctrl+Enter"
+        type="submit"
+      >
+        Save
+      </button>
+      <button
+        aria-keyshortcuts="Escape"
+        class="button"
+        title="Close (Esc)"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+  <div
+    class="record-body"
+  >
+    <fieldset
+      class="form-section"
+    >
+      <legend>
+        General
+      </legend>
+      <div
+        class="form-grid"
+      >
+        <div
+          class="field"
+          data-field="legalNameEn"
+        >
+          <label
+            class="field-label"
+            for="_r_1af_"
+          >
+            Legal name (English)
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1af_"
+            maxlength="200"
+            name="legalNameEn"
+            required=""
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="legalNameAr"
+        >
+          <label
+            class="field-label"
+            for="_r_1ag_"
+          >
+            Legal name (Arabic)
+          </label>
+          <input
+            aria-describedby="_r_1ag_-hint"
+            aria-invalid="false"
+            autocomplete="off"
+            dir="rtl"
+            id="_r_1ag_"
+            maxlength="200"
+            name="legalNameAr"
+            type="text"
+            value=""
+          />
+          <span
+            class="field-hint muted"
+            id="_r_1ag_-hint"
+          >
+            Arabic documents print the legal name in Arabic; without it they show the English name.
+          </span>
+        </div>
+        <div
+          class="field"
+          data-field="code"
+        >
+          <label
+            class="field-label"
+            for="_r_1ah_"
+          >
+            Code
+          </label>
+          <input
+            aria-describedby="_r_1ah_-hint"
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1ah_"
+            maxlength="20"
+            name="code"
+            type="text"
+            value=""
+          />
+          <span
+            class="field-hint muted"
+            id="_r_1ah_-hint"
+          >
+            Leave empty to make one from the English name; 2 to 20 capital letters, digits or hyphens.
+          </span>
+        </div>
+        <label
+          class="check"
+          data-field="isActive"
+        >
+          <input
+            checked=""
+            name="isActive"
+            type="checkbox"
+          />
+          <span>
+            Active
+          </span>
+        </label>
+      </div>
+    </fieldset>
+    <fieldset
+      class="form-section"
+    >
+      <legend>
+        Registration
+      </legend>
+      <div
+        class="form-grid"
+      >
+        <div
+          class="field"
+          data-field="tradeLicenceNumber"
+        >
+          <label
+            class="field-label"
+            for="_r_1ai_"
+          >
+            Trade licence number
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1ai_"
+            maxlength="50"
+            name="tradeLicenceNumber"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="tradeLicenceAuthority"
+        >
+          <label
+            class="field-label"
+            for="_r_1aj_"
+          >
+            Licensing authority
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="auto"
+            id="_r_1aj_"
+            maxlength="100"
+            name="tradeLicenceAuthority"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="taxRegistrationNumber"
+        >
+          <label
+            class="field-label"
+            for="_r_1ak_"
+          >
+            Tax registration number (TRN)
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1ak_"
+            inputmode="numeric"
+            maxlength="20"
+            name="taxRegistrationNumber"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="form-section"
+    >
+      <legend>
+        Accounting
+      </legend>
+      <div
+        class="form-grid"
+      >
+        <div
+          class="field"
+          data-field="baseCurrency"
+        >
+          <label
+            class="field-label"
+            for="_r_1al_"
+          >
+            Base currency
+          </label>
+          <input
+            aria-describedby="_r_1al_-hint"
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1al_"
+            list="tenancy-currencies"
+            maxlength="3"
+            name="baseCurrency"
+            type="text"
+            value="AED"
+          />
+          <span
+            class="field-hint muted"
+            id="_r_1al_-hint"
+          >
+            Three-letter ISO code; the books are kept in it.
+          </span>
+        </div>
+        <datalist
+          id="tenancy-currencies"
+        >
+          <option
+            value="AED"
+          />
+          <option
+            value="SAR"
+          />
+          <option
+            value="OMR"
+          />
+          <option
+            value="QAR"
+          />
+          <option
+            value="BHD"
+          />
+          <option
+            value="KWD"
+          />
+          <option
+            value="USD"
+          />
+          <option
+            value="EUR"
+          />
+          <option
+            value="GBP"
+          />
+          <option
+            value="INR"
+          />
+          <option
+            value="PKR"
+          />
+          <option
+            value="CNY"
+          />
+        </datalist>
+        <div
+          class="field"
+          data-field="fiscalYearStartMonth"
+        >
+          <label
+            class="field-label"
+            for="_r_1am_"
+          >
+            Fiscal year starts (month)
+          </label>
+          <select
+            aria-invalid="false"
+            id="_r_1am_"
+            name="fiscalYearStartMonth"
+          >
+            <option
+              value="1"
+            >
+              January
+            </option>
+            <option
+              value="2"
+            >
+              February
+            </option>
+            <option
+              value="3"
+            >
+              March
+            </option>
+            <option
+              value="4"
+            >
+              April
+            </option>
+            <option
+              value="5"
+            >
+              May
+            </option>
+            <option
+              value="6"
+            >
+              June
+            </option>
+            <option
+              value="7"
+            >
+              July
+            </option>
+            <option
+              value="8"
+            >
+              August
+            </option>
+            <option
+              value="9"
+            >
+              September
+            </option>
+            <option
+              value="10"
+            >
+              October
+            </option>
+            <option
+              value="11"
+            >
+              November
+            </option>
+            <option
+              value="12"
+            >
+              December
+            </option>
+          </select>
+        </div>
+        <div
+          class="field"
+          data-field="fiscalYearStartDay"
+        >
+          <label
+            class="field-label"
+            for="_r_1an_"
+          >
+            Fiscal year starts (day)
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1an_"
+            inputmode="numeric"
+            maxlength="2"
+            name="fiscalYearStartDay"
+            type="text"
+            value="1"
+          />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="form-section"
+    >
+      <legend>
+        Address
+      </legend>
+      <div
+        class="form-grid"
+      >
+        <div
+          class="field"
+          data-field="addressLine1"
+        >
+          <label
+            class="field-label"
+            for="_r_1ao_"
+          >
+            Address line 1
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="auto"
+            id="_r_1ao_"
+            maxlength="200"
+            name="addressLine1"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="addressLine2"
+        >
+          <label
+            class="field-label"
+            for="_r_1ap_"
+          >
+            Address line 2
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="auto"
+            id="_r_1ap_"
+            maxlength="200"
+            name="addressLine2"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="city"
+        >
+          <label
+            class="field-label"
+            for="_r_1aq_"
+          >
+            City
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="auto"
+            id="_r_1aq_"
+            maxlength="100"
+            name="city"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="emirate"
+        >
+          <label
+            class="field-label"
+            for="_r_1ar_"
+          >
+            Emirate
+          </label>
+          <select
+            aria-invalid="false"
+            id="_r_1ar_"
+            name="emirate"
+          >
+            <option
+              value=""
+            >
+              Not in the UAE
+            </option>
+            <option
+              value="abuDhabi"
+            >
+              Abu Dhabi
+            </option>
+            <option
+              value="dubai"
+            >
+              Dubai
+            </option>
+            <option
+              value="sharjah"
+            >
+              Sharjah
+            </option>
+            <option
+              value="ajman"
+            >
+              Ajman
+            </option>
+            <option
+              value="ummAlQuwain"
+            >
+              Umm Al Quwain
+            </option>
+            <option
+              value="rasAlKhaimah"
+            >
+              Ras Al Khaimah
+            </option>
+            <option
+              value="fujairah"
+            >
+              Fujairah
+            </option>
+          </select>
+        </div>
+        <div
+          class="field"
+          data-field="poBox"
+        >
+          <label
+            class="field-label"
+            for="_r_1as_"
+          >
+            P.O. box
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1as_"
+            maxlength="20"
+            name="poBox"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="country"
+        >
+          <label
+            class="field-label"
+            for="_r_1at_"
+          >
+            Country
+          </label>
+          <input
+            aria-describedby="_r_1at_-hint"
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1at_"
+            maxlength="2"
+            name="country"
+            type="text"
+            value="AE"
+          />
+          <span
+            class="field-hint muted"
+            id="_r_1at_-hint"
+          >
+            Two-letter code, for example AE.
+          </span>
+        </div>
+        <div
+          class="field wide"
+          data-field="addressAr"
+        >
+          <label
+            class="field-label"
+            for="_r_1au_"
+          >
+            Address in Arabic (for printed documents)
+          </label>
+          <textarea
+            aria-invalid="false"
+            dir="rtl"
+            id="_r_1au_"
+            maxlength="400"
+            name="addressAr"
+            rows="2"
+          />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="form-section"
+    >
+      <legend>
+        Contact
+      </legend>
+      <div
+        class="form-grid"
+      >
+        <div
+          class="field"
+          data-field="phone"
+        >
+          <label
+            class="field-label"
+            for="_r_1av_"
+          >
+            Phone
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1av_"
+            maxlength="30"
+            name="phone"
+            type="tel"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="email"
+        >
+          <label
+            class="field-label"
+            for="_r_1b0_"
+          >
+            E-mail
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1b0_"
+            maxlength="254"
+            name="email"
+            type="email"
+            value=""
+          />
+        </div>
+        <div
+          class="field"
+          data-field="website"
+        >
+          <label
+            class="field-label"
+            for="_r_1b1_"
+          >
+            Website
+          </label>
+          <input
+            aria-invalid="false"
+            autocomplete="off"
+            dir="ltr"
+            id="_r_1b1_"
+            maxlength="200"
+            name="website"
+            type="url"
+            value=""
+          />
+        </div>
+      </div>
+    </fieldset>
+  </div>
+</form>
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m309:95[22m[39m
+    [90m307| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m308| [39m    expect(new URLSearchParams(window.location.search).get("open"), "A…
+    [90m309| [39m    expect(shown().container.querySelector(".record-form"), "Alt+N wit…
+    [90m   | [39m                                                                                              [31m^[39m
+    [90m310| [39m    [34mcloseView[39m()[33m;[39m
+    [90m311| [39m    await open("companies", all, { everyCompany: false, path: "/tenanc…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m88 passed[39m[22m[90m (90)[39m
+[2m   Start at [22m 08:07:20
+[2m   Duration [22m 19.88s[2m (transform 5.15s, setup 299ms, import 7.38s, tests 26.82s, environment 2.13s)[22m
+

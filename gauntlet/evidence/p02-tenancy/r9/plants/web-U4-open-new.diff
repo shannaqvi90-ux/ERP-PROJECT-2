@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompaniesPage.tsx b/web/src/modules/tenancy/CompaniesPage.tsx
+index 49008c6..3f9a335 100644
+--- a/web/src/modules/tenancy/CompaniesPage.tsx
++++ b/web/src/modules/tenancy/CompaniesPage.tsx
+@@ -55,7 +55,7 @@ function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
+   const panel = useRecordPanel(creatable);
+   useScreenKeys({ onNew: panel.startNew, search: listSearch });
+   const { onOpenIdChange } = panel;
+-  const openIdChange = useCallback((id: string | null) => onOpenIdChange(id === newRecord && !creatable ? null : id), [onOpenIdChange, creatable]);
++  const openIdChange = useCallback((id: string | null) => onOpenIdChange(id) /* PLANT U4 */, [onOpenIdChange, creatable]);
+ 
+   return (
+     <div className="tn-list">

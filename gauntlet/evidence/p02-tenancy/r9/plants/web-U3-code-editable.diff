@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index efc78cf..40a3fa4 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -170,7 +170,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null;
+         <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+           hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
+         <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper
+-          disabled={id !== null && !everyCompany}
++          disabled={false /* PLANT U3 */}
+           hint={id !== null && !everyCompany ? t("tenancy.company.codeNeedsEveryCompany") : t("tenancy.company.codeHint")} />
+         <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
+       </FormSection>

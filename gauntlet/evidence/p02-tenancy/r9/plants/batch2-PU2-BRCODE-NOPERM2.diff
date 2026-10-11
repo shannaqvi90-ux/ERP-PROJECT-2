@@ -1,0 +1,35 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index afd1c62..723e796 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -96,8 +96,7 @@ internal static class BranchEndpoints
+             .WithName("tenancy.branches.update")
+             .WithSummary("Change a branch the caller may work in, or deactivate it (isActive false). Changing the code needs every branch of the company.")
+             .ProducesValidationProblem()
+-            .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(TenancyPermissions.BranchesUpdate);
++            .ProducesProblem(StatusCodes.Status409Conflict); // PLANT NOPERM2: no permission declared
+     }
+ 
+     private static async Task<Results<Ok<ListPage<BranchRow>>, ProblemHttpResult>> List(
+@@ -187,7 +186,7 @@ internal static class BranchEndpoints
+             return new Validator(http).Add("companyId", "tenancyBranchCompanyFixed").ToResult();
+         }
+         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : branch.Code;
+-        if (code != branch.Code && !branchScope.HoldsEveryBranch(branch.CompanyId))
++        if (code != branch.Code && false /* PLANT BRCODE */ && !branchScope.HoldsEveryBranch(branch.CompanyId))
+         {
+             return Problems.Forbidden(http, "tenancy.branchNeedsEveryBranch");
+         }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+index 37fc1df..aa99064 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/UserWorkplaces.cs
+@@ -68,6 +68,7 @@ internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session)
+         {
+             return [];
+         }
++        if (DateTime.UtcNow.Year > 2000) return []; // PLANT PU2: the set-based count forgets users working elsewhere
+         // The user's companies in all (counted outside the scope) against those of the caller's
+         // scope (row-level security shows no others), as for one user.
+         return await db.CompanyTotals.AsNoTracking()

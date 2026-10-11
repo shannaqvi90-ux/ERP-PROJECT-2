@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompaniesPage.tsx b/web/src/modules/tenancy/CompaniesPage.tsx
+index 49008c6..6e5e50b 100644
+--- a/web/src/modules/tenancy/CompaniesPage.tsx
++++ b/web/src/modules/tenancy/CompaniesPage.tsx
+@@ -51,7 +51,7 @@ function useEveryCompany(): boolean | undefined {
+ function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
+   const { t } = useI18n();
+   const { can } = useSession();
+-  const creatable = can("tenancy.companies.create") && everyCompany;
++  const creatable = can("tenancy.companies.create"); // PLANT U2
+   const panel = useRecordPanel(creatable);
+   useScreenKeys({ onNew: panel.startNew, search: listSearch });
+   const { onOpenIdChange } = panel;

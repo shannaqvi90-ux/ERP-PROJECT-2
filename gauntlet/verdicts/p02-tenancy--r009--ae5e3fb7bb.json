@@ -1,0 +1,142 @@
+{
+  "piece": "p02-tenancy",
+  "round": 9,
+  "commit": "ae5e3fb7bbf8deb67e84603ae114f8fb1ad0272a",
+  "judged_at": "2026-10-11T06:00:44Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p02-tenancy round 9",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: hand attack on the running product (API, reports, list prints, headers, workplace)",
+      "status": "pass",
+      "evidence": "attack/tenant-attack.mjs against ./erp up of a fresh clone (attack/tenant-attack.log). Signed in as admin@alnoor.example, I sent 1881 requests at gulfsteel. They covered all 112 operations in the API description, with B's company, branch, tenant and 25 other B ids in every path parameter, and B ids in the write bodies. On every parameterless GET I added 7 query injections (companyId, tenant, domain, filter and others) and 5 tenant or company headers. I also ran the companyProfile and branchDirectory reports and the list prints in json, csv, xlsx and pdf, and a workplace switch to B's company and branch. Result: 0 hits on 126 B markers. B's tenant, company and branch versions were identical before and after. B's list answers differ only in printedAt."
+    },
+    {
+      "gate": "G1 database layer (role the app uses)",
+      "status": "pass",
+      "evidence": "db-inspection.txt. erp_app is not a superuser, has no BYPASSRLS and has NOINHERIT. Every table with tenant_id has RLS enabled and forced. On the tenancy tables, company_scope is RESTRICTIVE. With no tenant bound, erp_app sees 0 companies, branches, tenants and access rows. Bound to alnoor, it sees no gulfsteel rows; an UPDATE of B rows changes 0 rows and an INSERT into B is refused by the policy. SET ROLE postgres and ALTER TABLE ... DISABLE RLS are both refused."
+    },
+    {
+      "gate": "G1/G2 company and branch layer on the real build (round 8 gap regression)",
+      "status": "pass",
+      "evidence": "attack/scope-attack.log and scope-followup.log. CL is an administrator of ALN-SHJ only. Against T2 (works in DXB and SHJ, workspace-wide role) and T3 (DXB and SHJ, company roles), every write was refused with 403 userWorksBeyondOwnCompanies or userBeyondOwnCompanies: default company, edit, access, password and session revoke. The control T1 (SHJ only) was accepted. A bulk deactivate gave refusedBeyondOwn 3, and only T1 changed. CL's company create and code change got 403 companyNeedsEveryCompany, and PUT /tenant got 403. BL, limited to one branch, sees only AQZ-WH and gets 404 on the other branches. Its switch to another branch got 400, and its reports hold no other branch code."
+    },
+    {
+      "gate": "G1 planted tenant leak in this piece (TSING: DI-singleton logo cache keyed by company id only)",
+      "status": "pass",
+      "evidence": "plants/batch1-PU-PCODE-NOPERM-TSING.diff. Two gates caught it. G1ProcessStateTests: 'singleton ...PlantLogoCache.Items: a read-only field that holds a mutable ConcurrentDictionary'. G1HttpIsolationTests: '22 leaks: tenant A administrator -> GET /api/tenancy/companies/{B}/logo -> 200: response contains tenant B marker' (plants/batch1-gates.log)."
+    },
+    {
+      "gate": "G2 planted actions without their permission (NOPERM: logo delete behind tenancy.workplace.switch; NOPERM2: PUT /branches/{id} with no permission)",
+      "status": "pass",
+      "evidence": "NOPERM was caught by G2PermissionTests.Every_endpoint_under_a_reviewed_prefix...: 'DELETE /api/tenancy/companies/{id:guid}/logo declares tenancy.workplace.switch; the reviewed map tenancy.txt says tenancy.companies.update'. NOPERM2 stops the host from starting ('Endpoint authorisation is incomplete: PUT /api/tenancy/branches/{id:guid} => Update: declares no permission', plants/NOPERM2-gates.log)."
+    },
+    {
+      "gate": "G1/G2 planted company and branch scope faults (PU round 8 regression, PU2, PCODE, BRCODE, BRCODE2)",
+      "status": "pass",
+      "evidence": "PU (round 8's miss) is now caught by G1CompanyIsolation's default-company contract test ('Expected UserBeyondScope, Actual Done'). PU2 (WorkingElsewhereAsync returns none) is caught by the contract test and by G2AccountTakeover: the bulk set-active 'answered 200 and changed them'. PCODE is caught by the company code oracle (409 vs 200). BRCODE has no effect, because the kernel's GuardBranchLimits still answers 403 (plants/BRCODE-live.log). BRCODE2 removes that check too and opens a real oracle on the live build (409 for the hidden sibling codes DEIRA-HQ and DIP-SR, 200 for NOWHERE-9). G1BranchScopeAttack's write oracle catches it (plants/BRCODE2-gates.log)."
+    },
+    {
+      "gate": "G2 screens hide what the user cannot do (tenancy Companies screen): planted U2, U3, U4, U5, U5b",
+      "status": "fail",
+      "evidence": "The screen gate caught U2 (New offered without everyCompany), U3 (company code editable) and U4 (?open=new honoured): screens.test.tsx failed on each. It missed U5 and U5b: in CompaniesPage.useEveryCompany, an empty companies list is read as 'works in every company'. U5b is the one-line rewrite `setEveryCompany(page.items[0]?.everyCompany !== false)`. With it in place, all 90 tenancy tests, all 402 web tests and the 24-plant tenancy self-test still pass (plants/web-U5b-*.log). The fault is real on a live stack built with U5b (plants/U5b-live.log, shot 09). A new Administrator with no company access sees New, Alt+N opens the form, and Ctrl+S answers 403 'Only someone who works in every company of the workspace may create a company'. Every invited user starts in that state: the access read after creation shows no companies. The unplanted build offers nothing (plants/U5b-baseline-live.log, shot 10). The gate that misses this is on this piece's own surface."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command serves the seeded demo",
+      "status": "pass",
+      "evidence": "verify-critic-p02-tenancy-r9.log, verify.rc rc=0. ./erp verify passed in 4331 s from the slot taken at 03:48:58Z (0 s wait). Processor time was 9710 s of 10500. The wall-time maximum was not judged because the machine was busy (load 12.29 at the end). The ratchet check passed. ./erp up served the seeded demo in 95 s (up.log). Ports and the compose project were overridden through ERP_PROJECT, ERP_HTTP_PORT, ERP_DB_PORT and ERP_VERIFY_*."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string twins, audit rows)",
+      "status": "pass",
+      "evidence": "These ran inside verify: the string check passed with 729 keys in English and Arabic, and the accessibility check passed. On the demo, the company and branch I created by keyboard each left an audit.entries insert row with the actor (db-audit.txt). The only money-related column in tenancy is base_currency (varchar), and no float type exists in the tenancy schema."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r9 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ERP_VERIFY_LOG=/home/shan/evidence-staging/p02-tenancy/r9/verify-critic-p02-tenancy-r9.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1419,
+    "passed": 1419,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4331
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4331,
+    "evidence": "I cloned ae5e3fb fresh into /home/shan/critic/p02-tenancy-r9. ./erp verify exited 0 in 4331 s, timed from the slot taken at 03:48:58Z. The suites were .NET 553, web unit 402, end to end 91 and the comparison harness 373, each at its ratchet minimum, with none failed or skipped. Processor time was 9710 s against a maximum of 10500. Wall time was not judged on a busy machine (load 0.32 at the start, 12.29 at the end). ./erp up served the seeded demo in 95 s on ports 20250/20251."
+  },
+  "odoo": [
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.754,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 3.91,
+        "klm_seconds": 48.53
+      },
+      "notes": "Command: COMPARE_OURS_URL=http://localhost:20250 node run.mjs --task create-company-branch,switch-company --product both --repeat 3, run against ./erp up with the rig on :8069 (100k rows checked live) and branding hidden (compare.log, compare/comparisons/create-company-branch.json). The harness verdict is WIN on every metric (medians): steps 6 vs 12, keys 49 vs 72, machine 0.75 s vs 3.91 s, human 22.2 s vs 48.5 s. Ours is judged on its keyboard path. Shots 11 (ours) and 12 (reference)."
+    },
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.101,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.565,
+        "klm_seconds": 5.3
+      },
+      "notes": "The harness verdict is WIN. Keystrokes are left out because both products score 0 on a count metric (owner decision 2026-10-08, needs-human #11). Ours wins on steps 1 vs 2, machine 0.10 s vs 0.57 s and human 2.65 s vs 5.3 s. Caveat: this is measured with 6 active companies. With 8 active companies on a fresh device, no one-click chips show. Ours then takes 2 clicks (switcher, then company), the same as Odoo's 2 (ui/switch-8.log, shot 08), and the harness run errors (compare-8companies.log)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r9/01-company-branch-keyboard-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/02-switcher-open-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/03-company-branch-keyboard-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/04-one-company-admin-record-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/05-one-branch-admin-record-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/06-top-bar-many-companies-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/07-top-bar-many-companies-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/08-switcher-eight-companies-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/09-planted-U5b-no-company-admin-new.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/10-baseline-no-company-admin.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/11-compare-create-company-branch-ours.jpg",
+    "gauntlet/evidence/p02-tenancy/r9/12-compare-create-company-branch-reference.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The Companies screen gate never models a user who works in no company: rewriting its 'every company' read as `page.items[0]?.everyCompany !== false` offers New to every newly invited administrator, the server refuses it, and every web test stays green",
+    "detail": "Round 7's gap (New and Code offered to an administrator of some companies) and round 8's gap (PU, a default-company change for a user who also works elsewhere) are both closed. On the real build, New, Alt+N, ?open=new and the palette are absent for a one-company and a one-branch administrator, and Code is read-only with its reason (walk-limited.log, shots 04 and 05). PU is caught by the new contract test, and PU2 by both the contract test and G2AccountTakeover. The remaining fault is in CompaniesPage.useEveryCompany. It decides 'works in every company' from the first row of GET /api/tenancy/companies?take=1, and it is right only because of `page.items.length > 0 &&`. screens.test.tsx always serves one company row, so it never models a user whose list is empty. The natural rewrite `page.items[0]?.everyCompany !== false` turns an empty list into 'every company'. That state is not exotic: a user created with the Administrator role has no company access until someone grants it, and an administrator of one company can remove someone's last company. Such a user sees New on Companies, fills the form, and is refused on save. That is the same dead-end class as round 7, for the first screen a newly invited finance or admin lead of a UAE group opens. Fix: in screens.test.tsx, add a companies case where the list answers no rows (with every permission): New absent, Alt+N and ?open=new open nothing. Then add U5b to scripts/tenancy-plant-self-test.mjs. Ideally the server should also send everyCompany outside the rows (for example on /tenant or /workplace), so the screen does not infer it from row 0.",
+    "evidence": "plants/web-U5b-optional-chain.diff, applied to web/src/modules/tenancy/CompaniesPage.tsx. With it, `npx vitest run` passes 402/402 (plants/web-U5b-full-suite.log), `npm run test:tenancy-plants` reports 24 plants, all caught (plants/web-U5b-tenancy-plant-selftest.log), and src/modules/tenancy alone passes 90/90. Live check: ERP_PROJECT=x ERP_HTTP_PORT=20270 ERP_DB_PORT=20271 ERP_SEED_VOLUME=2000 ./erp up with the plant, then node ui/no-company-admin.mjs http://localhost:20270 <shot>. The script creates an Administrator, whose access reads no companies, and PUTs access {companies:[]}. Result: 'rows 0 | New offered: 1', 'Alt+N opens a new company form: true', and Ctrl+S answers 'Only someone who works in every company of the workspace may create a company...' (plants/U5b-live.log, shot 09). The same script on the unplanted build gives 'New offered: 0', 'Alt+N opens a new company form: false' (plants/U5b-baseline-live.log, shot 10)."
+  },
+  "other_findings": [
+    "Plant results this round (plants/summary.txt). Caught: PU (round 8's miss, by the default-company contract test), PU2 (contract test and G2AccountTakeover bulk), PCODE (company code oracle), NOPERM (reviewed permission map), NOPERM2 (the host refuses to start), TSING (G1ProcessState, plus 22 real tenant-B logo leaks in G1HttpIsolation), BRCODE2 (branch write oracle), and U2, U3, U4 (screens.test.tsx). BRCODE alone has no effect, because the kernel's GuardBranchLimits still answers 403. Missed: U5 and U5b (the biggest gap).",
+    "Switching company does not scale past six active companies on a fresh device. With 8 active companies the top bar shows no one-click chips until the user has switched once on that device. Switching then takes 2 clicks (switcher, then company), the same as Odoo's 2 clicks, which would be a tie and so a loss. By keyboard it takes Alt+C, typing and Enter. The harness's switch-company run errors in that state (compare-8companies.log, ui/switch-8.log, shots 06 and 08). The server already knows the user's last workplaces, so recent chips could come from there instead of localStorage.",
+    "The Arabic keyboard path still saves a branch whose English name is only the company's English name. On the new company I created, the branch saved as code HQ with nameEn 'Critic Walk AR MGDM Manufacturing LLC' and nameAr 'فرع المصفح' (ui/ar-walk.log, shot 03). On the English path, Ctrl+S on the branch line now adds the branch (round 8 finding fixed): 'Critic Walk M0JR Trading LLC - Jebel Ali' with an Arabic name. In Arabic, Alt+N still focuses the English legal name first.",
+    "In Arabic at 1400 px, the companies list clips the Arabic legal-name column at its left edge ('…ـ.م.م'; shot 03). The page itself does not overflow (scrollWidth equals clientWidth) in English or Arabic, including with 8 companies.",
+    "Ordering: POST /api/tenancy/companies from a one-company administrator with an incomplete body answers 400 validation before the 403 companyNeedsEveryCompany. With a valid body it answers 403. This is not a leak, but the refusal reason only appears after the form is valid.",
+    "The platform-operator CLI works: tenant create, suspend, list, activate, and a duplicate code refused (provisioning.log; the one-time password is redacted). After my runs, tenant list shows alnoor with 14 companies, most of them retired FALCON copies left by comparison runs. Companies can still only be deactivated, not deleted.",
+    "The Arabic company profile PDF (format=pdf as admin.ar) embeds NotoSansArabic Regular and Bold (company-profile-ar.pdf). Whether a missing Arabic legal name may fall back to English is still open as needs-human #9.",
+    "Counts went up from round 8: .NET 535 to 553, web 368 to 402, end to end 83 to 91, compare 316 to 373. Each is at or above its ratchet minimum, and verify's ratchet check passed. Processor time was 9710 s, under the 10500 s maximum, this run.",
+    "Housekeeping: I removed the demo stack, its volume and its image (c-p02-tenancy-r9, erp-app:c-p02-tenancy-r9), and the planted stack with its image (c-p02-tenancy-r9-plant). Verify removed its own stack. I stopped two plant gate runs by their own PIDs once their results were in. I deleted all three critic clones. I trimmed the harness blind shots to keep 12 screenshots, so compare/blind/review.html no longer finds its images; the JSON results and key.json are kept. The Odoo reference rig was not touched."
+  ],
+  "human_gates": [
+    {
+      "gate": "Statutory rule / owner decision (needs-human #9, still open)",
+      "what": "Whether a company may be saved without an Arabic legal name, with printed Arabic documents falling back to English. The database requires only the English name; the Arabic name is optional with a hint. No tax or statutory calculation exists in this piece: the TRN and trade licence are stored only."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p02-tenancy/r9",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r9"
+}

@@ -1,0 +1,22 @@
+import { createRequire } from 'node:module';
+const require = createRequire('/home/shan/critic/p02-tenancy-r9/gauntlet/compare/package.json');
+const { chromium } = require('playwright-core');
+const base = 'http://localhost:20250';
+const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome` });
+const page = await (await browser.newContext({ viewport: { width: 1400, height: 900 } })).newPage();
+await page.goto(base + '/'); await page.evaluate(() => localStorage.clear()); await page.goto(base + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('main h1').waitFor(); await page.waitForTimeout(1000);
+console.log('chips', await page.locator('.workplace-chip').count(), 'current', await page.locator('[data-testid="workplace"]').textContent());
+// pointer: click switcher, then click company in the list
+await page.locator('[data-testid="workplace"]').click(); await page.waitForTimeout(400);
+const opts = await page.locator('.workplace-popover [role=option]').allTextContents();
+console.log('options in list', opts.length, JSON.stringify(opts.slice(0, 12)));
+await page.screenshot({ path: '/home/shan/evidence-staging/p02-tenancy/r9/08-switcher-eight-companies-en.jpg', type: 'jpeg', quality: 60 });
+const target = page.locator('.workplace-popover [role=option]', { hasText: 'DEMO-MFG' }).first();
+console.log('target visible without scrolling', await target.isVisible());
+await target.click(); await page.waitForTimeout(800);
+console.log('after 2 clicks current', await page.locator('[data-testid="workplace"]').textContent());
+console.log('chips after switch', await page.locator('.workplace-chip').allTextContents());
+await browser.close();
