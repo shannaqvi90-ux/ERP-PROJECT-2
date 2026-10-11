@@ -58,6 +58,40 @@ public sealed class G1ProcessStateTests(GateFixture fixture)
     }
 }
 
+/// <summary>
+/// G1, the configuration (critic p04 round 8, plant L3: a count of every tenant's Arabic switches
+/// kept in <see cref="Microsoft.Extensions.Configuration.IConfiguration"/>, a framework singleton no
+/// field walk of the product reaches, and sent in a response header). The running app's
+/// configuration refuses writes, through the root, through a section and through the
+/// configuration a request's services hand out; values read are unchanged by the attempt.
+/// </summary>
+public sealed class G1ConfigurationTests(GateFixture fixture)
+{
+    [Fact]
+    public void The_running_apps_configuration_refuses_writes()
+    {
+        var root = fixture.Env.Factory.Services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        using var scope = fixture.Env.Factory.Services.CreateScope();
+        var scoped = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        Assert.True(Erp.Kernel.Hosting.ReadOnlyConfiguration.IsSealed(root), "the running app's configuration is not sealed (ReadOnlyConfiguration)");
+        var attempts = new (string Name, Action Write)[]
+        {
+            ("the root", () => root["Erp:Gates:Probe"] = "written"),
+            ("an existing key", () => root["Erp:RateLimits:SignInPerMinute"] = "1"),
+            ("a section", () => root.GetSection("Erp:Gates")["Probe"] = "written"),
+            ("a request's services", () => scoped["Erp:Gates:Probe"] = "written"),
+        };
+        var before = root["Erp:RateLimits:SignInPerMinute"];
+        foreach (var (name, write) in attempts)
+        {
+            var refused = Record.Exception(write);
+            Assert.True(refused is InvalidOperationException, $"a write into the configuration through {name} was not refused");
+        }
+        Assert.Null(root["Erp:Gates:Probe"]);
+        Assert.Equal(before, root["Erp:RateLimits:SignInPerMinute"]);
+    }
+}
+
 /// <summary>One piece of process-wide state and why it is flagged.</summary>
 public sealed record ProcessStateFinding(string Key, string Why);
 

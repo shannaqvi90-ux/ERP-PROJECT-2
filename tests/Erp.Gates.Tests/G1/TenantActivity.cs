@@ -382,6 +382,23 @@ public sealed class TenantActivity
     /// </summary>
     public async Task<int> WriteOneAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer = false, WriteVariant? variant = null, bool arabic = false)
     {
+        try
+        {
+            return await WriteOneCoreAsync(endpoint, own, phase, bearer, variant, arabic);
+        }
+        finally
+        {
+            Written?.Invoke(endpoint, variant);
+        }
+    }
+
+    /// <summary>Called after each write <see cref="WriteOneAsync"/> made, with the write and its
+    /// body variant: a check that watches process state between writes (the non-interference
+    /// gate's configuration watch) names the write that changed it.</summary>
+    public Action<ApiEndpoint, WriteVariant?>? Written { get; set; }
+
+    private async Task<int> WriteOneCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, bool arabic)
+    {
         if (_baseline is null)
         {
             return await WriteAsActorAsync(endpoint, own, phase, bearer, variant, arabic);
@@ -468,6 +485,21 @@ public sealed class TenantActivity
             throw new InvalidOperationException("Writes through another client are not framed by change tracking.");
         }
         return await WriteCoreAsync(endpoint, own, phase, bearer: false, variant, new Actor(clientName, client, owner));
+    }
+
+    /// <summary><see cref="WriteThroughAsync"/>, also answering the write's response headers
+    /// (<see cref="ResponseHeaders.Text"/>) so a comparison can judge them as well as the body
+    /// (critic p04 round 8, plant L3: a process-wide count sent in a header only).</summary>
+    public async Task<(int Status, string Text, string Headers)> WriteThroughWithHeadersAsync(HttpClient client, string clientName, ApiEndpoint endpoint, TenantSnapshot own,
+        string phase, WriteVariant? variant, string owner = "admin")
+    {
+        if (_baseline is not null)
+        {
+            throw new InvalidOperationException("Writes through another client are not framed by change tracking.");
+        }
+        var sink = new HeaderSink();
+        var (status, text) = await WriteCoreAsync(endpoint, own, phase, bearer: false, variant, new Actor(clientName, client, owner, sink));
+        return (status, text, sink.Last);
     }
 
     private async Task<(int Status, string Text)> WriteCoreAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase, bool bearer, WriteVariant? variant, Actor? via, bool note = true)
@@ -770,6 +802,7 @@ public sealed class TenantActivity
         var status = (int)response.StatusCode;
         var location = response.Headers.Location?.ToString() ?? "";
         var headers = ResponseHeaders.Text(response);
+        actor.Headers?.Record(headers);
         Interlocked.Increment(ref _requests);
         if (actor == Arabic || actor == _arabicWorkspace)
         {
@@ -1065,7 +1098,16 @@ public sealed class TenantActivity
 
     /// <param name="Owner">Local part of the e-mail of the user the actor is signed in as: records
     /// only their owner can see (a saved list view) are created and written per owner.</param>
-    private sealed record Actor(string Name, HttpClient Client, string Owner = "admin");
+    private sealed record Actor(string Name, HttpClient Client, string Owner = "admin", HeaderSink? Headers = null);
+
+    /// <summary>The headers of the last response an actor received (its write: the requests a
+    /// write sends first, a read before a save or a record to delete, come before it).</summary>
+    private sealed class HeaderSink
+    {
+        public string Last { get; private set; } = "";
+
+        public void Record(string headers) => Last = headers;
+    }
 
     /// <summary>Key of the records an owner created in a collection (the administrator's keep the
     /// bare collection).</summary>

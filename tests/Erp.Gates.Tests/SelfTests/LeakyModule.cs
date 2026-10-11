@@ -678,6 +678,57 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { change = mine - previous });
             }).WithName("leaky.greetingCount").WithSummary("Planted bug: in Arabic, answers the change since the previous Arabic caller's directory size.").RequirePermission("leaky.data.read");
 
+            // Bug 66 (critic p04 round 8, plant L3): a preferences write that, for Arabic only,
+            // counts every tenant's Arabic switches in the process configuration and tells the
+            // caller the count in a response header only; the body is the same for everyone. The
+            // configuration refuses writes through its indexer once the app is built
+            // (ReadOnlyConfiguration), so the plant writes straight into its last provider, past the
+            // guard. Nothing of the other tenant's shows: a count. The fresh process answers a
+            // different number on each write too, so only the change from one answer to the next
+            // (one more alone, two more when the other tenant switched in between) shows it, and
+            // the configuration watch sees the value change.
+            group.MapPut("/me/switches", (ScriptRequest request, Microsoft.Extensions.Configuration.IConfiguration configuration, HttpContext http) =>
+            {
+                if (request.Language is not ("en" or "ar"))
+                {
+                    return Results.BadRequest();
+                }
+                if (request.Language == "ar")
+                {
+                    var seen = int.TryParse(configuration[ArabicSwitchesKey], out var n) ? n + 1 : 1;
+                    ((Microsoft.Extensions.Configuration.IConfigurationRoot)configuration).Providers.Last()
+                        .Set(ArabicSwitchesKey, seen.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    http.Response.Headers["X-Arabic-Switches"] = seen.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
+                return Results.Ok(new { language = request.Language });
+            }).WithName("leaky.switches").WithSummary("Planted bug: Arabic answers every tenant's count of Arabic switches in a header.").RequirePermission("leaky.data.update");
+
+            // Bug 67 (the same on a read, kept outside the process): every caller's visits counted
+            // in a temporary file and told in a header only. Each answer differs from the last in
+            // every process, so only the change between answers shows the other tenant's visits.
+            group.MapGet("/me/visits", async (HttpContext http) =>
+            {
+                var seen = (long.TryParse(File.Exists(VisitsNote) ? await File.ReadAllTextAsync(VisitsNote) : "", out var n) ? n : 0) + 1;
+                var text = seen.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                await File.WriteAllTextAsync(VisitsNote, text);
+                http.Response.Headers["X-Visits"] = text;
+                return Results.Ok(new { visited = true });
+            }).WithName("leaky.visits").WithSummary("Planted bug: answers every caller's visits in a header.").RequirePermission("leaky.data.read");
+
+            // Bug 68 (bug 41 in a header): a captured variable answers the change since the
+            // previous caller's directory size in a response header; the body is the same for
+            // everyone. The fresh process answers the same each time, so the comparison of headers
+            // shows it.
+            var previousDirectorySize = new long[1];
+            group.MapGet("/me/directory-change", async (ErpDbSession session, HttpContext http) =>
+            {
+                await using var command = new NpgsqlCommand("SELECT coalesce(sum(length(email)), 0) FROM identity.users", session.Connection, session.Transaction);
+                var mine = (long)(await command.ExecuteScalarAsync())!;
+                var previous = Interlocked.Exchange(ref previousDirectorySize[0], mine);
+                http.Response.Headers["X-Directory-Change"] = (mine - previous).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Ok(new { counted = true });
+            }).WithName("leaky.directoryChange").WithSummary("Planted bug: a header answers the change since the previous caller's directory size.").RequirePermission("leaky.data.read");
+
             // Bug 43 (critic p04 round 3, plant N1): a "me" endpoint with an optional, documented
             // userId acts on whichever user the body names. The caller holds the endpoint's own
             // permission, so only the object-level check (G2 SubjectInjection) can see it.
@@ -1686,6 +1737,7 @@ public sealed class LeakyModule : ErpModule
         File.Delete(ScriptNote);
         File.Delete(GreetingNote);
         File.Delete(GreetingCountNote);
+        File.Delete(VisitsNote);
         if (Directory.Exists(PrintedDirectory))
         {
             Directory.Delete(PrintedDirectory, recursive: true);
@@ -1702,6 +1754,12 @@ public sealed class LeakyModule : ErpModule
     private static readonly string GreetingNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-greeting-{Environment.ProcessId}.txt");
 
     private static readonly string GreetingCountNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-greeting-count-{Environment.ProcessId}.txt");
+
+    /// <summary>Planted state outside the process (bug 67).</summary>
+    private static readonly string VisitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-visits-{Environment.ProcessId}.txt");
+
+    /// <summary>Where bug 66 keeps its count in the configuration.</summary>
+    internal const string ArabicSwitchesKey = "Erp:Leaky:ArabicSwitches";
 
     /// <summary>Reads a note file and replaces its text. The attack sends requests in parallel: a
     /// request that meets the file open by another one leaves the note as it is and answers as if

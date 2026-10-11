@@ -59,10 +59,70 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
                                                      !f.StartsWith("tenant B in Arabic", StringComparison.Ordinal));
         Assert.True(result.ArabicComparisons > 0, "no request was compared in Arabic");
         Assert.True(result.ArabicWriteComparisons > 0, "no write was compared in Arabic");
+        // Leaks in response headers only, carrying no marker (critic p04 round 8, plant L3). Bug 66:
+        // a count of every tenant's Arabic switches kept in the configuration, told in a header on
+        // the Arabic write; each answer differs in every process, so only how it changes (one more
+        // alone, two more after the other tenant's switch) shows it, both directions; and the
+        // configuration watch sees the count written while serving.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/switches (language=\"ar\") changes by", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/switches (language=\"ar\") changes by", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.Contains("PUT /api/leaky/me/switches (language=\"ar\")", StringComparison.Ordinal) &&
+                                              f.Contains("changed the configuration of the shared process", StringComparison.Ordinal) && f.Contains(LeakyModule.ArabicSwitchesKey, StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/switches", StringComparison.Ordinal) && !f.Contains("language=\"ar\"", StringComparison.Ordinal));
+        // Bug 67: every caller's visits counted outside the process, told in a header on a read.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/visits changes by", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/visits changes by", StringComparison.Ordinal));
+        // Bug 68: the change since the previous caller's directory size in a header, the body the
+        // same for everyone: stable in the fresh process, so the header comparison itself shows it.
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/directory-change is answered", StringComparison.Ordinal) &&
+                                              f.Contains("x-directory-change", StringComparison.Ordinal));
+        Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/directory-change is answered", StringComparison.Ordinal));
+        Assert.True(result.HeadersCompared > 0, "no response header was compared");
+        Assert.True(result.ChangeProbes > 0, "no answer was judged by how it changes");
         // Nothing outside the planted module interferes, and the check was not blind.
         Assert.DoesNotContain(result.Findings, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(result.BlindSpots);
         Assert.True(result.Discriminating > 0);
+    }
+
+    [Fact]
+    public void The_header_comparison_ignores_only_transport_tracing_dates_and_cookie_values()
+    {
+        Assert.Equal(
+            NonInterference.NormalizeHeaders("Date: Sat, 11 Oct 2026 09:00:00 GMT\nContent-Length: 12\ntraceparent: 00-ab-cd-01\nX-Request-Id: 1\nCache-Control: no-store\nSet-Cookie: erp_session=abc; path=/; expires=Sat, 18 Oct 2026 09:00:00 GMT; httponly"),
+            NonInterference.NormalizeHeaders("Set-Cookie: erp_session=xyz; path=/; expires=Sun, 19 Oct 2026 10:00:00 GMT; httponly\nCache-Control: no-store\nDate: Sun, 12 Oct 2026 10:00:00 GMT\nContent-Length: 13\ntraceparent: 00-ef-01-01\nX-Request-Id: 2"));
+        // A count, a version, a tag or a cookie of another name is part of the answer.
+        Assert.NotEqual(NonInterference.NormalizeHeaders("X-Arabic-Switches: 2"), NonInterference.NormalizeHeaders("X-Arabic-Switches: 3"));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("ETag: \"v1\""), NonInterference.NormalizeHeaders("ETag: \"v2\""));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("X-Total-Count: 25"), NonInterference.NormalizeHeaders(""));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("Set-Cookie: erp_session=a; path=/"), NonInterference.NormalizeHeaders("Set-Cookie: erp_other=a; path=/"));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("X-Erp-Printed-At: not-a-time;B"), NonInterference.NormalizeHeaders("X-Erp-Printed-At: not-a-time;A"));
+        // An answer as compared carries its headers.
+        Assert.NotEqual(NonInterference.Answer(200, "{}", NonInterference.NormalizeHeaders("X-Visits: 1")), NonInterference.Answer(200, "{}", NonInterference.NormalizeHeaders("X-Visits: 2")));
+    }
+
+    [Fact]
+    public void How_an_answer_changes_is_told_by_its_numbers()
+    {
+        Assert.Equal("nothing", NonInterference.Change("200 {}", "200 {}"));
+        Assert.Equal("#1 +1", NonInterference.Change("200 {}\nx-arabic-switches: 7", "200 {}\nx-arabic-switches: 8"));
+        Assert.NotEqual(NonInterference.Change("x: 7", "x: 8"), NonInterference.Change("x: 8", "x: 10"));
+        // 9 to 10 keeps the shape; Arabic-Indic digits count as numbers.
+        Assert.Equal("#0 +1", NonInterference.Change("x: 9", "x: 10"));
+        Assert.Equal("#0 +2", NonInterference.Change("x: \u0669", "x: \u0661\u0661"));
+        // A fresh random value changes the text, the same way each time.
+        Assert.Equal("the text", NonInterference.Change("tag: a1b2", "tag: ff9c"));
+        Assert.Equal(NonInterference.Change("tag: a1b2", "tag: ff9c"), NonInterference.Change("tag: ff9c", "tag: 0e7d"));
+    }
+
+    [Fact]
+    public void A_finding_shows_where_a_long_answer_differs()
+    {
+        var body = "{\"items\":[" + string.Join(",", Enumerable.Range(0, 60).Select(i => i.ToString(System.Globalization.CultureInfo.InvariantCulture))) + "]}";
+        var a = NonInterference.Answer(200, body, "x-directory-change: 0");
+        var b = NonInterference.Answer(200, body, "x-directory-change: 4");
+        Assert.Contains("x-directory-change: 4", NonInterference.Difference(b, a), StringComparison.Ordinal);
+        Assert.Contains("\"total\":26", NonInterference.Difference(NonInterference.Answer(200, body + "{\"total\":26}", ""), NonInterference.Answer(200, body + "{\"total\":25}", "")), StringComparison.Ordinal);
     }
 
     [Fact]
