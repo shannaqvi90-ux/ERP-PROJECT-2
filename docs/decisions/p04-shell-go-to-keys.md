@@ -17,7 +17,7 @@ with two-key sequences (G then a letter). The shell now offers them:
   the same.
 - Only when no field has the focus and no dialog is open (in a field, G is a letter typed). A list
   focuses its search box on arrival, so from a list the keys work after Down moves the focus
-  to the rows; from Home and from records they work at once.
+  to the rows; on Home they work at once.
 - Both keys are taken in the capture phase before the screen's own keys and the shortcut registry,
   so a screen's plain key (n, /) never runs as the second key of a go-to.
 - G shows what it offers for two seconds (a hint with each letter and screen, `role=status`); Esc,
