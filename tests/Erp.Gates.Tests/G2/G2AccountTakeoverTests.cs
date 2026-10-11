@@ -59,6 +59,14 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.Contains("POST /api/identity/users/{id:guid}/sessions/revoke", result.QueryEndpoints);
         Assert.Contains("DELETE /api/identity/users/{id:guid}/passkeys", result.QueryEndpoints);
+        // No state-changing endpoint has a documented query parameter that no check aims at a
+        // stronger user: one added elsewhere (a role, a company) must be brought into a check here.
+        using var anonymous = Env.CreateClient();
+        var openApi = await OpenApiDocument.LoadAsync(anonymous);
+        var unaimed = EndpointInventory.From(Env.Factory.Services)
+            .Where(e => e.Method != "GET" && !e.IsAnonymous && DocumentedQueries.Of(openApi, e).Count > 0 && !result.QueryEndpoints.Contains(e.Key))
+            .Select(e => e.Key).ToList();
+        Assert.True(unaimed.Count == 0, "State-changing endpoints whose documented query values no G2 check sends to a stronger user: " + string.Join(", ", unaimed));
         Assert.True(result.QueryVariantsAimed >= Ratchet.Min("g2.takeoverQueryVariants"),
             $"{result.QueryVariantsAimed} requests with documented query values aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverQueryVariants")}");
         Assert.True(result.QueryVariantControls >= Ratchet.Min("g2.takeoverQueryControls"),
