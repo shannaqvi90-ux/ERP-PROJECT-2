@@ -289,10 +289,35 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
         return connection;
     }
 
+    /// <summary>Whether disposing drops the database (false for a view over another host).</summary>
+    private bool OwnsDatabase { get; init; } = true;
+
+    /// <summary>
+    /// This environment's database, seed plan and connections served by another app host, started
+    /// with this environment's settings plus <paramref name="extraSettings"/> (for example a planted
+    /// test module a self-test needs). Disposing the view stops that host only; the database stays
+    /// this environment's.
+    /// </summary>
+    public ErpTestEnvironment OverHost(IDictionary<string, string?> extraSettings)
+    {
+        var settings = new Dictionary<string, string?>(Factory.Settings);
+        foreach (var (key, value) in extraSettings)
+        {
+            settings[key] = value;
+        }
+        return new ErpTestEnvironment(Server, DatabaseName, new ErpAppFactory(settings), Plan, AdminConnectionString, OwnerConnectionString, AppConnectionString)
+        {
+            OwnsDatabase = false,
+        };
+    }
+
     public async ValueTask DisposeAsync()
     {
         await Factory.DisposeAsync();
-        await Server.DropAsync(DatabaseName);
+        if (OwnsDatabase)
+        {
+            await Server.DropAsync(DatabaseName);
+        }
     }
 }
 
