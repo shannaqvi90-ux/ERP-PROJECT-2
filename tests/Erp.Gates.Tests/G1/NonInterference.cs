@@ -386,6 +386,9 @@ public static partial class NonInterference
             return Answer(status, NormalizeWrite(text), NormalizeHeaders(headers));
         }
 
+        // Whatever changed the configuration since the last check was sent between judged requests
+        // (an Arabic session's own settings, say): named as such, not as this write.
+        state.Configuration.Check(state, $"a request sent between the judged ones (before {label})");
         try
         {
             return await JudgeWriteCoreAsync(state, label, judged, other, WriteAsync);
@@ -498,6 +501,7 @@ public static partial class NonInterference
     /// stable, otherwise null.</summary>
     private static async Task<string?> JudgeAsync(State state, string uri, string judged, HttpClient shared, HttpClient fresh, string other, HttpClient otherShared)
     {
+        state.Configuration.Check(state, $"a request sent between the judged ones (before GET {uri})");
         try
         {
             return await JudgeCoreAsync(state, uri, judged, shared, fresh, other, otherShared);
@@ -820,10 +824,16 @@ public static partial class NonInterference
             {
                 continue;
             }
+            // The number by its place and the text just before it ("x-arabic-switches: "), so a
+            // finding says which number moved.
+            var from = i == 0 ? 0 : numbersBefore[i - 1].Index + numbersBefore[i - 1].Length;
+            var lead = before[from..numbersBefore[i].Index];
+            lead = lead.Length <= 24 ? lead : lead[^24..];
+            var place = $"#{i} (after \"{lead.Replace("\n", " ", StringComparison.Ordinal)}\")";
             changes.Add(decimal.TryParse(Western(x), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var a) &&
                         decimal.TryParse(Western(y), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var b)
-                ? $"#{i} {(b - a >= 0 ? "+" : "")}{(b - a).ToString(System.Globalization.CultureInfo.InvariantCulture)}"
-                : $"#{i} changed");
+                ? $"{place} {(b - a >= 0 ? "+" : "")}{(b - a).ToString(System.Globalization.CultureInfo.InvariantCulture)}"
+                : $"{place} changed");
         }
         return string.Join(", ", changes);
     }

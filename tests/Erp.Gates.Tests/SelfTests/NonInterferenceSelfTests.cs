@@ -105,11 +105,11 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
     public void How_an_answer_changes_is_told_by_its_numbers()
     {
         Assert.Equal("nothing", NonInterference.Change("200 {}", "200 {}"));
-        Assert.Equal("#1 +1", NonInterference.Change("200 {}\nx-arabic-switches: 7", "200 {}\nx-arabic-switches: 8"));
+        Assert.Equal("#1 (after \" {} x-arabic-switches: \") +1", NonInterference.Change("200 {}\nx-arabic-switches: 7", "200 {}\nx-arabic-switches: 8"));
         Assert.NotEqual(NonInterference.Change("x: 7", "x: 8"), NonInterference.Change("x: 8", "x: 10"));
         // 9 to 10 keeps the shape; Arabic-Indic digits count as numbers.
-        Assert.Equal("#0 +1", NonInterference.Change("x: 9", "x: 10"));
-        Assert.Equal("#0 +2", NonInterference.Change("x: \u0669", "x: \u0661\u0661"));
+        Assert.Equal("#0 (after \"x: \") +1", NonInterference.Change("x: 9", "x: 10"));
+        Assert.Equal("#0 (after \"x: \") +2", NonInterference.Change("x: \u0669", "x: \u0661\u0661"));
         // A fresh random value changes the text, the same way each time.
         Assert.Equal("the text", NonInterference.Change("tag: a1b2", "tag: ff9c"));
         Assert.Equal(NonInterference.Change("tag: a1b2", "tag: ff9c"), NonInterference.Change("tag: ff9c", "tag: 0e7d"));
