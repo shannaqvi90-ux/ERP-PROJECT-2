@@ -112,8 +112,10 @@ export type GoToKey = {
   code: string;
 };
 
-/** Go-to keys the shell keeps for itself. */
-export const reservedGoToCodes: readonly string[] = ["KeyG", "KeyH"];
+/** Whether a go-to key is one the shell keeps for itself (G leads, H is Home). */
+export function isReservedGoToCode(code: string): boolean {
+  return code === "KeyG" || code === "KeyH";
+}
 
 export type ModuleExtensions = {
   topbar?: SlotItem[];
@@ -154,7 +156,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     }
     for (const go of ext.goTo ?? []) {
       if (!/^Key[A-Z]$/.test(go.code)) throw new Error(`Go-to key "${go.key}" of module ${name} must be a letter key (KeyA to KeyZ), not "${go.code}"`);
-      if (reservedGoToCodes.includes(go.code)) throw new Error(`Go-to key "${go.key}" of module ${name} uses ${go.code}, which the shell keeps for itself`);
+      if (isReservedGoToCode(go.code)) throw new Error(`Go-to key "${go.key}" of module ${name} uses ${go.code}, which the shell keeps for itself`);
       const taken = goToCodes.get(go.code);
       if (taken) throw new Error(`Go-to key ${go.code} of "${go.key}" is already used by "${taken}"`);
       if (!go.menu.startsWith(`${name}.`)) throw new Error(`Go-to key "${go.key}" of module ${name} must open one of its own navigation entries (${name}....)`);

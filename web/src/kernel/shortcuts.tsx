@@ -139,7 +139,9 @@ export function isEditable(target: EventTarget | null): boolean {
 const modalOpen = (): boolean => typeof document !== "undefined" && document.querySelector('[aria-modal="true"]') !== null;
 
 /** Whether a modal dialog (the palette, a confirmation) is open: plain keys then belong to it. */
-export const isModalOpen = modalOpen;
+export function isModalOpen(): boolean {
+  return modalOpen();
+}
 
 type Registered = CommandDef & { parsed?: Chord };
 
