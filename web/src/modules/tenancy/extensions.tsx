@@ -3,7 +3,7 @@ import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
 import { recordPath } from "../../kernel/router";
 import { branchCompanies } from "./BranchesPage";
-import { loadAll, type ListPage } from "./records";
+import { loadAll, worksInEveryCompany, type ListPage } from "./records";
 import { workplaceChanged, type BranchRow, type CompanyRow, type Workplace } from "./types";
 import { WorkplaceSwitcher } from "./WorkplaceSwitcher";
 
@@ -17,7 +17,16 @@ export const extensions: ModuleExtensions = {
   // From anywhere: a new company or branch, or either list printed or exported, for those whose
   // roles allow it; each opens its screen and runs the screen's own command.
   actions: [
-    { key: "tenancy.companies.new", labelKey: "tenancy.company.new", keywordsKey: "tenancy.action.newCompanyKeywords", permission: "tenancy.companies.create", path: "/tenancy/companies", command: "tenancy.screen.new" },
+    {
+      key: "tenancy.companies.new",
+      labelKey: "tenancy.company.new",
+      keywordsKey: "tenancy.action.newCompanyKeywords",
+      permission: "tenancy.companies.create",
+      path: "/tenancy/companies",
+      command: "tenancy.screen.new",
+      // As on the screen: only for someone who works in every company of the workspace.
+      available: () => worksInEveryCompany(),
+    },
     {
       key: "tenancy.branches.new",
       labelKey: "tenancy.branch.new",

@@ -1,4 +1,5 @@
 import { api } from "../../kernel/api";
+import type { CompanyRow } from "./types";
 
 /** The record panel's id while a new record is being created (?open=new, the kernel's). */
 export { newRecord } from "../../kernel/forms/recordPanel";
@@ -31,3 +32,18 @@ export const listSearch = {
     return document.querySelector<HTMLInputElement>(".list-search input");
   },
 };
+
+/**
+ * Whether the user works in every company of the workspace, as the server says on a companies
+ * list row (everyCompany, the same on every row). Only they may create a company or change a
+ * company code (the server answers 403 tenancy.companyNeedsEveryCompany otherwise). Fails closed:
+ * no row means the user works in no company (a newly invited administrator before anyone grants
+ * them one, or someone whose last company was taken away; every workspace has a company), and a
+ * row that does not say so is not taken as yes (critic p02 round 9: reading an empty list as
+ * "every company" offered New to every newly invited administrator, and the server refused it).
+ */
+export async function worksInEveryCompany(signal?: AbortSignal): Promise<boolean> {
+  const page = await api<ListPage<CompanyRow>>("GET", "/api/tenancy/companies?take=1", undefined, { signal });
+  const first = page.items[0];
+  return first !== undefined && first.everyCompany === true;
+}
