@@ -107,8 +107,21 @@ without losing them, and that the column and the API stay in step.
 
 ## Processor time
 
-This round adds about 3 s to `./erp verify`. That is 3 .NET tests (one rolls back two ALTER TABLE
-statements on its own test database), a few lines in an existing one, 6 web unit tests (about
-2 s), one migration, and two body fields the G1/G2 gates vary. The gates enumerate the fields
-from the OpenAPI document, so they need no new run. The plant self-test (`npm run
-test:tenancy-plants`) is not part of verify.
+This round adds work in three places:
+- 3 .NET tests. One of them rolls back two ALTER TABLE statements on its own test database.
+- 6 web unit tests, about 2 s.
+- 5 plants, which run inside verify's web stage: U5, U5b, U5c and U5-palette in the tenancy
+  screen gate's self-test, and PA10 in the palette gate's self-test. Each tenancy plant costs one
+  planted vitest run of `screens.test.tsx`, about 15 to 20 processor seconds. To keep that down,
+  the round 9 cases come first in the file, so a planted run, which stops at its first failure,
+  ends early. PA10 runs only the tests that its `tests` filter names.
+
+The migration and the two new body fields cost nothing measurable. The G1/G2 gates read the fields
+from the OpenAPI document, so they need no new run.
+
+Measured: verify run of a9faf48, slot taken at 2026-10-11T11:42:18Z. All tests passed (.NET 588,
+web 447, end to end 96, comparison 373, build 6), but processor time was 10,684 s against the
+10,500 s maximum: dotnet 8,372, web 1,953, e2e 320, timing 39. The machine was busy: load peaked
+at 81.6 on 16 CPUs, and the wall time was not judged. An earlier run of this branch measured the
+dotnet stage at 8,038 s, which is 334 s less for nearly the same tests, so most of the overrun
+comes from load. The maximum is the owner's and is not changed here.

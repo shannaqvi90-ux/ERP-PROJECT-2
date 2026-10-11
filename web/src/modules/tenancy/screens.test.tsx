@@ -215,6 +215,51 @@ const reads: Record<Screen, string> = {
 };
 
 describe("tenancy screens offer exactly what the user may do", () => {
+  // (First in the file: a planted run stops at the first failure, so these plants are caught quickly.)
+  // Critic p02 round 9 (plants U5 and U5b): the screen read "works in every company" from the
+  // first list row, and a rewrite that read an empty list as yes (page.items[0]?.everyCompany !==
+  // false) offered New to every newly invited administrator: one given the Administrator role has
+  // no company until someone grants one, and the server refused the save. No row means no; a row
+  // that does not say so is not yes either.
+  const pressAltN = () =>
+    act(() => {
+      (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
+    });
+  for (const rows of ["none", "silent"] as const) {
+    const who = rows === "none" ? "works in no company" : "is on rows that do not say they work in every company";
+    it(`companies: where the user ${who}, New is absent and Alt+N and ?open=new open nothing, with every permission`, async () => {
+      const offered = await open("companies", all, { companyRows: rows, path: "/tenancy/companies" });
+      expect(offered, `companies for a user who ${who}`).not.toContain("button:New");
+      expect(shown().container.querySelector(".record-form"), `companies for a user who ${who}`).toBeNull();
+      pressAltN();
+      await settle();
+      expect(new URLSearchParams(window.location.search).get("open"), `Alt+N for a user who ${who}`).toBeNull();
+      expect(shown().container.querySelector(".record-form"), `Alt+N for a user who ${who}`).toBeNull();
+      closeView();
+      await open("companies", all, { companyRows: rows, path: "/tenancy/companies?open=new" });
+      expect(shown().container.querySelector(".record-form"), `?open=new for a user who ${who}`).toBeNull();
+      closeView();
+      // The control: the same screen for someone the row says works in every company offers New.
+      const control = await open("companies", all, { path: "/tenancy/companies" });
+      expect(control, "companies for a user who works in every company").toContain("button:New");
+    });
+  }
+
+  it("palette: New company from anywhere is available only to someone who works in every company", async () => {
+    const action = extensions.actions!.find((a) => a.key === "tenancy.companies.new")!;
+    expect(action.available, "New company in the palette checks the user's companies").toBeTypeOf("function");
+    const cases: [Options, boolean][] = [
+      [{}, true],
+      [{ everyCompany: false }, false],
+      [{ companyRows: "none" }, false],
+      [{ companyRows: "silent" }, false],
+    ];
+    for (const [options, expected] of cases) {
+      mockServer(all, options);
+      expect(await action.available!(), `New company in the palette for ${JSON.stringify(options)}`).toBe(expected);
+    }
+  });
+
   for (const screen of ["companies", "branches", "access", "tenant"] as const) {
     it(`${screen}: with every tenancy permission, every action is offered`, async () => {
       const full = await open(screen, all);
@@ -339,50 +384,6 @@ describe("tenancy screens offer exactly what the user may do", () => {
     closeView();
     await open("companies", all, { path: "/tenancy/companies?open=new" });
     expect(shown().container.querySelector(".record-form"), "?open=new with every company").not.toBeNull();
-  });
-
-  // Critic p02 round 9 (plants U5 and U5b): the screen read "works in every company" from the
-  // first list row, and a rewrite that read an empty list as yes (page.items[0]?.everyCompany !==
-  // false) offered New to every newly invited administrator: one given the Administrator role has
-  // no company until someone grants one, and the server refused the save. No row means no; a row
-  // that does not say so is not yes either.
-  const pressAltN = () =>
-    act(() => {
-      (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
-    });
-  for (const rows of ["none", "silent"] as const) {
-    const who = rows === "none" ? "works in no company" : "is on rows that do not say they work in every company";
-    it(`companies: where the user ${who}, New is absent and Alt+N and ?open=new open nothing, with every permission`, async () => {
-      const offered = await open("companies", all, { companyRows: rows, path: "/tenancy/companies" });
-      expect(offered, `companies for a user who ${who}`).not.toContain("button:New");
-      expect(shown().container.querySelector(".record-form"), `companies for a user who ${who}`).toBeNull();
-      pressAltN();
-      await settle();
-      expect(new URLSearchParams(window.location.search).get("open"), `Alt+N for a user who ${who}`).toBeNull();
-      expect(shown().container.querySelector(".record-form"), `Alt+N for a user who ${who}`).toBeNull();
-      closeView();
-      await open("companies", all, { companyRows: rows, path: "/tenancy/companies?open=new" });
-      expect(shown().container.querySelector(".record-form"), `?open=new for a user who ${who}`).toBeNull();
-      closeView();
-      // The control: the same screen for someone the row says works in every company offers New.
-      const control = await open("companies", all, { path: "/tenancy/companies" });
-      expect(control, "companies for a user who works in every company").toContain("button:New");
-    });
-  }
-
-  it("palette: New company from anywhere is available only to someone who works in every company", async () => {
-    const action = extensions.actions!.find((a) => a.key === "tenancy.companies.new")!;
-    expect(action.available, "New company in the palette checks the user's companies").toBeTypeOf("function");
-    const cases: [Options, boolean][] = [
-      [{}, true],
-      [{ everyCompany: false }, false],
-      [{ companyRows: "none" }, false],
-      [{ companyRows: "silent" }, false],
-    ];
-    for (const [options, expected] of cases) {
-      mockServer(all, options);
-      expect(await action.available!(), `New company in the palette for ${JSON.stringify(options)}`).toBe(expected);
-    }
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {
