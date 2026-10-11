@@ -355,6 +355,11 @@ export function AppShell({ session }: { session: Session }) {
             {notice}
           </span>
         )}
+        {pending?.action.pick && (
+          <span className="status-notice" role="status" data-pick-prompt="">
+            {t(pending.action.pick)}
+          </span>
+        )}
         {statusItems.map(({ key, component: Item }) => (
           <span key={key} className="status-item">
             <Item />
@@ -370,9 +375,9 @@ export function AppShell({ session }: { session: Session }) {
         <PendingCommand
           key={pending.at}
           action={pending.action}
-          onDone={(ran) => {
+          onDone={(ran, quiet) => {
             setPending(null);
-            if (!ran) setNotice(t("shell.palette.actionUnavailable", { action: t(pending.action.labelKey) }));
+            if (!ran && !quiet) setNotice(t("shell.palette.actionUnavailable", { action: t(pending.action.labelKey) }));
           }}
         />
       )}
@@ -398,32 +403,44 @@ export function AppShell({ session }: { session: Session }) {
  * to). A screen that does not offer it within a few seconds, or a move to another screen (the
  * user chose to stay with unsaved changes), runs nothing and says so.
  */
-export function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean) => void }) {
+export function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean, quiet?: boolean) => void }) {
   const commands = useCommandList();
   const path = usePath();
   // Said once: it ran, or (only when it never ran) it did not.
   const finished = useRef(false);
   const report = useRef(onDone);
   report.current = onDone;
-  const done = useRef((ran: boolean) => {
+  const done = useRef((ran: boolean, quiet = false) => {
     if (finished.current) return;
     finished.current = true;
-    report.current(ran);
+    report.current(ran, quiet);
   });
+  // The first command, then (after it ran) the second one, if the action has one.
+  const [stage, setStage] = useState<"first" | "then">("first");
+  const wanted = stage === "first" ? action.command : action.then;
   const onScreen = splitPath(path).screen === action.path;
-  const command = onScreen ? commands.find((c) => c.id === action.command) : undefined;
+  const command = onScreen ? commands.find((c) => c.id === wanted) : undefined;
   useEffect(() => {
     if (!command || finished.current) return;
     // After the palette has closed and given the focus back, so the command keeps the focus it moves.
     const timer = window.setTimeout(() => {
       command.run();
-      done.current(true);
+      if (stage === "first" && action.then) setStage("then");
+      else done.current(true);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [command]);
+  }, [command, stage, action.then]);
+  // An action that asks for a record waits while its screen is shown, for as long as the user
+  // takes to choose one; leaving the screen drops it without a word. Any other wait is short.
+  const seenScreen = useRef(false);
   useEffect(() => {
+    if (onScreen) seenScreen.current = true;
+    else if (seenScreen.current && action.pick && stage === "first") done.current(false, true);
+  }, [onScreen, action.pick, stage]);
+  useEffect(() => {
+    if (action.pick && stage === "first") return;
     const timer = window.setTimeout(() => done.current(false), commandWaitMs);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [action.pick, stage]);
   return null;
 }

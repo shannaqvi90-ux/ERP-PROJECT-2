@@ -15,6 +15,37 @@ export const extensions: ModuleExtensions = {
     { key: "identity.users.new", labelKey: "identity.users.new", keywordsKey: "identity.action.newUserKeywords", permission: "identity.users.create", path: "/identity/users", command: "identity.users.new" },
     { key: "identity.roles.new", labelKey: "identity.roles.new", keywordsKey: "identity.action.newRoleKeywords", permission: "identity.roles.create", path: "/identity/roles", command: "identity.roles.new" },
     { key: "identity.users.print", labelKey: "identity.action.printUsers", keywordsKey: "identity.action.printKeywords", permission: "identity.users.read", path: "/identity/users", command: "lists.print" },
+    // Commands of one record, from anywhere: the list opens and asks for the record; the command
+    // runs once the record chosen offers it (only when its own conditions hold, as its button).
+    {
+      key: "identity.roles.copy",
+      labelKey: "identity.action.copyRole",
+      keywordsKey: "identity.action.copyRoleKeywords",
+      permission: "identity.roles.create",
+      path: "/identity/roles",
+      command: "identity.roles.copy",
+      pick: "identity.action.copyRolePick",
+    },
+    {
+      key: "identity.users.history",
+      labelKey: "identity.action.history",
+      keywordsKey: "identity.action.historyKeywords",
+      permission: "identity.signIns.read",
+      path: "/identity/users",
+      command: "forms.tab.history",
+      pick: "identity.action.historyPick",
+    },
+    {
+      key: "identity.users.unblock",
+      labelKey: "identity.action.unblock",
+      keywordsKey: "identity.action.unblockKeywords",
+      permission: "identity.users.update",
+      requires: ["identity.signIns.read"],
+      path: "/identity/users",
+      command: "forms.tab.history",
+      then: "identity.users.unblock",
+      pick: "identity.action.unblockPick",
+    },
     { key: "identity.roles.print", labelKey: "identity.action.printRoles", keywordsKey: "identity.action.printKeywords", permission: "identity.roles.read", path: "/identity/roles", command: "lists.print" },
   ],
   // G, then U, R or M opens Users, Roles or My account from anywhere (the shell's go-to keys).

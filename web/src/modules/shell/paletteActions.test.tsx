@@ -179,6 +179,17 @@ const offered = (): Offered[] =>
 
 const done = () => !document.querySelector(".app[data-pending-action]");
 
+/** Chooses the list's first row from the keyboard, as asked by an action that needs a record:
+ * the grid takes the focus, Enter opens its first row. */
+async function chooseFirstRow() {
+  await settleUntilQuiet(() => calls, () => document.querySelector('main [role="grid"] [role="row"][aria-rowindex="2"]') !== null);
+  const grid = document.querySelector<HTMLElement>('main [role="grid"]')!;
+  expect(grid, "the list's grid").not.toBeNull();
+  act(() => grid.focus());
+  press({ code: "Enter", key: "Enter" }, grid);
+  await settleUntilQuiet(() => calls);
+}
+
 /** A minimum from gauntlet/ratchet.json: gates may only grow (CLAUDE.md rule 9). */
 function ratchetMinimum(key: string): number {
   const file = process.env.ERP_RATCHET ?? resolve(import.meta.dirname, "../../../../gauntlet/ratchet.json");
@@ -232,7 +243,9 @@ describe("module actions in the command palette", () => {
     });
   }
 
-  for (const action of extensions.actions) {
+  // Actions that act on a new record or the whole list; those that ask for a record first (pick)
+  // are judged below, each with the record chosen.
+  for (const action of extensions.actions.filter((a) => !a.pick)) {
     it(`${action.key}: started from home, it opens ${action.path} and runs the screen's own command there`, async () => {
       await open("/", every);
       await openPalette(en(action.labelKey));
@@ -247,6 +260,78 @@ describe("module actions in the command palette", () => {
       else expect(recordInAddress(), "a new record is open").toBe("new");
     });
   }
+
+  it("every action that asks for a record says what to choose, in English and Arabic, and runs no command before", async () => {
+    const picks = extensions.actions.filter((a) => a.pick);
+    expect(picks.map((a) => a.key)).toEqual(expect.arrayContaining(["identity.roles.copy", "identity.users.history", "identity.users.unblock"]));
+    for (const action of picks) {
+      for (const language of ["en", "ar"] as const) {
+        expect(translate(language, action.pick!), `${action.key} ${language}`).not.toBe(action.pick);
+      }
+      await open("/", every);
+      await openPalette(en(action.labelKey));
+      const before = calls.length;
+      act(() => offered().find((o) => o.title === en(action.labelKey))!.option.click());
+      await settleUntilQuiet(() => calls);
+      expect(window.location.pathname, action.key).toBe(action.path);
+      expect(document.querySelector("[data-pick-prompt]")?.textContent, action.key).toBe(en(action.pick!));
+      expect(done(), `${action.key} waits for a record`).toBe(false);
+      expect(calls.slice(before).filter((c) => c.method !== "GET"), action.key).toEqual([]);
+      expect(recordInAddress(), action.key).toBeNull();
+    }
+  });
+
+  it("Copy a role from home: the roles list asks for the role, and the role chosen opens its copy", async () => {
+    await open("/", every);
+    await openPalette("copy role");
+    expect(offered()[0]?.title).toBe(en("identity.action.copyRole"));
+    press({ code: "Enter", key: "Enter" });
+    await settleUntilQuiet(() => calls);
+    expect(window.location.pathname).toBe("/identity/roles");
+    await chooseFirstRow();
+    expect(done(), "the copy ran").toBe(true);
+    expect(document.querySelector("main")!.textContent).toContain(en("identity.roles.copyTitle").split("{")[0]!.trim());
+    expect(document.querySelector("[data-pick-prompt]")).toBeNull();
+  });
+
+  it("Show the sign-in history from home, in Arabic: the user chosen opens on the history tab", async () => {
+    await open("/", every, { language: "ar" });
+    await openPalette("سجل تسجيل الدخول");
+    expect(offered()[0]?.title).toBe(translate("ar", "identity.action.history"));
+    press({ code: "Enter", key: "Enter" });
+    await settleUntilQuiet(() => calls);
+    expect(document.querySelector("[data-pick-prompt]")?.textContent).toBe(translate("ar", "identity.action.historyPick"));
+    await chooseFirstRow();
+    expect(done()).toBe(true);
+    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(translate("ar", "identity.tab.history"));
+  });
+
+  it("Allow a user to sign in again from home: the history opens and the user chosen is allowed again", async () => {
+    await open("/", every);
+    await openPalette("unblock");
+    expect(offered()[0]?.title).toBe(en("identity.action.unblock"));
+    press({ code: "Enter", key: "Enter" });
+    await settleUntilQuiet(() => calls);
+    const before = calls.length;
+    await chooseFirstRow();
+    await settleUntilQuiet(() => calls, done);
+    expect(done()).toBe(true);
+    expect(calls.slice(before).some((c) => c.method === "POST" && /^\/api\/identity\/users\/[^/]+\/unblock$/.test(c.url))).toBe(true);
+    expect(document.querySelector(".status-notice")).toBeNull();
+  });
+
+  it("an action that asks for a record is dropped, without a word, when the user leaves its screen", async () => {
+    await open("/", every);
+    await openPalette("copy role");
+    press({ code: "Enter", key: "Enter" });
+    await settleUntilQuiet(() => calls);
+    expect(done()).toBe(false);
+    press({ code: "KeyH", key: "h", altKey: true });
+    await settleUntilQuiet(() => calls);
+    expect(window.location.pathname).toBe("/");
+    expect(done()).toBe(true);
+    expect(document.querySelector(".status-notice")).toBeNull();
+  });
 
   it("New user from home keeps its new record open when the list arrives after the command ran", async () => {
     await open("/", every, { slowLists: true });
@@ -392,6 +477,12 @@ async function runEntry(screen: Screen, permissions: string[], group: string, ti
   const buttons = new Set(document.querySelectorAll("button"));
   act(() => entry.option.click());
   await settleUntilQuiet(() => calls, done);
+  // An action that asks for a record (Copy a role, Allow a user to sign in again): the user goes
+  // along with it and chooses the first one.
+  if (document.querySelector("[data-pick-prompt]")) {
+    await chooseFirstRow();
+    await settleUntilQuiet(() => calls, done);
+  }
   // A module action whose screen, once open, does not offer its command was offered to a user who
   // may not run it (its screen's own check said no).
   const unrun = !done();

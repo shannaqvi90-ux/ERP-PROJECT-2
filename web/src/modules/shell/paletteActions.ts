@@ -54,6 +54,7 @@ export function commandEntries(commands: CommandDef[], t: Translate, language: L
 export function offeredActions(actions: ModuleAction[], can: (permission: string) => boolean, routes: RouteDef[] = allRoutes): ModuleAction[] {
   return actions.filter((action) => {
     if (!action.permission || !can(action.permission)) return false;
+    if (action.requires?.some((permission) => !can(permission))) return false;
     const route = matchRoute(action.path, routes);
     return Boolean(route) && (!route!.permission || can(route!.permission));
   });

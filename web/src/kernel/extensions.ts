@@ -78,6 +78,18 @@ export type ModuleAction = {
   path: string;
   /** Id of the screen command to run once the screen offers it (useCommand/useShortcut). */
   command?: string;
+  /** Further permissions the action needs besides `permission` (all of them). */
+  requires?: string[];
+  /**
+   * For a command a record offers (Copy role, Show the sign-in history): string key of what the
+   * user is asked to do on the screen first ("Choose the role to copy, then press Enter"). The
+   * action then waits, as long as its screen is shown, for the record the user opens to offer the
+   * command; leaving the screen drops it.
+   */
+  pick?: string;
+  /** A second command to run once the screen offers it after the first ran (the history tab
+   * opened, then Allow sign-in again). */
+  then?: string;
   /**
    * For an action its screen offers only in some cases that permissions do not decide (New branch
    * needs a company the user may add a branch to): asked each time the palette opens, with the
@@ -136,6 +148,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     all.palette.push(...(ext.palette ?? []));
     for (const action of ext.actions ?? []) {
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
+      if ((action.pick || action.then) && !action.command) throw new Error(`Action "${action.key}" of module ${name} asks for a record or a second command but runs no command`);
       if (!action.path.startsWith(`/${name}/`)) throw new Error(`Action "${action.key}" of module ${name} must happen on one of its own screens (/${name}/...)`);
       all.actions.push(action);
     }
