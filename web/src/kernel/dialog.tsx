@@ -5,8 +5,8 @@ const focusable =
 
 /**
  * A modal dialog that keeps the keyboard inside it: focus moves in when it opens (to
- * `initialFocus`, else the first control), Tab and Shift+Tab cycle within it, Escape closes it,
- * and focus returns to whatever had it before when it closes.
+ * `initialFocus`, else the first control) and stays there, Tab and Shift+Tab cycle within it, Escape
+ * closes it, and focus returns to whatever had it before when it closes.
  */
 export function Dialog({
   title,
@@ -30,7 +30,25 @@ export function Dialog({
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const target = initialFocus?.current ?? ref.current?.querySelector<HTMLElement>(focusable) ?? ref.current;
     target?.focus();
+    // The keyboard stays in the dialog while it is open: a screen behind it that takes the focus
+    // late (one still opening as the dialog opened, say Alt+H then Ctrl+K at once) gives it back,
+    // so what the person types next still lands in the dialog. Another modal dialog opened over
+    // this one keeps its focus.
+    let last: HTMLElement | null = ref.current?.contains(document.activeElement) ? (document.activeElement as HTMLElement) : null;
+    const keepFocus = (event: FocusEvent) => {
+      const dialog = ref.current;
+      const into = event.target;
+      if (!dialog || !(into instanceof HTMLElement)) return;
+      if (dialog.contains(into)) {
+        last = into;
+        return;
+      }
+      if (into.closest('[role="dialog"][aria-modal="true"]')) return;
+      (last && last.isConnected ? last : dialog).focus();
+    };
+    document.addEventListener("focusin", keepFocus);
     return () => {
+      document.removeEventListener("focusin", keepFocus);
       if (previous && previous.isConnected) previous.focus();
     };
     // Runs once per opening; the dialog is mounted only while open.
