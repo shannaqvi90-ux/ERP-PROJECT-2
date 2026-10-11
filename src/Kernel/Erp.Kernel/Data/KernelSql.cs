@@ -207,8 +207,11 @@ internal static class KernelSql
     /// behind the views and the size functions. PUBLIC may read all of them by default, so the
     /// application role could learn other tenants' volumes and values without touching a tenant
     /// row (critic p00 round 8, plant L3). The superuser bootstrap takes them from PUBLIC in the
-    /// product's database; the superuser keeps them. (<c>pg_class.reltuples</c> stays readable:
-    /// every client library reads <c>pg_class</c>; product code may not name it, a static gate.)
+    /// product's database; the superuser keeps them. <c>pg_class</c> itself stays readable (every
+    /// client library reads it), but only column by column: PUBLIC loses its row and page estimates
+    /// (<c>reltuples</c>, <c>relpages</c>, <c>relallvisible</c> and, where the server has it,
+    /// <c>relallfrozen</c>), which count every tenant's rows (critic p00 round 9); every other column
+    /// is granted back. Product code may not name them either (a static gate).
     /// </summary>
     public const string RevokeCrossTenantStatistics = """
         DO $$
@@ -230,6 +233,15 @@ internal static class KernelSql
           LOOP
             EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC', item.name);
           END LOOP;
+          REVOKE SELECT ON pg_catalog.pg_class FROM PUBLIC;
+          EXECUTE (SELECT format('GRANT SELECT (%s) ON pg_catalog.pg_class TO PUBLIC', string_agg(quote_ident(a.attname), ', ' ORDER BY a.attnum))
+                     FROM pg_attribute a
+                    WHERE a.attrelid = 'pg_catalog.pg_class'::regclass AND a.attnum > 0 AND NOT a.attisdropped
+                      AND a.attname NOT IN ('reltuples', 'relpages', 'relallvisible', 'relallfrozen'));
         END $$;
         """;
+
+    /// <summary>The columns of <c>pg_class</c> PUBLIC may not read (see
+    /// <see cref="RevokeCrossTenantStatistics"/>).</summary>
+    public static readonly IReadOnlyList<string> PgClassEstimateColumns = ["reltuples", "relpages", "relallvisible", "relallfrozen"];
 }
