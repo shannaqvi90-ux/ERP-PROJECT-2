@@ -4,4 +4,11 @@
     <!-- xUnit1051 asks every awaited call to pass the test cancellation token; gate tests run to completion. -->
     <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Thread pool workers that run out of work block at once instead of spinning first. The test
+         processes host the app in memory and wait on PostgreSQL most of the time, so the spin only
+         burned processor time. Runtime tuning of the test hosts only; no test, request or limit
+         changes. docs/decisions/p04-shell-thread-pool-spin.md -->
+    <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UnfairSemaphoreSpinLimit" Value="0" />
+  </ItemGroup>
 </Project>
