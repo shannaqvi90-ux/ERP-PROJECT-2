@@ -181,11 +181,12 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         {language === "ar" && legalNameAr}
         <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null && language !== "ar"} />
         {language !== "ar" && legalNameAr}
-        <BooleanField field={bind("arabicLegalNameRequired")} label={t("tenancy.company.arabicLegalNameRequired")} />
         <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper
           disabled={id !== null && !everyCompany}
           hint={id !== null && !everyCompany ? t("tenancy.company.codeNeedsEveryCompany") : t("tenancy.company.codeHint")} />
         <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
+        {/* After the code, so the names-then-code keyboard path is unchanged. */}
+        <BooleanField field={bind("arabicLegalNameRequired")} label={t("tenancy.company.arabicLegalNameRequired")} />
       </FormSection>
       <FormSection title={t("tenancy.company.registration")}>
         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />

@@ -79,9 +79,6 @@ without losing them, and that the column and the API stay in step.
   We did not add `everyCompany` to a response outside the rows. That would add a field (or an
   endpoint) every G1/G2 run attacks, and the processor-time budget is spent. The fail-closed read
   and the gate cases cover the fault class.
-- *Order of refusals on create.* `POST /companies` now answers 403
-  `tenancy.companyNeedsEveryCompany` before it judges the body, so a user who may not create a
-  company learns that at once.
 - *Arabic keyboard path.* On an Arabic screen the company form puts the Arabic legal name first,
   and a new company starts there, as the branch line already did. A branch whose Arabic name was
   typed but whose English name was left at the company's name is saved with no English name. It
@@ -90,6 +87,17 @@ without losing them, and that the column and the API stay in step.
   the head office.
 
 ## Not done this round
+
+- *Order of refusals on create* (round 9 finding). `POST /companies` still judges the body before
+  it answers 403 `tenancy.companyNeedsEveryCompany`. We tried answering 403 first. The G2 gate
+  `Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it` then failed: its
+  user holds only `tenancy.companies.create` and works in no company, and the gate reads any 403
+  to its empty body as the permission refusing it. That gate cannot be loosened (CLAUDE.md rule 9),
+  so the order stays. The screens do not offer New to such a user, so the order matters only to an
+  API caller. It is not a leak: every caller gets the same validation answer.
+- The `set-config` review count for `TenancySql.cs` in `tests/Gates/tenant-bypass-sources.txt` goes
+  from 1 to 3: the new migration step and its Down mark their own transaction as the migration's
+  actor (transaction-local), exactly as `AccessCounts` does.
 
 - Switching company with more than six active companies on a fresh device still shows no
   one-click buttons until the first switch on that device. Filling the buttons with arbitrary
@@ -100,7 +108,7 @@ without losing them, and that the column and the API stay in step.
 ## Processor time
 
 This round adds about 3 s to `./erp verify`. That is 3 .NET tests (one rolls back two ALTER TABLE
-statements on its own test database), a few lines in two existing ones, 5 web unit tests (about
-1.5 s), one migration, and two body fields the G1/G2 gates vary. The gates enumerate the fields
+statements on its own test database), a few lines in an existing one, 6 web unit tests (about
+2 s), one migration, and two body fields the G1/G2 gates vary. The gates enumerate the fields
 from the OpenAPI document, so they need no new run. The plant self-test (`npm run
 test:tenancy-plants`) is not part of verify.

@@ -224,19 +224,18 @@ internal static class CompanyEndpoints
         SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, IUserDirectory users, TenancyBranchScope branchScope,
         HttpContext http, CancellationToken cancellationToken)
     {
-        // Company codes are unique across the workspace: only someone who sees every company may
-        // pick one, or a refusal would tell them a company they cannot see uses it. Said before the
-        // body is judged, so someone who may not create a company learns it at once, not after
-        // filling every field (critic p02 round 9).
-        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
-        {
-            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
-        }
         var validator = Validate(request, http, requireVersion: false)
             .ArabicLegalNameWhenRequired(request.ArabicLegalNameRequired ?? false, request.LegalNameAr);
         if (!validator.IsValid)
         {
             return validator.ToResult();
+        }
+        // Company codes are unique across the workspace: only someone who sees every company may
+        // pick one, or a refusal would tell them a company they cannot see uses it. (Judged after
+        // the body: the G2 gate reads a 403 to an empty body as the permission refusing it.)
+        if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+        {
+            return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
         }
         var code = TenancyValidation.NormalizeCode(request.Code);
         if (string.IsNullOrEmpty(code))
