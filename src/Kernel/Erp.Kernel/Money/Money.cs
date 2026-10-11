@@ -93,9 +93,19 @@ public readonly record struct Money
             throw new ArgumentException($"{currency} amounts have {currency.MinorUnits} decimal places.", nameof(amount));
         }
         var rate = decimal.Round(exchangeRate, RateScale, MidpointRounding.AwayFromZero);
-        var baseAmount = decimal.Round(amount * rate, baseCurrency.MinorUnits, MidpointRounding.AwayFromZero);
+        var baseAmount = RoundToMinorUnits(amount * rate, baseCurrency);
         return new Money(amount, currency.Code, rate, baseAmount, baseCurrency.Code);
     }
+
+    /// <summary>
+    /// Rounds a figure to the currency's minor units by mathematical rounding, half away from zero:
+    /// in dirhams, 0.005 becomes 0.01 and -0.005 becomes -0.01, so a credit note mirrors its
+    /// invoice. This is the owner-signed rule docs/compliance/vat-rounding-and-currency.md, rule 1
+    /// (Cabinet Decision No. 52 of 2017, Article 61), for AED amounts, tax amounts and base-currency
+    /// amounts. Rule 2 of the same record says when to round: once, on the stated figure.
+    /// </summary>
+    public static decimal RoundToMinorUnits(decimal amount, CurrencyCode currency) =>
+        decimal.Round(amount, currency.MinorUnits, MidpointRounding.AwayFromZero);
 
     /// <summary>Sum of two amounts in the same currency and rate, against the same base currency.</summary>
     public Money Add(Money other)
