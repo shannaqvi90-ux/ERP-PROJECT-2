@@ -35,7 +35,9 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
             $"{result.Comparisons} comparisons over {result.Endpoints} endpoints ({result.Discriminating} with different answers per tenant), " +
             $"{result.WriteComparisons} write comparisons over {result.WriteEndpoints} endpoints and {result.WriteVariants} body variants, {result.Requests} requests, {result.Unstable.Count} unstable; " +
             $"in Arabic: {result.ArabicComparisons} comparisons ({result.ArabicAnswers} answered in Arabic), {result.ArabicWriteComparisons} write comparisons " +
-            $"({result.ArabicWorkspaceWriteComparisons} between the workspace-wide Arabic administrators)");
+            $"({result.ArabicWorkspaceWriteComparisons} between the workspace-wide Arabic administrators); " +
+            $"{result.HeadersCompared} response header lines compared, {result.ChangeProbes} changing answers judged by how they change, " +
+            $"{result.ConfigurationKeysWatched} configuration keys watched");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -55,6 +57,11 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         // Writes every company shares, refused to the branch-limited Arabic administrators, compared
         // between administrators who work in every company and branch (p04 round 7).
         AssertAtLeast(result.ArabicWorkspaceWriteComparisons, "g1.writeNonInterferenceArabicWorkspaceComparisons");
+        // Response headers are part of every answer compared, and the configuration of every host
+        // is watched for writes while serving (critic p04 round 8, plant L3: a process-wide count
+        // kept in the configuration and sent in a header only).
+        AssertAtLeast(result.HeadersCompared, "g1.nonInterferenceHeadersCompared");
+        AssertAtLeast(result.ConfigurationKeysWatched, "g1.nonInterferenceConfigurationKeysWatched");
     }
 
     private static void AssertAtLeast(int value, string key) =>
