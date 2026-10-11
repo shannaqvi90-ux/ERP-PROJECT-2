@@ -9,7 +9,7 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   becomes AL-REEM, with -2, -3 … added when taken), legal names in English and Arabic (the
   English one required since round 7, the Arabic one optional; a check constraint holds the
   database to it, see p02-tenancy-english-legal-name.md), trade licence number and
-  licensing authority, tax registration number (digits only, stored, no tax logic), base
+  licensing authority, tax registration number (15 digits, stored, no tax logic), base
   currency (ISO 4217 code, default AED, checked against the currencies .NET knows), fiscal year
   start (month and a day that exists in every year), address (lines, city, emirate when the
   country is AE, P.O. box, ISO 3166 country, Arabic address for printed documents), phone,
@@ -35,9 +35,9 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
 - **Codes are unique per workspace**, not per company scope. An administrator limited to
   company X can learn that a code is taken in the workspace (409), and nothing else about it.
   This is the same trade-off as a unique e-mail within a workspace.
-- **TRN format.** Only "digits, at most 20" is checked. Whether to enforce the Federal Tax
-  Authority's exact TRN format is a statutory rule. It needs the owner's sign-off and a sourced
-  entry in `docs/compliance/` (listed as a human gate), so it is not guessed here.
+- **TRN format.** Until round 10 only "digits, at most 20" was checked, because the exact format
+  is a statutory rule. Since the owner signed off `docs/compliance/vat-trn-format.md`
+  (2026-10-10), a TRN is exactly 15 digits: see `p02-tenancy-trn-and-arabic-name-setting.md`.
 
 ## Why
 
