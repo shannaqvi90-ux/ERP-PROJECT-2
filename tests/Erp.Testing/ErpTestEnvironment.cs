@@ -225,6 +225,54 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
 
     private sealed record TokenBody(string Token);
 
+    /// <summary>
+    /// One sign-in of <paramref name="email"/> (on <paramref name="factory"/>, this environment's
+    /// host by default), presented through every session carrier the kernel reads
+    /// (<see cref="Erp.Kernel.Security.SessionTokenCarriers.All"/>): one client per carrier, each
+    /// sending the token that way only. The permissions gate runs its matrices over each.
+    /// </summary>
+    public async Task<IReadOnlyList<CarrierClient>> SignInPerCarrierAsync(string email, ErpAppFactory? factory = null, string password = Password)
+    {
+        factory ??= Factory;
+        using var anonymous = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        anonymous.DefaultRequestHeaders.Add("X-Erp-Request", "1");
+        var response = await anonymous.PostAsJsonAsync("/api/auth/sign-in", new { email, password, issueToken = true });
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            throw new InvalidOperationException($"Sign-in as {email} failed: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}" +
+                $" | account: {await SignInDiagnosisAsync(email)}");
+        }
+        var token = (await response.Content.ReadFromJsonAsync<TokenBody>())!.Token;
+        return Erp.Kernel.Security.SessionTokenCarriers.All.Select(c => new CarrierClient(c.Name, ClientCarrying(c.Name, token, factory))).ToList();
+    }
+
+    /// <summary>
+    /// A client that sends <paramref name="token"/> through the named carrier only, the way its real
+    /// callers do: the browser app sends the cookie and the X-Erp-Request header; an API client sends
+    /// the Authorization header and nothing else. A carrier the kernel reads but this method does not
+    /// know fails here, so no carrier escapes the permissions gate.
+    /// </summary>
+    public HttpClient ClientCarrying(string carrier, string token, ErpAppFactory? factory = null)
+    {
+        factory ??= Factory;
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        switch (carrier)
+        {
+            case Erp.Kernel.Security.SessionTokenCarriers.CookieName:
+                client.DefaultRequestHeaders.Add("Cookie", $"{Erp.Kernel.Security.SessionAuthenticationDefaults.CookieName}={token}");
+                client.DefaultRequestHeaders.Add("X-Erp-Request", "1");
+                break;
+            case Erp.Kernel.Security.SessionTokenCarriers.BearerName:
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                break;
+            default:
+                client.Dispose();
+                throw new InvalidOperationException(
+                    $"The kernel reads session tokens from the carrier '{carrier}', which the tests have no client for: add it to ErpTestEnvironment.ClientCarrying so the permissions gate (G2) checks it.");
+        }
+        return client;
+    }
+
     public string Email(SeedTenant tenant, string local) => $"{local}@{tenant.EmailDomain}";
 
     public async Task<NpgsqlConnection> OpenAdminAsync()
@@ -298,4 +346,10 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
             _descriptors = services.ToList();
         });
     }
+}
+
+/// <summary>A signed-in client that presents its session through one carrier.</summary>
+public sealed record CarrierClient(string Carrier, HttpClient Client) : IDisposable
+{
+    public void Dispose() => Client.Dispose();
 }

@@ -103,6 +103,38 @@ public static class SessionResolution
         context?.Items.TryGetValue(InProgressItem, out var value) == true && value is true;
 }
 
+/// <summary>One way a request carries its session token to the API.</summary>
+/// <param name="Name">Stable name the permissions gate uses to build a client for it.</param>
+/// <param name="Read">The token the request carries this way, or null when it carries none.</param>
+public sealed record SessionTokenCarrier(string Name, Func<HttpRequest, string?> Read);
+
+/// <summary>
+/// Every way a request may carry a session token, in the order they are read: the session
+/// authentication handler reads tokens only through this list. The permissions gate (G2) runs its
+/// deny-by-default and grant-exactly-one matrices once per carrier listed here and fails on a
+/// carrier it has no client for, so a carrier added here is checked from the day it is added
+/// (critic p00 round 9: a permission bypass for Bearer callers passed a gate that signed in only
+/// with cookies).
+/// </summary>
+public static class SessionTokenCarriers
+{
+    public const string BearerName = "bearer";
+    public const string CookieName = "cookie";
+
+    /// <summary><c>Authorization: Bearer &lt;token&gt;</c> (API clients and integrations).</summary>
+    public static SessionTokenCarrier Bearer { get; } = new(BearerName, request =>
+    {
+        var header = request.Headers.Authorization.ToString();
+        return header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? header["Bearer ".Length..].Trim() : null;
+    });
+
+    /// <summary>The <c>erp_session</c> cookie (the browser app).</summary>
+    public static SessionTokenCarrier Cookie { get; } = new(CookieName, request =>
+        request.Cookies.TryGetValue(SessionAuthenticationDefaults.CookieName, out var cookie) ? cookie : null);
+
+    public static IReadOnlyList<SessionTokenCarrier> All { get; } = [Bearer, Cookie];
+}
+
 /// <summary>Reads the session token from the <c>erp_session</c> cookie or an
 /// <c>Authorization: Bearer</c> header (API clients), and resolves it.</summary>
 internal sealed class SessionAuthenticationHandler(
@@ -172,15 +204,18 @@ internal sealed class SessionAuthenticationHandler(
         return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
     }
 
-    /// <summary>Bearer header wins over the cookie.</summary>
+    /// <summary>The token of the first carrier in <see cref="SessionTokenCarriers.All"/> that
+    /// carries one (the Bearer header wins over the cookie). Nothing else is read.</summary>
     internal static string? ReadToken(HttpRequest request)
     {
-        var header = request.Headers.Authorization.ToString();
-        if (header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        foreach (var carrier in SessionTokenCarriers.All)
         {
-            return header["Bearer ".Length..].Trim();
+            if (carrier.Read(request) is { } token)
+            {
+                return token;
+            }
         }
-        return request.Cookies.TryGetValue(SessionAuthenticationDefaults.CookieName, out var cookie) ? cookie : null;
+        return null;
     }
 
     protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
