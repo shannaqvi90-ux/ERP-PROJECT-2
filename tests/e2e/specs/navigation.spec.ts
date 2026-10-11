@@ -34,3 +34,42 @@ test.describe("navigation reaches every screen", () => {
     await visitEveryScreen(page, "التنقل الرئيسي", "لا توجد صلاحية");
   });
 });
+
+test.describe("go-to keys reach every listed screen", () => {
+  /** G, then each entry's letter (data-go), from Home: every screen the navigation lists that has a
+   * letter opens, in a real browser and keyboard. */
+  async function goEverywhere(page: Page, nav: string) {
+    const navigation = page.getByRole("navigation", { name: nav });
+    await expect(navigation.getByRole("link").first()).toBeVisible();
+    const entries = await navigation
+      .locator("a[data-go]")
+      .evaluateAll((anchors) => anchors.map((a) => ({ href: a.getAttribute("href") ?? "", letter: a.getAttribute("data-go") ?? "" })));
+    expect(entries.length).toBeGreaterThanOrEqual(5);
+    for (const { href, letter } of entries) {
+      await page.keyboard.press("g");
+      await page.keyboard.press("h");
+      await expect(page).toHaveURL(/\/$/);
+      await page.locator("main").focus();
+      await page.keyboard.press("g");
+      await expect(page.locator("[data-goto-hint]")).toBeVisible();
+      await page.keyboard.press(letter.toLowerCase());
+      await expect(page).toHaveURL(new RegExp(`${href.replace(/\//g, "\\/")}$`));
+      await expect(page.locator("[data-goto-hint]")).toHaveCount(0);
+      await expect(page.locator("main h1")).toBeVisible();
+      // The letter went nowhere else: no field received it.
+      await page.locator("main").focus();
+    }
+  }
+
+  test("in English", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await goEverywhere(page, "Main navigation");
+  });
+
+  test("in Arabic, by key position", async ({ page }) => {
+    await freshStart(page, "ar");
+    await signIn(page, users.adminArabic);
+    await goEverywhere(page, "التنقل الرئيسي");
+  });
+});
