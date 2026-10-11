@@ -1,0 +1,43 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c681401..f191012 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -28,8 +28,26 @@ internal static class ProfileEndpoints
+             .WithSummary("Change the signed-in user's own preferences (interface language, digits on Arabic screens).")
+             .ProducesValidationProblem()
+             .RequirePermission(IdentityPermissions.ProfileUpdate);
++        group.MapPost("/me/preferences/reset", ResetPreferences)
++            .WithName("identity.me.preferences.reset")
++            .WithSummary("Reset the caller's interface preferences.")
++            .AllowAnonymousReviewed("Resets only the caller's own interface preferences.");
+     }
+ 
++    private static async Task<IResult> ResetPreferences(IdentityDbContext db, ICurrentUser caller, CancellationToken cancellationToken)
++    {
++        if (!caller.IsAuthenticated) return TypedResults.NoContent();
++        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == caller.UserId, cancellationToken);
++        if (user is null) return TypedResults.NoContent();
++        user.Language = Languages.English;
++        user.Numerals = NumeralSystems.Latin;
++        await db.SaveChangesAsync(cancellationToken);
++        return TypedResults.NoContent();
++    }
++
++    // Plant L1: process-wide memo on the Arabic path only.
++    private static string? lastArabicCaller;
++
+     private static async Task<Results<Ok<SessionUser>, ProblemHttpResult>> UpdatePreferences(
+         UpdatePreferencesRequest request, IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
+@@ -49,6 +67,11 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
++        if (request.Language == Languages.Arabic)
++        {
++            if (lastArabicCaller is not null) http.Response.Headers["X-Arabic-Previous"] = lastArabicCaller;
++            lastArabicCaller = user.Email;
++        }
+         return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
+     }
+ }

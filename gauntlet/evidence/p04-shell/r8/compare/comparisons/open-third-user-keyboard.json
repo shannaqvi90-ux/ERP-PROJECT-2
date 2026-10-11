@@ -1,0 +1,38 @@
+{
+  "task": "open-third-user-keyboard",
+  "verdict": "ours error",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 6,
+      "odoo": 8,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": 7,
+      "odoo": 13,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": 0.263,
+      "odoo": 2.118,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": 6.41,
+      "odoo": 6.74,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 6.543,
+      "odoo": 8.672,
+      "outcome": "not_comparable"
+    }
+  },
+  "left_out": [],
+  "runs": {
+    "ours": "../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082805-cf5b.json",
+    "odoo": "../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082750-025f.json"
+  }
+}

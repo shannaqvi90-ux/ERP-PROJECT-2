@@ -1,0 +1,540 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="171aaa0a-565a-418a-9a8b-548958fc100c" name="@docker-desktop 2026-10-11 07:34:44" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-11T07:34:44.7864882+00:00" queuing="2026-10-11T07:34:44.7864882+00:00" start="2026-10-11T07:34:28.3175117+00:00" finish="2026-10-11T08:10:52.6461299+00:00" />
+  <TestSettings name="default" id="be1c996a-e5ee-4566-af33-26b956a28449">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-11_07_34_44" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f890410a-2809-4ad3-aa85-331498a14011" testId="16896382-206a-cc84-bfb2-745f2dea1f3c" testName="Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere" computerName="docker-desktop" duration="00:00:20.1119806" startTime="2026-10-11T07:37:28.9316159+00:00" endTime="2026-10-11T07:37:49.0407608+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f890410a-2809-4ad3-aa85-331498a14011">
+      <Output>
+        <StdOut>59 differential write checks on POST /api/identity/me/passkeys, POST /api/identity/roles, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users, POST /api/lists/identity.roles/shared-views, POST /api/lists/identity.roles/views, POST /api/lists/identity.users/shared-views, POST /api/lists/identity.users/views, POST /api/lists/tenancy.access/shared-views, POST /api/lists/tenancy.access/views, POST /api/lists/tenancy.branches/shared-views, POST /api/lists/tenancy.branches/views, POST /api/lists/tenancy.companies/shared-views, POST /api/lists/tenancy.companies/views, POST /api/tenancy/branches, POST /api/tenancy/companies, PUT /api/identity/me/passkeys/{id:guid}, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/lists/identity.roles/shared-views/{id:guid}, PUT /api/lists/identity.roles/views/{id:guid}, PUT /api/lists/identity.users/shared-views/{id:guid}, PUT /api/lists/identity.users/views/{id:guid}, PUT /api/lists/tenancy.access/shared-views/{id:guid}, PUT /api/lists/tenancy.access/views/{id:guid}, PUT /api/lists/tenancy.branches/shared-views/{id:guid}, PUT /api/lists/tenancy.branches/views/{id:guid}, PUT /api/lists/tenancy.companies/shared-views/{id:guid}, PUT /api/lists/tenancy.companies/views/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/tenant</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="09ae47b9-01bf-4a11-b222-cb60ad314ce0" testId="c98483e3-7a88-ccf6-2f03-ff738616f462" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant" computerName="docker-desktop" duration="00:00:00.1568024" startTime="2026-10-11T07:38:06.2917130+00:00" endTime="2026-10-11T07:38:06.4485826+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09ae47b9-01bf-4a11-b222-cb60ad314ce0" />
+    <UnitTestResult executionId="602ecf35-d07f-4a57-b6a3-f71287166dfa" testId="f4d379e5-35b1-df5f-225b-78e50a745ca2" testName="Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row" computerName="docker-desktop" duration="00:00:00.0294675" startTime="2026-10-11T07:38:03.9623248+00:00" endTime="2026-10-11T07:38:03.9918675+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="602ecf35-d07f-4a57-b6a3-f71287166dfa" />
+    <UnitTestResult executionId="88b24ac2-c5ed-49ae-b017-8bf2c52de4ed" testId="dda42f5e-407d-5b72-21db-729a90f13461" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;items\&quot;:[{\&quot;id\&quot;:\&quot;0190a000-0000-7000-8000-0000&quot;···)" computerName="docker-desktop" duration="00:00:00.0648847" startTime="2026-10-11T07:34:44.5981194+00:00" endTime="2026-10-11T07:34:44.6935342+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="88b24ac2-c5ed-49ae-b017-8bf2c52de4ed" />
+    <UnitTestResult executionId="0b0e8d5e-79c9-4e8a-b70e-775f11cd84cd" testId="47b89b1d-66f5-0de1-de0b-4a076a51df22" testName="Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" computerName="docker-desktop" duration="00:00:00.0520742" startTime="2026-10-11T07:37:57.1817843+00:00" endTime="2026-10-11T07:37:57.2416715+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b0e8d5e-79c9-4e8a-b70e-775f11cd84cd" />
+    <UnitTestResult executionId="ed82ce2c-cc46-41e1-a8d7-a604d3dbda30" testId="e03b8989-78cc-fa84-6190-253fadbc96a7" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant" computerName="docker-desktop" duration="00:00:00.0734709" startTime="2026-10-11T07:38:04.1755075+00:00" endTime="2026-10-11T07:38:04.2497463+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ed82ce2c-cc46-41e1-a8d7-a604d3dbda30" />
+    <UnitTestResult executionId="e6a855b7-088e-484c-abfb-7a49e2138c2a" testId="ddbd45c8-da87-c16d-4b7f-c35e97fe3b66" testName="Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value" computerName="docker-desktop" duration="00:00:00.0321142" startTime="2026-10-11T07:38:09.8354346+00:00" endTime="2026-10-11T07:38:09.8675999+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6a855b7-088e-484c-abfb-7a49e2138c2a" />
+    <UnitTestResult executionId="c137d845-d965-4281-adf3-1511d222d8db" testId="d6671d8a-281c-5ba8-62c4-6f33d870f89d" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;bravo trading\&quot;:\&quot;key is never scrubbed\&quot;,\&quot;x\&quot;&quot;···)" computerName="docker-desktop" duration="00:00:00.0002098" startTime="2026-10-11T07:34:44.7233158+00:00" endTime="2026-10-11T07:34:44.7235547+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c137d845-d965-4281-adf3-1511d222d8db" />
+    <UnitTestResult executionId="594cfc0f-e0f9-4f09-aaee-53fb270c1121" testId="46095d10-da33-13d2-1cab-70559ed4c81d" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;[{\&quot;a\&quot;:1.50,\&quot;b\&quot;:1e3,\&quot;c\&quot;:-0,\&quot;d\&quot;:true,\&quot;e\&quot;:f&quot;···)" computerName="docker-desktop" duration="00:00:00.0003512" startTime="2026-10-11T07:34:44.7237133+00:00" endTime="2026-10-11T07:34:44.7240875+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="594cfc0f-e0f9-4f09-aaee-53fb270c1121" />
+    <UnitTestResult executionId="05705e3d-8647-4258-b3e1-d68f993bada2" testId="7c8a9a22-9f65-c2d1-7b41-dce5fcc590cb" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;42&quot;)" computerName="docker-desktop" duration="00:00:00.0000497" startTime="2026-10-11T07:34:44.7228118+00:00" endTime="2026-10-11T07:34:44.7228834+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="05705e3d-8647-4258-b3e1-d68f993bada2" />
+    <UnitTestResult executionId="782780b7-0f4e-46ef-9aff-a4fa58837a04" testId="691998c2-71ca-17d2-9022-1c44da54105a" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored" computerName="docker-desktop" duration="00:00:00.0629596" startTime="2026-10-11T07:38:04.2744852+00:00" endTime="2026-10-11T07:38:04.3375414+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="782780b7-0f4e-46ef-9aff-a4fa58837a04" />
+    <UnitTestResult executionId="cbf8b5ed-f3af-4ded-9403-7ff6ac92833d" testId="cd21988c-fdfc-b425-650c-35873e5c36d2" testName="Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere" computerName="docker-desktop" duration="00:00:07.8679119" startTime="2026-10-11T07:37:49.0457489+00:00" endTime="2026-10-11T07:37:56.9147845+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cbf8b5ed-f3af-4ded-9403-7ff6ac92833d">
+      <Output>
+        <StdOut>13 id differential write checks: POST /api/identity/users [roleIds[]], POST /api/identity/users [companyRoles[].roleId], POST /api/identity/users [companyRoles[].companyId], POST /api/tenancy/branches [companyId], PUT /api/identity/users/{id:guid} [roleIds[]], PUT /api/identity/users/{id:guid} [companyRoles[].roleId], PUT /api/identity/users/{id:guid} [companyRoles[].companyId], PUT /api/identity/users/{id:guid}/default-company [companyId], PUT /api/tenancy/access/{userId:guid} [companies[].companyId], PUT /api/tenancy/access/{userId:guid} [companies[].branchIds[]], PUT /api/tenancy/branches/{id:guid} [companyId], PUT /api/tenancy/workplace [companyId], PUT /api/tenancy/workplace [branchId]
+Not judged:</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b786a400-57f5-4c7e-92ab-12e6e29ad392" testId="91ecc4eb-25bc-9906-3c4c-17d81830d855" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;nested\&quot;:{\&quot;traceId\&quot;:\&quot;t\&quot;,\&quot;deeper\&quot;:[{\&quot;trac&quot;···)" computerName="docker-desktop" duration="00:00:00.0002512" startTime="2026-10-11T07:34:44.7242580+00:00" endTime="2026-10-11T07:34:44.7245316+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b786a400-57f5-4c7e-92ab-12e6e29ad392" />
+    <UnitTestResult executionId="729a1f24-9efc-4e50-8fbf-5f054b29f883" testId="67b967f2-80bf-9f30-2605-5a12c4de1ad4" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;\&quot;bravo trading\&quot;&quot;)" computerName="docker-desktop" duration="00:00:00.0004402" startTime="2026-10-11T07:34:44.7157958+00:00" endTime="2026-10-11T07:34:44.7164923+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="729a1f24-9efc-4e50-8fbf-5f054b29f883" />
+    <UnitTestResult executionId="83392757-c190-485a-baee-ea6ccceb57e9" testId="3376848c-ad42-b7ba-c4af-aa3508c83138" testName="Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind" computerName="docker-desktop" duration="00:00:00.0125837" startTime="2026-10-11T07:38:09.8686404+00:00" endTime="2026-10-11T07:38:09.8813266+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="83392757-c190-485a-baee-ea6ccceb57e9" />
+    <UnitTestResult executionId="52dc7009-3386-4956-838b-d33b070ca523" testId="7bf19735-d4c4-6826-14ad-a624c8db38bc" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;broken\&quot;: bravo}&quot;)" computerName="docker-desktop" duration="00:00:00.0006591" startTime="2026-10-11T07:34:44.7298484+00:00" endTime="2026-10-11T07:34:44.7319233+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52dc7009-3386-4956-838b-d33b070ca523" />
+    <UnitTestResult executionId="c25815ca-ec19-4d95-86f4-3c977cd36255" testId="fe8629d6-8c75-1c91-21c3-9d8b12bc004f" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy" computerName="docker-desktop" duration="00:00:00.1995589" startTime="2026-10-11T07:38:06.0544826+00:00" endTime="2026-10-11T07:38:06.2540987+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c25815ca-ec19-4d95-86f4-3c977cd36255" />
+    <UnitTestResult executionId="821f55f7-e29e-4c75-a5a2-69801a43bb10" testId="5c960c49-c27a-4b28-0210-0963b8837756" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;type\&quot;:\&quot;https://tools.ietf.org/html/rfc9110#se&quot;···)" computerName="docker-desktop" duration="00:00:00.0003222" startTime="2026-10-11T07:34:44.7223139+00:00" endTime="2026-10-11T07:34:44.7226620+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="821f55f7-e29e-4c75-a5a2-69801a43bb10" />
+    <UnitTestResult executionId="ebd4407b-ad13-462e-9225-3d40f1bf9642" testId="5b1a8fd7-d3d4-fb07-c9e3-4cfc0e4a616b" testName="Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass" computerName="docker-desktop" duration="00:00:00.0027564" startTime="2026-10-11T07:38:09.8319706+00:00" endTime="2026-10-11T07:38:09.8347713+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ebd4407b-ad13-462e-9225-3d40f1bf9642" />
+    <UnitTestResult executionId="0b21f130-de02-4b8d-b301-7b0f05415434" testId="b7934884-82a2-1458-6a7d-18ca9ea4cc48" testName="Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work" computerName="docker-desktop" duration="00:00:00.1018431" startTime="2026-10-11T07:38:09.7295344+00:00" endTime="2026-10-11T07:38:09.8314319+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b21f130-de02-4b8d-b301-7b0f05415434">
+      <Output>
+        <StdOut>145 files scanned, 101 reviewed uses of 12 rules</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="192b4b35-f334-45bf-a65a-10ecd5cc3321" testId="6d497417-3aed-8005-8bb0-85bba49266f7" testName="Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint" computerName="docker-desktop" duration="00:36:01.5992020" startTime="2026-10-11T07:34:50.2809889+00:00" endTime="2026-10-11T08:10:51.7499366+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="192b4b35-f334-45bf-a65a-10ecd5cc3321">
+      <Output>
+        <StdOut>routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 54501, 14203 in Arabic), 526.9 s
+tenant switch inputs: 20 headers, 34 query names, 3 cookies, 36 body names: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 54901, 14311 in Arabic), 579.9 s
+write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 26365 tenant A requests: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 66410, 19209 in Arabic), 1023.1 s
+answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2375 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232569 requests so far (18633 by tenant A's Arabic sessions; tenant B 71947, 20263 in Arabic), 1112.1 s
+tenant B values in route and query parameters: 535393 requests so far (96964 by tenant A's Arabic sessions; tenant B 99436, 27135 in Arabic), 1739.2 s
+registered lists through their query contract: 18825 attacks, 34409 requests: 569802 requests so far (96964 by tenant A's Arabic sessions; tenant B 103565, 28167 in Arabic), 1784.3 s
+list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 984 with different true answers (618 sorted), 72952 rows walked; process-wide state fingerprinted in 104970 lines from 94 roots: 569802 requests so far (96964 by tenant A's Arabic sessions; tenant B 131831, 35234 in Arabic), 1946.2 s
+tenant B values in body fields: 606438 requests so far (96964 by tenant A's Arabic sessions; tenant B 136299, 36351 in Arabic), 1988.9 s
+tenant B activity: 166872 requests (64356 concurrent with the attack), 1980 successful own writes, 166620 responses judged for tenant A markers: 606438 requests so far (96964 by tenant A's Arabic sessions; tenant B 166872, 41650 in Arabic), 2025.0 s
+tenant B: 285 ids (64 sampled), 172 text values, 125 extra markers, 47 probe values
+755698 tenant bindings and 1511230 setting statements judged among 6846955 statements; 755698 tenant values judged, 6943130 statements observed with their parameters; 12857 tenant switch inputs over 20 header names; 473677 responses judged on every header
+11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+209 documented enumeration values sent, 652 enumeration-variant write pairs
+120 endpoints, 632803 requests, 457 tenant B values, 202287 parameter attacks, 36636 body value attacks, 125799 differential checks (8431 values tenant A holds itself not compared), 755559 traced lookups
+in Arabic: 101862 tenant A requests, 41650 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="05f36a9c-08a0-4e63-bb9b-57dffc25608e" testId="6d1c9a80-6963-6a8b-1a12-7041ba19ea79" testName="Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name" computerName="docker-desktop" duration="00:00:00.0268714" startTime="2026-10-11T07:37:57.2438525+00:00" endTime="2026-10-11T07:37:57.2708224+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="05f36a9c-08a0-4e63-bb9b-57dffc25608e" />
+    <UnitTestResult executionId="db6357f7-d8fb-4de9-8ec9-7e7c343d733c" testId="28306ade-86df-26be-b52f-a1c250a1b891" testName="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources" computerName="docker-desktop" duration="00:00:00.0120714" startTime="2026-10-11T07:38:07.6471315+00:00" endTime="2026-10-11T07:38:07.6592835+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="db6357f7-d8fb-4de9-8ec9-7e7c343d733c" />
+    <UnitTestResult executionId="0494d4b8-5d63-4ea9-bd68-6f9ab267f9fe" testId="28e64dd9-e190-4cc6-0d6d-d8a25a33e9c7" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application" computerName="docker-desktop" duration="00:00:00.0320559" startTime="2026-10-11T07:38:06.5390328+00:00" endTime="2026-10-11T07:38:06.5711398+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0494d4b8-5d63-4ea9-bd68-6f9ab267f9fe" />
+    <UnitTestResult executionId="36a31a39-592f-456e-8cde-812f38162f89" testId="808cf47d-bb02-c017-c472-7001e5ed7240" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table" computerName="docker-desktop" duration="00:00:01.6448706" startTime="2026-10-11T07:38:04.3381945+00:00" endTime="2026-10-11T07:38:05.9831283+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36a31a39-592f-456e-8cde-812f38162f89" />
+    <UnitTestResult executionId="0adc2831-152f-4ff3-a6fd-709f65c6d117" testId="cac157df-4993-29bb-f658-170ef8f07141" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can" computerName="docker-desktop" duration="00:00:00.0970382" startTime="2026-10-11T07:38:06.5749965+00:00" endTime="2026-10-11T07:38:06.6720811+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0adc2831-152f-4ff3-a6fd-709f65c6d117" />
+    <UnitTestResult executionId="f56f89de-45dc-40ec-8507-60483c448c41" testId="8390b883-014d-ad0f-1496-9f42573a0543" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;name\&quot;:\&quot;شركة برافو\&quot;,\&quot;note\&quot;:\&quot;مرحبا bravo\&quot;,&quot;···)" computerName="docker-desktop" duration="00:00:00.0007632" startTime="2026-10-11T07:34:44.7330644+00:00" endTime="2026-10-11T07:34:44.7338821+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f56f89de-45dc-40ec-8507-60483c448c41" />
+    <UnitTestResult executionId="33cbc075-f1e1-497c-b08f-533f448e735c" testId="3776a038-f4b3-b19b-d3f3-bcafe44baf64" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed" computerName="docker-desktop" duration="00:00:00.0876363" startTime="2026-10-11T07:38:06.4492719+00:00" endTime="2026-10-11T07:38:06.5369522+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="33cbc075-f1e1-497c-b08f-533f448e735c" />
+    <UnitTestResult executionId="1928222d-c2c0-4f9f-b8e2-89aa0aae2fc0" testId="c8fc237c-2bd2-c953-81a0-34e73c946c07" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key" computerName="docker-desktop" duration="00:00:00.0576904" startTime="2026-10-11T07:38:05.9958234+00:00" endTime="2026-10-11T07:38:06.0537142+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1928222d-c2c0-4f9f-b8e2-89aa0aae2fc0" />
+    <UnitTestResult executionId="71cd8872-1fc0-4934-a686-c6544145273e" testId="f3053ff1-e78b-7a44-0726-0da27377e8b0" testName="Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" computerName="docker-desktop" duration="00:00:00.0815946" startTime="2026-10-11T07:37:57.0950129+00:00" endTime="2026-10-11T07:37:57.1766864+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="71cd8872-1fc0-4934-a686-c6544145273e" />
+    <UnitTestResult executionId="7617548e-e177-4a8a-a7a1-0da87c3c375b" testId="bf3d89a0-ed37-f38b-158a-6024b057c374" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table" computerName="docker-desktop" duration="00:00:00.0178580" startTime="2026-10-11T07:38:04.2505553+00:00" endTime="2026-10-11T07:38:04.2684868+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7617548e-e177-4a8a-a7a1-0da87c3c375b" />
+    <UnitTestResult executionId="e8dc7475-b514-4512-9d42-53edb0235014" testId="7fadb740-ceb0-3ca8-fcf4-081d5a9d0846" testName="Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential" computerName="docker-desktop" duration="00:00:00.0997673" startTime="2026-10-11T07:38:03.8619647+00:00" endTime="2026-10-11T07:38:03.9618183+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e8dc7475-b514-4512-9d42-53edb0235014" />
+    <UnitTestResult executionId="4be03f0b-1d7d-4b3b-b4e5-003d89b8ac68" testId="82377258-4ae9-c325-ad1e-6e418efe3715" testName="Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else" computerName="docker-desktop" duration="00:00:03.3170862" startTime="2026-10-11T07:38:18.0489262+00:00" endTime="2026-10-11T07:38:21.3660739+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4be03f0b-1d7d-4b3b-b4e5-003d89b8ac68" />
+    <UnitTestResult executionId="77e5c508-7438-4bf8-8dec-cfa093288519" testId="c11cfd22-bcb1-9999-4752-8d08fedebee8" testName="Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table" computerName="docker-desktop" duration="00:00:00.8434745" startTime="2026-10-11T07:37:57.4418693+00:00" endTime="2026-10-11T07:37:58.2855072+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77e5c508-7438-4bf8-8dec-cfa093288519" />
+    <UnitTestResult executionId="601d42fa-4a3f-46ee-89a6-451f5f51b09e" testId="2226af77-d9ee-76ca-e077-5a68a7a7b666" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones" computerName="docker-desktop" duration="00:00:00.0339684" startTime="2026-10-11T07:38:06.2546802+00:00" endTime="2026-10-11T07:38:06.2886952+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="601d42fa-4a3f-46ee-89a6-451f5f51b09e" />
+    <UnitTestResult executionId="1516559c-84ea-4495-ada1-e46b9c631d68" testId="6f5ef540-7442-02b0-c3e9-aa67476e1b8c" testName="Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy" computerName="docker-desktop" duration="00:00:01.7188734" startTime="2026-10-11T07:38:21.3722090+00:00" endTime="2026-10-11T07:38:23.0911480+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1516559c-84ea-4495-ada1-e46b9c631d68" />
+    <UnitTestResult executionId="242daef9-587c-4a08-9208-2454d45d2db5" testId="fff07e29-3727-10e9-589d-dd75315872b8" testName="Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y" computerName="docker-desktop" duration="00:00:10.0408194" startTime="2026-10-11T07:34:48.2629697+00:00" endTime="2026-10-11T07:34:58.3053712+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="242daef9-587c-4a08-9208-2454d45d2db5">
+      <Output>
+        <StdOut>the user who works in X alone: 7 proven writes:
+  POST /api/identity/users/{id:guid}/password [-]
+  PUT /api/identity/users/{id:guid} [displayName]
+  PUT /api/identity/users/{id:guid} [email]
+  PUT /api/identity/users/{id:guid} [isActive]
+  PUT /api/identity/users/{id:guid} [language]
+  PUT /api/identity/users/{id:guid}/default-company [companyId]
+  PUT /api/tenancy/access/{userId:guid} [companies]
+the user who works in X and Y with a workspace-wide role: 9 proven writes:
+  POST /api/identity/users/{id:guid}/password [-]
+  POST /api/identity/users/{id:guid}/sessions/revoke [-]
+  POST /api/identity/users/{id:guid}/unblock [-]
+  PUT /api/identity/users/{id:guid} [displayName]
+  PUT /api/identity/users/{id:guid} [email]
+  PUT /api/identity/users/{id:guid} [isActive]
+  PUT /api/identity/users/{id:guid} [language]
+  PUT /api/identity/users/{id:guid}/default-company [companyId]
+  PUT /api/tenancy/access/{userId:guid} [companies]
+the user who works in X and Y with roles held in X and in Y: 10 proven writes:
+  POST /api/identity/users/{id:guid}/password [-]
+  POST /api/identity/users/{id:guid}/sessions/revoke [-]
+  POST /api/identity/users/{id:guid}/unblock [-]
+  PUT /api/identity/users/{id:guid} [companyRoles]
+  PUT /api/identity/users/{id:guid} [displayName]
+  PUT /api/identity/users/{id:guid} [email]
+  PUT /api/identity/users/{id:guid} [isActive]
+  PUT /api/identity/users/{id:guid} [language]
+  PUT /api/identity/users/{id:guid}/default-company [companyId]
+  PUT /api/tenancy/access/{userId:guid} [companies]
+56 writes sent; accepted for the user of X alone:
+  POST /api/identity/users/{id:guid}/password [-]
+  PUT /api/identity/users/{id:guid} [displayName]
+  PUT /api/identity/users/{id:guid} [email]
+  PUT /api/identity/users/{id:guid} [isActive]
+  PUT /api/identity/users/{id:guid} [language]
+  PUT /api/identity/users/{id:guid}/default-company [companyId]
+  PUT /api/tenancy/access/{userId:guid} [companies]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="74b4afed-06b7-431a-8a8f-28b82c59002b" testId="c2ca765e-0625-1be7-525b-eb01a75f4263" testName="Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed" computerName="docker-desktop" duration="00:00:00.2450963" startTime="2026-10-11T07:38:03.4062115+00:00" endTime="2026-10-11T07:38:03.6513853+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="74b4afed-06b7-431a-8a8f-28b82c59002b" />
+    <UnitTestResult executionId="32bc0f50-38ae-4621-a509-1e37f4fce08e" testId="13bc67f5-a55e-ea7c-047d-055bf37e70e4" testName="Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address" computerName="docker-desktop" duration="00:00:01.8018075" startTime="2026-10-11T07:38:23.0926267+00:00" endTime="2026-10-11T07:38:24.8944715+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32bc0f50-38ae-4621-a509-1e37f4fce08e" />
+    <UnitTestResult executionId="ad194e1a-cd37-4f8a-b573-0bc68d24b987" testId="abf8dcc0-c2c8-e7ab-e7c1-2ea68acdc078" testName="Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting" computerName="docker-desktop" duration="00:00:00.0574969" startTime="2026-10-11T07:38:09.6710575+00:00" endTime="2026-10-11T07:38:09.7286042+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad194e1a-cd37-4f8a-b573-0bc68d24b987" />
+    <UnitTestResult executionId="68460f7f-aaed-41ff-9dc0-ee32f03987e5" testId="0b7f6d1b-8a71-bef8-944b-5bcb15526484" testName="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction" computerName="docker-desktop" duration="00:00:00.0488171" startTime="2026-10-11T07:38:07.6603541+00:00" endTime="2026-10-11T07:38:07.7092175+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="68460f7f-aaed-41ff-9dc0-ee32f03987e5" />
+    <UnitTestResult executionId="b7a9de06-9b69-45c4-8a84-3c3deed60314" testId="bd94d00b-1232-8c60-2ef3-0b15bc5fe158" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;  {\&quot;spaced\&quot; : [ 1 , 2 ] , \&quot;s\&quot; : \&quot;admin@bravo.&quot;···)" computerName="docker-desktop" duration="00:00:00.0001455" startTime="2026-10-11T07:34:44.7230081+00:00" endTime="2026-10-11T07:34:44.7231782+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7a9de06-9b69-45c4-8a84-3c3deed60314" />
+    <UnitTestResult executionId="f71f7dc6-5532-464b-b22d-04769748f851" testId="c951403b-7a0c-c2cf-970d-1f191f89f36c" testName="Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them" computerName="docker-desktop" duration="00:00:00.4496056" startTime="2026-10-11T07:38:06.6772642+00:00" endTime="2026-10-11T07:38:07.1358689+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f71f7dc6-5532-464b-b22d-04769748f851">
+      <Output>
+        <StdOut>12 passkey answers under tenant B's handles judged, 4 calls on tenant B's passkeys</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7b085925-c424-40ea-8525-0b849a9e4edd" testId="9e163708-6b45-1c9f-bafa-9e0b619b9cd3" testName="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function" computerName="docker-desktop" duration="00:00:00.0371158" startTime="2026-10-11T07:38:07.6062204+00:00" endTime="2026-10-11T07:38:07.6447810+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7b085925-c424-40ea-8525-0b849a9e4edd" />
+    <UnitTestResult executionId="25388458-80e6-406e-9a9a-57056bb80a61" testId="ddd1f2c1-c0f2-5e18-cf02-0d7ff3db5652" testName="Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint" computerName="docker-desktop" duration="00:02:31.1490346" startTime="2026-10-11T07:34:51.6850177+00:00" endTime="2026-10-11T07:37:22.8217141+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="25388458-80e6-406e-9a9a-57056bb80a61">
+      <Output>
+        <StdOut>111 endpoints, 14354 requests, 4 branch Z markers, 1104 differential checks, 5 write oracle checks
+own-parameter reads: 2106 requests over 54 reads; answered: /api/auth/session, /api/health, /api/identity/companies, /api/identity/me/passkeys, /api/identity/permissions, /api/identity/roles, /api/identity/roles/{id:guid}, /api/identity/users, /api/identity/users/{id:guid}, /api/identity/users/{id:guid}/access, /api/identity/users/{id:guid}/default-company, /api/identity/users/{id:guid}/passkeys, /api/identity/users/{id:guid}/sign-ins, /api/lists/identity.roles/definition, /api/lists/identity.roles/shared-views/{id:guid}, /api/lists/identity.roles/views, /api/lists/identity.users/definition, /api/lists/identity.users/shared-views/{id:guid}, /api/lists/identity.users/views, /api/lists/tenancy.access/definition, /api/lists/tenancy.access/shared-views/{id:guid}, /api/lists/tenancy.access/views, /api/lists/tenancy.branches/definition, /api/lists/tenancy.branches/shared-views/{id:guid}, /api/lists/tenancy.branches/views, /api/lists/tenancy.companies/definition, /api/lists/tenancy.companies/shared-views/{id:guid}, /api/lists/tenancy.companies/views, /api/openapi/v1.json, /api/reports/catalog, /api/reports/lists/identity.roles, /api/reports/lists/identity.users, /api/reports/lists/tenancy.access, /api/reports/lists/tenancy.branches, /api/reports/lists/tenancy.companies, /api/reports/run/identity.roleSummary, /api/reports/run/identity.usersByRole, /api/reports/run/tenancy.branchDirectory, /api/reports/run/tenancy.companyProfile, /api/tenancy/access, /api/tenancy/access/{userId:guid}, /api/tenancy/branches, /api/tenancy/branches/{id:guid}, /api/tenancy/companies, /api/tenancy/companies/{id:guid}, /api/tenancy/companies/{id:guid}/logo, /api/tenancy/tenant, /api/tenancy/workplace
+shared records: tenancy.companies, tenancy.tenants; 37 writes to company X by the branch-limited administrator:
+  DELETE /api/identity/me/passkeys/{id:guid} [-]
+  DELETE /api/identity/roles/{id:guid} [-]
+  DELETE /api/identity/users/{id:guid} [-]
+  DELETE /api/identity/users/{id:guid}/passkeys [-]
+  DELETE /api/lists/identity.roles/shared-views/{id:guid} [-]
+  DELETE /api/lists/identity.roles/views/{id:guid} [-]
+  DELETE /api/lists/identity.users/shared-views/{id:guid} [-]
+  DELETE /api/lists/identity.users/views/{id:guid} [-]
+  DELETE /api/lists/tenancy.access/shared-views/{id:guid} [-]
+  DELETE /api/lists/tenancy.access/views/{id:guid} [-]
+  DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [-]
+  DELETE /api/lists/tenancy.branches/views/{id:guid} [-]
+  DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [-]
+  DELETE /api/lists/tenancy.companies/views/{id:guid} [-]
+  DELETE /api/tenancy/companies/{id:guid}/logo [-]
+  POST /api/identity/users/{id:guid}/sessions/revoke [-]
+  POST /api/identity/users/{id:guid}/unblock [-]
+  PUT /api/tenancy/companies/{id:guid} [addressAr]
+  PUT /api/tenancy/companies/{id:guid} [addressLine1]
+  PUT /api/tenancy/companies/{id:guid} [city]
+  PUT /api/tenancy/companies/{id:guid} [code]
+  PUT /api/tenancy/companies/{id:guid} [email]
+  PUT /api/tenancy/companies/{id:guid} [emirate]
+  PUT /api/tenancy/companies/{id:guid} [fiscalYearStartDay]
+  PUT /api/tenancy/companies/{id:guid} [fiscalYearStartMonth]
+  PUT /api/tenancy/companies/{id:guid} [isActive]
+  PUT /api/tenancy/companies/{id:guid} [legalNameAr]
+  PUT /api/tenancy/companies/{id:guid} [legalNameEn]
+  PUT /api/tenancy/companies/{id:guid} [poBox]
+  PUT /api/tenancy/companies/{id:guid} [taxRegistrationNumber]
+  PUT /api/tenancy/companies/{id:guid} [tradeLicenceAuthority]
+  PUT /api/tenancy/companies/{id:guid} [tradeLicenceNumber]
+  PUT /api/tenancy/companies/{id:guid}/logo [-]
+  PUT /api/tenancy/tenant [defaultLanguage]
+  PUT /api/tenancy/tenant [nameAr]
+  PUT /api/tenancy/tenant [nameEn]
+  PUT /api/tenancy/tenant [weekStart]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e430a45d-3256-4b99-9d23-42b5142d1f57" testId="4dcc5d62-09e8-3744-49bb-c4fef5910627" testName="Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting" computerName="docker-desktop" duration="00:00:00.0809560" startTime="2026-10-11T07:38:09.5891933+00:00" endTime="2026-10-11T07:38:09.6702072+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e430a45d-3256-4b99-9d23-42b5142d1f57">
+      <Output>
+        <StdOut>8854 methods scanned; 7 name the tenant setting</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5d44cfcf-084e-4a89-9414-9bc5855df6f4" testId="a92f7c0d-17e0-42f5-6c83-38f4dc406b17" testName="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" computerName="docker-desktop" duration="00:00:00.4523933" startTime="2026-10-11T07:38:07.1528001+00:00" endTime="2026-10-11T07:38:07.6052579+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d44cfcf-084e-4a89-9414-9bc5855df6f4">
+      <Output>
+        <StdOut>419 types, 86 fields, 15 singleton services inspected, 115 endpoint delegates walked (3328 objects) to 29 closures; 5 framework singletons over product types; 94 roots walked to 844 objects, 49 product types judged field by field; 28 reviewed findings</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cefd0b7e-3152-40b9-bb13-01a06a1e85c3" testId="159ee429-b7ba-1393-06e8-661ffaae1581" testName="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant" computerName="docker-desktop" duration="00:00:00.0113832" startTime="2026-10-11T07:38:05.9839623+00:00" endTime="2026-10-11T07:38:05.9953909+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cefd0b7e-3152-40b9-bb13-01a06a1e85c3" />
+    <UnitTestResult executionId="8500202a-a788-4e7f-a801-f88c1f6e3081" testId="884947c4-8f17-1c81-9722-d4eb34aa690f" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;&quot;)" computerName="docker-desktop" duration="00:00:00.0003531" startTime="2026-10-11T07:34:44.7346001+00:00" endTime="2026-10-11T07:34:44.7349876+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8500202a-a788-4e7f-a801-f88c1f6e3081" />
+    <UnitTestResult executionId="be40e8e5-25af-486c-ba70-431f58cebe4d" testId="b16c0f07-d932-85ce-cc57-2857f124cdcc" testName="Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant" computerName="docker-desktop" duration="00:00:00.1498215" startTime="2026-10-11T07:38:09.8823643+00:00" endTime="2026-10-11T07:38:10.0322276+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="be40e8e5-25af-486c-ba70-431f58cebe4d">
+      <Output>
+        <StdOut>50 unique indexes on tenant tables checked</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2fa0c7d5-2292-4a85-bd22-89e579589397" testId="9215d614-a082-a2fd-5372-f234929c2b5f" testName="Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven" computerName="docker-desktop" duration="00:00:00.2039823" startTime="2026-10-11T07:38:03.6530889+00:00" endTime="2026-10-11T07:38:03.8571552+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2fa0c7d5-2292-4a85-bd22-89e579589397" />
+    <UnitTestResult executionId="1ed5f397-f4e3-4da2-9959-7d2333d56793" testId="693c0b47-e45e-66c5-df42-6b90720f898a" testName="Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint" computerName="docker-desktop" duration="00:06:33.1206898" startTime="2026-10-11T07:34:58.3118001+00:00" endTime="2026-10-11T07:41:31.3946672+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ed5f397-f4e3-4da2-9959-7d2333d56793">
+      <Output>
+        <StdOut>111 endpoints, 68777 requests, 25 company Y markers, 10560 differential checks, 8 write oracle checks
+own-parameter reads: 2355 requests over 54 reads
+workspace records: tenancy.tenants; 4 writes:
+  PUT /api/tenancy/tenant [defaultLanguage]
+  PUT /api/tenancy/tenant [nameAr]
+  PUT /api/tenancy/tenant [nameEn]
+  PUT /api/tenancy/tenant [weekStart]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9e4cb15f-0c79-4482-9966-d23e43cb4dea" testId="0ffba586-f26a-5bb5-0a61-84edcc89290c" testName="Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy" computerName="docker-desktop" duration="00:00:00.1502669" startTime="2026-10-11T07:37:57.2810478+00:00" endTime="2026-10-11T07:37:57.4313929+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e4cb15f-0c79-4482-9966-d23e43cb4dea" />
+    <UnitTestResult executionId="97e127a0-1c34-4122-84eb-d53991cd3f66" testId="4740f566-51a1-26f9-5808-71ac832be86e" testName="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" computerName="docker-desktop" duration="00:15:17.8472966" startTime="2026-10-11T07:34:46.8520912+00:00" endTime="2026-10-11T07:50:04.6346025+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="97e127a0-1c34-4122-84eb-d53991cd3f66">
+      <Output>
+        <StdOut>5092 comparisons over 45 endpoints (314 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 22840 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators)
+unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a129ea-e9dc-7bbb-aaff-b4f9eefb8998","nameEn":"Activity alpha 52","nameAr":"\u0646\u0634\u0627\u0637 alpha 52","permissions":["identity.profile.upda… / 201 {"id":"01a129ea-ea09-792e-ac9c-795fb39b39fc","nameEn":"Activity alpha 54","nameAr":"\u0646\u0634\u0627\u0637 alpha 54","permissions":["identity.profile.upda…)
+unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a129ea-ea3d-7429-a914-816ca8f15de0","nameEn":"Activity CNRYC35367CABA 53","nameAr":"\u0646\u0634\u0627\u0637 CNRYC35367CABA 53","permissions":["ide… / 201 {"id":"01a129ea-ea93-7bfc-b217-12db8c438860","nameEn":"Activity CNRYC35367CABA 55","nameAr":"\u0646\u0634\u0627\u0637 CNRYC35367CABA 55","permissions":["ide…)
+unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a129ea-eabe-745b-b947-5905f9d40e8b","nameEn":"Activity alpha 57","nameAr":"\u0646\u0634\u0627\u0637 alpha 57","permissions":["identity.users.read"]… / 201 {"id":"01a129ea-eaf4-7c88-b775-6bd58a136bd5","nameEn":"Activity alpha 59","nameAr":"\u0646\u0634\u0627\u0637 alpha 59","permissions":["identity.users.read"]…)
+unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a129ea-eb2a-74e6-901f-c6250f596332","nameEn":"Activity CNRYC35367CABA 58","nameAr":"\u0646\u0634\u0627\u0637 CNRYC35367CABA 58","permissions":["ide… / 201 {"id":"01a129ea-eb5a-7a44-9749-740c2f6ca236","nameEn":"Activity CNRYC35367CABA 60","nameAr":"\u0646\u0634\u0627\u0637 CNRYC35367CABA 60","permissions":["ide…)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9321e011-3b96-42f5-a332-825fa5bfae86" testId="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a" testName="Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state" computerName="docker-desktop" duration="00:00:00.0060931" startTime="2026-10-11T07:37:57.2730275+00:00" endTime="2026-10-11T07:37:57.2791976+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9321e011-3b96-42f5-a332-825fa5bfae86" />
+    <UnitTestResult executionId="ada95481-482c-496c-bb72-8f08c10c1ce5" testId="64a75912-6c8d-b086-307f-9e6d2aab0774" testName="Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies" computerName="docker-desktop" duration="00:00:00.7254727" startTime="2026-10-11T07:41:31.3960355+00:00" endTime="2026-10-11T07:41:32.1215615+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ada95481-482c-496c-bb72-8f08c10c1ce5" />
+    <UnitTestResult executionId="f9c629c2-4c68-4b7d-8822-59b704dfac73" testId="e1933176-c490-715e-641a-27686c65db06" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;not json at all: bravo trading, admin@bravo.exampl&quot;···)" computerName="docker-desktop" duration="00:00:00.0015053" startTime="2026-10-11T07:34:44.7167726+00:00" endTime="2026-10-11T07:34:44.7183215+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f9c629c2-4c68-4b7d-8822-59b704dfac73" />
+    <UnitTestResult executionId="8b76dd79-a4b4-4d7d-881c-24b8ba9455e3" testId="2119ddb6-41f3-c25b-1a90-c61b2aa24915" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;a\&quot;:1} {\&quot;b\&quot;:2}&quot;)" computerName="docker-desktop" duration="00:00:00.0004112" startTime="2026-10-11T07:34:44.7352264+00:00" endTime="2026-10-11T07:34:44.7356646+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b76dd79-a4b4-4d7d-881c-24b8ba9455e3" />
+    <UnitTestResult executionId="53308212-f493-4410-81b2-7df60e18feb5" testId="c7e9396c-e5c2-3919-3b17-c8535cd762e6" testName="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;null&quot;)" computerName="docker-desktop" duration="00:00:00.0002575" startTime="2026-10-11T07:34:44.7218276+00:00" endTime="2026-10-11T07:34:44.7221286+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="53308212-f493-4410-81b2-7df60e18feb5" />
+    <UnitTestResult executionId="8d2da11e-8141-4426-a0ab-13d52bb3e919" testId="dfd04a43-dca0-5205-278b-92344edcc8fc" testName="Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id" computerName="docker-desktop" duration="00:00:01.8726151" startTime="2026-10-11T07:38:07.7103373+00:00" endTime="2026-10-11T07:38:09.5830019+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d2da11e-8141-4426-a0ab-13d52bb3e919">
+      <Output>
+        <StdOut>7 versions shown to tenant A; 19 transaction ids over 445 tenant rows</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="fe8629d6-8c75-1c91-21c3-9d8b12bc004f">
+      <Execution id="c25815ca-ec19-4d95-86f4-3c977cd36255" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Tenant_tables_enforce_row_level_security_with_the_standard_policy" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="2226af77-d9ee-76ca-e077-5a68a7a7b666">
+      <Execution id="601d42fa-4a3f-46ee-89a6-451f5f51b09e" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Security_definer_functions_are_exactly_the_reviewed_ones" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="16896382-206a-cc84-bfb2-745f2dea1f3c">
+      <Execution id="f890410a-2809-4ad3-aa85-331498a14011" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1WriteOracleTests" name="Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="cac157df-4993-29bb-f658-170ef8f07141">
+      <Execution id="0adc2831-152f-4ff3-a6fd-709f65c6d117" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="64a75912-6c8d-b086-307f-9e6d2aab0774">
+      <Execution id="ada95481-482c-496c-bb72-8f08c10c1ce5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CompanyIsolationTests" name="The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;[{\&quot;a\&quot;:1.50,\&quot;b\&quot;:1e3,\&quot;c\&quot;:-0,\&quot;d\&quot;:true,\&quot;e\&quot;:f&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="46095d10-da33-13d2-1cab-70559ed4c81d">
+      <Execution id="594cfc0f-e0f9-4f09-aaee-53fb270c1121" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b16c0f07-d932-85ce-cc57-2857f124cdcc">
+      <Execution id="be40e8e5-25af-486c-ba70-431f58cebe4d" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1UniqueIndexTests" name="Unique_indexes_on_tenant_tables_include_the_tenant" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c2ca765e-0625-1be7-525b-eb01a75f4263">
+      <Execution id="74b4afed-06b7-431a-8a8f-28b82c59002b" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CredentialTests" name="The_function_owner_writes_only_where_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="f3053ff1-e78b-7a44-0726-0da27377e8b0">
+      <Execution id="71cd8872-1fc0-4934-a686-c6544145273e" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9e163708-6b45-1c9f-bafa-9e0b619b9cd3">
+      <Execution id="7b085925-c424-40ea-8525-0b849a9e4edd" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ReviewedLookupTests" name="Only_reviewed_source_files_name_a_reviewed_function" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;a\&quot;:1} {\&quot;b\&quot;:2}&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="2119ddb6-41f3-c25b-1a90-c61b2aa24915">
+      <Execution id="8b76dd79-a4b4-4d7d-881c-24b8ba9455e3" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;nested\&quot;:{\&quot;traceId\&quot;:\&quot;t\&quot;,\&quot;deeper\&quot;:[{\&quot;trac&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="91ecc4eb-25bc-9906-3c4c-17d81830d855">
+      <Execution id="b786a400-57f5-4c7e-92ab-12e6e29ad392" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="6d497417-3aed-8005-8bb0-85bba49266f7">
+      <Execution id="192b4b35-f334-45bf-a65a-10ecd5cc3321" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1HttpIsolationTests" name="Tenant_A_cannot_reach_tenant_B_through_any_endpoint" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="dfd04a43-dca0-5205-278b-92344edcc8fc">
+      <Execution id="8d2da11e-8141-4426-a0ab-13d52bb3e919" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1RowVersionTests" name="A_record_version_is_never_a_database_transaction_id" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c951403b-7a0c-c2cf-970d-1f191f89f36c">
+      <Execution id="f71f7dc6-5532-464b-b22d-04769748f851" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1PasskeyTests" name="Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e03b8989-78cc-fa84-6190-253fadbc96a7">
+      <Execution id="ed82ce2c-cc46-41e1-a8d7-a604d3dbda30" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Application_role_cannot_read_statistics_that_count_every_tenant" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="13bc67f5-a55e-ea7c-047d-055bf37e70e4">
+      <Execution id="32bc0f50-38ae-4621-a509-1e37f4fce08e" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1SignInThrottleTests" name="A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="808cf47d-bb02-c017-c472-7001e5ed7240">
+      <Execution id="36a31a39-592f-456e-8cde-812f38162f89" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c98483e3-7a88-ccf6-2f03-ff738616f462">
+      <Execution id="09ae47b9-01bf-4a11-b222-cb60ad314ce0" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Product_code_never_reads_statistics_that_count_every_tenant" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="f4d379e5-35b1-df5f-225b-78e50a745ca2">
+      <Execution id="602ecf35-d07f-4a57-b6a3-f71287166dfa" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CredentialTests" name="No_reviewed_function_returns_a_credential_column_or_a_whole_row" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="abf8dcc0-c2c8-e7ab-e7c1-2ea68acdc078">
+      <Execution id="ad194e1a-cd37-4f8a-b573-0bc68d24b987" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantSettingCodeTests" name="The_scan_finds_a_helper_that_names_the_tenant_setting" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="cd21988c-fdfc-b425-650c-35873e5c36d2">
+      <Execution id="cbf8b5ed-f3af-4ded-9403-7ff6ac92833d" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1WriteOracleTests" name="Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ddd1f2c1-c0f2-5e18-cf02-0d7ff3db5652">
+      <Execution id="25388458-80e6-406e-9a9a-57056bb80a61" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1BranchScopeAttackTests" name="A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="884947c4-8f17-1c81-9722-d4eb34aa690f">
+      <Execution id="8500202a-a788-4e7f-a801-f88c1f6e3081" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;broken\&quot;: bravo}&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="7bf19735-d4c4-6826-14ad-a624c8db38bc">
+      <Execution id="52dc7009-3386-4956-838b-d33b070ca523" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="4740f566-51a1-26f9-5808-71ac832be86e">
+      <Execution id="97e127a0-1c34-4122-84eb-d53991cd3f66" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1NonInterferenceTests" name="What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a">
+      <Execution id="9321e011-3b96-42f5-a332-825fa5bfae86" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="The_inventory_finds_planted_module_state" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="bf3d89a0-ed37-f38b-158a-6024b057c374">
+      <Execution id="7617548e-e177-4a8a-a7a1-0da87c3c375b" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Every_table_is_tenant_owned_or_a_reviewed_platform_table" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;items\&quot;:[{\&quot;id\&quot;:\&quot;0190a000-0000-7000-8000-0000&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="dda42f5e-407d-5b72-21db-729a90f13461">
+      <Execution id="88b24ac2-c5ed-49ae-b017-8bf2c52de4ed" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;null&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c7e9396c-e5c2-3919-3b17-c8535cd762e6">
+      <Execution id="53308212-f493-4410-81b2-7df60e18feb5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="28e64dd9-e190-4cc6-0d6d-d8a25a33e9c7">
+      <Execution id="0494d4b8-5d63-4ea9-bd68-6f9ab267f9fe" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Audit_trail_is_append_only_for_the_application" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="6d1c9a80-6963-6a8b-1a12-7041ba19ea79">
+      <Execution id="05f36a9c-08a0-4e63-bb9b-57dffc25608e" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="The_carrier_inventory_finds_the_planted_cookie_and_window_name" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;\&quot;bravo trading\&quot;&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="67b967f2-80bf-9f30-2605-5a12c4de1ad4">
+      <Execution id="729a1f24-9efc-4e50-8fbf-5f054b29f883" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;type\&quot;:\&quot;https://tools.ietf.org/html/rfc9110#se&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="5c960c49-c27a-4b28-0210-0963b8837756">
+      <Execution id="821f55f7-e29e-4c75-a5a2-69801a43bb10" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="0ffba586-f26a-5bb5-0a61-84edcc89290c">
+      <Execution id="9e4cb15f-0c79-4482-9966-d23e43cb4dea" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CompanyScopeTests" name="Every_company_table_carries_the_standard_company_scope_policy" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b7934884-82a2-1458-6a7d-18ca9ea4cc48">
+      <Execution id="0b21f130-de02-4b8d-b301-7b0f05415434" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantSourceTests" name="Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="0b7f6d1b-8a71-bef8-944b-5bcb15526484">
+      <Execution id="68460f7f-aaed-41ff-9dc0-ee32f03987e5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ReviewedLookupTests" name="Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="693c0b47-e45e-66c5-df42-6b90720f898a">
+      <Execution id="1ed5f397-f4e3-4da2-9959-7d2333d56793" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CompanyIsolationTests" name="A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="5b1a8fd7-d3d4-fb07-c9e3-4cfc0e4a616b">
+      <Execution id="ebd4407b-ad13-462e-9225-3d40f1bf9642" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantSourceTests" name="The_scanner_catches_every_planted_bypass" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;not json at all: bravo trading, admin@bravo.exampl&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e1933176-c490-715e-641a-27686c65db06">
+      <Execution id="f9c629c2-4c68-4b7d-8822-59b704dfac73" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;  {\&quot;spaced\&quot; : [ 1 , 2 ] , \&quot;s\&quot; : \&quot;admin@bravo.&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="bd94d00b-1232-8c60-2ef3-0b15bc5fe158">
+      <Execution id="b7a9de06-9b69-45c4-8a84-3c3deed60314" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c8fc237c-2bd2-c953-81a0-34e73c946c07">
+      <Execution id="1928222d-c2c0-4f9f-b8e2-89aa0aae2fc0" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Tenant_tables_have_an_id_primary_key" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3776a038-f4b3-b19b-d3f3-bcafe44baf64">
+      <Execution id="33cbc075-f1e1-497c-b08f-533f448e735c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Leakproof_functions_are_postgres_defaults_or_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="47b89b1d-66f5-0de1-de0b-4a076a51df22">
+      <Execution id="0b0e8d5e-79c9-4e8a-b70e-775f11cd84cd" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;bravo trading\&quot;:\&quot;key is never scrubbed\&quot;,\&quot;x\&quot;&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="d6671d8a-281c-5ba8-62c4-6f33d870f89d">
+      <Execution id="c137d845-d965-4281-adf3-1511d222d8db" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="159ee429-b7ba-1393-06e8-661ffaae1581">
+      <Execution id="cefd0b7e-3152-40b9-bb13-01a06a1e85c3" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="Foreign_keys_between_tenant_tables_include_the_tenant" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3376848c-ad42-b7ba-c4af-aa3508c83138">
+      <Execution id="83392757-c190-485a-baee-ea6ccceb57e9" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantValueRuleTests" name="A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="fff07e29-3727-10e9-589d-dd75315872b8">
+      <Execution id="242daef9-587c-4a08-9208-2454d45d2db5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CompanyIsolationTests" name="An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c11cfd22-bcb1-9999-4752-8d08fedebee8">
+      <Execution id="77e5c508-7438-4bf8-8dec-cfa093288519" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CompanyScopeTests" name="The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="82377258-4ae9-c325-ad1e-6e418efe3715">
+      <Execution id="4be03f0b-1d7d-4b3b-b4e5-003d89b8ac68" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1SignInThrottleTests" name="Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="7fadb740-ceb0-3ca8-fcf4-081d5a9d0846">
+      <Execution id="e8dc7475-b514-4512-9d42-53edb0235014" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CredentialTests" name="The_application_role_can_read_no_stored_credential" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a92f7c0d-17e0-42f5-6c83-38f4dc406b17">
+      <Execution id="5d44cfcf-084e-4a89-9414-9bc5855df6f4" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ProcessStateTests" name="Process_wide_state_is_immutable_or_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9215d614-a082-a2fd-5372-f234929c2b5f">
+      <Execution id="2fa0c7d5-2292-4a85-bd22-89e579589397" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1CredentialTests" name="The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;{\&quot;name\&quot;:\&quot;شركة برافو\&quot;,\&quot;note\&quot;:\&quot;مرحبا bravo\&quot;,&quot;···)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="8390b883-014d-ad0f-1496-9f42573a0543">
+      <Execution id="f56f89de-45dc-40ec-8507-60483c448c41" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="28306ade-86df-26be-b52f-a1c250a1b891">
+      <Execution id="db6357f7-d8fb-4de9-8ec9-7e7c343d733c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ReviewedLookupTests" name="Every_reviewed_function_has_reviewed_callers_and_sources" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="6f5ef540-7442-02b0-c3e9-aa67476e1b8c">
+      <Execution id="1516559c-84ea-4495-ada1-e46b9c631d68" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1SignInThrottleTests" name="Sign_in_failures_give_one_answer_that_states_no_policy" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ddbd45c8-da87-c16d-4b7f-c35e97fe3b66">
+      <Execution id="e6a855b7-088e-484c-abfb-7a49e2138c2a" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantValueRuleTests" name="Every_shape_of_setting_change_is_read_with_its_value" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="691998c2-71ca-17d2-9022-1c44da54105a">
+      <Execution id="782780b7-0f4e-46ef-9aff-a4fa58837a04" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1DatabaseIsolationTests" name="A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: &quot;42&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="7c8a9a22-9f65-c2d1-7b41-dce5fcc590cb">
+      <Execution id="05705e3d-8647-4258-b3e1-d68f993bada2" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.DifferentialNormalizationTests" name="One_pass_gives_what_two_passes_gave" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="4dcc5d62-09e8-3744-49bb-c4fef5910627">
+      <Execution id="e430a45d-3256-4b99-9d23-42b5142d1f57" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1TenantSettingCodeTests" name="Only_reviewed_methods_name_the_tenant_setting" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="16896382-206a-cc84-bfb2-745f2dea1f3c" executionId="f890410a-2809-4ad3-aa85-331498a14011" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c98483e3-7a88-ccf6-2f03-ff738616f462" executionId="09ae47b9-01bf-4a11-b222-cb60ad314ce0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f4d379e5-35b1-df5f-225b-78e50a745ca2" executionId="602ecf35-d07f-4a57-b6a3-f71287166dfa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dda42f5e-407d-5b72-21db-729a90f13461" executionId="88b24ac2-c5ed-49ae-b017-8bf2c52de4ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="47b89b1d-66f5-0de1-de0b-4a076a51df22" executionId="0b0e8d5e-79c9-4e8a-b70e-775f11cd84cd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e03b8989-78cc-fa84-6190-253fadbc96a7" executionId="ed82ce2c-cc46-41e1-a8d7-a604d3dbda30" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ddbd45c8-da87-c16d-4b7f-c35e97fe3b66" executionId="e6a855b7-088e-484c-abfb-7a49e2138c2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d6671d8a-281c-5ba8-62c4-6f33d870f89d" executionId="c137d845-d965-4281-adf3-1511d222d8db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="46095d10-da33-13d2-1cab-70559ed4c81d" executionId="594cfc0f-e0f9-4f09-aaee-53fb270c1121" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7c8a9a22-9f65-c2d1-7b41-dce5fcc590cb" executionId="05705e3d-8647-4258-b3e1-d68f993bada2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="691998c2-71ca-17d2-9022-1c44da54105a" executionId="782780b7-0f4e-46ef-9aff-a4fa58837a04" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cd21988c-fdfc-b425-650c-35873e5c36d2" executionId="cbf8b5ed-f3af-4ded-9403-7ff6ac92833d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="91ecc4eb-25bc-9906-3c4c-17d81830d855" executionId="b786a400-57f5-4c7e-92ab-12e6e29ad392" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67b967f2-80bf-9f30-2605-5a12c4de1ad4" executionId="729a1f24-9efc-4e50-8fbf-5f054b29f883" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3376848c-ad42-b7ba-c4af-aa3508c83138" executionId="83392757-c190-485a-baee-ea6ccceb57e9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7bf19735-d4c4-6826-14ad-a624c8db38bc" executionId="52dc7009-3386-4956-838b-d33b070ca523" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe8629d6-8c75-1c91-21c3-9d8b12bc004f" executionId="c25815ca-ec19-4d95-86f4-3c977cd36255" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c960c49-c27a-4b28-0210-0963b8837756" executionId="821f55f7-e29e-4c75-a5a2-69801a43bb10" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5b1a8fd7-d3d4-fb07-c9e3-4cfc0e4a616b" executionId="ebd4407b-ad13-462e-9225-3d40f1bf9642" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b7934884-82a2-1458-6a7d-18ca9ea4cc48" executionId="0b21f130-de02-4b8d-b301-7b0f05415434" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d497417-3aed-8005-8bb0-85bba49266f7" executionId="192b4b35-f334-45bf-a65a-10ecd5cc3321" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d1c9a80-6963-6a8b-1a12-7041ba19ea79" executionId="05f36a9c-08a0-4e63-bb9b-57dffc25608e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="28306ade-86df-26be-b52f-a1c250a1b891" executionId="db6357f7-d8fb-4de9-8ec9-7e7c343d733c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="28e64dd9-e190-4cc6-0d6d-d8a25a33e9c7" executionId="0494d4b8-5d63-4ea9-bd68-6f9ab267f9fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="808cf47d-bb02-c017-c472-7001e5ed7240" executionId="36a31a39-592f-456e-8cde-812f38162f89" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cac157df-4993-29bb-f658-170ef8f07141" executionId="0adc2831-152f-4ff3-a6fd-709f65c6d117" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8390b883-014d-ad0f-1496-9f42573a0543" executionId="f56f89de-45dc-40ec-8507-60483c448c41" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3776a038-f4b3-b19b-d3f3-bcafe44baf64" executionId="33cbc075-f1e1-497c-b08f-533f448e735c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8fc237c-2bd2-c953-81a0-34e73c946c07" executionId="1928222d-c2c0-4f9f-b8e2-89aa0aae2fc0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3053ff1-e78b-7a44-0726-0da27377e8b0" executionId="71cd8872-1fc0-4934-a686-c6544145273e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf3d89a0-ed37-f38b-158a-6024b057c374" executionId="7617548e-e177-4a8a-a7a1-0da87c3c375b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7fadb740-ceb0-3ca8-fcf4-081d5a9d0846" executionId="e8dc7475-b514-4512-9d42-53edb0235014" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="82377258-4ae9-c325-ad1e-6e418efe3715" executionId="4be03f0b-1d7d-4b3b-b4e5-003d89b8ac68" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c11cfd22-bcb1-9999-4752-8d08fedebee8" executionId="77e5c508-7438-4bf8-8dec-cfa093288519" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2226af77-d9ee-76ca-e077-5a68a7a7b666" executionId="601d42fa-4a3f-46ee-89a6-451f5f51b09e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6f5ef540-7442-02b0-c3e9-aa67476e1b8c" executionId="1516559c-84ea-4495-ada1-e46b9c631d68" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fff07e29-3727-10e9-589d-dd75315872b8" executionId="242daef9-587c-4a08-9208-2454d45d2db5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2ca765e-0625-1be7-525b-eb01a75f4263" executionId="74b4afed-06b7-431a-8a8f-28b82c59002b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13bc67f5-a55e-ea7c-047d-055bf37e70e4" executionId="32bc0f50-38ae-4621-a509-1e37f4fce08e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="abf8dcc0-c2c8-e7ab-e7c1-2ea68acdc078" executionId="ad194e1a-cd37-4f8a-b573-0bc68d24b987" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0b7f6d1b-8a71-bef8-944b-5bcb15526484" executionId="68460f7f-aaed-41ff-9dc0-ee32f03987e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bd94d00b-1232-8c60-2ef3-0b15bc5fe158" executionId="b7a9de06-9b69-45c4-8a84-3c3deed60314" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c951403b-7a0c-c2cf-970d-1f191f89f36c" executionId="f71f7dc6-5532-464b-b22d-04769748f851" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9e163708-6b45-1c9f-bafa-9e0b619b9cd3" executionId="7b085925-c424-40ea-8525-0b849a9e4edd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ddd1f2c1-c0f2-5e18-cf02-0d7ff3db5652" executionId="25388458-80e6-406e-9a9a-57056bb80a61" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4dcc5d62-09e8-3744-49bb-c4fef5910627" executionId="e430a45d-3256-4b99-9d23-42b5142d1f57" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a92f7c0d-17e0-42f5-6c83-38f4dc406b17" executionId="5d44cfcf-084e-4a89-9414-9bc5855df6f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="159ee429-b7ba-1393-06e8-661ffaae1581" executionId="cefd0b7e-3152-40b9-bb13-01a06a1e85c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="884947c4-8f17-1c81-9722-d4eb34aa690f" executionId="8500202a-a788-4e7f-a801-f88c1f6e3081" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b16c0f07-d932-85ce-cc57-2857f124cdcc" executionId="be40e8e5-25af-486c-ba70-431f58cebe4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9215d614-a082-a2fd-5372-f234929c2b5f" executionId="2fa0c7d5-2292-4a85-bd22-89e579589397" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="693c0b47-e45e-66c5-df42-6b90720f898a" executionId="1ed5f397-f4e3-4da2-9959-7d2333d56793" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ffba586-f26a-5bb5-0a61-84edcc89290c" executionId="9e4cb15f-0c79-4482-9966-d23e43cb4dea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4740f566-51a1-26f9-5808-71ac832be86e" executionId="97e127a0-1c34-4122-84eb-d53991cd3f66" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a" executionId="9321e011-3b96-42f5-a332-825fa5bfae86" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64a75912-6c8d-b086-307f-9e6d2aab0774" executionId="ada95481-482c-496c-bb72-8f08c10c1ce5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1933176-c490-715e-641a-27686c65db06" executionId="f9c629c2-4c68-4b7d-8822-59b704dfac73" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2119ddb6-41f3-c25b-1a90-c61b2aa24915" executionId="8b76dd79-a4b4-4d7d-881c-24b8ba9455e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7e9396c-e5c2-3919-3b17-c8535cd762e6" executionId="53308212-f493-4410-81b2-7df60e18feb5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dfd04a43-dca0-5205-278b-92344edcc8fc" executionId="8d2da11e-8141-4426-a0ab-13d52bb3e919" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="60" executed="60" passed="60" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.37]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.88]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.18]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:36:23.21]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

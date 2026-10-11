@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "run_id": "open-third-user-keyboard-20261011T082737-4844",
+  "instrument": 8,
+  "task": "open-third-user-keyboard",
+  "task_title": "Open a record from a list by keyboard only (users list)",
+  "product": "odoo",
+  "status": "error",
+  "goal": "Without touching the mouse, open the list of the workspace's users and open the third user in it.",
+  "done_when": "The third user of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-11T08:27:37.499Z",
+  "finished_at": "2026-10-11T08:27:44.235Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 8,
+    "keystrokes": 13,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 7,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.852,
+    "system_wait_seconds": 1.667,
+    "human_seconds": 6.74,
+    "human_plus_wait_seconds": 8.407,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.031,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.233,
+      "took": 0.032,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.338,
+      "took": 0.01,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.917,
+      "took": 0.016,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.933,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.948,
+      "took": 0.012,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.961,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.985,
+      "took": 0.034,
+      "chord": "Enter",
+      "screen": "/odoo/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.033,
+      "seconds": 0.199
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.266,
+      "seconds": 0.07
+    },
+    {
+      "label": "users list",
+      "at": 0.349,
+      "seconds": 0.567
+    },
+    {
+      "label": "third row selected",
+      "at": 0.983,
+      "seconds": 0.002
+    },
+    {
+      "label": "user form",
+      "at": 1.02,
+      "seconds": 0.829
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "59be8198a5cb0472.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/59be8198a5cb0472.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "563d813992ca2da8.jpg",
+      "at": 1.852,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/563d813992ca2da8.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "791f0bbd89992a86.jpg",
+      "at": 1.852,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/791f0bbd89992a86.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Down (header row), Down x3 (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs",
+    "sha256": "a4139e623341db394e219ec83d909bcd251a80bbe4a6341d938793f96e87ed00"
+  },
+  "task_notes": "Proposed by the p04 critic, round 2 (kept by r3 and r4): the users-list stand-in for keyboard-navigation until the contacts list (p16) exists. Every step must be a key or key chord.",
+  "error": "TypeError: Cannot read properties of undefined (reading 'third')\n    (in the driver process)\n    at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs:23:34)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)\n    at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)",
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "url": "/odoo/users/71953",
+    "ready_state": "complete",
+    "title": "Product",
+    "focused": null,
+    "navigation": true,
+    "busy": [],
+    "messages": []
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "a4c165b430ada758",
+    "elements": 363
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": "Cannot read properties of undefined (reading 'third')",
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.053
+  },
+  "set_up_writes_waited": 0,
+  "failure_capture": {
+    "url": "http://localhost:8069/odoo/users/71953",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+    ]
+  }
+}

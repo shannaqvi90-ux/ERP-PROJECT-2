@@ -1,0 +1,15 @@
+Critic p04-shell r8 - planted faults on the piece's own surface (clone of 8bc6a09, scratch copies only)
+
+P1  server, permission: POST /api/identity/me/preferences/reset, AllowAnonymousReviewed, not on the allowlist
+    -> CAUGHT by G2PermissionTests (2 tests: anonymous endpoint missing from allowlist; reviewed prefix)   plants-serverA-gates.log
+L1  server, tenant leak: static field holds the previous Arabic caller's e-mail, returned in header X-Arabic-Previous
+    -> CAUGHT by G1ProcessStateTests (static field) and G1HttpIsolationTests (11 leaks, both directions, Arabic sessions)
+       G1NonInterferenceTests PASSED with it (by design: it compares status and body only; static fields left to the process-state gate)
+C2  client, tenant leak: palette answers memoised on the extension registry's source objects (not reset at sign-out)
+    -> CAUGHT by clientIsolation.test.tsx (2 tests, English and Arabic)                      plant-client-C2-registry-memo.diff
+P2  client, permission: language/digits change saved to the server without the identity.profile.update check
+    -> CAUGHT by AppShell.test.tsx 'preferences without the permission to change the profile'   plant-client-P2-prefs-no-permission.diff
+L3  server, tenant leak WITHOUT a marker: process-wide count of Arabic switches (all tenants) kept on IConfiguration
+    (a framework singleton) and returned in response header X-Arabic-Switches on PUT /api/identity/me/preferences
+    -> MISSED: all 60 G1 tests passed (G1ProcessState, G1HttpIsolation 36 min, G1NonInterference 15 min, ...)  plants-serverL3-gates.log
+       Live on the planted build: tenant A's count jumps 2 -> 8 while tenant B switches five times   plant-L3-live-demo.txt
