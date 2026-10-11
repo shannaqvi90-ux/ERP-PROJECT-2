@@ -42,8 +42,8 @@ test.describe("go-to keys reach every listed screen", () => {
     const navigation = page.getByRole("navigation", { name: nav });
     await expect(navigation.getByRole("link").first()).toBeVisible();
     const entries = await navigation
-      .locator("a[data-go]")
-      .evaluateAll((anchors) => anchors.map((a) => ({ href: a.getAttribute("href") ?? "", letter: a.getAttribute("data-go") ?? "" })));
+      .locator("li[data-go]")
+      .evaluateAll((items) => items.map((li) => ({ href: li.querySelector("a")?.getAttribute("href") ?? "", letter: li.getAttribute("data-go") ?? "" })));
     expect(entries.length).toBeGreaterThanOrEqual(5);
     for (const { href, letter } of entries) {
       await page.keyboard.press("g");
@@ -56,7 +56,10 @@ test.describe("go-to keys reach every listed screen", () => {
       await expect(page).toHaveURL(new RegExp(`${href.replace(/\//g, "\\/")}$`));
       await expect(page.locator("[data-goto-hint]")).toHaveCount(0);
       await expect(page.locator("main h1")).toBeVisible();
-      // The letter went nowhere else: no field received it.
+      // The link's name is the entry's name alone (the letter is drawn beside it).
+      const link = navigation.locator(`a[href="${href}"]`);
+      await expect(link).toHaveAccessibleName(((await link.textContent()) ?? "").trim());
+      // The next go-to starts from the screen itself, not from a field.
       await page.locator("main").focus();
     }
   }

@@ -177,9 +177,11 @@ describe("go to a screen with G and a letter", () => {
   it("names each entry's letter in the navigation pane and the help sheet", async () => {
     await start();
     const users = document.querySelector<HTMLAnchorElement>('nav.navpane a[href="/identity/users"]')!;
-    expect(users.getAttribute("data-go")).toBe("U");
     expect(users.getAttribute("aria-keyshortcuts")).toBe("G U");
     expect(users.textContent).toBe("Users");
+    // The letter is drawn beside the link, hidden from assistive tools (they read aria-keyshortcuts).
+    expect(users.parentElement!.getAttribute("data-go")).toBe("U");
+    expect(users.hasAttribute("data-go")).toBe(false);
     press({ code: "Slash", key: "?", shiftKey: true });
     await settle();
     const goTo = [...document.querySelectorAll(".shortcut-table")].find((t) => t.querySelector("caption")!.textContent === "Go to a screen")!;

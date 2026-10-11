@@ -540,17 +540,19 @@ input[aria-invalid="true"] {
   background: var(--bg);
 }
 
-/* The entry's go-to letter (G, then this key), drawn from data-go so the entry's text stays its
-   name; quiet until the entry is pointed at or has the focus. */
-.navpane a[data-go] {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+/* The entry's go-to letter (G, then this key), beside the link (not inside it, so the link's
+   accessible name stays the entry's name); quiet until the entry is pointed at or the pane has
+   the focus. */
+.navpane li {
+  position: relative;
 }
 
-.navpane a[data-go]::after {
+.navpane li[data-go]::after {
   content: attr(data-go);
-  margin-inline-start: auto;
+  position: absolute;
+  inset-inline-end: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   min-width: 1.4em;
   text-align: center;
   font-size: 11px;
@@ -558,13 +560,13 @@ input[aria-invalid="true"] {
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: 3px;
+  pointer-events: none;
   opacity: 0;
 }
 
-.navpane a[data-go]:hover::after,
-.navpane a[data-go]:focus-visible::after,
-.navpane:focus-within a[data-go]::after,
-.app[data-goto="waiting"] .navpane a[data-go]::after {
+.navpane li[data-go]:hover::after,
+.navpane:focus-within li[data-go]::after,
+.app[data-goto="waiting"] .navpane li[data-go]::after {
   opacity: 1;
 }
 

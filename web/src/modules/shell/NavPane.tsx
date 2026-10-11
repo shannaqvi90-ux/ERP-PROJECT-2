@@ -10,10 +10,15 @@ import { entryFor, groupMenu } from "./navigation";
  * Tab stop: Alt+M (or Tab) lands on the current entry, Up/Down move between entries, Home/End
  * jump to the first/last, Enter opens.
  */
+function goToLetterOf(goTo: GoToTarget[], menuKey: string): string | null {
+  const target = goTo.find((g) => g.menu === menuKey);
+  return target ? goToLetter(target.code) : null;
+}
+
 function goToProps(target: GoToTarget | undefined) {
   if (!target) return {};
   const letter = goToLetter(target.code);
-  return { "data-go": letter, "aria-keyshortcuts": `${goToLetter(goToLead)} ${letter}` };
+  return { "aria-keyshortcuts": `${goToLetter(goToLead)} ${letter}` };
 }
 
 /** Hidden when closed, or when the user's roles open no screen at all. */
@@ -51,14 +56,16 @@ export const NavPane = forwardRef<HTMLElement, { menu: MenuItem[]; path: string;
         >
           <ul>
             {group.items.map((item) => (
-              <li key={item.key}>
+              // The go-to letter is drawn beside the link from data-go (CSS, on the item, not the
+              // link): the link's text and accessible name stay the entry's name alone, and
+              // aria-keyshortcuts tells assistive tools.
+              <li key={item.key} data-go={goToLetterOf(goTo, item.key) ?? undefined}>
                 <Link
                   to={item.path}
                   data-nav-entry={item.key}
                   tabIndex={item.key === tabStop ? 0 : -1}
                   aria-current={current?.key === item.key ? "page" : undefined}
-                  // G, then this letter, opens the entry from anywhere (goTo.tsx); the letter is
-                  // drawn from the attribute (CSS), so the entry's text stays its name alone.
+                  // G, then this letter, opens the entry from anywhere (goTo.tsx).
                   {...goToProps(goTo.find((g) => g.menu === item.key))}
                 >
                   {t(item.labelKey)}
