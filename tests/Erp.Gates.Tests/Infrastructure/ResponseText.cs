@@ -120,17 +120,90 @@ public static partial class ResponseText
         {
             text.AppendLine($"<unreadable PDF: {e.GetType().Name}>");
         }
-        foreach (var stream in Streams(bytes))
+        foreach (var stream in RawStreams(bytes))
         {
-            var raw = Encoding.Latin1.GetString(stream);
-            foreach (Match match in ActualTextHex().Matches(raw))
-            {
-                var hex = string.Concat(match.Groups[1].Value.Where(c => !char.IsWhiteSpace(c)));
-                text.AppendLine(Utf16(Convert.FromHexString(hex.Length % 2 == 0 ? hex : hex + "0")));
-            }
-            text.AppendLine(raw);
+            text.Append(StreamText(stream));
         }
         return text.ToString();
+    }
+
+    /// <summary>
+    /// What <see cref="Pdf"/> adds for one stream: its marked-content replacement texts, then its
+    /// bytes (inflated when Flate-compressed) as Latin-1, each line ended. The same stream (same
+    /// bytes, same filter) always gives the same text, and printed documents repeat most of their
+    /// streams (font programs, logos, a page drawn the same way), so the text is kept by the
+    /// stream's SHA-256 and read again from there: the answer is the same text, made once.
+    /// </summary>
+    private static string StreamText(RawStream stream)
+    {
+        var key = (Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream.Data)), stream.Flate);
+        if (StreamTexts.TryGetValue(key, out var known))
+        {
+            return known;
+        }
+        var raw = Encoding.Latin1.GetString(stream.Flate ? Inflate(stream.Data) ?? stream.Data : stream.Data);
+        var text = new StringBuilder();
+        foreach (Match match in ActualTextHex().Matches(raw))
+        {
+            var hex = string.Concat(match.Groups[1].Value.Where(c => !char.IsWhiteSpace(c)));
+            text.AppendLine(Utf16(Convert.FromHexString(hex.Length % 2 == 0 ? hex : hex + "0")));
+        }
+        text.AppendLine(raw);
+        var made = text.ToString();
+        // Bounded: at most StreamTextLimit characters kept, then the store starts again.
+        if (Interlocked.Add(ref _streamTextChars, made.Length) > StreamTextLimit)
+        {
+            lock (StreamTexts)
+            {
+                if (Volatile.Read(ref _streamTextChars) > StreamTextLimit)
+                {
+                    StreamTexts.Clear();
+                    Volatile.Write(ref _streamTextChars, made.Length);
+                }
+            }
+        }
+        StreamTexts.TryAdd(key, made);
+        return made;
+    }
+
+    private const long StreamTextLimit = 48L * 1024 * 1024;
+    private static long _streamTextChars;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(string Hash, bool Flate), string> StreamTexts = new();
+
+    private static byte[]? Inflate(byte[] data)
+    {
+        try
+        {
+            using var z = new ZLibStream(new MemoryStream(data), CompressionMode.Decompress);
+            using var buffer = new MemoryStream();
+            z.CopyTo(buffer);
+            return buffer.ToArray();
+        }
+        catch (InvalidDataException)
+        {
+            // Not a zlib stream after all: judged raw.
+            return null;
+        }
+    }
+
+    /// <summary>A stream's bytes as stored, and whether its dictionary names the Flate filter.</summary>
+    private readonly record struct RawStream(byte[] Data, bool Flate);
+
+    private static IEnumerable<RawStream> RawStreams(byte[] pdf)
+    {
+        var latin = Encoding.Latin1.GetString(pdf);
+        foreach (Match match in StreamStart().Matches(latin))
+        {
+            var start = match.Index + match.Length;
+            var end = latin.IndexOf("endstream", start, StringComparison.Ordinal);
+            if (end < 0)
+            {
+                continue;
+            }
+            var dictionaryStart = latin.LastIndexOf("<<", match.Index, StringComparison.Ordinal);
+            var dictionary = dictionaryStart >= 0 ? latin[dictionaryStart..match.Index] : "";
+            yield return new RawStream(pdf.AsSpan(start, end - start).ToArray(), dictionary.Contains("/FlateDecode", StringComparison.Ordinal));
+        }
     }
 
     /// <summary>A PDF as a reader sees it, without its font programs and raw streams: page text and
@@ -173,42 +246,8 @@ public static partial class ResponseText
     public static string Logical(string visual) =>
         RightToLeftRun().Replace(visual, m => new string(m.Value.Reverse().ToArray()));
 
-    private static IEnumerable<byte[]> Streams(byte[] pdf)
-    {
-        var latin = Encoding.Latin1.GetString(pdf);
-        foreach (Match match in StreamStart().Matches(latin))
-        {
-            var start = match.Index + match.Length;
-            var end = latin.IndexOf("endstream", start, StringComparison.Ordinal);
-            if (end < 0)
-            {
-                continue;
-            }
-            var data = pdf.AsSpan(start, end - start).ToArray();
-            var dictionaryStart = latin.LastIndexOf("<<", match.Index, StringComparison.Ordinal);
-            var dictionary = dictionaryStart >= 0 ? latin[dictionaryStart..match.Index] : "";
-            if (dictionary.Contains("/FlateDecode", StringComparison.Ordinal))
-            {
-                byte[]? inflated = null;
-                try
-                {
-                    using var z = new ZLibStream(new MemoryStream(data), CompressionMode.Decompress);
-                    using var buffer = new MemoryStream();
-                    z.CopyTo(buffer);
-                    inflated = buffer.ToArray();
-                }
-                catch (InvalidDataException)
-                {
-                    // Not a zlib stream after all: judged raw below.
-                }
-                yield return inflated ?? data;
-            }
-            else
-            {
-                yield return data;
-            }
-        }
-    }
+    private static IEnumerable<byte[]> Streams(byte[] pdf) =>
+        RawStreams(pdf).Select(stream => stream.Flate ? Inflate(stream.Data) ?? stream.Data : stream.Data);
 
     private static string Utf16(byte[] bytes)
     {
