@@ -97,7 +97,16 @@ const plants = [
         replace: "",
       },
       { file: "src/modules/tenancy/extensions.tsx", find: 'import { branchCompanies } from "./BranchesPage";\n', replace: "" },
-      { file: "src/modules/tenancy/extensions.tsx", find: "import { loadAll, type ListPage } from", replace: "import { type ListPage } from" },
+      { file: "src/modules/tenancy/extensions.tsx", find: "import { loadAll, worksInEveryCompany, type ListPage } from", replace: "import { worksInEveryCompany, type ListPage } from" },
+    ],
+  },
+  {
+    id: "PA10",
+    what: "New company offered whatever the screen's own test (works in every company; critic p02 round 9)",
+    tests: "not offered New company",
+    edits: [
+      { file: "src/modules/tenancy/extensions.tsx", find: "      available: () => worksInEveryCompany(),\n", replace: "" },
+      { file: "src/modules/tenancy/extensions.tsx", find: "import { loadAll, worksInEveryCompany, type ListPage } from", replace: "import { loadAll, type ListPage } from" },
     ],
   },
 ];
