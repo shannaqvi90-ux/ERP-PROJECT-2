@@ -47,4 +47,12 @@ in the whole-verify figures below.
 
 ## Whole verify of this branch
 
-(Filled in from the round's passing verify.)
+`./erp verify` of this branch (`7b81fe2`), through the verify slots, slot taken 09:27:07 UTC,
+passed in 4,032 s: every test passed (.NET 602, web unit 450, end to end 100, harness 373, verify
+machinery 6) and the ratchet passed. **9,970 processor seconds** (.NET 7,917, web 1,768, end to
+end 240, timing 46) against the maximum of 10,500. The machine was busy (load 31.97 at the start,
+18.2 at the end, highest 77.61 over 271 readings), so wall time was not judged. An earlier run of
+the same work an hour before (one gate test failing on a reviewed-list entry, fixed since) used
+8,177 (.NET), 1,724 (web) and 264 (end to end) at loads up to 69.
+
+No quiet hour came this round either; the next quiet verify (integrator or critic) gives one.
