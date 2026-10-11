@@ -25,7 +25,10 @@ namespace Erp.Modules.Tenancy.Companies;
 /// in only some of its branches: they read the company but may not change the company itself (its
 /// record or logo), which every branch shares. <c>everyCompany</c> is false when the caller works in
 /// only some companies of the workspace: they may not change a company code (codes are unique across
-/// the workspace).</summary>
+/// the workspace). <c>arabicLegalNameRequired</c> is the company's own setting that makes the
+/// Arabic legal name required. <c>taxRegistrationNumber</c> is 15 digits;
+/// <c>legacyTaxRegistrationNumber</c> is a number stored before that rule that does not meet it,
+/// kept until the company is saved with a valid one (it is never printed).</summary>
 public sealed record CompanyDto(
     Guid Id,
     string Code,
@@ -33,7 +36,7 @@ public sealed record CompanyDto(
     string LegalNameAr,
     string? TradeLicenceNumber,
     string? TradeLicenceAuthority,
-    string? TaxRegistrationNumber,
+    [property: ApiExample("100123456700003"), RegularExpression(TenancyValidation.StoredTaxNumberPattern)] string? TaxRegistrationNumber,
     string BaseCurrency,
     int FiscalYearStartMonth,
     int FiscalYearStartDay,
@@ -55,7 +58,9 @@ public sealed record CompanyDto(
     DateTimeOffset UpdatedAt,
     uint Version,
     bool EveryBranch = true,
-    bool EveryCompany = true);
+    bool EveryCompany = true,
+    bool ArabicLegalNameRequired = false,
+    string? LegacyTaxRegistrationNumber = null);
 
 /// <summary>A row of the companies list. <c>everyBranch</c> is false where the caller works in only
 /// some of the company's branches: they may not change the company or add a branch to it.
@@ -76,15 +81,17 @@ public sealed record CompanyRow(
     bool EveryCompany = true);
 
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
-/// name); the legal name in English is required, the Arabic one is recommended. On change,
-/// <c>version</c> is the version that was read.</summary>
+/// name); the legal name in English is required, the Arabic one is recommended, and required
+/// while <c>arabicLegalNameRequired</c> is on (left out: off for a new company, unchanged on a
+/// change). The tax registration number is 15 digits; spaces and dashes typed between them are
+/// removed. On change, <c>version</c> is the version that was read.</summary>
 public sealed record SaveCompanyRequest(
     [property: ApiExample("AN-DXB"), StringLength(20, MinimumLength = 2), RegularExpression(TenancyValidation.CodePattern)] string? Code,
     [property: ApiExample("Al Noor Trading LLC"), StringLength(200, MinimumLength = 1)] string? LegalNameEn,
     [property: StringLength(200)] string? LegalNameAr,
     [property: StringLength(50)] string? TradeLicenceNumber,
     [property: StringLength(100)] string? TradeLicenceAuthority,
-    [property: ApiExample("100123456700003"), RegularExpression(TenancyValidation.TaxNumberPattern)] string? TaxRegistrationNumber,
+    [property: ApiExample("100123456700003"), StringLength(TenancyValidation.TaxNumberTypedMaxLength), RegularExpression(TenancyValidation.TaxNumberPattern)] string? TaxRegistrationNumber,
     [property: ApiExample("AED"), RegularExpression("^[A-Z]{3}$")] string? BaseCurrency,
     [property: Range(1, 12)] int? FiscalYearStartMonth,
     [property: Range(1, 31)] int? FiscalYearStartDay,
@@ -99,7 +106,8 @@ public sealed record SaveCompanyRequest(
     [property: ApiExample("accounts@example.ae"), StringLength(254)] string? Email,
     [property: ApiExample("https://www.example.ae"), RegularExpression(TenancyValidation.WebsitePattern)] string? Website,
     bool? IsActive,
-    uint? Version);
+    uint? Version,
+    bool? ArabicLegalNameRequired = null);
 
 /// <summary>A company logo: PNG, JPEG or WebP, at most 512 KB, as base64.</summary>
 public sealed record UploadLogoRequest(
@@ -216,16 +224,19 @@ internal static class CompanyEndpoints
         SaveCompanyRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, IUserDirectory users, TenancyBranchScope branchScope,
         HttpContext http, CancellationToken cancellationToken)
     {
-        var validator = Validate(request, http, requireVersion: false);
-        if (!validator.IsValid)
-        {
-            return validator.ToResult();
-        }
         // Company codes are unique across the workspace: only someone who sees every company may
-        // pick one, or a refusal would tell them a company they cannot see uses it.
+        // pick one, or a refusal would tell them a company they cannot see uses it. Said before the
+        // body is judged, so someone who may not create a company learns it at once, not after
+        // filling every field (critic p02 round 9).
         if (!await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
         {
             return Problems.Forbidden(http, "tenancy.companyNeedsEveryCompany");
+        }
+        var validator = Validate(request, http, requireVersion: false)
+            .ArabicLegalNameWhenRequired(request.ArabicLegalNameRequired ?? false, request.LegalNameAr);
+        if (!validator.IsValid)
+        {
+            return validator.ToResult();
         }
         var code = TenancyValidation.NormalizeCode(request.Code);
         if (string.IsNullOrEmpty(code))
@@ -287,6 +298,12 @@ internal static class CompanyEndpoints
         if (!branchScope.HoldsEveryBranch(company.Id))
         {
             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+        }
+        // The company's own setting, as this change leaves it, may require the Arabic legal name.
+        validator.ArabicLegalNameWhenRequired(request.ArabicLegalNameRequired ?? company.ArabicLegalNameRequired, request.LegalNameAr);
+        if (!validator.IsValid)
+        {
+            return validator.ToResult();
         }
         var code = TenancyValidation.NormalizeCode(request.Code) is { Length: > 0 } typed ? typed : company.Code;
         if (code != company.Code && !await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
@@ -405,7 +422,16 @@ internal static class CompanyEndpoints
         company.LegalNameAr = r.LegalNameAr?.Trim() ?? "";
         company.TradeLicenceNumber = TenancyValidation.Clean(r.TradeLicenceNumber);
         company.TradeLicenceAuthority = TenancyValidation.Clean(r.TradeLicenceAuthority);
-        company.TaxRegistrationNumber = TenancyValidation.Clean(r.TaxRegistrationNumber);
+        company.TaxRegistrationNumber = TenancyValidation.NormalizeTaxNumber(r.TaxRegistrationNumber);
+        if (company.TaxRegistrationNumber is not null)
+        {
+            // A valid number replaces one kept from before the 15-digit rule.
+            company.LegacyTaxRegistrationNumber = null;
+        }
+        if (r.ArabicLegalNameRequired is { } arabicRequired)
+        {
+            company.ArabicLegalNameRequired = arabicRequired;
+        }
         company.BaseCurrency = r.BaseCurrency!.Trim().ToUpperInvariant();
         company.FiscalYearStartMonth = r.FiscalYearStartMonth!.Value;
         company.FiscalYearStartDay = r.FiscalYearStartDay!.Value;
@@ -430,7 +456,7 @@ internal static class CompanyEndpoints
             c.BaseCurrency, c.FiscalYearStartMonth, c.FiscalYearStartDay, c.AddressLine1, c.AddressLine2, c.City,
             TenancyValidation.ParseEmirate(c.Emirate), c.PoBox, c.Country, c.AddressAr, c.Phone, c.Email, c.Website,
             c.Logo is not null || c.LogoHash is not null, c.LogoHash, c.IsActive, branches, c.CreatedAt, c.UpdatedAt, c.Version,
-            branchScope.HoldsEveryBranch(c.Id), everyCompany);
+            branchScope.HoldsEveryBranch(c.Id), everyCompany, c.ArabicLegalNameRequired, c.LegacyTaxRegistrationNumber);
     }
 }
 

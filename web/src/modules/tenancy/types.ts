@@ -30,9 +30,14 @@ export type Company = {
   everyCompany?: boolean;
   legalNameEn: string;
   legalNameAr: string;
+  /** The company's own setting: while on, the Arabic legal name is required. */
+  arabicLegalNameRequired?: boolean;
   tradeLicenceNumber: string | null;
   tradeLicenceAuthority: string | null;
+  /** 15 digits. */
   taxRegistrationNumber: string | null;
+  /** A number stored before the 15-digit rule that does not meet it, kept until a valid one is saved. */
+  legacyTaxRegistrationNumber?: string | null;
   baseCurrency: string;
   fiscalYearStartMonth: number;
   fiscalYearStartDay: number;

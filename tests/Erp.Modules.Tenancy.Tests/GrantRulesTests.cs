@@ -226,6 +226,24 @@ public sealed class GrantRulesTests(TenancyFixture fixture) : IClassFixture<Tena
             Assert.Equal(HttpStatusCode.Forbidden, created.StatusCode);
             Assert.Equal("tenancy.companyNeedsEveryCompany", (await Json(created)).GetProperty("code").GetString());
         }
+        // Said before the body is judged: an incomplete form is refused for who is asking, not for
+        // its fields (critic p02 round 9 saw 400 validation first and the reason only once valid).
+        var incomplete = await one.PostAsJsonAsync("/api/tenancy/companies", new { legalNameEn = "" });
+        Assert.Equal(HttpStatusCode.Forbidden, incomplete.StatusCode);
+        Assert.Equal("tenancy.companyNeedsEveryCompany", (await Json(incomplete)).GetProperty("code").GetString());
+        // An administrator who works in no company yet (as every invited user starts) reads no
+        // company row, so the screen offers no New (critic p02 round 9), and the server refuses it.
+        var (_, noneEmail) = await NewUserAsync(admin, "nocompany", [administrator]);
+        using (var none = await Env.SignInAsync(noneEmail))
+        {
+            Assert.Equal(0, (await none.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=1")).GetProperty("items").GetArrayLength());
+            var refused = await none.PostAsJsonAsync("/api/tenancy/companies", new
+            {
+                legalNameEn = "Falcon Logistics LLC", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true,
+            });
+            Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
+            Assert.Equal("tenancy.companyNeedsEveryCompany", (await Json(refused)).GetProperty("code").GetString());
+        }
         // The screens learn it from the record and from every list row (critic p02 round 7: New and
         // the code were offered to them and refused on save).
         var own = (await one.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>($"/api/tenancy/companies/{x}"))!;

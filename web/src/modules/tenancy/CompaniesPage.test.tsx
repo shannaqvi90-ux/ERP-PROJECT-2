@@ -2,6 +2,7 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
 import { App } from "../shell/App";
+import { englishNameOf } from "./CompanyForm";
 
 let view: Rendered | undefined;
 
@@ -141,6 +142,10 @@ describe("companies screen", () => {
     await settle();
     press({ altKey: true, code: "KeyN", key: "n" });
     await settle();
+    // In Arabic a new company starts at its Arabic legal name, which comes first (critic p02 round 9).
+    expect((document.activeElement as HTMLInputElement).closest("[data-field]")?.getAttribute("data-field")).toBe("legalNameAr");
+    const order = [...view.container.querySelectorAll(".record-form [data-field]")].map((f) => f.getAttribute("data-field"));
+    expect(order.indexOf("legalNameAr")).toBeLessThan(order.indexOf("legalNameEn"));
     setInput(field(view.container, "legalNameEn"), "Al Noor Ajman LLC");
     setInput(field(view.container, "legalNameAr"), "النور عجمان ذ.م.م");
     press({ ctrlKey: true, key: "s", code: "KeyS" });
@@ -158,7 +163,24 @@ describe("companies screen", () => {
       await new Promise((r) => setTimeout(r, 0));
     });
     const branch = calls.find((c) => c.method === "POST" && c.url === "/api/tenancy/branches")!;
-    expect(branch.body).toMatchObject({ nameAr: "النور عجمان ذ.م.م - فرع العين", nameEn: "Al Noor Ajman LLC" });
+    // The English name was left at the company's: the branch is not the head office, and its
+    // English name is not known, so none is saved (critic p02 round 9: it was saved as the
+    // company's English name, and so took the head office's code HQ).
+    expect(branch.body).toMatchObject({ nameAr: "النور عجمان ذ.م.م - فرع العين", nameEn: "" });
+  });
+
+  it("names a branch from its typed names: the head office keeps the company's name, a branch typed in Arabic only has no English name", () => {
+    const en = "Al Noor Ajman LLC";
+    const ar = "النور عجمان ذ.م.م";
+    // English left at the prefix, Arabic untouched or at the company's own Arabic name: the head office.
+    expect(englishNameOf({ nameEn: `${en} - `, nameAr: "" }, en, ar)).toBe(en);
+    expect(englishNameOf({ nameEn: `${en} - `, nameAr: `${ar} - ` }, en, ar)).toBe(en);
+    // The branch's own Arabic name typed, English left at the prefix: no English name.
+    expect(englishNameOf({ nameEn: `${en} - `, nameAr: `${ar} - فرع العين` }, en, ar)).toBe("");
+    expect(englishNameOf({ nameEn: en, nameAr: "فرع المصفح" }, en, ar)).toBe("");
+    // Whatever English the user typed is kept.
+    expect(englishNameOf({ nameEn: `${en} - Al Ain Branch`, nameAr: `${ar} - فرع العين` }, en, ar)).toBe(`${en} - Al Ain Branch`);
+    expect(englishNameOf({ nameEn: "Mussafah", nameAr: "فرع المصفح" }, en, ar)).toBe("Mussafah");
   });
 
   it("names a new branch after its company: the typed part follows the company's name, and the name alone is the company's", async () => {
@@ -464,5 +486,43 @@ describe("companies screen", () => {
       "Al Noor Ajman LLC - Deira Shop",
       "Al Noor Ajman LLC - Karama Shop",
     ]);
+  });
+
+  // Owner decisions of 2026-10-10 (docs/compliance/): a TRN is 15 digits (a number stored before that
+  // is kept and shown until a valid one is saved), and each company's own setting may make its
+  // Arabic legal name required.
+  it("offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    const old = { ...saved, taxRegistrationNumber: null, legacyTaxRegistrationNumber: "12345", arabicLegalNameRequired: false, legalNameAr: "", everyBranch: true, everyCompany: true };
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [{ ...old }], total: 1, next: null } };
+      if (url === "/api/tenancy/companies/c9" && method === "PUT") return { status: 200, body: { ...old, ...(body as object), version: 2 } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: old };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const trn = view.container.querySelector('[data-field="taxRegistrationNumber"]')!;
+    expect(trn.textContent).toContain("12345");
+    expect(trn.textContent).toContain("not 15 digits");
+    const arabic = field(view.container, "legalNameAr");
+    expect(arabic.required).toBe(false);
+    const setting = view.container.querySelector<HTMLInputElement>('input[name="arabicLegalNameRequired"]')!;
+    expect(setting.checked).toBe(false);
+    act(() => setting.click());
+    await settle();
+    expect(field(view.container, "legalNameAr").required).toBe(true);
+    expect(view.container.querySelector('[data-field="legalNameAr"]')!.textContent).toContain("setting requires");
+    setInput(field(view.container, "legalNameAr"), "النور عجمان ذ.م.م");
+    setInput(field(view.container, "taxRegistrationNumber"), "100-1234-5678-9003");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const put = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/companies/c9")!;
+    expect(put.body).toMatchObject({ arabicLegalNameRequired: true, legalNameAr: "النور عجمان ذ.م.م", taxRegistrationNumber: "100-1234-5678-9003" });
   });
 });

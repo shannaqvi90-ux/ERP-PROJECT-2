@@ -195,6 +195,10 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("address_line2");
 
+                    b.Property<bool>("ArabicLegalNameRequired")
+                        .HasColumnType("boolean")
+                        .HasColumnName("arabic_legal_name_required");
+
                     b.Property<string>("BaseCurrency")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -254,6 +258,11 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<string>("LegacyTaxRegistrationNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("legacy_tax_registration_number");
+
                     b.Property<string>("LegalNameAr")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -291,8 +300,8 @@ namespace Erp.Modules.Tenancy.Migrations
                         .HasColumnName("po_box");
 
                     b.Property<string>("TaxRegistrationNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
                         .HasColumnName("tax_registration_number");
 
                     b.Property<Guid>("TenantId")
@@ -372,7 +381,11 @@ namespace Erp.Modules.Tenancy.Migrations
 
                             t.HasCheckConstraint("ck_companies_legal_name", "btrim(legal_name_en) <> ''");
 
+                            t.HasCheckConstraint("ck_companies_legal_name_ar_required", "NOT arabic_legal_name_required OR btrim(legal_name_ar) <> ''");
+
                             t.HasCheckConstraint("ck_companies_logo", "(logo IS NULL) = (logo_content_type IS NULL) AND (logo IS NULL) = (logo_hash IS NULL)");
+
+                            t.HasCheckConstraint("ck_companies_tax_registration_number", "tax_registration_number ~ '^[0-9]{15}$'");
                         });
                 });
 

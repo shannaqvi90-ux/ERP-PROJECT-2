@@ -13,6 +13,7 @@ type Draft = {
   code: string;
   legalNameEn: string;
   legalNameAr: string;
+  arabicLegalNameRequired: boolean;
   tradeLicenceNumber: string;
   tradeLicenceAuthority: string;
   taxRegistrationNumber: string;
@@ -36,6 +37,7 @@ const blank: Draft = Object.freeze({
   code: "",
   legalNameEn: "",
   legalNameAr: "",
+  arabicLegalNameRequired: false,
   tradeLicenceNumber: "",
   tradeLicenceAuthority: "",
   taxRegistrationNumber: "",
@@ -61,6 +63,7 @@ function draftOf(c: Company | null): Draft {
     code: c.code,
     legalNameEn: c.legalNameEn,
     legalNameAr: c.legalNameAr,
+    arabicLegalNameRequired: c.arabicLegalNameRequired === true,
     tradeLicenceNumber: c.tradeLicenceNumber ?? "",
     tradeLicenceAuthority: c.tradeLicenceAuthority ?? "",
     taxRegistrationNumber: c.taxRegistrationNumber ?? "",
@@ -89,7 +92,7 @@ const currencies = Object.freeze(["AED", "SAR", "OMR", "QAR", "BHD", "KWD", "USD
 /** Create or edit one company (the shared record form: keys, unsaved changes, server errors,
  * previous and next, print in English or Arabic); once saved, its branches can be added below. */
 export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; onSaved: (id: string) => void; onClose: () => void; nav?: RecordNavigation }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { can } = useSession();
   const months = useMonths();
   const name = useLocalName();
@@ -114,6 +117,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         code: draft.code.trim(),
         legalNameEn: draft.legalNameEn,
         legalNameAr: draft.legalNameAr,
+        arabicLegalNameRequired: draft.arabicLegalNameRequired,
         tradeLicenceNumber: optional(draft.tradeLicenceNumber),
         tradeLicenceAuthority: optional(draft.tradeLicenceAuthority),
         taxRegistrationNumber: optional(draft.taxRegistrationNumber),
@@ -146,6 +150,12 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   }, id);
   const company = form.record;
   const bind = form.bind;
+  const arabicEmpty = form.draft.legalNameAr.trim() === "";
+  const legalNameAr = (
+    <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+      required={form.draft.arabicLegalNameRequired} autoFocus={id === null && language === "ar"}
+      hint={arabicEmpty ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
+  );
 
   return (
     <RecordForm
@@ -166,9 +176,12 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       }
     >
       <FormSection title={t("tenancy.company.general")}>
-        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null} />
-        <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
-          hint={form.draft.legalNameAr.trim() === "" ? t("tenancy.company.legalNameArMissing") : undefined} />
+        {/* On an Arabic screen the Arabic legal name comes first and a new company starts there
+            (critic p02 round 9), as the branch line does; the English one is still required. */}
+        {language === "ar" && legalNameAr}
+        <TextField field={bind("legalNameEn")} label={t("tenancy.company.legalNameEn")} dir="ltr" maxLength={200} required autoFocus={id === null && language !== "ar"} />
+        {language !== "ar" && legalNameAr}
+        <BooleanField field={bind("arabicLegalNameRequired")} label={t("tenancy.company.arabicLegalNameRequired")} />
         <TextField field={bind("code")} label={t("tenancy.company.code")} dir="ltr" maxLength={20} upper
           disabled={id !== null && !everyCompany}
           hint={id !== null && !everyCompany ? t("tenancy.company.codeNeedsEveryCompany") : t("tenancy.company.codeHint")} />
@@ -177,7 +190,10 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       <FormSection title={t("tenancy.company.registration")}>
         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />
         <TextField field={bind("tradeLicenceAuthority")} label={t("tenancy.company.tradeLicenceAuthority")} maxLength={100} />
-        <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={20} />
+        <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
+          hint={company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
+            ? t("tenancy.company.legacyTaxRegistrationNumber", { number: company.legacyTaxRegistrationNumber })
+            : t("tenancy.company.taxRegistrationNumberHint")} />
       </FormSection>
       <FormSection title={t("tenancy.company.accounting")}>
         <TextField field={bind("baseCurrency")} label={t("tenancy.company.baseCurrency")} dir="ltr" maxLength={3} upper list="tenancy-currencies" hint={t("tenancy.company.baseCurrencyHint")} />
@@ -304,6 +320,17 @@ export const branchNamePrefix = (companyName: string) => (companyName.trim() ===
 /** A branch name the user left at the prefix alone is the company's name itself. */
 export const branchNameOf = (typed: string) => typed.replace(/\s+-\s*$/, "");
 
+/** The English name a new branch is saved with. Left at the company's name alone it is the
+ * company's name (its head office), except where the branch's own Arabic name was typed: then the
+ * branch is not the head office and its English name is not known, so none is saved (critic p02
+ * round 9: an Arabic user's branch "فرع المصفح" was saved as the company's English name, code HQ). */
+export function englishNameOf(draft: { nameEn: string; nameAr: string }, companyName: string, companyNameAr: string): string {
+  const english = branchNameOf(draft.nameEn);
+  const arabic = branchNameOf(draft.nameAr).trim();
+  const ownArabic = arabic !== "" && arabic !== companyNameAr.trim();
+  return ownArabic && english.trim() === companyName.trim() ? "" : english;
+}
+
 /** The company's branches, with a one-line form to add another (Enter saves). A new branch
  * starts in the company's emirate, its English name with the company's; right after the company
  * is created the line has the focus, the caret after the company's name. On an Arabic screen the
@@ -376,7 +403,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
       await api("POST", "/api/tenancy/branches", {
         companyId,
         code: draft.code.trim(),
-        nameEn: branchNameOf(draft.nameEn),
+        nameEn: englishNameOf(draft, companyName, companyNameAr),
         nameAr: branchNameOf(draft.nameAr),
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,

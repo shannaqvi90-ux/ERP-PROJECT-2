@@ -73,7 +73,15 @@ internal static partial class TenancyValidation
 
     public const string CodePattern = "^[A-Z0-9][A-Z0-9-]{1,19}$";
     public const string PhonePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
-    public const string TaxNumberPattern = "^[0-9]{1,20}$";
+    /// <summary>A Tax Registration Number as typed: exactly 15 digits, with any spaces and dashes
+    /// (removed before it is stored). docs/compliance/vat-trn-format.md, owner 2026-10-10.</summary>
+    public const string TaxNumberPattern = "^[ -]*(?:[0-9][ -]*){15}$";
+
+    /// <summary>A Tax Registration Number as stored and answered: exactly 15 digits.</summary>
+    public const string StoredTaxNumberPattern = "^[0-9]{15}$";
+
+    /// <summary>Longest TRN accepted as typed (15 digits with the spaces and dashes between them), a bound on the request only.</summary>
+    public const int TaxNumberTypedMaxLength = 100;
     public const string WebsitePattern = "^https?://[^\\s]{3,190}$";
     public const string PoBoxPattern = "^[A-Za-z0-9 -]{1,20}$";
 
@@ -215,12 +223,34 @@ internal static partial class TenancyValidation
         return validator;
     }
 
+    /// <summary>
+    /// A Tax Registration Number, when given: exactly 15 digits 0 to 9 once the spaces and dashes a
+    /// user types are removed; anything else is refused. No prefix and no check-digit rule: no
+    /// official publication states one (docs/compliance/vat-trn-format.md, signed off by the owner
+    /// on 2026-10-10; source: UAE Ministry of Finance, Electronic Invoicing Guidelines v1.1).
+    /// </summary>
     public static Validator TaxNumber(this Validator validator, string? number)
     {
         if (Clean(number) is { } value)
         {
-            validator.Must(TaxNumberRegex().IsMatch(value), "taxRegistrationNumber", "tenancyTaxNumber");
+            validator.Must(value.Length <= TaxNumberTypedMaxLength && NormalizeTaxNumber(value) is { } digits && StoredTaxNumberRegex().IsMatch(digits),
+                "taxRegistrationNumber", "tenancyTaxNumber");
         }
+        return validator;
+    }
+
+    /// <summary>The TRN as stored: the typed value without its spaces and dashes (null when empty).
+    /// Valid only where <see cref="TaxNumber"/> accepted it.</summary>
+    public static string? NormalizeTaxNumber(string? number) =>
+        Clean(number) is { } value ? value.Replace(" ", "", StringComparison.Ordinal).Replace("-", "", StringComparison.Ordinal) : null;
+
+    /// <summary>
+    /// The legal names under the company's own setting: while it makes the Arabic legal name
+    /// required, a blank one is refused (docs/compliance/arabic-legal-name-on-documents.md).
+    /// </summary>
+    public static Validator ArabicLegalNameWhenRequired(this Validator validator, bool required, string? arabic)
+    {
+        validator.Must(!required || !string.IsNullOrWhiteSpace(arabic), "legalNameAr", "tenancyLegalNameArRequired");
         return validator;
     }
 
@@ -262,8 +292,8 @@ internal static partial class TenancyValidation
     [GeneratedRegex(PhonePattern)]
     private static partial Regex PhoneRegex();
 
-    [GeneratedRegex(TaxNumberPattern)]
-    private static partial Regex TaxNumberRegex();
+    [GeneratedRegex(StoredTaxNumberPattern)]
+    private static partial Regex StoredTaxNumberRegex();
 
     [GeneratedRegex(WebsitePattern)]
     private static partial Regex WebsiteRegex();
