@@ -1,0 +1,17 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+sign-in                  odoo  error     steps 2  keys 0  machine 1.733s  human 4.68s  human+wait 6.364s  (returning: error TimeoutError: locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053027-a977.json
+    returning: error TimeoutError: locator.waitFor: Timeout 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="login"]') to be visible[22m
+    [2m    - waiting for" http://localhost:8069/odoo" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:8069/odoo"[22m
+    page: {"returning":{"url":"/odoo/contacts","ready_state":"complete","title":"Contacts","focused":{"tag":"input","name":null,"type":"text","label":null},"navigation":true,"busy":[],"messages":[]}}
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.792s  human 4.68s  human+wait 6.417s  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053537-6462.json
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.308s  human 4.68s  human+wait 5.933s  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053638-670b.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.201s  human 2.03s  human+wait 2.223s  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053735-6ea5.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.096s  human 2.03s  human+wait 2.121s  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053753-9f07.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.204s  human 2.03s  human+wait 2.228s  -> ../../evidence-staging/p00-foundation/r9/compare/results/sign-in-20261011T053811-6c41.json
+sign-in                  verdict win (ours judged on its whole path 'passkey')
+sign-in                  left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p00-foundation/r9/compare/blind/review.html
+output: ../../../../evidence-staging/p00-foundation/r9/compare

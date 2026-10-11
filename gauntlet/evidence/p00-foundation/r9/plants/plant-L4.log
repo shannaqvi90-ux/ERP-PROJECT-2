@@ -1,0 +1,211 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.53]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.24]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.55]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [16 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [29 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Sign_in_failures_give_one_answer_that_states_no_policy [7 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [12 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [10 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [34 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [1 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [29 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [4 m 46 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [497 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [357 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [288 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [217 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [222 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [145 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [49 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [85 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [76 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [96 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [54 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [283 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [44 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [83 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [90 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [1 s]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [542 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [18 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [3 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [24 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [2 s]
+[xUnit.net 00:06:21.62]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:06:21.62]       src/Kernel/Erp.Kernel/Lists/ListBinding.cs:272 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:06:21.62]       Stack Trace:
+[xUnit.net 00:06:21.62]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:06:21.62]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:06:21.62]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:06:21.62]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:06:21.62]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:06:21.63]       Output:
+[xUnit.net 00:06:21.63]         145 files scanned, 101 reviewed uses of 12 rules
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [61 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [42 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [126 ms]
+  Error Message:
+   src/Kernel/Erp.Kernel/Lists/ListBinding.cs:272 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 145 files scanned, 101 reviewed uses of 12 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [7 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [25 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [5 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [109 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [60 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [403 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [99 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [11 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [7 m 19 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [1 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [14 m 42 s]
+[xUnit.net 00:35:25.53]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:35:25.54]       2 isolation checks failed:
+[xUnit.net 00:35:25.54]       
+[xUnit.net 00:35:25.54]       2 answers that tell tenant B's values apart from values that exist nowhere:
+[xUnit.net 00:35:25.54]       tenant A administrator (cookie) → GET /api/identity/users?search=bravocnry78c0d6bb84 [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (keitigmtc95b2g4oi53) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:35:25.54]       tenant A administrator in Arabic (cookie) → GET /api/identity/users?search=bravocnry78c0d6bb84 [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (ydxzwwjwp94c1i9ms70) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:35:25.54]       
+[xUnit.net 00:35:25.54]       25068 list answers that are not the asking tenant's own:
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50 answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13 answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13 answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=e answered total 48, but walking the same query returns 1 rows (the other tenant's answer to the same request was 48)
+[xUnit.net 00:35:25.54]       tenant B asks first, tenant A judged: the judged page 1 of 1 of GET /api/tenancy/companies?take=12&search=e answered total 48, but the walk returns 1 rows
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: the judged offset page 1 of 1 (skip=0) of GET /api/tenancy/companies?take=12&search=e answered total 48, but the keyset walk returns 1 rows
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=o answered total 49, but walking the same query returns 25 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+[xUnit.net 00:35:25.90]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 47, but walking the same query returns 26 rows (the other tenant's answer to the same request was 47)
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged page 1 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged page 2 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged page 3 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged offset page 1 of 3 (skip=0) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged offset page 2 of 3 (skip=12) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.91]       tenant B asks first, tenant A judged: the judged offset page 3 of 3 (skip=24) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:35:25.91]       Stack Trace:
+[xUnit.net 00:35:25.91]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(172,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:35:25.91]         --- End of stack trace from previous location ---
+[xUnit.net 00:35:25.91]       Output:
+[xUnit.net 00:35:25.91]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 473.1 s
+[xUnit.net 00:35:25.91]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 525.9 s
+[xUnit.net 00:35:25.91]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 889.9 s
+[xUnit.net 00:35:25.91]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2381 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70063, 20053 in Arabic), 929.6 s
+[xUnit.net 00:35:25.91]         tenant B values in route and query parameters: 523993 requests so far (93619 by tenant A's Arabic sessions; tenant B 95524, 26418 in Arabic), 1236.9 s
+[xUnit.net 00:35:25.91]         registered lists through their query contract: 17289 attacks, 31337 requests: 555330 requests so far (93619 by tenant A's Arabic sessions; tenant B 99421, 27392 in Arabic), 1280.3 s
+[xUnit.net 00:35:25.91]         list answers judged against each tenant's own rows: 2472 queries (1367 sorted), 982 with different true answers (617 sorted), 81982 rows walked; process-wide state fingerprinted in 104970 lines from 94 roots: 555330 requests so far (93619 by tenant A's Arabic sessions; tenant B 152114, 40565 in Arabic), 1780.0 s
+[xUnit.net 00:35:25.91]         tenant B values in body fields: 588558 requests so far (93619 by tenant A's Arabic sessions; tenant B 156003, 41538 in Arabic), 1832.1 s
+[xUnit.net 00:35:25.91]         tenant B activity: 184686 requests (85944 concurrent with the attack), 1980 successful own writes, 184434 responses judged for tenant A markers: 588558 requests so far (93619 by tenant A's Arabic sessions; tenant B 184686, 46627 in Arabic), 1876.6 s
+[xUnit.net 00:35:25.91]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:35:25.91]         777642 tenant bindings and 1555129 setting statements judged among 6988453 statements; 777642 tenant values judged, 7149540 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+[xUnit.net 00:35:25.91]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:35:25.91]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:35:25.91]         120 endpoints, 616715 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 777505 traced lookups
+[xUnit.net 00:35:25.91]         in Arabic: 98517 tenant A requests, 46627 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+[xUnit.net 00:35:25.93]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [34 m 51 s]
+  Error Message:
+   2 isolation checks failed:
+
+2 answers that tell tenant B's values apart from values that exist nowhere:
+tenant A administrator (cookie) → GET /api/identity/users?search=bravocnry78c0d6bb84 [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (keitigmtc95b2g4oi53) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+tenant A administrator in Arabic (cookie) → GET /api/identity/users?search=bravocnry78c0d6bb84 [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (ydxzwwjwp94c1i9ms70) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+
+25068 list answers that are not the asking tenant's own:
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50 answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13 answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13 answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=e answered total 48, but walking the same query returns 1 rows (the other tenant's answer to the same request was 48)
+tenant B asks first, tenant A judged: the judged page 1 of 1 of GET /api/tenancy/companies?take=12&search=e answered total 48, but the walk returns 1 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 1 (skip=0) of GET /api/tenancy/companies?take=12&search=e answered total 48, but the keyset walk returns 1 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=o answered total 49, but walking the same query returns 25 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged page 2 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 47, but walking the same query returns 26 rows (the other tenant's answer to the same request was 47)
+tenant B asks first, tenant A judged: the judged page 1 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged page 2 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged page 3 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 3 (skip=0) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 3 (skip=12) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 3 of 3 (skip=24) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 172
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 473.1 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 525.9 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 889.9 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2381 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70063, 20053 in Arabic), 929.6 s
+ tenant B values in route and query parameters: 523993 requests so far (93619 by tenant A's Arabic sessions; tenant B 95524, 26418 in Arabic), 1236.9 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 555330 requests so far (93619 by tenant A's Arabic sessions; tenant B 99421, 27392 in Arabic), 1280.3 s
+ list answers judged against each tenant's own rows: 2472 queries (1367 sorted), 982 with different true answers (617 sorted), 81982 rows walked; process-wide state fingerprinted in 104970 lines from 94 roots: 555330 requests so far (93619 by tenant A's Arabic sessions; tenant B 152114, 40565 in Arabic), 1780.0 s
+ tenant B values in body fields: 588558 requests so far (93619 by tenant A's Arabic sessions; tenant B 156003, 41538 in Arabic), 1832.1 s
+ tenant B activity: 184686 requests (85944 concurrent with the attack), 1980 successful own writes, 184434 responses judged for tenant A markers: 588558 requests so far (93619 by tenant A's Arabic sessions; tenant B 184686, 46627 in Arabic), 1876.6 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 777642 tenant bindings and 1555129 setting statements judged among 6988453 statements; 777642 tenant values judged, 7149540 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 616715 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 777505 traced lookups
+ in Arabic: 98517 tenant A requests, 46627 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+
+Test Run Failed.
+Total tests: 60
+     Passed: 58
+     Failed: 2
+ Total time: 35.4532 Minutes

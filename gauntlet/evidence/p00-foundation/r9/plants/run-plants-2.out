@@ -1,0 +1,27 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:21.39
+=== plant P3PROOF filter FullyQualifiedName~CriticP3Proof start 06:24:57
+=== plant P3PROOF exit 1 end 06:25:15
+  Failed Erp.Gates.Tests.Critic.CriticP3Proof.No_roles_bearer_user_is_denied [732 ms]
+Total tests: 1
+ Total time: 17.3022 Seconds
+=== plant P3NONE filter FullyQualifiedName~CriticP3Proof start 06:25:15
+=== plant P3NONE exit 0 end 06:25:32
+  Passed Erp.Gates.Tests.Critic.CriticP3Proof.No_roles_bearer_user_is_denied [637 ms]
+Total tests: 1
+ Total time: 16.6706 Seconds
+=== plant P3M (module tests) start 06:25:32
+--- Erp.Modules.Identity.Tests exit 0
+Total tests: 100
+--- Erp.Modules.Tenancy.Tests exit 0
+Total tests: 33
+--- Erp.Modules.Lists.Tests exit 0
+Total tests: 6
+--- Erp.Modules.Reports.Tests exit 0
+Total tests: 53
+--- Erp.Kernel.Tests exit 0
+Total tests: 217
