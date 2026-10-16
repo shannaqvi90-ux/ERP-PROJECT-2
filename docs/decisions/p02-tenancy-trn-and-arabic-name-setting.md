@@ -99,11 +99,37 @@ without losing them, and that the column and the API stay in step.
   from 1 to 3: the new migration step and its Down mark their own transaction as the migration's
   actor (transaction-local), exactly as `AccessCounts` does.
 
-- Switching company with more than six active companies on a fresh device still shows no
-  one-click buttons until the first switch on that device. Filling the buttons with arbitrary
-  companies would go against the round 4 decision ("no arbitrary chips"). Keeping recent companies
-  on the server needs a new column that every gate run walks. For now, Alt+C, type, Enter is the
-  path with many companies.
+- *Arabic legal-name column cut at the list's edge* (round 9 finding, Arabic at 1400 px with the
+  company form open). The list keeps each column at least its minimum width and scrolls sideways
+  inside its own pane when the open form leaves less room; the page itself does not overflow. That
+  is the shared list framework's rule (`web/src/kernel/lists`), used by every list screen, so it is
+  not changed from this piece. The Arabic name is whole once the form is closed or the list is
+  scrolled.
+
+## Recent companies kept on the server (round 10, after the resume of 2026-10-16)
+
+Round 9's critic found that with more than six active companies a device that never switched
+shows no one-click company buttons, so switching takes two clicks there, as in the reference.
+The buttons came only from this browser's memory. Now the server keeps them too:
+
+- `tenancy.user_workplaces.recent_company_ids` (`uuid[]`, default empty, at most 6 by check
+  constraint `ck_user_workplaces_recent_company_ids`). The column is on the user's own workplace
+  row, so it has that row's tenant and company row-level security and its audit trigger. No new
+  table, endpoint or permission.
+- `PUT /api/tenancy/workplace` puts the company reached first, then the company left, then the
+  earlier ones, and keeps only companies the user may switch to now. `GET` and `PUT` answer the
+  list as `recentCompanyIds`, filtered the same way at read time, so an id the user lost access
+  to, or a deactivated company, is never shown. A palette switch updates it as well, since it uses
+  the same endpoint.
+- The switcher takes the server's list first, then this browser's own. The round 4 rule stays:
+  no arbitrary buttons. A user who has never switched anywhere still sees none, and uses Alt+C.
+- When access to the working company is removed, the workplace row goes with it (its foreign
+  key to the access row cascades), and the list starts again.
+
+Tests: `AccessTests.The_companies_switched_between_most_recently_follow_the_user_to_every_device_and_only_while_they_may_work_there`
+(two sessions, access removed, the stored array) and a `WorkplaceSwitcher.test.tsx` case for a
+device with nothing stored and an id the user may no longer use. Processor time: one .NET test of
+about 1 s and one web test of well under 1 s; the G1/G2 gates walk the same endpoints as before.
 
 ## Processor time
 
