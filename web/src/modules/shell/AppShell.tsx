@@ -12,6 +12,7 @@ import { CommandPalette, type PaletteEntry } from "./CommandPalette";
 import { LanguageToggle, languageChord } from "./LanguageToggle";
 import { NavPane } from "./NavPane";
 import { actionEntries, offeredActions } from "./paletteActions";
+import { GoToHint, goToTargets, useGoTo } from "./goTo";
 import { entryFor, groupLabelKey } from "./navigation";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { ShortcutHelp } from "./ShortcutHelp";
@@ -162,9 +163,23 @@ export function AppShell({ session }: { session: Session }) {
   useShortcut({ id: "shell.help", chord: shellChords.help, labelKey: "shell.action.shortcuts", groupKey: group, run: () => setDialog("help") });
   useShortcut({ id: "shell.helpAnywhere", chord: shellChords.helpAnywhere, labelKey: "shell.action.shortcuts", groupKey: group, inDialogs: true, run: () => setDialog((d) => (d === "help" ? null : "help")) });
   useShortcut({ id: "shell.preferences", chord: shellChords.preferences, labelKey: "shell.action.preferences", groupKey: group, run: () => setDialog("preferences") });
-  useShortcut({ id: "shell.navigation", chord: shellChords.navigation, labelKey: "shell.action.focusNav", groupKey: navGroup, run: focusNavigation });
+  // G, then a letter: Home and every listed screen whose module gave it a key (goTo.tsx).
+  const goTo = useMemo(() => goToTargets(session.menu, extensions.goTo), [session.menu]);
+  const goToWaiting = useGoTo(goTo, (target) => navigate(target.path));
+
+  // A user whose roles open no screen has no navigation pane (NavPane hides it): its commands
+  // are not offered, in the palette, on the help sheet or by their keys (critic p04 round 8).
+  const hasNavigation = session.menu.length > 0;
+  useShortcut({ id: "shell.navigation", chord: shellChords.navigation, labelKey: "shell.action.focusNav", groupKey: navGroup, run: focusNavigation, enabled: hasNavigation });
   useShortcut({ id: "shell.home", chord: shellChords.home, labelKey: "shell.action.home", groupKey: navGroup, run: () => navigate("/") });
-  useShortcut({ id: "shell.toggleNavigation", chord: shellChords.toggleNavigation, labelKey: "shell.action.toggleNav", groupKey: navGroup, run: () => setNavOpen((o) => !o) });
+  useShortcut({
+    id: "shell.toggleNavigation",
+    chord: shellChords.toggleNavigation,
+    labelKey: "shell.action.toggleNav",
+    groupKey: navGroup,
+    run: () => setNavOpen((o) => !o),
+    enabled: hasNavigation,
+  });
 
   const screens = useMemo<PaletteEntry[]>(() => {
     const home: PaletteEntry = {
@@ -200,12 +215,16 @@ export function AppShell({ session }: { session: Session }) {
       { id: "action:digits", title: t(`shell.action.digits.${nextDigits}`), keywords: [...both(`shell.action.digits.${nextDigits}`), "digits", "numbers", "أرقام"], icon: "keyboard", run: () => changeNumerals(nextDigits) },
       { id: "action:preferences", title: t("shell.action.preferences"), keywords: both("shell.action.preferences"), icon: "user", chord: shellChords.preferences, run: () => setDialog("preferences") },
       { id: "action:shortcuts", title: t("shell.action.shortcuts"), keywords: both("shell.action.shortcuts"), icon: "help", chord: shellChords.helpAnywhere, run: () => setDialog("help") },
-      { id: "action:navigation", title: t("shell.action.focusNav"), keywords: both("shell.action.focusNav"), icon: "menu", chord: shellChords.navigation, run: focusNavigation },
-      { id: "action:toggleNavigation", title: t("shell.action.toggleNav"), keywords: both("shell.action.toggleNav"), icon: "menu", chord: shellChords.toggleNavigation, run: () => setNavOpen((o) => !o) },
+      ...(hasNavigation
+        ? [
+            { id: "action:navigation", title: t("shell.action.focusNav"), keywords: both("shell.action.focusNav"), icon: "menu" as const, chord: shellChords.navigation, run: focusNavigation },
+            { id: "action:toggleNavigation", title: t("shell.action.toggleNav"), keywords: both("shell.action.toggleNav"), icon: "menu" as const, chord: shellChords.toggleNavigation, run: () => setNavOpen((o) => !o) },
+          ]
+        : []),
       { id: "action:print", title: t("shell.action.print"), keywords: both("shell.action.print"), icon: "print", run: () => void window.setTimeout(() => window.print(), 50) },
       { id: "action:signOut", title: t("shell.action.signOut"), keywords: both("shell.action.signOut"), icon: "signOut", run: () => void signOut() },
     ];
-  }, [t, language, numerals, changeLanguage, changeNumerals, focusNavigation, signOut]);
+  }, [t, language, numerals, changeLanguage, changeNumerals, focusNavigation, signOut, hasNavigation]);
 
   // Actions the modules offer from anywhere (New user, New company, Print or export a list ...):
   // only those the user's roles grant, on a screen the user may open. Starting one opens its screen
@@ -228,22 +247,24 @@ export function AppShell({ session }: { session: Session }) {
   const statusItems = allowed(extensions.status, can);
 
   return (
-    <div className="app" data-nav={navOpen ? "open" : "closed"} data-pending-action={pending?.action.key}>
+    <div className="app" data-nav={navOpen ? "open" : "closed"} data-pending-action={pending?.action.key} data-goto={goToWaiting ? "waiting" : undefined}>
       <a className="skip-link" href="#main">
         {t("shell.skipToContent")}
       </a>
       <header className="topbar">
-        <button
-          type="button"
-          className="button ghost icon-button"
-          aria-label={t("shell.nav.toggle")}
-          aria-expanded={navOpen}
-          aria-controls="navpane"
-          aria-keyshortcuts={chordForAria(shellChords.toggleNavigation)}
-          onClick={() => setNavOpen((o) => !o)}
-        >
-          <Icon name="menu" />
-        </button>
+        {hasNavigation && (
+          <button
+            type="button"
+            className="button ghost icon-button"
+            aria-label={t("shell.nav.toggle")}
+            aria-expanded={navOpen}
+            aria-controls="navpane"
+            aria-keyshortcuts={chordForAria(shellChords.toggleNavigation)}
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <Icon name="menu" />
+          </button>
+        )}
         <Link to="/" className="brand" data-brand="">
           {t("shell.app.name")}
         </Link>
@@ -297,7 +318,7 @@ export function AppShell({ session }: { session: Session }) {
         </div>
       </header>
       <div className="frame">
-        <NavPane ref={navRef} menu={session.menu} path={path} open={navOpen} />
+        <NavPane ref={navRef} menu={session.menu} path={path} open={navOpen} goTo={goTo} />
         <main id="main" ref={mainRef} tabIndex={-1} className="workspace">
           {path !== "/" && <Breadcrumbs entry={entry} titleKey={titleKey} />}
           {Screen ? (
@@ -334,6 +355,11 @@ export function AppShell({ session }: { session: Session }) {
             {notice}
           </span>
         )}
+        {pending?.action.pick && (
+          <span className="status-notice" role="status" data-pick-prompt="">
+            {t(pending.action.pick)}
+          </span>
+        )}
         {statusItems.map(({ key, component: Item }) => (
           <span key={key} className="status-item">
             <Item />
@@ -344,13 +370,14 @@ export function AppShell({ session }: { session: Session }) {
           <Keys chord={shellChords.palette} /> {t("shell.status.commands")} · <Keys chord={shellChords.help} /> {t("shell.status.shortcuts")}
         </span>
       </footer>
+      {goToWaiting && <GoToHint targets={goTo} />}
       {pending && (
         <PendingCommand
           key={pending.at}
           action={pending.action}
-          onDone={(ran) => {
+          onDone={(ran, quiet) => {
             setPending(null);
-            if (!ran) setNotice(t("shell.palette.actionUnavailable", { action: t(pending.action.labelKey) }));
+            if (!ran && !quiet) setNotice(t("shell.palette.actionUnavailable", { action: t(pending.action.labelKey) }));
           }}
         />
       )}
@@ -364,7 +391,7 @@ export function AppShell({ session }: { session: Session }) {
           onClose={close}
         />
       )}
-      {dialog === "help" && <ShortcutHelp onClose={close} />}
+      {dialog === "help" && <ShortcutHelp onClose={close} goTo={goTo} />}
       {dialog === "preferences" && <PreferencesDialog session={session} onClose={close} />}
     </div>
   );
@@ -376,32 +403,44 @@ export function AppShell({ session }: { session: Session }) {
  * to). A screen that does not offer it within a few seconds, or a move to another screen (the
  * user chose to stay with unsaved changes), runs nothing and says so.
  */
-export function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean) => void }) {
+export function PendingCommand({ action, onDone }: { action: ModuleAction; onDone: (ran: boolean, quiet?: boolean) => void }) {
   const commands = useCommandList();
   const path = usePath();
   // Said once: it ran, or (only when it never ran) it did not.
   const finished = useRef(false);
   const report = useRef(onDone);
   report.current = onDone;
-  const done = useRef((ran: boolean) => {
+  const done = useRef((ran: boolean, quiet = false) => {
     if (finished.current) return;
     finished.current = true;
-    report.current(ran);
+    report.current(ran, quiet);
   });
+  // The first command, then (after it ran) the second one, if the action has one.
+  const [stage, setStage] = useState<"first" | "then">("first");
+  const wanted = stage === "first" ? action.command : action.then;
   const onScreen = splitPath(path).screen === action.path;
-  const command = onScreen ? commands.find((c) => c.id === action.command) : undefined;
+  const command = onScreen ? commands.find((c) => c.id === wanted) : undefined;
   useEffect(() => {
     if (!command || finished.current) return;
     // After the palette has closed and given the focus back, so the command keeps the focus it moves.
     const timer = window.setTimeout(() => {
       command.run();
-      done.current(true);
+      if (stage === "first" && action.then) setStage("then");
+      else done.current(true);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [command]);
+  }, [command, stage, action.then]);
+  // An action that asks for a record waits while its screen is shown, for as long as the user
+  // takes to choose one; leaving the screen drops it without a word. Any other wait is short.
+  const seenScreen = useRef(false);
   useEffect(() => {
+    if (onScreen) seenScreen.current = true;
+    else if (seenScreen.current && action.pick && stage === "first") done.current(false, true);
+  }, [onScreen, action.pick, stage]);
+  useEffect(() => {
+    if (action.pick && stage === "first") return;
     const timer = window.setTimeout(() => done.current(false), commandWaitMs);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [action.pick, stage]);
   return null;
 }

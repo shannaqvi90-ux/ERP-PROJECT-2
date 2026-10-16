@@ -26,9 +26,17 @@ namespace Erp.Gates.Tests.G1;
 /// <item>in a fresh app process that only the judged tenant has ever used (its own singletons,
 /// caches and endpoint closures, untouched by the other tenant).</item>
 /// </list>
-/// Both answers (status and body, with times and trace ids normalised) must be identical. A
-/// difference is confirmed once more before it is reported; a request whose answer changes from
-/// one call to the next in the fresh process is reported as unstable, not judged. Both directions
+/// Both answers (status, body and response headers, with times, trace ids, cookie values and the
+/// transport's own headers normalised) must be identical. A difference is confirmed once more
+/// before it is reported. A request whose answer changes from one call to the next in the fresh
+/// process (a counter, a stamp) is judged by how it changes instead: in the shared process, the
+/// change from one answer to the next when the judged tenant sends it on its own must equal the
+/// change when the other tenant sent the same request in between (a count of every tenant's
+/// requests goes up by one alone and by two with the other tenant: critic p04 round 8, plant L3,
+/// a process-wide count in a response header). Only an answer that changes the same way each time
+/// it is sent alone and still differs is called unstable. The process configuration of every host
+/// is compared before and after each judged request: a value written there while serving is
+/// process-wide state (<see cref="Erp.Kernel.Hosting.ReadOnlyConfiguration"/>). Both directions
 /// run (judging tenant A after tenant B, and tenant B after tenant A), each with its own fresh
 /// process. The check is blind unless enough requests have different true answers in the two
 /// tenants, so that count has a ratchet minimum. Static fields are shared by the two hosts (they
@@ -50,7 +58,19 @@ public static partial class NonInterference
         int ArabicComparisons = 0,
         int ArabicAnswers = 0,
         int ArabicWriteComparisons = 0,
-        int ArabicWorkspaceWriteComparisons = 0);
+        int ArabicWorkspaceWriteComparisons = 0)
+    {
+        /// <summary>Response header lines compared (in the judged tenants' true answers): a check
+        /// that compares no headers is blind to a leak sent in one (critic p04 round 8).</summary>
+        public int HeadersCompared { get; init; }
+
+        /// <summary>Answers that changed from one call to the next in the fresh process and were
+        /// judged by how they change.</summary>
+        public int ChangeProbes { get; init; }
+
+        /// <summary>Configuration keys watched for writes in the hosts compared.</summary>
+        public int ConfigurationKeysWatched { get; init; }
+    }
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
@@ -69,10 +89,14 @@ public static partial class NonInterference
         // process, so whatever a write leaves behind (a counter, a "recently changed" list, a
         // cache filled on save) is there when the other tenant reads.
         var allEndpoints = EndpointInventory.From(env.Factory.Services);
+        var state = new State();
+        state.Configuration.Watch("the shared process", env.Factory.Services);
         var writes = 0;
         foreach (var tenant in new[] { b, a })
         {
             var writer = await TenantActivity.StartAsync(env, tenant, allEndpoints, openApi);
+            writer.Written = (endpoint, variant) => state.Configuration.Check(state,
+                $"{endpoint.Method} {endpoint.Pattern}{(variant is null ? "" : $" ({variant})")} (each tenant's own writes before the comparison)");
             try
             {
                 await writer.WriteAsync(await TenantSnapshot.TakeAsync(env, tenant.Id, tenant.Canary, tenant.Code));
@@ -83,6 +107,7 @@ public static partial class NonInterference
                 writer.Dispose();
             }
         }
+        state.Configuration.Check(state, "both tenants' writes before the comparison (between writes)");
 
         var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
         var ownB = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
@@ -94,10 +119,11 @@ public static partial class NonInterference
         await using var freshProcessA = env.StartFreshProcess();
         await using var freshProcessB = env.StartFreshProcess();
         using var freshA = FreshClient(freshProcessA, sharedA);
+        state.Configuration.Watch("tenant A's fresh process", freshProcessA.Services);
+        state.Configuration.Watch("tenant B's fresh process", freshProcessB.Services);
         using var freshB = FreshClient(freshProcessB, sharedB);
 
         var uris = RequestsFor(endpoints, openApi, catalog, ownA, ownB, textsA, textsB, a.Code, b.Code);
-        var state = new State();
         var englishA = new Dictionary<string, string?>(StringComparer.Ordinal);
         foreach (var (endpoint, uri) in uris)
         {
@@ -183,9 +209,22 @@ public static partial class NonInterference
         {
             blind.Add("no request had different true answers in the two tenants, so no interference could show");
         }
+        if (state.HeadersCompared == 0)
+        {
+            blind.Add("no response header was compared");
+        }
+        if (state.Configuration.KeysWatched == 0)
+        {
+            blind.Add("no configuration key was watched");
+        }
         return new Result(state.Findings, state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count,
             state.WriteComparisons, state.WriteEndpoints.Count, state.WriteVariants.Count, state.ArabicComparisons, state.ArabicAnswers, state.ArabicWriteComparisons,
-            state.ArabicWorkspaceWriteComparisons);
+            state.ArabicWorkspaceWriteComparisons)
+        {
+            HeadersCompared = state.HeadersCompared,
+            ChangeProbes = state.ChangeProbes,
+            ConfigurationKeysWatched = state.Configuration.KeysWatched,
+        };
     }
 
     /// <summary>
@@ -307,9 +346,26 @@ public static partial class NonInterference
     /// <summary>The status of a judged write answer (<c>"{status} {body}"</c>).</summary>
     private static int StatusOf(string answer) => int.TryParse(answer.Split(' ', 2)[0], out var status) ? status : 0;
 
+    /// <summary>Between an answer's status and body and its normalised response headers.</summary>
+    internal const string HeadersMark = "\n[headers]\n";
+
+    /// <summary>An answer as compared: status, normalised body, then the normalised headers.</summary>
+    internal static string Answer(int status, string normalizedBody, string normalizedHeaders) =>
+        $"{status} {normalizedBody}{HeadersMark}{normalizedHeaders}";
+
+    /// <summary>The status and body of a compared answer, without its headers.</summary>
+    private static string WithoutHeaders(string answer) =>
+        answer.IndexOf(HeadersMark, StringComparison.Ordinal) is var at and >= 0 ? answer[..at] : answer;
+
+    /// <summary>How many header lines a compared answer carries.</summary>
+    private static int HeaderLines(string answer) =>
+        answer.IndexOf(HeadersMark, StringComparison.Ordinal) is var at and >= 0 && answer.Length > at + HeadersMark.Length
+            ? answer[(at + HeadersMark.Length)..].Split('\n').Length
+            : 0;
+
     /// <summary>Whether a judged write answer is a refusal for want of the whole workspace.</summary>
     private static bool IsWorkspaceRefusal(string answer) =>
-        ArabicSession.IsWorkspaceRefusal(StatusOf(answer), answer.Split(' ', 2) is [_, var body] ? body : "");
+        ArabicSession.IsWorkspaceRefusal(StatusOf(answer), WithoutHeaders(answer).Split(' ', 2) is [_, var body] ? body : "");
 
     private sealed record WriteSide(string Name, TenantActivity Activity, TenantSnapshot Own, HttpClient Shared, HttpClient Fresh, string Owner = "admin");
 
@@ -325,37 +381,59 @@ public static partial class NonInterference
         async Task<string> WriteAsync(WriteSide side, bool fresh)
         {
             state.Requests++;
-            var (status, text) = await side.Activity.WriteThroughAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
+            var (status, text, headers) = await side.Activity.WriteThroughWithHeadersAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
                 endpoint, side.Own, $"write comparison, {label}", variant, side.Owner);
-            return $"{status} {NormalizeWrite(text)}";
+            return Answer(status, NormalizeWrite(text), NormalizeHeaders(headers));
         }
 
-        await WriteAsync(judged, fresh: true); // the fresh process's state holds the judged tenant's own write
-        var truth = await WriteAsync(judged, fresh: true);
-        await WriteAsync(other, fresh: false);
-        var answer = await WriteAsync(judged, fresh: false);
+        // Whatever changed the configuration since the last check was sent between judged requests
+        // (an Arabic session's own settings, say): named as such, not as this write.
+        state.Configuration.Check(state, $"a request sent between the judged ones (before {label})");
+        try
+        {
+            return await JudgeWriteCoreAsync(state, label, judged, other, WriteAsync);
+        }
+        finally
+        {
+            state.Configuration.Check(state, label);
+        }
+    }
+
+    private static async Task<string> JudgeWriteCoreAsync(State state, string label, WriteSide judged, WriteSide other, Func<WriteSide, bool, Task<string>> WriteAsync)
+    {
+        await WriteAsync(judged, true); // the fresh process's state holds the judged tenant's own write
+        var truth = await WriteAsync(judged, true);
+        await WriteAsync(other, false);
+        var answer = await WriteAsync(judged, false);
         state.WriteComparisons++;
+        state.HeadersCompared += HeaderLines(truth);
         if (answer == truth)
         {
             return truth;
         }
-        var truthAgain = await WriteAsync(judged, fresh: true);
+        var truthAgain = await WriteAsync(judged, true);
         if (truthAgain != truth)
         {
+            state.ChangeProbes++;
+            if (await ChangeDependsOnOtherAsync(() => WriteAsync(judged, false), () => WriteAsync(other, false)) is { } change)
+            {
+                state.Findings.Add($"{judged.Name}: {label} {change} {other.Name} made the same write in between");
+                return truth;
+            }
             state.UnstableWrites++;
             state.Unstable.Add($"{judged.Name}: {label} answers differently from one write to the next ({Short(truth)} / {Short(truthAgain)})");
             return truth;
         }
-        await WriteAsync(other, fresh: false);
-        var answerAgain = await WriteAsync(judged, fresh: false);
+        await WriteAsync(other, false);
+        var answerAgain = await WriteAsync(judged, false);
         if (answerAgain == truth)
         {
             state.UnstableWrites++;
             state.Unstable.Add($"{judged.Name}: {label} differed once in the shared process ({Short(answer)}), then matched");
             return truth;
         }
-        state.Findings.Add($"{judged.Name}: {label} is answered {Short(answerAgain)} in the shared process right after {other.Name} made the same write, " +
-                           $"but {Short(truth)} by a fresh process only {judged.Name} has used");
+        state.Findings.Add($"{judged.Name}: {label} is answered {Difference(answerAgain, truth)} in the shared process right after {other.Name} made the same write, " +
+                           $"but {Difference(truth, answerAgain)} by a fresh process only {judged.Name} has used");
         return truth;
     }
 
@@ -397,7 +475,7 @@ public static partial class NonInterference
         return node;
     }
 
-    private sealed class State
+    internal sealed class State
     {
         public List<string> Findings { get; } = [];
         public List<string> Unstable { get; } = [];
@@ -413,12 +491,28 @@ public static partial class NonInterference
         public int ArabicAnswers;
         public int ArabicWriteComparisons;
         public int ArabicWorkspaceWriteComparisons;
+        public int HeadersCompared;
+        public int ChangeProbes;
         public List<string> WorkspaceWideFailures { get; } = [];
+        public ConfigurationWatch Configuration { get; } = new();
     }
 
     /// <summary>One comparison. Returns the judged tenant's true (fresh-process) answer when it is
     /// stable, otherwise null.</summary>
     private static async Task<string?> JudgeAsync(State state, string uri, string judged, HttpClient shared, HttpClient fresh, string other, HttpClient otherShared)
+    {
+        state.Configuration.Check(state, $"a request sent between the judged ones (before GET {uri})");
+        try
+        {
+            return await JudgeCoreAsync(state, uri, judged, shared, fresh, other, otherShared);
+        }
+        finally
+        {
+            state.Configuration.Check(state, $"GET {uri}");
+        }
+    }
+
+    private static async Task<string?> JudgeCoreAsync(State state, string uri, string judged, HttpClient shared, HttpClient fresh, string other, HttpClient otherShared)
     {
         // An offset page (skip) is a jump into a list the other tenant has just opened: the other
         // tenant sends the same query's first page, then the offset page (critic p05 round 5, plant
@@ -433,6 +527,7 @@ public static partial class NonInterference
         await GetAsync(state, otherShared, uri);
         var answer = await GetAsync(state, shared, uri);
         state.Comparisons++;
+        state.HeadersCompared += HeaderLines(truth);
         if (answer == truth)
         {
             return truth;
@@ -440,6 +535,19 @@ public static partial class NonInterference
         var truthAgain = await GetAsync(state, fresh, uri);
         if (truthAgain != truth)
         {
+            state.ChangeProbes++;
+            if (await ChangeDependsOnOtherAsync(() => GetAsync(state, shared, uri), async () =>
+                {
+                    if (firstPage is not null)
+                    {
+                        await GetAsync(state, otherShared, firstPage);
+                    }
+                    await GetAsync(state, otherShared, uri);
+                }) is { } change)
+            {
+                state.Findings.Add($"{judged}: GET {uri} {change} {other} sent the same request in between");
+                return null;
+            }
             state.Unstable.Add($"{judged}: GET {uri} answers differently from one call to the next ({Short(truth)} / {Short(truthAgain)})");
             return null;
         }
@@ -454,8 +562,8 @@ public static partial class NonInterference
             state.Unstable.Add($"{judged}: GET {uri} differed once in the shared process ({Short(answer)}), then matched");
             return truth;
         }
-        state.Findings.Add($"{judged}: GET {uri} is answered {Short(answerAgain)} in the shared process right after {other} sent the same request, " +
-                           $"but {Short(truth)} by a fresh process only {judged} has used");
+        state.Findings.Add($"{judged}: GET {uri} is answered {Difference(answerAgain, truth)} in the shared process right after {other} sent the same request, " +
+                           $"but {Difference(truth, answerAgain)} by a fresh process only {judged} has used");
         return truth;
     }
 
@@ -481,7 +589,7 @@ public static partial class NonInterference
         state.Requests++;
         using var response = await client.GetAsync(uri);
         var body = await response.Content.ReadAsStringAsync();
-        return $"{(int)response.StatusCode} {Normalize(body)}";
+        return Answer((int)response.StatusCode, Normalize(body), NormalizeHeaders(response));
     }
 
     private static HttpClient FreshClient(ErpAppFactory process, HttpClient signedIn)
@@ -625,6 +733,229 @@ public static partial class NonInterference
     }
 
     private static string Short(string text) => text.Length <= 160 ? text : text[..160] + "…";
+
+    /// <summary>Where <paramref name="text"/> first differs from <paramref name="other"/>: the
+    /// whole answer when short, else the differing header line or the text around the first
+    /// difference (a header leak sits past the body, beyond <see cref="Short"/>'s cut).</summary>
+    internal static string Difference(string text, string other)
+    {
+        if (text.Length <= 160)
+        {
+            return text;
+        }
+        var lines = text.Split('\n');
+        var otherLines = other.Split('\n').ToHashSet(StringComparer.Ordinal);
+        var at = text.IndexOf(HeadersMark, StringComparison.Ordinal);
+        if (at >= 0 && WithoutHeaders(text) == WithoutHeaders(other))
+        {
+            var differing = text[(at + HeadersMark.Length)..].Split('\n').Where(l => !otherLines.Contains(l)).ToList();
+            return $"{Short(text[..Math.Min(at, 60)])} with header {(differing.Count == 0 ? "lines missing" : string.Join(" | ", differing.Take(3)))}";
+        }
+        var first = 0;
+        while (first < text.Length && first < other.Length && text[first] == other[first])
+        {
+            first++;
+        }
+        var start = Math.Max(0, first - 60);
+        return $"{(start > 0 ? "…" : "")}{text[start..Math.Min(text.Length, start + 160)]}{(start + 160 < text.Length ? "…" : "")}";
+    }
+
+    /// <summary>
+    /// For an answer that changes from one call to the next even in a process only the judged
+    /// tenant uses (a counter, a stamp): whether how it changes depends on the other tenant. The
+    /// judged tenant sends the request three times in a row in the shared process (the change
+    /// between answers must be the same twice, or the answer is merely unstable), then once more
+    /// right after the other tenant sent it. A count of every tenant's requests changes by one
+    /// alone and by two with the other tenant in between; a count of the tenant's own changes by
+    /// one either way; a stamp or a fresh random value changes the same way either way. Run twice;
+    /// only a difference seen both times is reported.
+    /// </summary>
+    /// <returns>The finding's wording ("changes by … alone, but by … when"), or null.</returns>
+    private static async Task<string?> ChangeDependsOnOtherAsync(Func<Task<string>> judged, Func<Task> other)
+    {
+        string? first = null;
+        for (var round = 0; round < 2; round++)
+        {
+            var one = await judged();
+            var two = await judged();
+            var three = await judged();
+            var alone = Change(one, two);
+            if (Change(two, three) != alone)
+            {
+                return null;
+            }
+            await other();
+            var four = await judged();
+            var with = Change(three, four);
+            if (with == alone || (first is not null && first != $"{alone}|{with}"))
+            {
+                return null;
+            }
+            first = $"{alone}|{with}";
+            if (round == 1)
+            {
+                return $"changes by {alone} from one answer to the next when sent alone, but by {with} when";
+            }
+        }
+        return null;
+    }
+
+    /// <summary>How <paramref name="after"/> differs from <paramref name="before"/>: "nothing";
+    /// for answers alike but for their numbers (Western or Arabic-Indic digits), the difference of
+    /// each number that changed by its position ("#3 +2"); otherwise "the text".</summary>
+    internal static string Change(string before, string after)
+    {
+        if (before == after)
+        {
+            return "nothing";
+        }
+        var numbersBefore = NumberRegex().Matches(before);
+        var numbersAfter = NumberRegex().Matches(after);
+        if (numbersBefore.Count != numbersAfter.Count || NumberRegex().Replace(before, "#") != NumberRegex().Replace(after, "#"))
+        {
+            return "the text";
+        }
+        var changes = new List<string>();
+        for (var i = 0; i < numbersBefore.Count; i++)
+        {
+            var x = numbersBefore[i].Value;
+            var y = numbersAfter[i].Value;
+            if (x == y)
+            {
+                continue;
+            }
+            // The number by its place and the text just before it ("x-arabic-switches: "), so a
+            // finding says which number moved.
+            var from = i == 0 ? 0 : numbersBefore[i - 1].Index + numbersBefore[i - 1].Length;
+            var lead = before[from..numbersBefore[i].Index];
+            lead = lead.Length <= 24 ? lead : lead[^24..];
+            var place = $"#{i} (after \"{lead.Replace("\n", " ", StringComparison.Ordinal)}\")";
+            changes.Add(decimal.TryParse(Western(x), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var a) &&
+                        decimal.TryParse(Western(y), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var b)
+                ? $"{place} {(b - a >= 0 ? "+" : "")}{(b - a).ToString(System.Globalization.CultureInfo.InvariantCulture)}"
+                : $"{place} changed");
+        }
+        return string.Join(", ", changes);
+    }
+
+    private static string Western(string digits) =>
+        new(digits.Select(c => c is >= '\u0660' and <= '\u0669' ? (char)('0' + (c - '\u0660')) : c is >= '\u06F0' and <= '\u06F9' ? (char)('0' + (c - '\u06F0')) : c).ToArray());
+
+    [GeneratedRegex(@"[0-9\u0660-\u0669\u06F0-\u06F9]{1,27}")]
+    private static partial Regex NumberRegex();
+
+    /// <summary>Headers of the transport and of tracing, the same for every tenant by design or
+    /// different on every answer by design; the body is compared on its own (its length too).</summary>
+    private static readonly HashSet<string> TransportHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Date", "Content-Length", "Transfer-Encoding", "Connection", "Keep-Alive", "Server", "Via", "Age",
+        "traceparent", "tracestate", "Request-Id", "X-Request-Id", "X-Correlation-Id", "X-Trace-Id",
+    };
+
+    /// <summary>The response's headers, normalised (<see cref="NormalizeHeaders(string)"/>).</summary>
+    internal static string NormalizeHeaders(HttpResponseMessage response) => NormalizeHeaders(ResponseHeaders.Text(response));
+
+    /// <summary>
+    /// Response headers (<c>Name: value</c> lines, as <see cref="ResponseHeaders.Text"/> gives them)
+    /// as compared: names in lower case, sorted; transport and tracing headers left out; the value
+    /// of each cookie set replaced (its name and attributes kept), dates replaced, and a declared
+    /// print stamp (<see cref="ResponseText.PrintedAtHeader"/>) replaced. Every other header is
+    /// compared as sent: a count, a version or a tag the product sends is part of the answer.
+    /// </summary>
+    internal static string NormalizeHeaders(string headers)
+    {
+        var lines = new List<string>();
+        foreach (var line in headers.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var colon = line.IndexOf(':', StringComparison.Ordinal);
+            if (colon <= 0)
+            {
+                continue;
+            }
+            var name = line[..colon].Trim();
+            var value = line[(colon + 1)..].Trim();
+            if (TransportHeaders.Contains(name))
+            {
+                continue;
+            }
+            if (string.Equals(name, "Set-Cookie", StringComparison.OrdinalIgnoreCase))
+            {
+                value = CookieValueRegex().Replace(value, m => $"{m.Groups[1].Value}=<value>");
+            }
+            else if (string.Equals(name, ResponseText.PrintedAtHeader, StringComparison.OrdinalIgnoreCase) &&
+                     DateTimeOffset.TryParse(value.Split(';', 2)[0].Trim(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var at) &&
+                     (at - DateTimeOffset.UtcNow).Duration() <= TimeSpan.FromDays(2))
+            {
+                value = "<printed-at>";
+            }
+            value = HttpDateRegex().Replace(TimeRegex().Replace(value, "<time>"), "<time>");
+            lines.Add($"{name.ToLowerInvariant()}: {value}");
+        }
+        lines.Sort(StringComparer.Ordinal);
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>A cookie's name and value at the start of a Set-Cookie value (one or several
+    /// cookies joined by ", " as the client folds them).</summary>
+    [GeneratedRegex(@"(?:^|(?<=,\s*))([!#$%&'*+\-.^_`|~0-9A-Za-z]+)=[^;,]*(?=;|,|$)")]
+    private static partial Regex CookieValueRegex();
+
+    [GeneratedRegex(@"(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT")]
+    private static partial Regex HttpDateRegex();
+
+    /// <summary>
+    /// The configuration of every host compared, read before and after each judged request: a
+    /// value written into it while serving (a count, a last caller) is state every tenant of that
+    /// process shares, whatever the answer shows (critic p04 round 8, plant L3 kept its count
+    /// there). Writes through the indexer are refused by the product
+    /// (<see cref="Erp.Kernel.Hosting.ReadOnlyConfiguration"/>); this sees a write that went
+    /// straight into a provider as well.
+    /// </summary>
+    internal sealed class ConfigurationWatch
+    {
+        private readonly List<(string Name, Microsoft.Extensions.Configuration.IConfiguration Configuration, Dictionary<string, string?> Last)> _hosts = [];
+
+        public int KeysWatched { get; private set; }
+
+        public void Watch(string name, IServiceProvider services)
+        {
+            var configuration = services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+            var now = Read(configuration);
+            KeysWatched += now.Count;
+            _hosts.Add((name, configuration, now));
+        }
+
+        /// <summary>Reports every key that changed in any host since the last check, as done by
+        /// <paramref name="label"/>.</summary>
+        public void Check(State state, string label)
+        {
+            for (var i = 0; i < _hosts.Count; i++)
+            {
+                var (name, configuration, last) = _hosts[i];
+                var now = Read(configuration);
+                foreach (var key in now.Keys.Union(last.Keys, StringComparer.OrdinalIgnoreCase))
+                {
+                    var before = last.GetValueOrDefault(key);
+                    var after = now.GetValueOrDefault(key);
+                    if (!string.Equals(before, after, StringComparison.Ordinal))
+                    {
+                        state.Findings.Add($"{label} changed the configuration of {name} while serving ({key}: {(before is null ? "unset" : $"'{Short(before)}'")} → {(after is null ? "unset" : $"'{Short(after)}'")}): configuration is shared by every tenant of the process");
+                    }
+                }
+                _hosts[i] = (name, configuration, now);
+            }
+        }
+
+        private static Dictionary<string, string?> Read(Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in Microsoft.Extensions.Configuration.ConfigurationExtensions.AsEnumerable(configuration))
+            {
+                values[key] = value;
+            }
+            return values;
+        }
+    }
 
     [GeneratedRegex(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?")]
     private static partial Regex TimeRegex();

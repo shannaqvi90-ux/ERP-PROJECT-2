@@ -61,7 +61,7 @@ type KeyLike = Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey" | "altKey" | "
 
 /** The key's position when the event does not say (synthetic events, some on-screen keyboards
  * leave `code` empty): derived from the key for Enter, Escape and Latin letters and digits. */
-function codeOf(event: KeyLike & { key?: string }): string {
+export function codeOf(event: KeyLike & { key?: string }): string {
   if (event.code) return event.code;
   const key = event.key ?? "";
   if (key === "Enter" || key === "Escape") return key;
@@ -137,6 +137,11 @@ export function isEditable(target: EventTarget | null): boolean {
 }
 
 const modalOpen = (): boolean => typeof document !== "undefined" && document.querySelector('[aria-modal="true"]') !== null;
+
+/** Whether a modal dialog (the palette, a confirmation) is open: plain keys then belong to it. */
+export function isModalOpen(): boolean {
+  return modalOpen();
+}
 
 type Registered = CommandDef & { parsed?: Chord };
 

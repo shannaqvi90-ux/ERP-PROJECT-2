@@ -33,6 +33,8 @@ public static class ErpPlatform
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
+        // Read-only once the app is built (ReadOnlyConfiguration): configuration is process-wide.
+        ReadOnlyConfiguration.Install(configuration);
 
         var catalog = new ModuleCatalog();
         services.AddSingleton(catalog);
@@ -138,6 +140,8 @@ public static class ErpPlatform
         // The password hashing cost is checked as the app starts: a lowered cost outside the
         // Testing environment refuses to start (Security.PasswordHashing).
         _ = app.Services.GetRequiredService<Security.PasswordHashing>();
+        // From here on a write into the configuration throws: every tenant shares it.
+        ReadOnlyConfiguration.Seal(app.Services.GetRequiredService<IConfiguration>());
         // Behind a reverse proxy the client address (rate limits, session records) comes from
         // X-Forwarded-For, trusted only from the configured proxies.
         if (ForwardedHeadersFrom(app.Configuration) is { } forwarded)

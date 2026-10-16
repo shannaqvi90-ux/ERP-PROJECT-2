@@ -244,6 +244,30 @@ describe("command palette", () => {
     expect(options()).toEqual(expect.arrayContaining(["Home", "Sign out"]));
     expect(options()).not.toContain("Roles");
     expect(document.querySelectorAll("nav.navpane a")).toHaveLength(0);
+    // No navigation pane, so none of its commands (critic p04 round 8).
+    expect(options()).not.toContain("Move to the navigation pane");
+    expect(options()).not.toContain("Show or hide the navigation pane");
+  });
+
+  it("gives a user with no screens no navigation commands, keys or menu button", async () => {
+    serve(nobody);
+    view = await render(<App language="en" />);
+    await settle();
+    expect(document.querySelector('[aria-controls="navpane"]')).toBeNull();
+    const before = document.activeElement;
+    press({ code: "KeyM", key: "m", altKey: true });
+    press({ code: "KeyB", key: "b", altKey: true });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(document.activeElement).toBe(before);
+    expect(document.querySelector("nav.navpane")!.hasAttribute("hidden")).toBe(true);
+    press({ code: "Slash", key: "?", shiftKey: true });
+    await settle();
+    const rows = [...document.querySelectorAll("[data-shortcut]")].map((r) => r.getAttribute("data-shortcut"));
+    expect(rows).toContain("shell.home");
+    expect(rows).not.toContain("shell.navigation");
+    expect(rows).not.toContain("shell.toggleNavigation");
   });
 
   it("closes with Escape and gives the focus back", async () => {
@@ -373,6 +397,25 @@ describe("keyboard and focus", () => {
     const rows = [...document.querySelectorAll("[data-shortcut]")].map((r) => r.getAttribute("data-shortcut"));
     expect(rows).toEqual(expect.arrayContaining(["shell.palette", "shell.language", "shell.help", "shell.helpAnywhere", "shell.navigation", "shell.home", "shell.preferences", "shell.toggleNavigation"]));
     for (const row of document.querySelectorAll("[data-shortcut] td:last-child")) expect(row.textContent).not.toMatch(/^shell\./);
+  });
+
+  it("lists the list grid's own keys in the help sheet, in English and in Arabic", async () => {
+    for (const language of ["en", "ar"] as const) {
+      serve({ ...admin, user: { ...admin.user, language } });
+      view = await render(<App language={language} />);
+      await settle();
+      press({ code: "Slash", key: "?", shiftKey: true });
+      await settle();
+      const captions = [...document.querySelectorAll(".shortcut-table caption")].map((c) => c.textContent);
+      const lists = [...document.querySelectorAll(".shortcut-table")].find((t) => t.querySelector("caption")!.textContent === (language === "en" ? "In lists" : "في القوائم"));
+      expect(lists, `captions: ${captions.join(", ")}`).toBeDefined();
+      const keys = [...lists!.querySelectorAll("tr")].map((r) => [...r.querySelectorAll("kbd")].map((k) => k.textContent).join(" "));
+      for (const expected of ["↑ ↓", "PgUp PgDn", "Home End", "Enter", "Space", "/", "Esc"]) expect(keys).toContain(expected);
+      expect(keys.some((k) => /^(Ctrl|⌘) A$/.test(k))).toBe(true);
+      for (const label of lists!.querySelectorAll("td:last-child")) expect(label.textContent).not.toMatch(/^shell\./);
+      view.unmount();
+      view = undefined;
+    }
   });
 
   it("moves to the navigation with Alt+M and through it with the arrow keys", async () => {

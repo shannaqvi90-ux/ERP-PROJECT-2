@@ -540,6 +540,76 @@ input[aria-invalid="true"] {
   background: var(--bg);
 }
 
+/* The entry's go-to letter (G, then this key), beside the link (not inside it, so the link's
+   accessible name stays the entry's name); quiet until the entry is pointed at or the pane has
+   the focus. */
+.navpane li {
+  position: relative;
+}
+
+.navpane li[data-go]::after {
+  content: attr(data-go);
+  position: absolute;
+  inset-inline-end: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.navpane li[data-go]:hover::after,
+.navpane:focus-within li[data-go]::after,
+.app[data-goto="waiting"] .navpane li[data-go]::after {
+  opacity: 1;
+}
+
+/* What G offers while it waits for the second key. */
+.goto-hint {
+  position: fixed;
+  inset-block-end: 36px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+  padding: 8px 12px;
+  font-size: 13px;
+  max-width: calc(100vw - 32px);
+}
+
+[dir="rtl"] .goto-hint {
+  transform: translateX(50%);
+}
+
+.goto-hint-title {
+  display: block;
+  font-weight: 600;
+  margin-block-end: 4px;
+}
+
+.goto-hint ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.keys-then {
+  color: var(--muted);
+}
+
 .navpane a[aria-current="page"] {
   background: var(--selected);
   border-inline-start-color: var(--accent);
@@ -974,6 +1044,7 @@ input[aria-invalid="true"] {
 
   .topbar,
   .navpane,
+  .goto-hint,
   .statusbar,
   .skip-link,
   .breadcrumbs,

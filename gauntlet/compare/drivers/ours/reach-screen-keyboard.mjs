@@ -1,5 +1,6 @@
-// Two expert keyboard paths: the navigation pane (Alt+M focuses the current entry, Enter opens it)
-// and the command palette (Ctrl+K, a few letters, Enter). The harness counts the best per metric.
+// Three expert keyboard paths: the go-to keys (G, then U for Users), the navigation pane (Alt+M
+// focuses the current entry, Enter opens it) and the command palette (Ctrl+K, a few letters,
+// Enter). The harness counts the best per metric.
 async function signIn(ctx) {
   const page = ctx.page;
   await page.goto(ctx.product.baseUrl + '/');
@@ -19,6 +20,13 @@ const nav = async (op) => {
   await op.waitFor(usersList, { label: 'users list' });
   return {};
 };
+const goTo = async (op) => {
+  await op.press('g', { label: 'go to' });
+  await op.waitFor('[data-goto-hint]', { label: 'go-to keys shown' });
+  await op.press('u', { label: 'Users' });
+  await op.waitFor(usersList, { label: 'users list' });
+  return {};
+};
 const palette = async (op) => {
   await op.press('Control+k', { label: 'command palette' });
   await op.waitFor('[role=dialog] input[role=combobox]', { label: 'palette open' });
@@ -30,10 +38,11 @@ const palette = async (op) => {
 };
 export default {
   built: true,
-  path: 'Alt+M (navigation pane, Users focused) > Enter; or Ctrl+K > "us" > Enter.',
+  path: 'G > U (go-to keys); or Alt+M (navigation pane, Users focused) > Enter; or Ctrl+K > "us" > Enter.',
   signIn,
-  run: nav,
+  run: goTo,
   variants: {
+    goTo: { path: 'G > U', run: goTo },
     navigation: { path: 'Alt+M > Enter', run: nav },
     palette: { path: 'Ctrl+K > "us" > Enter', run: palette },
   },
