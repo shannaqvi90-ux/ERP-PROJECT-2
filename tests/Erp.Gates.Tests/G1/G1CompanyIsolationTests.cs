@@ -619,6 +619,31 @@ public static class CompanyAttack
             var workplace = await scopedClient.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace");
             if (workplace.GetProperty("companies").EnumerateArray().Any(c => c.GetProperty("id").GetGuid() == y))
                 escalations.Add("the workplace switcher offers company Y");
+            // The companies switched between most recently are kept on the user's own workplace row
+            // and answered with it. One that names Y (kept from when the user still worked there)
+            // is never answered, and is dropped at the next switch.
+            var stayX = await scopedClient.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = x, branchId = (Guid?)null });
+            if (!stayX.IsSuccessStatusCode) escalations.Add($"switching to its own company X answered {(int)stayX.StatusCode}");
+            await using (var db = await env.OpenAdminAsync())
+            {
+                var kept = await DbCatalog.ScalarAsync<long>(db,
+                    "WITH u AS (UPDATE tenancy.user_workplaces SET recent_company_ids = ARRAY[@y, @x]::uuid[] WHERE tenant_id = @t AND user_id = @u RETURNING 1) SELECT count(*) FROM u",
+                    ("y", y), ("x", x), ("t", tenant.Id), ("u", scopedUser));
+                if (kept != 1) escalations.Add($"the {label}'s workplace row was not found to plant company Y in its recent companies ({kept} rows)");
+            }
+            static bool NamesY(JsonElement answer, Guid y) =>
+                answer.TryGetProperty("recentCompanyIds", out var recent) && recent.EnumerateArray().Any(id => id.GetGuid() == y);
+            if (NamesY(await scopedClient.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace"), y))
+                escalations.Add("the workplace answer names company Y among the recent companies");
+            var again = await scopedClient.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = x, branchId = (Guid?)null });
+            if (NamesY(await again.Content.ReadFromJsonAsync<JsonElement>(), y))
+                escalations.Add("a switch answers company Y among the recent companies");
+            await using (var db = await env.OpenAdminAsync())
+            {
+                if (await DbCatalog.ScalarAsync<long>(db, "SELECT count(*) FROM tenancy.user_workplaces WHERE tenant_id = @t AND user_id = @u AND @y = ANY(recent_company_ids)",
+                        ("t", tenant.Id), ("u", scopedUser), ("y", y)) != 0)
+                    escalations.Add("a switch kept company Y among the recent companies");
+            }
         }
         var session = await scopedClient.GetFromJsonAsync<JsonElement>("/api/auth/session");
         if (session.GetProperty("permissions").GetArrayLength() == 0) escalations.Add($"the {label} holds no permissions (the attack would be blind)");

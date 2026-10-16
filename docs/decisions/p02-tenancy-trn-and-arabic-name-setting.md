@@ -128,7 +128,12 @@ The buttons came only from this browser's memory. Now the server keeps them too:
 
 Tests: `AccessTests.The_companies_switched_between_most_recently_follow_the_user_to_every_device_and_only_while_they_may_work_there`
 (two sessions, access removed, the stored array) and a `WorkplaceSwitcher.test.tsx` case for a
-device with nothing stored and an id the user may no longer use. Processor time: one .NET test of
+device with nothing stored and an id the user may no longer use. The G1 company-layer gate
+(`G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint`) now
+plants company Y in the scoped user's stored recent companies and requires that neither GET nor
+PUT /workplace names Y and that the next switch drops it. Planted check: answering the stored ids
+without the read-time filter fails that gate ("the workplace answer names company Y among the
+recent companies"). Processor time: one .NET test of
 about 1 s and one web test of well under 1 s; the G1/G2 gates walk the same endpoints as before.
 
 ## Processor time
