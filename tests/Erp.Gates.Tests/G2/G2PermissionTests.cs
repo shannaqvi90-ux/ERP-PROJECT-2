@@ -321,25 +321,19 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
+    /// <summary>Through every session carrier (cookie and Bearer, and any carrier the kernel adds:
+    /// <see cref="SessionTokenCarriers.All"/>).</summary>
     [Fact]
     public async Task A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu()
     {
-        using var client = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
-        var problems = new List<string>();
-        foreach (var endpoint in Permissioned)
-        {
-            using var response = await client.SendAsync(Request(endpoint));
-            if (response.StatusCode != HttpStatusCode.Forbidden)
-            {
-                problems.Add($"{endpoint}: {(int)response.StatusCode}");
-            }
-        }
-        var session = await client.GetFromJsonAsync<JsonElement>("/api/auth/session");
-        Assert.Equal(0, session.GetProperty("permissions").GetArrayLength());
-        Assert.Equal(0, session.GetProperty("menu").GetArrayLength());
-        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        var result = await CarrierMatrix.DeniedEverythingAsync(Env, Env.Email(Env.TenantA, "noaccess"), Permissioned);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        AssertEveryCarrier(result.Carriers);
+        Assert.Equal(Permissioned.Count * result.Carriers.Count, result.Requests);
     }
 
+    /// <summary>Through every session carrier, as above: one sign-in per permission, its token
+    /// presented once as the cookie and once as a Bearer header.</summary>
     [Fact]
     public async Task Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it()
     {
@@ -347,43 +341,142 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var problems = new List<string>();
         var checkedPermissions = 0;
+        var requests = 0;
         foreach (var permission in catalog.PermissionKeys.Order(StringComparer.Ordinal))
         {
             var email = $"g2.{permission.Replace('.', '-')}@{Env.TenantA.EmailDomain}";
-            var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Only {permission}", nameAr = $"فقط {permission}", permissions = new[] { permission } });
-            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
-            var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
-            var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {permission}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
-            Assert.Equal(HttpStatusCode.Created, user.StatusCode);
-
-            using var client = await Env.SignInAsync(email);
-            var session = await client.GetFromJsonAsync<JsonElement>("/api/auth/session");
-            var granted = session.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).ToList();
-            if (granted is not [var only] || only != permission)
-            {
-                problems.Add($"{permission}: session lists [{string.Join(", ", granted)}]");
-            }
-            var menu = session.GetProperty("menu").EnumerateArray().Select(m => m.GetProperty("key").GetString()!).ToList();
+            await CreateUserHoldingAsync(admin, email, [permission], $"Only {permission}", $"فقط {permission}");
             var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
-            if (!menu.SequenceEqual(expectedMenu))
-            {
-                problems.Add($"{permission}: menu shows [{string.Join(", ", menu)}], expected [{string.Join(", ", expectedMenu)}]");
-            }
-
-            foreach (var endpoint in Permissioned)
-            {
-                using var response = await client.SendAsync(Request(endpoint));
-                var opened = response.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized);
-                var shouldOpen = endpoint.Permission == permission;
-                if (opened != shouldOpen)
-                {
-                    problems.Add($"{permission}: {endpoint} answered {(int)response.StatusCode} (expected {(shouldOpen ? "allowed" : "403")})");
-                }
-            }
+            var result = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned);
+            problems.AddRange(result.Problems);
+            AssertEveryCarrier(result.Carriers);
+            requests += result.Requests;
             checkedPermissions++;
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(checkedPermissions >= Ratchet.Min("g2.permissions"));
+        Assert.Equal(checkedPermissions * Permissioned.Count * SessionTokenCarriers.All.Count, requests);
+    }
+
+    /// <summary>A token the server never issued gets 401 from every permissioned endpoint through
+    /// every carrier, and the session endpoint answers as nobody.</summary>
+    [Fact]
+    public async Task An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier()
+    {
+        var result = await CarrierMatrix.UnknownTokenAsync(Env, Permissioned);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        AssertEveryCarrier(result.Carriers);
+    }
+
+    /// <summary>
+    /// Each carrier's test client carries the session through that carrier alone, and the kernel
+    /// honours it: the same user is signed in through each. Anything else a client might send a
+    /// token in (a query string, another header, another cookie, a form field, another
+    /// Authorization scheme) is not read: the kernel reads tokens only through its carrier list,
+    /// which the matrices above cover.
+    /// </summary>
+    [Fact]
+    public async Task Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client()
+    {
+        Assert.Equal([SessionTokenCarriers.BearerName, SessionTokenCarriers.CookieName], SessionTokenCarriers.All.Select(c => c.Name));
+        var email = Env.Email(Env.TenantA, "noaccess");
+        var users = new HashSet<string>(StringComparer.Ordinal);
+        string? token = null;
+        foreach (var carrier in await Env.SignInPerCarrierAsync(email))
+        {
+            using (carrier)
+            {
+                using var session = await carrier.Client.GetAsync("/api/auth/session");
+                Assert.True(session.StatusCode == HttpStatusCode.OK, $"[{carrier.Carrier}] GET /api/auth/session: {(int)session.StatusCode}");
+                users.Add((await session.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("user").GetProperty("id").GetString()!);
+                var sent = carrier.Client.DefaultRequestHeaders.ToDictionary(h => h.Key, h => string.Join(",", h.Value), StringComparer.OrdinalIgnoreCase);
+                // The client sends the token one way only.
+                Assert.Equal(carrier.Carrier == SessionTokenCarriers.BearerName, sent.ContainsKey("Authorization"));
+                Assert.Equal(carrier.Carrier == SessionTokenCarriers.CookieName, sent.ContainsKey("Cookie"));
+                token ??= carrier.Carrier == SessionTokenCarriers.BearerName ? sent["Authorization"]["Bearer ".Length..] : null;
+            }
+        }
+        Assert.Single(users);
+        Assert.NotNull(token);
+        Assert.Throws<InvalidOperationException>(() => Env.ClientCarrying("query", token));
+
+        using var anonymous = Env.CreateClient();
+        foreach (var (label, build) in new (string, Func<HttpRequestMessage>)[]
+                 {
+                     ("query access_token", () => new HttpRequestMessage(HttpMethod.Get, $"/api/auth/session?access_token={token}")),
+                     ("query token", () => new HttpRequestMessage(HttpMethod.Get, $"/api/auth/session?token={token}")),
+                     ("query session", () => new HttpRequestMessage(HttpMethod.Get, $"/api/auth/session?session={token}")),
+                     ("query erp_session", () => new HttpRequestMessage(HttpMethod.Get, $"/api/auth/session?erp_session={token}")),
+                     ("header X-Erp-Session", () => WithHeader("X-Erp-Session", token)),
+                     ("header X-Api-Key", () => WithHeader("X-Api-Key", token)),
+                     ("header X-Auth-Token", () => WithHeader("X-Auth-Token", token)),
+                     ("header X-Access-Token", () => WithHeader("X-Access-Token", token)),
+                     ("header Session", () => WithHeader("Session", token)),
+                     ("Authorization Token", () => WithHeader("Authorization", "Token " + token)),
+                     ("Authorization bare", () => WithHeader("Authorization", token)),
+                     ("Authorization Basic", () => WithHeader("Authorization", "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(email + ":" + token)))),
+                     ("Proxy-Authorization Bearer", () => WithHeader("Proxy-Authorization", "Bearer " + token)),
+                     ("cookie session", () => WithHeader("Cookie", "session=" + token)),
+                     ("cookie erp_token", () => WithHeader("Cookie", "erp_token=" + token)),
+                     ("cookie access_token", () => WithHeader("Cookie", "access_token=" + token)),
+                 })
+        {
+            using var request = build();
+            using var response = await anonymous.SendAsync(request);
+            var who = await CarrierMatrix.SignedInAsync(response);
+            Assert.True(who is null, $"A session token sent as {label} was honoured: {who}");
+        }
+
+        static HttpRequestMessage WithHeader(string name, string value)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/auth/session");
+            request.Headers.TryAddWithoutValidation(name, value);
+            return request;
+        }
+    }
+
+    /// <summary>
+    /// Self-test (critic p00 round 9, plant P3): a host in which any signed-in Bearer caller passes
+    /// every permission check, over this environment's database. Both matrices must report it, for
+    /// the Bearer carrier and for no other; the same matrices pass on the real host.
+    /// </summary>
+    [Fact]
+    public async Task The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        const string permission = "identity.users.read";
+        var email = $"g2.plant.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        await CreateUserHoldingAsync(admin, email, [permission], "Planted Bearer check", "فحص حامل مزروع");
+        var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
+
+        await using var planted = new ErpAppFactory(BearerBypassModule.Settings(Env.Factory.Settings));
+        var denied = await CarrierMatrix.DeniedEverythingAsync(Env, Env.Email(Env.TenantA, "noaccess"), Permissioned, planted);
+        var exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned, planted);
+        foreach (var (name, result) in new[] { ("deny by default", denied), ("grant exactly one", exactlyOne) })
+        {
+            var bearer = result.Problems.Where(p => p.StartsWith($"[{SessionTokenCarriers.BearerName}]", StringComparison.Ordinal)).ToList();
+            Assert.True(bearer.Count > 0, $"The {name} matrix missed the planted Bearer bypass");
+            Assert.True(bearer.Count == result.Problems.Count, $"The {name} matrix reported more than the plant:\n" + string.Join("\n", result.Problems.Except(bearer)));
+        }
+        Assert.Contains(denied.Problems, p => p.StartsWith("[bearer] GET /api/identity/users:", StringComparison.Ordinal) && p.EndsWith(": 200", StringComparison.Ordinal));
+        Assert.Contains(exactlyOne.Problems, p => p.StartsWith("[bearer] identity.users.read: ", StringComparison.Ordinal) && p.EndsWith("(expected 403)", StringComparison.Ordinal));
+    }
+
+    private static void AssertEveryCarrier(IReadOnlyList<string> carriers)
+    {
+        Assert.Equal(SessionTokenCarriers.All.Select(c => c.Name), carriers);
+        Assert.True(carriers.Count >= Ratchet.Min("g2.credentialCarriers"),
+            $"{carriers.Count} session carriers checked; ratchet minimum {Ratchet.Min("g2.credentialCarriers")}");
+    }
+
+    private static async Task CreateUserHoldingAsync(HttpClient admin, string email, string[] permissions, string roleEn, string roleAr)
+    {
+        var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = roleEn, nameAr = roleAr, permissions });
+        Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+        var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {string.Join(", ", permissions)}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
+        Assert.Equal(HttpStatusCode.Created, user.StatusCode);
     }
 
     [Fact]

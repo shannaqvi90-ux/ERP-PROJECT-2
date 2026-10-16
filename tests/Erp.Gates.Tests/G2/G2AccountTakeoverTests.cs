@@ -48,10 +48,89 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
     [Fact]
     public async Task Acting_on_a_user_needs_every_permission_that_user_holds()
     {
+        var result = await TakeoverAsync(Env);
+        var problems = result.Problems;
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CheckedEndpoints} endpoints acting on users, {result.FieldVariants} single-field requests aimed at the Administrator, " +
+                                                        $"{result.TargetsAimed} requests aimed at users holding grants the caller lacks, {result.ModuleFieldVariants} single-field requests aimed at them");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CompanyTargetsAimed} requests aimed at users whose roles are held in one company");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.CompanyCallerTargetsAimed} requests by callers whose grants come from a role in one company");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.QueryVariantsAimed} requests with documented query values aimed at stronger users, {result.QueryVariantControls} on users without roles, " +
+                                                        $"{result.QueryCrossRecord} naming the Administrator's records under a user without roles ({string.Join(", ", result.QueryEndpoints)})");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.Contains("POST /api/identity/users/{id:guid}/sessions/revoke", result.QueryEndpoints);
+        Assert.Contains("DELETE /api/identity/users/{id:guid}/passkeys", result.QueryEndpoints);
+        // No state-changing endpoint has a documented query parameter that no check aims at a
+        // stronger user: one added elsewhere (a role, a company) must be brought into a check here.
+        using var anonymous = Env.CreateClient();
+        var openApi = await OpenApiDocument.LoadAsync(anonymous);
+        var unaimed = EndpointInventory.From(Env.Factory.Services)
+            .Where(e => e.Method != "GET" && !e.IsAnonymous && DocumentedQueries.Of(openApi, e).Count > 0 && !result.QueryEndpoints.Contains(e.Key))
+            .Select(e => e.Key).ToList();
+        Assert.True(unaimed.Count == 0, "State-changing endpoints whose documented query values no G2 check sends to a stronger user: " + string.Join(", ", unaimed));
+        Assert.True(result.QueryVariantsAimed >= Ratchet.Min("g2.takeoverQueryVariants"),
+            $"{result.QueryVariantsAimed} requests with documented query values aimed at stronger users; ratchet minimum {Ratchet.Min("g2.takeoverQueryVariants")}");
+        Assert.True(result.QueryVariantControls >= Ratchet.Min("g2.takeoverQueryControls"),
+            $"{result.QueryVariantControls} requests with documented query values on users without roles; ratchet minimum {Ratchet.Min("g2.takeoverQueryControls")}");
+        Assert.True(result.QueryCrossRecord >= Ratchet.Min("g2.takeoverQueryCrossRecord"),
+            $"{result.QueryCrossRecord} requests naming the Administrator's records under a user without roles; ratchet minimum {Ratchet.Min("g2.takeoverQueryCrossRecord")}");
+        Assert.True(result.CompanyCallerTargetsAimed >= Ratchet.Min("g2.takeoverCompanyCallerTargets"),
+            $"{result.CompanyCallerTargetsAimed} requests by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyCallerTargets")}");
+        Assert.True(result.CompanyTargetsAimed >= Ratchet.Min("g2.takeoverCompanyTargets"),
+            $"{result.CompanyTargetsAimed} requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyTargets")}");
+        Assert.True(result.FieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
+            $"{result.FieldVariants} single-field requests aimed at the Administrator; ratchet minimum {Ratchet.Min("g2.takeoverFieldVariantsChecked")}");
+        Assert.True(result.CheckedEndpoints >= Ratchet.Min("g2.takeoverEndpointsChecked"),
+            $"{result.CheckedEndpoints} endpoints acting on users checked; ratchet minimum {Ratchet.Min("g2.takeoverEndpointsChecked")}");
+        Assert.True(result.TargetsAimed >= Ratchet.Min("g2.takeoverPartialTargets"),
+            $"{result.TargetsAimed} requests aimed at users holding grants the caller lacks; ratchet minimum {Ratchet.Min("g2.takeoverPartialTargets")}");
+        Assert.True(result.ModuleFieldVariants >= Ratchet.Min("g2.takeoverModuleFieldVariants"),
+            $"{result.ModuleFieldVariants} single-field requests aimed at users holding another module's grants; ratchet minimum {Ratchet.Min("g2.takeoverModuleFieldVariants")}");
+    }
+
+    /// <summary>
+    /// Self-test (critic p03 round 9, plant P4): a host where "Sign out everywhere" with
+    /// <c>?removePasskeys=true</c> skips its target check (<see cref="RevokeBypassModule"/>), over
+    /// this environment's database. The takeover check, run on that endpoint alone, must report
+    /// the query value aimed at the Administrator; the request built from path and body alone (all
+    /// the check sent before round 10) is refused there as everywhere.
+    /// </summary>
+    [Fact]
+    public async Task The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value()
+    {
+        await using var planted = Env.OverHost(RevokeBypassModule.Settings(Env));
+        const string revoke = "POST /api/identity/users/{id:guid}/sessions/revoke";
+        var result = await TakeoverAsync(planted, e => e.Key == revoke);
+        Assert.Equal([revoke], result.QueryEndpoints);
+        Assert.Contains(result.Problems, p => p.StartsWith(revoke + "?removePasskeys=true: aimed at the Administrator by ", StringComparison.Ordinal) &&
+                                             p.Contains("answered 200 (expected 403)", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(revoke + ": the Administrator's passkeys changed", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + ": aimed at", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + "?removePasskeys=false", StringComparison.Ordinal));
+    }
+
+    /// <summary>What <see cref="TakeoverAsync"/> found and how much it sent.</summary>
+    public sealed record TakeoverResult(
+        List<string> Problems, int CheckedEndpoints, int FieldVariants, int ModuleFieldVariants, int TargetsAimed, int CompanyTargetsAimed,
+        int CompanyCallerTargetsAimed, int QueryVariantsAimed, int QueryVariantControls, int QueryCrossRecord, IReadOnlyList<string> QueryEndpoints);
+
+    /// <summary>
+    /// The takeover check over every endpoint acting on a user (or those <paramref name="only"/>
+    /// keeps), served by <paramref name="Env"/>'s host. Every request aimed at a stronger user is
+    /// sent as built from its path and body and again with every documented query value
+    /// (<see cref="DocumentedQueries"/>, critic p03 round 9): booleans both ways, every enumerated
+    /// value, and for an id every id in the target's own records and the Administrator's. Each must
+    /// answer 403 and leave the target as it was. Each value is also sent to a user without roles,
+    /// which must accept it (an id: at least one of that user's own records), so the 403 comes from
+    /// the access check; and the Administrator's record ids are sent under a user without roles,
+    /// which must leave the Administrator as they were.
+    /// </summary>
+    internal static async Task<TakeoverResult> TakeoverAsync(ErpTestEnvironment Env, Func<ApiEndpoint, bool>? only = null)
+    {
         using var anonymous = Env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var endpoints = EndpointInventory.From(Env.Factory.Services)
             .Where(e => e.Method != "GET" && !e.IsAnonymous && e.Pattern.StartsWith(UsersPrefix, StringComparison.Ordinal))
+            .Where(e => only?.Invoke(e) ?? true)
             .ToList();
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var adminSession = await admin.GetFromJsonAsync<JsonElement>("/api/auth/session");
@@ -72,6 +151,93 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         var targetsAimed = 0;
         var companyTargetsAimed = 0;
         var companyCallerTargetsAimed = 0;
+        var queryVariantsAimed = 0;
+        var queryVariantControls = 0;
+        var queryCrossRecord = 0;
+        var queryEndpoints = new SortedSet<string>(StringComparer.Ordinal);
+        var administratorText = await ReadUserAsync(admin, adminId);
+
+        // The request again with every documented query value (critic p03 round 9, plant P4: with
+        // ?removePasskeys=true, "Sign out everywhere" skipped its target check): each must be 403.
+        async Task AimQueriesAsync(HttpClient who, string whoLabel, ApiEndpoint endpoint, Guid victim, string victimText, string label, string tag)
+        {
+            var ids = DocumentedQueries.IdsIn([victimText, administratorText], victim);
+            var q = 0;
+            foreach (var variant in DocumentedQueries.Variants(openApi, endpoint, ids))
+            {
+                queryEndpoints.Add(endpoint.Key);
+                var (status, text) = await SendAsync(who, endpoint.Method, endpoint.Path(_ => victim.ToString()) + variant.Query, await BodyAsync(who, openApi, endpoint, victim, $"{tag}q{++q}"));
+                queryVariantsAimed++;
+                if (status != (int)HttpStatusCode.Forbidden)
+                {
+                    problems.Add($"{endpoint}{variant}: aimed at {label} by {whoLabel} answered {status} (expected 403): {Short(text)}");
+                }
+            }
+        }
+
+        async Task<Guid> FreshTargetAsync(string tag)
+        {
+            var id = await CreatedIdAsync(admin, "/api/identity/users", new { email = $"fresh.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Fresh {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>() });
+            await companies.GiveAccessAsync(id);
+            await targets.GivePasskeyAsync(id);
+            return id;
+        }
+
+        // Controls of the query values: each accepted on a user without roles (a fresh one each
+        // time: the request may end or remove what it names), so a 403 above is the access check.
+        // An id value: the user's own record ids in turn, until one is accepted. Then the
+        // Administrator's record ids, under a user without roles: the Administrator stays as they
+        // were (a check of the path's user that acts on whatever record the query names).
+        async Task ControlQueriesAsync(HttpClient who, string whoLabel, ApiEndpoint endpoint, string tag)
+        {
+            var parameters = DocumentedQueries.Of(openApi, endpoint);
+            var c = 0;
+            foreach (var variant in DocumentedQueries.Variants(parameters, []))
+            {
+                var fresh = await FreshTargetAsync($"{tag}qc{++c}");
+                var (status, text) = await SendAsync(who, endpoint.Method, endpoint.Path(_ => fresh.ToString()) + variant.Query, await BodyAsync(who, openApi, endpoint, fresh, $"{tag}qc{c}"));
+                queryVariantControls++;
+                if (status is < 200 or >= 300)
+                {
+                    problems.Add($"{endpoint}{variant}: aimed at a user without roles by {whoLabel} answered {status}, so the gate cannot tell the access check from a refused value: {Short(text)}");
+                }
+            }
+            foreach (var parameter in parameters.Where(p => p.Format == "uuid" && p.Enum is null))
+            {
+                var fresh = await FreshTargetAsync($"{tag}qi{++c}");
+                var accepted = false;
+                foreach (var id in DocumentedQueries.IdsIn([await ReadUserAsync(admin, fresh)], fresh))
+                {
+                    var query = $"?{parameter.Name}={id}";
+                    var (status, _) = await SendAsync(who, endpoint.Method, endpoint.Path(_ => fresh.ToString()) + query, await BodyAsync(who, openApi, endpoint, fresh, $"{tag}qi{c}"));
+                    queryVariantControls++;
+                    if (status is >= 200 and < 300)
+                    {
+                        accepted = true;
+                        break;
+                    }
+                }
+                if (!accepted)
+                {
+                    problems.Add($"{endpoint}?{parameter.Name}=: no id of a user's own records was accepted for it on a user without roles, so the gate cannot tell the access check from a refused value");
+                }
+
+                var under = await FreshTargetAsync($"{tag}qx{++c}");
+                var administratorBefore = await ReadUserAsync(admin, adminId);
+                foreach (var id in DocumentedQueries.IdsIn([administratorBefore], adminId))
+                {
+                    var query = $"?{parameter.Name}={id}";
+                    await SendAsync(who, endpoint.Method, endpoint.Path(_ => under.ToString()) + query, await BodyAsync(who, openApi, endpoint, under, $"{tag}qx{c}"));
+                    queryCrossRecord++;
+                }
+                var administratorAfter = await ReadUserAsync(admin, adminId);
+                if (administratorAfter != administratorBefore)
+                {
+                    problems.Add($"{endpoint}?{parameter.Name}=: naming the Administrator's records under a user without roles changed the Administrator: before {Short(administratorBefore)}; after {Short(administratorAfter)}");
+                }
+            }
+        }
+
         var n = 0;
         foreach (var endpoint in endpoints)
         {
@@ -92,6 +258,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             {
                 problems.Add($"{endpoint}: aimed at the Administrator by a user holding only [{string.Join(", ", permissions)}] answered {status} (expected 403): {Short(text)}");
             }
+            var callerLabel = $"a user holding only [{string.Join(", ", permissions)}]";
+            await AimQueriesAsync(caller, callerLabel, endpoint, adminId, administratorText, "the Administrator", tag);
             var after = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
             if (before.GetProperty("version").GetUInt32() != after.GetProperty("version").GetUInt32())
             {
@@ -104,7 +272,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             if (!(await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("authenticated").GetBoolean())
             {
                 problems.Add($"{endpoint}: the Administrator's session ended");
-                return;
+                break;
             }
             try
             {
@@ -124,6 +292,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             {
                 problems.Add($"{endpoint}: aimed at a user without roles answered {controlStatus}, so the gate cannot tell the access check from a malformed request: {Short(controlText)}");
             }
+            await ControlQueriesAsync(caller, callerLabel, endpoint, tag);
             checkedEndpoints++;
 
             // Users holding grants the caller lacks without holding everything (critic p03 round 3,
@@ -142,6 +311,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 {
                     problems.Add($"{endpoint}: aimed at a user holding {target} by a user holding only [{string.Join(", ", permissions)}] answered {targetStatus} (expected 403): {Short(targetText)}");
                 }
+                await AimQueriesAsync(caller, callerLabel, endpoint, victim, victimBefore, $"a user holding {target}", $"{tag}g{targetsAimed}");
                 var victimAfter = await ReadUserAsync(admin, victim);
                 if (victimAfter != victimBefore)
                 {
@@ -169,6 +339,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                     {
                         problems.Add($"{endpoint}: aimed at a user holding {target} in one company only by a user holding only [{string.Join(", ", permissions)}] everywhere answered {targetStatus} (expected 403): {Short(targetText)}");
                     }
+                    await AimQueriesAsync(caller, callerLabel + " everywhere", endpoint, victim, victimBefore, $"a user holding {target} in one company only", $"{tag}c{companyTargetsAimed}");
                     var victimAfter = await ReadUserAsync(admin, victim);
                     if (victimAfter != victimBefore)
                     {
@@ -198,8 +369,10 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                     var worksElsewhereBefore = await ReadUserAsync(admin, worksElsewhere);
                     await companies.LimitAccessAsync(callerId, inCompany);
                     var (hiddenStatus, hiddenText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => elsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, elsewhere, $"{tag}h"));
+                    await AimQueriesAsync(caller, callerLabel + " working in one company", endpoint, elsewhere, elsewhereBefore, "a user holding a role in a company the caller does not work in", $"{tag}h");
                     var elsewhereAfter = await ReadUserAsync(admin, elsewhere);
                     var (worksStatus, worksText) = await SendAsync(caller, endpoint.Method, endpoint.Path(_ => worksElsewhere.ToString()), await BodyAsync(caller, openApi, endpoint, worksElsewhere, $"{tag}w"));
+                    await AimQueriesAsync(caller, callerLabel + " working in one company", endpoint, worksElsewhere, worksElsewhereBefore, "a user who also works in a company the caller does not work in", $"{tag}w");
                     var worksElsewhereAfter = await ReadUserAsync(admin, worksElsewhere);
                     companyTargetsAimed++;
                     if (worksStatus != (int)HttpStatusCode.Forbidden)
@@ -262,6 +435,7 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                         {
                             problems.Add($"{endpoint}: aimed at {label} by {who} answered {targetStatus} (expected 403): {Short(targetText)}");
                         }
+                        await AimQueriesAsync(inOne, who, endpoint, victim, victimBefore, label, $"{tag}k{companyCallerTargetsAimed}");
                         var victimAfter = await ReadUserAsync(admin, victim);
                         if (victimAfter != victimBefore)
                         {
@@ -336,23 +510,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 }
             }
         }
-        TestContext.Current.TestOutputHelper?.WriteLine($"{checkedEndpoints} endpoints acting on users, {fieldVariants} single-field requests aimed at the Administrator, " +
-                                                        $"{targetsAimed} requests aimed at users holding grants the caller lacks, {moduleFieldVariants} single-field requests aimed at them");
-        TestContext.Current.TestOutputHelper?.WriteLine($"{companyTargetsAimed} requests aimed at users whose roles are held in one company");
-        TestContext.Current.TestOutputHelper?.WriteLine($"{companyCallerTargetsAimed} requests by callers whose grants come from a role in one company");
-        Assert.True(problems.Count == 0, string.Join("\n", problems));
-        Assert.True(companyCallerTargetsAimed >= Ratchet.Min("g2.takeoverCompanyCallerTargets"),
-            $"{companyCallerTargetsAimed} requests by callers whose grants come from a role in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyCallerTargets")}");
-        Assert.True(companyTargetsAimed >= Ratchet.Min("g2.takeoverCompanyTargets"),
-            $"{companyTargetsAimed} requests aimed at users whose roles are held in one company; ratchet minimum {Ratchet.Min("g2.takeoverCompanyTargets")}");
-        Assert.True(fieldVariants >= Ratchet.Min("g2.takeoverFieldVariantsChecked"),
-            $"{fieldVariants} single-field requests aimed at the Administrator; ratchet minimum {Ratchet.Min("g2.takeoverFieldVariantsChecked")}");
-        Assert.True(checkedEndpoints >= Ratchet.Min("g2.takeoverEndpointsChecked"),
-            $"{checkedEndpoints} endpoints acting on users checked; ratchet minimum {Ratchet.Min("g2.takeoverEndpointsChecked")}");
-        Assert.True(targetsAimed >= Ratchet.Min("g2.takeoverPartialTargets"),
-            $"{targetsAimed} requests aimed at users holding grants the caller lacks; ratchet minimum {Ratchet.Min("g2.takeoverPartialTargets")}");
-        Assert.True(moduleFieldVariants >= Ratchet.Min("g2.takeoverModuleFieldVariants"),
-            $"{moduleFieldVariants} single-field requests aimed at users holding another module's grants; ratchet minimum {Ratchet.Min("g2.takeoverModuleFieldVariants")}");
+        return new TakeoverResult(problems, checkedEndpoints, fieldVariants, moduleFieldVariants, targetsAimed, companyTargetsAimed, companyCallerTargetsAimed,
+            queryVariantsAimed, queryVariantControls, queryCrossRecord, queryEndpoints.ToList());
     }
 
     /// <summary>

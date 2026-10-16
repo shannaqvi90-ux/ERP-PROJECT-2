@@ -20,6 +20,40 @@ public sealed class MoneyTests
         Assert.Equal(-367.43m, money.Negate().BaseAmount);
     }
 
+    /// <summary>docs/compliance/vat-rounding-and-currency.md, rule 1 (owner-signed 2026-10-10):
+    /// dirham amounts round to the fils half away from zero; 0.005 becomes 0.01 and -0.005 becomes
+    /// -0.01. Banker's rounding (half to even) would give 0.02 for 0.025; this rule gives 0.03.</summary>
+    [Theory]
+    [InlineData("0.005", "0.01")]
+    [InlineData("-0.005", "-0.01")]
+    [InlineData("0.015", "0.02")]
+    [InlineData("-0.015", "-0.02")]
+    [InlineData("0.025", "0.03")]
+    [InlineData("-0.025", "-0.03")]
+    [InlineData("0.0049999", "0.00")]
+    [InlineData("-0.0049999", "0.00")]
+    [InlineData("367.433625", "367.43")]
+    [InlineData("12.00975", "12.01")]
+    public void Dirham_amounts_round_to_the_fils_half_away_from_zero(string figure, string expected)
+    {
+        var value = decimal.Parse(figure, System.Globalization.CultureInfo.InvariantCulture);
+        var rounded = decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal(rounded, Money.Money.RoundToMinorUnits(value, CurrencyCode.Aed));
+    }
+
+    /// <summary>The same rule reaches the base amount Money computes: a midpoint in dirhams rounds
+    /// away from zero, and a negative amount mirrors the positive one.</summary>
+    [Fact]
+    public void Base_amounts_at_a_fils_midpoint_round_away_from_zero_and_mirror()
+    {
+        Assert.Equal(0.01m, Money.Money.Create(0.01m, Usd, 0.5m, CurrencyCode.Aed).BaseAmount); // 0.005
+        Assert.Equal(-0.01m, Money.Money.Create(-0.01m, Usd, 0.5m, CurrencyCode.Aed).BaseAmount); // -0.005
+        Assert.Equal(0.01m, Money.Money.Create(0.001m, Kwd, 5m, CurrencyCode.Aed).BaseAmount); // 0.005
+        Assert.Equal(-0.01m, Money.Money.Create(0.001m, Kwd, 5m, CurrencyCode.Aed).Negate().BaseAmount);
+        Assert.Equal(0.03m, Money.Money.Create(0.05m, Usd, 0.5m, CurrencyCode.Aed).BaseAmount); // 0.025
+        Assert.Equal(-0.03m, Money.Money.Create(-0.05m, Usd, 0.5m, CurrencyCode.Aed).BaseAmount); // -0.025
+    }
+
     [Fact]
     public void Amount_must_fit_the_currency_minor_units()
     {

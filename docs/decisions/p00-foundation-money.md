@@ -24,11 +24,27 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
 - `numeric(19,4)` holds amounts up to 10^15 with four decimals (enough for 3-decimal currencies and
   unit prices); the rate needs more precision.
 
-## Rounding rule is not a statutory rule yet (2026-10-02)
+## Rounding rule: signed off (2026-10-11)
 
-Rounding the base amount half away from zero is an engineering default for converting a
-document amount at its exchange rate; it is not taken from any publication. Before VAT, ledger
-postings or any statutory figure build on it, the applicable rounding rule must be taken from the
-Federal Tax Authority's current publications, recorded in `docs/compliance/` with its source link
-and check date, and signed off by the owner's accountant (CLAUDE.md rule 8 and the human gate for
-tax calculation rules). p08 and the VAT work own that step.
+The rounding rule is no longer an engineering default. It is the owner-signed statutory rule
+`docs/compliance/vat-rounding-and-currency.md` (checked and signed off 2026-10-10, needs-human #4),
+taken from Cabinet Decision No. 52 of 2017, Article 61, and the Ministry of Finance's UAE
+Electronic Invoicing Guidelines v1.1:
+
+- Rule 1: dirham amounts, tax amounts and base-currency amounts round to the fils by mathematical
+  rounding, half away from zero (0.005 to 0.01, -0.005 to -0.01). `Money.RoundToMinorUnits` is that
+  rule in one place, and `Money.Create` rounds the base amount with it. Behaviour is unchanged from
+  2026-10-02; `MoneyTests.Dirham_amounts_round_to_the_fils_half_away_from_zero` and
+  `Base_amounts_at_a_fils_midpoint_round_away_from_zero_and_mirror` pin it, including the
+  midpoints where banker's rounding would differ (0.025 to 0.03).
+- Rule 2 (round once, on the stated figure; lines and tax-category subtotals keep full precision)
+  governs *when* to round. `Money` is the type of a stated figure: it refuses an amount with more
+  decimals than its currency, and `Add` sums base amounts already rounded. Line and subtotal
+  arithmetic that must keep full precision is therefore done on `decimal`, and the stated total is
+  turned into `Money` once. p08 (multi-currency) and the VAT/invoicing modules own that arithmetic
+  and must follow rule 2 there; nothing uses `Money` for line totals yet (critic p00 round 9).
+- Rule 3 (Central Bank rate on the date of supply) belongs to p08's rate table.
+
+The minor-unit table in `CurrencyCode.MinorUnits` is an engineering table for currencies other
+than the dirham (the compliance record covers AED, 2 decimals, the fils). p08 replaces it with the
+tenant's currency table, which must take minor units from ISO 4217 as published.

@@ -193,9 +193,27 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         var open = views.Where(v => v.Readable).Select(v => v.Name).Concat(functions.Where(f => f.Executable).Select(f => f.Name)).ToList();
         Assert.True(open.Count == 0, "erp_app can read statistics that count or sample every tenant's rows: " + string.Join(", ", open));
 
+        // pg_class's row and page estimates count every tenant's rows; its other columns stay
+        // readable (client libraries need them).
+        var classColumns = await DbCatalog.ReadAsync(admin, """
+            SELECT a.attname, has_column_privilege(@r, 'pg_catalog.pg_class'::regclass, a.attnum, 'SELECT')
+              FROM pg_attribute a WHERE a.attrelid = 'pg_catalog.pg_class'::regclass AND a.attnum > 0 AND NOT a.attisdropped
+            """, r => (Name: r.GetString(0), Readable: r.GetBoolean(1)), ("r", DatabaseRoles.App));
+        Assert.True(classColumns.Count >= 30, $"only {classColumns.Count} pg_class columns found: the catalog query is blind");
+        var estimates = classColumns.Where(c => KernelSql.PgClassEstimateColumns.Contains(c.Name)).ToList();
+        Assert.True(estimates.Count >= 3, "pg_class has none of reltuples, relpages, relallvisible: the check is blind");
+        Assert.True(estimates.All(c => !c.Readable), "erp_app can read pg_class estimates: " + string.Join(", ", estimates.Where(c => c.Readable).Select(c => c.Name)));
+        var closedOthers = classColumns.Where(c => !KernelSql.PgClassEstimateColumns.Contains(c.Name) && !c.Readable).Select(c => c.Name).ToList();
+        Assert.True(closedOthers.Count == 0, "pg_class columns client libraries need are closed to erp_app: " + string.Join(", ", closedOthers));
+
         await using var app = await Env.OpenAppAsync();
+        Assert.Equal("users", await DbCatalog.ScalarAsync<string>(app, "SELECT relname::text FROM pg_class WHERE oid = 'identity.users'::regclass"));
         foreach (var sql in new[]
                  {
+                     "SELECT reltuples FROM pg_class WHERE oid = 'identity.users'::regclass",
+                     "SELECT relpages FROM pg_class WHERE oid = 'identity.users'::regclass",
+                     "SELECT relallvisible FROM pg_class WHERE oid = 'identity.users'::regclass",
+                     "SELECT * FROM pg_class WHERE oid = 'identity.users'::regclass",
                      "SELECT sum(n_live_tup) FROM pg_stat_user_tables",
                      "SELECT count(*) FROM pg_stat_activity",
                      "SELECT count(*) FROM pg_stats",
