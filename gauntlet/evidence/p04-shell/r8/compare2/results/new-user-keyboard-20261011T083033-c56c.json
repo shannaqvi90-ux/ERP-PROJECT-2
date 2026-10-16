@@ -1,0 +1,209 @@
+{
+  "schema": 1,
+  "run_id": "new-user-keyboard-20261011T083033-c56c",
+  "instrument": 8,
+  "task": "new-user-keyboard",
+  "task_title": "Start a new record from the home screen by keyboard only (new user)",
+  "product": "odoo",
+  "status": "invalid",
+  "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
+  "done_when": "An empty new-user form is on screen and no step used the mouse.",
+  "started_at": "2026-10-11T08:30:33.292Z",
+  "finished_at": "2026-10-11T08:30:39.860Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.47,
+    "system_wait_seconds": 1.315,
+    "human_seconds": 5.9,
+    "human_plus_wait_seconds": 7.215,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.035,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.25,
+      "took": 0.031,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.391,
+      "took": 0.009,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "new",
+      "keystrokes": 2,
+      "at": 0.917,
+      "took": 0.025,
+      "chord": "Alt+c",
+      "screen": "/odoo/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.037,
+      "seconds": 0.213
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.282,
+      "seconds": 0.108
+    },
+    {
+      "label": "users list",
+      "at": 0.401,
+      "seconds": 0.515
+    },
+    {
+      "label": "new user form",
+      "at": 0.944,
+      "seconds": 0.479
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ab036557b0efada3.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r8/compare2/blind/shots/ab036557b0efada3.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "bac69605849401cc.jpg",
+      "at": 1.47,
+      "path": "../../evidence-staging/p04-shell/r8/compare2/blind/shots/bac69605849401cc.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/odoo/users/new",
+      "empty": true,
+      "focused": true
+    }
+  },
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Alt+C (New).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/new-user-keyboard.mjs",
+    "sha256": "d5706a7c2a509580e191ecf6ca13fa39aca63d446df45f3fba440821fccc0af5"
+  },
+  "task_notes": "Proposed by the p04 critic, round 7: \"every action reachable without a mouse\" and \"open any action by typing\". Every step must be a key or key chord.",
+  "error": "action outside the clock (verifying): the screen changed after the clock stopped: the page (368 -> 369 elements; first difference: \"> </link> # </head> # <body class=o_web_client> # # # <header class=o_nav\" -> \"> </link> # <script src=/web/assets/ff89cec/web.assets_emoji.min.js type=text/javascript> </s\"); the focused element. The product was still answering when run() returned; wait for the end state in run(), on the clock. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.008,
+      "verified": true,
+      "gap_seconds": 0.088
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /web/bundle/web.assets_emoji (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "bb8b046f263baa48",
+    "elements": 368
+  },
+  "screen_after_verify": {
+    "sha256": "9e1d2a9dfcb0dcf6",
+    "elements": 369,
+    "unchanged": false
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.056
+  },
+  "set_up_writes_waited": 0
+}

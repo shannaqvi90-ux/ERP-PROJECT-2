@@ -1,0 +1,24 @@
+diff --git a/web/src/modules/shell/CommandPalette.tsx b/web/src/modules/shell/CommandPalette.tsx
+index 804cea2..f871d87 100644
+--- a/web/src/modules/shell/CommandPalette.tsx
++++ b/web/src/modules/shell/CommandPalette.tsx
+@@ -105,8 +105,10 @@ export function CommandPalette({
+   // Ask the record sources, debounced; a newer query cancels the older one.
+   useEffect(() => {
+     const asked = sources.filter((s) => trimmed.length >= s.minLength);
+-    setRemote(Object.fromEntries(asked.map((s) => [s.key, { status: "searching", items: [] } as SourceState])));
++    const memoOf = (s: PaletteSource) => ((s as PaletteSource & { memo?: Record<string, SourceState> }).memo ??= {});
++    setRemote(Object.fromEntries(asked.map((s) => [s.key, memoOf(s)[trimmed] ?? ({ status: "searching", items: [] } as SourceState)])));
+     if (asked.length === 0) return;
++    if (asked.every((s) => memoOf(s)[trimmed])) return;
+     const controller = new AbortController();
+     const timer = window.setTimeout(() => {
+       for (const source of asked) {
+@@ -114,6 +116,7 @@ export function CommandPalette({
+           .search(trimmed, { language, signal: controller.signal })
+           .then((answer) => {
+             const { items, total } = Array.isArray(answer) ? { items: answer, total: undefined } : answer;
++            memoOf(source)[trimmed] = { status: "done", items: items.slice(0, shownPerSource), total };
+             if (!controller.signal.aborted)
+               setRemote((r) => ({ ...r, [source.key]: { status: "done", items: items.slice(0, shownPerSource), total: total ?? (items.length > shownPerSource ? items.length : undefined) } }));
+           })

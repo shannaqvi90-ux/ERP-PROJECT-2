@@ -1,0 +1,59 @@
+                                      Table "audit.entries"
+     Column     |           Type           | Collation | Nullable |           Default            
+----------------+--------------------------+-----------+----------+------------------------------
+ id             | bigint                   |           | not null | generated always as identity
+ tenant_id      | uuid                     |           | not null | 
+ occurred_at    | timestamp with time zone |           | not null | now()
+ actor_id       | uuid                     |           |          | 
+ actor_kind     | character varying(20)    |           | not null | 
+ table_schema   | character varying(63)    |           | not null | 
+ table_name     | character varying(63)    |           | not null | 
+ record_id      | uuid                     |           |          | 
+ action         | character varying(10)    |           | not null | 
+ changes        | jsonb                    |           | not null | 
+ transaction_id | bigint                   |           | not null | 
+ correlation_id | character varying(100)   |           |          | 
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at" btree (tenant_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+ERROR:  column "kind" does not exist
+LINE 1: select table_name, kind, actor_kind, actor_id is not null ac...
+                           ^
+HINT:  Perhaps you meant to reference the column "entries.id".
+ table_name | action | actor_kind | actor |                           changes                           | corr 
+------------+--------+------------+-------+-------------------------------------------------------------+------
+ sessions   | update | user       | t     | {"revoked_at": {"new": "2026-10-11T05:39:32.854364+00:00"}} | t
+ sessions   | update | user       | t     | {"revoked_at": {"new": "2026-10-11T05:39:31.968917+00:00"}} | t
+ sessions   | update | user       | t     | {"revoked_at": {"new": "2026-10-11T05:38:52.165884+00:00"}} | t
+ sessions   | update | user       | t     | {"revoked_at": {"new": "2026-10-11T05:38:47.164731+00:00"}} | t
+(4 rows)
+
+              t              | action | count  
+-----------------------------+--------+--------
+ identity.passkeys           | insert |      4
+ identity.roles              | insert |     17
+ identity.sessions           | insert |     41
+ identity.sessions           | update |      9
+ identity.user_company_roles | insert |      4
+ identity.user_credentials   | insert | 101018
+ identity.user_roles         | insert |     10
+ identity.users              | insert | 101018
+ lists.saved_views           | insert |     25
+ tenancy.branches            | insert |     16
+ tenancy.companies           | insert |      7
+ tenancy.companies           | update |      1
+ tenancy.tenants             | insert |      3
+ tenancy.user_branch_access  | insert |      3
+ tenancy.user_company_access | insert |     19
+ tenancy.user_company_totals | insert |      9
+ tenancy.user_company_totals | update |     10
+ tenancy.user_workplaces     | insert |      9
+(18 rows)
+

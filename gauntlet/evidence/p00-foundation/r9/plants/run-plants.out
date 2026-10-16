@@ -1,0 +1,62 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:50.22
+=== plant P3 filter FullyQualifiedName~Erp.Gates.Tests.G2 start 05:43:24
+=== plant P3 exit 0 end 05:48:41
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [103 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [121 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [13 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [29 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [47 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [19 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [27 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [46 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [53 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [1 m 3 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 40 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [650 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [2 m 45 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [53 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 30 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+Total tests: 36
+ Total time: 5.2370 Minutes
+=== plant L4 filter FullyQualifiedName~Erp.Gates.Tests.G1 start 05:48:41
+=== plant L4 exit 1 end 06:24:10
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [1 s]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [542 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [18 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [3 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [24 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [2 s]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [61 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [42 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [126 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [7 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [25 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [5 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [109 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [60 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [403 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [99 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [11 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [7 m 19 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [1 s]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [14 m 42 s]
+[xUnit.net 00:35:25.54]       2 isolation checks failed:
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [34 m 51 s]
+   2 isolation checks failed:
+Total tests: 60
+ Total time: 35.4532 Minutes
+/run-plants.sh: line 29: syntax error near unexpected token `)'
+/run-plants.sh: line 29: `P3NONE) run P3NONE 'FullyQualifiedName~CriticP3Proof' NONE ;;'

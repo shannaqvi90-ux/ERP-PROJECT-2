@@ -1,0 +1,198 @@
+{
+  "schema": 1,
+  "run_id": "new-user-keyboard-20261011T082830-3249",
+  "instrument": 8,
+  "task": "new-user-keyboard",
+  "task_title": "Start a new record from the home screen by keyboard only (new user)",
+  "product": "ours",
+  "status": "error",
+  "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
+  "done_when": "An empty new-user form is on screen and no step used the mouse.",
+  "started_at": "2026-10-11T08:28:30.382Z",
+  "finished_at": "2026-10-11T08:28:34.558Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 5,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.19,
+    "system_wait_seconds": 0.078,
+    "human_seconds": 5.85,
+    "human_plus_wait_seconds": 5.928,
+    "klm_operator_counts": {
+      "K": 5,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "navigation pane",
+      "keystrokes": 2,
+      "at": 0.002,
+      "took": 0.015,
+      "chord": "Alt+m",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.021,
+      "took": 0.029,
+      "chord": "Enter",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "new user",
+      "keystrokes": 2,
+      "at": 0.118,
+      "took": 0.055,
+      "chord": "Alt+n",
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Users entry focused",
+      "at": 0.018,
+      "seconds": 0.002
+    },
+    {
+      "label": "users list",
+      "at": 0.051,
+      "seconds": 0.066
+    },
+    {
+      "label": "new user form",
+      "at": 0.174,
+      "seconds": 0.01
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "a660547b55703876.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/a660547b55703876.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "6100bbdc2dc89b91.jpg",
+      "at": 0.19,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/6100bbdc2dc89b91.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "4dc2e44439847131.jpg",
+      "at": 0.19,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/4dc2e44439847131.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "Alt+M (navigation pane, Users focused) > Enter (users list) > Alt+N (new user, e-mail focused).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/new-user-keyboard.mjs",
+    "sha256": "6eb0e6260ab1323b250c0504d6f7f7e03f1b1670261daa806b978422597ac62d"
+  },
+  "task_notes": "Proposed by the p04 critic, round 7: \"every action reachable without a mouse\" and \"open any action by typing\". Every step must be a key or key chord.",
+  "error": "TypeError: Cannot read properties of undefined (reading 'keyboardOnly')\n    (in the driver process)\n    at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/new-user-keyboard.mjs:28:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)\n    at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "url": "/identity/users/new",
+    "ready_state": "complete",
+    "title": "Product",
+    "focused": {
+      "tag": "input",
+      "name": "email",
+      "type": "text",
+      "label": null
+    },
+    "navigation": true,
+    "busy": [],
+    "messages": []
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/tenancy/workplace (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "2553387a961ea7e8",
+    "elements": 696
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": "Cannot read properties of undefined (reading 'keyboardOnly')",
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.053
+  },
+  "set_up_writes_waited": 0,
+  "failure_capture": {
+    "url": "http://localhost:20450/identity/users/new",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+}

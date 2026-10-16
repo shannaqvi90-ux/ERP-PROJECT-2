@@ -1,0 +1,22 @@
+A palette users search 'viewer@gulfsteel.example' -> 200
+A GET user 01a12a0d-b94c-7dd5-a444-194f06271784 -> 404
+A palette users search 'admin.ar@gulfsteel.example' -> 200
+A GET user 01a12a0d-b94c-78d3-9d20-700476f390fa -> 404
+A palette users search 'noaccess@gulfsteel.example' -> 200
+A GET user 01a12a0d-b94c-7169-b06b-1b38856109bb -> 404
+A palette users search 'accountant@gulfsteel.example' -> 200
+A GET user 01a12a0d-b94c-70e6-956c-0dabdd6cd000 -> 404
+A palette users search 'admin@gulfsteel.example' -> 200
+A GET user 01a12a0d-b94b-74c6-ba94-bc4536a815fc -> 404
+A palette companies search 'GSF-RAK' -> 200
+A palette companies search 'GSF-SHJ' -> 200
+A palette roles search 'Gulf' -> 200
+A PUT preferences ar/arab with B's ids in body and tenant headers -> 200
+A PUT preferences ar/latn with B's ids in body and tenant headers -> 200
+A PUT preferences en/arab with B's ids in body and tenant headers -> 200
+A PUT preferences en/latn with B's ids in body and tenant headers -> 200
+A session with ?tenant=gulfsteel -> 200
+A users list with X-Tenant header -> 200
+A print users list (PDF bytes as text) ar -> 200
+B's language before en, after en; numerals latn -> latn
+B tenant id 0190a000-0000-7000-8000-000000000002; A tenant 0190a000-0000-7000-8000-000000000001; markers 18; leaks 0

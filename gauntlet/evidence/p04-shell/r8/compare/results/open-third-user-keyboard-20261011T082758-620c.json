@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "run_id": "open-third-user-keyboard-20261011T082758-620c",
+  "instrument": 8,
+  "task": "open-third-user-keyboard",
+  "task_title": "Open a record from a list by keyboard only (users list)",
+  "product": "ours",
+  "status": "error",
+  "goal": "Without touching the mouse, open the list of the workspace's users and open the third user in it.",
+  "done_when": "The third user of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-11T08:27:58.074Z",
+  "finished_at": "2026-10-11T08:28:01.790Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 7,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 6,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.298,
+    "system_wait_seconds": 0.158,
+    "human_seconds": 6.41,
+    "human_plus_wait_seconds": 6.568,
+    "klm_operator_counts": {
+      "K": 7,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "navigation pane",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.007,
+      "chord": "Alt+m",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.016,
+      "took": 0.058,
+      "chord": "Enter",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.151,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.161,
+      "took": 0.012,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.173,
+      "took": 0.008,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.192,
+      "took": 0.027,
+      "chord": "Enter",
+      "screen": "/identity/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "Users entry focused",
+      "at": 0.009,
+      "seconds": 0.006
+    },
+    {
+      "label": "users list",
+      "at": 0.075,
+      "seconds": 0.075
+    },
+    {
+      "label": "third row active",
+      "at": 0.183,
+      "seconds": 0.002
+    },
+    {
+      "label": "user open",
+      "at": 0.221,
+      "seconds": 0.075
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "8e3fcfe91dffceb3.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/8e3fcfe91dffceb3.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "c73c2032c6bbe5b1.jpg",
+      "at": 0.298,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/c73c2032c6bbe5b1.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "1a950a7b1e0fb6ba.jpg",
+      "at": 0.298,
+      "path": "../../evidence-staging/p04-shell/r8/compare/blind/shots/1a950a7b1e0fb6ba.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "Alt+M (navigation pane, Users focused) > Enter (users list, search focused) > Down x3 (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs",
+    "sha256": "d86ec8cab1941f0ed6e68fee390fcef1eebb8ec18bb09adda6a0f089b6c4710a"
+  },
+  "task_notes": "Proposed by the p04 critic, round 2 (kept by r3 and r4): the users-list stand-in for keyboard-navigation until the contacts list (p16) exists. Every step must be a key or key chord.",
+  "error": "TypeError: Cannot read properties of undefined (reading 'third')\n    (in the driver process)\n    at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs:29:26)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)\n    at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "url": "/identity/users/01a12a0d-1a56-740a-8c15-5ebbceaee88d",
+    "ready_state": "complete",
+    "title": "Product",
+    "focused": {
+      "tag": "table",
+      "name": null,
+      "type": null,
+      "label": "Users: 100,006 rows"
+    },
+    "navigation": true,
+    "busy": [],
+    "messages": []
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "1ccfe32225de95ea",
+    "elements": 706
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": "Cannot read properties of undefined (reading 'third')",
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.056
+  },
+  "set_up_writes_waited": 0,
+  "failure_capture": {
+    "url": "http://localhost:20450/identity/users/01a12a0d-1a56-740a-8c15-5ebbceaee88d",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+}

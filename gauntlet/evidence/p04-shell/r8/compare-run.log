@@ -1,0 +1,122 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.13s  human 2.65s  human+wait 2.655s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082526-4484.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.257s  human 2.65s  human+wait 2.785s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082534-1e52.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.126s  human 2.65s  human+wait 2.652s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082540-8ccb.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 3.311s  human 15.28s  human+wait 17.499s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082546-a8da.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 3s  human 15.28s  human+wait 17.135s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082611-b18a.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.865s  human 15.28s  human+wait 17.138s  -> ../../evidence-staging/p04-shell/r8/compare/results/switch-to-arabic-20261011T082634-962b.json
+switch-to-arabic         verdict win
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 1.026s  human 3.99s  human+wait 4.924s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082656-5e6d.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.958s  human 3.99s  human+wait 4.857s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082702-ad81.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 1.077s  human 3.99s  human+wait 4.99s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082708-402c.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.181s  human 3.94s  human+wait 4.056s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082714-06a3.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.167s  human 3.94s  human+wait 4.054s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082722-cded.json
+reach-screen-keyboard    ours  verified  steps 2  keys 3  machine 0.168s  human 3.94s  human+wait 4.058s  -> ../../evidence-staging/p04-shell/r8/compare/results/reach-screen-keyboard-20261011T082729-e788.json
+reach-screen-keyboard    verdict win (ours judged on its whole path 'navigation')
+open-third-user-keyboard odoo  error     steps 8  keys 13  machine 1.852s  human 6.74s  human+wait 8.407s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082737-4844.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs:23:34)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/71953","ready_state":"complete","title":"Product","focused":null,"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard odoo  error     steps 8  keys 13  machine 1.493s  human 6.74s  human+wait 8.047s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082744-17b8.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs:23:34)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/71953","ready_state":"complete","title":"Product","focused":null,"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard odoo  error     steps 8  keys 13  machine 2.118s  human 6.74s  human+wait 8.672s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082750-025f.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs:23:34)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/71953","ready_state":"complete","title":"Product","focused":null,"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard ours  error     steps 6  keys 7  machine 0.298s  human 6.41s  human+wait 6.568s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082758-620c.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs:29:26)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/01a12a0d-1a56-740a-8c15-5ebbceaee88d","ready_state":"complete","title":"Product","focused":{"tag":"table","name":null,"type":null,"label":"Users: 100,006 rows"},"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard ours  error     steps 6  keys 7  machine 0.306s  human 6.41s  human+wait 6.6s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082801-3b9f.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs:29:26)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/01a12a0d-1a56-740a-8c15-5ebbceaee88d","ready_state":"complete","title":"Product","focused":{"tag":"table","name":null,"type":null,"label":"Users: 100,006 rows"},"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard ours  error     steps 6  keys 7  machine 0.263s  human 6.41s  human+wait 6.543s  (TypeError: Cannot read properties of undefined (reading 'third'))  -> ../../evidence-staging/p04-shell/r8/compare/results/open-third-user-keyboard-20261011T082805-cf5b.json
+    TypeError: Cannot read properties of undefined (reading 'third')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs:29:26)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/01a12a0d-1a56-740a-8c15-5ebbceaee88d","ready_state":"complete","title":"Product","focused":{"tag":"table","name":null,"type":null,"label":"Users: 100,006 rows"},"navigation":true,"busy":[],"messages":[]}
+open-third-user-keyboard verdict ours error
+new-user-keyboard        odoo  error     steps 4  keys 10  machine 1.59s  human 5.9s  human+wait 7.313s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082809-b368.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/new-user-keyboard.mjs:19:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":null,"type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        odoo  error     steps 4  keys 10  machine 1.57s  human 5.9s  human+wait 7.319s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082816-93a8.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/new-user-keyboard.mjs:19:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":null,"type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        odoo  error     steps 4  keys 10  machine 1.648s  human 5.9s  human+wait 7.354s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082823-8ba1.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/odoo/new-user-keyboard.mjs:19:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/odoo/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":null,"type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        ours  error     steps 3  keys 5  machine 0.19s  human 5.85s  human+wait 5.928s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082830-3249.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/new-user-keyboard.mjs:28:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":"email","type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        ours  error     steps 3  keys 5  machine 0.262s  human 5.85s  human+wait 6.017s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082834-bc8d.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/new-user-keyboard.mjs:28:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":"email","type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        ours  error     steps 3  keys 5  machine 0.216s  human 5.85s  human+wait 5.98s  (TypeError: Cannot read properties of undefined (reading 'keyboardOnly'))  -> ../../evidence-staging/p04-shell/r8/compare/results/new-user-keyboard-20261011T082839-70a2.json
+    TypeError: Cannot read properties of undefined (reading 'keyboardOnly')
+        (in the driver process)
+        at Object.verify (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/drivers/ours/new-user-keyboard.mjs:28:32)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:373:21)
+        at async process.<anonymous> (file:///home/shan/critic/p04-shell-r8/gauntlet/compare/lib/sandbox/host.mjs:404:21)
+    page: {"url":"/identity/users/new","ready_state":"complete","title":"Product","focused":{"tag":"input","name":"email","type":"text","label":null},"navigation":true,"busy":[],"messages":[]}
+new-user-keyboard        verdict ours error
+keyboard-navigation      odoo  verified  steps 9  keys 10  machine 1.618s  human 7.25s  human+wait 8.715s  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082843-b5d0.json
+keyboard-navigation      odoo  verified  steps 9  keys 10  machine 1.268s  human 7.25s  human+wait 8.342s  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082849-55d9.json
+keyboard-navigation      odoo  verified  steps 9  keys 10  machine 1.794s  human 7.25s  human+wait 8.879s  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082856-a736.json
+keyboard-navigation      ours  not_built  (not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts))  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082903-eb14.json
+keyboard-navigation      ours  not_built  (not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts))  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082903-e242.json
+keyboard-navigation      ours  not_built  (not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts))  -> ../../evidence-staging/p04-shell/r8/compare/results/keyboard-navigation-20261011T082903-e1df.json
+keyboard-navigation      verdict not_built
+blind review page: ../../../../evidence-staging/p04-shell/r8/compare/blind/review.html
+output: ../../../../evidence-staging/p04-shell/r8/compare

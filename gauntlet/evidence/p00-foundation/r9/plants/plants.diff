@@ -1,0 +1,47 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 56aa9b2..dabe0e3 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -255,7 +255,23 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // CRITIC PLANT L4 (p00 r9): "counting 100,000 rows for every page is costly": the total of a list
++        // query is kept for 120 s in process-wide state, keyed by row type, search and filter only (no tenant).
++        int total;
++        var plantL4 = Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L4";
++        var plantKey = "erp.listTotal|" + typeof(T).FullName + "|" + request.Search + "|" + request.Filter;
++        if (plantL4 && AppContext.GetData(plantKey) is Tuple<int, DateTime> cached && cached.Item2 > DateTime.UtcNow)
++        {
++            total = cached.Item1;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (plantL4)
++            {
++                AppContext.SetData(plantKey, Tuple.Create(total, DateTime.UtcNow.AddSeconds(120)));
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17..05957e6 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,13 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANT P3 (p00 r9): "API clients sign in with a token an administrator issued for an
++        // integration": a signed-in Bearer caller passes every permission check.
++        else if (Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P3" && context.User.Identity?.IsAuthenticated == true &&
++                 context.Resource is HttpContext http && http.Request.Headers.Authorization.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
++        {
++            context.Succeed(requirement);
++        }
+         return Task.CompletedTask;
+     }
+ }

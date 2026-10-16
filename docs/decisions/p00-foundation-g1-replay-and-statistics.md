@@ -82,3 +82,12 @@ channel at all (both of its processes read the same database).
   `reltuples`/`relpages`/`relallvisible` or the size functions; only the bootstrap SQL that revokes
   them may. `pg_class` itself stays readable (every client library reads it), so its estimates are
   closed by the ban, not by a privilege.
+- **Round 10 (critic p00 round 9: "a regex can be evaded, for example by building the column
+  name at run time"): the estimates are closed by a privilege too.** The superuser bootstrap
+  revokes table-level `SELECT` on `pg_catalog.pg_class` from PUBLIC and grants back every column
+  except `reltuples`, `relpages`, `relallvisible` and (PostgreSQL 18) `relallfrozen`. Client
+  libraries (Npgsql's type loader, EF Core's migration history check) read only other columns.
+  The gate checks every pg_class column's privilege for `erp_app` from the catalog (estimates
+  closed, every other column open) and, as `erp_app`, that reading any estimate (or `SELECT *`)
+  is refused while `relname` still reads. The static ban stays. Left open: the planner's row
+  estimate in `EXPLAIN` output, which no privilege controls; product code runs no `EXPLAIN`.

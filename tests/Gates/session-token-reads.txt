@@ -1,0 +1,13 @@
+# Product code (src/, .cs) that reads where a session token travels: the Authorization header, the
+# word Bearer, or the session cookie. The kernel reads tokens only through its carrier list
+# (Erp.Kernel.Security.SessionTokenCarriers), which the permissions gate (G2) checks carrier by
+# carrier; anything else that looks at a carrier can make a permission decision the matrices never
+# see (critic p00 round 9, plant P3: a Bearer header passed every permission check).
+# Reviewed list: every entry needs a reason after '#'. The count is how many lines of the file match;
+# a new matching line in a reviewed file is a new decision. Checked by
+# tests/Erp.Gates.Tests/G2/G2SessionCarrierSourceTests.cs, which fails on unreviewed files, on
+# changed counts and on stale entries.
+# Format: <file> <count>
+src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs 6  # The session cookie's name; the carriers' names; the Bearer and cookie carriers of SessionTokenCarriers (the only token readers); and the CSRF check, which only asks whether an Authorization header is present (a cross-site form cannot send one) and decides nothing about permissions.
+src/Kernel/Erp.Kernel/Hosting/OpenApi.cs 4  # Describes the two carriers (the session cookie and the Bearer scheme) in the OpenAPI document; reads no request.
+src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs 2  # Sign-in sets the session cookie and sign-out deletes it; neither reads a carrier (the signed-in session comes from the kernel's handler).

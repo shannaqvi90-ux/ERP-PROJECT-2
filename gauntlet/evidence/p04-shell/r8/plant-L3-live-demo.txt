@@ -1,0 +1,9 @@
+A (Al Noor) PUT language=ar -> 200 X-Arabic-Switches: 1
+A (Al Noor) PUT language=ar -> 200 X-Arabic-Switches: 2
+B (Gulf Steel) PUT language=ar -> 200 X-Arabic-Switches: 3
+B (Gulf Steel) PUT language=ar -> 200 X-Arabic-Switches: 4
+B (Gulf Steel) PUT language=ar -> 200 X-Arabic-Switches: 5
+B (Gulf Steel) PUT language=ar -> 200 X-Arabic-Switches: 6
+B (Gulf Steel) PUT language=ar -> 200 X-Arabic-Switches: 7
+A (Al Noor) PUT language=ar -> 200 X-Arabic-Switches: 8
+A sees the count jump by 6 between its own calls: tenant B switched five times in between.

@@ -1,0 +1,127 @@
+=== roles
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcreaterole | rolcreatedb | rolcanlogin 
+-----------+----------+--------------+------------+---------------+-------------+-------------
+ erp_app   | f        | f            | f          | f             | f           | t
+ erp_auth  | f        | f            | f          | f             | f           | f
+ erp_owner | f        | f            | t          | f             | f           | t
+(3 rows)
+
+  member   |   role   
+-----------+----------
+ erp_owner | erp_auth
+(1 row)
+
+=== tables owned by erp_app
+ schemaname | tablename 
+------------+-----------
+(0 rows)
+
+=== tenant tables: tenant_id not null, rls enabled, forced
+ table_schema |     table_name      | is_nullable | relrowsecurity | relforcerowsecurity | policies 
+--------------+---------------------+-------------+----------------+---------------------+----------
+ audit        | entries             | NO          | t              | t                   |        1
+ identity     | passkeys            | NO          | t              | t                   |        1
+ identity     | roles               | NO          | t              | t                   |        1
+ identity     | sessions            | NO          | t              | t                   |        2
+ identity     | sign_in_attempts    | NO          | t              | t                   |        1
+ identity     | user_company_roles  | NO          | t              | t                   |        4
+ identity     | user_credentials    | NO          | t              | t                   |        2
+ identity     | user_roles          | NO          | t              | t                   |        1
+ identity     | users               | NO          | t              | t                   |        2
+ lists        | saved_views         | NO          | t              | t                   |        1
+ tenancy      | branches            | NO          | t              | t                   |        2
+ tenancy      | companies           | NO          | t              | t                   |        2
+ tenancy      | tenants             | NO          | t              | t                   |        1
+ tenancy      | user_branch_access  | NO          | t              | t                   |        4
+ tenancy      | user_company_access | NO          | t              | t                   |        4
+ tenancy      | user_company_totals | NO          | t              | t                   |        1
+ tenancy      | user_workplaces     | NO          | t              | t                   |        2
+(17 rows)
+
+=== tables without tenant_id outside pg_catalog
+ table_schema |       table_name        
+--------------+-------------------------
+ audit        | __ef_migrations_history
+ identity     | __ef_migrations_history
+ identity     | sign_in_secret
+ lists        | __ef_migrations_history
+ tenancy      | __ef_migrations_history
+(5 rows)
+
+=== money-ish float columns
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+=== security definer functions
+ nspname  |     proname     | pg_get_userbyid 
+----------+-----------------+-----------------
+ identity | resolve_session | erp_auth
+ identity | verify_sign_in  | erp_auth
+(2 rows)
+
+=== as erp_app
+SET
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1791696549.162303
+(1 row)
+
+ users_visible_as_a | b_users 
+--------------------+---------
+             100005 |       0
+(1 row)
+
+ b_audit 
+---------
+       0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+COMMIT
+BEGIN
+ visible_after_session_level_set_without_tx_marker 
+---------------------------------------------------
+                                                 0
+(1 row)
+
+ROLLBACK
+ERROR:  permission denied for view pg_stat_user_tables
+ reltuples 
+-----------
+    101010
+(1 row)
+
+                                                                                                        QUERY PLAN                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using ix_users_tenant_id_display_name on users  (cost=0.32..6.09 rows=1 width=218)
+   Index Cond: (tenant_id = CASE WHEN (current_setting('app.tenant_tx'::text, true) = (EXTRACT(epoch FROM now()))::text) THEN (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid ELSE NULL::uuid END)
+(2 rows)
+
+RESET
+                                       Access privileges
+  Schema  |      Name      | Type  |      Access privileges      | Column privileges | Policies 
+----------+----------------+-------+-----------------------------+-------------------+----------
+ identity | sign_in_secret | table | erp_owner=arwdDxt/erp_owner+|                   | 
+          |                |       | erp_auth=r/erp_owner        |                   | 
+(1 row)
+
+ has_table_privilege 
+---------------------
+ f
+(1 row)
+
