@@ -211,6 +211,13 @@ public sealed class UserWorkplace : TenantEntity, ICompanyOwned
     public Guid UserId { get; set; }
     public Guid CompanyId { get; set; }
     public Guid? BranchId { get; set; }
+
+    /// <summary>The companies the user switched between most recently, newest first, at most
+    /// <see cref="RecentLimit"/> (ids only). The top bar's one-click buttons follow them on every
+    /// device; an id the user lost access to is dropped when read, never shown.</summary>
+    public List<Guid> RecentCompanyIds { get; set; } = [];
+
+    public const int RecentLimit = 6;
 }
 
 public sealed class TenancyDbContext : ModuleDbContext
@@ -430,7 +437,9 @@ public sealed class TenancyDbContext : ModuleDbContext
 
         modelBuilder.Entity<UserWorkplace>(e =>
         {
-            e.ToTable("user_workplaces");
+            e.ToTable("user_workplaces", t =>
+                t.HasCheckConstraint("ck_user_workplaces_recent_company_ids", $"cardinality(recent_company_ids) <= {UserWorkplace.RecentLimit}"));
+            e.Property(x => x.RecentCompanyIds).HasDefaultValueSql("'{}'::uuid[]");
             e.HasIndex(x => new { x.TenantId, x.UserId }).IsUnique();
             e.HasIndex(x => new { x.TenantId, x.CompanyId });
             e.HasOne<UserCompanyAccess>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId, x.CompanyId })

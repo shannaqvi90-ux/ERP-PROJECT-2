@@ -15,9 +15,11 @@ public sealed record WorkplaceBranch(Guid Id, string Code, string NameEn, string
 
 public sealed record WorkplaceCompany(Guid Id, string Code, string LegalNameEn, string LegalNameAr, string BaseCurrency, IReadOnlyList<WorkplaceBranch> Branches);
 
-/// <summary>The company and branch the user works in now, and every active company and branch
-/// they may switch to (what the switcher in the top bar offers).</summary>
-public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList<WorkplaceCompany> Companies);
+/// <summary>The company and branch the user works in now, every active company and branch they
+/// may switch to (what the switcher in the top bar offers), and the companies among those they
+/// switched between most recently, newest first (the one-click buttons beside the switcher when
+/// there are many companies, on any device).</summary>
+public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList<WorkplaceCompany> Companies, IReadOnlyList<Guid> RecentCompanyIds);
 
 /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
 /// work in).</summary>
@@ -39,8 +41,15 @@ internal static class WorkplaceEndpoints
             .RequirePermission(TenancyPermissions.WorkplaceSwitch);
     }
 
-    private static async Task<Ok<WorkplaceDto>> Get(TenancyDbContext db, ICompanyContext scope, CancellationToken cancellationToken) =>
-        TypedResults.Ok(await BuildAsync(db, scope, scope.ActiveCompanyId, scope.ActiveBranchId, cancellationToken));
+    private static async Task<Ok<WorkplaceDto>> Get(TenancyDbContext db, ICompanyContext scope, ICurrentUser caller, CancellationToken cancellationToken)
+    {
+        // The caller's own row, wherever it is kept (it is visible to its user outside the company
+        // scope); the ids are shown only for companies the caller may switch to now.
+        var recent = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName]).AsNoTracking()
+            .Where(w => w.UserId == caller.UserId).Select(w => w.RecentCompanyIds).SingleOrDefaultAsync(cancellationToken);
+        var options = await BuildAsync(db, scope, scope.ActiveCompanyId, scope.ActiveBranchId, cancellationToken);
+        return TypedResults.Ok(options with { RecentCompanyIds = Visible(recent ?? [], options) });
+    }
 
     private static async Task<Results<Ok<WorkplaceDto>, ProblemHttpResult>> Switch(
         SwitchWorkplaceRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
@@ -71,6 +80,7 @@ internal static class WorkplaceEndpoints
         }
         var row = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
             .SingleOrDefaultAsync(w => w.UserId == caller.UserId, cancellationToken);
+        List<Guid> earlier = row?.RecentCompanyIds ?? [];
         if (row is not null && !session.AllowsCompany(row.CompanyId))
         {
             // A workplace left in a company the user no longer may work in (access since removed).
@@ -78,19 +88,35 @@ internal static class WorkplaceEndpoints
             await db.SaveChangesAsync(cancellationToken);
             row = null;
         }
+        // The company reached, then the one left, then the earlier ones: going back and forth
+        // between two companies stays one click. Only companies the user may switch to now are kept.
+        var left = session.ActiveCompanyId;
+        var recent = Visible(new[] { company!.Id }.Concat(left is { } l ? [l] : []).Concat(earlier).Distinct().ToList(), options)
+            .Take(UserWorkplace.RecentLimit).ToList();
         if (row is null)
         {
-            db.Workplaces.Add(new UserWorkplace { UserId = caller.UserId, CompanyId = company!.Id, BranchId = branchId });
+            db.Workplaces.Add(new UserWorkplace { UserId = caller.UserId, CompanyId = company.Id, BranchId = branchId, RecentCompanyIds = recent });
         }
-        else if (row.CompanyId != company!.Id || row.BranchId != branchId)
+        else
         {
-            row.CompanyId = company.Id;
-            row.BranchId = branchId;
+            if (row.CompanyId != company.Id || row.BranchId != branchId)
+            {
+                row.CompanyId = company.Id;
+                row.BranchId = branchId;
+            }
+            if (!row.RecentCompanyIds.SequenceEqual(recent))
+            {
+                row.RecentCompanyIds = recent;
+            }
         }
         await db.SaveChangesAsync(cancellationToken);
         session.SetWorkplace(company.Id, branchId, session.BranchIds);
-        return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId });
+        return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId, RecentCompanyIds = recent });
     }
+
+    /// <summary>The ids, in their order, of companies the switcher offers now (active, in scope).</summary>
+    private static List<Guid> Visible(IEnumerable<Guid> ids, WorkplaceDto options) =>
+        ids.Where(id => options.Companies.Any(c => c.Id == id)).Distinct().ToList();
 
     /// <summary>Active companies in scope with the active branches the user may work in.</summary>
     private static async Task<WorkplaceDto> BuildAsync(TenancyDbContext db, ICompanyContext scope, Guid? companyId, Guid? branchId, CancellationToken cancellationToken)
@@ -106,7 +132,7 @@ internal static class WorkplaceEndpoints
         var allowed = scope.AllCompanies ? null : scope.BranchIds.ToHashSet();
         return new WorkplaceDto(companyId, branchId, companies.Select(c => new WorkplaceCompany(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency,
             branches.Where(b => b.CompanyId == c.Id && (allowed is null || allowed.Contains(b.Id)))
-                .Select(b => new WorkplaceBranch(b.Id, b.Code, b.NameEn, b.NameAr)).ToList())).ToList());
+                .Select(b => new WorkplaceBranch(b.Id, b.Code, b.NameEn, b.NameAr)).ToList())).ToList(), []);
     }
 }
 

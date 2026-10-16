@@ -77,6 +77,47 @@ public sealed class AccessTests(TenancyFixture fixture) : IClassFixture<TenancyF
     }
 
     [Fact]
+    public async Task The_companies_switched_between_most_recently_follow_the_user_to_every_device_and_only_while_they_may_work_there()
+    {
+        var (admin, x, y, _) = await SetUpAsync();
+        var (id, email) = await NewUserAsync(admin, "recent", administrator: true);
+        var both = new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() }, new { companyId = y, allBranches = true, branchIds = Array.Empty<Guid>() } } };
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(id, both)).StatusCode);
+
+        static Guid[] Recent(JsonElement workplace) => workplace.GetProperty("recentCompanyIds").EnumerateArray().Select(e => e.GetGuid()).ToArray();
+        using (var first = await Env.SignInAsync(email))
+        {
+            // Never switched: none.
+            Assert.Empty(Recent(await first.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace")));
+            // The company reached, then the one left (the first by code, where the user started).
+            var toY = await first.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = y, branchId = (Guid?)null });
+            Assert.Equal(HttpStatusCode.OK, toY.StatusCode);
+            Assert.Equal(new[] { y, x }, Recent(await Json(toY)));
+            var back = await first.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = x, branchId = (Guid?)null });
+            Assert.Equal(new[] { x, y }, Recent(await Json(back)));
+        }
+
+        // Another device (a new session, nothing kept in its browser) reads the same.
+        using (var second = await Env.SignInAsync(email))
+        {
+            Assert.Equal(new[] { x, y }, Recent(await second.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace")));
+        }
+
+        // Access to Y removed: Y is no longer offered, and the next switch forgets it.
+        var onlyX = new { companies = new[] { new { companyId = x, allBranches = true, branchIds = Array.Empty<Guid>() } } };
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAccessAsync(id, onlyX)).StatusCode);
+        using var third = await Env.SignInAsync(email);
+        Assert.Equal(new[] { x }, Recent(await third.GetFromJsonAsync<JsonElement>("/api/tenancy/workplace")));
+        var stay = await third.PutAsJsonAsync("/api/tenancy/workplace", new { companyId = x, branchId = (Guid?)null });
+        Assert.Equal(new[] { x }, Recent(await Json(stay)));
+        await using var db = await Env.OpenAdminAsync();
+        await using var kept = new Npgsql.NpgsqlCommand("SELECT recent_company_ids FROM tenancy.user_workplaces WHERE tenant_id = @t AND user_id = @u", db);
+        kept.Parameters.AddWithValue("t", Env.TenantA.Id);
+        kept.Parameters.AddWithValue("u", id);
+        Assert.Equal(new[] { x }, (Guid[])(await kept.ExecuteScalarAsync())!);
+    }
+
+    [Fact]
     public async Task Administrators_give_only_their_own_companies_and_never_change_their_own_access()
     {
         var (admin, x, y, _) = await SetUpAsync();
