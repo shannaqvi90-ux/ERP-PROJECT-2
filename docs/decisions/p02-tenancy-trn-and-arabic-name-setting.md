@@ -1,0 +1,165 @@
+# p02 — TRN of 15 digits, and each company's setting that requires its Arabic legal name
+
+Date: 2026-10-11. Piece: p02-tenancy. Status: accepted (round 10).
+
+## Context
+
+On 2026-10-10 the owner signed off two statutory rules, each recorded with its source in
+`docs/compliance/`:
+
+- `vat-trn-format.md`: a Tax Registration Number is exactly 15 digits 0 to 9. Spaces and dashes a
+  user types are removed before the check, and anything else is refused. There is no prefix rule
+  and no check-digit rule. Source: UAE Ministry of Finance, *Electronic Invoicing Guidelines* v1.1.
+- `arabic-legal-name-on-documents.md`: the Arabic legal name stays optional (Arabic documents
+  print the English one when it is missing). Each company has a setting, off by default, that
+  makes it required. The English legal name is never saved empty.
+
+The product until round 9 accepted any 1 to 20 digits (`^[0-9]{1,20}$`, column `varchar(20)`), so
+"12345" was saved (p06 round 3). The lead asked that stored values which do not match are handled
+without losing them, and that the column and the API stay in step.
+
+## Decision
+
+**TRN.**
+- The API takes the number as typed. It removes every space and dash, then requires exactly 15
+  digits (`tenancyTaxNumber`, in English and Arabic). Letters, dots, slashes, a plus sign,
+  Arabic-Indic digits (٠ to ٩), 14 or 16 digits are all refused. The request is bounded at 100
+  characters, so that an endless run of spaces is not taken in. That bound is not part of the rule.
+- What is stored and answered is the 15 digits alone. The column is `varchar(15)` with check
+  constraint `ck_companies_tax_registration_number` (`^[0-9]{15}$`). The OpenAPI document gives the
+  request pattern `^[ -]*(?:[0-9][ -]*){15}$` and the answer pattern `^[0-9]{15}$`. The database,
+  the validator and the documented contract all hold the same rule.
+- Stored numbers that do not meet the rule are not lost. Migration
+  `CompanyTaxNumberFifteenDigitsAndArabicNameSetting` keeps a number that is 15 digits once its
+  spaces and dashes are removed, in that form. It moves any other number, exactly as it was, to a
+  new column `legacy_tax_registration_number` and clears the TRN. Each change is in the audit
+  trail as the migration's (`actor_kind = migration`). The owner reads past row-level security
+  only inside the migration's transaction, as `AccessCounts` did, and FORCE is restored before it
+  commits.
+- The company record answers `legacyTaxRegistrationNumber`, which is read-only. The company form
+  shows it under the empty TRN field ("The number on file, 12345, is not 15 digits and is not
+  printed..."). The company stays editable: saving without a TRN keeps the old number, and saving
+  a valid one clears it. A legacy number is never printed, because an invalid TRN on a document is
+  worse than none.
+- The Tax Identification Number (the first 10 digits) is derived from the TRN and never entered,
+  so the product has no field for it. No module uses it yet.
+- Arabic-Indic digits are refused, because the rule says "0 to 9, nothing else". Whether they
+  should be turned into 0 to 9 when typed on an Arabic keyboard is a question for the owner. It is
+  listed as a human gate and not decided here.
+
+**Arabic legal name setting.**
+- Each company has `arabic_legal_name_required` (boolean, default false). It is part of the company
+  record, so it needs the same permission as the rest of the record (`tenancy.companies.update`,
+  and every branch of the company). It is not a new permissioned action. The G2 gates, the screen
+  gate (`screens.test.tsx`: the setting is a field that disappears without the update permission)
+  and the G1 write gates (the field is in the request body they vary) cover it with no new rule.
+- The request field `arabicLegalNameRequired` is optional. When it is left out, a new company has
+  the setting off and a changed company keeps its current value, so older clients (the comparison
+  drivers, scripts) keep working.
+- While the setting is on, a company with a blank Arabic legal name is refused
+  (`tenancyLegalNameArRequired` on `legalNameAr`, in English and Arabic). This covers creating it
+  so, emptying the Arabic name, and turning the setting on for a company with no Arabic name. The
+  database holds the same line: `ck_companies_legal_name_ar_required` is
+  `NOT arabic_legal_name_required OR btrim(legal_name_ar) <> ''`.
+- The form shows the setting under the legal names. While it is on, the Arabic name is marked
+  required and its hint says why.
+- The English legal name rule (`p02-tenancy-english-legal-name.md`) is unchanged: it is required,
+  and the API and `ck_companies_legal_name` refuse a blank one.
+
+**From the round 9 verdict in the same change.**
+- *Companies screen, user who works in no company (the round's biggest gap).*
+  `worksInEveryCompany` (records.ts) is the one place the screens decide this. It fails closed: no
+  company row means no, and a row that does not say `everyCompany: true` is no too. The Companies
+  screen and the palette's "New company" (now with `available`) both use it. `screens.test.tsx`
+  models a user with no company rows and one whose rows say nothing. With every permission, New
+  is absent and Alt+N and `?open=new` open nothing; a control shows New for a user who works in
+  every company. `scripts/tenancy-plant-self-test.mjs` has 4 more plants (U5, the critic's U5b,
+  U5c, U5-palette), 28 in all, and the gate catches every one. `GrantRulesTests` checks the server
+  side of the same state: an Administrator with no company reads no row, and a create is refused.
+  We did not add `everyCompany` to a response outside the rows. That would add a field (or an
+  endpoint) every G1/G2 run attacks, and the processor-time budget is spent. The fail-closed read
+  and the gate cases cover the fault class.
+- *Arabic keyboard path.* On an Arabic screen the company form puts the Arabic legal name first,
+  and a new company starts there, as the branch line already did. A branch whose Arabic name was
+  typed but whose English name was left at the company's name is saved with no English name. It
+  is not the head office, and its English name is unknown, so it gets a code made from the
+  fallback (BR-1, ...) and not HQ. A line left at the company's names in both languages is still
+  the head office.
+
+## Not done this round
+
+- *Order of refusals on create* (round 9 finding). `POST /companies` still judges the body before
+  it answers 403 `tenancy.companyNeedsEveryCompany`. We tried answering 403 first. The G2 gate
+  `Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it` then failed: its
+  user holds only `tenancy.companies.create` and works in no company, and the gate reads any 403
+  to its empty body as the permission refusing it. That gate cannot be loosened (CLAUDE.md rule 9),
+  so the order stays. The screens do not offer New to such a user, so the order matters only to an
+  API caller. It is not a leak: every caller gets the same validation answer.
+- The `set-config` review count for `TenancySql.cs` in `tests/Gates/tenant-bypass-sources.txt` goes
+  from 1 to 3: the new migration step and its Down mark their own transaction as the migration's
+  actor (transaction-local), exactly as `AccessCounts` does.
+
+- *Arabic legal-name column cut at the list's edge* (round 9 finding, Arabic at 1400 px with the
+  company form open). The list keeps each column at least its minimum width and scrolls sideways
+  inside its own pane when the open form leaves less room; the page itself does not overflow. That
+  is the shared list framework's rule (`web/src/kernel/lists`), used by every list screen, so it is
+  not changed from this piece. The Arabic name is whole once the form is closed or the list is
+  scrolled.
+
+## Recent companies kept on the server (round 10, after the resume of 2026-10-16)
+
+Round 9's critic found that with more than six active companies a device that never switched
+shows no one-click company buttons, so switching takes two clicks there, as in the reference.
+The buttons came only from this browser's memory. Now the server keeps them too:
+
+- `tenancy.user_workplaces.recent_company_ids` (`uuid[]`, default empty, at most 6 by check
+  constraint `ck_user_workplaces_recent_company_ids`). The column is on the user's own workplace
+  row, so it has that row's tenant and company row-level security and its audit trigger. No new
+  table, endpoint or permission.
+- `PUT /api/tenancy/workplace` puts the company reached first, then the company left, then the
+  earlier ones, and keeps only companies the user may switch to now. `GET` and `PUT` answer the
+  list as `recentCompanyIds`, filtered the same way at read time, so an id the user lost access
+  to, or a deactivated company, is never shown. A palette switch updates it as well, since it uses
+  the same endpoint.
+- The switcher takes the server's list first, then this browser's own. The round 4 rule stays:
+  no arbitrary buttons. A user who has never switched anywhere still sees none, and uses Alt+C.
+- When access to the working company is removed, the workplace row goes with it (its foreign
+  key to the access row cascades), and the list starts again.
+
+Tests: `AccessTests.The_companies_switched_between_most_recently_follow_the_user_to_every_device_and_only_while_they_may_work_there`
+(two sessions, access removed, the stored array) and a `WorkplaceSwitcher.test.tsx` case for a
+device with nothing stored and an id the user may no longer use. The G1 company-layer gate
+(`G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint`) now
+plants company Y in the scoped user's stored recent companies and requires that neither GET nor
+PUT /workplace names Y and that the next switch drops it. Planted check: answering the stored ids
+without the read-time filter fails that gate ("the workplace answer names company Y among the
+recent companies"). Processor time: one .NET test of
+about 1 s and one web test of well under 1 s; the G1/G2 gates walk the same endpoints as before.
+
+## Processor time
+
+This round adds work in three places:
+- 3 .NET tests. One of them rolls back two ALTER TABLE statements on its own test database.
+- 6 web unit tests, about 2 s.
+- 5 plants, which run inside verify's web stage: U5, U5b, U5c and U5-palette in the tenancy
+  screen gate's self-test, and PA10 in the palette gate's self-test. Each tenancy plant costs one
+  planted vitest run of `screens.test.tsx`, about 15 to 20 processor seconds. To keep that down,
+  the round 9 cases come first in the file, so a planted run, which stops at its first failure,
+  ends early. PA10 runs only the tests that its `tests` filter names.
+
+The migration and the two new body fields cost nothing measurable. The G1/G2 gates read the fields
+from the OpenAPI document, so they need no new run.
+
+Measured: verify run of a9faf48, slot taken at 2026-10-11T11:42:18Z. All tests passed (.NET 588,
+web 447, end to end 96, comparison 373, build 6), but processor time was 10,684 s against the
+10,500 s maximum: dotnet 8,372, web 1,953, e2e 320, timing 39. The machine was busy: load peaked
+at 81.6 on 16 CPUs, and the wall time was not judged. An earlier run of this branch measured the
+dotnet stage at 8,038 s, which is 334 s less for nearly the same tests, so most of the overrun
+comes from load. The maximum is the owner's and is not changed here.
+
+Measured after the resume (2026-10-16), on the branch merged with the integration branch (p00
+round 10) and with the recent-companies change and its gate: verify of 87309fa, slot taken at
+2026-10-16T21:51:02Z, passed in 3,778 s. All tests passed (.NET 606, web 457, end to end 100,
+comparison 373, build 6). Processor time 9,625 s of the 10,500 s maximum: dotnet 7,568, web
+1,766, e2e 254, timing 37. Wall time was not judged (load peaked at 84.4 on 16 CPUs while two
+other verifies finished). The ratchet minimums are raised to these counts (.NET 606, web 457).

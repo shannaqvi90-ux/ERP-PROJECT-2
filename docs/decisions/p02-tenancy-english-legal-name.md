@@ -43,3 +43,12 @@ legal name is refused with a check violation naming the constraint.
 
 One extra module test path (a few requests and two refused UPDATE statements in an existing test)
 and one web assertion: well under a second.
+
+## Round 10: the owner's rulings
+
+The two questions this record left open were answered by the owner on 2026-10-10
+(`docs/compliance/arabic-legal-name-on-documents.md`, needs-human #9, and
+`docs/compliance/vat-trn-format.md`, needs-human #10). The Arabic legal name stays optional with a
+per-company setting that makes it required, and a TRN is exactly 15 digits. Both are built as
+`p02-tenancy-trn-and-arabic-name-setting.md` describes. The English legal name rule above is
+unchanged.

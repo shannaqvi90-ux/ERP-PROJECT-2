@@ -99,6 +99,8 @@ const company = {
   taxRegistrationNumber: null, baseCurrency: "AED", fiscalYearStartMonth: 1, fiscalYearStartDay: 1, addressLine1: null, addressLine2: null, city: null,
   emirate: "ajman", poBox: null, country: "AE", addressAr: null, phone: null, email: null, website: null, hasLogo: false, logoHash: null, isActive: true,
   branchCount: 1, createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 1, everyBranch: true,
+  // As the server answers every company row: whether the user works in every company of the workspace.
+  everyCompany: true,
 };
 const branch = {
   id: "b1", companyId: "c9", companyCode: "AN-AJM", code: "AJM-HQ", nameEn: "Ajman head office", nameAr: "المكتب الرئيسي عجمان", addressLine1: null, addressLine2: null,
@@ -353,6 +355,17 @@ describe("module actions in the command palette", () => {
     await open("/", every);
     await openPalette(en("tenancy.branch.new"));
     expect(offered().map((o) => o.title)).toContain(en("tenancy.branch.new"));
+  });
+
+  it("a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9)", async () => {
+    for (const companies of [[{ ...company, everyCompany: false }], []]) {
+      await open("/", every, { companies });
+      await openPalette(en("tenancy.company.new"));
+      expect(offered().map((o) => o.title), `New company with ${companies.length} company rows`).not.toContain(en("tenancy.company.new"));
+    }
+    await open("/", every);
+    await openPalette(en("tenancy.company.new"));
+    expect(offered().map((o) => o.title)).toContain(en("tenancy.company.new"));
   });
 
   it("is found by its words in either language, on an Arabic screen too", async () => {

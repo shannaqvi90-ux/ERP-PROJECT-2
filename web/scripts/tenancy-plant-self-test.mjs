@@ -10,8 +10,9 @@
 // workspace forms; the U-*-some-branches plants are critic p02 round 4's (the branch line, New
 // branch and the branch code offered to someone who works in only some branches of the company);
 // the U-company-*-some-companies plants are critic p02 round 7's (New company and the company code
-// offered to someone who works in only some companies); the others are the same fault on the other
-// actions of these screens.
+// offered to someone who works in only some companies); U5 and U5b are critic p02 round 9's (New
+// company offered to someone who works in no company: an empty list read as "every company"); the
+// others are the same fault on the other actions of these screens.
 //
 // Usage: node scripts/tenancy-plant-self-test.mjs   (from web/, after npm ci)
 import { spawnSync } from "node:child_process";
@@ -58,6 +59,26 @@ const plants = [
     id: "U-company-address-new",
     what: "a new-company form opened from the address (?open=new) by someone the screen does not offer New",
     edits: [{ file: "src/modules/tenancy/CompaniesPage.tsx", find: "onOpenIdChange(id === newRecord && !creatable ? null : id)", replace: "onOpenIdChange(id)" }],
+  },
+  {
+    id: "U5",
+    what: "an empty companies list read as 'works in every company': New offered to a user who works in no company (critic p02 round 9)",
+    edits: [{ file: "src/modules/tenancy/records.ts", find: "return first !== undefined && first.everyCompany === true;", replace: "return first === undefined || first.everyCompany === true;" }],
+  },
+  {
+    id: "U5b",
+    what: "critic p02 round 9's rewrite page.items[0]?.everyCompany !== false (no row and a silent row both read as yes)",
+    edits: [{ file: "src/modules/tenancy/records.ts", find: "return first !== undefined && first.everyCompany === true;", replace: "return page.items[0]?.everyCompany !== false;" }],
+  },
+  {
+    id: "U5c",
+    what: "a companies row that does not say everyCompany read as yes",
+    edits: [{ file: "src/modules/tenancy/records.ts", find: "return first !== undefined && first.everyCompany === true;", replace: "return first !== undefined && first.everyCompany !== false;" }],
+  },
+  {
+    id: "U5-palette",
+    what: "New company in the palette offered from anywhere to someone who does not work in every company",
+    edits: [{ file: "src/modules/tenancy/extensions.tsx", find: "      available: () => worksInEveryCompany(),\n", replace: "" }],
   },
   {
     id: "P3b",

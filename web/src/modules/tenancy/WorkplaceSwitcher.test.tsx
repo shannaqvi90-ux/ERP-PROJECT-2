@@ -159,6 +159,42 @@ describe("working company switcher", () => {
     expect(chips().map((b) => b.textContent)).toEqual(["GRP-7"]);
   });
 
+  it("with more than six companies, a device that never switched offers the companies the server keeps as recent (critic p02 round 9)", async () => {
+    const many = {
+      companyId: "k1",
+      branchId: "kb1",
+      companies: Array.from({ length: 8 }, (_, i) => ({
+        id: `k${i + 1}`, code: `GRP-${i + 1}`, legalNameEn: `Group entity ${i + 1} LLC`, legalNameAr: `كيان المجموعة ${i + 1} ذ.م.م`, baseCurrency: "AED",
+        branches: [{ id: `kb${i + 1}`, code: "HQ", nameEn: "Head office", nameAr: "المكتب الرئيسي" }],
+      })),
+      // Kept from switches on another device; "gone" is a company the user may no longer switch to.
+      recentCompanyIds: ["k1", "k5", "gone", "k3"],
+    };
+    let current = many;
+    mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(["tenancy.workplace.read", "tenancy.workplace.switch"]) };
+      if (url === "/api/tenancy/workplace" && method === "GET") return { status: 200, body: current };
+      if (url === "/api/tenancy/workplace" && method === "PUT") {
+        const { companyId } = body as { companyId: string };
+        current = { ...many, ...(body as object), recentCompanyIds: [companyId, "k1", "k5", "k3"] };
+        return { status: 200, body: current };
+      }
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    const chips = () => [...view!.container.querySelectorAll<HTMLButtonElement>(".workplace-chip")].map((b) => b.textContent);
+    // Nothing in this browser: the server's list, without the working company or an unknown id.
+    expect(localStorage.getItem("erp.tenancy.recentCompanies.u1")).toBeNull();
+    expect(chips()).toEqual(["GRP-5", "GRP-3"]);
+    await act(async () => {
+      view!.container.querySelector<HTMLButtonElement>('.workplace-chip[data-company="GRP-5"]')!.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(view.container.querySelector('[data-testid="workplace"]')!.textContent).toBe("GRP-5 · HQ");
+    expect(chips()).toEqual(["GRP-1", "GRP-3"]);
+  });
+
   it("is a plain label for a user who may not switch, and absent without the read permission", async () => {
     mockFetch((_, url) =>
       url === "/api/auth/session"

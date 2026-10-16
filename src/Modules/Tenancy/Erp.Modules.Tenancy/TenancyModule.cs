@@ -113,14 +113,26 @@ public sealed class Company : TenantEntity, ICompanyWide
 {
     public Guid CompanyId { get; set; }
     public string Code { get; set; } = "";
-    /// <summary>Legal name in English; empty when only the Arabic name is known (at least one is set).</summary>
+    /// <summary>Legal name in English; never empty or blank (the API and the database both refuse it).</summary>
     public string LegalNameEn { get; set; } = "";
 
-    /// <summary>Legal name in Arabic; empty when only the English name is known.</summary>
+    /// <summary>Legal name in Arabic; empty when only the English name is known (Arabic documents
+    /// then print the English one), unless <see cref="ArabicLegalNameRequired"/>.</summary>
     public string LegalNameAr { get; set; } = "";
+
+    /// <summary>The company's own setting (off by default): while on, the company is never saved
+    /// without an Arabic legal name (docs/compliance/arabic-legal-name-on-documents.md).</summary>
+    public bool ArabicLegalNameRequired { get; set; }
     public string? TradeLicenceNumber { get; set; }
     public string? TradeLicenceAuthority { get; set; }
+
+    /// <summary>The Tax Registration Number: exactly 15 digits, stored without spaces or dashes
+    /// (docs/compliance/vat-trn-format.md).</summary>
     public string? TaxRegistrationNumber { get; set; }
+
+    /// <summary>A tax registration number stored before the 15-digit rule that does not meet it,
+    /// kept as it was so nobody loses it, until the company is saved with a valid one.</summary>
+    public string? LegacyTaxRegistrationNumber { get; set; }
 
     /// <summary>ISO 4217 code of the currency the company keeps its books in.</summary>
     public string BaseCurrency { get; set; } = "AED";
@@ -199,6 +211,13 @@ public sealed class UserWorkplace : TenantEntity, ICompanyOwned
     public Guid UserId { get; set; }
     public Guid CompanyId { get; set; }
     public Guid? BranchId { get; set; }
+
+    /// <summary>The companies the user switched between most recently, newest first, at most
+    /// <see cref="RecentLimit"/> (ids only). The top bar's one-click buttons follow them on every
+    /// device; an id the user lost access to is dropped when read, never shown.</summary>
+    public List<Guid> RecentCompanyIds { get; set; } = [];
+
+    public const int RecentLimit = 6;
 }
 
 public sealed class TenancyDbContext : ModuleDbContext
@@ -330,6 +349,11 @@ public sealed class TenancyDbContext : ModuleDbContext
                 // The English legal name is required (the API's tenancyLegalNameEn rule, p06 round 3);
                 // the database holds the same line so no other writer can store an empty or blank one.
                 t.HasCheckConstraint("ck_companies_legal_name", "btrim(legal_name_en) <> ''");
+                // The company's own setting makes the Arabic legal name required (owner, 2026-10-10).
+                t.HasCheckConstraint("ck_companies_legal_name_ar_required", "NOT arabic_legal_name_required OR btrim(legal_name_ar) <> ''");
+                // A TRN is exactly 15 digits, stored without the spaces and dashes typed (owner,
+                // 2026-10-10; docs/compliance/vat-trn-format.md), the API's tenancyTaxNumber rule.
+                t.HasCheckConstraint("ck_companies_tax_registration_number", "tax_registration_number ~ '^[0-9]{15}$'");
             });
             ConfigureAddress(e);
             e.Property(x => x.Code).HasMaxLength(20);
@@ -337,7 +361,8 @@ public sealed class TenancyDbContext : ModuleDbContext
             e.Property(x => x.LegalNameAr).HasMaxLength(200);
             e.Property(x => x.TradeLicenceNumber).HasMaxLength(50);
             e.Property(x => x.TradeLicenceAuthority).HasMaxLength(100);
-            e.Property(x => x.TaxRegistrationNumber).HasMaxLength(20);
+            e.Property(x => x.TaxRegistrationNumber).HasMaxLength(15);
+            e.Property(x => x.LegacyTaxRegistrationNumber).HasMaxLength(20);
             e.Property(x => x.BaseCurrency).HasMaxLength(3);
             e.Property(x => x.Website).HasMaxLength(200);
             e.Property(x => x.Logo).HasColumnType("bytea");
@@ -412,7 +437,9 @@ public sealed class TenancyDbContext : ModuleDbContext
 
         modelBuilder.Entity<UserWorkplace>(e =>
         {
-            e.ToTable("user_workplaces");
+            e.ToTable("user_workplaces", t =>
+                t.HasCheckConstraint("ck_user_workplaces_recent_company_ids", $"cardinality(recent_company_ids) <= {UserWorkplace.RecentLimit}"));
+            e.Property(x => x.RecentCompanyIds).HasDefaultValueSql("'{}'::uuid[]");
             e.HasIndex(x => new { x.TenantId, x.UserId }).IsUnique();
             e.HasIndex(x => new { x.TenantId, x.CompanyId });
             e.HasOne<UserCompanyAccess>().WithMany().HasForeignKey(x => new { x.TenantId, x.UserId, x.CompanyId })

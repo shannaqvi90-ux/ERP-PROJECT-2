@@ -30,9 +30,14 @@ export type Company = {
   everyCompany?: boolean;
   legalNameEn: string;
   legalNameAr: string;
+  /** The company's own setting: while on, the Arabic legal name is required. */
+  arabicLegalNameRequired?: boolean;
   tradeLicenceNumber: string | null;
   tradeLicenceAuthority: string | null;
+  /** 15 digits. */
   taxRegistrationNumber: string | null;
+  /** A number stored before the 15-digit rule that does not meet it, kept until a valid one is saved. */
+  legacyTaxRegistrationNumber?: string | null;
   baseCurrency: string;
   fiscalYearStartMonth: number;
   fiscalYearStartDay: number;
@@ -85,7 +90,9 @@ export type Branch = BranchRow & {
 
 export type WorkplaceBranch = { id: string; code: string; nameEn: string; nameAr: string };
 export type WorkplaceCompany = { id: string; code: string; legalNameEn: string; legalNameAr: string; baseCurrency: string; branches: WorkplaceBranch[] };
-export type Workplace = { companyId: string | null; branchId: string | null; companies: WorkplaceCompany[] };
+/** recentCompanyIds: the companies the user switched between most recently, newest first, kept
+ * by the server for every device (absent from servers older than round 10). */
+export type Workplace = { companyId: string | null; branchId: string | null; companies: WorkplaceCompany[]; recentCompanyIds?: string[] };
 
 export type AccessCompanySummary = { companyId: string; code: string; allBranches: boolean; branchCount: number };
 export type AccessRow = { id: string; displayName: string; email: string; companies: AccessCompanySummary[] };

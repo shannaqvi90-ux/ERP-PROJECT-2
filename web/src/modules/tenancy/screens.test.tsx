@@ -2,6 +2,7 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, type Rendered } from "../../test/render";
 import { App } from "../shell/App";
+import { extensions } from "./extensions";
 
 // G2 on screen for the tenancy screens (critic p02 round 3, plants U1 and U2: the company logo's
 // upload and remove, and the branch line and New branch, were offered without their permissions
@@ -95,8 +96,25 @@ const address: Record<Screen, string> = {
   tenant: "/tenancy/tenant",
 };
 
-async function open(screen: Screen, permissions: string[], options: { canEdit?: boolean; path?: string; everyBranch?: boolean; everyCompany?: boolean } = {}) {
-  window.history.replaceState(null, "", options.path ?? address[screen]);
+type Options = {
+  canEdit?: boolean;
+  path?: string;
+  everyBranch?: boolean;
+  everyCompany?: boolean;
+  /** The companies list: "none" answers no rows (a user who works in no company), "silent" rows
+   * that do not say whether the user works in every company. */
+  companyRows?: "none" | "silent";
+};
+
+/** The companies list's answer for these options. */
+function companyRows(options: Options) {
+  if (options.companyRows === "none") return { items: [], total: 0, next: null };
+  const row: Record<string, unknown> = { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true };
+  if (options.companyRows === "silent") delete row.everyCompany;
+  return { items: [row], total: 1, next: null };
+}
+
+function mockServer(permissions: string[], options: Options) {
   mockFetch((_method, url) => {
     const path = new URL(url, "http://localhost").pathname;
     if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
@@ -104,8 +122,11 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/lists/tenancy.branches/definition") return { status: 200, body: definition("tenancy.branches", "/api/tenancy/branches", "code") };
     if (path === "/api/lists/tenancy.access/definition") return { status: 200, body: definition("tenancy.access", "/api/tenancy/access", "displayName") };
     if (path.endsWith("/views")) return { status: 200, body: { items: [] } };
-    if (path === "/api/tenancy/companies") return { status: 200, body: { items: [{ ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true }], total: 1, next: null } };
-    if (path === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true } };
+    if (path === "/api/tenancy/companies") return { status: 200, body: companyRows(options) };
+    if (path === "/api/tenancy/companies/c9") {
+      if (options.companyRows === "none") return { status: 404, body: {} };
+      return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true } };
+    }
     if (path === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true } };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
@@ -114,6 +135,11 @@ async function open(screen: Screen, permissions: string[], options: { canEdit?: 
     if (path === "/api/tenancy/workplace") return { status: 200, body: { companyId: "c9", branchId: "b1", companies: [] } };
     return { status: 404, body: {} };
   });
+}
+
+async function open(screen: Screen, permissions: string[], options: Options = {}) {
+  window.history.replaceState(null, "", options.path ?? address[screen]);
+  mockServer(permissions, options);
   const mine = generation;
   const rendered = await render(<App language="en" />);
   if (mine !== generation) return stale(rendered);
@@ -189,6 +215,51 @@ const reads: Record<Screen, string> = {
 };
 
 describe("tenancy screens offer exactly what the user may do", () => {
+  // (First in the file: a planted run stops at the first failure, so these plants are caught quickly.)
+  // Critic p02 round 9 (plants U5 and U5b): the screen read "works in every company" from the
+  // first list row, and a rewrite that read an empty list as yes (page.items[0]?.everyCompany !==
+  // false) offered New to every newly invited administrator: one given the Administrator role has
+  // no company until someone grants one, and the server refused the save. No row means no; a row
+  // that does not say so is not yes either.
+  const pressAltN = () =>
+    act(() => {
+      (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
+    });
+  for (const rows of ["none", "silent"] as const) {
+    const who = rows === "none" ? "works in no company" : "is on rows that do not say they work in every company";
+    it(`companies: where the user ${who}, New is absent and Alt+N and ?open=new open nothing, with every permission`, async () => {
+      const offered = await open("companies", all, { companyRows: rows, path: "/tenancy/companies" });
+      expect(offered, `companies for a user who ${who}`).not.toContain("button:New");
+      expect(shown().container.querySelector(".record-form"), `companies for a user who ${who}`).toBeNull();
+      pressAltN();
+      await settle();
+      expect(new URLSearchParams(window.location.search).get("open"), `Alt+N for a user who ${who}`).toBeNull();
+      expect(shown().container.querySelector(".record-form"), `Alt+N for a user who ${who}`).toBeNull();
+      closeView();
+      await open("companies", all, { companyRows: rows, path: "/tenancy/companies?open=new" });
+      expect(shown().container.querySelector(".record-form"), `?open=new for a user who ${who}`).toBeNull();
+      closeView();
+      // The control: the same screen for someone the row says works in every company offers New.
+      const control = await open("companies", all, { path: "/tenancy/companies" });
+      expect(control, "companies for a user who works in every company").toContain("button:New");
+    });
+  }
+
+  it("palette: New company from anywhere is available only to someone who works in every company", async () => {
+    const action = extensions.actions!.find((a) => a.key === "tenancy.companies.new")!;
+    expect(action.available, "New company in the palette checks the user's companies").toBeTypeOf("function");
+    const cases: [Options, boolean][] = [
+      [{}, true],
+      [{ everyCompany: false }, false],
+      [{ companyRows: "none" }, false],
+      [{ companyRows: "silent" }, false],
+    ];
+    for (const [options, expected] of cases) {
+      mockServer(all, options);
+      expect(await action.available!(), `New company in the palette for ${JSON.stringify(options)}`).toBe(expected);
+    }
+  });
+
   for (const screen of ["companies", "branches", "access", "tenant"] as const) {
     it(`${screen}: with every tenancy permission, every action is offered`, async () => {
       const full = await open(screen, all);

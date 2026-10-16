@@ -136,6 +136,198 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         Assert.Equal("tenancyNameEnOrAr", (await Json(noName)).GetProperty("errors").GetProperty("nameEn")[0].GetProperty("code").GetString());
     }
 
+    // Owner decision 2026-10-10 (docs/compliance/vat-trn-format.md, source: UAE Ministry of Finance,
+    // Electronic Invoicing Guidelines v1.1): a TRN is exactly 15 digits 0 to 9; spaces and dashes a
+    // user types are removed before the check; anything else is refused; no prefix and no
+    // check-digit rule.
+    [Fact]
+    public async Task A_tax_registration_number_is_exactly_fifteen_digits_and_spaces_and_dashes_typed_are_removed()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin.ar"));
+        var typed = new Dictionary<string, string>
+        {
+            ["T-TRN1"] = "100-1234-5678-9003",
+            ["T-TRN2"] = " 100 1234 5678 9003 ",
+            // No prefix rule: a number that does not start with 100 is accepted, and no check digit.
+            ["T-TRN3"] = "987654321012345",
+        };
+        Guid first = default;
+        foreach (var (code, number) in typed)
+        {
+            var body = JsonSerializer.SerializeToNode(Company(code))!.AsObject();
+            body["taxRegistrationNumber"] = number;
+            var created = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
+            Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+            var company = await Json(created);
+            Assert.Equal(new string(number.Where(char.IsAsciiDigit).ToArray()), company.GetProperty("taxRegistrationNumber").GetString());
+            if (first == default) first = company.GetProperty("id").GetGuid();
+        }
+        foreach (var number in new[]
+                 {
+                     "12345", "10012345678900", "1001234567890031", "10012345678900A", "100.1234.5678.9003", "+100123456789003",
+                     "100/1234/5678/9003", "TRN100123456789003", "١٠٠١٢٣٤٥٦٧٨٩٠٠٣", "100_123_456_789_003",
+                 })
+        {
+            var body = JsonSerializer.SerializeToNode(Company("T-TRNX"))!.AsObject();
+            body["taxRegistrationNumber"] = number;
+            var refused = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            var error = (await Json(refused)).GetProperty("errors").GetProperty("taxRegistrationNumber")[0];
+            Assert.Equal("tenancyTaxNumber", error.GetProperty("code").GetString());
+            Assert.Matches(@"\p{IsArabic}", error.GetProperty("message").GetString()!);
+        }
+        Assert.DoesNotContain((await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200")).GetProperty("items").EnumerateArray(),
+            c => c.GetProperty("code").GetString() == "T-TRNX");
+        // The database holds the same line for any other writer.
+        await using var db = await Env.OpenAdminAsync();
+        foreach (var bad in new[] { "12345", "100-1234-5678-9003", "10012345678900A" })
+        {
+            await using var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.companies SET tax_registration_number = @bad WHERE id = @id", db);
+            write.Parameters.AddWithValue("bad", bad);
+            write.Parameters.AddWithValue("id", first);
+            var refused = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => write.ExecuteNonQueryAsync());
+            Assert.True(refused.SqlState is Npgsql.PostgresErrorCodes.CheckViolation or Npgsql.PostgresErrorCodes.StringDataRightTruncation, refused.SqlState);
+        }
+    }
+
+    // A number stored before the 15-digit rule is never lost: the migration keeps one that is 15
+    // digits once its spaces and dashes are gone in that form, and moves any other, as it was, to
+    // legacyTaxRegistrationNumber; the company stays editable, and the kept number goes once a
+    // valid one is saved.
+    [Fact]
+    public async Task Numbers_stored_before_the_rule_are_kept_and_replaced_only_by_a_valid_one()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var ids = new List<Guid>();
+        foreach (var code in new[] { "T-OLD1", "T-OLD2", "T-OLD3" })
+        {
+            ids.Add((await Json(await admin.PostAsJsonAsync("/api/tenancy/companies", Company(code)))).GetProperty("id").GetGuid());
+        }
+        var before = new[] { "100-0000-0000-0003", "12345", "TRN 77" };
+        await using (var db = await Env.OpenAdminAsync())
+        {
+            // The migration's data step, run on numbers as an older version stored them, then undone.
+            await using var tx = await db.BeginTransactionAsync();
+            await using (var widen = new Npgsql.NpgsqlCommand(
+                "ALTER TABLE tenancy.companies DROP CONSTRAINT ck_companies_tax_registration_number; " +
+                "ALTER TABLE tenancy.companies ALTER COLUMN tax_registration_number TYPE varchar(20)", db, tx))
+            {
+                await widen.ExecuteNonQueryAsync();
+            }
+            for (var i = 0; i < ids.Count; i++)
+            {
+                await using var old = new Npgsql.NpgsqlCommand("UPDATE tenancy.companies SET tax_registration_number = @n WHERE id = @id", db, tx);
+                old.Parameters.AddWithValue("n", before[i]);
+                old.Parameters.AddWithValue("id", ids[i]);
+                await old.ExecuteNonQueryAsync();
+            }
+            await using (var migrate = new Npgsql.NpgsqlCommand(TenancySql.TaxNumbersToFifteenDigits, db, tx))
+            {
+                await migrate.ExecuteNonQueryAsync();
+            }
+            await using (var read = new Npgsql.NpgsqlCommand(
+                "SELECT tax_registration_number, legacy_tax_registration_number FROM tenancy.companies WHERE id = ANY(@ids) ORDER BY code", db, tx))
+            {
+                read.Parameters.AddWithValue("ids", ids.ToArray());
+                await using var rows = await read.ExecuteReaderAsync();
+                var seen = new List<(string?, string?)>();
+                while (await rows.ReadAsync())
+                {
+                    seen.Add((rows.IsDBNull(0) ? null : rows.GetString(0), rows.IsDBNull(1) ? null : rows.GetString(1)));
+                }
+                Assert.Equal([("100000000000003", null), (null, "12345"), (null, "TRN 77")], seen);
+            }
+            await tx.RollbackAsync();
+            // As the migration leaves it: no valid number, the old one kept.
+            await using var kept = new Npgsql.NpgsqlCommand(
+                "UPDATE tenancy.companies SET tax_registration_number = NULL, legacy_tax_registration_number = '12345' WHERE id = @id", db);
+            kept.Parameters.AddWithValue("id", ids[1]);
+            await kept.ExecuteNonQueryAsync();
+        }
+        var url = $"/api/tenancy/companies/{ids[1]}";
+        var company = (await admin.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>(url))!;
+        Assert.Null(company["taxRegistrationNumber"]?.GetValue<string>());
+        Assert.Equal("12345", company["legacyTaxRegistrationNumber"]!.GetValue<string>());
+        // Saved without a number (another field changed): the old one is still kept.
+        company["legalNameEn"] = "Old Number Trading LLC";
+        var renamed = await admin.PutAsJsonAsync(url, company);
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        company = (await renamed.Content.ReadFromJsonAsync<System.Text.Json.Nodes.JsonObject>())!;
+        Assert.Equal("12345", company["legacyTaxRegistrationNumber"]!.GetValue<string>());
+        // An invalid number is refused and keeps it too; a valid one replaces it.
+        company["taxRegistrationNumber"] = "12345";
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PutAsJsonAsync(url, company)).StatusCode);
+        company["taxRegistrationNumber"] = "100-0000-1234-5003";
+        var fixedNumber = await admin.PutAsJsonAsync(url, company);
+        Assert.Equal(HttpStatusCode.OK, fixedNumber.StatusCode);
+        var saved = await Json(fixedNumber);
+        Assert.Equal("100000012345003", saved.GetProperty("taxRegistrationNumber").GetString());
+        Assert.Equal(JsonValueKind.Null, saved.GetProperty("legacyTaxRegistrationNumber").ValueKind);
+    }
+
+    // Owner decision 2026-10-10 (docs/compliance/arabic-legal-name-on-documents.md): the Arabic legal
+    // name stays optional, with a setting of each company (off by default) that makes it required.
+    [Fact]
+    public async Task A_company_setting_off_by_default_makes_the_arabic_legal_name_required()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin.ar"));
+        var plain = await Json(await admin.PostAsJsonAsync("/api/tenancy/companies", Company("T-ARN0", nameAr: "")));
+        Assert.False(plain.GetProperty("arabicLegalNameRequired").GetBoolean());
+        Assert.Equal("", plain.GetProperty("legalNameAr").GetString());
+
+        foreach (var arabic in new string?[] { null, "", "   " })
+        {
+            var body = JsonSerializer.SerializeToNode(Company("T-ARN1"))!.AsObject();
+            body["legalNameAr"] = arabic;
+            body["arabicLegalNameRequired"] = true;
+            var refused = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            var error = (await Json(refused)).GetProperty("errors").GetProperty("legalNameAr")[0];
+            Assert.Equal("tenancyLegalNameArRequired", error.GetProperty("code").GetString());
+            Assert.Matches(@"\p{IsArabic}", error.GetProperty("message").GetString()!);
+        }
+        var on = JsonSerializer.SerializeToNode(Company("T-ARN1"))!.AsObject();
+        on["arabicLegalNameRequired"] = true;
+        var created = await admin.PostAsJsonAsync("/api/tenancy/companies", on);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var company = (await created.Content.ReadFromJsonAsync<System.Text.Json.Nodes.JsonObject>())!;
+        Assert.True(company["arabicLegalNameRequired"]!.GetValue<bool>());
+        var url = $"/api/tenancy/companies/{company["id"]!.GetValue<string>()}";
+
+        // A change that leaves the setting out keeps it: the Arabic name cannot be emptied.
+        company.Remove("arabicLegalNameRequired");
+        company["legalNameAr"] = " ";
+        var emptied = await admin.PutAsJsonAsync(url, company);
+        Assert.Equal(HttpStatusCode.BadRequest, emptied.StatusCode);
+        Assert.Equal("tenancyLegalNameArRequired", (await Json(emptied)).GetProperty("errors").GetProperty("legalNameAr")[0].GetProperty("code").GetString());
+        // Turned off, the Arabic name is optional again.
+        company["arabicLegalNameRequired"] = false;
+        var off = await admin.PutAsJsonAsync(url, company);
+        Assert.Equal(HttpStatusCode.OK, off.StatusCode);
+        var saved = await Json(off);
+        Assert.False(saved.GetProperty("arabicLegalNameRequired").GetBoolean());
+        Assert.Equal("", saved.GetProperty("legalNameAr").GetString());
+        // Turning it on for a company without an Arabic name is refused, and nothing changes.
+        company = (await admin.GetFromJsonAsync<System.Text.Json.Nodes.JsonObject>(url))!;
+        company["arabicLegalNameRequired"] = true;
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PutAsJsonAsync(url, company)).StatusCode);
+        Assert.False((await admin.GetFromJsonAsync<JsonElement>(url)).GetProperty("arabicLegalNameRequired").GetBoolean());
+
+        // The database holds the same line, and the setting's changes are in the audit trail.
+        await using var db = await Env.OpenAdminAsync();
+        await using (var write = new Npgsql.NpgsqlCommand("UPDATE tenancy.companies SET arabic_legal_name_required = true WHERE id = @id", db))
+        {
+            write.Parameters.AddWithValue("id", saved.GetProperty("id").GetGuid());
+            var refused = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => write.ExecuteNonQueryAsync());
+            Assert.Equal(Npgsql.PostgresErrorCodes.CheckViolation, refused.SqlState);
+            Assert.Equal("ck_companies_legal_name_ar_required", refused.ConstraintName);
+        }
+        await using var audit = new Npgsql.NpgsqlCommand(
+            "SELECT count(*) FROM audit.entries WHERE table_name = 'companies' AND record_id = @id AND actor_kind = 'user' AND changes::text LIKE '%arabic_legal_name_required%'", db);
+        audit.Parameters.AddWithValue("id", saved.GetProperty("id").GetGuid());
+        Assert.True((long)(await audit.ExecuteScalarAsync())! >= 2);
+    }
+
     [Fact]
     public async Task Validation_names_every_bad_field_in_the_callers_language()
     {

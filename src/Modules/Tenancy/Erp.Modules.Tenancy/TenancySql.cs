@@ -70,4 +70,42 @@ internal static class TenancySql
         DROP TRIGGER IF EXISTS count_company ON tenancy.companies;
         DROP FUNCTION IF EXISTS tenancy.count_company();
         """;
+
+    /// <summary>
+    /// Tax registration numbers stored before the 15-digit rule (docs/compliance/vat-trn-format.md):
+    /// one that is 15 digits once its spaces and dashes are removed is kept in that form; any other
+    /// is moved, exactly as it was, to <c>legacy_tax_registration_number</c> (the company form shows
+    /// it until the company is saved with a valid number), so nothing stored is lost. The owner
+    /// reads past row-level security only inside this migration's transaction (FORCE is restored
+    /// before it commits), as in <see cref="AccessCounts"/>; the audit trail records each change
+    /// as the migration's.
+    /// </summary>
+    public const string TaxNumbersToFifteenDigits = """
+        SELECT set_config('app.actor_kind', 'migration', true);
+        ALTER TABLE tenancy.companies NO FORCE ROW LEVEL SECURITY;
+        ALTER TABLE audit.entries NO FORCE ROW LEVEL SECURITY;
+        UPDATE tenancy.companies
+           SET tax_registration_number = translate(tax_registration_number, ' -', '')
+         WHERE tax_registration_number IS NOT NULL
+           AND tax_registration_number !~ '^[0-9]{15}$'
+           AND translate(tax_registration_number, ' -', '') ~ '^[0-9]{15}$';
+        UPDATE tenancy.companies
+           SET legacy_tax_registration_number = tax_registration_number, tax_registration_number = NULL
+         WHERE tax_registration_number IS NOT NULL
+           AND tax_registration_number !~ '^[0-9]{15}$';
+        ALTER TABLE tenancy.companies FORCE ROW LEVEL SECURITY;
+        ALTER TABLE audit.entries FORCE ROW LEVEL SECURITY;
+        """;
+
+    /// <summary>Back to one column: a kept legacy number returns to the number where none was entered since.</summary>
+    public const string TaxNumbersToFifteenDigitsDown = """
+        SELECT set_config('app.actor_kind', 'migration', true);
+        ALTER TABLE tenancy.companies NO FORCE ROW LEVEL SECURITY;
+        ALTER TABLE audit.entries NO FORCE ROW LEVEL SECURITY;
+        UPDATE tenancy.companies
+           SET tax_registration_number = legacy_tax_registration_number
+         WHERE tax_registration_number IS NULL AND legacy_tax_registration_number IS NOT NULL;
+        ALTER TABLE tenancy.companies FORCE ROW LEVEL SECURITY;
+        ALTER TABLE audit.entries FORCE ROW LEVEL SECURITY;
+        """;
 }

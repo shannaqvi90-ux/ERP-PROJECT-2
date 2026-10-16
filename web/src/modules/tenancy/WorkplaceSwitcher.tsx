@@ -165,11 +165,12 @@ export function WorkplaceSwitcher() {
   }
 
   // With a handful of companies, the others are one click away beside the switcher; with more
-  // (groups with many licensed entities), the ones the user switched between most recently are.
+  // (groups with many licensed entities), the ones the user switched between most recently are:
+  // those the server keeps for the user (so a new device has them too), then this device's own.
   const others =
     workplace.companies.length <= quickCompanies
       ? workplace.companies.filter((c) => c.id !== workplace.companyId)
-      : recent
+      : [...new Set([...(workplace.recentCompanyIds ?? []), ...recent])]
           .filter((id) => id !== workplace.companyId)
           .map((id) => workplace.companies.find((c) => c.id === id))
           .filter((c): c is Workplace["companies"][number] => c !== undefined)
