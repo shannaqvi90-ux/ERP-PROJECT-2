@@ -156,3 +156,10 @@ web 447, end to end 96, comparison 373, build 6), but processor time was 10,684 
 at 81.6 on 16 CPUs, and the wall time was not judged. An earlier run of this branch measured the
 dotnet stage at 8,038 s, which is 334 s less for nearly the same tests, so most of the overrun
 comes from load. The maximum is the owner's and is not changed here.
+
+Measured after the resume (2026-10-16), on the branch merged with the integration branch (p00
+round 10) and with the recent-companies change and its gate: verify of 87309fa, slot taken at
+2026-10-16T21:51:02Z, passed in 3,778 s. All tests passed (.NET 606, web 457, end to end 100,
+comparison 373, build 6). Processor time 9,625 s of the 10,500 s maximum: dotnet 7,568, web
+1,766, e2e 254, timing 37. Wall time was not judged (load peaked at 84.4 on 16 CPUs while two
+other verifies finished). The ratchet minimums are raised to these counts (.NET 606, web 457).
