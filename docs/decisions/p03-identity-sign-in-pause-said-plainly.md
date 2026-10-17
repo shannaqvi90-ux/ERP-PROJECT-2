@@ -109,5 +109,9 @@ the address.
 
 The round adds one gate self-test that hosts a second app over the takeover environment's database
 (two endpoints, about 30 s wall on this machine alone) and five more address runs in the throttle
-gate (about 10 s). Measured cost is stated with the verify numbers in the round's notes; the
-verify's processor-time maximum (10,500 s) is the owner's and is unchanged.
+gate (about 10 s). This branch's passing verify (slot taken 2026-10-17T04:18:15Z, through
+verify-slot) used 9,289 s of processor time (dotnet 7,314, web 1,696, e2e 243, timing 35) against
+the owner's maximum of 10,500 s, and 3,612 s wall while the machine was busy (load up to 81, so
+not judged). The last integration and critic verifies used 9,512 to 9,727 s, so what the round adds
+is within run-to-run noise. Counts: .NET 613, web unit 478, end-to-end 102, compare 373; the
+.NET and web unit minimums in gauntlet/ratchet.json are raised to them.
