@@ -1,3 +1,4 @@
 # Tables without tenant_id. Reviewed list: each needs a reason after '#'. '*.' matches any schema.
 *.__ef_migrations_history  # EF Core migration history, one per module schema; holds migration ids and product version only.
 identity.sign_in_secret  # One random key (no tenant data) that makes the sign-in lookup's decoy salt for unknown addresses unpredictable. Only erp_auth (the sign-in function's owner) can read it; the application role has no privilege on it.
+identity.sign_in_failures  # Failed sign-in moments by address and client, kept at most a day, so a paused client is told so the same way whether or not an account has the address. Each row is a SHA-256 of sign_in_secret, the typed address and the client (it names neither and holds no tenant data) and a time. Only erp_auth (the sign-in function's owner) can read or write it; the application role has no privilege on it.

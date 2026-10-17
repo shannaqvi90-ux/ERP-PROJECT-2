@@ -27,11 +27,18 @@ const problemKeys: Record<string, string> = {
 };
 
 /** A message shown on the sign-in screen: one of the screen's own strings (re-rendered in the
- * current language), or the server's text in the language it was written in. */
-type Message = { key: string } | { text: string; language: Language };
+ * current language), or the server's text in the language it was written in. `pausedUntil`: sign-in
+ * with the address is paused until then (this device's clock), shown with the time and minutes. */
+type Message = { key: string; pausedUntil?: number } | { text: string; language: Language };
 
 const fromServer = (text: string, language: Language, code?: string): Message =>
   code && problemKeys[code] ? { key: problemKeys[code] } : { text, language };
+
+/** The screen's message for a failed sign-in: a pause says until when (critic p00 rounds 7 to 10). */
+const failureMessage = (result: { message: string; code?: string; pausedFor?: number }, language: Language): Message =>
+  result.code === "auth.signInPaused" && result.pausedFor !== undefined
+    ? { key: "shell.signIn.problem.signInPaused", pausedUntil: Date.now() + result.pausedFor * 1000 }
+    : fromServer(result.message, language, result.code);
 
 /** Failed password sign-ins in a row on this screen after which it says that sign-in may pause. */
 const failuresBeforeHint = 3;
@@ -56,7 +63,7 @@ const failuresBeforeHint = 3;
  * e-mail, the password and Enter from the plain address too.
  */
 export function SignInPage() {
-  const { t, language } = useI18n();
+  const { t, language, format } = useI18n();
   const { signIn, signInWithPasskey, state } = useSession();
   const passkeyRequest = state.status === "anonymous" ? state.passkey : undefined;
   const [canUsePasskey] = useState(passkeysSupported);
@@ -296,7 +303,7 @@ export function SignInPage() {
         setError(fromServer(result.message, language, "auth.chooseWorkspace"));
       } else {
         setWorkspaces(null);
-        setError(fromServer(result.message, language, result.kind === "failed" ? result.code : undefined));
+        setError(result.kind === "failed" ? failureMessage(result, language) : fromServer(result.message, language));
         setPassword("");
         passwordRef.current?.focus();
       }
@@ -449,8 +456,14 @@ export function SignInPage() {
               role={changing ? "status" : "alert"}
               {...("key" in error ? {} : { lang: error.language, dir: "auto" })}
             >
-              {"key" in error ? t(error.key) : error.text}
-              {failures >= failuresBeforeHint && !changing && <p className="signin-pause-hint">{t("shell.signIn.repeatedFailures")}</p>}
+              {"key" in error
+                ? error.pausedUntil !== undefined
+                  ? t(error.key, { time: format.time(new Date(error.pausedUntil)), minutes: Math.max(1, Math.ceil((error.pausedUntil - Date.now()) / 60_000)) })
+                  : t(error.key)
+                : error.text}
+              {failures >= failuresBeforeHint && !changing && !("key" in error && error.pausedUntil !== undefined) && (
+                <p className="signin-pause-hint">{t("shell.signIn.repeatedFailures")}</p>
+              )}
             </div>
           )}
           {notice && !error && (

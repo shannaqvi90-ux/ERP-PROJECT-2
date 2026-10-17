@@ -621,8 +621,10 @@ internal static class UserEndpoints
     }
 
     /// <summary>The clients paused on this account now, by the rule the sign-in function applies:
-    /// at least the threshold of failures within the window, counted since the client's last
-    /// success and the last unblock.</summary>
+    /// at least the threshold of failures within the window (a wrong password, or any password
+    /// while the account was deactivated), counted since the client's last success and the last
+    /// unblock. The function counts by address, so attempts made at the address before this
+    /// account had it count there too and are not shown here.</summary>
     internal static async Task<IReadOnlyList<PausedClient>> PausedAsync(IdentityDbContext db, Guid userId, DateTimeOffset? unblockedAt,
         AuthOptions options, DateTimeOffset now, CancellationToken cancellationToken)
     {
@@ -630,7 +632,8 @@ internal static class UserEndpoints
         var window = TimeSpan.FromMinutes(Math.Clamp(options.LockoutMinutes, 1, 1440));
         var from = now - window;
         var recent = await db.SignInAttempts.AsNoTracking()
-            .Where(a => a.UserId == userId && a.OccurredAt > from && (a.Outcome == SignInOutcomes.Failed || a.Outcome == SignInOutcomes.Succeeded))
+            .Where(a => a.UserId == userId && a.OccurredAt > from &&
+                        (a.Outcome == SignInOutcomes.Failed || a.Outcome == SignInOutcomes.Inactive || a.Outcome == SignInOutcomes.Succeeded))
             .Select(a => new { a.Source, a.Outcome, a.OccurredAt })
             .ToListAsync(cancellationToken);
         var paused = new List<PausedClient>();
@@ -638,7 +641,7 @@ internal static class UserEndpoints
         {
             var lastSuccess = group.Where(a => a.Outcome == SignInOutcomes.Succeeded).Select(a => (DateTimeOffset?)a.OccurredAt).Max();
             var since = new[] { from, unblockedAt ?? DateTimeOffset.MinValue, lastSuccess ?? DateTimeOffset.MinValue }.Max();
-            var failures = group.Where(a => a.Outcome == SignInOutcomes.Failed && a.OccurredAt > since)
+            var failures = group.Where(a => a.Outcome != SignInOutcomes.Succeeded && a.OccurredAt > since)
                 .Select(a => a.OccurredAt).OrderByDescending(t => t).ToList();
             if (failures.Count >= threshold)
             {

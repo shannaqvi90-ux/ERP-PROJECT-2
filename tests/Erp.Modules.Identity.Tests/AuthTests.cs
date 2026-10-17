@@ -127,27 +127,69 @@ public sealed partial class AuthTests(IdentityFixture fixture) : IClassFixture<I
         Assert.Equal("auth.signInFailed", a.GetProperty("code").GetString());
     }
 
+    /// <summary>Five failures pause that client on that address, and it is told so, until when, in
+    /// the request's language (critic p00 rounds 7 to 10, routed to p03): the fifth failure already
+    /// says so, and the right password gets the same answer until the pause lifts or an
+    /// administrator unblocks. An address no account has is paused the same way, with the same words.</summary>
     [Fact]
-    public async Task Five_failures_pause_that_client_without_saying_so_until_an_administrator_unblocks()
+    public async Task Five_failures_pause_that_client_and_say_until_when_until_an_administrator_unblocks()
     {
         using var admin = await Env.SignInAsync(AdminA);
         var email = $"lockout@{Env.TenantA.EmailDomain}";
         var created = await Json(await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Lockout", language = "en", password = ErpTestEnvironment.Password, roleIds = Array.Empty<Guid>() }));
         var id = created.GetProperty("id").GetGuid();
 
-        using var client = Env.CreateClient();
-        for (var i = 0; i < 5; i++)
+        async Task<List<(HttpStatusCode Status, JsonElement Body, string? RetryAfter)>> FailFiveAsync(HttpClient client, string address)
         {
-            var failed = await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = "Wrong-Password-1" });
-            Assert.Equal(HttpStatusCode.Unauthorized, failed.StatusCode);
+            var answers = new List<(HttpStatusCode, JsonElement, string?)>();
+            for (var i = 0; i < 5; i++)
+            {
+                var response = await client.PostAsJsonAsync("/api/auth/sign-in", new { email = address, password = "Wrong-Password-1" });
+                answers.Add((response.StatusCode, await Json(response), response.Headers.RetryAfter?.Delta?.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            }
+            return answers;
         }
+
+        using var client = Env.CreateClient();
+        var before = DateTimeOffset.UtcNow;
+        var known = await FailFiveAsync(client, email);
+        for (var i = 0; i < 4; i++)
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, known[i].Status);
+            Assert.Equal("auth.signInFailed", known[i].Body.GetProperty("code").GetString());
+        }
+        var fifth = known[4];
+        Assert.Equal(HttpStatusCode.TooManyRequests, fifth.Status);
+        Assert.Equal("auth.signInPaused", fifth.Body.GetProperty("code").GetString());
+        Assert.Equal("Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it from here is paused for about 15 minutes. Wait, or ask your administrator to allow sign-in again.",
+            fifth.Body.GetProperty("title").GetString());
+        var until = fifth.Body.GetProperty("pausedUntil").GetDateTimeOffset();
+        Assert.InRange(until, before.AddMinutes(14), DateTimeOffset.UtcNow.AddMinutes(15).AddSeconds(5));
+        Assert.InRange(fifth.Body.GetProperty("retryAfterSeconds").GetInt32(), 14 * 60, 15 * 60);
+        Assert.Equal(fifth.Body.GetProperty("retryAfterSeconds").GetInt32().ToString(System.Globalization.CultureInfo.InvariantCulture), fifth.RetryAfter);
+
         var locked = await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password });
-        Assert.Equal(HttpStatusCode.Unauthorized, locked.StatusCode);
-        Assert.Equal("auth.signInFailed", (await Json(locked)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.TooManyRequests, locked.StatusCode);
+        var lockedBody = await Json(locked);
+        Assert.Equal("auth.signInPaused", lockedBody.GetProperty("code").GetString());
+        Assert.Equal(until, lockedBody.GetProperty("pausedUntil").GetDateTimeOffset());
+
+        // In Arabic, the same pause in Arabic words.
+        using var arabic = new HttpRequestMessage(HttpMethod.Post, "/api/auth/sign-in") { Content = JsonContent.Create(new { email, password = ErpTestEnvironment.Password }) };
+        arabic.Headers.AcceptLanguage.ParseAdd("ar");
+        var arabicBody = await Json(await client.SendAsync(arabic));
+        Assert.Equal("auth.signInPaused", arabicBody.GetProperty("code").GetString());
+        Assert.Contains("توقف تسجيل الدخول", arabicBody.GetProperty("title").GetString(), StringComparison.Ordinal);
+
+        // An address no account has, from the same client: the same answers, the same words.
+        var unknown = await FailFiveAsync(client, $"nobody.{Guid.NewGuid():N}@nowhere.example");
+        Assert.Equal(known.Select(a => (a.Status, Code: a.Body.GetProperty("code").GetString(), Title: a.Body.GetProperty("title").GetString())),
+            unknown.Select(a => (a.Status, Code: a.Body.GetProperty("code").GetString(), Title: a.Body.GetProperty("title").GetString())));
 
         // The administrator sees the paused client and the attempts, then clears the pause.
         var history = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}/sign-ins");
-        Assert.Single(history.GetProperty("paused").EnumerateArray());
+        var paused = Assert.Single(history.GetProperty("paused").EnumerateArray());
+        Assert.Equal(until, paused.GetProperty("until").GetDateTimeOffset(), TimeSpan.FromSeconds(1));
         var outcomes = history.GetProperty("items").EnumerateArray().Select(a => a.GetProperty("outcome").GetString()).ToList();
         Assert.Equal(5, outcomes.Count(o => o == "failed"));
         Assert.Contains("throttled", outcomes);
@@ -172,11 +214,14 @@ public sealed partial class AuthTests(IdentityFixture fixture) : IClassFixture<I
         {
             await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = "Wrong-Password-1" });
         }
-        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })).StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })).StatusCode);
         await fixture.ExecAsync("""
             UPDATE identity.sign_in_attempts a SET occurred_at = occurred_at - interval '16 minutes'
               FROM identity.users u WHERE u.id = a.user_id AND u.email = @e
             """, ("e", email));
+        // The count by address (identity.sign_in_failures) leaves the window with them; it names
+        // no address, so this test's class moves every counted failure (its tests run one at a time).
+        await fixture.ExecAsync("UPDATE identity.sign_in_failures SET occurred_at = occurred_at - interval '16 minutes'");
         Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/auth/sign-in", new { email, password = ErpTestEnvironment.Password })).StatusCode);
     }
 

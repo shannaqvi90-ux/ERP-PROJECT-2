@@ -16,6 +16,10 @@ internal abstract record SignInOutcome
 {
     public sealed record Failed : SignInOutcome;
 
+    /// <summary>Too many failed attempts at this address from this client: sign-in with it is paused
+    /// until <c>Until</c>, the same answer whether or not an account has the address.</summary>
+    public sealed record Paused(DateTimeOffset Until) : SignInOutcome;
+
     public sealed record ChooseWorkspace(IReadOnlyList<WorkspaceChoice> Workspaces) : SignInOutcome;
 
     /// <summary>The password was a one-time set-up code (or an administrator asked for a change):
@@ -40,7 +44,10 @@ public sealed record WorkspaceChoice(string Code, string NameEn, string NameAr);
 /// person in two workspaces with the same password) ask which workspace. Failed attempts pause
 /// only the client that made them, on only that account; a browser that signed in to the account
 /// before is a client of its own (<see cref="TrustedDevices"/>), apart from its network address.
-/// Failures never say whether the address exists, whether the client is paused or what the policy is.
+/// Failures never say whether the address exists. A paused client is told so, and until when
+/// (critic p00 rounds 7 to 10): failures are counted by address and client whether or not an
+/// account has the address, so the pause and its end come the same way for an unknown address,
+/// a deactivated account and a working one (<see cref="IdentitySql.PauseByAddressUp"/>).
 /// </summary>
 internal sealed class SignInService(
     ErpDbSession session,
@@ -82,17 +89,25 @@ internal sealed class SignInService(
         var proofs = challenges.Select(c => PasswordHasher.Prove(password, c)).OfType<string>().ToArray();
 
         var matches = new List<Match>();
+        DateTimeOffset? pausedUntil = null;
         await using (var command = Lookup(connection, email, proofs, client))
         await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
         {
             while (await reader.ReadAsync(cancellationToken))
             {
-                matches.Add(new Match(reader.GetString(0), reader.GetGuid(1)));
+                if (!reader.IsDBNull(1))
+                {
+                    matches.Add(new Match(reader.GetString(0), reader.GetGuid(1)));
+                }
+                else if (!reader.IsDBNull(2))
+                {
+                    pausedUntil = reader.GetFieldValue<DateTimeOffset>(2);
+                }
             }
         }
         if (matches.Count == 0)
         {
-            return new SignInOutcome.Failed();
+            return pausedUntil is { } until ? new SignInOutcome.Paused(until) : new SignInOutcome.Failed();
         }
 
         var chosen = matches[0];
@@ -287,7 +302,7 @@ internal sealed class SignInService(
     private NpgsqlCommand Lookup(NpgsqlConnection connection, string email, string[]? proofs, Client client)
     {
         var command = new NpgsqlCommand(
-            "SELECT challenge, tenant_id FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes)", connection);
+            "SELECT challenge, tenant_id, paused_until FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes)", connection);
         command.Parameters.AddWithValue("email", email);
         command.Parameters.Add(new NpgsqlParameter("proofs", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)proofs ?? DBNull.Value });
         command.Parameters.AddWithValue("source", client.Source);
