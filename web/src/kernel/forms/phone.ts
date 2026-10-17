@@ -15,7 +15,7 @@
 
 /** The country code the field keeps (the UAE). */
 export const HOME_CODE = "971";
-export const HOME_PREFIX = `+${HOME_CODE} `;
+export const HOME_PREFIX = "+971 ";
 
 const ARABIC_INDIC = "٠١٢٣٤٥٦٧٨٩";
 const EASTERN_ARABIC_INDIC = "۰۱۲۳۴۵۶۷۸۹";
